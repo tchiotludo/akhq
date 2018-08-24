@@ -1,0 +1,82 @@
+<#-- @ftlvariable name="clusterId" type="java.lang.String" -->
+<#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
+
+<#import "/includes/template.ftl" as template>
+<#import "/includes/functions.ftl" as functions>
+
+<@template.header "Topics", "topic" />
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover mb-0">
+        <thead class="thead-dark">
+            <tr>
+                <th colspan="3">Topics</th>
+                <th colspan="3">Partitions</th>
+                <th colspan="2">Replications</th>
+                <th>Consumers Groups</th>
+                <th colspan="2" class="row-action"></th>
+            </tr>
+        </thead>
+        <thead class="thead-dark">
+            <tr>
+                <th class="text-nowrap">Name</th>
+                <th class="text-nowrap">Offsets</th>
+                <th class="text-nowrap">Size</th>
+                <th class="text-nowrap">Total</th>
+                <th class="text-nowrap">Available</th>
+                <th class="text-nowrap">Under replicated</th>
+                <th class="text-nowrap">Factor</th>
+                <th class="text-nowrap">In Sync</th>
+                <th class="text-nowrap">Consumer Groups</th>
+                <th colspan="2" class="row-action"></th>
+            </tr>
+        </thead>
+        <tbody>
+                <#if topics?size == 0>
+                    <tr>
+                        <td colspan="5">
+                            <div class="alert alert-info mb-0" role="alert">
+                                No topic available
+                            </div>
+                        </td>
+                    </tr>
+                </#if>
+                <#list topics as topic>
+                    <tr>
+                        <td>${topic.getName()}</td>
+                        <td>${topic.getSumFirstOffsets() + " ⤑ " + topic.getSumOffsets()}</td>
+                        <td>${functions.filesize(topic.getLogDirSize())}</td>
+                        <td>${topic.getPartitions()?size}</td>
+                        <td><!-- @TODO --></td>
+                        <td><!-- @TODO --></td>
+                        <td>${topic.getReplicas()?size}</td>
+                        <td>${topic.getInSyncReplicas()?size}</td>
+                        <td>
+                            <#list topic.getConsumerGroups() as group>
+                                <#assign active = group.isActiveTopic(topic.getName()) >
+                                <a href="/${clusterId}/group/${group.getId()}" class="btn btn-sm mb-1 btn-${active?then("success", "warning")} ">
+                                    ${group.getId()}
+                                    <span class="badge badge-light">
+                                        Lag: ${group.getOffsetLag(topic.getName())}
+                                    </span>
+                                </a><br/>
+                            </#list>
+                        </td>
+                        <td class="row-action main-row-action">
+                            <a href="/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
+                        </td>
+                        <td class="row-action">
+                            <#if topic.isInternal() == false>
+                                <a
+                                    href="/${clusterId}/topic/${topic.getName()}/delete"
+                                    data-confirm="Do you want to delete topic <br /><strong>${topic.getName()}</strong><br /><br /> ?"
+                                ><i class="fa fa-trash"></i></a>
+                            </#if>
+                        </td>
+                    </tr>
+                </#list>
+        </tbody>
+    </table>
+</div>
+
+<@template.footer/>

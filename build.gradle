@@ -1,0 +1,91 @@
+buildscript {
+    ext {
+        joobyVersion = "1.5.1"
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.google.gradle:osdetector-gradle-plugin:1.4.0"
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        classpath "org.jooby:jooby-gradle-plugin:$joobyVersion"
+    }
+}
+
+apply plugin: "io.spring.dependency-management"
+apply plugin: "com.google.osdetector"
+apply plugin: "application"
+apply plugin: "jooby"
+apply plugin: "idea"
+
+group 'org.kafkahq'
+version '0.1'
+mainClassName = "org.kafkahq.App"
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.jooby:jooby-bom:$joobyVersion"
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = false
+        downloadSources = true
+    }
+}
+
+joobyRun {
+    includes = ['**/*.class', '**/*.conf', '**/*.properties', '**/*.ftl', '**/*.xml']
+}
+
+
+dependencies {
+    // jooby
+    compile "org.jooby:jooby-netty"
+    compile "io.netty:netty-transport-native-epoll:${dependencyManagement.importedProperties['netty.version']}:${osdetector.classifier.contains('linux') ? 'linux-x86_64' : ''}"
+    compile "io.netty:netty-tcnative-boringssl-static:${dependencyManagement.importedProperties['boringssl.version']}"
+    compile group: 'org.jooby', name: 'jooby-assets', version: joobyVersion
+    compile group: 'org.jooby', name: 'jooby-assets-sass', version: joobyVersion
+    compile group: 'org.jooby', name: 'jooby-livereload', version: joobyVersion
+    // compile group: 'org.jooby', name: 'jooby-assets-auto-prefixer', version: joobyVersion
+    // compile group: 'org.jooby', name: 'jooby-assets-clean-css', version: joobyVersion
+    // compile group: 'org.jooby', name: 'jooby-assets-uglify', version: joobyVersion
+    compile group: 'org.jooby', name: 'jooby-jackson', version: joobyVersion
+    compile group: 'org.jooby', name: 'jooby-ftl', version: joobyVersion
+    compile group: 'org.jooby', name: 'jooby-whoops', version: joobyVersion
+
+    // kafka
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.+'
+
+    // debug
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.+'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.+'
+
+    // test
+    testCompile "junit:junit:4.12"
+    testCompile "io.rest-assured:rest-assured:3.1.0"
+}
+
+sourceSets.main.resources {
+    srcDirs = ["conf", "public"]
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": mainClassName
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
