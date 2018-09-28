@@ -1,6 +1,7 @@
 package org.kafkahq.repositories;
 
 import com.google.inject.Binder;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
@@ -11,6 +12,7 @@ import org.jooby.Env;
 import org.jooby.Jooby;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Partition;
+import org.kafkahq.modules.KafkaModule;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +20,9 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ConsumerGroupRepository extends AbstractRepository implements Jooby.Module {
+    @Inject
+    private KafkaModule kafkaModule;
+
     public List<ConsumerGroup> list() throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
@@ -74,6 +79,12 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
                         .anyMatch(s -> Objects.equals(s, topic))
             )
             .collect(Collectors.toList());
+    }
+
+    public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
+        kafkaModule.getAdminClient(clusterId).deleteConsumerGroups(new ArrayList<String>() {{
+            add(name);
+        }}).all().get();
     }
 
     @SuppressWarnings("NullableProblems")

@@ -75,7 +75,6 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
         }}).all().get();
     }
 
-
     @SuppressWarnings("NullableProblems")
     @Override
     public void configure(Env env, Config conf, Binder binder) {

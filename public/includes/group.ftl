@@ -41,6 +41,12 @@
                             <td class="row-action main-row-action">
                                 <a href="/${clusterId}/group/${group.getId()}" ><i class="fa fa-search"></i></a>
                             </td>
+                            <td class="row-action">
+                                <a
+                                    href="/${clusterId}/group/${group.getId()}/delete"
+                                    data-confirm="Do you want to delete consumer group <br /><strong>${group.getId()}</strong><br /><br /> ?"
+                                ><i class="fa fa-trash"></i></a>
+                            </td>
                         </tr>
                     </#list>
             </tbody>
