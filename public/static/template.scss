@@ -45,6 +45,11 @@ a, button, input[type="submit"] {
     transition-duration: 200ms;
 }
 
+body {
+    min-width: 320px;
+
+}
+
 .title {
     display: flex;
     position: relative;
@@ -149,44 +154,46 @@ h1 {
             }
         }
     }
-}
-
-a {
-    &[aria-expanded="true"] {
-        color: #fff;
-        background: $tertiary;
-    }
-    &[data-toggle="collapse"] {
-        position: relative;
-    }
-}
-
-.dropdown-toggle::after {
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-}
-
-ul ul a {
-    font-size: 0.9em !important;
-    padding-left: 30px !important;
-    background: $tertiary;
-}
 
 
-@media (max-width: 768px) {
-    #sidebar {
-        margin-left: -250px;
-        &.active {
-            margin-left: 0;
+    a {
+        &[aria-expanded="true"] {
+            color: #fff;
+            background: $tertiary;
+        }
+        &[data-toggle="collapse"] {
+            position: relative;
         }
     }
-    #sidebar-collapse span {
-        display: none;
+
+    .dropdown-toggle::after {
+        display: block;
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+    }
+
+    ul ul a {
+        font-size: 0.9em !important;
+        padding-left: 30px !important;
+        background: $tertiary;
+    }
+
+
+    @media (max-width: 768px) {
+        & {
+            margin-left: -250px;
+            &.active {
+                margin-left: 0;
+            }
+        }
+        #sidebar-collapse span {
+            display: none;
+        }
     }
 }
+
 
 /* ----------------------------------------------------------------------------------------------------------------- *\
     Turbolinks
@@ -219,5 +226,15 @@ table {
             overflow-wrap: break-word;
             word-break: break-all;
         }
+    }
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- *\
+    Data
+\* ----------------------------------------------------------------------------------------------------------------- */
+.data-filter {
+    > nav {
+        display: flex;
+        order: 2;
     }
 }

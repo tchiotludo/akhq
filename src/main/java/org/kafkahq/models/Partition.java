@@ -9,8 +9,9 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 public class Partition {
-    public Partition(TopicPartitionInfo partitionInfo, LogDir logDir, Offsets offsets) {
+    public Partition(String topic, TopicPartitionInfo partitionInfo, LogDir logDir, Offsets offsets) {
         this.id = partitionInfo.partition();
+        this.topic = topic;
         this.logDir = logDir;
         this.firstOffset = offsets.getFirstOffset();
         this.lastOffset = offsets.getLastOffset();
@@ -29,6 +30,12 @@ public class Partition {
 
     public int getId() {
         return id;
+    }
+
+    private final String topic;
+
+    public String getTopic() {
+        return topic;
     }
 
     private final List<Node.Partition> nodes;

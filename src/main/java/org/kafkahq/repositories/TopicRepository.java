@@ -17,14 +17,18 @@ import java.util.concurrent.ExecutionException;
 
 @Singleton
 public class TopicRepository extends AbstractRepository implements Jooby.Module {
-    @Inject
     private KafkaModule kafkaModule;
 
-    @Inject
     private ConsumerGroupRepository consumerGroupRepository;
 
-    @Inject
     private LogDirRepository logDirRepository;
+
+    @Inject
+    public TopicRepository(KafkaModule kafkaModule, ConsumerGroupRepository consumerGroupRepository, LogDirRepository logDirRepository) {
+        this.kafkaModule = kafkaModule;
+        this.consumerGroupRepository = consumerGroupRepository;
+        this.logDirRepository = logDirRepository;
+    }
 
     public List<Topic> list() throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
@@ -78,6 +82,6 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
     @SuppressWarnings("NullableProblems")
     @Override
     public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(TopicRepository.class).toInstance(new TopicRepository());
+        binder.bind(TopicRepository.class).asEagerSingleton();
     }
 }

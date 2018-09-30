@@ -1,5 +1,6 @@
 package org.kafkahq.repositories;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -12,46 +13,68 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.jooby.Env;
 import org.jooby.Jooby;
+import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Singleton
 public class RecordRepository extends AbstractRepository implements Jooby.Module {
-    @Inject
     private KafkaModule kafkaModule;
 
-    @Inject
     private TopicRepository topicRepository;
+
+    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
+
+    @Inject
+    public RecordRepository(KafkaModule kafkaModule, TopicRepository topicRepository) {
+        this.kafkaModule = kafkaModule;
+        this.topicRepository = topicRepository;
+    }
 
     public List<ConsumerRecord<String, String>> consume(String clusterId, List<String> topics, Options options) throws ExecutionException, InterruptedException {
         return  this.kafkaModule.debug(() -> {
+            List<Topic> topicsDetail = topicRepository.findByName(topics);
             KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(clusterId);
-            options.seek(topicRepository, consumer, topics);
 
+            Map<String, Map<Integer, Long>> assigments = new TreeMap<>();
             List<ConsumerRecord<String, String>> list = new ArrayList<>();
-            HashMap<Integer, Long> currentOffsets = new HashMap<>();
-            boolean isDifferent = true;
 
+            topicsDetail.forEach(topic -> topic
+                .getPartitions()
+                .forEach(partition -> {
+                    assigments.putAll(options.seek(consumer, partition));
 
-            while (isDifferent) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(200));
-                HashMap<Integer, Long> previousOffsets = new HashMap<>(currentOffsets);
-                for (ConsumerRecord<String, String> record : records) {
-                    list.add(record);
-                    currentOffsets.put(record.partition(), record.offset());
-                }
+                    Long endOffset = assigments.get(partition.getTopic()).get(partition.getId());
+                    long currentOffset = 0L;
 
-                isDifferent = !previousOffsets.equals(currentOffsets);
-            }
+                    while (currentOffset < endOffset) {
+                        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                        for (ConsumerRecord<String, String> record : records) {
+                            logger.trace(
+                                "Record topic {} partion {} offset {}",
+                                partition.getTopic(),
+                                partition.getId(),
+                                record.offset()
+                            );
+
+                            currentOffset = record.offset();
+
+                            if (currentOffset >= endOffset) {
+                                break;
+                            } else {
+                                list.add(record);
+                            }
+                        }
+                    }
+                })
+            );
 
             return list;
         }, "Consume {} with options {}", topics, options);
@@ -65,7 +88,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             NEWEST,
         }
 
-        private int size = 20;
+        private int size = 1;
 
 
         public int getSize() {
@@ -124,43 +147,48 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return this;
         }
 
-        private void seek(TopicRepository topicRepository, KafkaConsumer<String, String> consumer, List<String> topics) throws ExecutionException, InterruptedException {
-            List<Topic> topicsDetails = topicRepository.findByName(topics);
+        public Map<String, Map<Integer, Long>> seek(KafkaConsumer<String, String> consumer, Partition partition) {
+            TopicPartition topicPartition = new TopicPartition(
+                partition.getTopic(),
+                partition.getId()
+            );
 
-            // list partitons
-            List<TopicPartition> input = topicsDetails
-                .stream()
-                .flatMap(topic -> topic.getPartitions().stream().map(partition ->
-                    new TopicPartition(topic.getName(), partition.getId())
-                ))
-                .collect(Collectors.toList());
+            consumer.assign(Collections.singleton(topicPartition));
+            long begin;
+            long last;
 
-            // filter partitions
-            if (this.partition != null) {
-                input = input.stream()
-                    .filter(topicPartition -> topicPartition.partition() == this.partition)
-                    .collect(Collectors.toList());
-            }
-
-            consumer.assign(input);
-
-            // offset
             if (this.start == 0 && this.sort == Options.Sort.OLDEST) {
-                consumer.seekToBeginning(input);
+                begin = partition.getFirstOffset();
+                last = partition.getFirstOffset() + this.size > partition.getLastOffset() ?
+                    partition.getLastOffset() :
+                    partition.getFirstOffset() + this.size;
             } else {
-                this.findOffset(topicsDetails)
-                    .forEach(consumer::seek);
+                if (partition.getLastOffset() - this.size < partition.getFirstOffset()) {
+                    begin = partition.getFirstOffset();
+                    last = partition.getLastOffset();
+                } else {
+                    begin = partition.getLastOffset() - this.size;
+                    last = partition.getLastOffset();
+                }
             }
-        }
 
-        private Map<TopicPartition, Long> findOffset(List<Topic> topicsDetails) {
-            return new HashMap<>();
+            consumer.seek(topicPartition, begin);
+
+            logger.trace(
+                "Consume topic {} partion {} from {} to {}",
+                partition.getTopic(),
+                partition.getId(),
+                begin,
+                last - 1
+            );
+
+            return ImmutableMap.of(partition.getTopic(), ImmutableMap.of(partition.getId(), last));
         }
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
     public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(RecordRepository.class).toInstance(new RecordRepository());
+        binder.bind(RecordRepository.class).to(RecordRepository.class);
     }
 }

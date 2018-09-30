@@ -25,6 +25,7 @@ public class Topic {
 
         for (TopicPartitionInfo partition : description.partitions()) {
             this.partitions.add(new Partition(
+                description.name(),
                 partition,
                 logDirs.stream()
                     .filter(logDir -> logDir.getPartition() == partition.partition())

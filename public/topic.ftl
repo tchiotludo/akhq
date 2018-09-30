@@ -7,6 +7,7 @@
 <#import "/includes/node.ftl" as nodeTemplate>
 <#import "/includes/group.ftl" as groupTemplate>
 <#import "/includes/functions.ftl" as functions>
+<#import "/includes/topic.ftl" as topicTemplate>
 
 <@template.header "Topic: " + topic.getName(), "topic" />
 
@@ -32,42 +33,7 @@
     <div class="tab-content">
         <#if tab == "data">
         <div class="tab-pane active" role="tabpanel">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover mb-0">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Key</th>
-                            <th>Date</th>
-                            <th>Partition</th>
-                            <th>Offset</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <#if datas?size == 0>
-                            <tr>
-                                <td colspan="5">
-                                    <div class="alert alert-info mb-0" role="alert">
-                                        No data available
-                                    </div>
-                                </td>
-                            </tr>
-                        </#if>
-                    <#list datas as data>
-                        <tr>
-                            <td><code>${data.key()!'null'}</code></td>
-                            <td>${data.timestamp()?number_to_datetime?string.medium_short}</td>
-                            <td>${data.partition()}</td>
-                            <td>${data.offset()}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="4">
-                                <pre class="mb-0"><code>${data.value()!'null'}</code></pre>
-                            </td>
-                        </tr>
-                    </#list>
-                    </tbody>
-                </table>
-            </div>
+            <@topicTemplate.data datas />
         </div>
         </#if>
 

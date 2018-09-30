@@ -33,7 +33,16 @@
     </root>
 
     <logger name="org.apache.kafka" level="WARN" />
+
+    <!-- Jooby -->
     <logger name="io.netty" level="WARN" />
     <logger name="org.jooby" level="WARN" />
     <logger name="org.jooby.RequestLogger" level="INFO" />
+
+    <!-- Test -->
+    <logger name="org.apache.zookeeper" level="ERROR" />
+    <logger name="com.salesforce.kafka" level="ERROR" />
+    <logger name="kafka" level="ERROR" />
+    <logger name="com.salesforce.kafka" level="INFO" />
+    <logger name="state.change.logger" level="ERROR" />
 </configuration>

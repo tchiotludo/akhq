@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        joobyVersion = "1.5.1"
+        joobyVersion = "1.5.+"
     }
 
     repositories {
@@ -73,6 +73,8 @@ dependencies {
 
     // test
     testCompile "junit:junit:4.12"
+    testCompile 'com.salesforce.kafka.test:kafka-junit4:3.0.1'
+    testCompile 'org.apache.kafka:kafka_2.11:2.0.0'
     testCompile "io.rest-assured:rest-assured:3.1.0"
 }
 
