@@ -46,35 +46,37 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             Map<String, Map<Integer, Long>> assigments = new TreeMap<>();
             List<ConsumerRecord<String, String>> list = new ArrayList<>();
 
-            topicsDetail.forEach(topic -> topic
-                .getPartitions()
-                .forEach(partition -> {
-                    assigments.putAll(options.seek(consumer, partition));
+            synchronized (consumer) {
+                topicsDetail.forEach(topic -> topic
+                    .getPartitions()
+                    .forEach(partition -> {
+                        assigments.putAll(options.seek(consumer, partition));
 
-                    Long endOffset = assigments.get(partition.getTopic()).get(partition.getId());
-                    long currentOffset = 0L;
+                        Long endOffset = assigments.get(partition.getTopic()).get(partition.getId());
+                        long currentOffset = 0L;
 
-                    while (currentOffset < endOffset) {
-                        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-                        for (ConsumerRecord<String, String> record : records) {
-                            logger.trace(
-                                "Record topic {} partion {} offset {}",
-                                partition.getTopic(),
-                                partition.getId(),
-                                record.offset()
-                            );
+                        while (currentOffset < endOffset) {
+                            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                            for (ConsumerRecord<String, String> record : records) {
+                                logger.trace(
+                                    "Record topic {} partion {} offset {}",
+                                    partition.getTopic(),
+                                    partition.getId(),
+                                    record.offset()
+                                );
 
-                            currentOffset = record.offset();
+                                currentOffset = record.offset();
 
-                            if (currentOffset >= endOffset) {
-                                break;
-                            } else {
-                                list.add(record);
+                                if (currentOffset >= endOffset) {
+                                    break;
+                                } else {
+                                    list.add(record);
+                                }
                             }
                         }
-                    }
-                })
-            );
+                    })
+                );
+            }
 
             return list;
         }, "Consume {} with options {}", topics, options);
@@ -88,7 +90,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             NEWEST,
         }
 
-        private int size = 1;
+        private int size = 10;
 
 
         public int getSize() {
@@ -189,6 +191,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     @SuppressWarnings("NullableProblems")
     @Override
     public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(RecordRepository.class).to(RecordRepository.class);
+        binder.bind(RecordRepository.class);
     }
 }

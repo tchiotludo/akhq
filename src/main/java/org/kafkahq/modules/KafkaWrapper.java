@@ -2,6 +2,7 @@ package org.kafkahq.modules;
 
 import com.google.inject.Inject;
 import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
@@ -110,25 +111,28 @@ public class KafkaWrapper {
                         )
                         .collect(Collectors.toList());
 
-                    Map<TopicPartition, Long> begins = kafkaModule.getConsumer(clusterId).beginningOffsets(collect);
-                    // @FIXME: ugly hacks, on startup, first query can send a partial result, resending request works !
-                    if (begins.size() != collect.size()) {
-                        begins = kafkaModule.getConsumer(clusterId).beginningOffsets(collect);
-                    }
-                    Map<TopicPartition, Long> ends = kafkaModule.getConsumer(clusterId).endOffsets(collect);
+                    KafkaConsumer<String, String> consumer = kafkaModule.getConsumer(clusterId);
+                    synchronized (consumer) {
+                        Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
+                        // @FIXME: ugly hacks, on startup, first query can send a partial result, resending request works !
+                        if (begins.size() != collect.size()) {
+                            begins = consumer.beginningOffsets(collect);
+                        }
+                        Map<TopicPartition, Long> ends = consumer.endOffsets(collect);
 
-                    return begins.entrySet().stream()
-                        .collect(groupingBy(
-                            o -> o.getKey().topic(),
-                            mapping(begin ->
-                                    new Partition.Offsets(
-                                        begin.getKey().partition(),
-                                        begin.getValue(),
-                                        ends.get(begin.getKey())
-                                    ),
-                                toList()
-                            )
-                        ));
+                        return begins.entrySet().stream()
+                            .collect(groupingBy(
+                                o -> o.getKey().topic(),
+                                mapping(begin ->
+                                        new Partition.Offsets(
+                                            begin.getKey().partition(),
+                                            begin.getValue(),
+                                            ends.get(begin.getKey())
+                                        ),
+                                    toList()
+                                )
+                            ));
+                    }
                 },
                 "Describe Topic {}",
                 topics
