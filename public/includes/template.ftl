@@ -10,19 +10,18 @@
         <meta name="turbolinks-cache-control" content="no-cache" />
         <link rel="shortcut icon"
               type="image/png"
-              href="/static/img/icon.png" />
+              href="/img/icon.png" />
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
         ${liveReload?no_esc}
         ${vendor_styles?no_esc}
-        ${template_styles?no_esc}
+        ${main_styles?no_esc}
         ${vendor_scripts?no_esc}
-        ${template_scripts?no_esc}
+        ${main_scripts?no_esc}
     <#nested>
     </head>
     <body>
         <div class="wrapper">
-            <!-- Sidebar  -->
             <nav id="sidebar">
                 <div class="sidebar-header">
                     <h3><img src="/static/img/logo.svg"/><sup><strong>HQ</strong></sup></h3>

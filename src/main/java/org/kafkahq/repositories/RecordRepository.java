@@ -54,9 +54,17 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
                         Long endOffset = assigments.get(partition.getTopic()).get(partition.getId());
                         long currentOffset = 0L;
+                        int emptyResult = 0;
 
-                        while (currentOffset < endOffset) {
-                            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                        while (currentOffset < endOffset && emptyResult <= 1) {
+                            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
+
+                            if (records.isEmpty()) {
+                                emptyResult++;
+                            } else {
+                                emptyResult = 0;
+                            }
+
                             for (ConsumerRecord<String, String> record : records) {
                                 logger.trace(
                                     "Record topic {} partion {} offset {}",
@@ -115,7 +123,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return this;
         }
 
-        private Sort sort = Sort.OLDEST;
+        private Sort sort = Sort.NEWEST;
 
         public Sort getSort() {
             return sort;

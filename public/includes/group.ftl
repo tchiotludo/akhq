@@ -13,6 +13,7 @@
                     <th>Coordinator</th>
                     <th>Topics</th>
                     <th class="row-action"></th>
+                    <th class="row-action"></th>
                 </tr>
             </thead>
             <tbody>

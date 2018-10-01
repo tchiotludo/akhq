@@ -1,3 +1,10 @@
+import $ from  "jquery";
+import 'bootstrap';
+import Turbolinks from "turbolinks";
+import swal from 'sweetalert2';
+
+Turbolinks.start();
+
 $(document).on('ready turbolinks:load', function () {
     /* Sidebar */
     $('#sidebar-collapse').on('click', function () {
@@ -32,7 +39,7 @@ $(document).on('ready turbolinks:load', function () {
     });
 
     /* Confirm */
-    var toast = swal.mixin({
+    const toast = swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
@@ -43,8 +50,8 @@ $(document).on('ready turbolinks:load', function () {
         event.stopPropagation();
         event.preventDefault();
 
-        var message = 'Are you sure ?';
-        var href = $(this).attr("href");
+        let  message = 'Are you sure ?';
+        const href = $(this).attr("href");
 
         if ($(this).attr("data-confirm") !== "true") {
             message = $(this).attr("data-confirm");

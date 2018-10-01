@@ -17,7 +17,9 @@ build/*
 .gradletasknamecache
 
 ### Assets
-public/vendor
+public/static
+node_modules
+node/
 
 ### Ide ###
 .idea/*

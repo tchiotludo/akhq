@@ -11,9 +11,24 @@
     "sweetalert2": "^7.28.0",
     "turbolinks": "^5.2.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "clean-webpack-plugin": "0.1.19",
+    "css-loader": "1.0.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "2.0.0",
+    "node-sass": "4.9.3",
+    "sass-loader": "7.1.0",
+    "style-loader": "0.23.0",
+    "url-loader": "1.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9",
+    "webpack-merge": "4.1.4"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "NODE_ENV=dev node_modules/.bin/webpack-dev-server --progress --mode development",
+    "watch": "node_modules/.bin/webpack --progress --mode development --watch",
+    "build": "node_modules/.bin/webpack -p --progress --mode production"
   },
   "repository": {
     "type": "git",
