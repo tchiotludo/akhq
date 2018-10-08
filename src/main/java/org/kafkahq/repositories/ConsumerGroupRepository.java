@@ -47,6 +47,8 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     public List<ConsumerGroup> findByName(List<String> groups) throws ExecutionException, InterruptedException {
         ArrayList<ConsumerGroup> list = new ArrayList<>();
 
+        groups = groups.stream().map(s -> s.equals("null") ? "" : s).collect(Collectors.toList());
+
         Set<Map.Entry<String, ConsumerGroupDescription>> consumerDescriptions = kafkaWrapper.describeConsumerGroups(groups).entrySet();
 
         for (Map.Entry<String, ConsumerGroupDescription> description : consumerDescriptions) {

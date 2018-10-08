@@ -18,7 +18,7 @@ public class ConsumerGroup {
         Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> groupOffset,
         Map<String, List<Partition.Offsets>> topicsOffsets
     ) {
-        this.id = groupDescription.groupId();
+        this.id = groupDescription.groupId().equals("") ? "null" : groupDescription.groupId();
         this.isSimpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
         this.partitionAssignor = groupDescription.partitionAssignor();
         this.state = groupDescription.state();
