@@ -20,8 +20,8 @@
         <thead class="thead-dark">
             <tr>
                 <th class="text-nowrap">Name</th>
-                <th class="text-nowrap">Offsets</th>
                 <th class="text-nowrap">Size</th>
+                <th class="text-nowrap">Weight</th>
                 <th class="text-nowrap">Total</th>
                 <th class="text-nowrap">Available</th>
                 <th class="text-nowrap">Under replicated</th>
@@ -44,7 +44,11 @@
                 <#list topics as topic>
                     <tr>
                         <td>${topic.getName()}</td>
-                        <td>${topic.getSumFirstOffsets() + " ⤑ " + topic.getSumOffsets()}</td>
+                        <td>
+                            <span class="text-nowrap">
+                                ≈ ${topic.getSize()}
+                            </span>
+                        </td>
                         <td>${functions.filesize(topic.getLogDirSize())}</td>
                         <td>${topic.getPartitions()?size}</td>
                         <td><!-- @TODO --></td>

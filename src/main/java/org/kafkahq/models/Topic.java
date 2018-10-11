@@ -88,6 +88,21 @@ public class Topic {
             .reduce(0L, Long::sum);
     }
 
+    public long getSize() {
+        return this.getSumOffsets() - this.getSumFirstOffsets();
+    }
+
+    public long getSize(int partition) {
+        for (Partition current : this.getPartitions()) {
+            if (partition == current.getId()) {
+                return current.getLastOffset() - current.getFirstOffset();
+            }
+        }
+
+        throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
+    }
+
+
     public long getSumFirstOffsets() {
         return this.getPartitions().stream()
             .map(Partition::getFirstOffset)

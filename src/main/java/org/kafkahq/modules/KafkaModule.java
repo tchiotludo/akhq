@@ -33,7 +33,7 @@ public class KafkaModule implements Jooby.Module {
 
         try {
             call = task.call();
-            logger.debug("[{}] " + format, (System.currentTimeMillis() - startTime) + "ms", arguments);
+            logger.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
             return call;
         } catch (InterruptedException | ExecutionException exception) {
             throw exception;
@@ -52,12 +52,30 @@ public class KafkaModule implements Jooby.Module {
             .collect(Collectors.toList());
     }
 
-    private Properties getCommonProperties(String clusterId) {
+    private Properties getConfigProperties(String path) {
         Properties props = new Properties();
 
-        this.config.getConfig("kafka.connections." + clusterId)
-            .entrySet()
-            .forEach(config -> props.put(config.getKey(), config.getValue().unwrapped()));
+        if (this.config.hasPath(path)) {
+            this.config.getConfig(path)
+                .entrySet()
+                .forEach(config -> props.put(config.getKey(), config.getValue().unwrapped()));
+        }
+
+        return props;
+    }
+
+    private Properties getConsumerProperties(String clusterId) {
+        Properties props = new Properties();
+        props.putAll(this.getConfigProperties("kafka.defaults.consumer"));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+
+        return props;
+    }
+
+    private Properties getAdminProperties(String clusterId) {
+        Properties props = new Properties();
+        props.putAll(this.getConfigProperties("kafka.defaults.admin"));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
 
         return props;
     }
@@ -66,7 +84,7 @@ public class KafkaModule implements Jooby.Module {
 
     public AdminClient getAdminClient(String clusterId) {
         if (!this.adminClient.containsKey(clusterId)) {
-            this.adminClient.put(clusterId, AdminClient.create(this.getCommonProperties(clusterId)));
+            this.adminClient.put(clusterId, AdminClient.create(this.getAdminProperties(clusterId)));
         }
 
         return this.adminClient.get(clusterId);
@@ -77,7 +95,7 @@ public class KafkaModule implements Jooby.Module {
     public KafkaConsumer<String, String> getConsumer(String clusterId) {
         if (!this.consumer.containsKey(clusterId)) {
             this.consumer.put(clusterId, new KafkaConsumer<>(
-                this.getCommonProperties(clusterId),
+                this.getConsumerProperties(clusterId),
                 new StringDeserializer(),
                 new StringDeserializer()
             ));

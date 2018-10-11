@@ -33,7 +33,7 @@
                             data-toggle="collapse"
                             aria-expanded="false"
                             class="dropdown-toggle"><i
-                            class="fa fa-fw fa fa-object-group"
+                            class="fa fa-fw fa fa-database"
                             aria-hidden="true"></i> Clusters <span class="badge badge-success">${clusterId}</span></a>
                         <ul class="collapse list-unstyled" id="clusters">
                             <#list clusters as cluster>

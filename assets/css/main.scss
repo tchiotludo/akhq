@@ -94,6 +94,20 @@ h1 {
     transition: all 0.3s;
 }
 
+nav.navbar {
+    .dropdown-menu {
+        input {
+            margin: $dropdown-item-padding-y $dropdown-item-padding-x;
+            width: calc(100% - 3rem);
+        }
+    }
+}
+
+.page-item.info .page-link {
+    color: color-yiq($secondary);
+    @include gradient-bg($secondary);
+}
+
 /* ----------------------------------------------------------------------------------------------------------------- *\
     Sidebar
 \* ----------------------------------------------------------------------------------------------------------------- */
@@ -238,5 +252,11 @@ table {
     > nav {
         display: flex;
         order: 2;
+    }
+
+    > .navbar-collapse {
+        @include media-breakpoint-down(md) {
+            order: 3;
+        }
     }
 }
