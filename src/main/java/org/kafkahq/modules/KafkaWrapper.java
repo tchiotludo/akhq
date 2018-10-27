@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.jooby.scope.RequestScoped;
 import org.kafkahq.models.Partition;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
@@ -187,7 +189,6 @@ public class KafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-
     private Map<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupOffset = new HashMap<>();
 
     public Map<TopicPartition, OffsetAndMetadata> consumerGroupsOffsets(String groupId) throws ExecutionException, InterruptedException {
@@ -225,5 +226,38 @@ public class KafkaWrapper {
         }
 
         return this.logDirs;
+    }
+
+    private Map<ConfigResource, Config> describeConfigs = new HashMap<>();
+
+    public Map<ConfigResource, Config> describeConfigs(ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
+        List<String> list = new ArrayList<>(names);
+        list.removeIf((value) -> this.describeConfigs.entrySet()
+            .stream()
+            .filter(entry -> entry.getKey().type() == type)
+            .anyMatch(entry -> entry.getKey().name().equals(value))
+        );
+
+        if (list.size() > 0) {
+            Map<ConfigResource, Config> description = this.kafkaModule.debug(() -> kafkaModule.getAdminClient(clusterId)
+                .describeConfigs(list.stream()
+                    .map(s -> new ConfigResource(type, s))
+                    .collect(Collectors.toList())
+                )
+                .all()
+                .get(),
+                "Describe Topic Config {}",
+                names
+            );
+
+            this.describeConfigs.putAll(description);
+        }
+
+        return this.describeConfigs
+            .entrySet()
+            .stream()
+            .filter(e -> e.getKey().type() == type)
+            .filter(e -> names.contains(e.getKey().name()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

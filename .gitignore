@@ -36,3 +36,6 @@ logs/*
 
 ### Kafka HQ ###
 conf/*.dev.conf
+
+## Docker
+docker-compose.override.yml

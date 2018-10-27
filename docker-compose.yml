@@ -1,0 +1,17 @@
+version: '3.6'
+volumes:
+  gradle-cache:
+    driver: local
+
+services:
+  kafkahq:
+    image: gradle:4.10-jdk-alpine
+    command: gradle joobyRun
+    environment:
+      APP_ENV: "DEV"
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - gradle-cache:/home/gradle/.gradle
+    ports:
+      - 8080:8080

@@ -56,7 +56,6 @@ public class GroupController extends AbstractController {
         );
     }
 
-
     @GET
     @Path("{id}/delete")
     public Result delete(Request request) {

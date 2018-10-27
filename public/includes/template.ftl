@@ -10,7 +10,7 @@
         <meta name="turbolinks-cache-control" content="no-cache" />
         <link rel="shortcut icon"
               type="image/png"
-              href="/img/icon.png" />
+              href="/public/static/img/icon.png" />
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
         ${liveReload?no_esc}
@@ -42,6 +42,9 @@
                             </li>
                             </#list>
                         </ul>
+                    </li>
+                    <li class="${(tab == "node")?then("active", "")}">
+                        <a href="/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
                     </li>
                     <li class="${(tab == "topic")?then("active", "")}">
                         <a href="/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>

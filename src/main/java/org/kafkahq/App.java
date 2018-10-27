@@ -7,6 +7,7 @@ import org.jooby.ftl.Ftl;
 import org.jooby.json.Jackson;
 import org.jooby.livereload.LiveReload;
 import org.jooby.whoops.Whoops;
+import org.kafkahq.controllers.NodeController;
 import org.kafkahq.controllers.GroupController;
 import org.kafkahq.controllers.TopicController;
 import org.kafkahq.modules.KafkaModule;
@@ -54,6 +55,7 @@ public class App extends Jooby {
         use("*", "/{cluster}", (req, rsp, chain)  -> {
             rsp.redirect("/" + req.param("cluster").value() + "/topic");
         });
+        use(NodeController.class);
         use(TopicController.class);
         use(GroupController.class);
     }

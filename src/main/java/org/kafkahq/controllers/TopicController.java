@@ -12,7 +12,9 @@ import org.jooby.Results;
 import org.jooby.View;
 import org.jooby.mvc.GET;
 import org.jooby.mvc.Path;
+import org.kafkahq.models.Config;
 import org.kafkahq.models.Topic;
+import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.response.ResultStatusResponse;
@@ -30,6 +32,9 @@ public class TopicController extends AbstractController {
 
     @Inject
     private TopicRepository topicRepository;
+
+    @Inject
+    private ConfigRepository configRepository;
 
     @Inject
     private RecordRepository recordRepository;
@@ -105,13 +110,14 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/{tab:(partitions|groups)}")
+    @Path("{id}/{tab:(partitions|groups|configs)}")
     public View tab(Request request) throws ExecutionException, InterruptedException {
         return this.topic(request, request.param("tab").value());
     }
 
     public View topic(Request request, String tab) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(request.param("id").value());
+        List<Config> configs = this.configRepository.findByTopic(request.param("id").value());
 
         return this.template(
             request,
@@ -119,6 +125,7 @@ public class TopicController extends AbstractController {
                 .html("topic")
                 .put("tab", tab)
                 .put("topic", topic)
+                .put("configs", configs)
         );
     }
 
