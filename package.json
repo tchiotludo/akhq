@@ -1,7 +1,7 @@
 {
   "name": "kafkahq",
   "version": "1.0.0",
-  "description": "",
+  "description": "Kafka GUI for topics, topics data, consumers group and more",
   "main": "index.js",
   "dependencies": {
     "bootstrap": "^4.1.3",

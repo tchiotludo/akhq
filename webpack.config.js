@@ -19,12 +19,10 @@ module.exports = {
     entry: {
         vendor: [
             'jquery',
-            'moment',
             'popper.js',
             'bootstrap',
             'sweetalert2',
             'turbolinks',
-            'tempusdominus-bootstrap-4',
             path.join(srcDirectory, 'css/vendor.scss')
         ],
         main: [

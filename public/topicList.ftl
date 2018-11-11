@@ -11,7 +11,7 @@
         <thead class="thead-dark">
             <tr>
                 <th colspan="3">Topics</th>
-                <th colspan="3">Partitions</th>
+                <th colspan="1">Partitions</th>
                 <th colspan="2">Replications</th>
                 <th>Consumers Groups</th>
                 <th colspan="2" class="row-action"></th>
@@ -23,8 +23,10 @@
                 <th class="text-nowrap">Size</th>
                 <th class="text-nowrap">Weight</th>
                 <th class="text-nowrap">Total</th>
+                <!--
                 <th class="text-nowrap">Available</th>
                 <th class="text-nowrap">Under replicated</th>
+                -->
                 <th class="text-nowrap">Factor</th>
                 <th class="text-nowrap">In Sync</th>
                 <th class="text-nowrap">Consumer Groups</th>
@@ -34,7 +36,7 @@
         <tbody>
                 <#if topics?size == 0>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="9">
                             <div class="alert alert-info mb-0" role="alert">
                                 No topic available
                             </div>
@@ -51,8 +53,6 @@
                         </td>
                         <td>${functions.filesize(topic.getLogDirSize())}</td>
                         <td>${topic.getPartitions()?size}</td>
-                        <td><!-- @TODO --></td>
-                        <td><!-- @TODO --></td>
                         <td>${topic.getReplicas()?size}</td>
                         <td>${topic.getInSyncReplicas()?size}</td>
                         <td>

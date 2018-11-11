@@ -89,7 +89,9 @@ public class Topic {
     }
 
     public long getSize() {
-        return this.getSumOffsets() - this.getSumFirstOffsets();
+        return this.getPartitions().stream()
+            .map(partition -> partition.getLastOffset() - partition.getFirstOffset())
+            .reduce(0L, Long::sum);
     }
 
     public long getSize(int partition) {
@@ -100,18 +102,5 @@ public class Topic {
         }
 
         throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
-    }
-
-
-    public long getSumFirstOffsets() {
-        return this.getPartitions().stream()
-            .map(Partition::getFirstOffset)
-            .reduce(0L, Long::sum);
-    }
-
-    public long getSumOffsets() {
-        return this.getPartitions().stream()
-            .map(Partition::getLastOffset)
-            .reduce(0L, Long::sum);
     }
 }

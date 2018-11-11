@@ -13,7 +13,9 @@
               href="/public/static/img/icon.png" />
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
+        <#if myOptionalVar??>
         ${liveReload?no_esc}
+        </#if>
         ${vendor_styles?no_esc}
         ${main_styles?no_esc}
         ${vendor_scripts?no_esc}

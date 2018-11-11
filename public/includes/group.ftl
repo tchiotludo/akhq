@@ -19,7 +19,7 @@
             <tbody>
                     <#if groups?size == 0>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <div class="alert alert-info mb-0" role="alert">
                                     No consumer group available
                                 </div>

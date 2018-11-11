@@ -1,0 +1,7 @@
+.git
+node_modules
+.gradle
+.idea
+build/
+out/
+*.hprof

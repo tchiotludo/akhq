@@ -1,13 +1,16 @@
-FROM openjdk:8-jdk as builder
+FROM openjdk:8-jdk-alpine as builder
 COPY . /app
 WORKDIR /app
-RUN echo -e 'http://dl-cdn.alpinelinux.org/alpine/edge/main\nhttp://dl-cdn.alpinelinux.org/alpine/edge/community\nhttp://dl-cdn.alpinelinux.org/alpine/edge/testing' > /etc/apk/repositories && \
-    apk add --no-cache yarn && \
-    yarn install && \
+RUN apk update && \
+    apk add --no-cache nodejs-npm && \
+    npm install && \
+    ./gradlew test && \
     ./gradlew jar
 
-
-FROM openjdk:8-jre
+FROM openjdk:8-jre-alpine
 WORKDIR /app
+
+COPY docker /
 COPY --from=builder /app/build/libs/kafkahq-*.jar /app/kafkahq.jar
-CMD ["/usr/bin/java", "-jar", "/app/kafkahq.jar", "prod"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["./kafkahq"]
