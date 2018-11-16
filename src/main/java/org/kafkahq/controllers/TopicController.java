@@ -75,7 +75,6 @@ public class TopicController extends AbstractController {
             partitionUrls.put(uri.addParameter("partition", String.valueOf(i)).toNormalizedURI(false).toString(), String.valueOf(i));
         }
 
-
         return this.template(
             request,
             Results

@@ -81,17 +81,21 @@ h1 {
 }
 
 #content {
-    @media (min-width: 768px) {
+    @include media-breakpoint-up(md) {
         width: calc(100% - 250px);
     }
 
-    @media (max-width: 768px) {
+    @include media-breakpoint-up(md) {
+        margin-left: 250px;
+    }
+
+    @include media-breakpoint-down(md) {
         max-width: 100%;
     }
 
     padding: 20px;
     min-height: 100vh;
-    transition: all 0.3s;
+    transition: none;
 }
 
 nav.navbar {
@@ -121,9 +125,6 @@ nav.navbar {
     font-size: $font-size-lg;
     border-right: 1px solid $nav-tabs-border-color;
 
-    &.active {
-        margin-left: -250px;
-    }
     .sidebar-header {
         padding: 5px 10px;
         background: $tertiary;
@@ -136,6 +137,7 @@ nav.navbar {
             }
         }
     }
+
     ul {
         p {
             color: #fff;
@@ -195,8 +197,7 @@ nav.navbar {
         background: $tertiary;
     }
 
-
-    @media (max-width: 768px) {
+    @include media-breakpoint-down(sm) {
         & {
             margin-left: -250px;
             &.active {
@@ -206,6 +207,11 @@ nav.navbar {
         #sidebar-collapse span {
             display: none;
         }
+    }
+
+    @include media-breakpoint-up(md) {
+        position: fixed;
+        height: 100%;
     }
 }
 

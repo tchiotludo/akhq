@@ -14,6 +14,11 @@ public class TopicPartition {
         this.partition = topicPartition.partition();
     }
 
+    public TopicPartition(TopicPartition topicPartition) {
+        this.topic = topicPartition.getTopic();
+        this.partition = topicPartition.getPartition();
+    }
+
     private final String topic;
 
     public String getTopic() {
@@ -29,11 +34,12 @@ public class TopicPartition {
     @ToString
     @EqualsAndHashCode(callSuper=true)
     public static class ConsumerGroupOffset extends TopicPartition {
-        public ConsumerGroupOffset(org.apache.kafka.common.TopicPartition topicPartition) {
+        public ConsumerGroupOffset(TopicPartition topicPartition) {
             super(topicPartition);
 
             this.offset = Optional.empty();
             this.metadata = Optional.empty();
+            this.member = Optional.empty();
             this.firstOffset = Optional.empty();
             this.lastOffset = Optional.empty();
         }
@@ -41,13 +47,14 @@ public class TopicPartition {
         public ConsumerGroupOffset(
             org.apache.kafka.common.TopicPartition topicPartition,
             OffsetAndMetadata offsetAndMetadata,
-            Partition.Offsets partiionOffsets
+            Partition.Offsets partiionOffsets,
+            Consumer member
         ) {
             super(topicPartition);
 
             this.offset = Optional.of(offsetAndMetadata.offset());
             this.metadata = Optional.of(offsetAndMetadata.metadata());
-
+            this.member = member != null ? Optional.of(member) : Optional.empty() ;
             this.firstOffset = Optional.of(partiionOffsets.getFirstOffset());
             this.lastOffset = Optional.of(partiionOffsets.getLastOffset());
         }
@@ -62,6 +69,12 @@ public class TopicPartition {
 
         public Optional<String> getMetadata() {
             return metadata;
+        }
+
+        private final Optional<Consumer> member;
+
+        public Optional<Consumer> getMember() {
+            return member;
         }
 
         private Optional<Long> firstOffset;

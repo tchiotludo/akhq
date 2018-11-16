@@ -7,7 +7,7 @@
             <tr>
                 <th>Name</th>
                 <th>Partition</th>
-                <th>Metadata</th>
+                <th>Member</th>
                 <th>Offset</th>
                 <th>Lag</th>
             </tr>
@@ -27,8 +27,11 @@
                 <td><a href="/${clusterId}/topic/${offset.getTopic()}">${offset.getTopic()}</a></td>
                 <td>${offset.getPartition()}</td>
                 <td>
-                    <#if offset.getMetadata().isPresent() && offset.getMetadata().get() != "">
-                        ${offset.getMetadata().get()}
+                    <#if offset.getMember().isPresent()>
+                        ${offset.getMember().get().getHost()}
+                        <a class="text-secondary" data-toggle="tooltip" title="${offset.getMember().get().getId()?replace('<[^>]+>','','r')}">
+                            <i class="fa fa-question-circle" aria-hidden="true"></i>
+                        </a>
                     <#else>
                         -
                     </#if>

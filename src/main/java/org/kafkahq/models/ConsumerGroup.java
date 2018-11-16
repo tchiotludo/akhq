@@ -41,14 +41,27 @@ public class ConsumerGroup {
             this.offsets.add(new TopicPartition.ConsumerGroupOffset(
                 offset.getKey(),
                 offset.getValue(),
-                topicOffsets
+                topicOffsets,
+                this.members
+                    .stream()
+                    .filter(consumer -> consumer.getAssignments()
+                        .stream()
+                        .filter(topicPartition ->
+                            topicPartition.getPartition() == offset.getKey().partition() &&
+                                topicPartition.getTopic().equals(offset.getKey().topic())
+                        )
+                        .collect(Collectors.toList())
+                        .size() > 0
+                    )
+                    .findFirst()
+                    .orElse(null)
             ));
         }
 
-        for (MemberDescription member : groupDescription.members()) {
-            for (org.apache.kafka.common.TopicPartition assignment : member.assignment().topicPartitions()) {
+        for (Consumer consumer : this.members) {
+            for (TopicPartition assignment : consumer.getAssignments()) {
                 long count = this.offsets.stream()
-                    .filter(entry -> entry.getTopic().equals(assignment.topic()) && entry.getPartition() == assignment.partition())
+                    .filter(entry -> entry.getTopic().equals(assignment.getTopic()) && entry.getPartition() == assignment.getPartition())
                     .count();
 
                 if (count == 0) {

@@ -11,6 +11,7 @@
                     <th>Id</th>
                     <th>State</th>
                     <th>Coordinator</th>
+                    <th>Members</th>
                     <th>Topics</th>
                     <th class="row-action"></th>
                     <th class="row-action"></th>
@@ -31,6 +32,7 @@
                             <td>${group.getId()}</td>
                             <td><@state group.getState() /></td>
                             <td><@nodeTemplate.badge group.getCoordinator()/></td>
+                            <td>${group.getMembers()?size}</td>
                             <td>
                                 <#list group.getTopics() as topic>
                                     <a href="/${clusterId}/topic/${topic}" class="btn btn-dark btn-sm mb-1">

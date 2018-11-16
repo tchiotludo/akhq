@@ -78,7 +78,7 @@ public class KafkaWrapper {
                     .describeTopics(list)
                     .all()
                     .get(),
-                "Describe Topic {}",
+                "Describe Topics {}",
                 topics
             );
 
@@ -136,7 +136,7 @@ public class KafkaWrapper {
                             ));
                     }
                 },
-                "Describe Topic {}",
+                "Describe Topics Offsets {}",
                 topics
             );
 
