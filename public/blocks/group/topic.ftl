@@ -1,5 +1,6 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover mb-0">
@@ -24,7 +25,7 @@
         </#if>
         <#list group.getOffsets() as offset>
             <tr>
-                <td><a href="/${clusterId}/topic/${offset.getTopic()}">${offset.getTopic()}</a></td>
+                <td><a href="${basePath}/${clusterId}/topic/${offset.getTopic()}">${offset.getTopic()}</a></td>
                 <td>${offset.getPartition()}</td>
                 <td>
                     <#if offset.getMember().isPresent()>

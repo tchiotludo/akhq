@@ -1,6 +1,7 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "/includes/template.ftl" as template>
 
@@ -10,12 +11,12 @@
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link ${(tab == "topics")?then("active", "")}"
-               href="/${clusterId}/group/${group.getId()}/topics"
+               href="${basePath}/${clusterId}/group/${group.getId()}/topics"
                role="tab">Topics</a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${(tab == "members")?then("active", "")}"
-               href="/${clusterId}/group/${group.getId()}/members"
+               href="${basePath}/${clusterId}/group/${group.getId()}/members"
                role="tab">Members</a>
         </li>
     </ul>

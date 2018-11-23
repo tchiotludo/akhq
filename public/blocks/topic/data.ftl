@@ -1,5 +1,6 @@
-<#-- @ftlvariable name="datas" type="java.util.List<org.apache.kafka.clients.consumer.ConsumerRecord<java.lang.String, java.lang.String>>" -->
+<#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.String, java.lang.String>>" -->
 <#-- @ftlvariable name="navbar" type="java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>>" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto data-filter">
     <button class="navbar-toggler"
@@ -29,7 +30,7 @@
                 </a>
                 <div class="dropdown-menu">
                     <#list navbar["sort"]['values'] as k, v >
-                        <a class="dropdown-item" href="${k}">
+                        <a class="dropdown-item" href="${basePath}${k}">
                             <i class="fa fa-fw fa-sort-numeric-desc" aria-hidden="true"></i> ${v?lower_case?cap_first}
                         </a>
                     </#list>
@@ -47,7 +48,7 @@
                 </a>
                 <div class="dropdown-menu">
                     <#list navbar["partition"]['values'] as k, v >
-                        <a class="dropdown-item" href="${k}">${v}</a>
+                        <a class="dropdown-item" href="${basePath}${k}">${v}</a>
                     </#list>
                 </div>
             </li>

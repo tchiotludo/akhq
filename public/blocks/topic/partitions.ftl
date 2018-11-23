@@ -1,5 +1,6 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "/includes/node.ftl" as nodeTemplate>
 <#import "/includes/functions.ftl" as functions>
@@ -36,7 +37,7 @@
                     ${functions.filesize(partition.getLogDir().getSize())}
                 </td>
                 <td class="row-action main-row-action">
-                    <a href="/${clusterId}/topic/${topic.getName()}/partitions/${partition.getId()}" >
+                    <a href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions/${partition.getId()}" >
                 <i class="fa fa-search"></i></a>
                 </td>
             </tr>

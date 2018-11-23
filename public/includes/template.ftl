@@ -1,6 +1,7 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="clusters" type="java.util.List<java.lang.String>" -->
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#macro header title tab>
     <!DOCTYPE html>
@@ -10,10 +11,10 @@
         <meta name="turbolinks-cache-control" content="no-cache" />
         <link rel="shortcut icon"
               type="image/png"
-              href="/public/static/img/icon.png" />
+              href="${basePath}/static/img/icon.png" />
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
-        <#if myOptionalVar??>
+        <#if liveReload?? >
         ${liveReload?no_esc}
         </#if>
         ${vendor_styles?no_esc}
@@ -26,7 +27,7 @@
         <div class="wrapper">
             <nav id="sidebar">
                 <div class="sidebar-header">
-                    <h3><img src="/static/img/logo.svg"/><sup><strong>HQ</strong></sup></h3>
+                    <h3><img src="${basePath}/static/img/logo.svg"/><sup><strong>HQ</strong></sup></h3>
                 </div>
 
                 <ul class="list-unstyled components">
@@ -40,19 +41,19 @@
                         <ul class="collapse list-unstyled" id="clusters">
                             <#list clusters as cluster>
                             <li>
-                                <a href="/${cluster}" class="${(cluster == clusterId)?then("active", "")}">${cluster}</a>
+                                <a href="${basePath}/${cluster}" class="${(cluster == clusterId)?then("active", "")}">${cluster}</a>
                             </li>
                             </#list>
                         </ul>
                     </li>
                     <li class="${(tab == "node")?then("active", "")}">
-                        <a href="/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
+                        <a href="${basePath}/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
                     </li>
                     <li class="${(tab == "topic")?then("active", "")}">
-                        <a href="/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>
+                        <a href="${basePath}/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>
                     </li>
                     <li class="${(tab == "group")?then("active", "")}">
-                        <a href="/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
+                        <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
                     </li>
                 </ul>
             </nav>

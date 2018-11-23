@@ -1,5 +1,6 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="cluster" type="org.kafkahq.models.Cluster" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "/includes/template.ftl" as template>
 <#import "/includes/node.ftl" as nodeTemplate>
@@ -32,7 +33,7 @@
                         <td>${node.getHost()}:${node.getPort()?c}</td>
                         <td>${node.getRack()!}</td>
                         <td class="row-action main-row-action">
-                            <a href="/${clusterId}/node/${node.getId()?c}" ><i class="fa fa-search"></i></a>
+                            <a href="${basePath}/${clusterId}/node/${node.getId()?c}" ><i class="fa fa-search"></i></a>
                         </td>
                     </tr>
                 </#list>

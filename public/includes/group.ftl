@@ -1,4 +1,5 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "node.ftl" as nodeTemplate>
 
@@ -35,18 +36,18 @@
                             <td>${group.getMembers()?size}</td>
                             <td>
                                 <#list group.getTopics() as topic>
-                                    <a href="/${clusterId}/topic/${topic}" class="btn btn-dark btn-sm mb-1">
+                                    <a href="${basePath}/${clusterId}/topic/${topic}" class="btn btn-dark btn-sm mb-1">
                                         ${topic}
                                         <span class="badge badge-light">Lag: ${group.getOffsetLag(topic)}</span>
                                     </a>
                                 </#list>
                             </td>
                             <td class="row-action main-row-action">
-                                <a href="/${clusterId}/group/${group.getId()}" ><i class="fa fa-search"></i></a>
+                                <a href="${basePath}/${clusterId}/group/${group.getId()}" ><i class="fa fa-search"></i></a>
                             </td>
                             <td class="row-action">
                                 <a
-                                    href="/${clusterId}/group/${group.getId()}/delete"
+                                    href="${basePath}/${clusterId}/group/${group.getId()}/delete"
                                     data-confirm="Do you want to delete consumer group <br /><strong>${group.getId()}</strong><br /><br /> ?"
                                 ><i class="fa fa-trash"></i></a>
                             </td>

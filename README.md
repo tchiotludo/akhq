@@ -42,7 +42,6 @@ First you need a [configuration files](#configuration) in order to configure Kaf
 ```sh
 docker run -d \
     -p 8080:8080 \
-    -e KAFKAHQ_CONFIGURATION_FILE=/app/application.conf
     -v application.conf:/app/application.conf
     tchiotludo/kafkahq
 ```
@@ -86,8 +85,7 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
 * `key`: must be an url friendly string the identify your cluster
 * `value`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
 
-KafkaHQ docker image support 2 environment variables to handle configuraiton :
-* `KAFKAHQ_CONFIGURATION_FILE`: a path on the container with the configuration file that can be mounted with a volume  (`-v`) or secrets.
+KafkaHQ docker image support 1 environment variables to handle configuraiton :
 * `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration that will be written on /app/configuration.conf on container.
 
 

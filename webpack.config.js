@@ -38,7 +38,7 @@ module.exports = {
     output: {
         path: dstDirectory,
         filename: 'js/[name].js',
-        publicPath: '/static/',
+        publicPath: '../',
     },
     resolve: {
         modules: [
@@ -110,7 +110,7 @@ module.exports = {
                 include: [
                     /\/fonts\//
                 ],
-                loader: 'file-loader?name=font/[name].[ext]'
+                loader: 'file-loader?name=font/[name].[ext]',
             }
         ]
     }
@@ -126,7 +126,7 @@ if (isDev) {
         },
         devServer: {
             index: '',
-            publicPath: '/static/',
+            publicPath: '../',
             host: '0.0.0.0',
             proxy: {
                 context: () => true,

@@ -1,5 +1,6 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
+<#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "/includes/template.ftl" as template>
 <#import "/includes/functions.ftl" as functions>
@@ -58,7 +59,7 @@
                         <td>
                             <#list topic.getConsumerGroups() as group>
                                 <#assign active = group.isActiveTopic(topic.getName()) >
-                                <a href="/${clusterId}/group/${group.getId()}" class="btn btn-sm mb-1 btn-${active?then("success", "warning")} ">
+                                <a href="${basePath}/${clusterId}/group/${group.getId()}" class="btn btn-sm mb-1 btn-${active?then("success", "warning")} ">
                                     ${group.getId()}
                                     <span class="badge badge-light">
                                         Lag: ${group.getOffsetLag(topic.getName())}
@@ -67,12 +68,12 @@
                             </#list>
                         </td>
                         <td class="row-action main-row-action">
-                            <a href="/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
+                            <a href="${basePath}/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
                         </td>
                         <td class="row-action">
                             <#if topic.isInternal() == false>
                                 <a
-                                    href="/${clusterId}/topic/${topic.getName()}/delete"
+                                    href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
                                     data-confirm="Do you want to delete topic <br /><strong>${topic.getName()}</strong><br /><br /> ?"
                                 ><i class="fa fa-trash"></i></a>
                             </#if>
