@@ -81,6 +81,7 @@ public class TopicController extends AbstractController {
                 .html("topic")
                 .put("tab", "data")
                 .put("topic", topic)
+                .put("canDeleteRecords", topic.canDeleteRecords(configRepository))
                 .put("datas", data)
                 .put("navbar", ImmutableMap.builder()
                     .put("partition", ImmutableMap.builder()
@@ -126,6 +127,37 @@ public class TopicController extends AbstractController {
                 .put("topic", topic)
                 .put("configs", configs)
         );
+    }
+
+    @GET
+    @Path("{id}/deleteRecord")
+    public Result deleteRecord(Request request) {
+        String topic = request.param("id").value();
+        Integer partition = request.param("partition").intValue();
+        String key = request.param("key").value();
+
+        ResultStatusResponse result = new ResultStatusResponse();
+
+        try {
+            this.recordRepository.delete(
+                request.param("cluster").value(),
+                topic,
+                partition,
+                key
+            );
+
+            result.result = true;
+            result.message = "Record will be deleted on compaction";
+
+            return Results.with(result, 200);
+        } catch (Exception exception) {
+            logger.error("Failed to delete record " + key, exception);
+
+            result.result = false;
+            result.message = exception.getCause().getMessage();
+
+            return Results.with(result, 500);
+        }
     }
 
     @GET

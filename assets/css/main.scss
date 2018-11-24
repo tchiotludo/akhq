@@ -230,12 +230,15 @@ table {
     .main-row-action {
         cursor: pointer;
     }
+
     th.row-action {
         width: 16px;
     }
+
     td.row-action a {
         color: $body-color;
     }
+
     pre {
         white-space: pre-wrap;
         overflow-wrap: break-word;
@@ -247,6 +250,10 @@ table {
             overflow-wrap: break-word;
             word-break: break-all;
         }
+    }
+
+    tr.deleted {
+        opacity: 0.5;
     }
 
     .table.table-sm {

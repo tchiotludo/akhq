@@ -1,6 +1,8 @@
 <#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.String, java.lang.String>>" -->
 <#-- @ftlvariable name="navbar" type="java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto data-filter">
     <button class="navbar-toggler"
@@ -80,6 +82,9 @@
                 <th>Partition</th>
                 <th>Offset</th>
                 <th>Headers</th>
+                <#if canDeleteRecords == true >
+                <th class="row-action"></th>
+                </#if>
             </tr>
         </thead>
         <tbody>
@@ -95,7 +100,7 @@
             <#assign i=0>
             <#list datas as data>
                 <#assign i++>
-                <tr>
+                <tr <#if !(data.getValue())??>class="deleted"</#if>>
                     <td><code>${data.getKey()!'null'}</code></td>
                     <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
                     <td class="text-right">${data.getPartition()}</td>
@@ -107,9 +112,19 @@
                             ${data.getHeaders()?size}
                         </#if>
                     </td>
+                    <#if canDeleteRecords == true >
+                        <td>
+                            <#if data.getValue()??>
+                                <a
+                                    href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKey()}"
+                                        data-confirm="Do you want to delete record <br /><strong>${data.getKey()} from topic ${topic.getName()}</strong><br /><br /> ?"
+                                ><i class="fa fa-trash"></i></a>
+                            </#if>
+                        </td>
+                    </#if>
                 </tr>
-                <tr>
-                    <td colspan="5">
+                <tr <#if !(data.getValue())??>class="deleted"</#if>>
+                    <td colspan="${(canDeleteRecords == true)?then("6", "5")}">
                         <#if data.getHeaders()?size != 0>
                             <table class="table table-sm collapse headers-${i}">
                                 <#list data.getHeaders() as key, value>

@@ -36,9 +36,8 @@ public class ConfigRepository extends AbstractRepository implements Jooby.Module
             List<org.kafkahq.models.Config> collect = value.entries()
                 .stream()
                 .map(org.kafkahq.models.Config::new)
+                .sorted(Comparator.comparing(org.kafkahq.models.Config::getName))
                 .collect(Collectors.toList());
-
-            collect.sort(Comparator.comparing(org.kafkahq.models.Config::getName));
 
             map.put(key.name(), collect);
         });

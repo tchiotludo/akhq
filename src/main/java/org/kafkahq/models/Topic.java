@@ -4,10 +4,13 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.TopicPartitionInfo;
+import org.apache.kafka.common.config.TopicConfig;
+import org.kafkahq.repositories.ConfigRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @ToString
@@ -102,5 +105,17 @@ public class Topic {
         }
 
         throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
+    }
+
+    public Boolean canDeleteRecords(ConfigRepository configRepository) throws ExecutionException, InterruptedException {
+        if (this.isInternal()) {
+            return false;
+        }
+
+        return configRepository
+            .findByTopic(this.getName())
+            .stream()
+            .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
+            .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
     }
 }

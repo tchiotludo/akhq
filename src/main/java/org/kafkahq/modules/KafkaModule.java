@@ -6,7 +6,9 @@ import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.jooby.Env;
 import org.jooby.Jooby;
 import org.slf4j.Logger;
@@ -72,6 +74,14 @@ public class KafkaModule implements Jooby.Module {
         return props;
     }
 
+    private Properties getProducerProperties(String clusterId) {
+        Properties props = new Properties();
+        props.putAll(this.getConfigProperties("kafka.defaults.producer"));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+
+        return props;
+    }
+
     private Properties getAdminProperties(String clusterId) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.admin"));
@@ -90,18 +100,32 @@ public class KafkaModule implements Jooby.Module {
         return this.adminClient.get(clusterId);
     }
 
-    private Map<String, KafkaConsumer<String, String>> consumer = new HashMap<>();
+    private Map<String, KafkaConsumer<String, String>> consumers = new HashMap<>();
 
     public KafkaConsumer<String, String> getConsumer(String clusterId) {
-        if (!this.consumer.containsKey(clusterId)) {
-            this.consumer.put(clusterId, new KafkaConsumer<>(
+        if (!this.consumers.containsKey(clusterId)) {
+            this.consumers.put(clusterId, new KafkaConsumer<>(
                 this.getConsumerProperties(clusterId),
                 new StringDeserializer(),
                 new StringDeserializer()
             ));
         }
 
-        return this.consumer.get(clusterId);
+        return this.consumers.get(clusterId);
+    }
+
+    private Map<String, KafkaProducer<String, String>> producers = new HashMap<>();
+
+    public KafkaProducer<String, String> getProducer(String clusterId) {
+        if (!this.producers.containsKey(clusterId)) {
+            this.producers.put(clusterId, new KafkaProducer<>(
+                this.getProducerProperties(clusterId),
+                new StringSerializer(),
+                new StringSerializer()
+            ));
+        }
+
+        return this.producers.get(clusterId);
     }
 
     @SuppressWarnings("NullableProblems")

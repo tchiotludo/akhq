@@ -12,6 +12,7 @@ import lombok.ToString;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.jooby.Env;
@@ -148,6 +149,16 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
         return consumer.poll(Duration.ofMillis(2000));
         */
+    }
+
+
+    public void delete(String clusterId, String topic, Integer partition, String key) throws ExecutionException, InterruptedException {
+        kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+            topic,
+            partition,
+            key,
+            null
+        )).get();
     }
 
     @ToString
