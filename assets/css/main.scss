@@ -48,7 +48,6 @@ a, button, input[type="submit"] {
 
 body {
     min-width: 320px;
-
 }
 
 .title {
@@ -247,6 +246,31 @@ table {
             white-space: pre-wrap;
             overflow-wrap: break-word;
             word-break: break-all;
+        }
+    }
+
+    .table.table-sm {
+        margin-top: calc(-#{$table-cell-padding});
+        width: calc(100% + (#{$table-cell-padding } * 2));
+        margin-left: -$table-cell-padding;
+        position: relative;
+        border-bottom: $table-border-width dashed $table-border-color;
+        font-size: $font-size-sm;
+
+        td, th {
+            border: 0;
+        }
+
+        th {
+          border-right: $table-border-width dashed $table-border-color;
+        }
+
+        tbody tr:nth-of-type(even) {
+            background-color: lighten($table-accent-bg, 0.1);
+        }
+
+        tbody tr:nth-of-type(odd) {
+            background-color: lighten($table-bg, 0.1);
         }
     }
 }

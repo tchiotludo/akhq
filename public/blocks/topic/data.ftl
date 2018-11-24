@@ -79,31 +79,51 @@
                 <th>Date</th>
                 <th>Partition</th>
                 <th>Offset</th>
+                <th>Headers</th>
             </tr>
         </thead>
         <tbody>
-        <#if datas?size == 0>
-            <tr>
-                <td colspan="5">
-                    <div class="alert alert-info mb-0" role="alert">
-                        No data available
-                    </div>
-                </td>
-            </tr>
-        </#if>
-    <#list datas as data>
-        <tr>
-            <td><code>${data.key()!'null'}</code></td>
-            <td>${data.timestamp()?number_to_datetime?string.medium_short}</td>
-            <td>${data.partition()}</td>
-            <td>${data.offset()}</td>
-        </tr>
-        <tr>
-            <td colspan="4">
-                <pre class="mb-0"><code>${data.value()!'null'}</code></pre>
-            </td>
-        </tr>
-    </#list>
+            <#if datas?size == 0>
+                <tr>
+                    <td colspan="5">
+                        <div class="alert alert-info mb-0" role="alert">
+                            No data available
+                        </div>
+                    </td>
+                </tr>
+            </#if>
+            <#assign i=0>
+            <#list datas as data>
+                <#assign i++>
+                <tr>
+                    <td><code>${data.getKey()!'null'}</code></td>
+                    <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
+                    <td class="text-right">${data.getPartition()}</td>
+                    <td class="text-right">${data.getOffset()}</td>
+                    <td class="text-right">
+                        <#if data.getHeaders()?size != 0>
+                            <a href="#" data-toggle="collapse" role="button" aria-expanded="false" data-target=".headers-${i}">${data.getHeaders()?size}</a>
+                        <#else>
+                            ${data.getHeaders()?size}
+                        </#if>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <#if data.getHeaders()?size != 0>
+                            <table class="table table-sm collapse headers-${i}">
+                                <#list data.getHeaders() as key, value>
+                                    <tr>
+                                        <th>${key}</th>
+                                        <td><pre class="mb-0">${value}</pre></td>
+                                    </tr>
+                                </#list>
+                            </table>
+                        </#if>
+                        <pre class="mb-0"><code>${data.getValue()!'null'}</code></pre>
+                    </td>
+                </tr>
+            </#list>
         </tbody>
     </table>
 </div>

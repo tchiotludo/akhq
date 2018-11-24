@@ -3,7 +3,6 @@ package org.kafkahq.controllers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.inject.Inject;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.codehaus.httpcache4j.uri.QueryParams;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.jooby.Request;
@@ -13,6 +12,7 @@ import org.jooby.View;
 import org.jooby.mvc.GET;
 import org.jooby.mvc.Path;
 import org.kafkahq.models.Config;
+import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
@@ -63,7 +63,7 @@ public class TopicController extends AbstractController {
         request.param("partition").toOptional(Integer.class).ifPresent(options::setPartition);
         request.param("sort").toOptional(RecordRepository.Options.Sort.class).ifPresent(options::setSort);
 
-        List<ConsumerRecord<String, String>> data = this.recordRepository.consume(options);
+        List<Record<String, String>> data = this.recordRepository.consume(options);
 
         URIBuilder uri = URIBuilder.empty()
             .withPath(request.path())

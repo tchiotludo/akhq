@@ -17,6 +17,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.jooby.Env;
 import org.jooby.Jooby;
 import org.kafkahq.models.Partition;
+import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
 import org.slf4j.Logger;
@@ -41,12 +42,12 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         this.topicRepository = topicRepository;
     }
 
-    public List<ConsumerRecord<String, String>> consume(Options options) throws ExecutionException, InterruptedException {
+    public List<Record<String, String>> consume(Options options) throws ExecutionException, InterruptedException {
         return this.kafkaModule.debug(() -> {
             Topic topicsDetail = topicRepository.findByName(options.topic);
             KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
-            List<ConsumerRecord<String, String>> list = new ArrayList<>();
+            List<Record<String, String>> list = new ArrayList<>();
             HashMap<TopicPartition, OffsetBound<Long, Long>> partitionsOffset = new HashMap<>();
 
             for (Partition partition : topicsDetail.getPartitions()) {
@@ -108,7 +109,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                         );
                         */
 
-                        list.add(record);
+                        list.add(new Record<>(record));
                     }
                 }
             }
@@ -247,13 +248,13 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return null;
         }
 
-        public URIBuilder after(List<ConsumerRecord<String, String>> records, URIBuilder uri) throws URISyntaxException {
+        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) throws URISyntaxException {
             Map<Integer, Long> next = new HashMap<>(this.after);
-            for (ConsumerRecord<String, String> record : records) {
-                if (this.sort == Sort.OLDEST && (!next.containsKey(record.partition()) || next.get(record.partition()) < record.offset())) {
-                    next.put(record.partition(), record.offset());
-                } else if (this.sort == Sort.NEWEST && (!next.containsKey(record.partition()) || next.get(record.partition()) > record.offset())) {
-                    next.put(record.partition(), record.offset());
+            for (Record<String, String> record : records) {
+                if (this.sort == Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) < record.getOffset())) {
+                    next.put(record.getPartition(), record.getOffset());
+                } else if (this.sort == Sort.NEWEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) > record.getOffset())) {
+                    next.put(record.getPartition(), record.getOffset());
                 }
             }
 
@@ -264,7 +265,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return offsetUrl(uri, next);
         }
 
-        public URIBuilder before(List<ConsumerRecord<String, String>> records, URIBuilder uri) throws URISyntaxException {
+        public URIBuilder before(List<Record<String, String>> records, URIBuilder uri) throws URISyntaxException {
             /*
             Map<Integer, Long> previous = new HashMap<>(this.after);
             for (ConsumerRecord<String, String> record : records) {
