@@ -259,7 +259,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return null;
         }
 
-        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) throws URISyntaxException {
+        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {
             Map<Integer, Long> next = new HashMap<>(this.after);
             for (Record<String, String> record : records) {
                 if (this.sort == Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) < record.getOffset())) {
@@ -302,7 +302,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             // return offsetUrl(basePath, previous);
         }
 
-        private URIBuilder offsetUrl(URIBuilder uri, Map<Integer, Long> offsets) throws URISyntaxException {
+        private URIBuilder offsetUrl(URIBuilder uri, Map<Integer, Long> offsets) {
             ArrayList<String> segment = new ArrayList<>();
 
             for (Map.Entry<Integer, Long> offset : offsets.entrySet()) {
@@ -310,10 +310,10 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             }
 
             if (offsets.size() > 0) {
-                return uri.addParameter("after", String.join("_", segment));
+                uri = uri.addParameter("after", String.join("_", segment));
             }
 
-            return URIBuilder.empty();
+            return uri;
         }
     }
 

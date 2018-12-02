@@ -9,7 +9,7 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 public class Partition {
-    public Partition(String topic, TopicPartitionInfo partitionInfo, LogDir logDir, Offsets offsets) {
+    public Partition(String topic, TopicPartitionInfo partitionInfo, List<LogDir> logDir, Offsets offsets) {
         this.id = partitionInfo.partition();
         this.topic = topic;
         this.logDir = logDir;
@@ -44,9 +44,9 @@ public class Partition {
         return nodes;
     }
 
-    private final LogDir logDir;
+    private final List<LogDir> logDir;
 
-    public LogDir getLogDir() {
+    public List<LogDir> getLogDir() {
         return logDir;
     }
 
@@ -68,6 +68,13 @@ public class Partition {
             .filter(Node.Partition::isLeader)
             .findFirst()
             .orElseThrow(() -> new NoSuchElementException("Leader not found"));
+    }
+
+    public long getLogDirSize() {
+        return this.getLogDir().stream()
+            .filter(logDir -> logDir.getBrokerId() == this.getLeader().getId())
+            .map(LogDir::getSize)
+            .reduce(0L, Long::sum);
     }
 
     @ToString

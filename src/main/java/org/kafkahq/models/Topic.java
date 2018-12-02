@@ -32,10 +32,7 @@ public class Topic {
                 partition,
                 logDirs.stream()
                     .filter(logDir -> logDir.getPartition() == partition.partition())
-                    .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException(
-                        "Partition '" + partition.partition() + "' doesn't exist for topic " + this.name
-                    )),
+                    .collect(Collectors.toList()),
                 offsets.stream()
                     .filter(offset -> offset.getPartition() == partition.partition())
                     .findFirst()
@@ -85,9 +82,15 @@ public class Topic {
             .collect(Collectors.toList());
     }
 
+    public List<LogDir> getLogDir() {
+        return this.getPartitions().stream()
+            .flatMap(partition -> partition.getLogDir().stream())
+            .collect(Collectors.toList());
+    }
+
     public long getLogDirSize() {
         return this.getPartitions().stream()
-            .map(p -> p.getLogDir().getSize())
+            .map(Partition::getLogDirSize)
             .reduce(0L, Long::sum);
     }
 

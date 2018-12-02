@@ -15,7 +15,10 @@
   - [x] Node leader & assignemnts view
   - [x] Delete a topic
 - [ ] Browse Topic data
-  - [x] View data, offset, key & timestamp
+  - [x] View data, offset, key, timestamp & headers
+  - [x] Configurations view
+  - [x] Logs view
+  - [x] Delete a record
   - [x] Sort view
   - [x] Filter per partitions
   - [ ] Handle Kafka Registry Deserialization
@@ -31,6 +34,7 @@
 - [ ] Nodes
   - [x] List
   - [x] Configurations view
+  - [x] Logs view
 
 
 ## Installation

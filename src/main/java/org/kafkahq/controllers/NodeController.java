@@ -10,6 +10,7 @@ import org.kafkahq.models.Config;
 import org.kafkahq.models.Node;
 import org.kafkahq.repositories.ClusterRepository;
 import org.kafkahq.repositories.ConfigRepository;
+import org.kafkahq.repositories.LogDirRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -23,6 +24,9 @@ public class NodeController extends AbstractController {
 
     @Inject
     private ConfigRepository configRepository;
+
+    @Inject
+    private LogDirRepository logDirRepository;
 
     @GET
     public View list(Request request) throws ExecutionException, InterruptedException {
@@ -41,7 +45,7 @@ public class NodeController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/{tab:(configs)}")
+    @Path("{id}/{tab:(configs|logs)}")
     public View tab(Request request) throws ExecutionException, InterruptedException {
         return this.node(request, request.param("tab").value());
     }
@@ -62,6 +66,7 @@ public class NodeController extends AbstractController {
                 .html("node")
                 .put("tab", tab)
                 .put("node", node)
+                .put("logs", logDirRepository.findByBroker(node.getId()))
                 .put("configs", configs)
         );
     }

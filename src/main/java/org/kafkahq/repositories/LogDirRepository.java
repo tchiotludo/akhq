@@ -32,8 +32,14 @@ public class LogDirRepository extends AbstractRepository implements Jooby.Module
     }
 
     public List<LogDir> findByTopic(String topic) throws ExecutionException, InterruptedException {
-        return  this.list().stream()
+        return this.list().stream()
             .filter(item -> item.getTopic().equals(topic))
+            .collect(Collectors.toList());
+    }
+
+    public List<LogDir> findByBroker(Integer brokerId) throws ExecutionException, InterruptedException {
+        return this.list().stream()
+            .filter(item -> item.getBrokerId().equals(brokerId))
             .collect(Collectors.toList());
     }
 

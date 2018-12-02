@@ -110,7 +110,7 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/{tab:(partitions|groups|configs)}")
+    @Path("{id}/{tab:(partitions|groups|configs|logs)}")
     public View tab(Request request) throws ExecutionException, InterruptedException {
         return this.topic(request, request.param("tab").value());
     }

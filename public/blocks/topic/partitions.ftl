@@ -34,7 +34,7 @@
                 <td>
                     ${partition.getLastOffset()-partition.getFirstOffset()}
                     -
-                    ${functions.filesize(partition.getLogDir().getSize())}
+                    ${functions.filesize(partition.getLogDirSize())}
                 </td>
                 <td class="row-action main-row-action">
                     <a href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions/${partition.getId()}" >

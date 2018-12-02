@@ -6,6 +6,7 @@
 
 <#import "/includes/template.ftl" as template>
 <#import "/includes/group.ftl" as groupTemplate>
+<#import "/includes/log.ftl" as logTemplate>
 
 <@template.header "Topic: " + topic.getName(), "topic" />
 
@@ -31,6 +32,11 @@
                href="${basePath}/${clusterId}/topic/${topic.getName()}/configs"
                role="tab">Configs</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link ${(tab == "logs")?then("active", "")}"
+               href="${basePath}/${clusterId}/topic/${topic.getName()}/logs"
+               role="tab">Logs</a>
+        </li>
     </ul>
 
     <div class="tab-content">
@@ -55,6 +61,12 @@
         <#if tab == "configs">
         <div class="tab-pane active" role="tabpanel">
             <#include "/blocks/configs.ftl" />
+        </div>
+        </#if>
+
+        <#if tab == "logs">
+        <div class="tab-pane active" role="tabpanel">
+            <@logTemplate.table topic.getLogDir() />
         </div>
         </#if>
     </div>
