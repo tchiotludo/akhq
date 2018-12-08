@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -62,6 +63,7 @@ public class TopicController extends AbstractController {
         request.param("after").toOptional().ifPresent(options::setAfter);
         request.param("partition").toOptional(Integer.class).ifPresent(options::setPartition);
         request.param("sort").toOptional(RecordRepository.Options.Sort.class).ifPresent(options::setSort);
+        request.param("timestamp").toOptional(String.class).ifPresent(s -> options.setTimestamp(Instant.parse(s).toEpochMilli()));
 
         List<Record<String, String>> data = this.recordRepository.consume(options);
 
@@ -96,6 +98,10 @@ public class TopicController extends AbstractController {
                             .put(uri.addParameter("sort", RecordRepository.Options.Sort.OLDEST.name()).toNormalizedURI(false).toString(), RecordRepository.Options.Sort.OLDEST.name())
                             .build()
                         )
+                        .build()
+                    )
+                    .put("timestamp", ImmutableMap.builder()
+                        .put("current", Optional.ofNullable(options.getTimestamp()))
                         .build()
                     )
                     .build()

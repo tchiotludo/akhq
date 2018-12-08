@@ -25,6 +25,7 @@ module.exports = (env, argv) => {
                 'turbolinks',
                 'moment',
                 'imports-loader?jQuery=>jQuery!tempusdominus-bootstrap-4',
+                'urijs',
                 path.join(srcDirectory, 'css/vendor.scss')
             ],
             main: [

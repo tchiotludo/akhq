@@ -17,6 +17,6 @@ abstract public class AbstractController {
         return view
             .put("clusterId", request.param("cluster").value())
             .put("clusters", this.kafkaModule.getClustersList())
-            .put("basePath", config.getString("application.path"));
+            .put("basePath", config.getString("application.path").replaceAll("/$",""));
     }
 }

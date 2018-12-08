@@ -47,8 +47,8 @@ public class App extends Jooby {
 
         on("prod", () -> {
             use(new Assets());
-            assets("/favicon.ico");
         });
+        assets("/favicon.ico");
 
         use(new Ftl("/", ".ftl"));
         use(KafkaModule.class);

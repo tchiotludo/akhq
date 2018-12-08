@@ -12,6 +12,7 @@ import lombok.ToString;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -21,10 +22,12 @@ import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.Debug;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -52,7 +55,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             HashMap<TopicPartition, OffsetBound<Long, Long>> partitionsOffset = new HashMap<>();
 
             for (Partition partition : topicsDetail.getPartitions()) {
-                OffsetBound<Long, Long> seek = options.seek(partition);
+                OffsetBound<Long, Long> seek = options.seek(consumer, partition);
 
                 if (seek == null) {
                     logger.trace(
@@ -216,10 +219,37 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             this.partition = partition;
         }
 
-        private OffsetBound<Long, Long> seek(Partition partition) {
+        private Long timestamp;
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        private OffsetBound<Long, Long> seek(KafkaConsumer<String, String> consumer, Partition partition) {
             long begin;
             long first = partition.getFirstOffset();
             long last = partition.getLastOffset();
+
+            if (this.timestamp != null) {
+                Map<TopicPartition, OffsetAndTimestamp> timestampOffset = consumer.offsetsForTimes(
+                    ImmutableMap.of(
+                        new TopicPartition(partition.getTopic(), partition.getId()),
+                        this.timestamp
+                    )
+                );
+
+                for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : timestampOffset.entrySet()) {
+                    if (entry.getValue() == null) {
+                        return null;
+                    }
+
+                    first = entry.getValue().offset();
+                }
+            }
 
             if (this.partition != null && partition.getId() != this.partition) {
                 return null;
@@ -276,7 +306,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return offsetUrl(uri, next);
         }
 
-        public URIBuilder before(List<Record<String, String>> records, URIBuilder uri) throws URISyntaxException {
+        public URIBuilder before(List<Record<String, String>> records, URIBuilder uri) {
             /*
             Map<Integer, Long> previous = new HashMap<>(this.after);
             for (ConsumerRecord<String, String> record : records) {

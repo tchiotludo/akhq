@@ -28,10 +28,10 @@
                    data-toggle="dropdown"
                    aria-haspopup="true"
                    aria-expanded="false">
-                    <strong>Sort:</strong> (${navbar["sort"]['current'].orElse('')?lower_case?cap_first})
+                    <strong>Sort:</strong> (${navbar["sort"]["current"].orElse("")?lower_case?cap_first})
                 </a>
                 <div class="dropdown-menu">
-                    <#list navbar["sort"]['values'] as k, v >
+                    <#list navbar["sort"]["values"] as k, v >
                         <a class="dropdown-item" href="${basePath}${k}">
                             <i class="fa fa-fw fa-sort-numeric-desc" aria-hidden="true"></i> ${v?lower_case?cap_first}
                         </a>
@@ -46,16 +46,14 @@
                    data-toggle="dropdown"
                    aria-haspopup="true"
                    aria-expanded="false">
-                    <strong>Partition:</strong> (${navbar["partition"]['current'].orElse('All')})
+                    <strong>Partition:</strong> (${navbar["partition"]["current"].orElse("All")})
                 </a>
                 <div class="dropdown-menu">
-                    <#list navbar["partition"]['values'] as k, v >
+                    <#list navbar["partition"]["values"] as k, v >
                         <a class="dropdown-item" href="${basePath}${k}">${v}</a>
                     </#list>
                 </div>
             </li>
-
-            <!--
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
                    href="#"
@@ -63,13 +61,24 @@
                    data-toggle="dropdown"
                    aria-haspopup="true"
                    aria-expanded="false">
-                    <strong>Start Timestamp:</strong>
+                    <strong>Timestamp:</strong>
+                    <#if navbar["timestamp"]["current"].isPresent()>(${navbar["timestamp"]["current"].get()?number_to_datetime?string.medium_short})</#if>
                 </a>
-                <div class="dropdown-menu">
-                    <input class="form-control" type="datetime-local" placeholder="Search" aria-label="Search">
+                <div class="dropdown-menu datetime-tempus">
+                    <div class="input-group mb-2">
+                        <input class="form-control"
+                               name="timestamp"
+                               type="text"
+                               <#if navbar["timestamp"]["current"].isPresent()>
+                               value="${navbar["timestamp"]["current"].get()?number_to_datetime?string.iso}"
+                               </#if> />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">OK</button>
+                        </div>
+                    </div>
+                    <div class="datetime-container"></div>
                 </div>
             </li>
-            -->
         </ul>
     </div>
 </nav>
@@ -90,7 +99,7 @@
         <tbody>
             <#if datas?size == 0>
                 <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                         <div class="alert alert-info mb-0" role="alert">
                             No data available
                         </div>
@@ -101,7 +110,7 @@
             <#list datas as data>
                 <#assign i++>
                 <tr <#if !(data.getValue())??>class="deleted"</#if>>
-                    <td><code>${data.getKey()!'null'}</code></td>
+                    <td><code>${data.getKey()!"null"}</code></td>
                     <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
                     <td class="text-right">${data.getPartition()}</td>
                     <td class="text-right">${data.getOffset()}</td>
@@ -135,7 +144,7 @@
                                 </#list>
                             </table>
                         </#if>
-                        <pre class="mb-0"><code>${data.getValue()!'null'}</code></pre>
+                        <pre class="mb-0"><code>${data.getValue()!"null"}</code></pre>
                     </td>
                 </tr>
             </#list>

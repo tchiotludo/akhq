@@ -98,17 +98,68 @@ h1 {
 }
 
 nav.navbar {
+    a.dropdown-toggle {
+        white-space: nowrap;
+    }
+
     .dropdown-menu {
-        input {
+        .input-group {
             margin: $dropdown-item-padding-y $dropdown-item-padding-x;
             width: calc(100% - 3rem);
+            min-width: 200px;
+
+            input {
+                border: 0;
+            }
         }
     }
 }
 
-.page-item.info .page-link {
-    color: color-yiq($secondary);
-    @include gradient-bg($secondary);
+.page-item.info {
+    .page-link {
+        color: color-yiq($secondary);
+        @include gradient-bg($secondary);
+        white-space: nowrap;
+    }
+}
+
+.datetime-tempus {
+    min-width: 18.5rem;
+    padding-bottom: 0;
+
+    .datetime-container {
+        .col-md-6 {
+            max-width: none;
+            flex: auto;
+
+            .timepicker-picker {
+                border-top: 2px solid $gray-700;
+            }
+        }
+
+        .bootstrap-datetimepicker-widget {
+            .timepicker-hour, .timepicker-minute, .timepicker-second {
+                width: 16px;
+                font-weight: normal;
+            }
+
+            table {
+                & td {
+                    height: 16px;
+                    line-height: 16px;
+                    width: 16px;
+
+                    span {
+                        display: inline-block;
+                        width: 16px;
+                        height: 16px;
+                        line-height: 16px;
+                    }
+                }
+            }
+        }
+
+    }
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- *\
