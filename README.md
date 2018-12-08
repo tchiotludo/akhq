@@ -93,5 +93,11 @@ KafkaHQ docker image support 1 environment variables to handle configuraiton :
 * `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration that will be written on /app/configuration.conf on container.
 
 
+## Development Environment
+A docker-compose is provide to start a development environnement.
+Just install docker & docker-compose, clone the repository and issue a simple `docker-compose up` to start a dev server.
+Dev server is a java server & webpack-dev-server with live reload.
+
+
 ## License
 Apache 2.0 © [tchiotludo](https://github.com/tchiotludo)

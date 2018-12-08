@@ -14,6 +14,8 @@ import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
 import org.kafkahq.repositories.AbstractRepository;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 public class App extends Jooby {
@@ -26,14 +28,29 @@ public class App extends Jooby {
         use(new Jackson());
 
         on("dev", () -> {
+            Path basedir = Paths.get(System.getProperty("user.dir"));
             use(new Whoops());
-            use(new LiveReload());
+            use(new LiveReload()
+                .register(basedir.resolve("public"),
+                    "**/*.ftl"
+                )
+                .register(basedir.resolve("target"),
+                    "**/*.class",
+                    "**/*.conf",
+                    "**/*.properties")
+                .register(basedir.resolve("build"),
+                    "**/*.class",
+                    "**/*.conf",
+                    "**/*.properties")
+            );
         });
 
-        use(new Assets());
-        assets("/favicon.ico");
-        use(new Ftl("/", ".ftl"));
+        on("prod", () -> {
+            use(new Assets());
+            assets("/favicon.ico");
+        });
 
+        use(new Ftl("/", ".ftl"));
         use(KafkaModule.class);
 
         // @RequestScoped hack

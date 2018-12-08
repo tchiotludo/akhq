@@ -12,15 +12,14 @@
         <link rel="shortcut icon"
               type="image/png"
               href="${basePath}/static/img/icon.png" />
-        <link rel="stylesheet"
-              href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
         <#if liveReload?? >
         ${liveReload?no_esc}
         </#if>
-        ${vendor_styles?no_esc}
-        ${main_styles?no_esc}
-        ${vendor_scripts?no_esc}
-        ${main_scripts?no_esc}
+        <link rel="stylesheet" href="${basePath}/static/css/vendor.css" />
+        <link rel="stylesheet" href="${basePath}/static/css/main.css" />
+        <script type="text/javascript" src="${basePath}/static/js/vendor.js"></script>
+        <script type="text/javascript" src="${basePath}/static/js/main.js"></script>
     <#nested>
     </head>
     <body>

@@ -3,15 +3,32 @@ volumes:
   gradle-cache:
     driver: local
 
+networks:
+  main: {}
+
 services:
   kafkahq:
     image: gradle:4.10-jdk-alpine
-    command: gradle joobyRun
+    command: "gradle --no-daemon joobyRun -x webpack"
     environment:
-      APP_ENV: "DEV"
+      application.host: "0.0.0.0"
+      application.env: "dev"
     working_dir: /app
     volumes:
       - ./:/app
       - gradle-cache:/home/gradle/.gradle
     ports:
-      - 8080:8080
+      - 127.11.8.17:8080:8080
+    networks:
+      - main
+
+  webpack:
+    image: node:11
+    command: "sh -c 'npm install && npm run dev'"
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - 127.11.8.17:8081:8081
+    networks:
+      - main
