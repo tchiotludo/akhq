@@ -144,7 +144,7 @@
                                 </#list>
                             </table>
                         </#if>
-                        <pre class="mb-0"><code>${data.getValue()!"null"}</code></pre>
+                        <pre class="mb-0 highlight"><code>${data.getValue()!"null"}</code></pre>
                     </td>
                 </tr>
             </#list>

@@ -278,57 +278,97 @@ nav.navbar {
     Table
 \* ----------------------------------------------------------------------------------------------------------------- */
 table {
-    .main-row-action {
-        cursor: pointer;
-    }
+    tbody {
+        .main-row-action {
+            cursor: pointer;
+        }
 
-    th.row-action {
-        width: 16px;
-    }
+        th.row-action {
+            width: 16px;
+        }
 
-    td.row-action a {
-        color: $body-color;
-    }
+        td.row-action a {
+            color: $body-color;
+        }
 
-    pre {
-        white-space: pre-wrap;
-        overflow-wrap: break-word;
-        overflow: auto;
-        max-height: 150px;
-
-        code {
+        pre {
             white-space: pre-wrap;
             overflow-wrap: break-word;
-            word-break: break-all;
-        }
-    }
+            overflow: auto;
+            max-height: 100px;
+            cursor: pointer;
+            position: relative;
 
-    tr.deleted {
-        opacity: 0.5;
-    }
+            code {
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+                word-break: break-all;
 
-    .table.table-sm {
-        margin-top: calc(-#{$table-cell-padding});
-        width: calc(100% + (#{$table-cell-padding } * 2));
-        margin-left: -$table-cell-padding;
-        position: relative;
-        border-bottom: $table-border-width dashed $table-border-color;
-        font-size: $font-size-sm;
-
-        td, th {
-            border: 0;
-        }
-
-        th {
-          border-right: $table-border-width dashed $table-border-color;
+                &:after {
+                    content:'';
+                    width:100%;
+                    height:35px;
+                    position:absolute;
+                    left:0;
+                    bottom:0;
+                    background: linear-gradient(transparent, $gray-900);
+                }
+            }
         }
 
-        tbody tr:nth-of-type(even) {
-            background-color: lighten($table-accent-bg, 0.1);
+        tr:hover {
+            pre code:after {
+                background: linear-gradient(transparent, $indigo);
+            }
         }
 
-        tbody tr:nth-of-type(odd) {
-            background-color: lighten($table-bg, 0.1);
+        .hljs {
+            background: none;
+        }
+
+        tr.hightlight {
+            &:hover {
+                background: none;
+            }
+
+            pre {
+                overflow: hidden;
+                max-height: none;
+                cursor: default;
+
+                code:after {
+                    display: none;
+                }
+            }
+        }
+
+        tr.deleted {
+            opacity: 0.5;
+        }
+
+        .table.table-sm {
+            margin-top: calc(-#{$table-cell-padding});
+            width: calc(100% + (#{$table-cell-padding } * 2));
+            margin-left: -$table-cell-padding;
+            position: relative;
+            border-bottom: $table-border-width dashed $table-border-color;
+            font-size: $font-size-sm;
+
+            td, th {
+                border: 0;
+            }
+
+            th {
+                border-right: $table-border-width dashed $table-border-color;
+            }
+
+            tbody tr:nth-of-type(even) {
+                background-color: lighten($table-accent-bg, 0.1);
+            }
+
+            tbody tr:nth-of-type(odd) {
+                background-color: lighten($table-bg, 0.1);
+            }
         }
     }
 }

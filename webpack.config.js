@@ -26,6 +26,7 @@ module.exports = (env, argv) => {
                 'moment',
                 'imports-loader?jQuery=>jQuery!tempusdominus-bootstrap-4',
                 'urijs',
+                'highlight.js',
                 path.join(srcDirectory, 'css/vendor.scss')
             ],
             main: [

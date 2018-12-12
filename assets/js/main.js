@@ -5,6 +5,7 @@ import swal from 'sweetalert2';
 import 'moment';
 import 'tempusdominus-bootstrap-4';
 import urijs from 'urijs';
+import hljs from 'highlight.js';
 
 turbolinks.start();
 turbolinks.setProgressBarDelay(0);
@@ -141,5 +142,29 @@ $(document).on('ready turbolinks:load', function () {
             if (e.which === 13) {
                 dateTimeSubmit($(this))
             }
+    });
+
+    // Highlight
+    $('pre.highlight code').on('dblclick', function() {
+        let code = $(this);
+
+        if (code.closest('tr').hasClass("hightlight")) {
+            code.
+                removeClass()
+                .html(code.data('raw'))
+                .closest('tr')
+                .removeClass("hightlight")
+        } else {
+            code.data('raw', code.html());
+
+            try {
+                let json = JSON.parse(code.html());
+                code.html(JSON.stringify(json, null, 2));
+            } catch (e) {}
+
+            hljs.highlightBlock(code[0]);
+
+            code.closest('tr').addClass("hightlight");
+        }
     });
 });
