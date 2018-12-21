@@ -145,26 +145,35 @@ $(document).on('ready turbolinks:load', function () {
     });
 
     // Highlight
-    $('pre.highlight code').on('dblclick', function() {
-        let code = $(this);
+    $('pre.highlight code')
+        .on('click', function() {
+            let code = $(this);
 
-        if (code.closest('tr').hasClass("hightlight")) {
-            code.
-                removeClass()
+            if (!code.closest('tr').hasClass("hightlight")) {
+                code.data('raw', code.html());
+
+                try {
+                    let json = JSON.parse(code.html());
+                    code.html(JSON.stringify(json, null, 2));
+                } catch (e) {}
+
+                hljs.highlightBlock(code[0]);
+
+                code.closest('tr').addClass("hightlight");
+                code.closest('td').find('button.close').toggleClass('d-none');
+            }
+        })
+        .closest('td')
+        .find('button.close')
+        .on('click', function() {
+            $(this).toggleClass('d-none');
+
+            let code = $(this).parent().find('code');
+            $(this).parent().find('code')
+                .removeClass()
                 .html(code.data('raw'))
                 .closest('tr')
                 .removeClass("hightlight")
-        } else {
-            code.data('raw', code.html());
-
-            try {
-                let json = JSON.parse(code.html());
-                code.html(JSON.stringify(json, null, 2));
-            } catch (e) {}
-
-            hljs.highlightBlock(code[0]);
-
-            code.closest('tr').addClass("hightlight");
-        }
-    });
+        })
+    ;
 });

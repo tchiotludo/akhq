@@ -134,6 +134,9 @@
                 </tr>
                 <tr <#if !(data.getValue())??>class="deleted"</#if>>
                     <td colspan="${(canDeleteRecords == true)?then("6", "5")}">
+                        <button type="button" class="close d-none" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                         <#if data.getHeaders()?size != 0>
                             <table class="table table-sm collapse headers-${i}">
                                 <#list data.getHeaders() as key, value>
