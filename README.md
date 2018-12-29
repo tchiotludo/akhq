@@ -1,6 +1,8 @@
 # KafkaHQ
 > Kafka GUI for topics, topics data, consumers group and more...
 
+![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
+
 ## Features
 
 - [ ] General
