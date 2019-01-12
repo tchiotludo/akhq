@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -66,10 +67,14 @@ public class KafkaModule implements Jooby.Module {
         return props;
     }
 
-    private Properties getConsumerProperties(String clusterId) {
+    private Properties getConsumerProperties(String clusterId, Integer maxPollRecords) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.consumer"));
         props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+
+        if (maxPollRecords != null) {
+            props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(maxPollRecords));
+        }
 
         return props;
     }
@@ -105,13 +110,21 @@ public class KafkaModule implements Jooby.Module {
     public KafkaConsumer<String, String> getConsumer(String clusterId) {
         if (!this.consumers.containsKey(clusterId)) {
             this.consumers.put(clusterId, new KafkaConsumer<>(
-                this.getConsumerProperties(clusterId),
+                this.getConsumerProperties(clusterId, null),
                 new StringDeserializer(),
                 new StringDeserializer()
             ));
         }
 
         return this.consumers.get(clusterId);
+    }
+
+    public KafkaConsumer<String, String> getConsumer(String clusterId, int maxPollRecords) {
+        return new KafkaConsumer<>(
+            this.getConsumerProperties(clusterId, maxPollRecords),
+            new StringDeserializer(),
+            new StringDeserializer()
+        );
     }
 
     private Map<String, KafkaProducer<String, String>> producers = new HashMap<>();
