@@ -23,9 +23,9 @@
   - [x] Delete a record
   - [x] Sort view
   - [x] Filter per partitions
+  - [X] Filter with a starting time
   - [ ] Handle Kafka Registry Deserialization
   - [ ] Filter with a starting offset
-  - [ ] Filter with a starting time
 - [ ] Consumer Groups (only with kafka internal storage, not with old Zookepper)
   - [x] List with lag, topics assignemnts
   - [x] Partitions view & lag
@@ -60,7 +60,7 @@ Go to http://localhost:8080
 * Install Java 8
 * Download the latest jar on [release page](TODO)
 * Create an `application.conf` in the same directory
-* Launch the application with `java kafkahq.jar prod`
+* Launch the application with `java -jar kafkahq.jar prod`
 * Go to http://localhost:8080
 
 
