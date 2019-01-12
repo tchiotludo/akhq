@@ -88,13 +88,15 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             injectTestData();
             logger.info("Test data injected");
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    Files.delete(CS_PATH);
-                } catch (Exception e) {
-                    logger.error("Can't delete CS file", e);
-                }
-            }));
+            if (reuse) {
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try {
+                        Files.delete(CS_PATH);
+                    } catch (Exception e) {
+                        logger.error("Can't delete CS file", e);
+                    }
+                }));
+            }
 
         } catch (Exception  e) {
             throw new RuntimeException(e);
@@ -146,7 +148,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(50, 0), TOPIC_COMPACTED, partition);
         }
 
-        Thread.sleep(100L);
+        Thread.sleep(1000L);
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {
