@@ -306,7 +306,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
         }
 
-        private Sort sort = Sort.NEWEST;
+        private Sort sort = Sort.OLDEST;
 
         public Sort getSort() {
             return sort;

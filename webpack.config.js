@@ -110,7 +110,6 @@ module.exports = (env, argv) => {
                             {
                                 loader: 'css-loader',
                                 options: {
-                                    minimize: argv.mode === 'production',
                                     sourceMap: true
                                 }
                             },
@@ -156,7 +155,6 @@ module.exports = (env, argv) => {
             devServer: {
                 host: '0.0.0.0',
                 port: 8081,
-                compress: true,
                 overlay: true,
                 publicPath: '/static/',
                 proxy: {
