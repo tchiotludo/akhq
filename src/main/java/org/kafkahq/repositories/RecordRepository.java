@@ -6,9 +6,8 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
+import lombok.experimental.Wither;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -22,15 +21,13 @@ import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.utils.Debug;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class RecordRepository extends AbstractRepository implements Jooby.Module {
@@ -49,83 +46,193 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     public List<Record<String, String>> consume(Options options) throws ExecutionException, InterruptedException {
         return this.kafkaModule.debug(() -> {
             Topic topicsDetail = topicRepository.findByName(options.topic);
-            KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
-
-            List<Record<String, String>> list = new ArrayList<>();
-            HashMap<TopicPartition, OffsetBound<Long, Long>> partitionsOffset = new HashMap<>();
-
-            for (Partition partition : topicsDetail.getPartitions()) {
-                OffsetBound<Long, Long> seek = options.seek(consumer, partition);
-
-                if (seek == null) {
-                    logger.trace(
-                        "Skip Consume topic {} partion {} (first {}, last {})",
-                        partition.getTopic(),
-                        partition.getId(),
-                        partition.getFirstOffset(),
-                        partition.getLastOffset()
-                    );
-                } else {
-                    logger.trace(
-                        "Consume topic {} partion {} from {} to {} (first {}, last {})",
-                        partition.getTopic(),
-                        partition.getId(),
-                        seek.getBegin(),
-                        seek.getEnd(),
-                        partition.getFirstOffset(),
-                        partition.getLastOffset()
-                    );
 
 
-                    TopicPartition topicPartition = new TopicPartition(
-                        partition.getTopic(),
-                        partition.getId()
-                    );
-
-                    partitionsOffset.putAll(ImmutableMap.of(topicPartition, seek));
-                }
+            if (options.sort == Options.Sort.OLDEST) {
+                return consumeOldest(topicsDetail, options);
+            } else {
+                return consumeNewest(topicsDetail, options);
             }
-
-            Map<Integer, Long> lastOffset = partitionsOffset.entrySet().stream().collect(
-                Collectors.toMap(o -> o.getKey().partition(), o -> o.getValue().getEnd())
-            );
-
-            synchronized (consumer) {
-                consumer.assign(partitionsOffset.keySet());
-                partitionsOffset.forEach((topicPartition, offsetBound) ->
-                    consumer.seek(topicPartition, offsetBound.getBegin())
-                );
-
-                if (partitionsOffset.size() > 0) {
-                    ConsumerRecords<String, String> records = this.poll(consumer);
-
-                    for (ConsumerRecord<String, String> record : records) {
-                        if (record.offset() > lastOffset.get(record.partition())) {
-                            continue;
-                        }
-
-                        /*
-                        logger.trace(
-                            "Record topic {} partion {} offset {}",
-                            record.topic(),
-                            record.partition(),
-                            record.offset()
-                        );
-                        */
-
-                        list.add(new Record<>(record));
-                    }
-                }
-            }
-
-            if (options.sort == Options.Sort.NEWEST) {
-                Collections.reverse(list);
-            }
-
-            return list;
         }, "Consume with options {}", options);
     }
 
+    private List<Record<String, String>> consumeOldest(Topic topic, Options options) {
+        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
+
+        Map<TopicPartition, Long> partitions = topic
+            .getPartitions()
+            .stream()
+            .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
+                .map(offsetBound -> offsetBound.withTopicPartition(
+                    new TopicPartition(
+                        partition.getTopic(),
+                        partition.getId()
+                    )
+                ))
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
+
+        List<Record<String, String>> list = new ArrayList<>();
+
+        if (partitions.size() > 0) {
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+
+            partitions.forEach((topicPartition, first) ->
+                logger.trace(
+                    "Consume [topic: {}] [partition: {}] [start: {}]",
+                    topicPartition.topic(),
+                    topicPartition.partition(),
+                    first
+                )
+            );
+
+            synchronized (consumer) {
+                ConsumerRecords<String, String> records = this.poll(consumer);
+
+                for (ConsumerRecord<String, String> record : records) {
+                    list.add(new Record<>(record));
+                }
+            }
+        }
+        return list;
+    }
+
+    private List<Record<String, String>> consumeNewest(Topic topic, Options options) {
+        int pollSizePerPartition = pollSizePerPartition(topic, options);
+
+        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(
+            options.clusterId,
+            pollSizePerPartition
+        );
+
+        return topic
+            .getPartitions()
+            .stream()
+            .map(partition -> getOffsetForSortNewest(consumer, partition, options, pollSizePerPartition)
+                .map(offset -> offset.withTopicPartition(
+                    new TopicPartition(
+                        partition.getTopic(),
+                        partition.getId()
+                    )
+                ))
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .flatMap(topicPartitionOffset -> {
+                consumer.assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
+                consumer.seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
+                List<Record<String, String>> list = new ArrayList<>();
+
+                synchronized (consumer) {
+                    int poll = 0;
+
+                    do {
+                        ConsumerRecords<String, String> records = this.poll(consumer);
+
+                        if (records.isEmpty()) {
+                            poll++;
+                        } else {
+                            poll = 0;
+                        }
+
+                        for (ConsumerRecord<String, String> record : records) {
+                            if (record.offset() > topicPartitionOffset.getEnd()) {
+                                poll = 2;
+                                break;
+                            }
+
+                            list.add(new Record<>(record));
+                        }
+                    }
+                    while (poll < 1);
+                }
+
+                Collections.reverse(list);
+
+                return Stream.of(list);
+            })
+             .flatMap(List::stream)
+             .collect(Collectors.toList());
+    }
+
+    private int pollSizePerPartition(Topic topic, Options options) {
+        if (options.partition != null) {
+            return options.size;
+        } else {
+            return (int) Math.round(options.size * 1.0 / topic.getPartitions().size());
+        }
+    }
+
+    private Optional<Long> getFirstOffset(KafkaConsumer<String, String> consumer, Partition partition, Options options) {
+        if (options.partition != null && partition.getId() != options.partition) {
+            return Optional.empty();
+        }
+
+        long first = partition.getFirstOffset();
+
+        if (options.timestamp != null) {
+            Map<TopicPartition, OffsetAndTimestamp> timestampOffset = consumer.offsetsForTimes(
+                ImmutableMap.of(
+                    new TopicPartition(partition.getTopic(), partition.getId()),
+                    options.timestamp
+                )
+            );
+
+            for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : timestampOffset.entrySet()) {
+                if (entry.getValue() == null) {
+                    return Optional.empty();
+                }
+
+                first = entry.getValue().offset();
+            }
+        }
+
+        return Optional.of(first);
+    }
+
+    private Optional<OffsetBound> getFirstOffsetForSortOldest(KafkaConsumer<String, String> consumer, Partition partition, Options options) {
+        return getFirstOffset(consumer, partition, options)
+            .map(first -> {
+                if (options.after.size() > 0 && options.after.containsKey(partition.getId())) {
+                    first = options.after.get(partition.getId()) + 1;
+                }
+
+                if (first > partition.getLastOffset()) {
+                    return null;
+                }
+
+                return OffsetBound.builder()
+                    .begin(first)
+                    .build();
+            });
+    }
+
+    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<String, String> consumer, Partition partition, Options options, int pollSizePerPartition) {
+        return getFirstOffset(consumer, partition, options)
+            .map(first -> {
+                long last = partition.getLastOffset();
+
+                if (pollSizePerPartition > 0 && options.after.containsKey(partition.getId())) {
+                    last = options.after.get(partition.getId()) - 1;
+                }
+
+                if (last == partition.getFirstOffset() || last < 0) {
+                    return null;
+                } else if (!(last - pollSizePerPartition < first)) {
+                    first = last - pollSizePerPartition;
+                }
+
+                return EndOffsetBound.builder()
+                    .begin(first)
+                    .end(last)
+                    .build();
+            });
+    }
+
+    @SuppressWarnings("deprecation")
     private ConsumerRecords<String, String> poll(KafkaConsumer<String, String> consumer) {
         /*
         // poll with long call poll(final long timeoutMs, boolean includeMetadataInTimeout = true)
@@ -154,7 +261,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         */
     }
 
-
     public void delete(String clusterId, String topic, Integer partition, String key) throws ExecutionException, InterruptedException {
         kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
@@ -166,6 +272,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
     @ToString
     @EqualsAndHashCode
+    @Getter
     public static class Options {
         public enum Sort {
             OLDEST,
@@ -181,7 +288,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             this.topic = topic;
         }
 
-        private int size = 100;
+        private int size = 50;
 
         public void setSize(int size) {
             this.size = size;
@@ -227,66 +334,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
         public void setTimestamp(long timestamp) {
             this.timestamp = timestamp;
-        }
-
-        private OffsetBound<Long, Long> seek(KafkaConsumer<String, String> consumer, Partition partition) {
-            long begin;
-            long first = partition.getFirstOffset();
-            long last = partition.getLastOffset();
-
-            if (this.timestamp != null) {
-                Map<TopicPartition, OffsetAndTimestamp> timestampOffset = consumer.offsetsForTimes(
-                    ImmutableMap.of(
-                        new TopicPartition(partition.getTopic(), partition.getId()),
-                        this.timestamp
-                    )
-                );
-
-                for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : timestampOffset.entrySet()) {
-                    if (entry.getValue() == null) {
-                        return null;
-                    }
-
-                    first = entry.getValue().offset();
-                }
-            }
-
-            if (this.partition != null && partition.getId() != this.partition) {
-                return null;
-            }
-
-            switch (this.sort) {
-                case OLDEST:
-                    if (this.after.size() > 0 && this.after.containsKey(partition.getId())) {
-                        first = this.after.get(partition.getId()) + 1;
-                    }
-
-                    begin = first;
-                    last = first + this.size > partition.getLastOffset() ? partition.getLastOffset() : first + this.size;
-
-                    if (begin > partition.getLastOffset()) {
-                        return null;
-                    }
-
-                    return OffsetBound.of(begin, last);
-
-                case NEWEST:
-                    if (this.after.size() > 0 && this.after.containsKey(partition.getId())) {
-                        last = this.after.get(partition.getId()) - 1;
-                    }
-
-                    if (last == partition.getFirstOffset() || last < 0) {
-                        return null;
-                    } else if (last - this.size < first) {
-                        begin = first;
-                    } else {
-                        begin = last - this.size;
-                    }
-
-                    return OffsetBound.of(begin, last);
-            }
-
-            return null;
         }
 
         public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {
@@ -347,10 +394,21 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         }
     }
 
-    @Data(staticConstructor = "of")
-    static public class OffsetBound<A, B> {
-        private final A begin;
-        private final B end;
+    @Data
+    @Builder
+    private static class OffsetBound {
+        @Wither
+        private final TopicPartition topicPartition;
+        private final long begin;
+    }
+
+    @Data
+    @Builder
+    private static class EndOffsetBound {
+        @Wither
+        private final TopicPartition topicPartition;
+        private final long begin;
+        private final long end;
     }
 
     @SuppressWarnings("NullableProblems")

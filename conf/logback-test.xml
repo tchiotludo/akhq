@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="15 seconds" debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
         <immediateFlush>true</immediateFlush>
@@ -27,16 +29,13 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.apache.kafka" level="WARN" />
 
-    <!-- Jooby -->
-    <logger name="io.netty" level="WARN" />
-    <logger name="org.jooby" level="WARN" />
-    <logger name="org.jooby.RequestLogger" level="INFO" />
+    <logger name="org.kafkahq.App" level="WARN" />
+    <logger name="org.kafkahq" level="INFO" />
 
 </configuration>

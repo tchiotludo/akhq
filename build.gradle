@@ -77,7 +77,7 @@ dependencies {
     compile group: "org.jooby", name: "jooby-whoops", version: joobyVersion
 
     // kafka
-    compile group: "org.apache.kafka", name: "kafka-clients", version: "2.0.+"
+    compile group: "org.apache.kafka", name: "kafka-clients", version: "2.1.+"
 
     // utils
     compile group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
@@ -89,8 +89,8 @@ dependencies {
 
     // test
     testCompile "junit:junit:4.12"
-    testCompile "com.salesforce.kafka.test:kafka-junit4:3.0.1"
-    testCompile "org.apache.kafka:kafka_2.11:2.0.0"
+    testCompile "com.salesforce.kafka.test:kafka-junit4:3.1.0"
+    testCompile "org.apache.kafka:kafka_2.12:2.1.0"
     testCompile "io.rest-assured:rest-assured:3.1.0"
 }
 
