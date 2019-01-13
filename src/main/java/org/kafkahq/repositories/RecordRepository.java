@@ -47,7 +47,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         return this.kafkaModule.debug(() -> {
             Topic topicsDetail = topicRepository.findByName(options.topic);
 
-
             if (options.sort == Options.Sort.OLDEST) {
                 return consumeOldest(topicsDetail, options);
             } else {
@@ -127,27 +126,27 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 List<Record<String, String>> list = new ArrayList<>();
 
                 synchronized (consumer) {
-                    int poll = 0;
+                    int emptyPoll = 0;
 
                     do {
                         ConsumerRecords<String, String> records = this.poll(consumer);
 
                         if (records.isEmpty()) {
-                            poll++;
+                            emptyPoll++;
                         } else {
-                            poll = 0;
+                            emptyPoll = 0;
                         }
 
                         for (ConsumerRecord<String, String> record : records) {
                             if (record.offset() > topicPartitionOffset.getEnd()) {
-                                poll = 2;
+                                emptyPoll = 2;
                                 break;
                             }
 
                             list.add(new Record<>(record));
                         }
                     }
-                    while (poll < 1);
+                    while (emptyPoll < 1);
                 }
 
                 Collections.reverse(list);
@@ -273,28 +272,24 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     @ToString
     @EqualsAndHashCode
     @Getter
+    @Setter
     public static class Options {
         public enum Sort {
             OLDEST,
             NEWEST,
         }
-
         private String clusterId;
-
         private String topic;
+        private int size = 50;
+        private Map<Integer, Long> after = new HashMap<>();
+        private Sort sort = Sort.OLDEST;
+        private Integer partition;
+        private Long timestamp;
 
         public Options(String clusterId, String topic) {
             this.clusterId = clusterId;
             this.topic = topic;
         }
-
-        private int size = 50;
-
-        public void setSize(int size) {
-            this.size = size;
-        }
-
-        private Map<Integer, Long> after = new HashMap<>();
 
         public void setAfter(String after) {
             this.after.clear();
@@ -304,36 +299,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .withKeyValueSeparator('-')
                 .split(after)
                 .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
-        }
-
-        private Sort sort = Sort.OLDEST;
-
-        public Sort getSort() {
-            return sort;
-        }
-
-        public void setSort(Sort sort) {
-            this.sort = sort;
-        }
-
-        private Integer partition;
-
-        public Integer getPartition() {
-            return partition;
-        }
-
-        public void setPartition(int partition) {
-            this.partition = partition;
-        }
-
-        private Long timestamp;
-
-        public Long getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(long timestamp) {
-            this.timestamp = timestamp;
         }
 
         public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {

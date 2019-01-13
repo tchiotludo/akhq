@@ -1,6 +1,7 @@
 package org.kafkahq.models;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -12,7 +13,16 @@ import java.util.stream.Collectors;
 
 @ToString
 @EqualsAndHashCode
+@Getter
 public class ConsumerGroup {
+    private final String id;
+    private final boolean isSimpleConsumerGroup;
+    private final String partitionAssignor;
+    private final ConsumerGroupState state;
+    private final Node coordinator;
+    private final ArrayList<Consumer> members = new ArrayList<>();
+    private final ArrayList<org.kafkahq.models.TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
+
     public ConsumerGroup(
         ConsumerGroupDescription groupDescription,
         Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> groupOffset,
@@ -74,48 +84,6 @@ public class ConsumerGroup {
             .comparing(org.kafkahq.models.TopicPartition.ConsumerGroupOffset::getTopic)
             .thenComparingInt(org.kafkahq.models.TopicPartition.ConsumerGroupOffset::getPartition)
         );
-    }
-
-    private final String id;
-
-    public String getId() {
-        return id;
-    }
-
-    private final boolean isSimpleConsumerGroup;
-
-    public boolean isSimpleConsumerGroup() {
-        return isSimpleConsumerGroup;
-    }
-
-    private final String partitionAssignor;
-
-    public String partitionAssignor() {
-        return partitionAssignor;
-    }
-
-    private final ConsumerGroupState state;
-
-    public ConsumerGroupState getState() {
-        return state;
-    }
-
-    private final Node coordinator;
-
-    public Node getCoordinator() {
-        return coordinator;
-    }
-
-    private final ArrayList<Consumer> members = new ArrayList<>();
-
-    public ArrayList<Consumer> getMembers() {
-        return members;
-    }
-
-    private final ArrayList<org.kafkahq.models.TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
-
-    public ArrayList<org.kafkahq.models.TopicPartition.ConsumerGroupOffset> getOffsets() {
-        return offsets;
     }
 
     public List<String> getActiveTopics() {

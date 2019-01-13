@@ -1,6 +1,7 @@
 package org.kafkahq.models;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -15,7 +16,13 @@ import java.util.stream.Collectors;
 
 @ToString
 @EqualsAndHashCode
+@Getter
 public class Topic {
+    private String name;
+    private boolean internal;
+    private final List<Partition> partitions = new ArrayList<>();
+    private List<ConsumerGroup> consumerGroups;
+
     public Topic(
         TopicDescription description,
         List<ConsumerGroup> consumerGroup,
@@ -41,30 +48,6 @@ public class Topic {
                     ))
             ));
         }
-    }
-
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    private boolean internal;
-
-    public boolean isInternal() {
-        return internal;
-    }
-
-    private final List<Partition> partitions = new ArrayList<>();
-
-    public List<Partition> getPartitions() {
-        return partitions;
-    }
-
-    private List<ConsumerGroup> consumerGroups;
-
-    public List<ConsumerGroup> getConsumerGroups() {
-        return consumerGroups;
     }
 
     public List<Node.Partition> getReplicas() {
