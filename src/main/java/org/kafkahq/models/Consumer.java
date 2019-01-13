@@ -1,6 +1,7 @@
 package org.kafkahq.models;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.MemberDescription;
 
@@ -12,7 +13,13 @@ import java.util.stream.Collectors;
 
 @ToString
 @EqualsAndHashCode
+@Getter
 public class Consumer {
+    private final String id;
+    private final String clientId;
+    private final String host;
+    private final ArrayList<TopicPartition> assignments = new ArrayList<>();
+
     public Consumer(MemberDescription description) {
         this.id = description.consumerId();
         this.clientId = description.clientId();
@@ -26,30 +33,6 @@ public class Consumer {
             .comparing(org.kafkahq.models.TopicPartition::getTopic)
             .thenComparingInt(org.kafkahq.models.TopicPartition::getPartition)
         );
-    }
-
-    private final String id;
-
-    public String getId() {
-        return id;
-    }
-
-    private final String clientId;
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    private final String host;
-
-    public String getHost() {
-        return host;
-    }
-
-    private final ArrayList<TopicPartition> assignments = new ArrayList<>();
-
-    public ArrayList<TopicPartition> getAssignments() {
-        return assignments;
     }
 
     public ArrayList<GroupedAssignement> getGroupedAssignments() {
@@ -67,22 +50,16 @@ public class Consumer {
         return list;
     }
 
+    @ToString
+    @EqualsAndHashCode
+    @Getter
     public static class GroupedAssignement {
+        private final String topic;
+        private final int[] partitions;
+
         private GroupedAssignement (String topic, int[] partitions) {
             this.topic = topic;
             this.partitions = partitions;
-        }
-
-        private final String topic;
-
-        public String getTopic() {
-            return topic;
-        }
-
-        private final int[] partitions;
-
-        public int[] getPartitions() {
-            return partitions;
         }
     }
 }

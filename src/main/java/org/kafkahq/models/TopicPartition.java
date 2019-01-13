@@ -1,6 +1,7 @@
 package org.kafkahq.models;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 
@@ -8,7 +9,11 @@ import java.util.Optional;
 
 @ToString
 @EqualsAndHashCode
+@Getter
 public class TopicPartition {
+    private final String topic;
+    private final int partition;
+
     public TopicPartition(org.apache.kafka.common.TopicPartition topicPartition) {
         this.topic = topicPartition.topic();
         this.partition = topicPartition.partition();
@@ -19,21 +24,17 @@ public class TopicPartition {
         this.partition = topicPartition.getPartition();
     }
 
-    private final String topic;
-
-    public String getTopic() {
-        return topic;
-    }
-
-    private final int partition;
-
-    public int getPartition() {
-        return partition;
-    }
 
     @ToString
     @EqualsAndHashCode(callSuper=true)
+    @Getter
     public static class ConsumerGroupOffset extends TopicPartition {
+        private final Optional<Long> offset;
+        private final Optional<String> metadata;
+        private final Optional<Consumer> member;
+        private Optional<Long> firstOffset;
+        private Optional<Long> lastOffset;
+
         public ConsumerGroupOffset(TopicPartition topicPartition) {
             super(topicPartition);
 
@@ -57,36 +58,6 @@ public class TopicPartition {
             this.member = member != null ? Optional.of(member) : Optional.empty() ;
             this.firstOffset = Optional.of(partiionOffsets.getFirstOffset());
             this.lastOffset = Optional.of(partiionOffsets.getLastOffset());
-        }
-
-        private final Optional<Long> offset;
-
-        public Optional<Long> getOffset() {
-            return offset;
-        }
-
-        private final Optional<String> metadata;
-
-        public Optional<String> getMetadata() {
-            return metadata;
-        }
-
-        private final Optional<Consumer> member;
-
-        public Optional<Consumer> getMember() {
-            return member;
-        }
-
-        private Optional<Long> firstOffset;
-
-        public Optional<Long> getFirstOffset() {
-            return firstOffset;
-        }
-
-        private Optional<Long> lastOffset;
-
-        public Optional<Long> getLastOffset() {
-            return lastOffset;
         }
 
         public Optional<Long> getOffsetLag() {
