@@ -14,6 +14,7 @@ import org.jooby.mvc.Path;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
+import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
@@ -21,8 +22,7 @@ import org.kafkahq.response.ResultStatusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -51,21 +51,16 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}")
-    public View home(Request request) throws ExecutionException, InterruptedException, URISyntaxException {
-        Topic topic = this.topicRepository.findByName(request.param("id").value());
+    @Path("{topic}")
+    public View home(Request request) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(request.param("topic").value());
+        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request);
 
-        RecordRepository.Options options = new RecordRepository.Options(
-            request.param("cluster").value(),
-            topic.getName()
-        );
+        List<Record<String, String>> data = new ArrayList<>();
 
-        request.param("after").toOptional().ifPresent(options::setAfter);
-        request.param("partition").toOptional(Integer.class).ifPresent(options::setPartition);
-        request.param("sort").toOptional(RecordRepository.Options.Sort.class).ifPresent(options::setSort);
-        request.param("timestamp").toOptional(String.class).ifPresent(s -> options.setTimestamp(Instant.parse(s).toEpochMilli()));
-
-        List<Record<String, String>> data = this.recordRepository.consume(options);
+        if (options.getSearch() == null) {
+            data = this.recordRepository.consume(options);
+        }
 
         URIBuilder uri = URIBuilder.empty()
             .withPath(request.path())
@@ -104,6 +99,10 @@ public class TopicController extends AbstractController {
                         .put("current", Optional.ofNullable(options.getTimestamp()))
                         .build()
                     )
+                    .put("search", ImmutableMap.builder()
+                        .put("current", Optional.ofNullable(options.getSearch()))
+                        .build()
+                    )
                     .build()
                 )
                 .put("pagination", ImmutableMap.builder()
@@ -116,14 +115,14 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/{tab:(partitions|groups|configs|logs)}")
+    @Path("{topic}/{tab:(partitions|groups|configs|logs)}")
     public View tab(Request request) throws ExecutionException, InterruptedException {
         return this.topic(request, request.param("tab").value());
     }
 
     public View topic(Request request, String tab) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(request.param("id").value());
-        List<Config> configs = this.configRepository.findByTopic(request.param("id").value());
+        Topic topic = this.topicRepository.findByName(request.param("topic").value());
+        List<Config> configs = this.configRepository.findByTopic(request.param("topic").value());
 
         return this.template(
             request,
@@ -136,9 +135,9 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/deleteRecord")
+    @Path("{topic}/deleteRecord")
     public Result deleteRecord(Request request) {
-        String topic = request.param("id").value();
+        String topic = request.param("topic").value();
         Integer partition = request.param("partition").intValue();
         String key = request.param("key").value();
 
@@ -167,9 +166,9 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/delete")
+    @Path("{topic}/delete")
     public Result delete(Request request) {
-        String name = request.param("id").value();
+        String name = request.param("topic").value();
         ResultStatusResponse result = new ResultStatusResponse();
 
         try {

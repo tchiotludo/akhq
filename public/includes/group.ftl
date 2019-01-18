@@ -14,8 +14,8 @@
                     <th>Coordinator</th>
                     <th>Members</th>
                     <th>Topics</th>
-                    <th class="row-action"></th>
-                    <th class="row-action"></th>
+                    <th class="khq-row-action"></th>
+                    <th class="khq-row-action"></th>
                 </tr>
             </thead>
             <tbody>
@@ -42,10 +42,10 @@
                                     </a>
                                 </#list>
                             </td>
-                            <td class="row-action main-row-action">
+                            <td class="khq-row-action khq-row-action-main">
                                 <a href="${basePath}/${clusterId}/group/${group.getId()}" ><i class="fa fa-search"></i></a>
                             </td>
-                            <td class="row-action">
+                            <td class="khq-row-action">
                                 <a
                                     href="${basePath}/${clusterId}/group/${group.getId()}/delete"
                                     data-confirm="Do you want to delete consumer group <br /><strong>${group.getId()}</strong><br /><br /> ?"

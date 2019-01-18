@@ -15,7 +15,7 @@
                 <th colspan="1">Partitions</th>
                 <th colspan="2">Replications</th>
                 <th>Consumers Groups</th>
-                <th colspan="2" class="row-action"></th>
+                <th colspan="2" class="khq-row-action"></th>
             </tr>
         </thead>
         <thead class="thead-dark">
@@ -31,7 +31,7 @@
                 <th class="text-nowrap">Factor</th>
                 <th class="text-nowrap">In Sync</th>
                 <th class="text-nowrap">Consumer Groups</th>
-                <th colspan="2" class="row-action"></th>
+                <th colspan="2" class="khq-row-action"></th>
             </tr>
         </thead>
         <tbody>
@@ -67,10 +67,10 @@
                                 </a><br/>
                             </#list>
                         </td>
-                        <td class="row-action main-row-action">
+                        <td class="khq-row-action khq-row-action-main">
                             <a href="${basePath}/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
                         </td>
-                        <td class="row-action">
+                        <td class="khq-row-action">
                             <#if topic.isInternal() == false>
                                 <a
                                     href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"

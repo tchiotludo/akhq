@@ -4,7 +4,7 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto data-filter">
+<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter">
     <button class="navbar-toggler"
             type="button"
             data-toggle="collapse"
@@ -64,7 +64,7 @@
                     <strong>Timestamp:</strong>
                     <#if navbar["timestamp"]["current"].isPresent()>(${navbar["timestamp"]["current"].get()?number_to_datetime?string.medium_short})</#if>
                 </a>
-                <div class="dropdown-menu datetime-tempus">
+                <div class="dropdown-menu khq-data-datetime">
                     <div class="input-group mb-2">
                         <input class="form-control"
                                name="timestamp"
@@ -79,10 +79,42 @@
                     <div class="datetime-container"></div>
                 </div>
             </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle"
+                   href="#"
+                   role="button"
+                   data-toggle="dropdown"
+                   aria-haspopup="true"
+                   aria-expanded="false">
+                    <strong>Search:</strong>
+                    <#if navbar["search"]["current"].isPresent()>(${navbar["search"]["current"].get()})</#if>
+                </a>
+                <div class="dropdown-menu khq-search-navbar">
+                    <div class="input-group">
+                        <input class="form-control"
+                               name="search"
+                               type="text"
+                                <#if navbar["search"]["current"].isPresent()>
+                                    value="${navbar["search"]["current"].get()}"
+                                </#if> />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </li>
         </ul>
     </div>
 </nav>
-<div class="table-responsive">
+<div class="table-responsive <#if navbar["search"]["current"].isPresent()>khq-search-sse</#if>">
+    <#if navbar["search"]["current"].isPresent()>
+    <div class="progress-container">
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 0;" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <button type="button" class="btn btn btn-outline-info btn-sm disabled">Cancel</button>
+    </div>
+    </#if>
     <table class="table table-bordered table-striped table-hover mb-0">
         <thead class="thead-dark">
             <tr>
@@ -92,65 +124,22 @@
                 <th>Offset</th>
                 <th>Headers</th>
                 <#if canDeleteRecords == true >
-                <th class="row-action"></th>
+                <th class="khq-row-action"></th>
                 </#if>
             </tr>
         </thead>
         <tbody>
-            <#if datas?size == 0>
+            <#if datas?size == 0 && !navbar["search"]["current"].isPresent()>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="${canDeleteRecords?then("6", "5")}">
                         <div class="alert alert-info mb-0" role="alert">
                             No data available
                         </div>
                     </td>
                 </tr>
             </#if>
-            <#assign i=0>
-            <#list datas as data>
-                <#assign i++>
-                <tr <#if !(data.getValue())??>class="deleted"</#if>>
-                    <td><code>${data.getKey()!"null"}</code></td>
-                    <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
-                    <td class="text-right">${data.getPartition()}</td>
-                    <td class="text-right">${data.getOffset()}</td>
-                    <td class="text-right">
-                        <#if data.getHeaders()?size != 0>
-                            <a href="#" data-toggle="collapse" role="button" aria-expanded="false" data-target=".headers-${i}">${data.getHeaders()?size}</a>
-                        <#else>
-                            ${data.getHeaders()?size}
-                        </#if>
-                    </td>
-                    <#if canDeleteRecords == true >
-                        <td>
-                            <#if data.getValue()??>
-                                <a
-                                    href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKey()}"
-                                        data-confirm="Do you want to delete record <br /><strong>${data.getKey()} from topic ${topic.getName()}</strong><br /><br /> ?"
-                                ><i class="fa fa-trash"></i></a>
-                            </#if>
-                        </td>
-                    </#if>
-                </tr>
-                <tr <#if !(data.getValue())??>class="deleted"</#if>>
-                    <td colspan="${(canDeleteRecords == true)?then("6", "5")}">
-                        <button type="button" class="close d-none" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <#if data.getHeaders()?size != 0>
-                            <table class="table table-sm collapse headers-${i}">
-                                <#list data.getHeaders() as key, value>
-                                    <tr>
-                                        <th>${key}</th>
-                                        <td><pre class="mb-0">${value}</pre></td>
-                                    </tr>
-                                </#list>
-                            </table>
-                        </#if>
-                        <pre class="mb-0 highlight"><code>${data.getValue()!"null"}</code></pre>
-                    </td>
-                </tr>
-            </#list>
+
+            <#include "/blocks/topic/dataBody.ftl" />
         </tbody>
     </table>
 </div>

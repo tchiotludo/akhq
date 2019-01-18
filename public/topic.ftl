@@ -10,7 +10,7 @@
 
 <@template.header "Topic: " + topic.getName(), "topic" />
 
-<div class="tabs-container invisible">
+<div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link ${(tab == "data")?then("active", "")}"

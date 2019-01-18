@@ -24,7 +24,7 @@
     </head>
     <body>
         <div class="wrapper">
-            <nav id="sidebar">
+            <nav id="khq-sidebar">
                 <div class="sidebar-header">
                     <h3><img src="${basePath}/static/img/logo.svg"/><sup><strong>HQ</strong></sup></h3>
                 </div>
@@ -60,7 +60,7 @@
             <div id="content">
                 <div class="title">
                     <h1>
-                        <button type="button" id="sidebar-collapse" class="btn btn-dark d-md-none">
+                        <button type="button" id="khq-sidebar-collapse" class="btn btn-dark d-md-none">
                             <i class="fa fa-bars"></i>
                         </button>
 

@@ -1,5 +1,6 @@
 package org.kafkahq.repositories;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
@@ -24,8 +25,11 @@ import org.kafkahq.modules.KafkaModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,22 +61,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
     private List<Record<String, String>> consumeOldest(Topic topic, Options options) {
         KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
-
-        Map<TopicPartition, Long> partitions = topic
-            .getPartitions()
-            .stream()
-            .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
-                .map(offsetBound -> offsetBound.withTopicPartition(
-                    new TopicPartition(
-                        partition.getTopic(),
-                        partition.getId()
-                    )
-                ))
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
-
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
         List<Record<String, String>> list = new ArrayList<>();
 
         if (partitions.size() > 0) {
@@ -97,6 +86,23 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             }
         }
         return list;
+    }
+
+    private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options, KafkaConsumer<String, String> consumer) {
+        return topic
+                .getPartitions()
+                .stream()
+                .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
+                    .map(offsetBound -> offsetBound.withTopicPartition(
+                        new TopicPartition(
+                            partition.getTopic(),
+                            partition.getId()
+                        )
+                    ))
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
     }
 
     private List<Record<String, String>> consumeNewest(Topic topic, Options options) {
@@ -125,11 +131,15 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 consumer.seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
                 List<Record<String, String>> list = new ArrayList<>();
 
-                synchronized (consumer) {
+
                     int emptyPoll = 0;
 
                     do {
-                        ConsumerRecords<String, String> records = this.poll(consumer);
+                        ConsumerRecords<String, String> records;
+
+                        synchronized (consumer) {
+                            records = this.poll(consumer);
+                        }
 
                         if (records.isEmpty()) {
                             emptyPoll++;
@@ -147,7 +157,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                         }
                     }
                     while (emptyPoll < 1);
-                }
 
                 Collections.reverse(list);
 
@@ -240,7 +249,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         // First one wait for metadata and send records
         // Hack bellow can be used to wait for metadata
         */
-        return consumer.poll(1000);
+        return consumer.poll(5000);
 
         /*
         if (!records.isEmpty()) {
@@ -269,6 +278,149 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         )).get();
     }
 
+
+    public SearchEnd search(Options options, SearchConsumer callback) throws ExecutionException, InterruptedException {
+        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
+        Topic topic = topicRepository.findByName(options.topic);
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
+        SearchEvent searchEvent = new SearchEvent(topic);
+
+        callback.accept(searchEvent);
+        List<Record<String, String>> all = new ArrayList<>();
+
+        int emptyPoll = 0;
+        if (partitions.size() > 0) {
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+            partitions.forEach((topicPartition, first) ->
+                logger.trace(
+                    "Search [topic: {}] [partition: {}] [start: {}]",
+                    topicPartition.topic(),
+                    topicPartition.partition(),
+                    first
+                )
+            );
+
+            synchronized (consumer) {
+                List<Record<String, String>> list = new ArrayList<>();
+
+                do {
+                    list.removeIf(r -> true);
+                    ConsumerRecords<String, String> records = this.poll(consumer);
+
+                    if (records.isEmpty()) {
+                        emptyPoll++;
+                    } else {
+                        emptyPoll = 0;
+                    }
+
+                    for (ConsumerRecord<String, String> record : records) {
+
+                        if (callback.isClose()) {
+                            break;
+                        }
+
+                        searchEvent.updateProgress(record);
+
+                        if (searchFilter(options, record)) {
+                            list.add(new Record<>(record));
+
+                            logger.trace(
+                                "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
+                                record.topic(),
+                                record.partition(),
+                                record.offset(),
+                                record.key()
+                            );
+                        }
+
+                    }
+
+                    if (list.size() > 0) {
+                        searchEvent.records = list;
+                        all.addAll(list);
+                    }
+
+                    callback.accept(searchEvent);
+                }
+                while (emptyPoll < 1 && all.size() <= options.getSize() && !callback.isClose());
+            }
+        }
+
+        return new SearchEnd(emptyPoll < 1 ? options.pagination(all) : null);
+    }
+
+    private boolean searchFilter(Options options, ConsumerRecord<String, String> record) {
+        if (record.key() != null && record.key().toLowerCase().contains(options.getSearch().toLowerCase())) {
+            return true;
+        }
+
+        if (record.value() != null && record.value().toLowerCase().contains(options.getSearch().toLowerCase())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public abstract static class SearchConsumer implements Closeable, Consumer<SearchEvent> {
+        private boolean isClose = false;
+
+        @Override
+        public void close() throws IOException {
+            this.isClose = true;
+            logger.info("SearchConsumer closed called");
+        }
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SearchEnd {
+        @JsonProperty("after")
+        private String after;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class SearchEvent {
+        @JsonProperty("offsets")
+        private Map<Integer, Offset> offsets = new HashMap<>();
+
+        @JsonProperty("progress")
+        private Map<Integer, Long> progress = new HashMap<>();
+
+        @JsonProperty("records")
+        private List<Record<String, String>> records = new ArrayList<>();
+
+        private SearchEvent(Topic topic) {
+            topic.getPartitions()
+                .forEach(partition -> {
+                    offsets.put(partition.getId(), new Offset(partition.getFirstOffset(), partition.getLastOffset()));
+                    progress.put(partition.getId(), partition.getLastOffset() - partition.getFirstOffset());
+                });
+        }
+
+        private void updateProgress(ConsumerRecord<String, String> record) {
+            Offset offset = offsets.get(record.partition());
+            progress.put(record.partition(), offset.end - offset.begin - record.offset());
+        }
+
+        @AllArgsConstructor
+        public static class Offset {
+            @JsonProperty("begin")
+            private final long begin;
+
+            @JsonProperty("end")
+            private final long end;
+        }
+    }
+
     @ToString
     @EqualsAndHashCode
     @Getter
@@ -285,6 +437,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         private Sort sort = Sort.OLDEST;
         private Integer partition;
         private Long timestamp;
+        private String search;
 
         public Options(String clusterId, String topic) {
             this.clusterId = clusterId;
@@ -301,7 +454,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
         }
 
-        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {
+        public String pagination(List<Record<String, String>> records) {
             Map<Integer, Long> next = new HashMap<>(this.after);
             for (Record<String, String> record : records) {
                 if (this.sort == Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) < record.getOffset())) {
@@ -311,51 +464,33 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 }
             }
 
+            ArrayList<String> segment = new ArrayList<>();
+
+            for (Map.Entry<Integer, Long> offset : next.entrySet()) {
+                segment.add(offset.getKey() + "-" + offset.getValue());
+            }
+
+            if (next.size() > 0) {
+                return String.join("_", segment);
+            }
+
+            return null;
+        }
+
+        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {
             if (records.size() == 0) {
                 return URIBuilder.empty();
             }
 
-            return offsetUrl(uri, next);
+            return uri.addParameter("after", pagination(records));
         }
 
         public URIBuilder before(List<Record<String, String>> records, URIBuilder uri) {
-            /*
-            Map<Integer, Long> previous = new HashMap<>(this.after);
-            for (ConsumerRecord<String, String> record : records) {
-                if (this.sort == Sort.OLDEST && (!previous.containsKey(record.partition()) || previous.get(record.partition()) > record.offset())) {
-                    previous.put(record.partition(), record.offset());
-                } else if (this.sort == Sort.NEWEST && (!previous.containsKey(record.partition()) || previous.get(record.partition()) < record.offset())) {
-                    previous.put(record.partition(), record.offset());
-                }
+            if (records.size() == 0) {
+                return URIBuilder.empty();
             }
 
-            for (Integer key : previous.keySet()) {
-                long offset = previous.get(key) - this.size;
-                if (offset < 0) {
-                    previous.remove(key);
-                } else {
-                    previous.put(key, offset);
-                }
-            }
-            */
-
-            return offsetUrl(uri, new HashMap<>());
-
-            // return offsetUrl(basePath, previous);
-        }
-
-        private URIBuilder offsetUrl(URIBuilder uri, Map<Integer, Long> offsets) {
-            ArrayList<String> segment = new ArrayList<>();
-
-            for (Map.Entry<Integer, Long> offset : offsets.entrySet()) {
-                segment.add(offset.getKey() + "-" + offset.getValue());
-            }
-
-            if (offsets.size() > 0) {
-                uri = uri.addParameter("after", String.join("_", segment));
-            }
-
-            return uri;
+            return uri.addParameter("before", pagination(records));
         }
     }
 
