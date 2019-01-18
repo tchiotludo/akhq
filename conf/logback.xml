@@ -37,6 +37,5 @@
     <!-- Jooby -->
     <logger name="io.netty" level="WARN" />
     <logger name="org.jooby" level="WARN" />
-    <logger name="org.jooby.RequestLogger" level="INFO" />
 
 </configuration>

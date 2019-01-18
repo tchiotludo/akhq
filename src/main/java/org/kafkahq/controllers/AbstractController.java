@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import org.jooby.Request;
 import org.jooby.View;
+import org.kafkahq.App;
 import org.kafkahq.modules.KafkaModule;
 
 abstract public class AbstractController {
@@ -17,6 +18,6 @@ abstract public class AbstractController {
         return view
             .put("clusterId", request.param("cluster").value())
             .put("clusters", this.kafkaModule.getClustersList())
-            .put("basePath", config.getString("application.path").replaceAll("/$",""));
+            .put("basePath", App.getBasePath(config));
     }
 }

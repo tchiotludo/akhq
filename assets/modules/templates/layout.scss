@@ -1,0 +1,59 @@
+a, button, input[type="submit"] {
+    transition-duration: 200ms;
+}
+
+body {
+    min-width: 320px;
+}
+
+.title {
+    display: flex;
+    position: relative;
+    width: calc(100% + 40px);
+    left: -20px;
+    top: -20px;
+    height: 74px;
+    border-bottom: 4px solid $yellow;
+    padding: 17px 20px 0;
+}
+
+h1 {
+    font-family: $font-family-title;
+    font-weight: 700;
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#content {
+    @include media-breakpoint-up(md) {
+        width: calc(100% - 250px);
+    }
+
+    @include media-breakpoint-up(md) {
+        margin-left: 250px;
+    }
+
+    @include media-breakpoint-down(md) {
+        width: 100%;
+    }
+
+    padding: 20px;
+    min-height: 100vh;
+    transition: none;
+}
+
+.turbolinks-progress-bar {
+    background-color: $red;
+    box-shadow: 0 1px 10px $red;
+}

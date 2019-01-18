@@ -1,5 +1,6 @@
 package org.kafkahq;
 
+import com.typesafe.config.Config;
 import org.jooby.Jooby;
 import org.jooby.RequestLogger;
 import org.jooby.assets.Assets;
@@ -7,8 +8,9 @@ import org.jooby.ftl.Ftl;
 import org.jooby.json.Jackson;
 import org.jooby.livereload.LiveReload;
 import org.jooby.whoops.Whoops;
-import org.kafkahq.controllers.NodeController;
+import org.kafkahq.controllers.DataSseController;
 import org.kafkahq.controllers.GroupController;
+import org.kafkahq.controllers.NodeController;
 import org.kafkahq.controllers.TopicController;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
@@ -75,6 +77,11 @@ public class App extends Jooby {
         use(NodeController.class);
         use(TopicController.class);
         use(GroupController.class);
+        sse("/{cluster}/topic/{topic}/search/{search}", new DataSseController());
+    }
+
+    public static String getBasePath(Config config) {
+        return config.getString("application.path").replaceAll("/$","");
     }
 
     public static void main(String[] args) {

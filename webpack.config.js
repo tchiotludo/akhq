@@ -19,6 +19,7 @@ module.exports = (env, argv) => {
         entry: {
             vendor: [
                 'jquery',
+                "jquery-ui/ui/widget",
                 'popper.js',
                 'bootstrap',
                 'sweetalert2',

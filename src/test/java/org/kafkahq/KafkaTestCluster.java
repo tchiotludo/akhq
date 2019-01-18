@@ -33,6 +33,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_RANDOM = "random";
     public static final String TOPIC_COMPACTED = "compacted";
     public static final String TOPIC_EMPTY = "empty";
+    public static final String TOPIC_HUGE = "huge";
 
     private final static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
     private final short numberOfBrokers;
@@ -118,12 +119,14 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     private void injectTestData() throws InterruptedException, ExecutionException {
         // empty topic
         testUtils.createTopic(TOPIC_EMPTY, 12, numberOfBrokers);
+        logger.debug("Empty topic created");
 
         // random data
         testUtils.createTopic(TOPIC_RANDOM, 3, numberOfBrokers);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
         }
+        logger.debug("Random topic created");
 
         // compacted topic
         testUtils.createTopic(TOPIC_COMPACTED, 3, numberOfBrokers);
@@ -147,8 +150,14 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             Thread.sleep(10L);
             testUtils.produceRecords(randomDatas(50, 0), TOPIC_COMPACTED, partition);
         }
+        logger.debug("Compacted topic created");
 
-        Thread.sleep(1000L);
+        // huge data
+        testUtils.createTopic(TOPIC_HUGE, 3, numberOfBrokers);
+        for (int partition = 0; partition < 3; partition++) {
+            testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
+        }
+        logger.debug("Huge topic created");
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {

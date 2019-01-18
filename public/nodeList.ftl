@@ -14,7 +14,7 @@
                 <th class="text-nowrap">Id</th>
                 <th class="text-nowrap">Host</th>
                 <th class="text-nowrap">Rack</th>
-                <th colspan="1" class="row-action"></th>
+                <th colspan="1" class="khq-row-action"></th>
             </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@
                         <td><@nodeTemplate.badge node/></td>
                         <td>${node.getHost()}:${node.getPort()?c}</td>
                         <td>${node.getRack()!}</td>
-                        <td class="row-action main-row-action">
+                        <td class="khq-row-action khq-row-action-main">
                             <a href="${basePath}/${clusterId}/node/${node.getId()?c}" ><i class="fa fa-search"></i></a>
                         </td>
                     </tr>

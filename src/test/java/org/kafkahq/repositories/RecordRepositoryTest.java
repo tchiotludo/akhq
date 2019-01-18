@@ -19,7 +19,7 @@ public class RecordRepositoryTest extends BaseTest {
         RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_EMPTY);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
-        assertEquals(0, consumeAll(repository, options));
+        assertEquals(0, consumeAll(options));
     }
 
     @Test
@@ -27,7 +27,7 @@ public class RecordRepositoryTest extends BaseTest {
         RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
-        assertEquals(300, consumeAll(repository, options));
+        assertEquals(300, consumeAll(options));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class RecordRepositoryTest extends BaseTest {
         RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
 
-        assertEquals(300, consumeAll(repository, options));
+        assertEquals(300, consumeAll(options));
     }
 
     @Test
@@ -44,7 +44,7 @@ public class RecordRepositoryTest extends BaseTest {
         options.setSort(RecordRepository.Options.Sort.OLDEST);
         options.setPartition(1);
 
-        assertEquals(100, consumeAll(repository, options));
+        assertEquals(100, consumeAll(options));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class RecordRepositoryTest extends BaseTest {
         options.setSort(RecordRepository.Options.Sort.NEWEST);
         options.setPartition(1);
 
-        assertEquals(100, consumeAll(repository, options));
+        assertEquals(100, consumeAll(options));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class RecordRepositoryTest extends BaseTest {
         RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
-        assertEquals(153, consumeAll(repository, options));
+        assertEquals(153, consumeAll(options));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class RecordRepositoryTest extends BaseTest {
         RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
 
-        assertEquals(153, consumeAll(repository, options));
+        assertEquals(153, consumeAll(options));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class RecordRepositoryTest extends BaseTest {
         options.setSort(RecordRepository.Options.Sort.OLDEST);
         options.setPartition(0);
 
-        assertEquals(51, consumeAll(repository, options));
+        assertEquals(51, consumeAll(options));
     }
 
     @Test
@@ -87,10 +87,10 @@ public class RecordRepositoryTest extends BaseTest {
         options.setSort(RecordRepository.Options.Sort.NEWEST);
         options.setPartition(0);
 
-        assertEquals(51, consumeAll(repository, options));
+        assertEquals(51, consumeAll(options));
     }
 
-    private int consumeAll(RecordRepository repository, RecordRepository.Options options) throws ExecutionException, InterruptedException {
+    private int consumeAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
         int size = 0;
         boolean hasNext = true;
 
@@ -120,4 +120,55 @@ public class RecordRepositoryTest extends BaseTest {
         return size;
     }
 
+    @Test
+    public void searchAll() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        options.setSearch("key");
+
+        assertEquals(3000, searchAll(options));
+    }
+
+    @Test
+    public void searchKey() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        options.setSearch("key_100");
+
+        assertEquals(3, searchAll(options));
+    }
+
+    @Test
+    public void searchValue() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        options.setSearch("value_100");
+
+        assertEquals(3, searchAll(options));
+    }
+
+    private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
+        int size = 0;
+        boolean hasNext = true;
+
+        do {
+            SearchConsumer searchConsumer = new SearchConsumer();
+            RecordRepository.SearchEnd end = repository.search(options, searchConsumer);
+            size += searchConsumer.size;
+
+            if (end.getAfter() == null) {
+                hasNext = false;
+            } else {
+                options.setAfter(end.getAfter());
+            }
+        } while (hasNext);
+
+        return size;
+    }
+
+    private static class SearchConsumer extends RecordRepository.SearchConsumer {
+        public int size = 0;
+
+        @Override
+        public void accept(RecordRepository.SearchEvent searchEvent) {
+            size += searchEvent.getRecords().size();
+        }
+    }
 }

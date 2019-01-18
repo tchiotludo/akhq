@@ -1,0 +1,12 @@
+.khq-data-filter {
+    > nav {
+        display: flex;
+        order: 2;
+    }
+
+    > .navbar-collapse {
+        @include media-breakpoint-down(md) {
+            order: 3;
+        }
+    }
+}

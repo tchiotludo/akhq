@@ -13,7 +13,7 @@
             <th>Replicas</th>
             <th>Offsets</th>
             <th>Size</th>
-            <th class="row-action"></th>
+            <th class="khq-row-action"></th>
         </tr>
     </thead>
     <tbody>
@@ -36,7 +36,7 @@
                     -
                     ${functions.filesize(partition.getLogDirSize())}
                 </td>
-                <td class="row-action main-row-action">
+                <td class="khq-row-action khq-row-action-main">
                     <a href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions/${partition.getId()}" >
                 <i class="fa fa-search"></i></a>
                 </td>
