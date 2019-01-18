@@ -58,7 +58,7 @@ Go to http://localhost:8080
 ### Stand Alone
 
 * Install Java 8
-* Download the latest jar on [release page](TODO)
+* Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
 * Create an `application.conf` in the same directory
 * Launch the application with `java -jar kafkahq.jar prod`
 * Go to http://localhost:8080
