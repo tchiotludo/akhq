@@ -70,10 +70,10 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
 {
   kafka {
     connections {
-      plaintext {
+      my-cluster-1 {
           bootstrap.servers: "kafka:9092"
       }
-      ssl {
+      my-cluster-2 {
         bootstrap.servers: "kafka:9093"
         security.protocol: SSL
         ssl.truststore.location: /app/truststore.jks
@@ -88,7 +88,7 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
 ```
 
 `kafka.connections` is a key value configuration with :
-* `key`: must be an url friendly string the identify your cluster
+* `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
 * `value`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
 
 KafkaHQ docker image support 1 environment variables to handle configuraiton :
