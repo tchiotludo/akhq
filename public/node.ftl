@@ -15,7 +15,7 @@
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link ${(tab == "configs")?then("active", "")}"
-               href="${basePath}/${clusterId}/node/${node.getId()?c}/configs"
+               href="${basePath}/${clusterId}/node/${node.getId()?c}"
                role="tab">Configs</a>
         </li>
         <li class="nav-item">
