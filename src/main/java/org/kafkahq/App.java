@@ -1,6 +1,7 @@
 package org.kafkahq;
 
 import com.typesafe.config.Config;
+import org.jooby.FlashScope;
 import org.jooby.Jooby;
 import org.jooby.RequestLogger;
 import org.jooby.assets.Assets;
@@ -23,6 +24,8 @@ import java.util.Optional;
 public class App extends Jooby {
     // module
     {
+        use(new FlashScope());
+
         use("*", new RequestLogger()
             .latency()
             .extended()

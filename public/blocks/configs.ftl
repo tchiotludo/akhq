@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="configs" type="java.util.ArrayList<org.kafkahq.models.Config>" -->
-<form>
+<form enctype="multipart/form-data" method="post" class="khq-form">
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0">
             <thead class="thead-dark">
@@ -21,9 +21,9 @@
                         </#if>
                     </td>
                     <td>
-                        <input type="email"
+                        <input type="text"
                             class="form-control"
-                            name="${config.getName()}"
+                            name="configs[${config.getName()}]"
                             value="${config.getValue()!}"
                             ${(config.isReadOnly())?then("readonly", "")}
                         />
@@ -43,5 +43,8 @@
             </#list>
             </tbody>
         </table>
+    </div>
+    <div class="khq-submit">
+        <button type="submit" class="btn btn-primary">Update configs</button>
     </div>
 </form>

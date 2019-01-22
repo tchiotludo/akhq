@@ -1,4 +1,4 @@
-import $ from  "jquery";
+import $ from "jquery";
 import "jquery-ui/ui/widget";
 import urijs from "urijs";
 
@@ -141,5 +141,7 @@ $(document).bind("ready turbolinks:load khq.refresh", function (event)
  */
 $(document).bind("turbolinks:before-render", function (event)
 {
-    $(document.body).empty()
+    if (event.data && event.data.newBody) {
+        $(document.body).empty()
+    }
 });

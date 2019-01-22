@@ -57,3 +57,19 @@ h1 {
     background-color: $red;
     box-shadow: 0 1px 10px $red;
 }
+
+form.khq-form {
+    margin-bottom: 25px;
+
+    div.khq-submit {
+        position: fixed;
+        bottom: 0;
+        background: red;
+        width: calc(100vw - 250px - 15px);
+        margin-left: -40px;
+        padding: 5px 15px;
+        text-align: right;
+        background: $black;
+        border-top: 1px solid $nav-tabs-border-color;
+    }
+}

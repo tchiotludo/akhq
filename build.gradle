@@ -18,6 +18,7 @@ buildscript {
 
 plugins {
     id "com.moowork.node" version "1.2.0"
+    id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 apply plugin: "io.spring.dependency-management"
@@ -36,6 +37,10 @@ repositories {
     mavenCentral()
 }
 
+lombok {
+    version = '1.18.4'
+    sha256 = ""
+}
 
 idea {
     module {

@@ -12,6 +12,7 @@ import '../modules/datas/search-navbar';
 import '../modules/datas/search-sse';
 import '../modules/tables/row-action';
 import '../modules/templates/sidebar';
+import '../modules/templates/toast'
 import '../modules/templates/tooltip';
 
 turbolinks.start();
