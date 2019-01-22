@@ -38,6 +38,7 @@ table {
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 word-break: break-all;
+                display: block;
 
                 &:after {
                     content:'';
