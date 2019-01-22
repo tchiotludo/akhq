@@ -27,15 +27,24 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.apache.kafka" level="WARN" />
+    <logger name="io.netty" level="WARN" />
+    <logger name="org.jooby" level="WARN" />
+    <logger name="org.jooby.RequestLogger" level="INFO" />
+
 
     <!-- Jooby -->
     <logger name="io.netty" level="WARN" />
     <logger name="org.jooby" level="WARN" />
 
+    <!-- Test -->
+    <logger name="org.apache.zookeeper" level="ERROR" />
+    <logger name="com.salesforce.kafka" level="ERROR" />
+    <logger name="kafka" level="ERROR" />
+    <logger name="com.salesforce.kafka" level="INFO" />
+    <logger name="state.change.logger" level="ERROR" />
 </configuration>

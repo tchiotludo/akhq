@@ -8,8 +8,8 @@ import org.jooby.View;
 import org.jooby.mvc.GET;
 import org.jooby.mvc.Path;
 import org.kafkahq.models.ConsumerGroup;
+import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConsumerGroupRepository;
-import org.kafkahq.response.ResultStatusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,24 +58,13 @@ public class GroupController extends AbstractController {
 
     @GET
     @Path("{id}/delete")
-    public Result delete(Request request) {
-        String name = request.param("id").value();
-        ResultStatusResponse result = new ResultStatusResponse();
+    public Result delete(Request request, String id) {
+        this.toast(request, RequestHelper.runnableToToast(() ->
+                this.consumerGroupRepository.delete(request.param("cluster").value(), id),
+            "Consumer group '" + id + "' is deleted",
+            "Failed to consumer group " + id
+        ));
 
-        try {
-            this.consumerGroupRepository.delete(request.param("cluster").value(), name);
-
-            result.result = true;
-            result.message = "Topic '" + name + "' is deleted";
-
-            return Results.with(result, 200);
-        } catch (Exception exception) {
-            logger.error("Failed to delete topic " + name, exception);
-
-            result.result = false;
-            result.message = exception.getCause().getMessage();
-
-            return Results.with(result, 500);
-        }
+        return Results.ok();
     }
 }

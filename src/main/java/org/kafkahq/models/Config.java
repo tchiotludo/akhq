@@ -1,8 +1,10 @@
 package org.kafkahq.models;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.Wither;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
@@ -17,8 +19,10 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @Getter
+@AllArgsConstructor
 public class Config {
     private final String name;
+    @Wither
     private final String value;
     private final String description;
     private final Source source;

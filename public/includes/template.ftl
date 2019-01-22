@@ -2,6 +2,7 @@
 <#-- @ftlvariable name="clusters" type="java.util.List<java.lang.String>" -->
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="toast" type="java.lang.String" -->
 
 <#macro header title tab>
     <!DOCTYPE html>
@@ -23,6 +24,10 @@
     <#nested>
     </head>
     <body>
+        <#if toast??>
+            <div class="khq-toast"></div>
+            <script type="application/json">${toast?no_esc}</script>
+        </#if>
         <div class="wrapper">
             <nav id="khq-sidebar">
                 <div class="sidebar-header">
