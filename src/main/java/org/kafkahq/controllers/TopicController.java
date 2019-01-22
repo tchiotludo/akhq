@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Path("/{cluster}/topic")
 public class TopicController extends AbstractController {
@@ -132,14 +131,7 @@ public class TopicController extends AbstractController {
     @POST
     @Path("{topic}/{tab:configs}")
     public void updateConfig(Request request, Response response, String topic) throws Throwable {
-        List<Config> configs = this.configRepository.findByTopic(topic);
-
-        List<Config> updated = configs
-            .stream()
-            .filter(config -> !config.isReadOnly())
-            .filter(config -> !config.getValue().equals(request.param("configs[" + config.getName() + "]").value()))
-            .map(config -> config.withValue(request.param("configs[" + config.getName() + "]").value()))
-            .collect(Collectors.toList());
+        List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByTopic(topic));
 
         this.toast(request, RequestHelper.runnableToToast(() -> {
                 if (updated.size() == 0) {

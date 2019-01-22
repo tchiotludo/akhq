@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class RequestHelper implements Jooby.Module {
@@ -32,6 +34,16 @@ public class RequestHelper implements Jooby.Module {
         request.param("search").toOptional(String.class).ifPresent(options::setSearch);
 
         return options;
+    }
+
+    public static List<org.kafkahq.models.Config> updatedConfigs(Request request, List<org.kafkahq.models.Config> configs) {
+        return configs
+            .stream()
+            .filter(config -> !config.isReadOnly())
+            .filter(config -> !(config.getValue() == null ? "" : config.getValue()).equals(request.param("configs[" + config.getName() + "]").value()))
+            .map(config -> config.withValue(request.param("configs[" + config.getName() + "]").value()))
+            .collect(Collectors.toList());
+
     }
 
     public static AbstractController.Toast runnableToToast(ResultStatusResponseRunnable callable, String successMessage, String failedMessage) {
