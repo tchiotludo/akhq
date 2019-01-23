@@ -28,6 +28,8 @@ module.exports = (env, argv) => {
                 'imports-loader?jQuery=>jQuery!tempusdominus-bootstrap-4',
                 'urijs',
                 'highlight.js',
+                'bytes',
+                'humanize-duration',
                 path.join(srcDirectory, 'css/vendor.scss')
             ],
             main: [

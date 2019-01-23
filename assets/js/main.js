@@ -10,6 +10,7 @@ import '../modules/datas/datetime';
 import '../modules/datas/highlight';
 import '../modules/datas/search-navbar';
 import '../modules/datas/search-sse';
+import '../modules/forms/config';
 import '../modules/tables/row-action';
 import '../modules/templates/sidebar';
 import '../modules/templates/toast'

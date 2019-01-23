@@ -1,12 +1,18 @@
 <#-- @ftlvariable name="configs" type="java.util.ArrayList<org.kafkahq.models.Config>" -->
+<#if topic??>
+    <#assign internal=topic.isInternal()>
+<#else>
+    <#assign internal=false>
+</#if>
+
 <form enctype="multipart/form-data" method="post" class="khq-form">
     <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover mb-0">
+        <table class="table table-bordered table-striped table-hover mb-0 khq-form-config">
             <thead class="thead-dark">
                 <tr>
                     <th>Name</th>
                     <th>Value</th>
-                    <th>Default</th>
+                    <th>Type</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,10 +29,12 @@
                     <td>
                         <input type="text"
                             class="form-control"
+                            autocomplete="off"
                             name="configs[${config.getName()}]"
                             value="${config.getValue()!}"
                             ${(config.isReadOnly())?then("readonly", "")}
                         />
+                        <small class="humanize form-text text-muted"></small>
                     </td>
                     <td>
                         <span
@@ -44,7 +52,9 @@
             </tbody>
         </table>
     </div>
-    <div class="khq-submit">
-        <button type="submit" class="btn btn-primary">Update configs</button>
-    </div>
+    <#if internal == false>
+        <div class="khq-submit">
+            <button type="submit" class="btn btn-primary">Update configs</button>
+        </div>
+    </#if>
 </form>
