@@ -75,7 +75,11 @@
 
                 <main>
 </#macro>
-
+<#macro bottom>
+                    <aside>
+                        <#nested>
+                    </aside>
+</#macro>
 <#macro footer>
                 </main>
             </div>

@@ -23,11 +23,13 @@ $.widget("khq.form-config", $.khq.widget, {
         };
 
         $.each(selectors, function (selector, callback) {
-            console.log(selector, callback);
             self.element.find(selector)
                 .each(function (key, value) {
                     let input = $(value);
                     let humanize = input.closest('tr').find('.humanize');
+                    if (humanize.length === 0) {
+                        humanize = input.closest('.form-group').find('.form-text');
+                    }
 
                     callback(input.val(), humanize);
 

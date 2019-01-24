@@ -84,4 +84,8 @@
     </table>
 </div>
 
+<@template.bottom>
+    <a href="${basePath}/${clusterId}/topic/create" type="submit" class="btn btn-primary">Create a topic</a>
+</@template.bottom>
+
 <@template.footer/>

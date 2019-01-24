@@ -5,7 +5,7 @@
     <#assign internal=false>
 </#if>
 
-<form enctype="multipart/form-data" method="post" class="khq-form">
+<form enctype="multipart/form-data" method="post" class="khq-form mb-0">
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0 khq-form-config">
             <thead class="thead-dark">
