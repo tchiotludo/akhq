@@ -48,7 +48,7 @@ h1 {
         width: 100%;
     }
 
-    padding: 20px;
+    padding: 20px 20px 65px;
     min-height: 100vh;
     transition: none;
 }
@@ -60,22 +60,36 @@ h1 {
 
 form.khq-form {
     margin-bottom: 25px;
+}
 
-    div.khq-submit {
-        position: fixed;
-        bottom: 0;
-        background: red;
-        margin-left: -40px;
-        padding: 5px 15px;
-        text-align: right;
-        background: $black;
-        border-top: 1px solid $nav-tabs-border-color;
+form.khq-form div.khq-submit,
+#content aside {
+    position: fixed;
+    bottom: 0;
+    background: red;
+    margin-left: -20px;
+    padding: 5px 15px;
+    text-align: right;
+    background: $black;
+    border-top: 1px solid $nav-tabs-border-color;
 
-        @include media-breakpoint-up(md) {
-            width: calc(100vw - 250px - 15px);
-        }
-        @include media-breakpoint-down(md) {
-            width: calc(100vw - 15px);
-        }
+    width: calc(100vw);
+    @include media-breakpoint-up(md) {
+        width: calc(100vw - 250px);
+    }
+}
+
+.tab-pane form.khq-form div.khq-submit {
+    margin-left: -40px;
+    width: calc(100vw - 15px);
+    @include media-breakpoint-up(md) {
+        width: calc(100vw - 250px - 15px);
+    }
+}
+
+#content aside {
+    width: calc(100vw - 5px);
+    @include media-breakpoint-up(md) {
+        width: calc(100vw - 255px);
     }
 }

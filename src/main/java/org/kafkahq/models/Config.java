@@ -24,11 +24,16 @@ public class Config {
     private final String name;
     @Wither
     private final String value;
-    private final String description;
-    private final Source source;
-    private final boolean isSensitive;
-    private final boolean isReadOnly;
+    private String description;
+    private Source source;
+    private boolean isSensitive;
+    private boolean isReadOnly;
     private final List<Synonym> synonyms = new ArrayList<>();
+
+    public Config(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 
     public Config(ConfigEntry entry) {
         this.name = entry.name();

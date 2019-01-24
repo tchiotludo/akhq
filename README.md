@@ -5,38 +5,39 @@
 
 ## Features
 
-- [ ] General
-  - [x] Works with modern Kafka cluster (1.0+)
-  - [x] Connection on standard or ssl, sasl cluster
-  - [x] Multi cluster
-- [ ] Topics
-  - [x] List
-  - [x] Configurations view
-  - [x] Partitions view
-  - [x] Consumers groups assignemnts view
-  - [x] Node leader & assignemnts view
-  - [x] Delete a topic
-- [ ] Browse Topic data
-  - [x] View data, offset, key, timestamp & headers
-  - [x] Configurations view
-  - [x] Logs view
-  - [x] Delete a record
-  - [x] Sort view
-  - [x] Filter per partitions
-  - [X] Filter with a starting time
-  - [ ] Handle Kafka Registry Deserialization
-  - [ ] Filter with a starting offset
-- [ ] Consumer Groups (only with kafka internal storage, not with old Zookepper)
-  - [x] List with lag, topics assignemnts
-  - [x] Partitions view & lag
-  - [x] Node leader & assignemnts view
-  - [x] Display active and pending consumers groups
-  - [x] Delete a consumer group
-  - [ ] Update consumer group offsets
-- [ ] Nodes
-  - [x] List
-  - [x] Configurations view
-  - [x] Logs view
+- **General**
+  - Works with modern Kafka cluster (1.0+)
+  - Connection on standard or ssl, sasl cluster
+  - Multi cluster
+- **Topics**
+  - List
+  - Configurations view
+  - Partitions view
+  - Consumers groups assignments view
+  - Node leader & assignments view
+  - Create a topic
+  - Configure a topic
+  - Delete a topic
+- **Browse Topic datas**
+  - View data, offset, key, timestamp & headers
+  - Configurations view
+  - Logs view
+  - Delete a record
+  - Sort view
+  - Filter per partitions
+  - Filter with a starting time
+  - Filter data with a search string
+- **Consumer Groups** (only with kafka internal storage, not with old Zookepper)
+  - List with lag, topics assignments
+  - Partitions view & lag
+  - Node leader & assignments view
+  - Display active and pending consumers groups
+  - Delete a consumer group
+- **Nodes**
+  - List
+  - Configurations view
+  - Logs view
+  - Configure a node
 
 
 ## Installation

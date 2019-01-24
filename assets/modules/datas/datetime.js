@@ -1,5 +1,6 @@
 import $ from  "jquery";
 import turbolinks from "turbolinks";
+import 'moment';
 import 'tempusdominus-bootstrap-4';
 import "../widget";
 

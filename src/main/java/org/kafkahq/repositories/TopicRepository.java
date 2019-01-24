@@ -4,6 +4,7 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.jooby.Env;
@@ -23,11 +24,14 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
 
     private LogDirRepository logDirRepository;
 
+    private ConfigRepository configRepository;
+
     @Inject
-    public TopicRepository(KafkaModule kafkaModule, ConsumerGroupRepository consumerGroupRepository, LogDirRepository logDirRepository) {
+    public TopicRepository(KafkaModule kafkaModule, ConsumerGroupRepository consumerGroupRepository, LogDirRepository logDirRepository, ConfigRepository configRepository) {
         this.kafkaModule = kafkaModule;
         this.consumerGroupRepository = consumerGroupRepository;
         this.logDirRepository = logDirRepository;
+        this.configRepository = configRepository;
     }
 
     public List<Topic> list() throws ExecutionException, InterruptedException {
@@ -73,10 +77,21 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
         return list;
     }
 
+    public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
+        kafkaModule
+            .getAdminClient(clusterId)
+            .createTopics(Collections.singleton(new NewTopic(name, partitions, replicationFactor)))
+            .all()
+            .get();
+
+        configRepository.updateTopic(clusterId, name, configs);
+    }
+
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule.getAdminClient(clusterId).deleteTopics(new ArrayList<String>() {{
-            add(name);
-        }}).all().get();
+        kafkaModule.getAdminClient(clusterId)
+            .deleteTopics(Collections.singleton(name))
+            .all()
+            .get();
     }
 
     @SuppressWarnings("NullableProblems")

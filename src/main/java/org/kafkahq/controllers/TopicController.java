@@ -3,6 +3,7 @@ package org.kafkahq.controllers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.inject.Inject;
+import org.apache.kafka.common.config.TopicConfig;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.jooby.*;
 import org.jooby.mvc.GET;
@@ -15,10 +16,12 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.kafkahq.utils.Debug;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -44,6 +47,43 @@ public class TopicController extends AbstractController {
                 .html("topicList")
                 .put("topics", this.topicRepository.list())
         );
+    }
+
+    @GET
+    @Path("create")
+    public View create(Request request) {
+        return this.template(
+            request,
+            Results
+                .html("topicCreate")
+        );
+    }
+
+    @POST
+    @Path("create")
+    public void createSubmit(Request request, Response response) throws Throwable {
+        List<Config> options = new ArrayList<>();
+        Arrays
+            .asList(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.RETENTION_MS_CONFIG)
+            .forEach(s -> request
+                .param("configs[" +  s + "]")
+                .toOptional()
+                .ifPresent(r -> options.add(new Config(s, r)))
+            );
+
+        this.toast(request, RequestHelper.runnableToToast(() ->
+                this.topicRepository.create(
+                    request.param("cluster").value(),
+                    request.param("name").value(),
+                    request.param("partition").intValue(),
+                    request.param("replication").shortValue(),
+                    options
+                ),
+            "Topic '" + request.param("name").value() + "' is created",
+            "Failed to create topic '" + request.param("name").value() + "'"
+        ));
+
+        response.redirect("/" + request.param("cluster").value() + "/topic");
     }
 
     @GET

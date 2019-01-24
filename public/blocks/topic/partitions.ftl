@@ -37,8 +37,9 @@
                     ${functions.filesize(partition.getLogDirSize())}
                 </td>
                 <td class="khq-row-action khq-row-action-main">
-                    <a href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions/${partition.getId()}" >
-                <i class="fa fa-search"></i></a>
+                    <a href="${basePath}/${clusterId}/topic/${topic.getName()}?partition=${partition.getId()}">
+                        <i class="fa fa-search"></i>
+                    </a>
                 </td>
             </tr>
         </#list>

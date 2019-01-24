@@ -1,8 +1,6 @@
-import $ from "jquery";
+import "jquery";
 import 'bootstrap';
 import turbolinks from "turbolinks";
-import 'moment';
-import 'tempusdominus-bootstrap-4';
 
 import '../modules/widget';
 import '../modules/datas/data-confirm';

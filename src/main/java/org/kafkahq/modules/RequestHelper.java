@@ -43,7 +43,6 @@ public class RequestHelper implements Jooby.Module {
             .filter(config -> !(config.getValue() == null ? "" : config.getValue()).equals(request.param("configs[" + config.getName() + "]").value()))
             .map(config -> config.withValue(request.param("configs[" + config.getName() + "]").value()))
             .collect(Collectors.toList());
-
     }
 
     public static AbstractController.Toast runnableToToast(ResultStatusResponseRunnable callable, String successMessage, String failedMessage) {
@@ -55,15 +54,14 @@ public class RequestHelper implements Jooby.Module {
                 .message(successMessage)
                 .type(AbstractController.Toast.Type.success);
         } catch (Exception exception) {
-
             String cause = exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage();
-            String message = failedMessage != null ? failedMessage + ": \n" + cause : cause;
 
             builder
-                .message(message)
+                .title(failedMessage)
+                .message(exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage())
                 .type(AbstractController.Toast.Type.error);
 
-            logger.error(message, exception);
+            logger.error(failedMessage != null ? failedMessage : cause, exception);
         }
 
         return builder.build();
