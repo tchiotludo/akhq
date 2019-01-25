@@ -7,6 +7,7 @@
     font-family: $font-family-title;
     font-size: $font-size-lg;
     border-right: 1px solid $nav-tabs-border-color;
+    z-index: 2;
 
     .sidebar-header {
         padding: 5px 10px;

@@ -73,10 +73,10 @@ form.khq-form div.khq-submit,
     border-top: 1px solid $nav-tabs-border-color;
     display: flex;
     justify-content: flex-end;
-    width: calc(100vw);
+    width: calc(100vw - 15px);
     @include media-breakpoint-up(md) {
         left: $menu-width;
-        width: calc(100vw - #{$menu-width});
+        width: calc(100vw - #{$menu-width} - 15px);
     }
 
     > div {
@@ -96,8 +96,7 @@ form.khq-form div.khq-submit,
     }
 }
 
-form.khq-form div.khq-submit {
-
+.tab-pane form.khq-form div.khq-submit {
     width: calc(100vw - 15px);
     @include media-breakpoint-up(md) {
         width: calc(100vw - #{$menu-width} - 15px);
