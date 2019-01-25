@@ -33,13 +33,20 @@
   - Node leader & assignments view
   - Display active and pending consumers groups
   - Delete a consumer group
-  - Update consumer group offsets
+  - Update consumer group offsets to start / end / timestamp
 - **Nodes**
   - List
   - Configurations view
   - Logs view
   - Configure a node
 
+
+## Quick preview
+* Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
+* run `docker-compose up`
+* go to [http://localhost:8080](http://localhost:8080)
+
+It will start a Kafka node, a Zookeeper node, fill with some sample data and start a consumer group & start KafkaHQ.
 
 ## Installation
 
@@ -99,7 +106,7 @@ KafkaHQ docker image support 1 environment variables to handle configuraiton :
 
 ## Development Environment
 A docker-compose is provide to start a development environnement.
-Just install docker & docker-compose, clone the repository and issue a simple `docker-compose up` to start a dev server.
+Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
 

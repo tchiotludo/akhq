@@ -39,4 +39,5 @@ logs/*
 conf/*.dev.conf
 
 ## Docker
+.env
 docker-compose.override.yml
