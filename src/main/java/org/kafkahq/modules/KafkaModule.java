@@ -67,14 +67,10 @@ public class KafkaModule implements Jooby.Module {
         return props;
     }
 
-    private Properties getConsumerProperties(String clusterId, Integer maxPollRecords) {
+    private Properties getConsumerProperties(String clusterId) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.consumer"));
         props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
-
-        if (maxPollRecords != null) {
-            props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(maxPollRecords));
-        }
 
         return props;
     }
@@ -110,7 +106,7 @@ public class KafkaModule implements Jooby.Module {
     public KafkaConsumer<String, String> getConsumer(String clusterId) {
         if (!this.consumers.containsKey(clusterId)) {
             this.consumers.put(clusterId, new KafkaConsumer<>(
-                this.getConsumerProperties(clusterId, null),
+                this.getConsumerProperties(clusterId),
                 new StringDeserializer(),
                 new StringDeserializer()
             ));
@@ -119,9 +115,12 @@ public class KafkaModule implements Jooby.Module {
         return this.consumers.get(clusterId);
     }
 
-    public KafkaConsumer<String, String> getConsumer(String clusterId, int maxPollRecords) {
+    public KafkaConsumer<String, String> getConsumer(String clusterId, Properties properties) {
+        Properties props = this.getConsumerProperties(clusterId);
+        props.putAll(properties);
+
         return new KafkaConsumer<>(
-            this.getConsumerProperties(clusterId, maxPollRecords),
+            props,
             new StringDeserializer(),
             new StringDeserializer()
         );

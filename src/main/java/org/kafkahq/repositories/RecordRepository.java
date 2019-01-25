@@ -9,10 +9,7 @@ import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import lombok.*;
 import lombok.experimental.Wither;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -88,6 +85,43 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         return list;
     }
 
+    public List<TimeOffset> getOffsetForTime(String clusterId, List<org.kafkahq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
+        return this.kafkaModule.debug(() -> {
+            Map<TopicPartition, Long> map = new HashMap<>();
+
+            KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(clusterId);
+
+            partitions
+                .forEach(partition -> map.put(
+                    new TopicPartition(partition.getTopic(), partition.getPartition()),
+                    timestamp
+                ));
+
+            return consumer.offsetsForTimes(map)
+                .entrySet()
+                .stream()
+                .map(r -> r.getValue() != null ? new TimeOffset(
+                    r.getKey().topic(),
+                    r.getKey().partition(),
+                    r.getValue().offset()
+                ) : null)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        }, "Offsets for {} Timestamp {}", partitions, timestamp);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class TimeOffset {
+        private String topic;
+        private int partition;
+        private long offset;
+    }
+
+
     private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options, KafkaConsumer<String, String> consumer) {
         return topic
                 .getPartitions()
@@ -110,7 +144,9 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
         KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(
             options.clusterId,
-            pollSizePerPartition
+            new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(pollSizePerPartition));
+            }}
         );
 
         return topic

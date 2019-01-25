@@ -10,17 +10,17 @@ $.widget("khq.search-navbar", $.khq.widget, {
         self._value = this.element.find('input').val();
 
         this.element.find('.btn').on('click', function() {
-            self._submit($(this).closest('.dropdown-menu').find('input'));
+            self._offsetByDatetime($(this).closest('.dropdown-menu').find('input'));
         });
 
         this.element.find('input').on('keypress', function(e) {
             if (e.which === 13) {
-                self._submit($(this).closest('.dropdown-menu').find('input'));
+                self._offsetByDatetime($(this).closest('.dropdown-menu').find('input'));
             }
         });
     },
 
-    _submit: function(input) {
+    _offsetByDatetime: function(input) {
         let url = this._url();
 
         if (input.val()) {

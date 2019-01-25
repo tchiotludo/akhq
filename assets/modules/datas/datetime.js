@@ -3,49 +3,31 @@ import turbolinks from "turbolinks";
 import 'moment';
 import 'tempusdominus-bootstrap-4';
 import "../widget";
+import "../forms/datetime";
 
-$.widget("khq.data-datetime", $.khq.widget, {
+$.widget("khq.data-datetime", $.khq.datetime, {
     _create: function () {
+        this._super();
+
         const self = this;
         const element = this.element;
-
-        let datetimeTempusOptions = {
-            inline: true,
-            sideBySide: true,
-            useCurrent: false,
-        };
-
-        if (element.find('input').val()) {
-            datetimeTempusOptions.date = element.find('input').val();
-        }
-
-        element
-            .find('.datetime-container')
-            .on('change.datetimepicker', function (event) {
-                if (event.date) {
-                    element
-                        .find('input')
-                        .val(event.date.toISOString());
-                }
-            })
-            .datetimepicker(datetimeTempusOptions);
 
         element
             .find('.input-group button')
             .on('click', function () {
-                self._submit($(this).closest('.input-group').find('input'));
+                self._offsetByDatetime($(this).closest('.input-group').find('input'));
             });
 
         element
             .find('input')
             .on('keypress', function (e) {
                 if (e.which === 13) {
-                    self._submit($(this));
+                    self._offsetByDatetime($(this));
                 }
             });
     },
 
-    _submit: function(input) {
+    _offsetByDatetime: function(input) {
         let url = this._url();
 
         if (input.val()) {
