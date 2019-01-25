@@ -1,4 +1,4 @@
-.khq-data-datetime {
+.khq-datetime, .khq-data-datetime {
     min-width: 18.5rem;
     padding-bottom: 0;
 
@@ -32,6 +32,15 @@
                     }
                 }
             }
+        }
+    }
+}
+
+.khq-datetime {
+    .input-group {
+        padding: $input-padding-y $input-padding-x;
+        input {
+            border: 0;
         }
     }
 }

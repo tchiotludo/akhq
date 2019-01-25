@@ -36,6 +36,9 @@
     </div>
 </div>
 
+<@template.bottom>
+    <a href="${basePath}/${clusterId}/group/${group.getId()}/offsets" type="submit" class="btn btn-primary">Update offsets</a>
+</@template.bottom>
 
 <@template.footer/>
 

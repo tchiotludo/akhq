@@ -24,6 +24,10 @@ public class TopicPartition {
         this.partition = topicPartition.getPartition();
     }
 
+    public TopicPartition(String topic, int partition) {
+        this.topic = topic;
+        this.partition = partition;
+    }
 
     @ToString
     @EqualsAndHashCode(callSuper=true)

@@ -1,6 +1,6 @@
 #khq-sidebar {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: $menu-width;
+    max-width: $menu-width;
     background: $black;
     color: #fff;
     transition: all 0.3s;
@@ -82,7 +82,7 @@
 
     @include media-breakpoint-down(sm) {
         & {
-            margin-left: -250px;
+            margin-left: -$menu-width;
             &.active {
                 margin-left: 0;
             }

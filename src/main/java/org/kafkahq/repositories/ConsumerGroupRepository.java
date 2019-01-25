@@ -6,6 +6,8 @@ import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.jooby.Env;
@@ -79,6 +81,23 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
                         .anyMatch(s -> Objects.equals(s, topic))
             )
             .collect(Collectors.toList());
+    }
+
+    public void updateOffsets(String clusterId, String name, Map<org.kafkahq.models.TopicPartition, Long> offset) {
+        KafkaConsumer<String, String> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+            put(ConsumerConfig.GROUP_ID_CONFIG, name);
+        }});
+
+        Map<TopicPartition, OffsetAndMetadata> offsets = offset
+            .entrySet()
+            .stream()
+            .map(r -> new AbstractMap.SimpleEntry<>(
+                new TopicPartition(r.getKey().getTopic(), r.getKey().getPartition()),
+                new OffsetAndMetadata(r.getValue())
+            ))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        consumer.commitSync(offsets);
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {

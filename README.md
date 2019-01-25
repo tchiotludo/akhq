@@ -33,6 +33,7 @@
   - Node leader & assignments view
   - Display active and pending consumers groups
   - Delete a consumer group
+  - Update consumer group offsets
 - **Nodes**
   - List
   - Configurations view

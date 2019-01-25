@@ -21,7 +21,7 @@ public class ConsumerGroup {
     private final ConsumerGroupState state;
     private final Node coordinator;
     private final ArrayList<Consumer> members = new ArrayList<>();
-    private final ArrayList<org.kafkahq.models.TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
+    private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 
     public ConsumerGroup(
         ConsumerGroupDescription groupDescription,
@@ -81,15 +81,15 @@ public class ConsumerGroup {
         }
 
         this.offsets.sort(Comparator
-            .comparing(org.kafkahq.models.TopicPartition.ConsumerGroupOffset::getTopic)
-            .thenComparingInt(org.kafkahq.models.TopicPartition.ConsumerGroupOffset::getPartition)
+            .comparing(TopicPartition.ConsumerGroupOffset::getTopic)
+            .thenComparingInt(TopicPartition.ConsumerGroupOffset::getPartition)
         );
     }
 
     public List<String> getActiveTopics() {
         return this.getMembers()
             .stream()
-            .flatMap(consumer -> consumer.getAssignments().stream().map(org.kafkahq.models.TopicPartition::getTopic))
+            .flatMap(consumer -> consumer.getAssignments().stream().map(TopicPartition::getTopic))
             .distinct()
             .sorted(String::compareToIgnoreCase)
             .collect(Collectors.toList());
@@ -98,7 +98,7 @@ public class ConsumerGroup {
     public List<String> getTopics() {
         List<String> list = this.getOffsets()
             .stream()
-            .map(org.kafkahq.models.TopicPartition::getTopic)
+            .map(TopicPartition::getTopic)
             .distinct()
             .collect(Collectors.toList());
 
@@ -118,10 +118,16 @@ public class ConsumerGroup {
     public long getOffsetLag(String topic) {
         return this.offsets.stream()
             .filter(consumerGroupOffset -> consumerGroupOffset.getTopic().equals(topic))
-            .map(org.kafkahq.models.TopicPartition.ConsumerGroupOffset::getOffsetLag)
+            .map(TopicPartition.ConsumerGroupOffset::getOffsetLag)
             .reduce(0L,
                 (a1, a2) -> a1 + a2.orElse(0L),
                 (a1, a2) -> a1 + a2
             );
+    }
+
+    public Map<String, List<TopicPartition.ConsumerGroupOffset>> getGroupedTopicOffset() {
+        return this.offsets
+            .stream()
+            .collect(Collectors.groupingBy(TopicPartition::getTopic));
     }
 }

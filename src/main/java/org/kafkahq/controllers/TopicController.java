@@ -16,7 +16,6 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.utils.Debug;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
