@@ -40,11 +40,14 @@ public class TopicController extends AbstractController {
 
     @GET
     public View list(Request request) throws ExecutionException, InterruptedException {
+        Optional<String> search = request.param("search").toOptional(String.class);
+
         return this.template(
             request,
             Results
                 .html("topicList")
-                .put("topics", this.topicRepository.list())
+                .put("search", search)
+                .put("topics", this.topicRepository.list(search))
         );
     }
 

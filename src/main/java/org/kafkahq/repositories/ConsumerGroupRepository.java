@@ -25,11 +25,13 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     @Inject
     private KafkaModule kafkaModule;
 
-    public List<ConsumerGroup> list() throws ExecutionException, InterruptedException {
+    public List<ConsumerGroup> list(Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups()) {
-            list.add(item.groupId());
+            if (isSearchMatch(search, item.groupId())) {
+                list.add(item.groupId());
+            }
         }
 
         List<ConsumerGroup> groups = this.findByName(list);
@@ -71,7 +73,7 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     }
 
     public List<ConsumerGroup> findByTopic(String topic) throws ExecutionException, InterruptedException {
-        return this.list().stream()
+        return this.list(Optional.empty()).stream()
             .filter(consumerGroups ->
                 consumerGroups.getActiveTopics()
                     .stream()

@@ -34,13 +34,15 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
         this.configRepository = configRepository;
     }
 
-    public List<Topic> list() throws ExecutionException, InterruptedException {
+    public List<Topic> list(Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
 
         for (TopicListing item : listTopics) {
-            list.add(item.name());
+            if (isSearchMatch(search, item.name())) {
+                list.add(item.name());
+            }
         }
 
         List<Topic> topics = this.findByName(list);
