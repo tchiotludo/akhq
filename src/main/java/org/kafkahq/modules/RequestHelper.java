@@ -21,11 +21,8 @@ import java.util.stream.Collectors;
 public class RequestHelper implements Jooby.Module {
     private transient static final Logger logger = LoggerFactory.getLogger(TopicController.class);
 
-    public static RecordRepository.Options buildRecordRepositoryOptions(Request request) {
-        RecordRepository.Options options = new RecordRepository.Options(
-            request.param("cluster").value(),
-            request.param("topic").value()
-        );
+    public static RecordRepository.Options buildRecordRepositoryOptions(Request request, String cluster, String topic) {
+        RecordRepository.Options options = new RecordRepository.Options(cluster, topic);
 
         request.param("after").toOptional().ifPresent(options::setAfter);
         request.param("partition").toOptional(Integer.class).ifPresent(options::setPartition);
@@ -69,12 +66,6 @@ public class RequestHelper implements Jooby.Module {
 
     public interface ResultStatusResponseRunnable {
         void run() throws Exception;
-    }
-
-    @Getter
-    public static class RunnableResult {
-        private Boolean result;
-        private String message;
     }
 
     @SuppressWarnings("NullableProblems")

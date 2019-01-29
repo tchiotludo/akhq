@@ -26,9 +26,9 @@ abstract public class AbstractController {
     @Inject
     private Config config;
 
-    protected View template(Request request, View view) {
+    protected View template(Request request, String cluster, View view) {
         view
-            .put("clusterId", request.param("cluster").value())
+            .put("clusterId", cluster)
             .put("clusters", this.kafkaModule.getClustersList())
             .put("basePath", App.getBasePath(config));
 

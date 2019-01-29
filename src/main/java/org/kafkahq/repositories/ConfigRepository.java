@@ -20,12 +20,18 @@ public class ConfigRepository extends AbstractRepository implements Jooby.Module
     @Inject
     private KafkaModule kafkaModule;
 
-    public List<org.kafkahq.models.Config> findByBroker(String name) throws ExecutionException, InterruptedException {
-        return this.findByBrokers(Collections.singletonList(name)).get(name);
+    public List<org.kafkahq.models.Config> findByBroker(Integer name) throws ExecutionException, InterruptedException {
+        return this.findByBrokers(Collections.singletonList(name)).get(String.valueOf(name));
     }
 
-    public Map<String, List<org.kafkahq.models.Config>> findByBrokers(List<String> names) throws ExecutionException, InterruptedException {
-        return this.find(ConfigResource.Type.BROKER, names);
+    public Map<String, List<org.kafkahq.models.Config>> findByBrokers(List<Integer> names) throws ExecutionException, InterruptedException {
+        return this.find(
+            ConfigResource.Type.BROKER,
+            names
+                .stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList())
+        );
     }
 
     public List<org.kafkahq.models.Config> findByTopic(String name) throws ExecutionException, InterruptedException {
@@ -52,8 +58,8 @@ public class ConfigRepository extends AbstractRepository implements Jooby.Module
         return map;
     }
 
-    public void updateBroker(String clusterId, String name, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
-        this.update(clusterId, ConfigResource.Type.BROKER, name, configs);
+    public void updateBroker(String clusterId, Integer name, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
+        this.update(clusterId, ConfigResource.Type.BROKER, String.valueOf(name), configs);
     }
 
     public void updateTopic(String clusterId, String name, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {

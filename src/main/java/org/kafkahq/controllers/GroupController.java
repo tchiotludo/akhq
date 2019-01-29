@@ -32,11 +32,10 @@ public class GroupController extends AbstractController {
     private RecordRepository recordRepository;
 
     @GET
-    public View list(Request request) throws ExecutionException, InterruptedException {
-        Optional<String> search = request.param("search").toOptional(String.class);
-
+    public View list(Request request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
         return this.template(
             request,
+            cluster,
             Results
                 .html("groupList")
                 .put("search", search)
@@ -45,22 +44,23 @@ public class GroupController extends AbstractController {
     }
 
     @GET
-    @Path("{id}")
-    public View home(Request request) throws ExecutionException, InterruptedException {
-        return this.group(request, "topics");
+    @Path("{groupName}")
+    public View home(Request request, String cluster, String groupName) throws ExecutionException, InterruptedException {
+        return this.render(request, cluster, groupName, "topics");
     }
 
     @GET
-    @Path("{id}/{tab:(topics|members)}")
-    public View tab(Request request) throws ExecutionException, InterruptedException {
-        return this.group(request, request.param("tab").value());
+    @Path("{groupName}/{tab:(topics|members)}")
+    public View tab(Request request, String cluster, String tab, String groupName) throws ExecutionException, InterruptedException {
+        return this.render(request, cluster, groupName, tab);
     }
 
-    public View group(Request request, String tab) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(request.param("id").value());
+    public View render(Request request, String cluster, String groupName, String tab) throws ExecutionException, InterruptedException {
+        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
 
         return this.template(
             request,
+            cluster,
             Results
                 .html("group")
                 .put("tab", tab)
@@ -69,12 +69,13 @@ public class GroupController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/offsets")
-    public View offsets(Request request) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(request.param("id").value());
+    @Path("{groupName}/offsets")
+    public View offsets(Request request, String cluster, String groupName) throws ExecutionException, InterruptedException {
+        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
 
         return this.template(
             request,
+            cluster,
             Results
                 .html("groupUpdate")
                 .put("group", group)
@@ -82,9 +83,9 @@ public class GroupController extends AbstractController {
     }
 
     @POST
-    @Path("{id}/offsets")
-    public void offsetsSubmit(Request request, Response response) throws Throwable {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(request.param("id").value());
+    @Path("{groupName}/offsets")
+    public void offsetsSubmit(Request request, Response response, String cluster, String groupName) throws Throwable {
+        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
 
         Map<TopicPartition, Long> offsets = group.getOffsets()
             .stream()
@@ -95,8 +96,8 @@ public class GroupController extends AbstractController {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         this.toast(request, RequestHelper.runnableToToast(() -> this.consumerGroupRepository.updateOffsets(
-                request.param("cluster").value(),
-                request.param("id").value(),
+                cluster,
+                groupName,
                 offsets
             ),
             "Offsets for '" + group.getId() + "' is updated",
@@ -107,17 +108,17 @@ public class GroupController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/offsets/start")
-    public Result offsetsStart(Request request) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(request.param("id").value());
+    @Path("{groupName}/offsets/start")
+    public Result offsetsStart(Request request, String cluster, String groupName, String timestamp) throws ExecutionException, InterruptedException {
+        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
 
         List<RecordRepository.TimeOffset> offsetForTime = recordRepository.getOffsetForTime(
-            request.param("cluster").value(),
+            cluster,
             group.getOffsets()
                 .stream()
                 .map(r -> new TopicPartition(r.getTopic(), r.getPartition()))
                 .collect(Collectors.toList()),
-            Instant.parse(request.param("timestamp").value()).toEpochMilli()
+            Instant.parse(timestamp).toEpochMilli()
         );
 
         return Results
@@ -126,10 +127,10 @@ public class GroupController extends AbstractController {
     }
 
     @GET
-    @Path("{id}/delete")
-    public Result delete(Request request, String id) {
+    @Path("{groupName}/delete")
+    public Result delete(Request request, String cluster, String id) {
         this.toast(request, RequestHelper.runnableToToast(() ->
-                this.consumerGroupRepository.delete(request.param("cluster").value(), id),
+                this.consumerGroupRepository.delete(cluster, id),
             "Consumer group '" + id + "' is deleted",
             "Failed to consumer group " + id
         ));

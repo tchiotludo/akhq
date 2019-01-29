@@ -41,9 +41,7 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     }
 
     public ConsumerGroup findByName(String name) throws ExecutionException, InterruptedException {
-        Optional<ConsumerGroup> topics = this.findByName(new ArrayList<String>() {{
-            add(name);
-        }}).stream().findFirst();
+        Optional<ConsumerGroup> topics = this.findByName(Collections.singletonList(name)).stream().findFirst();
 
         return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
@@ -103,9 +101,7 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule.getAdminClient(clusterId).deleteConsumerGroups(new ArrayList<String>() {{
-            add(name);
-        }}).all().get();
+        kafkaModule.getAdminClient(clusterId).deleteConsumerGroups(Collections.singleton(name)).all().get();
     }
 
     @SuppressWarnings("NullableProblems")
