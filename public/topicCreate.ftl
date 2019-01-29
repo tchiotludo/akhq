@@ -1,6 +1,3 @@
-<#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="basePath" type="java.lang.String" -->
-
 <#import "/includes/template.ftl" as template>
 <#import "/includes/functions.ftl" as functions>
 

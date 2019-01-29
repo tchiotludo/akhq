@@ -16,8 +16,6 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 
 @Path("/{cluster}/topic")
 public class TopicController extends AbstractController {
-    private static final Logger logger = LoggerFactory.getLogger(TopicController.class);
 
     @Inject
     private TopicRepository topicRepository;
@@ -39,11 +36,10 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
 
     @GET
-    public View list(Request request) throws ExecutionException, InterruptedException {
-        Optional<String> search = request.param("search").toOptional(String.class);
-
+    public View list(Request request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
         return this.template(
             request,
+            cluster,
             Results
                 .html("topicList")
                 .put("search", search)
@@ -53,9 +49,10 @@ public class TopicController extends AbstractController {
 
     @GET
     @Path("create")
-    public View create(Request request) {
+    public View create(Request request, String cluster) {
         return this.template(
             request,
+            cluster,
             Results
                 .html("topicCreate")
         );
@@ -63,7 +60,7 @@ public class TopicController extends AbstractController {
 
     @POST
     @Path("create")
-    public void createSubmit(Request request, Response response) throws Throwable {
+    public void createSubmit(Request request, Response response, String cluster) throws Throwable {
         List<Config> options = new ArrayList<>();
         Arrays
             .asList(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.RETENTION_MS_CONFIG)
@@ -75,7 +72,7 @@ public class TopicController extends AbstractController {
 
         this.toast(request, RequestHelper.runnableToToast(() ->
                 this.topicRepository.create(
-                    request.param("cluster").value(),
+                    cluster,
                     request.param("name").value(),
                     request.param("partition").intValue(),
                     request.param("replication").shortValue(),
@@ -85,14 +82,14 @@ public class TopicController extends AbstractController {
             "Failed to create topic '" + request.param("name").value() + "'"
         ));
 
-        response.redirect("/" + request.param("cluster").value() + "/topic");
+        response.redirect("/" + cluster + "/topic");
     }
 
     @GET
-    @Path("{topic}")
-    public View home(Request request) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(request.param("topic").value());
-        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request);
+    @Path("{topicName}")
+    public View home(Request request, String cluster, String topicName) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(topicName);
+        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request, cluster, topicName);
 
         List<Record<String, String>> data = new ArrayList<>();
 
@@ -110,58 +107,66 @@ public class TopicController extends AbstractController {
 
         return this.template(
             request,
+            cluster,
             Results
                 .html("topic")
                 .put("tab", "data")
                 .put("topic", topic)
                 .put("canDeleteRecords", topic.canDeleteRecords(configRepository))
                 .put("datas", data)
-                .put("navbar", ImmutableMap.builder()
-                    .put("partition", ImmutableMap.builder()
-                        .put("current", Optional.ofNullable(options.getPartition()))
-                        .put("values", partitionUrls.build())
-                        .build()
-                    )
-                    .put("sort", ImmutableMap.builder()
-                        .put("current", Optional.ofNullable(options.getSort()))
-                        .put("values", ImmutableMap.builder()
-                            .put(uri.addParameter("sort", RecordRepository.Options.Sort.NEWEST.name()).toNormalizedURI(false).toString(), RecordRepository.Options.Sort.NEWEST.name())
-                            .put(uri.addParameter("sort", RecordRepository.Options.Sort.OLDEST.name()).toNormalizedURI(false).toString(), RecordRepository.Options.Sort.OLDEST.name())
-                            .build()
-                        )
-                        .build()
-                    )
-                    .put("timestamp", ImmutableMap.builder()
-                        .put("current", Optional.ofNullable(options.getTimestamp()))
-                        .build()
-                    )
-                    .put("search", ImmutableMap.builder()
-                        .put("current", Optional.ofNullable(options.getSearch()))
-                        .build()
-                    )
-                    .build()
-                )
-                .put("pagination", ImmutableMap.builder()
-                    .put("size", options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
-                    .put("before", options.before(data, uri).toNormalizedURI(false).toString())
-                    .put("after", options.after(data, uri).toNormalizedURI(false).toString())
-                    .build()
-                )
+                .put("navbar", dataNavbar(options, uri, partitionUrls))
+                .put("pagination", dataPagination(topic, options, data, uri))
         );
     }
 
-    @GET
-    @Path("{topic}/{tab:(partitions|groups|configs|logs)}")
-    public View tab(Request request) throws ExecutionException, InterruptedException {
-        return this.topic(request, request.param("tab").value());
+    private ImmutableMap<Object, Object> dataPagination(Topic topic, RecordRepository.Options options, List<Record<String, String>> data, URIBuilder uri) {
+        return ImmutableMap.builder()
+            .put("size", options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
+            .put("before", options.before(data, uri).toNormalizedURI(false).toString())
+            .put("after", options.after(data, uri).toNormalizedURI(false).toString())
+            .build();
     }
 
-    public View topic(Request request, String tab) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(request.param("topic").value());
-        List<Config> configs = this.configRepository.findByTopic(request.param("topic").value());
+    private ImmutableMap<Object, Object> dataNavbar(RecordRepository.Options options, URIBuilder uri, ImmutableMap.Builder<String, String> partitionUrls) {
+        return ImmutableMap.builder()
+            .put("partition", ImmutableMap.builder()
+                .put("current", Optional.ofNullable(options.getPartition()))
+                .put("values", partitionUrls.build())
+                .build()
+            )
+            .put("sort", ImmutableMap.builder()
+                .put("current", Optional.ofNullable(options.getSort()))
+                .put("values", ImmutableMap.builder()
+                    .put(uri.addParameter("sort", RecordRepository.Options.Sort.NEWEST.name()).toNormalizedURI(false).toString(), RecordRepository.Options.Sort.NEWEST.name())
+                    .put(uri.addParameter("sort", RecordRepository.Options.Sort.OLDEST.name()).toNormalizedURI(false).toString(), RecordRepository.Options.Sort.OLDEST.name())
+                    .build()
+                )
+                .build()
+            )
+            .put("timestamp", ImmutableMap.builder()
+                .put("current", Optional.ofNullable(options.getTimestamp()))
+                .build()
+            )
+            .put("search", ImmutableMap.builder()
+                .put("current", Optional.ofNullable(options.getSearch()))
+                .build()
+            )
+            .build();
+    }
+
+    @GET
+    @Path("{topicName}/{tab:(partitions|groups|configs|logs)}")
+    public View tab(Request request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+        return this.render(request, cluster, topicName,  tab);
+    }
+
+    public View render(Request request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(topicName);
+        List<Config> configs = this.configRepository.findByTopic(topicName);
 
         return this.template(
             request,
+            cluster,
             Results
                 .html("topic")
                 .put("tab", tab)
@@ -171,9 +176,9 @@ public class TopicController extends AbstractController {
     }
 
     @POST
-    @Path("{topic}/{tab:configs}")
-    public void updateConfig(Request request, Response response, String topic) throws Throwable {
-        List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByTopic(topic));
+    @Path("{topicName}/{tab:configs}")
+    public void updateConfig(Request request, Response response, String cluster, String topicName) throws Throwable {
+        List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByTopic(topicName));
 
         this.toast(request, RequestHelper.runnableToToast(() -> {
                 if (updated.size() == 0) {
@@ -181,28 +186,25 @@ public class TopicController extends AbstractController {
                 }
 
                 this.configRepository.updateTopic(
-                    request.param("cluster").value(),
-                    request.param("topic").value(),
+                    cluster,
+                    topicName,
                     updated
                 );
             },
-            "Topic configs '" + topic + "' is updated",
-            "Failed to update topic '" + topic + "' configs"
+            "Topic configs '" + topicName + "' is updated",
+            "Failed to update topic '" + topicName + "' configs"
         ));
 
         response.redirect(request.path());
     }
 
     @GET
-    @Path("{topic}/deleteRecord")
-    public Result deleteRecord(Request request, Response response) throws Throwable {
-        String topic = request.param("topic").value();
-        Integer partition = request.param("partition").intValue();
-        String key = request.param("key").value();
+    @Path("{topicName}/deleteRecord")
+    public Result deleteRecord(Request request, Response response, String cluster, String topicName, Integer partition, String key) throws Throwable {
 
         this.toast(request, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
-                request.param("cluster").value(),
-                topic,
+                cluster,
+                topicName,
                 partition,
                 key
             ),
@@ -214,12 +216,12 @@ public class TopicController extends AbstractController {
     }
 
     @GET
-    @Path("{topic}/delete")
-    public Result delete(Request request, String topic) {
+    @Path("{topicName}/delete")
+    public Result delete(Request request, String cluster, String topicName) {
         this.toast(request, RequestHelper.runnableToToast(() ->
-                this.topicRepository.delete(request.param("cluster").value(), topic),
-            "Topic '" + topic + "' is deleted",
-            "Failed to delete topic " + topic
+                this.topicRepository.delete(cluster, topicName),
+            "Topic '" + topicName + "' is deleted",
+            "Failed to delete topic " + topicName
         ));
 
         return Results.ok();

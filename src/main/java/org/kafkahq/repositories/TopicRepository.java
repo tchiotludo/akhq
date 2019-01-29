@@ -52,9 +52,7 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
     }
 
     public Topic findByName(String name) throws ExecutionException, InterruptedException {
-        Optional<Topic> topics = this.findByName(new ArrayList<String>() {{
-                add(name);
-            }}).stream().findFirst();
+        Optional<Topic> topics = this.findByName(Collections.singletonList(name)).stream().findFirst();
 
         return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }

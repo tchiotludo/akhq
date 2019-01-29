@@ -32,9 +32,10 @@ public class NodeController extends AbstractController {
     private LogDirRepository logDirRepository;
 
     @GET
-    public View list(Request request) throws ExecutionException, InterruptedException {
+    public View list(Request request, String cluster) throws ExecutionException, InterruptedException {
         return this.template(
             request,
+            cluster,
             Results
                 .html("nodeList")
                 .put("cluster", this.clusterRepository.get())
@@ -43,19 +44,19 @@ public class NodeController extends AbstractController {
 
     @GET
     @Path("{nodeId}")
-    public View home(Request request) throws ExecutionException, InterruptedException {
-        return this.node(request, "configs");
+    public View home(Request request, String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        return this.render(request, cluster, nodeId, "configs");
     }
 
     @GET
     @Path("{nodeId}/{tab:(logs)}")
-    public View tab(Request request) throws ExecutionException, InterruptedException {
-        return this.node(request, request.param("tab").value());
+    public View tab(Request request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
+        return this.render(request, cluster, nodeId, tab);
     }
 
     @POST
     @Path("{nodeId}")
-    public void updateConfig(Request request, Response response, String nodeId) throws Throwable {
+    public void updateConfig(Request request, Response response, String cluster, Integer nodeId) throws Throwable {
         List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByBroker(nodeId));
 
         this.toast(request, RequestHelper.runnableToToast(() -> {
@@ -64,7 +65,7 @@ public class NodeController extends AbstractController {
                 }
 
                 this.configRepository.updateBroker(
-                    request.param("cluster").value(),
+                    cluster,
                     nodeId,
                     updated
                 );
@@ -76,21 +77,22 @@ public class NodeController extends AbstractController {
         response.redirect(request.path());
     }
     
-    public View node(Request request, String tab) throws ExecutionException, InterruptedException {
+    public View render(Request request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
         Node node = this.clusterRepository.get()
             .getNodes()
             .stream()
-            .filter(e -> e.getId() == request.param("nodeId").intValue())
+            .filter(e -> e.getId() == nodeId)
             .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Node '" + request.param("nodeId").intValue() + "' doesn't exist"));
+            .orElseThrow(() -> new NoSuchElementException("Node '" + nodeId + "' doesn't exist"));
 
-        List<Config> configs = this.configRepository.findByBroker(request.param("nodeId").value());
+        List<Config> configs = this.configRepository.findByBroker(nodeId);
         configs.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
             (o1.isReadOnly() ? 1 : -1 )
         );
 
         return this.template(
             request,
+            cluster,
             Results
                 .html("node")
                 .put("tab", tab)

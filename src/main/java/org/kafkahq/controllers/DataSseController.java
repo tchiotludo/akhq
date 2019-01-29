@@ -39,7 +39,11 @@ public class DataSseController implements Sse.Handler {
         Config config = sse.require(Config.class);
 
         Topic topic = topicRepository.findByName(request.param("topic").value());
-        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request);
+        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(
+            request,
+            request.param("cluster").value(),
+            request.param("topic").value()
+        );
 
         Map<String, Object> datas = new HashMap<>();
         datas.put("topic", topic);
