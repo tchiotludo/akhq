@@ -5,6 +5,8 @@
 
 <@template.header "Consumer Groups", "group" />
 
+<#include "/blocks/navbar-search.ftl" />
+
 <@groupTemplate.table groups />
 
 <@template.footer/>

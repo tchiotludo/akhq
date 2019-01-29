@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -32,11 +33,14 @@ public class GroupController extends AbstractController {
 
     @GET
     public View list(Request request) throws ExecutionException, InterruptedException {
+        Optional<String> search = request.param("search").toOptional(String.class);
+
         return this.template(
             request,
             Results
                 .html("groupList")
-                .put("groups", this.consumerGroupRepository.list())
+                .put("search", search)
+                .put("groups", this.consumerGroupRepository.list(search))
         );
     }
 

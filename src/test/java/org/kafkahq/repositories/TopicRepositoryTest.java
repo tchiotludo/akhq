@@ -20,7 +20,12 @@ public class TopicRepositoryTest extends BaseTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(4, topicRepository.list().size());
+        assertEquals(4, topicRepository.list(Optional.empty()).size());
+    }
+
+    @Test
+    public void search() throws ExecutionException, InterruptedException {
+        assertEquals(1, topicRepository.list(Optional.of("ra do")).size());
     }
 
     @Test

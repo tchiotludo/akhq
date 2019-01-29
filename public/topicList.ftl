@@ -7,6 +7,8 @@
 
 <@template.header "Topics", "topic" />
 
+<#include "/blocks/navbar-search.ftl" />
+
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover mb-0">
         <thead class="thead-dark">
