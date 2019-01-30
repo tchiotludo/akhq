@@ -30,6 +30,7 @@ module.exports = (env, argv) => {
                 'highlight.js',
                 'bytes',
                 'humanize-duration',
+                'ace-builds',
                 path.join(srcDirectory, 'css/vendor.scss')
             ],
             main: [

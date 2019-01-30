@@ -11,25 +11,25 @@
                 border-top: 2px solid $gray-700;
             }
         }
+    }
 
-        .bootstrap-datetimepicker-widget {
-            .timepicker-hour, .timepicker-minute, .timepicker-second {
+    .bootstrap-datetimepicker-widget {
+        .timepicker-hour, .timepicker-minute, .timepicker-second {
+            width: 16px;
+            font-weight: normal;
+        }
+
+        table {
+            & td {
+                height: 16px;
+                line-height: 16px;
                 width: 16px;
-                font-weight: normal;
-            }
 
-            table {
-                & td {
+                span {
+                    display: inline-block;
+                    width: 16px;
                     height: 16px;
                     line-height: 16px;
-                    width: 16px;
-
-                    span {
-                        display: inline-block;
-                        width: 16px;
-                        height: 16px;
-                        line-height: 16px;
-                    }
                 }
             }
         }

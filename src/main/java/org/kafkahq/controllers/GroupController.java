@@ -128,11 +128,11 @@ public class GroupController extends AbstractController {
 
     @GET
     @Path("{groupName}/delete")
-    public Result delete(Request request, String cluster, String id) {
+    public Result delete(Request request, String cluster, String groupName) {
         this.toast(request, RequestHelper.runnableToToast(() ->
-                this.consumerGroupRepository.delete(cluster, id),
-            "Consumer group '" + id + "' is deleted",
-            "Failed to consumer group " + id
+                this.consumerGroupRepository.delete(cluster, groupName),
+            "Consumer group '" + groupName + "' is deleted",
+            "Failed to consumer group " + groupName
         ));
 
         return Results.ok();
