@@ -11,7 +11,9 @@ import lombok.*;
 import lombok.experimental.Wither;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.jooby.Env;
 import org.jooby.Jooby;
@@ -303,6 +305,22 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
 
         return consumer.poll(Duration.ofMillis(2000));
         */
+    }
+
+
+    public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
+        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+            topic,
+            partition.orElse(null),
+            timestamp.orElse(null),
+            key.orElse(null),
+            value,
+            headers
+                .entrySet()
+                .stream()
+                .map(entry -> new RecordHeader(entry.getKey(), entry.getValue().getBytes()))
+                .collect(Collectors.toList())
+        )).get();
     }
 
     public void delete(String clusterId, String topic, Integer partition, String key) throws ExecutionException, InterruptedException {

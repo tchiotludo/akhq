@@ -17,10 +17,8 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Path("/{cluster}/topic")
@@ -83,6 +81,57 @@ public class TopicController extends AbstractController {
         ));
 
         response.redirect("/" + cluster + "/topic");
+    }
+
+    @GET
+    @Path("{topicName}/produce")
+    public View produce(Request request, String cluster, String topicName) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(topicName);
+
+        return this.template(
+            request,
+            cluster,
+            Results
+                .html("topicProduce")
+                .put("topic", topic)
+        );
+    }
+
+    @POST
+    @Path("{topicName}/produce")
+    public void produceSubmit(Request request, Response response, String cluster, String topicName) throws Throwable {
+        List<String> headersKey = request.param("headers[key][]").toList();
+        List<String> headersValue = request.param("headers[value][]").toList();
+
+        Map<String, String> headers = new HashMap<>();
+
+        int i = 0;
+        for (String key : headersKey) {
+            if (key != null && !key.equals("") && headersValue.get(i) != null && !headersValue.get(i).equals("")) {
+                headers.put(key, headersValue.get(i));
+            }
+            i++;
+        }
+
+        this.toast(request, RequestHelper.runnableToToast(() -> {
+                this.recordRepository.produce(
+                    cluster,
+                    topicName,
+                    request.param("value").value(),
+                    headers,
+                    request.param("key").toOptional(),
+                    request.param("partition").toOptional().filter(r -> !r.equals("")).map(Integer::valueOf),
+                    request.param("timestamp")
+                        .toOptional(String.class)
+                        .filter(r -> !r.equals(""))
+                        .map(s -> Instant.parse(s).toEpochMilli())
+                );
+            },
+            "Record created",
+            "Failed to produce record"
+        ));
+
+        response.redirect(request.path());
     }
 
     @GET
@@ -201,7 +250,6 @@ public class TopicController extends AbstractController {
     @GET
     @Path("{topicName}/deleteRecord")
     public Result deleteRecord(Request request, Response response, String cluster, String topicName, Integer partition, String key) throws Throwable {
-
         this.toast(request, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
                 cluster,
                 topicName,

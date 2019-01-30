@@ -8,6 +8,25 @@ $.widget("khq.datetime", $.khq.widget, {
         const self = this;
         const element = this.element;
 
+        if (element.find('.datetime-container').length > 0) {
+            this._inline(element);
+        } else {
+            this._hover(element);
+        }
+
+    },
+
+    _onChange: function(event) {
+        const element = this.element;
+
+        if (event.date) {
+            element
+                .find('input')
+                .val(event.date.toISOString());
+        }
+    },
+
+    _inline: function (element) {
         let datetimeTempusOptions = {
             inline: true,
             sideBySide: true,
@@ -20,14 +39,17 @@ $.widget("khq.datetime", $.khq.widget, {
 
         element
             .find('.datetime-container')
-            .on('change.datetimepicker', function (event) {
-                if (event.date) {
-                    element
-                        .find('input')
-                        .val(event.date.toISOString());
-                }
-            })
+            .on('change.datetimepicker', $.proxy(this._onChange, this))
             .datetimepicker(datetimeTempusOptions);
+    },
 
+    _hover: function (element) {
+        element
+            .find('input')
+            .on('change.datetimepicker', $.proxy(this._onChange, this))
+            .datetimepicker({
+                sideBySide: true,
+                useCurrent: false,
+            });
     },
 });

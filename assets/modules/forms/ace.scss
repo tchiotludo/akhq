@@ -1,0 +1,9 @@
+.khq-ace-editor {
+    > div {
+        height: $input-height-inner * 3 ;
+    }
+
+    > textarea {
+        display: none;
+    }
+}
