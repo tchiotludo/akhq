@@ -57,7 +57,7 @@ First you need a [configuration files](#configuration) in order to configure Kaf
 ```sh
 docker run -d \
     -p 8080:8080 \
-    -v application.conf:/app/application.conf
+    -v application.conf:/app/application.conf \
     tchiotludo/kafkahq
 ```
 
