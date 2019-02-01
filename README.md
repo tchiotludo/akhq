@@ -57,11 +57,11 @@ First you need a [configuration files](#configuration) in order to configure Kaf
 ```sh
 docker run -d \
     -p 8080:8080 \
-    -v application.conf:/app/application.conf \
+    -v /tmp/application.conf:/app/application.conf \
     tchiotludo/kafkahq
 ```
-
-Go to http://localhost:8080
+* With `-v /tmp/application.conf` must be an absolute path to configuration file
+* Go to http://localhost:8080
 
 
 ### Stand Alone
