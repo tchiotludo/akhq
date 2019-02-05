@@ -43,7 +43,7 @@
         <label for="value" class="col-sm-2 col-form-label">Value</label>
         <div class="col-sm-10">
             <div class="khq-ace-editor">
-                <div>></div>
+                <div></div>
                 <textarea class="form-control" name="value" id="value" placeholder="Value"></textarea>
             </div>
         </div>

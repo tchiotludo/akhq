@@ -22,7 +22,7 @@ module.exports = (env, argv) => {
                 "jquery-ui/ui/widget",
                 'popper.js',
                 'bootstrap',
-                'sweetalert2',
+                'sweetalert2/dist/sweetalert2.js',
                 'turbolinks',
                 'moment',
                 'imports-loader?jQuery=>jQuery!tempusdominus-bootstrap-4',

@@ -1,5 +1,5 @@
 import $ from  "jquery";
-import swal from 'sweetalert2';
+import swal from 'sweetalert2/dist/sweetalert2.js';
 import turbolinks from "turbolinks";
 import "../widget";
 

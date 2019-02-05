@@ -76,7 +76,7 @@
                             <#if topic.isInternal() == false>
                                 <a
                                     href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
-                                    data-confirm="Do you want to delete topic <br /><strong>${topic.getName()}</strong><br /><br /> ?"
+                                    data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"
                                 ><i class="fa fa-trash"></i></a>
                             </#if>
                         </td>
