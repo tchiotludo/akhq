@@ -4,8 +4,8 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -70,7 +70,7 @@ public class KafkaModule implements Jooby.Module {
     private Properties getConsumerProperties(String clusterId) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.consumer"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
 
         return props;
     }
@@ -78,7 +78,7 @@ public class KafkaModule implements Jooby.Module {
     private Properties getProducerProperties(String clusterId) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.producer"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
 
         return props;
     }
@@ -86,7 +86,7 @@ public class KafkaModule implements Jooby.Module {
     private Properties getAdminProperties(String clusterId) {
         Properties props = new Properties();
         props.putAll(this.getConfigProperties("kafka.defaults.admin"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId));
+        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
 
         return props;
     }
@@ -138,6 +138,22 @@ public class KafkaModule implements Jooby.Module {
         }
 
         return this.producers.get(clusterId);
+    }
+
+    private Map<String, RestService> registryClient = new HashMap<>();
+
+    public RestService getRegistryClient(String clusterId) {
+        if (!this.registryClient.containsKey(clusterId)) {
+            if (this.config.hasPath("kafka.connections." + clusterId + ".registry")) {
+                this.registryClient.put(clusterId, new RestService(
+                    this.config.getString("kafka.connections." + clusterId + ".registry")
+                ));
+            } else {
+                this.registryClient.put(clusterId, null);
+            }
+        }
+
+        return this.registryClient.get(clusterId);
     }
 
     @SuppressWarnings("NullableProblems")

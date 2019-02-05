@@ -1,5 +1,5 @@
 # KafkaHQ
-> Kafka GUI for topics, topics data, consumers group and more...
+> Kafka GUI for topics, topics data, consumers group, schema registry and more...
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
 
@@ -34,6 +34,12 @@
   - Display active and pending consumers groups
   - Delete a consumer group
   - Update consumer group offsets to start / end / timestamp
+- **Schema Registry**
+  - List schema
+  - Create a schema
+  - Update a schema
+  - Delete a schema
+  - View and delete individual schema version
 - **Nodes**
   - List
   - Configurations view
@@ -80,16 +86,21 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
   kafka {
     connections {
       my-cluster-1 {
+        properties {
           bootstrap.servers: "kafka:9092"
+        }
+        registry: "http://schema-registry:8085"
       }
       my-cluster-2 {
-        bootstrap.servers: "kafka:9093"
-        security.protocol: SSL
-        ssl.truststore.location: /app/truststore.jks
-        ssl.truststore.password: password
-        ssl.keystore.location: /app/keystore.jks
-        ssl.keystore.password: password
-        ssl.key.password: password
+        properties {
+          bootstrap.servers: "kafka:9093"
+          security.protocol: SSL
+          ssl.truststore.location: /app/truststore.jks
+          ssl.truststore.password: password
+          ssl.keystore.location: /app/keystore.jks
+          ssl.keystore.password: password
+          ssl.key.password: password
+        }
       }
     }
   }
