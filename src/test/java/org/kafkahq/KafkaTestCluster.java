@@ -2,8 +2,14 @@ package org.kafkahq;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.*;
 import com.salesforce.kafka.test.KafkaTestUtils;
 import com.yammer.metrics.core.Stoppable;
+import io.confluent.kafka.schemaregistry.RestApp;
+import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
+import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
+import lombok.Builder;
+import lombok.Getter;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -26,7 +32,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 public class KafkaTestCluster implements Runnable, Stoppable {
-    public static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.txt");
+    public static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.json");
 
     public static final String CLUSTER_ID = "test";
 
@@ -39,7 +45,9 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     private final short numberOfBrokers;
     private final boolean reuse;
     private final com.salesforce.kafka.test.KafkaTestCluster cluster;
+    private RestApp schemaRegistry;
     private final KafkaTestUtils testUtils;
+    private ReuseFile reuseFile;
 
     public com.salesforce.kafka.test.KafkaTestCluster getCluster() {
         return cluster;
@@ -70,6 +78,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public void stop() {
         try {
             cluster.stop();
+            schemaRegistry.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -80,11 +89,30 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         try {
             cluster.start();
 
+            logger.info("Kafka server started on {}", cluster.getKafkaConnectString());
+
+            schemaRegistry = new RestApp(
+                0,
+                cluster.getZookeeperConnectString(),
+                "__schemas",
+                AvroCompatibilityLevel.BACKWARD.name,
+                new Properties() {{
+                    put(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG, "10000");
+                    put(SchemaRegistryConfig.KAFKASTORE_INIT_TIMEOUT_CONFIG, "90000");
+                }}
+            );
+            schemaRegistry.start();
+
+            logger.info("Kafka Schema registry started on {}", schemaRegistry.restConnect);
+
+            reuseFile = ReuseFile.builder()
+                .kafka(cluster.getKafkaConnectString())
+                .zookeeper(cluster.getZookeeperConnectString())
+                .schemaRegistry(schemaRegistry.restConnect)
+                .build();
             if (reuse) {
                 writeClusterInfo();
             }
-
-            logger.info("Kafka server started on {}", cluster.getKafkaConnectString());
 
             injectTestData();
             logger.info("Test data injected");
@@ -109,12 +137,29 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         kafkaTestCluster.run();
     }
 
+    public static ReuseFile readClusterInfo() throws IOException {
+        if (!Files.exists(CS_PATH)) {
+            return null;
+        }
+
+        return new Gson().fromJson(new String(Files.readAllBytes(CS_PATH)), ReuseFile.class);
+    }
+
+    public ReuseFile getClusterInfo() {
+        return reuseFile;
+    }
+
     private void writeClusterInfo() throws IOException {
         Files.write(
             CS_PATH,
-            cluster.getKafkaConnectString().getBytes()
+            new GsonBuilder()
+                .setPrettyPrinting()
+                .create()
+                .toJson(reuseFile)
+                .getBytes()
         );
     }
+
 
     private void injectTestData() throws InterruptedException, ExecutionException {
         // empty topic
@@ -171,5 +216,13 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         }
 
         return keysAndValues;
+    }
+
+    @Builder
+    @Getter
+    public static class ReuseFile {
+        private String kafka;
+        private String zookeeper;
+        private String schemaRegistry;
     }
 }

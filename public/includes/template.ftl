@@ -3,6 +3,7 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="toast" type="java.lang.String" -->
+<#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
 
 <#macro header title tab>
     <!DOCTYPE html>
@@ -59,6 +60,11 @@
                     <li class="${(tab == "group")?then("active", "")}">
                         <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
                     </li>
+                    <#if registryEnabled?? && registryEnabled == true >
+                    <li class="${(tab == "schema")?then("active", "")}">
+                        <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
+                    </li>
+                    </#if>
                 </ul>
             </nav>
 

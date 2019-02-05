@@ -16,7 +16,6 @@ import org.kafkahq.modules.KafkaModule;
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
     private static Gson gson = new GsonBuilder()
-        .setPrettyPrinting()
         .enableComplexMapKeySerialization()
         .create();
 
@@ -30,6 +29,7 @@ abstract public class AbstractController {
         view
             .put("clusterId", cluster)
             .put("clusters", this.kafkaModule.getClustersList())
+            .put("registryEnabled", this.kafkaModule.getRegistryClient(cluster) != null)
             .put("basePath", App.getBasePath(config));
 
         request
@@ -45,8 +45,10 @@ abstract public class AbstractController {
             .withParameters(QueryParams.parse(request.queryString().orElse("")));
     }
 
-    protected void toast(Request request, Toast toast) {
+    protected Toast toast(Request request, Toast toast) {
         request.flash(SESSION_TOAST, gson.toJson(toast));
+
+        return toast;
     }
 
     @Builder

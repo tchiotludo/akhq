@@ -2,6 +2,7 @@
 buildscript {
     ext {
         joobyVersion = "1.5.+"
+        confluentVersion = "5.1.0"
     }
 
     repositories {
@@ -35,6 +36,8 @@ sourceCompatibility = 1.8
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url 'http://packages.confluent.io/maven/' }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 lombok {
@@ -46,6 +49,13 @@ idea {
     module {
         downloadJavadoc = false
         downloadSources = true
+    }
+}
+
+configurations {
+    implementation {
+        exclude  group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude  group: 'log4j', module: 'log4j'
     }
 }
 
@@ -83,6 +93,7 @@ dependencies {
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: "2.1.+"
+    compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
 
     // utils
     compile group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
@@ -97,6 +108,17 @@ dependencies {
     testCompile "com.salesforce.kafka.test:kafka-junit4:3.1.0"
     testCompile "org.apache.kafka:kafka_2.12:2.1.0"
     testCompile "io.rest-assured:rest-assured:3.1.0"
+    testCompile "io.confluent:kafka-schema-registry:" + confluentVersion
+    testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
+}
+
+/**********************************************************************************************************************\
+ * Test
+ **********************************************************************************************************************/
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
 }
 
 /**********************************************************************************************************************\

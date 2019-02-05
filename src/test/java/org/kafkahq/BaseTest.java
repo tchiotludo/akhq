@@ -13,9 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class BaseTest {
     protected static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
@@ -25,16 +22,14 @@ public class BaseTest {
     @BeforeClass
     public static void setup() throws IOException {
         // kafka cluster
-        String kafkaConnectString;
-        Path path = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.txt");
+        KafkaTestCluster.ReuseFile reuseFile = KafkaTestCluster.readClusterInfo();
 
-        if (Files.exists(path)) {
-            kafkaConnectString = new String(Files.readAllBytes(path));
-            logger.info("Kafka server reused on {}", kafkaConnectString);
+        if (reuseFile != null) {
+            logger.info("Kafka server reused on {}", reuseFile.getKafka());
         } else {
             cluster = new KafkaTestCluster((short) 1, false);
             cluster.run();
-            kafkaConnectString = cluster.getCluster().getKafkaConnectString();
+            reuseFile = cluster.getClusterInfo();
         }
 
         // app
@@ -43,8 +38,12 @@ public class BaseTest {
             .use(ConfigFactory
                 .empty()
                 .withValue(
-                    "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".bootstrap.servers",
-                    ConfigValueFactory.fromAnyRef(kafkaConnectString)
+                    "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
+                    ConfigValueFactory.fromAnyRef(reuseFile.getKafka())
+                )
+                .withValue(
+                    "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".registry",
+                    ConfigValueFactory.fromAnyRef(reuseFile.getSchemaRegistry())
                 )
                 .withValue(
                     "application.port",
@@ -57,7 +56,7 @@ public class BaseTest {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws Exception {
         app.stop();
         app = null;
 
