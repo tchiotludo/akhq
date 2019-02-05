@@ -51,7 +51,6 @@
         <label for="configs[retention.ms]" class="col-sm-2 col-form-label">Retention</label>
         <div class="col-sm-10">
             <input type="number" class="form-control" name="configs[retention.ms]" id="configs[retention.ms]" placeholder="Retention" value="86400000">
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
         </div>
     </div>
     <div class="khq-submit">

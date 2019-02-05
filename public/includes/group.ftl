@@ -48,7 +48,7 @@
                             <td class="khq-row-action">
                                 <a
                                     href="${basePath}/${clusterId}/group/${group.getId()}/delete"
-                                    data-confirm="Do you want to delete consumer group <br /><strong>${group.getId()}</strong><br /><br /> ?"
+                                    data-confirm="Do you want to delete consumer group: <code>${group.getId()}</code> ?"
                                 ><i class="fa fa-trash"></i></a>
                             </td>
                         </tr>

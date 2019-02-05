@@ -24,7 +24,7 @@
                 <#if data.getValue()??>
                     <a
                             href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKey()}"
-                            data-confirm="Do you want to delete record <br /><strong>${data.getKey()} from topic ${topic.getName()}</strong><br /><br /> ?"
+                            data-confirm="Do you want to delete record code>${data.getKey()} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
