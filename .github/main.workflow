@@ -1,8 +1,8 @@
 workflow "Build on push" {
   on = "push"
   resolves = [
-    "debug",
     "HTTP client",
+    "debug",
   ]
 }
 
