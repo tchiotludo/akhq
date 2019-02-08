@@ -7,7 +7,6 @@ workflow "Build on push" {
 
 action "Tests" {
   uses = "docker://openjdk:8-jdk-alpine"
-  needs = ["Show Environment"]
   runs = "./gradlew test"
 }
 
