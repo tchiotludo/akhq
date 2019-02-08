@@ -4,7 +4,7 @@ workflow "Build on push" {
 }
 
 action "debug" {
-  uses = "actions/bin/debug"
+  uses = "actions/bin/debug@latest"
 }
 
 action "Tests" {
