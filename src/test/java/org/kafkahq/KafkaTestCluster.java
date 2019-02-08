@@ -3,7 +3,10 @@ package org.kafkahq;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.*;
+import com.salesforce.kafka.test.KafkaBrokers;
+import com.salesforce.kafka.test.KafkaProvider;
 import com.salesforce.kafka.test.KafkaTestUtils;
+import com.salesforce.kafka.test.ListenerProperties;
 import com.yammer.metrics.core.Stoppable;
 import io.confluent.kafka.schemaregistry.RestApp;
 import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
@@ -25,14 +28,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class KafkaTestCluster implements Runnable, Stoppable {
-    public static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.json");
+    private static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.json");
 
     public static final String CLUSTER_ID = "test";
 
@@ -40,17 +40,70 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_COMPACTED = "compacted";
     public static final String TOPIC_EMPTY = "empty";
     public static final String TOPIC_HUGE = "huge";
+    public static final String TOPIC_STREAM_IN = "stream-in";
+    public static final String TOPIC_STREAM_MAP = "stream-map";
+    public static final String TOPIC_STREAM_COUNT = "stream-count";
 
-    private final static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
-    private final short numberOfBrokers;
-    private final boolean reuse;
-    private final com.salesforce.kafka.test.KafkaTestCluster cluster;
+    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
+    private short numberOfBrokers;
+    private boolean reuse;
+    private com.salesforce.kafka.test.KafkaTestCluster cluster;
     private RestApp schemaRegistry;
-    private final KafkaTestUtils testUtils;
+    private KafkaTestUtils testUtils;
     private ReuseFile reuseFile;
+    private StreamTest stream;
 
     public com.salesforce.kafka.test.KafkaTestCluster getCluster() {
         return cluster;
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        List<String> argsList = Arrays.asList(args);
+
+        if (argsList.size() > 0 && argsList.get(0).equals("inject")) {
+            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster();
+            kafkaTestCluster.injectTestData();
+        } else {
+            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster((short) 3, true);
+            kafkaTestCluster.run();
+        }
+    }
+
+    /**
+     * Reuse a local broker
+     */
+    private KafkaTestCluster() {
+        this.numberOfBrokers = 1;
+        this.testUtils = new KafkaTestUtils(new KafkaProvider() {
+            @Override
+            public KafkaBrokers getKafkaBrokers() {
+                return null;
+            }
+
+            @Override
+            public String getKafkaConnectString() {
+                return "kafka:9092";
+            }
+
+            @Override
+            public List<ListenerProperties> getListenerProperties() {
+                return Collections.singletonList(new ListenerProperties(
+                    "PLAINTEXT",
+                    "PLAINTEXT://kafka:9092",
+                    new Properties()
+                ));
+            }
+
+            @Override
+            public String getZookeeperConnectString() {
+                return null;
+            }
+        });
+
+        this.reuseFile = new ReuseFile.ReuseFileBuilder()
+            .schemaRegistry("http://schema-registry:8085")
+            .kafka("kafka:9092")
+            .build();
     }
 
     public KafkaTestCluster(short numberOfBrokers, boolean reuse) {
@@ -79,6 +132,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         try {
             cluster.stop();
             schemaRegistry.stop();
+            stream.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -132,11 +186,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         }
     }
 
-    public static void main(String[] args) {
-        KafkaTestCluster kafkaTestCluster = new KafkaTestCluster((short) 3, true);
-        kafkaTestCluster.run();
-    }
-
     public static ReuseFile readClusterInfo() throws IOException {
         if (!Files.exists(CS_PATH)) {
             return null;
@@ -159,7 +208,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
                 .getBytes()
         );
     }
-
 
     private void injectTestData() throws InterruptedException, ExecutionException {
         // empty topic
@@ -203,6 +251,33 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
         logger.debug("Huge topic created");
+
+        // stream
+        testUtils.createTopic(TOPIC_STREAM_IN, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_STREAM_MAP, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_STREAM_COUNT, 3, numberOfBrokers);
+        stream = new StreamTest(this.reuseFile.getKafka(), this.reuseFile.getSchemaRegistry());
+        stream.run();
+
+        testUtils.produceRecords(
+            ImmutableMap.<byte[], byte[]>builder()
+                .put("1".getBytes(), "1;WaWa;ABYSSINIAN".getBytes())
+                .put("2".getBytes(), "2;Romeo;AMERICAN_SHORTHAIR".getBytes())
+                .put("3".getBytes(), "3;Matisse;BIRMAN".getBytes())
+                .put("4".getBytes(), "4;Finnegan;MAINE_COON".getBytes())
+                .put("5".getBytes(), "5;Forrest;ORIENTAL".getBytes())
+                .put("6".getBytes(), "6;Edgar;PERSIAN".getBytes())
+                .put("7".getBytes(), "7;Desmond;RAGDOLL".getBytes())
+                .put("8".getBytes(), "8;Darcy;SIAMESE".getBytes())
+                .put("9".getBytes(), "9;Byron;SPHYNX".getBytes())
+                .put("10".getBytes(), "10;Augustus;ABYSSINIAN".getBytes())
+                .put("11".getBytes(), "11;Arturo;ABYSSINIAN".getBytes())
+                .put("12".getBytes(), "12;Archibald;RAGDOLL".getBytes())
+                .build(),
+            TOPIC_STREAM_IN,
+            1
+        );
+        logger.debug("Stream started");
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {

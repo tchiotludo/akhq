@@ -20,7 +20,7 @@ public class TopicRepositoryTest extends BaseTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(5, topicRepository.list(Optional.empty()).size());
+        assertEquals(11, topicRepository.list(Optional.empty()).size());
     }
 
     @Test

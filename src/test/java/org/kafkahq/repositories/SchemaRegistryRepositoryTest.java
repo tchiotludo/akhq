@@ -11,7 +11,7 @@ import org.kafkahq.models.Schema;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SchemaRegistryRepositoryTest extends BaseTest {
     private final SchemaRegistryRepository repository = app.require(SchemaRegistryRepository.class);
@@ -40,10 +40,9 @@ public class SchemaRegistryRepositoryTest extends BaseTest {
     private final org.apache.avro.Schema SCHEMA_2 = SchemaBuilder
         .record("schema2").namespace("org.kafkahq")
         .fields()
-        .name("clientHash").type().fixed("MD5").size(16).noDefault()
-        .name("clientProtocol").type().nullable().stringType().noDefault()
-        .name("serverHash").type("MD5").noDefault()
-        .name("meta").type().nullable().map().values().bytesType().noDefault()
+        .name("hash").type().fixed("MD5").size(16).noDefault()
+        .name("name").type().nullable().stringType().noDefault()
+        .name("meta").type().nullable().map().values().stringType().noDefault()
         .endRecord();
 
     @Before
@@ -57,11 +56,23 @@ public class SchemaRegistryRepositoryTest extends BaseTest {
 
     @Test
     public void getAll() throws IOException, RestClientException {
-        repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1);
-        repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_2, SCHEMA_2);
         List<Schema> all = repository.getAll(KafkaTestCluster.CLUSTER_ID);
+        assertEquals(3, all.size());
+    }
 
-        assertEquals(2, all.size());
+    @Test
+    public void getStreamSubject() throws IOException, RestClientException {
+        Schema latestVersion = repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP + "-value");
+
+        assertNotNull(latestVersion);
+    }
+
+    @Test
+    public void missingSubjectConfigMustBeDefault() throws IOException, RestClientException {
+        Schema.Config defaultConfig = repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID);
+        Schema.Config subjectConfig = repository.getConfig(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
+
+        assertEquals(defaultConfig.getCompatibilityLevel(), subjectConfig.getCompatibilityLevel());
     }
 
     @Test
@@ -79,8 +90,15 @@ public class SchemaRegistryRepositoryTest extends BaseTest {
     @Test
     public void register() throws IOException, RestClientException {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1);
+        repository.updateConfig(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, new Schema.Config(Schema.Config.CompatibilityLevelConfig.FORWARD));
+        repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V2);
+        repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_2, SCHEMA_2);
 
-        assertEquals(1, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
+        assertEquals(5, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
+        assertEquals(SCHEMA_1_V2, repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).getSchema());
+        assertEquals(2, repository.getAllVersions(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).size());
+
+        assertEquals(SCHEMA_2, repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_2).getSchema());
     }
 
     @Test
@@ -88,7 +106,7 @@ public class SchemaRegistryRepositoryTest extends BaseTest {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1);
         repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
 
-        assertEquals(0, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
+        assertEquals(3, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
     }
 
     @Test

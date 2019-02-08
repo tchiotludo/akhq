@@ -29,7 +29,7 @@ abstract public class AbstractController {
         view
             .put("clusterId", cluster)
             .put("clusters", this.kafkaModule.getClustersList())
-            .put("registryEnabled", this.kafkaModule.getRegistryClient(cluster) != null)
+            .put("registryEnabled", this.kafkaModule.getRegistryRestClient(cluster) != null)
             .put("basePath", App.getBasePath(config));
 
         request

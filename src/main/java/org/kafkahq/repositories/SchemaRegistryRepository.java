@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.jooby.Env;
 import org.jooby.Jooby;
 import org.kafkahq.models.Schema;
@@ -14,11 +15,14 @@ import org.kafkahq.modules.KafkaModule;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Singleton
 public class SchemaRegistryRepository extends AbstractRepository implements Jooby.Module {
+    public static final int ERROR_NOT_FOUND = 40401;
     private KafkaModule kafkaModule;
+    private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
 
     @Inject
     public SchemaRegistryRepository(KafkaModule kafkaModule) {
@@ -27,7 +31,7 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public List<Schema> getAll(String clusterId) throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .getAllSubjects()
             .stream()
             .map(s -> {
@@ -48,7 +52,7 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
             getLatestVersion(clusterId, subject);
             found = true;
         } catch (RestClientException exception) {
-            if (exception.getErrorCode() != 40401) { // Subject not found.; error code: 40401
+            if (exception.getErrorCode() != ERROR_NOT_FOUND) { // Subject not found.; error code: 40401
                 throw exception;
             }
         }
@@ -58,7 +62,7 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public Schema getLatestVersion(String clusterId, String subject) throws IOException, RestClientException {
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema latestVersion = this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .getLatestVersion(subject);
 
         return new Schema(latestVersion);
@@ -66,12 +70,12 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public List<Schema> getAllVersions(String clusterId, String subject) throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .getAllVersions(subject)
             .parallelStream()
             .map(id -> {
                 try {
-                    return this.kafkaModule.getRegistryClient(clusterId).getVersion(subject, id);
+                    return this.kafkaModule.getRegistryRestClient(clusterId).getVersion(subject, id);
                 } catch (RestClientException | IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -82,7 +86,7 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public Schema lookUpSubjectVersion(String clusterId, String subject, org.apache.avro.Schema schema, boolean deleted) throws IOException, RestClientException {
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema find = this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .lookUpSubjectVersion(schema.toString(), subject, deleted);
 
         return new Schema(find);
@@ -90,19 +94,19 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, "latest");
     }
 
     public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version) throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, String.valueOf(version));
     }
 
     public Schema register(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
         int id = this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .registerSchema(schema.toString(), subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
@@ -116,7 +120,7 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
 
     public int delete(String clusterId, String subject) throws IOException, RestClientException {
         List<Integer> list = this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .deleteSubject(new HashMap<>(), subject);
 
         if (list.size() == 0) {
@@ -127,32 +131,51 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
     }
 
     public int deleteVersion(String clusterId, String subject, int version) throws IOException, RestClientException {
-        return this.kafkaModule.getRegistryClient(clusterId)
+        return this.kafkaModule.getRegistryRestClient(clusterId)
             .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
     }
 
     public Schema.Config getDefaultConfig(String clusterId) throws IOException, RestClientException {
         return new Schema.Config(this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .getConfig(null)
         );
     }
 
     public Schema.Config getConfig(String clusterId, String subject) throws IOException, RestClientException {
-        return new Schema.Config(this.kafkaModule
-            .getRegistryClient(clusterId)
-            .getConfig(subject)
-        );
+        try {
+            return new Schema.Config(this.kafkaModule
+                .getRegistryRestClient(clusterId)
+                .getConfig(subject)
+            );
+        } catch (RestClientException exception) {
+            if (exception.getErrorCode() != ERROR_NOT_FOUND) {
+                throw exception;
+            }
+
+            return this.getDefaultConfig(clusterId);
+        }
     }
 
     public void updateConfig(String clusterId, String subject, Schema.Config config) throws IOException, RestClientException {
         ConfigUpdateRequest configUpdateRequest = this.kafkaModule
-            .getRegistryClient(clusterId)
+            .getRegistryRestClient(clusterId)
             .updateCompatibility(config.getCompatibilityLevel().name(), subject);
 
         if (!configUpdateRequest.getCompatibilityLevel().equals(config.getCompatibilityLevel().name())) {
             throw new IllegalArgumentException("Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel() + "' expected: " + config.getCompatibilityLevel().name());
         }
+    }
+
+    public KafkaAvroDeserializer getKafkaAvroDeserializer(String clusterId) {
+        if (!this.kafkaAvroDeserializers.containsKey(clusterId)) {
+            this.kafkaAvroDeserializers.put(
+                clusterId,
+                new KafkaAvroDeserializer(this.kafkaModule.getRegistryClient(clusterId))
+            );
+        }
+
+        return this.kafkaAvroDeserializers.get(clusterId);
     }
 
     @SuppressWarnings("NullableProblems")

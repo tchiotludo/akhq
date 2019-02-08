@@ -1,14 +1,14 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
-<#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.String, java.lang.String>>" -->
+<#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.Byte[]>>" -->
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 
 <#assign i=0>
 <#list datas as data>
     <#assign i++>
-    <tr class="reduce <#if !(data.getValue())??>deleted</#if>">
-        <td><code class="key">${data.getKey()!"null"}</code></td>
+    <tr class="reduce <#if !(data.getValueAsString())??>deleted</#if>">
+        <td><code class="key">${data.getKeyAsString()!"null"}</code></td>
         <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
         <td class="text-right">${data.getPartition()}</td>
         <td class="text-right">${data.getOffset()}</td>
@@ -23,8 +23,8 @@
             <td>
                 <#if data.getValue()??>
                     <a
-                            href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKey()}"
-                            data-confirm="Do you want to delete record code>${data.getKey()} from topic ${topic.getName()}</code> ?"
+                            href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKeyAsBase64()}"
+                            data-confirm="Do you want to delete record code>${data.getKeyAsString()} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
@@ -45,7 +45,7 @@
                     </#list>
                 </table>
             </#if>
-            <pre class="mb-0 khq-data-highlight"><code>${data.getValue()!"null"}</code></pre>
+            <pre class="mb-0 khq-data-highlight"><code>${data.getValueAsString()!"null"}</code></pre>
         </td>
     </tr>
 </#list>

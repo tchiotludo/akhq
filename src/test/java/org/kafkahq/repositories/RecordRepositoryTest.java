@@ -6,7 +6,10 @@ import org.kafkahq.BaseTest;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Record;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -90,13 +93,34 @@ public class RecordRepositoryTest extends BaseTest {
         assertEquals(51, consumeAll(options));
     }
 
-    private int consumeAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
-        int size = 0;
+
+    @Test
+    public void consumeAvro() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        List<Record> records = consumeAllRecord(options);
+
+        assertEquals(12, records.size());
+
+
+        Optional<Record> avroRecord = records
+            .stream()
+            .filter(record -> record.getKeyAsString().equals("1"))
+            .findFirst();
+
+        avroRecord.orElseThrow(() -> new NoSuchElementException("Unable to find key 1"));
+        avroRecord.ifPresent(record -> assertEquals("{\"id\": 1, \"name\": \"WaWa\", \"breed\": \"ABYSSINIAN\"}", record.getValueAsString()));
+    }
+
+    private List<Record> consumeAllRecord(RecordRepository.Options options) throws ExecutionException, InterruptedException {
         boolean hasNext = true;
 
+        List<Record> all = new ArrayList<>();
+
         do {
-            List<Record<String, String>> datas = repository.consume(options);
-            size += datas.size();
+            List<Record> datas = repository.consume(options);
+            all.addAll(datas);
 
             datas.forEach(record -> logger.debug(
                 "Records [Topic: {}] [Partition: {}] [Offset: {}] [Key: {}] [Value: {}]",
@@ -117,7 +141,11 @@ public class RecordRepositoryTest extends BaseTest {
             }
         } while (hasNext);
 
-        return size;
+        return all;
+    }
+
+    private int consumeAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
+        return this.consumeAllRecord(options).size();
     }
 
     @Test
