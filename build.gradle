@@ -130,7 +130,6 @@ dependencies {
 test {
     testLogging {
         exceptionFormat = 'full'
-        showStandardStreams = true
     }
 }
 
