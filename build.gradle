@@ -80,6 +80,11 @@ sourceSets.main.resources {
     srcDirs = ["conf", "public"]
 }
 
+if (project.hasProperty("joobyRun")) {
+    gradle.startParameter.excludedTaskNames += "npmInstall"
+    gradle.startParameter.excludedTaskNames += "webpack"
+}
+
 /**********************************************************************************************************************\
  * Dependencies
  **********************************************************************************************************************/
@@ -130,6 +135,7 @@ test {
 
 if (project.hasProperty("test")) {
     gradle.startParameter.excludedTaskNames += "npmInstall"
+    gradle.startParameter.excludedTaskNames += "webpack"
 }
 
 /**********************************************************************************************************************\
