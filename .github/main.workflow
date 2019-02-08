@@ -23,13 +23,13 @@ action "Show Environment" {
 
 
 action "Tests" {
-  uses = "docker://openjdk/8-jdk-alpine"
+  uses = "docker://openjdk:8-jdk-alpine"
   needs = ["Show Environment"]
   runs = "./gradlew test"
 }
 
 action "Build Jar" {
-  uses = "docker://openjdk/8-jdk-alpine"
+  uses = "docker://openjdk:8-jdk-alpine"
   needs = ["Tests"]
   runs = "apk update && apk add --no-cache nodejs-npm && npm install && ./gradlew jar"
 }
