@@ -20,6 +20,7 @@
   - Delete a topic
 - **Browse Topic datas**
   - View data, offset, key, timestamp & headers
+  - Automatic deserializarion of avro message encoded with schema registry
   - Configurations view
   - Logs view
   - Delete a record
@@ -52,7 +53,7 @@
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
-It will start a Kafka node, a Zookeeper node, fill with some sample data and start a consumer group & start KafkaHQ.
+It will start a Kafka node, a Zookeeper node, a Schema Registry, fill with some sample data, start a consumer group & start KafkaHQ.
 
 ## Installation
 
@@ -109,7 +110,8 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
 
 `kafka.connections` is a key value configuration with :
 * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
-* `value`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
+* `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
+* `registry`: the schema registry url *(optional)*
 
 KafkaHQ docker image support 1 environment variables to handle configuraiton :
 * `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration that will be written on /app/configuration.conf on container.

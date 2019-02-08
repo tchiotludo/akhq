@@ -8,7 +8,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
-import org.kafkahq.utils.Debug;
 
 import java.nio.ByteBuffer;
 import java.util.Base64;
@@ -76,7 +75,7 @@ public class Record {
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
-            Debug.print(magicBytes, schemaId);
+
             if (magicBytes == 0 && schemaId >= 0) {
                 convert = true;
             }

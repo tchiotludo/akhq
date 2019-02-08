@@ -130,9 +130,9 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     @Override
     public void stop() {
         try {
-            cluster.stop();
             schemaRegistry.stop();
             stream.stop();
+            cluster.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -210,6 +210,33 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     }
 
     private void injectTestData() throws InterruptedException, ExecutionException {
+        // stream
+        testUtils.createTopic(TOPIC_STREAM_IN, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_STREAM_MAP, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_STREAM_COUNT, 3, numberOfBrokers);
+        stream = new StreamTest(this.reuseFile.getKafka(), this.reuseFile.getSchemaRegistry());
+        stream.run();
+
+        testUtils.produceRecords(
+            ImmutableMap.<byte[], byte[]>builder()
+                .put("1".getBytes(), "1;WaWa;ABYSSINIAN".getBytes())
+                .put("2".getBytes(), "2;Romeo;AMERICAN_SHORTHAIR".getBytes())
+                .put("3".getBytes(), "3;Matisse;BIRMAN".getBytes())
+                .put("4".getBytes(), "4;Finnegan;MAINE_COON".getBytes())
+                .put("5".getBytes(), "5;Forrest;ORIENTAL".getBytes())
+                .put("6".getBytes(), "6;Edgar;PERSIAN".getBytes())
+                .put("7".getBytes(), "7;Desmond;RAGDOLL".getBytes())
+                .put("8".getBytes(), "8;Darcy;SIAMESE".getBytes())
+                .put("9".getBytes(), "9;Byron;SPHYNX".getBytes())
+                .put("10".getBytes(), "10;Augustus;ABYSSINIAN".getBytes())
+                .put("11".getBytes(), "11;Arturo;ABYSSINIAN".getBytes())
+                .put("12".getBytes(), "12;Archibald;RAGDOLL".getBytes())
+                .build(),
+            TOPIC_STREAM_IN,
+            1
+        );
+        logger.debug("Stream started");
+
         // empty topic
         testUtils.createTopic(TOPIC_EMPTY, 12, numberOfBrokers);
         logger.debug("Empty topic created");
@@ -251,33 +278,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
         logger.debug("Huge topic created");
-
-        // stream
-        testUtils.createTopic(TOPIC_STREAM_IN, 3, numberOfBrokers);
-        testUtils.createTopic(TOPIC_STREAM_MAP, 3, numberOfBrokers);
-        testUtils.createTopic(TOPIC_STREAM_COUNT, 3, numberOfBrokers);
-        stream = new StreamTest(this.reuseFile.getKafka(), this.reuseFile.getSchemaRegistry());
-        stream.run();
-
-        testUtils.produceRecords(
-            ImmutableMap.<byte[], byte[]>builder()
-                .put("1".getBytes(), "1;WaWa;ABYSSINIAN".getBytes())
-                .put("2".getBytes(), "2;Romeo;AMERICAN_SHORTHAIR".getBytes())
-                .put("3".getBytes(), "3;Matisse;BIRMAN".getBytes())
-                .put("4".getBytes(), "4;Finnegan;MAINE_COON".getBytes())
-                .put("5".getBytes(), "5;Forrest;ORIENTAL".getBytes())
-                .put("6".getBytes(), "6;Edgar;PERSIAN".getBytes())
-                .put("7".getBytes(), "7;Desmond;RAGDOLL".getBytes())
-                .put("8".getBytes(), "8;Darcy;SIAMESE".getBytes())
-                .put("9".getBytes(), "9;Byron;SPHYNX".getBytes())
-                .put("10".getBytes(), "10;Augustus;ABYSSINIAN".getBytes())
-                .put("11".getBytes(), "11;Arturo;ABYSSINIAN".getBytes())
-                .put("12".getBytes(), "12;Archibald;RAGDOLL".getBytes())
-                .build(),
-            TOPIC_STREAM_IN,
-            1
-        );
-        logger.debug("Stream started");
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {
