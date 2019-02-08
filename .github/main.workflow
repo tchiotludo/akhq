@@ -1,6 +1,6 @@
 workflow "Build on push" {
   on = "push"
-  resolves = ["Build docker image", "debug"]
+  resolves = ["Build docker image"]
 }
 
 action "debug" {
@@ -9,6 +9,7 @@ action "debug" {
 
 action "Tests" {
   uses = "docker://openjdk:8-jdk-alpine:latest"
+  needs = ["debug"]
   runs = "./gradlew test"
 }
 
