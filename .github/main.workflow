@@ -16,8 +16,15 @@ action "HTTP client" {
   args = ["GET", "https://ifconfig.co/"]
 }
 
+action "Show Environment" {
+  uses = "docker://alpine"
+  args = "printenv"
+}
+
+
 action "Tests" {
   uses = "docker://openjdk/8-jdk-alpine"
+  needs = ["Show Environment"]
   runs = "./gradlew test"
 }
 
