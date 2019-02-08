@@ -7,13 +7,13 @@ workflow "Build on push" {
 
 action "Tests" {
   uses = "docker://openjdk:8-jdk-alpine"
-  runs = "./gradlew --debug test"
+  runs = "./gradlew --console=plain test"
 }
 
 action "Build Jar" {
   uses = "docker://openjdk:8-jdk-alpine"
   needs = ["Tests"]
-  runs = "apk update && apk add --no-cache nodejs-npm && npm install && ./gradlew jar"
+  runs = "apk update && apk add --no-cache nodejs-npm && npm install && ./gradlew --console=plain jar"
 }
 
 action "Build docker image" {
