@@ -1,6 +1,10 @@
 workflow "Build on push" {
   on = "push"
-  resolves = ["Build docker image"]
+  resolves = ["Build docker image", "debug"]
+}
+
+action "debug" {
+  uses = "actions/bin/debug"
 }
 
 action "Tests" {
