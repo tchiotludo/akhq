@@ -210,6 +210,30 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     }
 
     private void injectTestData() throws InterruptedException, ExecutionException {
+        // compacted topic
+        testUtils.createTopic(TOPIC_COMPACTED, 3, numberOfBrokers);
+        testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
+            new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
+            new Config(Collections.singletonList(
+                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
+            ))
+        )).all().get();
+
+        KafkaProducer<String, String> producer = testUtils.getKafkaProducer(
+            StringSerializer.class,
+            StringSerializer.class
+        );
+
+        for (int partition = 0; partition < 3; partition++) {
+            for (int count = 0; count < 50; count++) {
+                producer.send(new ProducerRecord<>(TOPIC_COMPACTED, partition, "compact-key", "Partition(" + partition + ") Count(" + count + ")")).get();
+                Thread.sleep(10L);
+            }
+            Thread.sleep(10L);
+            testUtils.produceRecords(randomDatas(50, 0), TOPIC_COMPACTED, partition);
+        }
+        logger.debug("Compacted topic created");
+
         // stream
         testUtils.createTopic(TOPIC_STREAM_IN, 3, numberOfBrokers);
         testUtils.createTopic(TOPIC_STREAM_MAP, 3, numberOfBrokers);
@@ -247,30 +271,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
         }
         logger.debug("Random topic created");
-
-        // compacted topic
-        testUtils.createTopic(TOPIC_COMPACTED, 3, numberOfBrokers);
-        testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
-            new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
-            new Config(Collections.singletonList(
-                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
-            ))
-        )).all().get();
-
-        KafkaProducer<String, String> producer = testUtils.getKafkaProducer(
-            StringSerializer.class,
-            StringSerializer.class
-        );
-
-        for (int partition = 0; partition < 3; partition++) {
-            for (int count = 0; count < 50; count++) {
-                producer.send(new ProducerRecord<>(TOPIC_COMPACTED, partition, "compact-key", "Partition(" + partition + ") Count(" + count + ")")).get();
-                Thread.sleep(10L);
-            }
-            Thread.sleep(10L);
-            testUtils.produceRecords(randomDatas(50, 0), TOPIC_COMPACTED, partition);
-        }
-        logger.debug("Compacted topic created");
 
         // huge data
         testUtils.createTopic(TOPIC_HUGE, 3, numberOfBrokers);
