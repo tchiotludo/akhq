@@ -34,19 +34,20 @@ import java.util.stream.Stream;
 
 @Singleton
 public class RecordRepository extends AbstractRepository implements Jooby.Module {
-    private KafkaModule kafkaModule;
-
-    private TopicRepository topicRepository;
-
     private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
 
+    private final KafkaModule kafkaModule;
+    private final TopicRepository topicRepository;
+    private final SchemaRegistryRepository schemaRegistryRepository;
+
     @Inject
-    public RecordRepository(KafkaModule kafkaModule, TopicRepository topicRepository) {
+    public RecordRepository(KafkaModule kafkaModule, TopicRepository topicRepository, SchemaRegistryRepository schemaRegistryRepository) {
         this.kafkaModule = kafkaModule;
         this.topicRepository = topicRepository;
+        this.schemaRegistryRepository = schemaRegistryRepository;
     }
 
-    public List<Record<String, String>> consume(Options options) throws ExecutionException, InterruptedException {
+    public List<Record> consume(Options options) throws ExecutionException, InterruptedException {
         return this.kafkaModule.debug(() -> {
             Topic topicsDetail = topicRepository.findByName(options.topic);
 
@@ -58,10 +59,10 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         }, "Consume with options {}", options);
     }
 
-    private List<Record<String, String>> consumeOldest(Topic topic, Options options) {
-        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
+    private List<Record> consumeOldest(Topic topic, Options options) {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
-        List<Record<String, String>> list = new ArrayList<>();
+        List<Record> list = new ArrayList<>();
 
         if (partitions.size() > 0) {
             consumer.assign(partitions.keySet());
@@ -77,10 +78,10 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             );
 
             synchronized (consumer) {
-                ConsumerRecords<String, String> records = this.poll(consumer);
+                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
-                for (ConsumerRecord<String, String> record : records) {
-                    list.add(new Record<>(record));
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    list.add(newRecord(record, options));
                 }
             }
         }
@@ -91,7 +92,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         return this.kafkaModule.debug(() -> {
             Map<TopicPartition, Long> map = new HashMap<>();
 
-            KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(clusterId);
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(clusterId);
 
             partitions
                 .forEach(partition -> map.put(
@@ -124,7 +125,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     }
 
 
-    private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options, KafkaConsumer<String, String> consumer) {
+    private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options, KafkaConsumer<byte[], byte[]> consumer) {
         return topic
                 .getPartitions()
                 .stream()
@@ -141,10 +142,10 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
     }
 
-    private List<Record<String, String>> consumeNewest(Topic topic, Options options) {
+    private List<Record> consumeNewest(Topic topic, Options options) {
         int pollSizePerPartition = pollSizePerPartition(topic, options);
 
-        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
             options.clusterId,
             new Properties() {{
                 put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(pollSizePerPartition));
@@ -167,34 +168,33 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             .flatMap(topicPartitionOffset -> {
                 consumer.assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
                 consumer.seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
-                List<Record<String, String>> list = new ArrayList<>();
 
+                List<Record> list = new ArrayList<>();
+                int emptyPoll = 0;
 
-                    int emptyPoll = 0;
+                do {
+                    ConsumerRecords<byte[], byte[]> records;
 
-                    do {
-                        ConsumerRecords<String, String> records;
-
-                        synchronized (consumer) {
-                            records = this.poll(consumer);
-                        }
-
-                        if (records.isEmpty()) {
-                            emptyPoll++;
-                        } else {
-                            emptyPoll = 0;
-                        }
-
-                        for (ConsumerRecord<String, String> record : records) {
-                            if (record.offset() > topicPartitionOffset.getEnd()) {
-                                emptyPoll = 2;
-                                break;
-                            }
-
-                            list.add(new Record<>(record));
-                        }
+                    synchronized (consumer) {
+                        records = this.poll(consumer);
                     }
-                    while (emptyPoll < 1);
+
+                    if (records.isEmpty()) {
+                        emptyPoll++;
+                    } else {
+                        emptyPoll = 0;
+                    }
+
+                    for (ConsumerRecord<byte[], byte[]> record : records) {
+                        if (record.offset() > topicPartitionOffset.getEnd()) {
+                            emptyPoll = 2;
+                            break;
+                        }
+
+                        list.add(newRecord(record, options));
+                    }
+                }
+                while (emptyPoll < 1);
 
                 Collections.reverse(list);
 
@@ -212,7 +212,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         }
     }
 
-    private Optional<Long> getFirstOffset(KafkaConsumer<String, String> consumer, Partition partition, Options options) {
+    private Optional<Long> getFirstOffset(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
         if (options.partition != null && partition.getId() != options.partition) {
             return Optional.empty();
         }
@@ -239,7 +239,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         return Optional.of(first);
     }
 
-    private Optional<OffsetBound> getFirstOffsetForSortOldest(KafkaConsumer<String, String> consumer, Partition partition, Options options) {
+    private Optional<OffsetBound> getFirstOffsetForSortOldest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
                 if (options.after.size() > 0 && options.after.containsKey(partition.getId())) {
@@ -256,7 +256,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             });
     }
 
-    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<String, String> consumer, Partition partition, Options options, int pollSizePerPartition) {
+    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options, int pollSizePerPartition) {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
                 long last = partition.getLastOffset();
@@ -279,7 +279,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     }
 
     @SuppressWarnings("deprecation")
-    private ConsumerRecords<String, String> poll(KafkaConsumer<String, String> consumer) {
+    private ConsumerRecords<byte[], byte[]> poll(KafkaConsumer<byte[], byte[]> consumer) {
         /*
         // poll with long call poll(final long timeoutMs, boolean includeMetadataInTimeout = true)
         // poll with Duration call poll(final long timeoutMs, boolean includeMetadataInTimeout = false)
@@ -307,6 +307,9 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         */
     }
 
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, Options options) {
+        return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId));
+    }
 
     public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
         return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
@@ -323,24 +326,24 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         )).get();
     }
 
-    public void delete(String clusterId, String topic, Integer partition, String key) throws ExecutionException, InterruptedException {
+    public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
         kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
-            key,
+            new String(key),
             null
         )).get();
     }
 
 
     public SearchEnd search(Options options, SearchConsumer callback) throws ExecutionException, InterruptedException {
-        KafkaConsumer<String, String> consumer = this.kafkaModule.getConsumer(options.clusterId);
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
         Topic topic = topicRepository.findByName(options.topic);
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
         SearchEvent searchEvent = new SearchEvent(topic);
 
         callback.accept(searchEvent);
-        List<Record<String, String>> all = new ArrayList<>();
+        List<Record> all = new ArrayList<>();
 
         int emptyPoll = 0;
         if (partitions.size() > 0) {
@@ -356,11 +359,11 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             );
 
             synchronized (consumer) {
-                List<Record<String, String>> list = new ArrayList<>();
+                List<Record> list = new ArrayList<>();
 
                 do {
                     list.removeIf(r -> true);
-                    ConsumerRecords<String, String> records = this.poll(consumer);
+                    ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
                     if (records.isEmpty()) {
                         emptyPoll++;
@@ -368,7 +371,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                         emptyPoll = 0;
                     }
 
-                    for (ConsumerRecord<String, String> record : records) {
+                    for (ConsumerRecord<byte[], byte[]> record : records) {
 
                         if (callback.isClose()) {
                             break;
@@ -377,7 +380,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                         searchEvent.updateProgress(record);
 
                         if (searchFilter(options, record)) {
-                            list.add(new Record<>(record));
+                            list.add(newRecord(record, options));
 
                             logger.trace(
                                 "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
@@ -404,12 +407,12 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         return new SearchEnd(emptyPoll < 1 ? options.pagination(all) : null);
     }
 
-    private boolean searchFilter(Options options, ConsumerRecord<String, String> record) {
-        if (record.key() != null && record.key().toLowerCase().contains(options.getSearch().toLowerCase())) {
+    private boolean searchFilter(Options options, ConsumerRecord<byte[], byte[]> record) {
+        if (record.key().length > 0 && new String(record.key()).toLowerCase().contains(options.getSearch().toLowerCase())) {
             return true;
         }
 
-        if (record.value() != null && record.value().toLowerCase().contains(options.getSearch().toLowerCase())) {
+        if (record.value().length > 0 && new String(record.value()).toLowerCase().contains(options.getSearch().toLowerCase())) {
             return true;
         }
 
@@ -450,7 +453,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         private Map<Integer, Long> progress = new HashMap<>();
 
         @JsonProperty("records")
-        private List<Record<String, String>> records = new ArrayList<>();
+        private List<Record> records = new ArrayList<>();
 
         private SearchEvent(Topic topic) {
             topic.getPartitions()
@@ -460,7 +463,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 });
         }
 
-        private void updateProgress(ConsumerRecord<String, String> record) {
+        private void updateProgress(ConsumerRecord<byte[], byte[]> record) {
             Offset offset = offsets.get(record.partition());
             progress.put(record.partition(), offset.end - offset.begin - record.offset());
         }
@@ -492,6 +495,8 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         private Integer partition;
         private Long timestamp;
         private String search;
+        private String schemaKey;
+        private String schemaValue;
 
         public Options(String clusterId, String topic) {
             this.clusterId = clusterId;
@@ -508,9 +513,9 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
         }
 
-        public String pagination(List<Record<String, String>> records) {
+        public String pagination(List<Record> records) {
             Map<Integer, Long> next = new HashMap<>(this.after);
-            for (Record<String, String> record : records) {
+            for (Record record : records) {
                 if (this.sort == Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) < record.getOffset())) {
                     next.put(record.getPartition(), record.getOffset());
                 } else if (this.sort == Sort.NEWEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) > record.getOffset())) {
@@ -531,7 +536,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return null;
         }
 
-        public URIBuilder after(List<Record<String, String>> records, URIBuilder uri) {
+        public URIBuilder after(List<Record> records, URIBuilder uri) {
             if (records.size() == 0) {
                 return URIBuilder.empty();
             }
@@ -539,7 +544,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             return uri.addParameter("after", pagination(records));
         }
 
-        public URIBuilder before(List<Record<String, String>> records, URIBuilder uri) {
+        public URIBuilder before(List<Record> records, URIBuilder uri) {
             if (records.size() == 0) {
                 return URIBuilder.empty();
             }

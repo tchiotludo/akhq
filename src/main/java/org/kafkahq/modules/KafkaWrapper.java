@@ -112,7 +112,7 @@ public class KafkaWrapper {
                         )
                         .collect(Collectors.toList());
 
-                    KafkaConsumer<String, String> consumer = kafkaModule.getConsumer(clusterId);
+                    KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
                     synchronized (consumer) {
                         Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
                         // @FIXME: ugly hacks, on startup, first query can send a partial result, resending request works !

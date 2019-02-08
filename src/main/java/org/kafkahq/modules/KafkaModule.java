@@ -4,11 +4,13 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jooby.Env;
 import org.jooby.Jooby;
@@ -101,28 +103,28 @@ public class KafkaModule implements Jooby.Module {
         return this.adminClient.get(clusterId);
     }
 
-    private Map<String, KafkaConsumer<String, String>> consumers = new HashMap<>();
+    private Map<String, KafkaConsumer<byte[], byte[]>> consumers = new HashMap<>();
 
-    public KafkaConsumer<String, String> getConsumer(String clusterId) {
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) {
         if (!this.consumers.containsKey(clusterId)) {
             this.consumers.put(clusterId, new KafkaConsumer<>(
                 this.getConsumerProperties(clusterId),
-                new StringDeserializer(),
-                new StringDeserializer()
+                new ByteArrayDeserializer(),
+                new ByteArrayDeserializer()
             ));
         }
 
         return this.consumers.get(clusterId);
     }
 
-    public KafkaConsumer<String, String> getConsumer(String clusterId, Properties properties) {
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) {
         Properties props = this.getConsumerProperties(clusterId);
         props.putAll(properties);
 
         return new KafkaConsumer<>(
             props,
-            new StringDeserializer(),
-            new StringDeserializer()
+            new ByteArrayDeserializer(),
+            new ByteArrayDeserializer()
         );
     }
 
@@ -140,20 +142,25 @@ public class KafkaModule implements Jooby.Module {
         return this.producers.get(clusterId);
     }
 
-    private Map<String, RestService> registryClient = new HashMap<>();
+    private Map<String, RestService> registryRestClient = new HashMap<>();
 
-    public RestService getRegistryClient(String clusterId) {
-        if (!this.registryClient.containsKey(clusterId)) {
+    public RestService getRegistryRestClient(String clusterId) {
+        if (!this.registryRestClient.containsKey(clusterId)) {
             if (this.config.hasPath("kafka.connections." + clusterId + ".registry")) {
-                this.registryClient.put(clusterId, new RestService(
+                this.registryRestClient.put(clusterId, new RestService(
                     this.config.getString("kafka.connections." + clusterId + ".registry")
                 ));
-            } else {
-                this.registryClient.put(clusterId, null);
             }
         }
 
-        return this.registryClient.get(clusterId);
+        return this.registryRestClient.get(clusterId);
+    }
+
+    public SchemaRegistryClient getRegistryClient(String clusterId) {
+        return new CachedSchemaRegistryClient(
+            this.getRegistryRestClient(clusterId),
+            Integer.MAX_VALUE
+        );
     }
 
     @SuppressWarnings("NullableProblems")

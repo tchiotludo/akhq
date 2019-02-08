@@ -3,7 +3,6 @@ package org.kafkahq.modules;
 import com.google.inject.Binder;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
-import lombok.Getter;
 import org.jooby.Env;
 import org.jooby.Jooby;
 import org.jooby.Request;

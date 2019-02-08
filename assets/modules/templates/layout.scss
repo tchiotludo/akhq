@@ -35,6 +35,35 @@ h1 {
     align-items: stretch;
 }
 
+.ace_editor {
+    font-family: $font-family-monospace;
+    background-color: transparent;
+    border-radius: $input-border-radius;
+    border: 1px solid #262424;
+}
+
+.ace_editor, .table-responsive {
+    ::-webkit-scrollbar {
+        width: $scrollbar-width;
+        height: $scrollbar-width;
+    }
+
+    ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(100, 100, 100, 0.9);
+    }
+
+    ::-webkit-scrollbar-corner,
+    ::-webkit-scrollbar-thumb:window-inactive {
+        background: rgba(100, 100, 100, 0.6);
+    }
+}
+
+
+
 #content {
     @include media-breakpoint-up(md) {
         width: calc(100% - #{$menu-width});
@@ -74,6 +103,8 @@ form.khq-form div.khq-submit,
     display: flex;
     justify-content: flex-end;
     width: calc(100vw - 15px);
+    z-index: $zindex-fixed;
+
     @include media-breakpoint-up(md) {
         left: $menu-width;
         width: calc(100vw - #{$menu-width} - 15px);

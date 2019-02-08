@@ -140,7 +140,7 @@ public class TopicController extends AbstractController {
         Topic topic = this.topicRepository.findByName(topicName);
         RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request, cluster, topicName);
 
-        List<Record<String, String>> data = new ArrayList<>();
+        List<Record> data = new ArrayList<>();
 
         if (options.getSearch() == null) {
             data = this.recordRepository.consume(options);
@@ -168,7 +168,7 @@ public class TopicController extends AbstractController {
         );
     }
 
-    private ImmutableMap<Object, Object> dataPagination(Topic topic, RecordRepository.Options options, List<Record<String, String>> data, URIBuilder uri) {
+    private ImmutableMap<Object, Object> dataPagination(Topic topic, RecordRepository.Options options, List<Record> data, URIBuilder uri) {
         return ImmutableMap.builder()
             .put("size", options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
             .put("before", options.before(data, uri).toNormalizedURI(false).toString())
@@ -249,12 +249,12 @@ public class TopicController extends AbstractController {
 
     @GET
     @Path("{topicName}/deleteRecord")
-    public Result deleteRecord(Request request, Response response, String cluster, String topicName, Integer partition, String key) throws Throwable {
+    public Result deleteRecord(Request request, String cluster, String topicName, Integer partition, String key) {
         this.toast(request, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
                 cluster,
                 topicName,
                 partition,
-                key
+                Base64.getDecoder().decode(key)
             ),
             "Record '" + key + "' will be deleted on compaction",
             "Failed to delete record '" + key + "'"

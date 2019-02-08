@@ -1,7 +1,7 @@
 import $ from "jquery";
 import "../widget";
 import ace from 'ace-builds';
-import "ace-builds/src-noconflict/theme-tomorrow";
+import "ace-builds/src-noconflict/theme-merbivore_soft";
 import "ace-builds/src-noconflict/mode-json";
 
 $.widget("khq.ace-editor", $.khq.widget, {
@@ -14,7 +14,7 @@ $.widget("khq.ace-editor", $.khq.widget, {
             maxLines: 48,
             autoScrollEditorIntoView: true,
             useWorker: false,
-            theme: "ace/theme/tomorrow"
+            theme: "ace/theme/merbivore_soft"
         });
 
         editor.renderer.setScrollMargin(10, 10, 10, 10);

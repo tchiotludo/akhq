@@ -1,19 +1,21 @@
-
 buildscript {
     ext {
         joobyVersion = "1.5.+"
         confluentVersion = "5.1.0"
+        kafkaVersion = "2.1.+"
     }
 
     repositories {
         mavenLocal()
         mavenCentral()
+        jcenter()
     }
 
     dependencies {
         classpath "com.google.gradle:osdetector-gradle-plugin:1.4.0"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
         classpath "org.jooby:jooby-gradle-plugin:$joobyVersion"
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.16.0"
     }
 }
 
@@ -27,6 +29,7 @@ apply plugin: "com.google.osdetector"
 apply plugin: "application"
 apply plugin: "jooby"
 apply plugin: "idea"
+apply plugin: "com.commercehub.gradle.plugin.avro"
 
 group "org.kafkahq"
 version "0.1"
@@ -92,8 +95,10 @@ dependencies {
     compile group: "org.jooby", name: "jooby-whoops", version: joobyVersion
 
     // kafka
-    compile group: "org.apache.kafka", name: "kafka-clients", version: "2.1.+"
+    compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
+    compile group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
+    compile group: 'org.apache.avro', name: 'avro', version: '1.8.2'
 
     // utils
     compile group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
@@ -106,10 +111,12 @@ dependencies {
     // test
     testCompile "junit:junit:4.12"
     testCompile "com.salesforce.kafka.test:kafka-junit4:3.1.0"
-    testCompile "org.apache.kafka:kafka_2.12:2.1.0"
+    testCompile "org.apache.kafka:kafka_2.12:" + kafkaVersion
     testCompile "io.rest-assured:rest-assured:3.1.0"
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
+    testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
+    testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
 }
 
 /**********************************************************************************************************************\

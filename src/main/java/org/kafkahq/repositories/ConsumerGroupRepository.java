@@ -84,7 +84,7 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
     }
 
     public void updateOffsets(String clusterId, String name, Map<org.kafkahq.models.TopicPartition, Long> offset) {
-        KafkaConsumer<String, String> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
             put(ConsumerConfig.GROUP_ID_CONFIG, name);
         }});
 
