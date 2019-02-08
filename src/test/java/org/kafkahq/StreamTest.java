@@ -8,6 +8,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -82,13 +83,7 @@ public class StreamTest implements Runnable, Stoppable {
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
         streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl);
-        try {
-            streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/" +
-                new String(MessageDigest.getInstance("MD5").digest(this.bootstrapServers.getBytes()))
-            );
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/" + DigestUtils.md5Hex(this.bootstrapServers).toUpperCase());
 
         Serde<Cat> specificAvroSerde = getSpecificSerde();
         final StreamsBuilder builder = new StreamsBuilder();
