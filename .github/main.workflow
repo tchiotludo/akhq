@@ -2,7 +2,6 @@ workflow "Build on push" {
   on = "push"
   resolves = [
     "HTTP client",
-    "debug",
     "Build docker image",
   ]
 }
@@ -18,12 +17,12 @@ action "HTTP client" {
 }
 
 action "Tests" {
-  uses = "docker://openjdk:8-jdk-alpine@latest"
+  uses = "docker://openjdk/8-jdk-alpine"
   runs = "./gradlew test"
 }
 
 action "Build Jar" {
-  uses = "docker://openjdk:8-jdk-alpine:latest"
+  uses = "docker://openjdk/8-jdk-alpine"
   needs = ["Tests"]
   runs = "apk update && apk add --no-cache nodejs-npm && npm install && ./gradlew jar"
 }
