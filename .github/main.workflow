@@ -7,7 +7,7 @@ workflow "Build on push" {
 
 action "Tests" {
   uses = "docker://openjdk:8-jdk-alpine"
-  runs = "./gradlew test"
+  runs = "./gradlew --debug test"
 }
 
 action "Build Jar" {
