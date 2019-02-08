@@ -29,7 +29,7 @@ table {
         pre {
             white-space: pre-wrap;
             overflow-wrap: break-word;
-            overflow: auto;
+            overflow: hidden;
             max-height: 100px;
             cursor: pointer;
             position: relative;
@@ -47,14 +47,14 @@ table {
                     position:absolute;
                     left:0;
                     bottom:0;
-                    background: linear-gradient(transparent, $gray-900);
+                    background: linear-gradient(transparent, $body-bg);
                 }
             }
         }
 
         tr:hover {
             pre code:after {
-                background: linear-gradient(transparent, $indigo);
+                background: linear-gradient(transparent, $table-hover-bg);
             }
         }
 
