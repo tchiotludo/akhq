@@ -23,6 +23,7 @@ plugins {
     id "com.moowork.node" version "1.2.0"
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'com.adarshr.test-logger' version '1.6.0'
+    id "com.dorongold.task-tree" version "1.3.1"
 }
 
 apply plugin: "io.spring.dependency-management"
@@ -81,10 +82,8 @@ sourceSets.main.resources {
     srcDirs = ["conf", "public"]
 }
 
-if (project.hasProperty("joobyRun")) {
-    gradle.startParameter.excludedTaskNames += "npmInstall"
-    gradle.startParameter.excludedTaskNames += "webpack"
-}
+joobyRun.dependsOn.remove("npmInstall")
+joobyRun.dependsOn.remove("webpack")
 
 /**********************************************************************************************************************\
  * Dependencies
@@ -156,10 +155,8 @@ task testInjectData(type:JavaExec) {
     args "inject"
 }
 
-if (project.hasProperty("test")) {
-    gradle.startParameter.excludedTaskNames += "npmInstall"
-    gradle.startParameter.excludedTaskNames += "webpack"
-}
+check.dependsOn.remove("npmInstall")
+check.dependsOn.remove("webpack")
 
 /**********************************************************************************************************************\
  * Node + Webpack

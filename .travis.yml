@@ -4,6 +4,12 @@ install: true
 jdk:
   - oraclejdk8
 
+addons:
+  apt:
+    packages:
+      - nodejs
+      - npm
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -15,21 +21,23 @@ cache:
     - node_modules
 
 script:
-  # fail fast: in case there is an error building, quit immediately.
   - set -e
+  # Gradle
   - ./gradlew --console=plain test
   - ./gradlew --console=plain jar
+  # Docker Build
   - cp build/libs/kafkahq-*.jar docker/app/kafkahq.jar
   - docker build . -t $TRAVIS_COMMIT
+  # Docker Tag
   - if [ -z "$TRAVIS_TAG" ]; then
-      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
+      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_TAG;
     fi
+  # Docker Branch
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
-    else
+    elif [ -z "$TRAVIS_BRANCH" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
     fi
-  # fail fast: back to default in case internal travis scripts return non zero response codes.
   - set +e
 
 deploy:
@@ -37,6 +45,7 @@ deploy:
     api_key:
       secure: Zb/iCIzv0qe+Ka/A6U7wSKUZ8AlQFY8jm0Mla1hcFZTTLs95NmIudxozuJr+D9rO3hqnkkeh23nfaNzGYLD6elLpDaFn3UpI2caA/6mc4QqZQ3fiw+49LDDjaGNLm0pnKVnaPdbusc6giz2GMQYpXcngLNbGtXN4KGEghmnQKSP+oIreBllUJNbvIpBjTJnBT8/PJAmzO6WnJl6U7J4lP06GVyM8Rq7UvlQuYGXZMvks3hRxQAUsSMWhNlK95XHEJkpOqxDUJXM9i8bKKqyy9RYl+/BkupQPPpShTXVPXtz1TTmo5cE+K6TLNBJkpw7QtYHqpbAZpwaYiwyf9XaZiZF4CSK4ue64NfvAtXSrDnUPZq7F2hzkZ01xADxnx3Q306QD1AJ1pHTyubmIN9rc6P5IQHezh6pgvTCA9T5mDjmPxgul4ERi3z3u6IIEanEi8lvkY6ZiVDx+/xMitEFkExhJQN+i0DUCEBNe/GJYYNKt6o/tcp2ptFLVADXQs6i9jNklaVbA9fFh48L1jEDH4KxNT5LnmVtxRHfs8+edQAI4eA3ZONKXrIhAD3wG+xnvjfOtX1YBoCkLIq30G+kY+No0yGKuOMiLbq0vbiDilh1slytRaMr+PhhceFUr/wzWZLb0iZlnDatcKq9gjuMY7oMfMk3DNTgoY/gDqXWl66k=
     draft: true
+    skip_cleanup: true
     file: "/docker/app/kafkahq.jar"
     on:
       repo: tchiotludo/kafkahq
@@ -46,6 +55,3 @@ deploy:
   - provider: script
     script: |
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker push tchiotludo/kafkahq
-    on:
-      branch: master
-      tags: true
