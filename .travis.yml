@@ -15,16 +15,22 @@ cache:
     - node_modules
 
 script:
+  # fail fast: in case there is an error building, quit immediately.
+  - set -e
   - ./gradlew --console=plain test
   - ./gradlew --console=plain jar
-  - cp build/libs/kafkahq-*.jar /docker/app/kafkahq.jar
+  - cp build/libs/kafkahq-*.jar docker/app/kafkahq.jar
   - docker build . -t $TRAVIS_COMMIT
   - if [ -z "$TRAVIS_TAG" ]; then
-      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest
+      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
     fi
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker tag kafkahq tchiotludo/kafkahq:latest
+      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
+    else
+      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
     fi
+  # fail fast: back to default in case internal travis scripts return non zero response codes.
+  - set +e
 
 deploy:
   - provider: releases
