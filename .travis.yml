@@ -12,6 +12,34 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    - node_modules
 
 script:
   - ./gradlew --console=plain test
+  - ./gradlew --console=plain jar
+  - cp build/libs/kafkahq-*.jar /docker/app/kafkahq.jar
+  - docker build . -t $TRAVIS_COMMIT
+  - if [ -z "$TRAVIS_TAG" ]; then
+      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest
+    fi
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker tag kafkahq tchiotludo/kafkahq:latest
+    fi
+
+deploy:
+  - provider: releases
+    api_key:
+      secure: Zb/iCIzv0qe+Ka/A6U7wSKUZ8AlQFY8jm0Mla1hcFZTTLs95NmIudxozuJr+D9rO3hqnkkeh23nfaNzGYLD6elLpDaFn3UpI2caA/6mc4QqZQ3fiw+49LDDjaGNLm0pnKVnaPdbusc6giz2GMQYpXcngLNbGtXN4KGEghmnQKSP+oIreBllUJNbvIpBjTJnBT8/PJAmzO6WnJl6U7J4lP06GVyM8Rq7UvlQuYGXZMvks3hRxQAUsSMWhNlK95XHEJkpOqxDUJXM9i8bKKqyy9RYl+/BkupQPPpShTXVPXtz1TTmo5cE+K6TLNBJkpw7QtYHqpbAZpwaYiwyf9XaZiZF4CSK4ue64NfvAtXSrDnUPZq7F2hzkZ01xADxnx3Q306QD1AJ1pHTyubmIN9rc6P5IQHezh6pgvTCA9T5mDjmPxgul4ERi3z3u6IIEanEi8lvkY6ZiVDx+/xMitEFkExhJQN+i0DUCEBNe/GJYYNKt6o/tcp2ptFLVADXQs6i9jNklaVbA9fFh48L1jEDH4KxNT5LnmVtxRHfs8+edQAI4eA3ZONKXrIhAD3wG+xnvjfOtX1YBoCkLIq30G+kY+No0yGKuOMiLbq0vbiDilh1slytRaMr+PhhceFUr/wzWZLb0iZlnDatcKq9gjuMY7oMfMk3DNTgoY/gDqXWl66k=
+    draft: true
+    file: "/docker/app/kafkahq.jar"
+    on:
+      repo: tchiotludo/kafkahq
+      on:
+        tags: true
+
+  - provider: script
+    script: |
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker push tchiotludo/kafkahq
+    on:
+      branch: master
+      tags: true
