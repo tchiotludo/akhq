@@ -170,6 +170,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
 
             injectTestData();
             logger.info("Test data injected");
+            Thread.sleep(5000);
 
             if (reuse) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
