@@ -29,13 +29,13 @@ script:
   - cp build/libs/kafkahq-*.jar docker/app/kafkahq.jar
   - docker build . -t $TRAVIS_COMMIT
   # Docker Tag
-  - if [ -z "$TRAVIS_TAG" ]; then
+  - if [ ! -z "$TRAVIS_TAG" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_TAG;
     fi
   # Docker Branch
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
-    elif [ -z "$TRAVIS_BRANCH" ]; then
+    elif [ ! -z "$TRAVIS_BRANCH" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
     fi
   - set +e
