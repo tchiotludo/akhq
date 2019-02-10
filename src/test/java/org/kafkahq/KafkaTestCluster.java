@@ -64,7 +64,8 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             KafkaTestCluster kafkaTestCluster = new KafkaTestCluster();
             kafkaTestCluster.injectTestData();
         } else {
-            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster((short) 3, true);
+            short numberOfBrokers = argsList.size() >= 1 ? Short.parseShort(argsList.get(0)) : (short) 3;
+            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster(numberOfBrokers, true);
             kafkaTestCluster.run();
         }
     }

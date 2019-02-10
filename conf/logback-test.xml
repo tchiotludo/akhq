@@ -34,14 +34,12 @@
         <appender-ref ref="STDERR" />
     </root>
 
-
     <logger name="org.kafkahq.App" level="WARN" />
     <logger name="org.kafkahq" level="INFO" />
-    <logger name="org.jooby.RequestLogger" level="INFO" />
     <logger name="org.apache.kafka.common.utils.AppInfoParser" level="ERROR" />
     <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="ERROR" />
-
+    <logger name="kafka.server.BrokerMetadataCheckpoint" level="ERROR" />
 
 </configuration>
