@@ -169,14 +169,14 @@ gradle.taskGraph.whenReady { graph ->
 
 test.dependsOn "startTestKafkaCluster"
 
-task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
+task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'classes') {
     group = 'verification'
     description = 'Start a global standalone test Kafka cluster during tests'
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.kafkahq.KafkaTestCluster'
     args ['1']
     waitForOutput = 'Test data injected'
-    timeout = 600
+    timeout = 300
 }
 
 /**********************************************************************************************************************\
