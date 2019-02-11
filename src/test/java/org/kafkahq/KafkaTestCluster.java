@@ -2,7 +2,8 @@ package org.kafkahq;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.salesforce.kafka.test.KafkaBrokers;
 import com.salesforce.kafka.test.KafkaProvider;
 import com.salesforce.kafka.test.KafkaTestUtils;
@@ -172,6 +173,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             injectTestData();
             logger.info("Test data injected");
             Thread.sleep(10000);
+            logger.info("Test data injected sleep done");
 
             if (reuse) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {

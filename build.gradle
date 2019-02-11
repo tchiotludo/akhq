@@ -175,7 +175,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.kafkahq.KafkaTestCluster'
     args ['1']
-    waitForOutput = 'Test data injected'
+    waitForOutput = 'Test data injected sleep done'
     timeout = 300
 }
 
