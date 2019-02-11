@@ -53,19 +53,26 @@ services:
     links:
       - zookeeper
 
-  schemaregistry:
+  schema-registry:
     image: confluentinc/cp-schema-registry
     depends_on:
       - zookeeper
       - kafka
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
-      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
-      SCHEMA_REGISTRY_LISTENERS: "https://0.0.0.0:8085"
-      SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: "https"
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8085"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
-    ports:
-      - 8085:8085
+
+  test-data:
+    image: gradle:4.10-jdk
+    command: "gradle --no-daemon testInjectData"
+    working_dir: /app
+    volumes:
+      - ./:/app
+    links:
+      - kafka
+      - schema-registry
 
   kafkacat:
     image: confluentinc/cp-kafkacat

@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -69,7 +67,7 @@ public class StreamTest implements Runnable, Stoppable {
         });
 
         streams.setStateListener((newState, oldState) ->
-            logger.info("Switching from {} to {} state", oldState, newState)
+            logger.debug("Switching from {} to {} state", oldState, newState)
         );
 
         streams.start();
