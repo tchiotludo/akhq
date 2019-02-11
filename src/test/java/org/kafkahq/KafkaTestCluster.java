@@ -9,9 +9,6 @@ import com.salesforce.kafka.test.KafkaProvider;
 import com.salesforce.kafka.test.KafkaTestUtils;
 import com.salesforce.kafka.test.ListenerProperties;
 import com.yammer.metrics.core.Stoppable;
-import io.confluent.kafka.schemaregistry.RestApp;
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import lombok.Builder;
 import lombok.Getter;
 import org.apache.kafka.clients.admin.Config;
@@ -21,9 +18,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.kafkahq.clusters.EmbeddedSingleNodeKafkaCluster;
 import org.kafkahq.repositories.RecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,134 +45,102 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_COUNT = "stream-count";
 
     private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
-    private short numberOfBrokers;
-    private boolean reuse;
-    private com.salesforce.kafka.test.KafkaTestCluster cluster;
-    private RestApp schemaRegistry;
+
+    private EmbeddedSingleNodeKafkaCluster kafkaCluster;
     private KafkaTestUtils testUtils;
-    private ReuseFile reuseFile;
+    private boolean reuse;
+    private ConnectionString connectionString;
     private StreamTest stream;
 
-    public com.salesforce.kafka.test.KafkaTestCluster getCluster() {
-        return cluster;
-    }
-
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         List<String> argsList = Arrays.asList(args);
 
         if (argsList.size() > 0 && argsList.get(0).equals("inject")) {
             KafkaTestCluster kafkaTestCluster = new KafkaTestCluster();
             kafkaTestCluster.injectTestData();
         } else {
-            short numberOfBrokers = argsList.size() >= 1 ? Short.parseShort(argsList.get(0)) : (short) 3;
-            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster(numberOfBrokers, true);
+            KafkaTestCluster kafkaTestCluster = new KafkaTestCluster(true);
             kafkaTestCluster.run();
         }
     }
 
     /**
-     * Reuse a local broker
+     * Reuse a local broker for inject only
      */
     private KafkaTestCluster() {
-        this.numberOfBrokers = 1;
-        this.testUtils = new KafkaTestUtils(new KafkaProvider() {
-            @Override
-            public KafkaBrokers getKafkaBrokers() {
-                return null;
-            }
-
-            @Override
-            public String getKafkaConnectString() {
-                return "kafka:9092";
-            }
-
-            @Override
-            public List<ListenerProperties> getListenerProperties() {
-                return Collections.singletonList(new ListenerProperties(
-                    "PLAINTEXT",
-                    "PLAINTEXT://kafka:9092",
-                    new Properties()
-                ));
-            }
-
-            @Override
-            public String getZookeeperConnectString() {
-                return null;
-            }
-        });
-
-        this.reuseFile = new ReuseFile.ReuseFileBuilder()
+        this.connectionString = new ConnectionString.ConnectionStringBuilder()
             .schemaRegistry("http://schema-registry:8085")
             .kafka("kafka:9092")
             .build();
+        
+        testUtils = new KafkaTestUtils(new Provider(this.connectionString));
     }
 
-    public KafkaTestCluster(short numberOfBrokers, boolean reuse) {
-        this.numberOfBrokers = numberOfBrokers;
+    public KafkaTestCluster(boolean reuseEnabled) throws Exception {
+        reuse = reuseEnabled;
 
-        cluster = new com.salesforce.kafka.test.KafkaTestCluster(
-            numberOfBrokers,
-            new Properties() {{
-                put("log.min.cleanable.dirty.ratio", "0.01");
-                put("log.roll.ms", "1");
-                put("log.cleaner.backoff.ms", "1");
-                put("log.segment.delete.delay.ms", "1");
-                put(TopicConfig.SEGMENT_MS_CONFIG, "1");
-                put(TopicConfig.SEGMENT_INDEX_BYTES_CONFIG, "1");
-                put(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0.01");
-                put(TopicConfig.DELETE_RETENTION_MS_CONFIG, "1");
-            }}
-        );
-        this.reuse = reuse;
+        kafkaCluster = new EmbeddedSingleNodeKafkaCluster(new Properties() {{
+            // Log config
+            put("log.min.cleanable.dirty.ratio", "0.01");
+            put("log.roll.ms", "1");
+            put("log.cleaner.backoff.ms", "1");
+            put("log.segment.delete.delay.ms", "1");
 
-        testUtils = new KafkaTestUtils(this.cluster);
+            // Segment config
+            put(TopicConfig.SEGMENT_MS_CONFIG, "1");
+            put(TopicConfig.SEGMENT_INDEX_BYTES_CONFIG, "1");
+            put(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0.01");
+            put(TopicConfig.DELETE_RETENTION_MS_CONFIG, "1");
+
+            // Lower active threads.
+            put("num.io.threads", "2");
+            put("num.network.threads", "2");
+            put("log.flush.interval.messages", "1");
+
+            // Define replication factor for internal topics to 1
+            put("offsets.topic.replication.factor", "1");
+            put("offset.storage.replication.factor", "1");
+            put("transaction.state.log.replication.factor", "1");
+            put("transaction.state.log.min.isr", "1");
+            put("transaction.state.log.num.partitions", "4");
+            put("config.storage.replication.factor", "1");
+            put("status.storage.replication.factor", "1");
+            put("default.replication.factor", "1");
+        }});
+
+        kafkaCluster.start();
     }
 
     @Override
     public void stop() {
-        try {
-            schemaRegistry.stop();
-            stream.stop();
-            cluster.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        kafkaCluster.stop();
+        stream.stop();
     }
 
     @Override
     public void run() {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         try {
-            cluster.start();
+            kafkaCluster.start();
+            logger.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
+            logger.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
 
-            logger.info("Kafka server started on {}", cluster.getKafkaConnectString());
-
-            schemaRegistry = new RestApp(
-                0,
-                cluster.getZookeeperConnectString(),
-                "__schemas",
-                AvroCompatibilityLevel.BACKWARD.name,
-                new Properties() {{
-                    put(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG, "10000");
-                    put(SchemaRegistryConfig.KAFKASTORE_INIT_TIMEOUT_CONFIG, "90000");
-                }}
-            );
-            schemaRegistry.start();
-
-            logger.info("Kafka Schema registry started on {}", schemaRegistry.restConnect);
-
-            reuseFile = ReuseFile.builder()
-                .kafka(cluster.getKafkaConnectString())
-                .zookeeper(cluster.getZookeeperConnectString())
-                .schemaRegistry(schemaRegistry.restConnect)
+            connectionString = ConnectionString.builder()
+                .kafka(kafkaCluster.bootstrapServers())
+                .zookeeper(kafkaCluster.zookeeperConnect())
+                .schemaRegistry(kafkaCluster.schemaRegistryUrl())
                 .build();
+
+            testUtils = new KafkaTestUtils(new Provider(this.connectionString));
+
             if (reuse) {
                 writeClusterInfo();
             }
 
             injectTestData();
             logger.info("Test data injected");
-            Thread.sleep(2500);
-            logger.info("Test data injected sleep done");
 
             if (reuse) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -190,16 +157,16 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         }
     }
 
-    public static ReuseFile readClusterInfo() throws IOException {
+    public static ConnectionString readClusterInfo() throws IOException {
         if (!Files.exists(CS_PATH)) {
             return null;
         }
 
-        return new Gson().fromJson(new String(Files.readAllBytes(CS_PATH)), ReuseFile.class);
+        return new Gson().fromJson(new String(Files.readAllBytes(CS_PATH)), ConnectionString.class);
     }
 
-    public ReuseFile getClusterInfo() {
-        return reuseFile;
+    public ConnectionString getClusterInfo() {
+        return connectionString;
     }
 
     private void writeClusterInfo() throws IOException {
@@ -208,17 +175,17 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             new GsonBuilder()
                 .setPrettyPrinting()
                 .create()
-                .toJson(reuseFile)
+                .toJson(connectionString)
                 .getBytes()
         );
     }
 
     private void injectTestData() throws InterruptedException, ExecutionException {
         // stream
-        testUtils.createTopic(TOPIC_STREAM_IN, 3, numberOfBrokers);
-        testUtils.createTopic(TOPIC_STREAM_MAP, 3, numberOfBrokers);
-        testUtils.createTopic(TOPIC_STREAM_COUNT, 3, numberOfBrokers);
-        stream = new StreamTest(this.reuseFile.getKafka(), this.reuseFile.getSchemaRegistry());
+        testUtils.createTopic(TOPIC_STREAM_IN, 3, (short) 1);
+        testUtils.createTopic(TOPIC_STREAM_MAP, 3, (short) 1);
+        testUtils.createTopic(TOPIC_STREAM_COUNT, 3, (short) 1);
+        stream = new StreamTest(this.connectionString.getKafka(), this.connectionString.getSchemaRegistry());
         stream.run();
 
         testUtils.produceRecords(
@@ -242,7 +209,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         logger.debug("Stream started");
 
         // compacted topic
-        testUtils.createTopic(TOPIC_COMPACTED, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_COMPACTED, 3, (short) 1);
         testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
             new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
             new Config(Collections.singletonList(
@@ -266,18 +233,18 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         logger.debug("Compacted topic created");
 
         // empty topic
-        testUtils.createTopic(TOPIC_EMPTY, 12, numberOfBrokers);
+        testUtils.createTopic(TOPIC_EMPTY, 12, (short) 1);
         logger.debug("Empty topic created");
 
         // random data
-        testUtils.createTopic(TOPIC_RANDOM, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_RANDOM, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
         }
         logger.debug("Random topic created");
 
         // huge data
-        testUtils.createTopic(TOPIC_HUGE, 3, numberOfBrokers);
+        testUtils.createTopic(TOPIC_HUGE, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
@@ -297,9 +264,41 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         return keysAndValues;
     }
 
+    private class Provider implements KafkaProvider {
+        private ConnectionString connectionString;
+
+        public Provider(ConnectionString connection) {
+            connectionString = connection;
+        }
+
+        @Override
+        public KafkaBrokers getKafkaBrokers() {
+            return null;
+        }
+
+        @Override
+        public String getKafkaConnectString() {
+            return connectionString.getKafka();
+        }
+
+        @Override
+        public List<ListenerProperties> getListenerProperties() {
+            return Collections.singletonList(new ListenerProperties(
+                "PLAINTEXT",
+                connectionString.getKafka(),
+                new Properties()
+            ));
+        }
+
+        @Override
+        public String getZookeeperConnectString() {
+            return connectionString.getZookeeper();
+        }
+    }
+
     @Builder
     @Getter
-    public static class ReuseFile {
+    public static class ConnectionString {
         private String kafka;
         private String zookeeper;
         private String schemaRegistry;

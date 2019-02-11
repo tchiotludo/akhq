@@ -67,7 +67,7 @@ public class StreamTest implements Runnable, Stoppable {
         });
 
         streams.setStateListener((newState, oldState) ->
-            logger.info("Switching from {} to {} state", oldState, newState)
+            logger.debug("Switching from {} to {} state", oldState, newState)
         );
 
         streams.start();

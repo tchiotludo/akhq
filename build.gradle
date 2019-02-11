@@ -126,6 +126,7 @@ dependencies {
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
+    testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.25'
 }
 
 /**********************************************************************************************************************\
@@ -175,7 +176,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.kafkahq.KafkaTestCluster'
     args ['1']
-    waitForOutput = 'Test data injected sleep done'
+    waitForOutput = 'Test data injected'
     timeout = 300
 }
 

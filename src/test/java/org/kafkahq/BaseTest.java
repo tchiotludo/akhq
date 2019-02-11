@@ -20,16 +20,16 @@ public class BaseTest {
     private static KafkaTestCluster cluster;
 
     @BeforeClass
-    public static void setup() throws IOException {
+    public static void setup() throws Exception {
         // kafka cluster
-        KafkaTestCluster.ReuseFile reuseFile = KafkaTestCluster.readClusterInfo();
+        KafkaTestCluster.ConnectionString connectionString = KafkaTestCluster.readClusterInfo();
 
-        if (reuseFile != null) {
-            logger.info("Kafka server reused on {}", reuseFile.getKafka());
+        if (connectionString != null) {
+            logger.info("Kafka server reused on {}", connectionString.getKafka());
         } else {
-            cluster = new KafkaTestCluster((short) 1, false);
+            cluster = new KafkaTestCluster(false);
             cluster.run();
-            reuseFile = cluster.getClusterInfo();
+            connectionString = cluster.getClusterInfo();
         }
 
         // app
@@ -39,11 +39,11 @@ public class BaseTest {
                 .empty()
                 .withValue(
                     "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
-                    ConfigValueFactory.fromAnyRef(reuseFile.getKafka())
+                    ConfigValueFactory.fromAnyRef(connectionString.getKafka())
                 )
                 .withValue(
                     "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".registry",
-                    ConfigValueFactory.fromAnyRef(reuseFile.getSchemaRegistry())
+                    ConfigValueFactory.fromAnyRef(connectionString.getSchemaRegistry())
                 )
                 .withValue(
                     "application.port",

@@ -2,6 +2,10 @@
 <configuration scan="true" scanPeriod="15 seconds" debug="false">
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
         <immediateFlush>true</immediateFlush>
@@ -41,5 +45,8 @@
     <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="ERROR" />
     <logger name="kafka.server.BrokerMetadataCheckpoint" level="ERROR" />
+    <logger name="io.confluent.rest" level="ERROR" />
+    <logger name="io.confluent.kafka.schemaregistry" level="ERROR" />
+    <logger name="org.glassfish.jersey.internal.inject.Providers" level="ERROR" />
 
 </configuration>
