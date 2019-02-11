@@ -22,6 +22,8 @@ buildscript {
 plugins {
     id "com.moowork.node" version "1.2.0"
     id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'com.adarshr.test-logger' version '1.6.0'
+    id 'com.github.psxpaul.execfork' version '0.1.9'
 }
 
 apply plugin: "io.spring.dependency-management"
@@ -80,6 +82,13 @@ sourceSets.main.resources {
     srcDirs = ["conf", "public"]
 }
 
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(joobyRun)) {
+        webpack.enabled = false
+        npmInstall.enabled = false
+    }
+}
+
 /**********************************************************************************************************************\
  * Dependencies
  **********************************************************************************************************************/
@@ -117,6 +126,7 @@ dependencies {
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
+    testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.25'
 }
 
 /**********************************************************************************************************************\
@@ -128,15 +138,59 @@ test {
     }
 }
 
+testlogger {
+    theme 'mocha'
+    showExceptions true
+    slowThreshold 2000
+    showStandardStreams true
+}
+
+task testKafkaCluster(type:JavaExec) {
+    group = 'verification'
+    description = 'Start a standalone test Kafka cluster'
+    classpath sourceSets.test.runtimeClasspath
+    main = "org.kafkahq.KafkaTestCluster"
+}
+
+task testInjectData(type:JavaExec) {
+    group = 'verification'
+    description = 'Start a standalone test Kafka cluster'
+    classpath sourceSets.test.runtimeClasspath
+    main = "org.kafkahq.KafkaTestCluster"
+    args ['inject']
+}
+
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(test) || graph.hasTask(testKafkaCluster) || graph.hasTask(testInjectData)) {
+        webpack.enabled = false
+        npmInstall.enabled = false
+    }
+}
+
+test.dependsOn "startTestKafkaCluster"
+
+task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'testClasses') {
+    group = 'verification'
+    description = 'Start a global standalone test Kafka cluster during tests'
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'org.kafkahq.KafkaTestCluster'
+    args ['1']
+    waitForOutput = 'Test data injected'
+    timeout = 300
+}
+
 /**********************************************************************************************************************\
  * Node + Webpack
  **********************************************************************************************************************/
 import com.moowork.gradle.node.task.NodeTask
 
 task webpack(type: NodeTask, dependsOn: "npmInstall") {
+    group = 'build'
+    description = 'Build with webpack assets'
     script = project.file("node_modules/.bin/webpack")
     outputs.dir("public/static")
-    args = ["-p", "--progress", "--mode production"]
+    args = ["-p", "--mode production"]
 }
 
 jar.dependsOn "webpack"
