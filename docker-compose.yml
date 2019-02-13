@@ -17,7 +17,7 @@ services:
               docker-kafka-server {
                   properties {
                     bootstrap.servers: "kafka:9092"
-                  }
+                  },
                   registry: "http://schema-registry:8085"
               }
             }
