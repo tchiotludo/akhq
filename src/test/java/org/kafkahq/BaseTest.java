@@ -2,20 +2,16 @@ package org.kafkahq;
 
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.test.InstanceSpec;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
 import org.kafkahq.repositories.AbstractRepository;
-import org.kafkahq.repositories.RecordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
+@Slf4j
 public class BaseTest {
-    protected static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
     protected static App app;
     private static KafkaTestCluster cluster;
 
@@ -25,7 +21,7 @@ public class BaseTest {
         KafkaTestCluster.ConnectionString connectionString = KafkaTestCluster.readClusterInfo();
 
         if (connectionString != null) {
-            logger.info("Kafka server reused on {}", connectionString.getKafka());
+            log.info("Kafka server reused on {}", connectionString.getKafka());
         } else {
             cluster = new KafkaTestCluster(false);
             cluster.run();

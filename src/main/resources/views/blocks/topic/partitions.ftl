@@ -2,8 +2,8 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/node.ftl" as nodeTemplate>
-<#import "/includes/functions.ftl" as functions>
+<#import "../../includes/node.ftl" as nodeTemplate>
+<#import "../../includes/functions.ftl" as functions>
 
 <table class="table table-bordered table-striped table-hover mb-0">
     <thead class="thead-dark">

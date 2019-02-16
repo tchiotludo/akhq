@@ -1,22 +1,18 @@
 package org.kafkahq.repositories;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.modules.KafkaModule;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
-public class ConfigRepository extends AbstractRepository implements Jooby.Module {
+public class ConfigRepository extends AbstractRepository {
     @Inject
     private KafkaModule kafkaModule;
 
@@ -81,9 +77,17 @@ public class ConfigRepository extends AbstractRepository implements Jooby.Module
             .get();
     }
 
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(ConfigRepository.class).toInstance(new ConfigRepository());
+    public static List<org.kafkahq.models.Config> updatedConfigs(Map<String, String> request, List<org.kafkahq.models.Config> configs) {
+        return configs
+            .stream()
+            .filter(config -> !config.isReadOnly())
+            .filter(config -> request.containsKey("configs[" + config.getName() + "]"))
+            .filter(config -> {
+                String current = config.getValue() == null ? "" : config.getValue();
+
+                return !(current).equals(request.get("configs[" + config.getName() + "]"));
+            })
+            .map(config -> config.withValue(request.get("configs[" + config.getName() + "]")))
+            .collect(Collectors.toList());
     }
 }

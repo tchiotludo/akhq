@@ -1,29 +1,22 @@
 package org.kafkahq.repositories;
 
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Singleton
-public class TopicRepository extends AbstractRepository implements Jooby.Module {
+public class TopicRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
-
     private ConsumerGroupRepository consumerGroupRepository;
-
     private LogDirRepository logDirRepository;
-
     private ConfigRepository configRepository;
 
     @Inject
@@ -92,11 +85,5 @@ public class TopicRepository extends AbstractRepository implements Jooby.Module 
             .deleteTopics(Collections.singleton(name))
             .all()
             .get();
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(TopicRepository.class).asEagerSingleton();
     }
 }

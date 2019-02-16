@@ -1,17 +1,13 @@
 package org.kafkahq.repositories;
 
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.KafkaModule;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Singleton
-public class SchemaRegistryRepository extends AbstractRepository implements Jooby.Module {
+public class SchemaRegistryRepository extends AbstractRepository {
     public static final int ERROR_NOT_FOUND = 40401;
     private KafkaModule kafkaModule;
     private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
@@ -176,11 +172,5 @@ public class SchemaRegistryRepository extends AbstractRepository implements Joob
         }
 
         return this.kafkaAvroDeserializers.get(clusterId);
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(SchemaRegistryRepository.class);
     }
 }

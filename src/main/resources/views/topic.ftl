@@ -4,9 +4,9 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/group.ftl" as groupTemplate>
-<#import "/includes/log.ftl" as logTemplate>
+<#import "includes/template.ftl" as template>
+<#import "includes/group.ftl" as groupTemplate>
+<#import "includes/log.ftl" as logTemplate>
 
 <@template.header "Topic: " + topic.getName(), "topic" />
 
@@ -42,13 +42,13 @@
     <div class="tab-content">
         <#if tab == "data">
         <div class="tab-pane active" role="tabpanel">
-            <#include "/blocks/topic/data.ftl" />
+            <#include "blocks/topic/data.ftl" />
         </div>
         </#if>
 
         <#if tab == "partitions">
         <div class="tab-pane active" role="tabpanel">
-            <#include "/blocks/topic/partitions.ftl" />
+            <#include "blocks/topic/partitions.ftl" />
         </div>
         </#if>
 
@@ -60,7 +60,7 @@
 
         <#if tab == "configs">
         <div class="tab-pane active" role="tabpanel">
-            <#include "/blocks/configs.ftl" />
+            <#include "blocks/configs.ftl" />
         </div>
         </#if>
 

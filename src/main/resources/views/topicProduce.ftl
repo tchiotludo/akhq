@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/functions.ftl" as functions>
+<#import "includes/template.ftl" as template>
+<#import "includes/functions.ftl" as functions>
 
 <@template.header "Produce to  " + topic.getName(), "topic" />
 
@@ -27,8 +27,8 @@
         <label class="col-sm-2 col-form-label">Headers</label>
         <div class="col-sm-10 khq-multiple">
             <div>
-                <input type="text" class="form-control" name="headers[key][]" autocomplete="off" placeholder="Key">
-                <input type="text" class="form-control" name="headers[value][]" autocomplete="off" placeholder="Value">
+                <input type="text" class="form-control" name="headers[key]" autocomplete="off" placeholder="Key">
+                <input type="text" class="form-control" name="headers[value]" autocomplete="off" placeholder="Value">
                 <button class="btn btn-secondary"><i class="fa fa-plus"></i></button>
             </div>
         </div>

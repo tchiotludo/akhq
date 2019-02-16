@@ -1,5 +1,6 @@
 package org.kafkahq.repositories;
 
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.Test;
 import org.kafkahq.BaseTest;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
+@Slf4j
 public class RecordRepositoryTest extends BaseTest {
     private final RecordRepository repository = app.require(RecordRepository.class);
 
@@ -122,7 +124,7 @@ public class RecordRepositoryTest extends BaseTest {
             List<Record> datas = repository.consume(options);
             all.addAll(datas);
 
-            datas.forEach(record -> logger.debug(
+            datas.forEach(record -> log.debug(
                 "Records [Topic: {}] [Partition: {}] [Offset: {}] [Key: {}] [Value: {}]",
                 record.getTopic(),
                 record.getPartition(),
@@ -130,7 +132,7 @@ public class RecordRepositoryTest extends BaseTest {
                 record.getKey(),
                 record.getValue()
             ));
-            logger.info("Consume {} records", datas.size());
+            log.info("Consume {} records", datas.size());
 
             URIBuilder after = options.after(datas, URIBuilder.empty());
 

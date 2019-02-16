@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Debug {
-    private static final Logger logger = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
+    private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
     private static final String name = Thread.currentThread().getStackTrace()[2].getClassName();
 
     private static String caller() {
@@ -35,7 +35,7 @@ public class Debug {
 
         runnable.run();
 
-        logger.trace("[" + (System.currentTimeMillis() - start ) + " ms] " + message, arguments);
+        log.trace("[" + (System.currentTimeMillis() - start ) + " ms] " + message, arguments);
     }
 
     @SafeVarargs
@@ -49,10 +49,10 @@ public class Debug {
 
     @SafeVarargs
     public static <T> void log(T... args) {
-        logger.trace("\033[44;30m " + caller() + " \033[0m");
+        log.trace("\033[44;30m " + caller() + " \033[0m");
 
         for (Object arg : args) {
-            logger.trace("\033[46;30m " + arg.getClass().getName() + " \033[0m " + toJson(arg));
+            log.trace("\033[46;30m " + arg.getClass().getName() + " \033[0m " + toJson(arg));
         }
     }
 }

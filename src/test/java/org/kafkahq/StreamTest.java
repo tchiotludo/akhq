@@ -4,6 +4,7 @@ import com.yammer.metrics.core.Stoppable;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -17,18 +18,14 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
-import org.kafkahq.repositories.RecordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Properties;
 
+@Slf4j
 public class StreamTest implements Runnable, Stoppable {
-    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
-
     private KafkaStreams streams;
     private String bootstrapServers;
     private String registryUrl;
@@ -62,12 +59,12 @@ public class StreamTest implements Runnable, Stoppable {
 
     private void start(KafkaStreams streams) {
         streams.setUncaughtExceptionHandler((thread, ex) -> {
-            logger.error("Uncaught exception in " + thread.getName() + ", closing Kafka Streams !", ex);
+            log.error("Uncaught exception in " + thread.getName() + ", closing Kafka Streams !", ex);
             System.exit(1);
         });
 
         streams.setStateListener((newState, oldState) ->
-            logger.debug("Switching from {} to {} state", oldState, newState)
+            log.debug("Switching from {} to {} state", oldState, newState)
         );
 
         streams.start();

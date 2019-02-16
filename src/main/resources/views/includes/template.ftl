@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="clusters" type="java.util.List<java.lang.String>" -->
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
@@ -9,15 +11,13 @@
     <!DOCTYPE html>
     <html>
     <head>
+        <meta charset="UTF-8" />
         <title>${title} | KafkaHQ</title>
         <meta name="turbolinks-cache-control" content="no-cache" />
         <link rel="shortcut icon"
               type="image/png"
               href="${basePath}/static/img/icon.png" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,700" />
-        <#if liveReload?? >
-        ${liveReload?no_esc}
-        </#if>
         <link rel="stylesheet" href="${basePath}/static/css/vendor.css" />
         <link rel="stylesheet" href="${basePath}/static/css/main.css" />
         <script type="text/javascript" src="${basePath}/static/js/vendor.js"></script>

@@ -1,5 +1,6 @@
 buildscript {
     ext {
+        micronautVersion = "1.1.0.M1"
         joobyVersion = "1.5.+"
         confluentVersion = "5.1.0"
         kafkaVersion = "2.1.+"
@@ -12,20 +13,33 @@ buildscript {
     }
 
     dependencies {
+        // jooby
         classpath "com.google.gradle:osdetector-gradle-plugin:1.4.0"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
         classpath "org.jooby:jooby-gradle-plugin:$joobyVersion"
+
+        // kafkahq
         classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.16.0"
     }
 }
 
 plugins {
+    // micronaut
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "com.github.johnrengelman.shadow" version "4.0.2"
+    id "application"
+    id "java"
+    id "net.ltgt.apt-eclipse" version "0.20"
+    id "net.ltgt.apt-idea" version "0.20"
+
+    // kafkahq
     id "com.moowork.node" version "1.2.0"
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'com.adarshr.test-logger' version '1.6.0'
     id 'com.github.psxpaul.execfork' version '0.1.9'
 }
 
+// jooby
 apply plugin: "io.spring.dependency-management"
 apply plugin: "com.google.osdetector"
 apply plugin: "application"
@@ -43,6 +57,7 @@ repositories {
     mavenCentral()
     maven { url 'http://packages.confluent.io/maven/' }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://jcenter.bintray.com" }
 }
 
 lombok {
@@ -71,23 +86,15 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom "org.jooby:jooby-bom:$joobyVersion"
+        mavenBom "io.micronaut:micronaut-bom:$micronautVersion"
     }
 }
 
-joobyRun {
-    includes = ["**/*.class", "**/*.conf", "**/*.properties", "**/*.ftl", "**/*.xml"]
+// micronaut
+configurations {
+    developmentOnly
 }
 
-sourceSets.main.resources {
-    srcDirs = ["conf", "public"]
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(joobyRun)) {
-        webpack.enabled = false
-        npmInstall.enabled = false
-    }
-}
 
 /**********************************************************************************************************************\
  * Dependencies
@@ -127,6 +134,41 @@ dependencies {
     testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.25'
+
+    // micronaut
+    annotationProcessor "io.micronaut:micronaut-inject-java"
+    annotationProcessor "io.micronaut:micronaut-validation"
+    compile "io.micronaut:micronaut-http-client"
+    compile "io.micronaut:micronaut-http-server-netty"
+    compile "io.micronaut:micronaut-inject"
+    compile "io.micronaut:micronaut-validation"
+    compile 'io.micronaut:micronaut-views'
+    compile "io.micronaut:micronaut-runtime"
+    runtime "ch.qos.logback:logback-classic:1.2.3"
+    runtime 'org.freemarker:freemarker:2.3.28'
+
+    // micronaut test
+    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+    testCompile "org.junit.jupiter:junit-jupiter-api"
+    testCompile "io.micronaut.test:micronaut-test-junit5"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine"
+}
+
+/**********************************************************************************************************************\
+ * Compile & run (micronaut)
+ **********************************************************************************************************************/
+run.classpath += configurations.developmentOnly
+test.classpath += configurations.developmentOnly
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1')
+
+// use JUnit 5 platform
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+    options.compilerArgs.add('-parameters')
 }
 
 /**********************************************************************************************************************\
@@ -189,24 +231,34 @@ task webpack(type: NodeTask, dependsOn: "npmInstall") {
     group = 'build'
     description = 'Build with webpack assets'
     script = project.file("node_modules/.bin/webpack")
-    outputs.dir("public/static")
+    outputs.dir("src/main/resources/static")
     args = ["-p", "--mode production"]
 }
 
 jar.dependsOn "webpack"
 processResources.dependsOn 'webpack'
 
-clean.delete << file("public/static")
+clean.delete << file("src/main/resources/static")
 
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
-jar {
-    manifest {
-        attributes "Main-Class": mainClassName
-    }
+shadowJar {
+    mergeServiceFiles()
+}
 
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+/**********************************************************************************************************************\
+ * Tmp
+ **********************************************************************************************************************/
+task micronaut(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'org.kafkahq.App'
+    jvmArgs = ['-Dmicronaut.environments=dev']
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(micronaut)) {
+        webpack.enabled = false
+        npmInstall.enabled = false
     }
 }

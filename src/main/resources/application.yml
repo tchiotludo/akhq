@@ -1,0 +1,26 @@
+micronaut:
+  application:
+    name: kafkahq
+  io:
+    watch:
+      paths: src/main
+      restart: true
+  context:
+    path: ""
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:static
+        mapping: "${micronaut.context.path:}/static/**"
+
+jackson:
+  module-scan: false
+
+kafka:
+  defaults:
+    consumer:
+      properties:
+        max.poll.records: 50
+        isolation.level: read_committed
+        group.id: KafkaHQ
+        enable.auto.commit: "false"

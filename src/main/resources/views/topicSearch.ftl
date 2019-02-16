@@ -4,4 +4,4 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#include "/blocks/topic/dataBody.ftl" />
+<#include "blocks/topic/dataBody.ftl" />

@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="pagination" type="java.util.Map<java.lang.String, java.lang.String>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 

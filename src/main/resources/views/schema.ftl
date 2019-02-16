@@ -5,8 +5,8 @@
 <#-- @ftlvariable name="config" type="org.kafkahq.models.Schema.Config" -->
 <#-- @ftlvariable name="versions" type="java.util.List<org.kafkahq.models.Schema>" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/schema.ftl" as schemaTemplate>
+<#import "includes/template.ftl" as template>
+<#import "includes/schema.ftl" as schemaTemplate>
 
 <@template.header "Schema: " + schema.getSubject(), "schema" />
 

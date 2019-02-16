@@ -3,7 +3,7 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/template.ftl" as template>
+<#import "includes/template.ftl" as template>
 
 <@template.header "Consumer Group: " + group.getId(), "group" />
 
@@ -24,13 +24,13 @@
     <div class="tab-content">
         <#if tab == "topics">
         <div class="tab-pane show active" role="tabpanel">
-            <#include "/blocks/group/topic.ftl" />
+            <#include "blocks/group/topic.ftl" />
         </div>
         </#if>
 
         <#if tab == "members">
         <div class="tab-pane active" role="tabpanel">
-            <#include "/blocks/group/members.ftl" />
+            <#include "blocks/group/members.ftl" />
         </div>
         </#if>
     </div>

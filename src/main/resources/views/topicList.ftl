@@ -2,12 +2,12 @@
 <#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/functions.ftl" as functions>
+<#import "includes/template.ftl" as template>
+<#import "includes/functions.ftl" as functions>
 
 <@template.header "Topics", "topic" />
 
-<#include "/blocks/navbar-search.ftl" />
+<#include "blocks/navbar-search.ftl" />
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover mb-0">

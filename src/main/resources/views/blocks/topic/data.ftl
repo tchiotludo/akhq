@@ -1,3 +1,4 @@
+
 <#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.String>>" -->
 <#-- @ftlvariable name="navbar" type="java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
@@ -16,7 +17,7 @@
     </button>
 
     <nav>
-        <#include "/blocks/topic/pagination.ftl" />
+        <#include "pagination.ftl" />
     </nav>
 
     <div class="collapse navbar-collapse" id="topic-data">
@@ -139,7 +140,7 @@
                 </tr>
             </#if>
 
-            <#include "/blocks/topic/dataBody.ftl" />
+            <#include "dataBody.ftl" />
         </tbody>
     </table>
 </div>

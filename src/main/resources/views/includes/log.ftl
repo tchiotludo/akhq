@@ -2,7 +2,7 @@
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "node.ftl" as nodeTemplate>
-<#import "/includes/functions.ftl" as functions>
+<#import "functions.ftl" as functions>
 
 <#macro table logs>
     <#-- @ftlvariable name="logs" type="java.util.List<org.kafkahq.models.LogDir>" -->

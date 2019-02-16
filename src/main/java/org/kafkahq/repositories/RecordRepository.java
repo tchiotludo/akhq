@@ -3,27 +3,22 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import lombok.*;
 import lombok.experimental.Wither;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
@@ -33,9 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class RecordRepository extends AbstractRepository implements Jooby.Module {
-    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
-
+@Slf4j
+public class RecordRepository extends AbstractRepository {
     private final KafkaModule kafkaModule;
     private final TopicRepository topicRepository;
     private final SchemaRegistryRepository schemaRegistryRepository;
@@ -69,7 +63,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             partitions.forEach(consumer::seek);
 
             partitions.forEach((topicPartition, first) ->
-                logger.trace(
+                log.trace(
                     "Consume [topic: {}] [partition: {}] [start: {}]",
                     topicPartition.topic(),
                     topicPartition.partition(),
@@ -335,7 +329,6 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         )).get();
     }
 
-
     public SearchEnd search(Options options, SearchConsumer callback) throws ExecutionException, InterruptedException {
         KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
         Topic topic = topicRepository.findByName(options.topic);
@@ -350,7 +343,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             consumer.assign(partitions.keySet());
             partitions.forEach(consumer::seek);
             partitions.forEach((topicPartition, first) ->
-                logger.trace(
+                log.trace(
                     "Search [topic: {}] [partition: {}] [start: {}]",
                     topicPartition.topic(),
                     topicPartition.partition(),
@@ -382,7 +375,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                         if (searchFilter(options, record)) {
                             list.add(newRecord(record, options));
 
-                            logger.trace(
+                            log.trace(
                                 "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
                                 record.topic(),
                                 record.partition(),
@@ -428,7 +421,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         @Override
         public void close() throws IOException {
             this.isClose = true;
-            logger.info("SearchConsumer closed called");
+            log.info("SearchConsumer closed called");
         }
     }
 
@@ -568,11 +561,5 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         private final TopicPartition topicPartition;
         private final long begin;
         private final long end;
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(RecordRepository.class);
     }
 }

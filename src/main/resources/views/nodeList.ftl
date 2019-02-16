@@ -2,8 +2,8 @@
 <#-- @ftlvariable name="cluster" type="org.kafkahq.models.Cluster" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/node.ftl" as nodeTemplate>
+<#import "includes/template.ftl" as template>
+<#import "includes/node.ftl" as nodeTemplate>
 
 <@template.header "Nodes", "node" />
 

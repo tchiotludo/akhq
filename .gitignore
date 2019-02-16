@@ -18,7 +18,7 @@ build/*
 .gradletasknamecache
 
 ### Assets
-public/static
+src/main/resources/static
 node_modules
 node/
 
@@ -36,7 +36,7 @@ out/*
 logs/*
 
 ### Kafka HQ ###
-conf/*.dev.conf
+src/**/*-dev.yml
 
 ## Docker
 .env

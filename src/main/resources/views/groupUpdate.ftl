@@ -2,8 +2,8 @@
 <#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "/includes/template.ftl" as template>
-<#import "/includes/functions.ftl" as functions>
+<#import "includes/template.ftl" as template>
+<#import "includes/functions.ftl" as functions>
 
 <@template.header "Update offsets: " + group.getId(), "group" />
 

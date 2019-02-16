@@ -1,5 +1,5 @@
-<#import "/includes/template.ftl" as template>
-<#import "/includes/functions.ftl" as functions>
+<#import "includes/template.ftl" as template>
+<#import "includes/functions.ftl" as functions>
 
 <@template.header "Create a topic", "topic" />
 
