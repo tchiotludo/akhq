@@ -9,7 +9,7 @@ micronaut:
     path: ""
   router:
     static-resources:
-      swagger:
+      static:
         paths: classpath:static
         mapping: "${micronaut.context.path:}/static/**"
 

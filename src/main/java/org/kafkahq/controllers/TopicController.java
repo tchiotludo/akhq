@@ -13,7 +13,10 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
 import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.disposables.Disposable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,12 +30,14 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.kafkahq.utils.Debug;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.Buffer;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -317,6 +322,25 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+
+    @Get("test")
+    public Publisher<Event<RecordRepository.SearchEnd>> index() {
+        String[] versions = new String[]{"1.0", "2.0"};
+
+        return Flowable.generate(() -> 0, (i, emitter) -> {
+            if (i < versions.length) {
+                emitter.onNext(
+                    Event.of(new RecordRepository.SearchEnd("Micronaut " + versions[i] + " Released"))
+                );
+                Debug.print(versions[i]);
+                Thread.sleep(2000);
+            } else {
+                emitter.onComplete();
+            }
+            return ++i;
+        });
+    }
+
     @Get("{topicName}/search/{search}")
     public Publisher<Event<?>> sse(String cluster,
                                           String topicName,
@@ -343,6 +367,28 @@ public class TopicController extends AbstractController {
         datas.put("clusterId", cluster);
         datas.put("basePath", getBasePath());
 
+        FlowableOnSubscribe<Event<?>> flowableOnSubscribe = emitter -> {
+
+            emitter.onNext(Event
+                .of(new RecordRepository.SearchEnd("1"))
+                .name("searchEnd")
+            );
+
+            Debug.print("1");
+            Thread.sleep(1000);
+
+            emitter.onNext(Event
+                .of(new RecordRepository.SearchEnd("2"))
+                .name("searchEnd")
+            );
+            Debug.print("2");
+            Thread.sleep(1000);
+            emitter.onComplete();
+        };
+
+        return Flowable.create(flowableOnSubscribe, BackpressureStrategy.ERROR);
+
+        /*
         return Flowable.unsafeCreate((emitter) -> {
             RecordRepository.SearchConsumer searchConsumer = new RecordRepository.SearchConsumer() {
                 @Override
@@ -355,7 +401,7 @@ public class TopicController extends AbstractController {
                     } catch (IOException ignored) {}
 
                     emitter.onNext(Event
-                        .of(new SearchBody(
+                        .of(new DataSseController.SearchBody(
                             searchEvent.getOffsets(),
                             searchEvent.getProgress(),
                             stringWriter.toString()
@@ -381,6 +427,7 @@ public class TopicController extends AbstractController {
 
             emitter.onComplete();
         });
+        */
     }
 
     @ToString

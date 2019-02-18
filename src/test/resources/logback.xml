@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
-    <!-- Remove logback startup log -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
     <property name="pattern" value="%d{ISO8601} %highlight(%-5.5level) %magenta(%-10.10thread) %cyan(%-26.26logger{26}) %msg%n" />
     <withJansi>true</withJansi>
 
@@ -36,6 +40,9 @@
         <appender-ref ref="STDOUT" />
         <appender-ref ref="STDERR" />
     </root>
+
+    <logger name="org.kafkahq" level="INFO" />
+    <logger name="io.micronaut" level="INFO" />
 
     <logger name="org.apache.kafka.common.utils.AppInfoParser" level="ERROR" />
     <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR" />

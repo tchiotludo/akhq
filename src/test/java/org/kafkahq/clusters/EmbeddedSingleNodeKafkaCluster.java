@@ -4,9 +4,10 @@ import io.confluent.kafka.schemaregistry.RestApp;
 import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import kafka.server.KafkaConfig$;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -15,8 +16,8 @@ import java.util.Properties;
  * Runs an in-memory, "embedded" Kafka cluster with 1 ZooKeeper instance, 1 Kafka broker, and 1
  * Confluent Schema Registry instance.
  */
-public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
-    private static final Logger log = LoggerFactory.getLogger(EmbeddedSingleNodeKafkaCluster.class);
+@Slf4j
+public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
     private static final int DEFAULT_BROKER_PORT = 0; // 0 results in a random port being selected
     private static final String KAFKA_SCHEMAS_TOPIC = "__schemas";
     private static final String AVRO_COMPATIBILITY_TYPE = AvroCompatibilityLevel.BACKWARD.name;
@@ -83,12 +84,12 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
     }
 
     @Override
-    protected void before() throws Exception {
+    public void beforeTestExecution(ExtensionContext context) throws Exception {
         start();
     }
 
     @Override
-    protected void after() {
+    public void afterTestExecution(ExtensionContext context) throws Exception {
         stop();
     }
 

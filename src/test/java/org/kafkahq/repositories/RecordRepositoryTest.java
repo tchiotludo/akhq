@@ -2,22 +2,26 @@ package org.kafkahq.repositories;
 
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.junit.Test;
-import org.kafkahq.BaseTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kafkahq.KafkaClusterExtension;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Record;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class RecordRepositoryTest extends BaseTest {
-    private final RecordRepository repository = app.require(RecordRepository.class);
+@ExtendWith(KafkaClusterExtension.class)
+public class RecordRepositoryTest {
+    @Inject
+    private RecordRepository repository;
 
     @Test
     public void consumeEmpty() throws ExecutionException, InterruptedException {
