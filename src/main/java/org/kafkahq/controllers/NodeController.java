@@ -16,11 +16,13 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.LogDirRepository;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
+@Singleton
 @Controller("${micronaut.context.path:}/{cluster}/node")
 public class NodeController extends AbstractController {
     private ClusterRepository clusterRepository;

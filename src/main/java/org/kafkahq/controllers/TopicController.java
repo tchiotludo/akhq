@@ -34,6 +34,7 @@ import org.kafkahq.utils.Debug;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+@Singleton
 @Slf4j
 @Controller("${micronaut.context.path:}/{cluster}/topic")
 public class TopicController extends AbstractController {
@@ -98,7 +100,7 @@ public class TopicController extends AbstractController {
             .map(r -> new Config(r.getKey(), r.getValue()))
             .collect(Collectors.toList());
 
-        MutableHttpResponse<Void> response = HttpResponse.redirect(new URI(("/" + cluster + "/topic")));
+        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
 
         this.toast(response, RequestHelper.runnableToToast(() ->
                 this.topicRepository.create(

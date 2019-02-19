@@ -11,9 +11,11 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 
+@Singleton
 @Controller("${micronaut.context.path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
@@ -52,7 +54,7 @@ public class SchemaController extends AbstractController {
         throws Throwable
     {
         if (this.schemaRepository.exist(cluster, subject)) {
-            MutableHttpResponse<Void> response = HttpResponse.redirect(new URI(("/" + cluster + "/schema/create")));
+            MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema/create"));
 
             this.toast(response, AbstractController.Toast.builder()
                 .message("Subject '" + subject + "' already exits")
@@ -96,7 +98,7 @@ public class SchemaController extends AbstractController {
                                      String subject,
                                      String schema,
                                      String compatibilityLevel) throws Throwable {
-        MutableHttpResponse<Void> response = HttpResponse.redirect(new URI("/" + cluster + "/schema/" + subject));
+        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema/" + subject));
 
         this.toast(response, RequestHelper.runnableToToast(
             () -> registerSchema(cluster, subject, schema, compatibilityLevel),

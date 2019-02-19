@@ -14,6 +14,8 @@ import lombok.experimental.Wither;
 import org.kafkahq.modules.KafkaModule;
 
 import javax.inject.Inject;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 abstract public class AbstractController {
@@ -52,6 +54,10 @@ abstract public class AbstractController {
 
     protected String getBasePath() {
         return basePath.replaceAll("/$","");
+    }
+
+    protected URI uri(String path) throws URISyntaxException {
+        return new URI((this.basePath != null ? this.basePath : "") + path);
     }
 
     protected <T> Toast toast(MutableHttpResponse<T> response, Toast toast) {
