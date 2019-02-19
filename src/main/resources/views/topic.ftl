@@ -72,9 +72,11 @@
     </div>
 </div>
 
-<@template.bottom>
-    <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" type="submit" class="btn btn-primary">Produce to topic</a>
-</@template.bottom>
+<#if tab != "configs">
+    <@template.bottom>
+        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" type="submit" class="btn btn-primary">Produce to topic</a>
+    </@template.bottom>
+</#if>
 
 <@template.footer/>
 
