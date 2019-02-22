@@ -3,14 +3,14 @@ package org.kafkahq.controllers;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.runtime.context.scope.ThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.modules.KafkaModule;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.net.URISyntaxException;
 
-@Singleton
+@ThreadLocal
 @Slf4j
 @Controller
 public class RedirectController extends AbstractController {

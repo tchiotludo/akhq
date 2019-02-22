@@ -14,8 +14,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @ExtendWith(KafkaClusterExtension.class)
@@ -179,30 +182,27 @@ public class RecordRepositoryTest {
     }
 
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
-        int size = 0;
-        boolean hasNext = true;
+        AtomicInteger size = new AtomicInteger();
+        AtomicBoolean hasNext = new AtomicBoolean(true);
 
         do {
-            SearchConsumer searchConsumer = new SearchConsumer();
-            RecordRepository.SearchEnd end = repository.search(options, searchConsumer);
-            size += searchConsumer.size;
+            repository.search(options).blockingSubscribe(event -> {
+                size.addAndGet(event.getData().getRecords().size());
 
-            if (end.getAfter() == null) {
-                hasNext = false;
-            } else {
-                options.setAfter(end.getAfter());
-            }
-        } while (hasNext);
+                assertTrue(event.getData().getPercent() >= 0);
+                assertTrue(event.getData().getPercent() <= 100);
 
-        return size;
-    }
+                if (event.getName().equals("searchEnd")) {
+                    if (event.getData().getAfter() == null) {
+                        hasNext.set(false);
+                    } else {
+                        options.setAfter(event.getData().getAfter());
+                    }
+                }
+            });
 
-    private static class SearchConsumer extends RecordRepository.SearchConsumer {
-        public int size = 0;
+        } while (hasNext.get());
 
-        @Override
-        public void accept(RecordRepository.SearchEvent searchEvent) {
-            size += searchEvent.getRecords().size();
-        }
+        return size.get();
     }
 }

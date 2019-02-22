@@ -7,6 +7,7 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.runtime.context.scope.ThreadLocal;
 import io.micronaut.views.View;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Node;
@@ -16,13 +17,12 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.LogDirRepository;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
-@Singleton
+@ThreadLocal
 @Controller("${micronaut.context.path:}/{cluster}/node")
 public class NodeController extends AbstractController {
     private ClusterRepository clusterRepository;

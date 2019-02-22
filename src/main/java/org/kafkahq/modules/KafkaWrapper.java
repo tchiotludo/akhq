@@ -10,7 +10,6 @@ import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -21,7 +20,6 @@ public class KafkaWrapper {
     private KafkaModule kafkaModule;
     private String clusterId;
 
-    @Inject
     public KafkaWrapper(KafkaModule kafkaModule, String clusterId) {
         this.kafkaModule = kafkaModule;
         this.clusterId = clusterId;

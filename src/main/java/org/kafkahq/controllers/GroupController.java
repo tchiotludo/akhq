@@ -7,6 +7,7 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.runtime.context.scope.ThreadLocal;
 import io.micronaut.views.View;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.TopicPartition;
@@ -15,7 +16,6 @@ import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Singleton
+@ThreadLocal
 @Controller("${micronaut.context.path:}/{cluster}/group")
 public class GroupController extends AbstractController {
     private ConsumerGroupRepository consumerGroupRepository;

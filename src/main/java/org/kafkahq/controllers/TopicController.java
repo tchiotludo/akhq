@@ -11,15 +11,10 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
+import io.micronaut.runtime.context.scope.ThreadLocal;
 import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.disposables.Disposable;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -30,23 +25,19 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.utils.Debug;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
-import java.nio.Buffer;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Singleton
 @Slf4j
 @Controller("${micronaut.context.path:}/{cluster}/topic")
+@ThreadLocal
 public class TopicController extends AbstractController {
     private TopicRepository topicRepository;
     private ConfigRepository configRepository;
@@ -324,25 +315,6 @@ public class TopicController extends AbstractController {
         return response;
     }
 
-
-    @Get("test")
-    public Publisher<Event<RecordRepository.SearchEnd>> index() {
-        String[] versions = new String[]{"1.0", "2.0"};
-
-        return Flowable.generate(() -> 0, (i, emitter) -> {
-            if (i < versions.length) {
-                emitter.onNext(
-                    Event.of(new RecordRepository.SearchEnd("Micronaut " + versions[i] + " Released"))
-                );
-                Debug.print(versions[i]);
-                Thread.sleep(2000);
-            } else {
-                emitter.onComplete();
-            }
-            return ++i;
-        });
-    }
-
     @Get("{topicName}/search/{search}")
     public Publisher<Event<?>> sse(String cluster,
                                           String topicName,
@@ -369,81 +341,46 @@ public class TopicController extends AbstractController {
         datas.put("clusterId", cluster);
         datas.put("basePath", getBasePath());
 
-        FlowableOnSubscribe<Event<?>> flowableOnSubscribe = emitter -> {
+        return recordRepository
+            .search(options)
+            .map(event -> {
+                SearchBody searchBody = new SearchBody(
+                    event.getData().getPercent(),
+                    event.getData().getAfter()
+                );
 
-            emitter.onNext(Event
-                .of(new RecordRepository.SearchEnd("1"))
-                .name("searchEnd")
-            );
-
-            Debug.print("1");
-            Thread.sleep(1000);
-
-            emitter.onNext(Event
-                .of(new RecordRepository.SearchEnd("2"))
-                .name("searchEnd")
-            );
-            Debug.print("2");
-            Thread.sleep(1000);
-            emitter.onComplete();
-        };
-
-        return Flowable.create(flowableOnSubscribe, BackpressureStrategy.ERROR);
-
-        /*
-        return Flowable.unsafeCreate((emitter) -> {
-            RecordRepository.SearchConsumer searchConsumer = new RecordRepository.SearchConsumer() {
-                @Override
-                public void accept(RecordRepository.SearchEvent searchEvent) {
-                    datas.put("datas", searchEvent.getRecords());
+                if (event.getData().getRecords().size() > 0) {
+                    datas.put("datas", event.getData().getRecords());
 
                     StringWriter stringWriter = new StringWriter();
                     try {
                         freemarkerViewsRenderer.render("topicSearch", datas).writeTo(stringWriter);
                     } catch (IOException ignored) {}
 
-                    emitter.onNext(Event
-                        .of(new DataSseController.SearchBody(
-                            searchEvent.getOffsets(),
-                            searchEvent.getProgress(),
-                            stringWriter.toString()
-                        ))
-                        .name("searchBody")
-                    );
+                    searchBody.body = stringWriter.toString();
                 }
-            };
 
-
-//             emitter.setCancellable(searchConsumer::close);
-            RecordRepository.SearchEnd end = null;
-            try {
-                end = recordRepository.search(options, searchConsumer);
-            } catch (ExecutionException | InterruptedException e) {
-                emitter.onError(e);
-            }
-
-            emitter.onNext(Event
-                .of(end)
-                .name("searchEnd")
-            );
-
-            emitter.onComplete();
-        });
-        */
+                return Event
+                    .of(searchBody)
+                    .name(event.getName());
+            });
     }
 
     @ToString
     @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
     public static class SearchBody {
-        @JsonProperty("offsets")
-        private Map<Integer, RecordRepository.SearchEvent.Offset> offsets = new HashMap<>();
+        public SearchBody(double percent, String after) {
+            this.percent = percent;
+            this.after = after;
+        }
 
-        @JsonProperty("progress")
-        private Map<Integer, Long> progress = new HashMap<>();
+        @JsonProperty("percent")
+        private Double percent;
 
         @JsonProperty("body")
         private String body;
+
+        @JsonProperty("after")
+        private String after;
     }
 }

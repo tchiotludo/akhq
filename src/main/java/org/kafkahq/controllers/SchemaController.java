@@ -5,17 +5,17 @@ import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.runtime.context.scope.ThreadLocal;
 import io.micronaut.views.View;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 
-@Singleton
+@ThreadLocal
 @Controller("${micronaut.context.path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;

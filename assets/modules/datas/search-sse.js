@@ -38,13 +38,17 @@ $.widget("khq.search-sse", $.khq.widget, {
         this._eventSource.addEventListener('searchBody', function(e) {
             let searchBody = JSON.parse(e.data);
 
-            if (searchBody.body.trim()) {
+            if (searchBody.body) {
                 table.append(searchBody.body);
                 $(document).trigger('khq.refresh');
             }
 
-            if (searchBody.progress && searchBody.offsets) {
-                self._updateProgress(searchBody.offsets, searchBody.progress)
+            if (searchBody.after !== null) {
+                self._updateAfter(searchBody.percent);
+            }
+
+            if (searchBody.percent) {
+                self._updateProgressBar(searchBody.percent);
             }
         }, false);
 
@@ -52,14 +56,8 @@ $.widget("khq.search-sse", $.khq.widget, {
             self._close(e);
             let searchEnd = JSON.parse(e.data);
 
-            if (searchEnd.after !== null) {
-                self._after
-                    .removeClass('disabled')
-                    .find('.page-link')
-                    .attr('href', self._url().setSearch("after", searchEnd.after));
-            } else {
-                self._updateProgressBar(100);
-            }
+            self._updateAfter(searchEnd.percent);
+            self._updateProgressBar(100);
         });
     },
 
@@ -68,24 +66,16 @@ $.widget("khq.search-sse", $.khq.widget, {
         this._cancelButton.addClass('disabled btn-outline-dark');
     },
 
-    _updateProgress(offsets, progress) {
-        let current = 0;
-        let total = 0;
-
-        $.each(offsets, function (partition, offset) {
-            total += offset.end - offset.begin;
-        });
-
-        $.each(progress, function (partition, remaining) {
-            current += remaining;
-        });
-
-        this._updateProgressBar(100-(current*100/total));
-    },
-
     _updateProgressBar(number) {
         this._progressBar
             .css('width', number + "%")
             .text((Math.round(number  * 100) / 100) + "%");
+    },
+
+    _updateAfter(after) {
+        this._after
+            .removeClass('disabled')
+            .find('.page-link')
+            .attr('href', this._url().setSearch("after", after));
     }
 });

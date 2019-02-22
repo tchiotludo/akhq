@@ -6,6 +6,7 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
+import org.kafkahq.configs.Connection;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
 import org.kafkahq.repositories.AbstractRepository;
@@ -27,6 +28,9 @@ public class KafkaWrapperFilter implements HttpServerFilter {
     @Value("${micronaut.context.path}")
     protected String basePath;
 
+    @Inject
+    private List<Connection> connections;
+
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         String path = request.getPath();
@@ -39,7 +43,12 @@ public class KafkaWrapperFilter implements HttpServerFilter {
         // set cluster
         if (pathSplit.size() >= 2) {
             String clusterId = pathSplit.get(1);
-            AbstractRepository.setWrapper(new KafkaWrapper(kafkaModule, clusterId));
+
+            connections
+                .stream()
+                .filter(connection -> connection.getName().equals(clusterId))
+                .findFirst()
+                .ifPresent(connection -> AbstractRepository.setWrapper(new KafkaWrapper(kafkaModule, clusterId)));
         }
 
         return chain.proceed(request);
