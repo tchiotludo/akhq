@@ -8,9 +8,9 @@ volumes:
 
 services:
   kafkahq:
-    image: test
+    image: tchiotludo/kafkahq
     environment:
-      KAFKAHQ_CONFIGURATION: |
+      MICRONAUT_APPLICATION_JSON: |
         {
           "kafkahq": {
             "connections": {
