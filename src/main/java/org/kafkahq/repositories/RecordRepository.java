@@ -329,14 +329,11 @@ public class RecordRepository extends AbstractRepository {
         )).get();
     }
 
-    //
-
     public Flowable<Event<SearchEvent>> search(Options options) throws ExecutionException, InterruptedException {
         KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
         Topic topic = topicRepository.findByName(options.topic);
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
-        SearchEvent searchEvent = new SearchEvent(topic);
         AtomicInteger matchesCount = new AtomicInteger();
 
         if (partitions.size() == 0) {
@@ -357,28 +354,28 @@ public class RecordRepository extends AbstractRepository {
             )
         );
 
-        return Flowable.generate(() -> 0, (emptyPoll, emitter) -> {
+        return Flowable.generate(() -> new SearchEvent(topic), (searchEvent, emitter) -> {
             // end
-            if (emptyPoll == 666) {
+            if (searchEvent.emptyPoll == 666) {
                 emitter.onComplete();
-                return emptyPoll;
+                return searchEvent;
             }
+
+            SearchEvent currentEvent = new SearchEvent(searchEvent);
 
             synchronized (consumer) {
                 ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
                 if (records.isEmpty()) {
-                    emptyPoll++;
+                    currentEvent.emptyPoll++;
                 } else {
-                    emptyPoll = 0;
+                    currentEvent.emptyPoll = 0;
                 }
 
                 List<Record> list = new ArrayList<>();
 
                 for (ConsumerRecord<byte[], byte[]> record : records) {
-                    synchronized (searchEvent) {
-                        searchEvent.updateProgress(record);
-                    }
+                    currentEvent.updateProgress(record);
 
                     if (searchFilter(options, record)) {
                         list.add(newRecord(record, options));
@@ -394,21 +391,19 @@ public class RecordRepository extends AbstractRepository {
                     }
                 }
 
-                synchronized (searchEvent) {
-                    searchEvent.records = list;
+                currentEvent.records = list;
 
-                    if (list.size() > 0) {
-                        emitter.onNext(searchEvent.progress(options));
-                    } else if (emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
-                        emitter.onNext(searchEvent.end());
-                        emptyPoll = 666;
-                    } else {
-                        emitter.onNext(searchEvent.progress(options));
-                    }
+                if (list.size() > 0) {
+                    emitter.onNext(currentEvent.progress(options));
+                } else if (currentEvent.emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
+                    emitter.onNext(currentEvent.end());
+                    currentEvent.emptyPoll = 666;
+                } else {
+                    emitter.onNext(currentEvent.progress(options));
                 }
             }
 
-            return emptyPoll;
+            return currentEvent;
         });
     }
 
@@ -432,6 +427,11 @@ public class RecordRepository extends AbstractRepository {
         private List<Record> records = new ArrayList<>();
         private String after;
         private double percent;
+        private double emptyPoll = 0;
+
+        private SearchEvent(SearchEvent event) {
+            this.offsets = event.offsets;
+        }
 
         private SearchEvent(Topic topic) {
             topic.getPartitions()
