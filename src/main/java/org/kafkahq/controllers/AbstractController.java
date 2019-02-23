@@ -24,7 +24,7 @@ abstract public class AbstractController {
         .enableComplexMapKeySerialization()
         .create();
 
-    @Value("${micronaut.context.path}")
+    @Value("${kafkahq.server.base-path}")
     protected String basePath;
 
     @Inject

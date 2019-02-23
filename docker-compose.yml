@@ -12,13 +12,13 @@ services:
     environment:
       KAFKAHQ_CONFIGURATION: |
         {
-          "kafka": {
+          "kafkahq": {
             "connections": {
               "docker-kafka-server": {
                   "properties": {
                     "bootstrap.servers": "kafka:9092"
                   },
-                  "registry": "http://schema-registry:8085"
+                  "schema-registry": "http://schema-registry:8085"
               }
             }
           }

@@ -83,36 +83,53 @@ docker run -d \
 ## Configuration
 Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files.
 Configuration file example in YML :
+
 ```yml
-kafka:
+kafkahq:
+  server:
+    # if behind a reverse proxy, path to kafkahq with trailing slash
+    base-path: ""
+
+  # default kafka properties for each clients, available for admin / producer / consumer (optionnal)
+  clients-defaults:
+    consumer:
+      properties:
+        max.poll.records: 50
+
+  # list of kafka cluster available for kafkahq
   connections:
+    # url friendly name for the cluster
     my-cluster-1:
-    properties:
-      bootstrap.servers: "kafka:9092"
-    
-    registry: "http://schema-registry:8085"
-    
+      # standard kafka properties (optionnal)
+      properties:
+        bootstrap.servers: "kafka:9092"
+      # schema registry url (optionnal)
+      schema-registry: "http://schema-registry:8085"
+
     my-cluster-2:
-    properties:
-      bootstrap.servers: "kafka:9093"
-      security.protocol: SSL
-      ssl.truststore.location: /app/truststore.jks
-      ssl.truststore.password: password
-      ssl.keystore.location: /app/keystore.jks
-      ssl.keystore.password: password
-      ssl.key.password: password
+      properties:
+        bootstrap.servers: "kafka:9093"
+        security.protocol: SSL
+        ssl.truststore.location: /app/truststore.jks
+        ssl.truststore.password: password
+        ssl.keystore.location: /app/keystore.jks
+        ssl.keystore.password: password
+        ssl.key.password: password
 ```
 
-`kafka.connections` is a key value configuration with :
-* `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
-* `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
-* `registry`: the schema registry url *(optional)*
+* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash
+* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with trailing slash
+* `kafkahq.connections` is a key value configuration with :
+  * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
+  * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
+  * `schema-registry`: the schema registry url *(optional)*
+
+> Since KafkaHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
+> More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 KafkaHQ docker image support 2 environment variables to handle configuraiton :
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
-
-More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ## Development Environment
 A docker-compose is provide to start a development environnement.

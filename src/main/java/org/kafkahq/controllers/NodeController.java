@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 @ThreadLocal
-@Controller("${micronaut.context.path:}/{cluster}/node")
+@Controller("${kafkahq.server.base-path:}/{cluster}/node")
 public class NodeController extends AbstractController {
     private ClusterRepository clusterRepository;
     private ConfigRepository configRepository;

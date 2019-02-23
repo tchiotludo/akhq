@@ -7,10 +7,10 @@ import lombok.Getter;
 import java.net.URL;
 import java.util.Optional;
 
-@EachProperty("kafka.connections")
+@EachProperty("kafkahq.connections")
 @Getter
 public class Connection extends AbstractProperties {
-    Optional<URL> registry = Optional.empty();
+    Optional<URL> schemaRegistry = Optional.empty();
 
     public Connection(@Parameter  String name) {
         super(name);

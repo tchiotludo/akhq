@@ -25,7 +25,7 @@ public class KafkaWrapperFilter implements HttpServerFilter {
         this.kafkaModule = kafkaModule;
     }
 
-    @Value("${micronaut.context.path}")
+    @Value("${kafkahq.server.base-path}")
     protected String basePath;
 
     @Inject

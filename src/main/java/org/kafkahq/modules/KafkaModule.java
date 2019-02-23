@@ -155,9 +155,9 @@ public class KafkaModule {
         if (!this.registryRestClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
-            if (connection.getRegistry().isPresent()) {
+            if (connection.getSchemaRegistry().isPresent()) {
                 this.registryRestClient.put(clusterId, new RestService(
-                    connection.getRegistry().get().toString()
+                    connection.getSchemaRegistry().get().toString()
                 ));
             }
         }

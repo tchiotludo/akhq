@@ -26,12 +26,12 @@ public class RedirectController extends AbstractController {
         return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
     }
 
-    @Get("${micronaut.context.path:}")
+    @Get("${kafkahq.server.base-path:}")
     public HttpResponse home() throws URISyntaxException {
         return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
     }
 
-    @Get("${micronaut.context.path:}/{cluster}")
+    @Get("${kafkahq.server.base-path:}/{cluster}")
     public HttpResponse topic(String cluster) throws URISyntaxException {
         return HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
     }

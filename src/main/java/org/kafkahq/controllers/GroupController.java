@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @ThreadLocal
-@Controller("${micronaut.context.path:}/{cluster}/group")
+@Controller("${kafkahq.server.base-path:}/{cluster}/group")
 public class GroupController extends AbstractController {
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;

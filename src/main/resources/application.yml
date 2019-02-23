@@ -5,19 +5,19 @@ micronaut:
     watch:
       paths: src/main
       restart: true
-  context:
-    path: ""
   router:
     static-resources:
       static:
         paths: classpath:static
-        mapping: "${micronaut.context.path:}/static/**"
+        mapping: "${kafkahq.server.base-path:}/static/**"
 
 jackson:
   module-scan: false
 
-kafka:
-  defaults:
+kafkahq:
+  server:
+    base-path: ""
+  clients-defaults:
     consumer:
       properties:
         max.poll.records: 50

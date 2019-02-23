@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Controller("${micronaut.context.path:}/{cluster}/topic")
+@Controller("${kafkahq.server.base-path:}/{cluster}/topic")
 @ThreadLocal
 public class TopicController extends AbstractController {
     private TopicRepository topicRepository;

@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.net.URI;
 
 @ThreadLocal
-@Controller("${micronaut.context.path:}/{cluster}/schema")
+@Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
 

@@ -36,9 +36,9 @@ public class KafkaClusterExtension implements BeforeAllCallback, AfterAllCallbac
         applicationContext = ApplicationContext.run(PropertySource.of(
             "test",
             ImmutableMap.of(
-                "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
+                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
                 connectionString.getKafka(),
-                "kafka.connections." + KafkaTestCluster.CLUSTER_ID + ".registry",
+                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry",
                 connectionString.getSchemaRegistry()
             )
         ));
