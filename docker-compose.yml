@@ -10,7 +10,7 @@ services:
   kafkahq:
     image: test
     environment:
-      MICRONAUT_APPLICATION_JSON: |
+      KAFKAHQ_CONFIGURATION: |
         {
           "kafka": {
             "connections": {
