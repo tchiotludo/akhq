@@ -157,6 +157,7 @@ module.exports = (env, argv) => {
         config = merge(config, {
             devServer: {
                 host: '0.0.0.0',
+                disableHostCheck: true,
                 port: 8081,
                 overlay: true,
                 publicPath: '/static/',

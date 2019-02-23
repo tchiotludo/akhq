@@ -168,10 +168,10 @@ task testKafkaCluster(type:JavaExec) {
 
 task testInjectData(type:JavaExec) {
     group = 'verification'
-    description = 'Start a standalone test Kafka cluster'
+    description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
     main = "org.kafkahq.KafkaTestCluster"
-    args ['inject']
+    args 'inject'
 }
 
 gradle.taskGraph.whenReady { graph ->

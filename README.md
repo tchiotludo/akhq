@@ -64,10 +64,10 @@ First you need a [configuration files](#configuration) in order to configure Kaf
 ```sh
 docker run -d \
     -p 8080:8080 \
-    -v /tmp/application.conf:/app/application.conf \
+    -v /tmp/application.yml:/app/application.yml \
     tchiotludo/kafkahq
 ```
-* With `-v /tmp/application.conf` must be an absolute path to configuration file
+* With `-v /tmp/application.yml` must be an absolute path to configuration file
 * Go to http://localhost:8080
 
 
@@ -75,37 +75,32 @@ docker run -d \
 
 * Install Java 8
 * Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
-* Create an `application.conf` in the same directory
-* Launch the application with `java -jar kafkahq.jar prod`
+* Create an [configuration files](#configuration) 
+* Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`
 * Go to http://localhost:8080
 
 
 ## Configuration
-Configuration file is a [HOCON configuration](https://github.com/lightbend/config/blob/master/HOCON.md) file with an example below :
-```
-{
-  kafka {
-    connections {
-      my-cluster-1 {
-        properties {
-          bootstrap.servers: "kafka:9092"
-        }
-        registry: "http://schema-registry:8085"
-      }
-      my-cluster-2 {
-        properties {
-          bootstrap.servers: "kafka:9093"
-          security.protocol: SSL
-          ssl.truststore.location: /app/truststore.jks
-          ssl.truststore.password: password
-          ssl.keystore.location: /app/keystore.jks
-          ssl.keystore.password: password
-          ssl.key.password: password
-        }
-      }
-    }
-  }
-}
+Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files.
+Configuration file example in YML :
+```yml
+kafka:
+  connections:
+    my-cluster-1:
+    properties:
+      bootstrap.servers: "kafka:9092"
+    
+    registry: "http://schema-registry:8085"
+    
+    my-cluster-2:
+    properties:
+      bootstrap.servers: "kafka:9093"
+      security.protocol: SSL
+      ssl.truststore.location: /app/truststore.jks
+      ssl.truststore.password: password
+      ssl.keystore.location: /app/keystore.jks
+      ssl.keystore.password: password
+      ssl.key.password: password
 ```
 
 `kafka.connections` is a key value configuration with :
@@ -113,9 +108,11 @@ Configuration file is a [HOCON configuration](https://github.com/lightbend/confi
 * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
 * `registry`: the schema registry url *(optional)*
 
-KafkaHQ docker image support 1 environment variables to handle configuraiton :
-* `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration that will be written on /app/configuration.conf on container.
+KafkaHQ docker image support 2 environment variables to handle configuraiton :
+* `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
+* `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
 
+More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ## Development Environment
 A docker-compose is provide to start a development environnement.
