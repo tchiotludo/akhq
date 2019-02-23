@@ -3,6 +3,8 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
@@ -492,16 +494,19 @@ public class RecordRepository extends AbstractRepository {
         }
         private String clusterId;
         private String topic;
-        private int size = 50;
+        private int size;
         private Map<Integer, Long> after = new HashMap<>();
-        private Sort sort = Sort.OLDEST;
+        private Sort sort;
         private Integer partition;
         private Long timestamp;
         private String search;
         private String schemaKey;
         private String schemaValue;
 
-        public Options(String clusterId, String topic) {
+        public Options(Environment environment, String clusterId, String topic) {
+            this.sort = environment.getProperty("kafkahq.topic-data.sort", Sort.class, Sort.OLDEST);
+            this.size = environment.getProperty("kafkahq.topic-data.size", Integer.class, 50);
+
             this.clusterId = clusterId;
             this.topic = topic;
         }

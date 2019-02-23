@@ -3,6 +3,8 @@ package org.kafkahq.controllers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -43,13 +45,20 @@ public class TopicController extends AbstractController {
     private ConfigRepository configRepository;
     private RecordRepository recordRepository;
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
+    private Environment environment;
 
     @Inject
-    public TopicController(TopicRepository topicRepository, ConfigRepository configRepository, RecordRepository recordRepository, FreemarkerViewsRenderer freemarkerViewsRenderer) {
+    public TopicController(TopicRepository topicRepository,
+                           ConfigRepository configRepository,
+                           RecordRepository recordRepository,
+                           FreemarkerViewsRenderer freemarkerViewsRenderer,
+                           Environment environment)
+    {
         this.topicRepository = topicRepository;
         this.configRepository = configRepository;
         this.recordRepository = recordRepository;
         this.freemarkerViewsRenderer = freemarkerViewsRenderer;
+        this.environment = environment;
     }
 
     @View("topicList")
@@ -174,7 +183,7 @@ public class TopicController extends AbstractController {
     {
         Topic topic = this.topicRepository.findByName(topicName);
 
-        RecordRepository.Options options = new RecordRepository.Options(cluster, topicName);
+        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         after.ifPresent(options::setAfter);
         partition.ifPresent(options::setPartition);
         sort.ifPresent(options::setSort);
@@ -327,7 +336,7 @@ public class TopicController extends AbstractController {
     {
         Topic topic = topicRepository.findByName(topicName);
 
-        RecordRepository.Options options = new RecordRepository.Options(cluster, topicName);
+        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         after.ifPresent(options::setAfter);
         partition.ifPresent(options::setPartition);
         sort.ifPresent(options::setSort);

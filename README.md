@@ -94,7 +94,7 @@ kafkahq:
   clients-defaults:
     consumer:
       properties:
-        max.poll.records: 50
+        isolation.level: read_committed
 
   # list of kafka cluster available for kafkahq
   connections:
@@ -115,6 +115,12 @@ kafkahq:
         ssl.keystore.location: /app/keystore.jks
         ssl.keystore.password: password
         ssl.key.password: password
+        
+  topic-data:
+    # default sort order (OLDEST, NEWEST)
+    sort: OLDEST
+    # max record per page
+    size: 50
 ```
 
 * `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash

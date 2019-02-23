@@ -1,5 +1,6 @@
 package org.kafkahq.repositories;
 
+import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RecordRepositoryTest {
     @Inject
     private RecordRepository repository;
-
+    
+    @Inject
+    private Environment environment;
+    
     @Test
     public void consumeEmpty() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_EMPTY);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_EMPTY);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
         assertEquals(0, consumeAll(options));
@@ -36,7 +40,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeOldest() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
         assertEquals(300, consumeAll(options));
@@ -44,7 +48,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeNewest() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
 
         assertEquals(300, consumeAll(options));
@@ -52,7 +56,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeOldestPerPartition() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
         options.setPartition(1);
 
@@ -61,7 +65,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeNewestPerPartition() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
         options.setPartition(1);
 
@@ -70,7 +74,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeOldestCompacted() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
         assertEquals(153, consumeAll(options));
@@ -78,7 +82,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeNewestCompacted() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
 
         assertEquals(153, consumeAll(options));
@@ -86,7 +90,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeOldestPerPartitionCompacted() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
         options.setPartition(0);
 
@@ -95,7 +99,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeNewestPerPartitionCompacted() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
         options.setSort(RecordRepository.Options.Sort.NEWEST);
         options.setPartition(0);
 
@@ -105,7 +109,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void consumeAvro() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
         List<Record> records = consumeAllRecord(options);
@@ -159,7 +163,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void searchAll() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
         options.setSearch("key");
 
         assertEquals(3000, searchAll(options));
@@ -167,7 +171,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void searchKey() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
         options.setSearch("key_100");
 
         assertEquals(3, searchAll(options));
@@ -175,7 +179,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void searchValue() throws ExecutionException, InterruptedException {
-        RecordRepository.Options options = new RecordRepository.Options(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
         options.setSearch("value_100");
 
         assertEquals(3, searchAll(options));
