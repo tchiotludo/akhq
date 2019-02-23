@@ -1,15 +1,14 @@
 package org.kafkahq.clusters;
 
 
+import com.google.common.io.Files;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.network.ListenerName;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.utils.Time;
-import org.junit.rules.TemporaryFolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,15 +22,12 @@ import java.util.Properties;
  * running at `127.0.0.1:2181`.  You can specify a different ZooKeeper instance by setting the
  * `zookeeper.connect` parameter in the broker's configuration.
  */
+@Slf4j
 public class KafkaEmbedded {
-
-    private static final Logger log = LoggerFactory.getLogger(KafkaEmbedded.class);
-
     private static final String DEFAULT_ZK_CONNECT = "127.0.0.1:2181";
-
     private final Properties effectiveConfig;
     private final File logDir;
-    private final TemporaryFolder tmpFolder;
+    private final File tmpFolder;
     private final KafkaServer kafka;
 
     /**
@@ -41,10 +37,10 @@ public class KafkaEmbedded {
      *               broker should listen to.  Note that you cannot change some settings such as
      *               `log.dirs`, `port`.
      */
+    @SuppressWarnings("UnstableApiUsage")
     public KafkaEmbedded(final Properties config) throws IOException {
-        tmpFolder = new TemporaryFolder();
-        tmpFolder.create();
-        logDir = tmpFolder.newFolder();
+        tmpFolder = Files.createTempDir();
+        logDir = Files.createTempDir();
         effectiveConfig = effectiveConfigFrom(config);
         final boolean loggingEnabled = true;
 
@@ -113,6 +109,7 @@ public class KafkaEmbedded {
         kafka.awaitShutdown();
         log.debug("Removing temp folder {} with logs.dir at {} ...", tmpFolder, logDir);
         tmpFolder.delete();
+        logDir.delete();
         log.debug("Shutdown of embedded Kafka broker at {} completed (with ZK ensemble at {}) ...",
             brokerList(), zookeeperConnect()
         );

@@ -2,16 +2,21 @@ package org.kafkahq.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.inject.Inject;
-import com.typesafe.config.Config;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.core.util.CollectionUtils;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.cookie.Cookie;
 import lombok.Builder;
 import lombok.Getter;
-import org.codehaus.httpcache4j.uri.QueryParams;
-import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.jooby.Request;
-import org.jooby.View;
-import org.kafkahq.App;
+import lombok.experimental.Wither;
 import org.kafkahq.modules.KafkaModule;
+
+import javax.inject.Inject;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
@@ -19,34 +24,51 @@ abstract public class AbstractController {
         .enableComplexMapKeySerialization()
         .create();
 
+    @Value("${kafkahq.server.base-path}")
+    protected String basePath;
+
     @Inject
     private KafkaModule kafkaModule;
 
-    @Inject
-    private Config config;
+    @SuppressWarnings("unchecked")
+    protected HttpResponse template(HttpRequest request, String cluster, Object... values) {
 
-    protected View template(Request request, String cluster, View view) {
-        view
-            .put("clusterId", cluster)
-            .put("clusters", this.kafkaModule.getClustersList())
-            .put("registryEnabled", this.kafkaModule.getRegistryRestClient(cluster) != null)
-            .put("basePath", App.getBasePath(config));
+        Map datas = CollectionUtils.mapOf(values);
 
-        request
-            .ifFlash(SESSION_TOAST)
-            .ifPresent(s -> view.put("toast", s));
+        datas.put("clusterId", cluster);
+        datas.put("clusters", this.kafkaModule.getClustersList());
+        datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(cluster) != null);
+        datas.put("basePath", getBasePath());
 
-        return view;
+        MutableHttpResponse<Map> response = HttpResponse.ok();
+
+        request.getCookies()
+            .findCookie(SESSION_TOAST)
+            .ifPresent(s -> {
+                datas.put("toast", s.getValue());
+                response.cookie(Cookie.of(SESSION_TOAST, "").maxAge(0).path("/"));
+            });
+
+        return response.body(datas);
     }
 
-    protected URIBuilder uri(Request request) {
-        return URIBuilder.empty()
-            .withPath(request.path())
-            .withParameters(QueryParams.parse(request.queryString().orElse("")));
+    protected String getBasePath() {
+        return basePath.replaceAll("/$","");
     }
 
-    protected Toast toast(Request request, Toast toast) {
-        request.flash(SESSION_TOAST, gson.toJson(toast));
+    protected URI uri(String path) throws URISyntaxException {
+        return new URI((this.basePath != null ? this.basePath : "") + path);
+    }
+
+    protected <T> Toast toast(MutableHttpResponse<T> response, Toast toast) {
+        Cookie cookie = Cookie
+            .of(SESSION_TOAST, gson.toJson(toast
+                .withTitle(toast.getTitle() != null ? toast.getTitle().replaceAll(";", ",") : null)
+                .withMessage(toast.getMessage() != null ? toast.getMessage().replaceAll(";", ",") : null)
+            ))
+            .path("/");
+
+        response.cookie(cookie);
 
         return toast;
     }
@@ -62,8 +84,10 @@ abstract public class AbstractController {
             question
         }
 
+        @Wither
         private String title;
 
+        @Wither
         private String message;
 
         @Builder.Default

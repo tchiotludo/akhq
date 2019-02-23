@@ -1,14 +1,25 @@
 package org.kafkahq.controllers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.inject.Inject;
-import org.apache.kafka.common.config.TopicConfig;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.env.Environment;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.http.sse.Event;
+import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.views.View;
+import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.jooby.*;
-import org.jooby.mvc.GET;
-import org.jooby.mvc.POST;
-import org.jooby.mvc.Path;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
@@ -16,129 +27,169 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.reactivestreams.Publisher;
 
+import javax.inject.Inject;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-@Path("/{cluster}/topic")
+@Slf4j
+@Controller("${kafkahq.server.base-path:}/{cluster}/topic")
+@ThreadLocal
 public class TopicController extends AbstractController {
-
-    @Inject
     private TopicRepository topicRepository;
-
-    @Inject
     private ConfigRepository configRepository;
+    private RecordRepository recordRepository;
+    private FreemarkerViewsRenderer freemarkerViewsRenderer;
+    private Environment environment;
 
     @Inject
-    private RecordRepository recordRepository;
+    public TopicController(TopicRepository topicRepository,
+                           ConfigRepository configRepository,
+                           RecordRepository recordRepository,
+                           FreemarkerViewsRenderer freemarkerViewsRenderer,
+                           Environment environment)
+    {
+        this.topicRepository = topicRepository;
+        this.configRepository = configRepository;
+        this.recordRepository = recordRepository;
+        this.freemarkerViewsRenderer = freemarkerViewsRenderer;
+        this.environment = environment;
+    }
 
-    @GET
-    public View list(Request request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
+    @View("topicList")
+    @Get
+    public HttpResponse list(HttpRequest request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
         return this.template(
             request,
             cluster,
-            Results
-                .html("topicList")
-                .put("search", search)
-                .put("topics", this.topicRepository.list(search))
+            "search", search,
+            "topics", this.topicRepository.list(search)
         );
     }
 
-    @GET
-    @Path("create")
-    public View create(Request request, String cluster) {
+    @View("topicCreate")
+    @Get("create")
+    public HttpResponse create(HttpRequest request, String cluster) {
         return this.template(
             request,
-            cluster,
-            Results
-                .html("topicCreate")
+            cluster
         );
     }
 
-    @POST
-    @Path("create")
-    public void createSubmit(Request request, Response response, String cluster) throws Throwable {
-        List<Config> options = new ArrayList<>();
-        Arrays
-            .asList(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.RETENTION_MS_CONFIG)
-            .forEach(s -> request
-                .param("configs[" +  s + "]")
-                .toOptional()
-                .ifPresent(r -> options.add(new Config(s, r)))
-            );
+    @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse createSubmit(HttpRequest request,
+                                     String cluster,
+                                     String name,
+                                     Integer partition,
+                                     Short replication,
+                                     Map<String, String> configs)
+        throws Throwable
+    {
+        List<Config> options = configs
+            .entrySet()
+            .stream()
+            .map(r -> new AbstractMap.SimpleEntry<>(
+                r.getKey().replaceAll("(configs\\[)(.*)(])", "$2"),
+                r.getValue()
+            ))
+            .map(r -> new Config(r.getKey(), r.getValue()))
+            .collect(Collectors.toList());
 
-        this.toast(request, RequestHelper.runnableToToast(() ->
+        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
+
+        this.toast(response, RequestHelper.runnableToToast(() ->
                 this.topicRepository.create(
                     cluster,
-                    request.param("name").value(),
-                    request.param("partition").intValue(),
-                    request.param("replication").shortValue(),
+                    name,
+                    partition,
+                    replication,
                     options
                 ),
-            "Topic '" + request.param("name").value() + "' is created",
-            "Failed to create topic '" + request.param("name").value() + "'"
+            "Topic '" + name + "' is created",
+            "Failed to create topic '" + name + "'"
         ));
 
-        response.redirect("/" + cluster + "/topic");
+        return response;
     }
 
-    @GET
-    @Path("{topicName}/produce")
-    public View produce(Request request, String cluster, String topicName) throws ExecutionException, InterruptedException {
+    @View("topicProduce")
+    @Get("{topicName}/produce")
+    public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(topicName);
 
         return this.template(
             request,
             cluster,
-            Results
-                .html("topicProduce")
-                .put("topic", topic)
+            "topic", topic
         );
     }
 
-    @POST
-    @Path("{topicName}/produce")
-    public void produceSubmit(Request request, Response response, String cluster, String topicName) throws Throwable {
-        List<String> headersKey = request.param("headers[key][]").toList();
-        List<String> headersValue = request.param("headers[value][]").toList();
-
-        Map<String, String> headers = new HashMap<>();
+    @Post(value = "{topicName}/produce", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse produceSubmit(HttpRequest request,
+                                      String cluster,
+                                      String topicName,
+                                      String value,
+                                      Optional<String> key,
+                                      Optional<Integer> partition,
+                                      Optional<String> timestamp,
+                                      Map<String, List<String>> headers)
+    {
+        Map<String, String> finalHeaders = new HashMap<>();
 
         int i = 0;
-        for (String key : headersKey) {
-            if (key != null && !key.equals("") && headersValue.get(i) != null && !headersValue.get(i).equals("")) {
-                headers.put(key, headersValue.get(i));
+        for (String headerKey : headers.get("headers[key]")) {
+            if (headerKey != null && !headerKey.equals("") && headers.get("headers[value]").get(i) != null && !headers.get("headers[value]").get(i).equals("")) {
+                finalHeaders.put(headerKey, headers.get("headers[value]").get(i));
             }
             i++;
         }
 
-        this.toast(request, RequestHelper.runnableToToast(() -> {
+        MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
+
+        this.toast(response, RequestHelper.runnableToToast(() ->
                 this.recordRepository.produce(
                     cluster,
                     topicName,
-                    request.param("value").value(),
-                    headers,
-                    request.param("key").toOptional(),
-                    request.param("partition").toOptional().filter(r -> !r.equals("")).map(Integer::valueOf),
-                    request.param("timestamp")
-                        .toOptional(String.class)
-                        .filter(r -> !r.equals(""))
-                        .map(s -> Instant.parse(s).toEpochMilli())
-                );
-            },
+                    value,
+                    finalHeaders,
+                    key.filter(r -> !r.equals("")),
+                    partition,
+                    timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
+                )
+            ,
             "Record created",
             "Failed to produce record"
         ));
 
-        response.redirect(request.path());
+        return response;
     }
 
-    @GET
-    @Path("{topicName}")
-    public View home(Request request, String cluster, String topicName) throws ExecutionException, InterruptedException {
+    @View("topic")
+    @Get("{topicName}")
+    public HttpResponse home(HttpRequest request,
+                             String cluster,
+                             String topicName,
+                             Optional<String> after,
+                             Optional<Integer> partition,
+                             Optional<RecordRepository.Options.Sort> sort,
+                             Optional<String> timestamp,
+                             Optional<String> search)
+        throws ExecutionException, InterruptedException
+    {
         Topic topic = this.topicRepository.findByName(topicName);
-        RecordRepository.Options options = RequestHelper.buildRecordRepositoryOptions(request, cluster, topicName);
+
+        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
+        after.ifPresent(options::setAfter);
+        partition.ifPresent(options::setPartition);
+        sort.ifPresent(options::setSort);
+        timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
+        after.ifPresent(options::setAfter);
+        search.ifPresent(options::setSearch);
 
         List<Record> data = new ArrayList<>();
 
@@ -146,7 +197,7 @@ public class TopicController extends AbstractController {
             data = this.recordRepository.consume(options);
         }
 
-        URIBuilder uri = this.uri(request);
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
 
         ImmutableMap.Builder<String, String> partitionUrls = ImmutableSortedMap.naturalOrder();
         partitionUrls.put((uri.getParametersByName("partition").size() > 0 ? uri.removeParameters("partition") : uri).toNormalizedURI(false).toString(), "All");
@@ -157,14 +208,12 @@ public class TopicController extends AbstractController {
         return this.template(
             request,
             cluster,
-            Results
-                .html("topic")
-                .put("tab", "data")
-                .put("topic", topic)
-                .put("canDeleteRecords", topic.canDeleteRecords(configRepository))
-                .put("datas", data)
-                .put("navbar", dataNavbar(options, uri, partitionUrls))
-                .put("pagination", dataPagination(topic, options, data, uri))
+            "tab", "data",
+            "topic", topic,
+            "canDeleteRecords", topic.canDeleteRecords(configRepository),
+            "datas", data,
+            "navbar", dataNavbar(options, uri, partitionUrls),
+            "pagination", dataPagination(topic, options, data, uri)
         );
     }
 
@@ -203,33 +252,31 @@ public class TopicController extends AbstractController {
             .build();
     }
 
-    @GET
-    @Path("{topicName}/{tab:(partitions|groups|configs|logs)}")
-    public View tab(Request request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+    @View("topic")
+    @Get("{topicName}/{tab:(partitions|groups|configs|logs)}")
+    public HttpResponse tab(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, topicName,  tab);
     }
 
-    public View render(Request request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+    private HttpResponse render(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(topicName);
         List<Config> configs = this.configRepository.findByTopic(topicName);
 
         return this.template(
             request,
             cluster,
-            Results
-                .html("topic")
-                .put("tab", tab)
-                .put("topic", topic)
-                .put("configs", configs)
+            "tab", tab,
+            "topic", topic,
+            "configs", configs
         );
     }
 
-    @POST
-    @Path("{topicName}/{tab:configs}")
-    public void updateConfig(Request request, Response response, String cluster, String topicName) throws Throwable {
-        List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByTopic(topicName));
+    @Post(value = "{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse updateConfig(HttpRequest request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(topicName));
+        MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
-        this.toast(request, RequestHelper.runnableToToast(() -> {
+        this.toast(response, RequestHelper.runnableToToast(() -> {
                 if (updated.size() == 0) {
                     throw new IllegalArgumentException("No config to update");
                 }
@@ -244,13 +291,14 @@ public class TopicController extends AbstractController {
             "Failed to update topic '" + topicName + "' configs"
         ));
 
-        response.redirect(request.path());
+        return response;
     }
 
-    @GET
-    @Path("{topicName}/deleteRecord")
-    public Result deleteRecord(Request request, String cluster, String topicName, Integer partition, String key) {
-        this.toast(request, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
+    @Get("{topicName}/deleteRecord")
+    public HttpResponse deleteRecord(String cluster, String topicName, Integer partition, String key) {
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        this.toast(response, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
                 cluster,
                 topicName,
                 partition,
@@ -260,18 +308,88 @@ public class TopicController extends AbstractController {
             "Failed to delete record '" + key + "'"
         ));
 
-        return Results.ok();
+        return response;
     }
 
-    @GET
-    @Path("{topicName}/delete")
-    public Result delete(Request request, String cluster, String topicName) {
-        this.toast(request, RequestHelper.runnableToToast(() ->
+    @Get("{topicName}/delete")
+    public HttpResponse delete(String cluster, String topicName) {
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        this.toast(response, RequestHelper.runnableToToast(() ->
                 this.topicRepository.delete(cluster, topicName),
             "Topic '" + topicName + "' is deleted",
             "Failed to delete topic " + topicName
         ));
 
-        return Results.ok();
+        return response;
+    }
+
+    @Get("{topicName}/search/{search}")
+    public Publisher<Event<?>> sse(String cluster,
+                                          String topicName,
+                                          Optional<String> after,
+                                          Optional<Integer> partition,
+                                          Optional<RecordRepository.Options.Sort> sort,
+                                          Optional<String> timestamp,
+                                          Optional<String> search)
+        throws ExecutionException, InterruptedException
+    {
+        Topic topic = topicRepository.findByName(topicName);
+
+        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
+        after.ifPresent(options::setAfter);
+        partition.ifPresent(options::setPartition);
+        sort.ifPresent(options::setSort);
+        timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
+        after.ifPresent(options::setAfter);
+        search.ifPresent(options::setSearch);
+
+        Map<String, Object> datas = new HashMap<>();
+        datas.put("topic", topic);
+        datas.put("canDeleteRecords", topic.canDeleteRecords(configRepository));
+        datas.put("clusterId", cluster);
+        datas.put("basePath", getBasePath());
+
+        return recordRepository
+            .search(options)
+            .map(event -> {
+                SearchBody searchBody = new SearchBody(
+                    event.getData().getPercent(),
+                    event.getData().getAfter()
+                );
+
+                if (event.getData().getRecords().size() > 0) {
+                    datas.put("datas", event.getData().getRecords());
+
+                    StringWriter stringWriter = new StringWriter();
+                    try {
+                        freemarkerViewsRenderer.render("topicSearch", datas).writeTo(stringWriter);
+                    } catch (IOException ignored) {}
+
+                    searchBody.body = stringWriter.toString();
+                }
+
+                return Event
+                    .of(searchBody)
+                    .name(event.getName());
+            });
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    public static class SearchBody {
+        public SearchBody(double percent, String after) {
+            this.percent = percent;
+            this.after = after;
+        }
+
+        @JsonProperty("percent")
+        private Double percent;
+
+        @JsonProperty("body")
+        private String body;
+
+        @JsonProperty("after")
+        private String after;
     }
 }

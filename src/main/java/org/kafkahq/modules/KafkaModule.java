@@ -1,22 +1,20 @@
 package org.kafkahq.modules;
 
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.jooby.Env;
-import org.jooby.Jooby;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kafkahq.configs.AbstractProperties;
+import org.kafkahq.configs.Connection;
+import org.kafkahq.configs.Default;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +24,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
-public class KafkaModule implements Jooby.Module {
-    private static Logger logger = LoggerFactory.getLogger(KafkaModule.class);
+@Slf4j
+public class KafkaModule {
+    @Inject
+    private List<Connection> connections;
 
     @Inject
-    private Config config;
+    private List<Default> defaults;
 
     public <T> T debug(Callable<T> task, String format, Object... arguments) throws ExecutionException, InterruptedException {
         long startTime = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class KafkaModule implements Jooby.Module {
 
         try {
             call = task.call();
-            logger.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
+            log.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
             return call;
         } catch (InterruptedException | ExecutionException exception) {
             throw exception;
@@ -48,47 +48,54 @@ public class KafkaModule implements Jooby.Module {
     }
 
     public List<String> getClustersList() {
-        return this.config
-            .getConfig("kafka.connections")
-            .entrySet()
+        return this.connections
             .stream()
-            .map(entry -> entry.getKey().split("\\.")[0])
+            .map(r -> r.getName().split("\\.")[0])
             .distinct()
             .collect(Collectors.toList());
     }
 
-    private Properties getConfigProperties(String path) {
-        Properties props = new Properties();
+    private Connection getConnection(String cluster) {
+        return this.connections
+            .stream()
+            .filter(r -> r.getName().equals(cluster))
+            .findFirst()
+            .get();
+    }
 
-        if (this.config.hasPath(path)) {
-            this.config.getConfig(path)
-                .entrySet()
-                .forEach(config -> props.put(config.getKey(), config.getValue().unwrapped()));
-        }
+    private Properties getDefaultsProperties(List<? extends AbstractProperties> current, String type) {
+        Properties properties = new Properties();
 
-        return props;
+        current
+            .stream()
+            .filter(r -> r.getName().equals(type))
+            .forEach(r -> r.getProperties()
+                .forEach(properties::put)
+            );
+
+        return properties;
     }
 
     private Properties getConsumerProperties(String clusterId) {
         Properties props = new Properties();
-        props.putAll(this.getConfigProperties("kafka.defaults.consumer"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
+        props.putAll(this.getDefaultsProperties(this.defaults, "consumer"));
+        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
         return props;
     }
 
     private Properties getProducerProperties(String clusterId) {
         Properties props = new Properties();
-        props.putAll(this.getConfigProperties("kafka.defaults.producer"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
+        props.putAll(this.getDefaultsProperties(this.defaults, "producer"));
+        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
         return props;
     }
 
     private Properties getAdminProperties(String clusterId) {
         Properties props = new Properties();
-        props.putAll(this.getConfigProperties("kafka.defaults.admin"));
-        props.putAll(this.getConfigProperties("kafka.connections." + clusterId + ".properties"));
+        props.putAll(this.getDefaultsProperties(this.defaults, "admin"));
+        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
         return props;
     }
@@ -146,9 +153,11 @@ public class KafkaModule implements Jooby.Module {
 
     public RestService getRegistryRestClient(String clusterId) {
         if (!this.registryRestClient.containsKey(clusterId)) {
-            if (this.config.hasPath("kafka.connections." + clusterId + ".registry")) {
+            Connection connection = this.getConnection(clusterId);
+
+            if (connection.getSchemaRegistry().isPresent()) {
                 this.registryRestClient.put(clusterId, new RestService(
-                    this.config.getString("kafka.connections." + clusterId + ".registry")
+                    connection.getSchemaRegistry().get().toString()
                 ));
             }
         }
@@ -161,11 +170,5 @@ public class KafkaModule implements Jooby.Module {
             this.getRegistryRestClient(clusterId),
             Integer.MAX_VALUE
         );
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(KafkaModule.class).toInstance(new KafkaModule());
     }
 }

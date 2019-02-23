@@ -1,9 +1,8 @@
 package org.kafkahq.clusters;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.test.TestingServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -12,10 +11,8 @@ import java.io.IOException;
  *
  * The ZooKeeper server instance is automatically started when you create a new instance of this class.
  */
+@Slf4j
 public class ZooKeeperEmbedded {
-
-    private static final Logger log = LoggerFactory.getLogger(ZooKeeperEmbedded.class);
-
     private final TestingServer server;
 
     /**

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        joobyVersion = "1.5.+"
+        micronautVersion = "1.1.0.M1"
         confluentVersion = "5.1.0"
         kafkaVersion = "2.1.+"
     }
@@ -12,25 +12,27 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.google.gradle:osdetector-gradle-plugin:1.4.0"
-        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
-        classpath "org.jooby:jooby-gradle-plugin:$joobyVersion"
-        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.16.0"
+        // kafkahq
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.14.1"
     }
 }
 
 plugins {
+    // micronaut
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "com.github.johnrengelman.shadow" version "4.0.2"
+    id "application"
+    id "java"
+    id "net.ltgt.apt-eclipse" version "0.20"
+    id "net.ltgt.apt-idea" version "0.20"
+
+    // kafkahq
     id "com.moowork.node" version "1.2.0"
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'com.adarshr.test-logger' version '1.6.0'
     id 'com.github.psxpaul.execfork' version '0.1.9'
 }
 
-apply plugin: "io.spring.dependency-management"
-apply plugin: "com.google.osdetector"
-apply plugin: "application"
-apply plugin: "jooby"
-apply plugin: "idea"
 apply plugin: "com.commercehub.gradle.plugin.avro"
 
 group "org.kafkahq"
@@ -43,6 +45,7 @@ repositories {
     mavenCentral()
     maven { url 'http://packages.confluent.io/maven/' }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://jcenter.bintray.com" }
 }
 
 lombok {
@@ -65,25 +68,29 @@ configurations {
 }
 
 /**********************************************************************************************************************\
- * Jooby
+ * Micronaut
  **********************************************************************************************************************/
-
 dependencyManagement {
     imports {
-        mavenBom "org.jooby:jooby-bom:$joobyVersion"
+        mavenBom "io.micronaut:micronaut-bom:$micronautVersion"
     }
 }
 
-joobyRun {
-    includes = ["**/*.class", "**/*.conf", "**/*.properties", "**/*.ftl", "**/*.xml"]
+configurations {
+    developmentOnly
 }
 
-sourceSets.main.resources {
-    srcDirs = ["conf", "public"]
+run.classpath += configurations.developmentOnly
+test.classpath += configurations.developmentOnly
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dmicronaut.environments=dev')
+
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+    options.compilerArgs.add('-parameters')
 }
 
 gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(joobyRun)) {
+    if (graph.hasTask(run)) {
         webpack.enabled = false
         npmInstall.enabled = false
     }
@@ -93,15 +100,17 @@ gradle.taskGraph.whenReady { graph ->
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
-    // jooby
-    compile "org.jooby:jooby-netty"
-    compile "io.netty:netty-transport-native-epoll:${dependencyManagement.importedProperties["netty.version"]}:${osdetector.classifier.contains("linux") ? "linux-x86_64" : ""}"
-    compile "io.netty:netty-tcnative-boringssl-static:${dependencyManagement.importedProperties["boringssl.version"]}"
-    compile group: "org.jooby", name: "jooby-assets", version: joobyVersion
-    compile group: "org.jooby", name: "jooby-livereload", version: joobyVersion
-    compile group: "org.jooby", name: "jooby-jackson", version: joobyVersion
-    compile group: "org.jooby", name: "jooby-ftl", version: joobyVersion
-    compile group: "org.jooby", name: "jooby-whoops", version: joobyVersion
+    // micronaut
+    annotationProcessor "io.micronaut:micronaut-inject-java"
+    annotationProcessor "io.micronaut:micronaut-validation"
+    compile "io.micronaut:micronaut-inject"
+    compile "io.micronaut:micronaut-validation"
+    compile 'io.micronaut:micronaut-views'
+    compile "io.micronaut:micronaut-runtime"
+    compile "io.micronaut:micronaut-http-client"
+    compile "io.micronaut:micronaut-http-server-netty"
+    runtime "ch.qos.logback:logback-classic:1.2.3"
+    runtime 'org.freemarker:freemarker:2.3.28'
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
@@ -110,29 +119,34 @@ dependencies {
     compile group: 'org.apache.avro', name: 'avro', version: '1.8.2'
 
     // utils
+    compileOnly group: "org.projectlombok", name: "lombok", version: "1.18.+"
     compile group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
     compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
-
-    // debug
     compile group: "com.google.code.gson", name: "gson", version: "2.8.+"
-    compileOnly group: "org.projectlombok", name: "lombok", version: "1.18.+"
+
+    // micronaut test
+    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+    testCompile "org.junit.jupiter:junit-jupiter-api"
+    testCompile "io.micronaut.test:micronaut-test-junit5"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine"
 
     // test
-    testCompile "junit:junit:4.12"
-    testCompile "com.salesforce.kafka.test:kafka-junit4:3.1.0"
+    testCompile "com.salesforce.kafka.test:kafka-junit5:3.1.0"
     testCompile "org.apache.kafka:kafka_2.12:" + kafkaVersion
-    testCompile "io.rest-assured:rest-assured:3.1.0"
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.25'
+    testCompile group: 'commons-codec', name: 'commons-codec', version: '1.11'
 }
 
 /**********************************************************************************************************************\
  * Test
  **********************************************************************************************************************/
 test {
+    useJUnitPlatform()
+
     testLogging {
         exceptionFormat = 'full'
     }
@@ -154,12 +168,11 @@ task testKafkaCluster(type:JavaExec) {
 
 task testInjectData(type:JavaExec) {
     group = 'verification'
-    description = 'Start a standalone test Kafka cluster'
+    description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
     main = "org.kafkahq.KafkaTestCluster"
-    args ['inject']
+    args 'inject'
 }
-
 
 gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(test) || graph.hasTask(testKafkaCluster) || graph.hasTask(testInjectData)) {
@@ -175,7 +188,6 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
     description = 'Start a global standalone test Kafka cluster during tests'
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.kafkahq.KafkaTestCluster'
-    args ['1']
     waitForOutput = 'Test data injected sleep done'
     timeout = 300
 }
@@ -189,24 +201,18 @@ task webpack(type: NodeTask, dependsOn: "npmInstall") {
     group = 'build'
     description = 'Build with webpack assets'
     script = project.file("node_modules/.bin/webpack")
-    outputs.dir("public/static")
+    outputs.dir("src/main/resources/static")
     args = ["-p", "--mode production"]
 }
 
 jar.dependsOn "webpack"
 processResources.dependsOn 'webpack'
 
-clean.delete << file("public/static")
+clean.delete << file("src/main/resources/static")
 
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
-jar {
-    manifest {
-        attributes "Main-Class": mainClassName
-    }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+shadowJar {
+    mergeServiceFiles()
 }

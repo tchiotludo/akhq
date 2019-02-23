@@ -11,6 +11,7 @@ import com.salesforce.kafka.test.ListenerProperties;
 import com.yammer.metrics.core.Stoppable;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -19,9 +20,6 @@ import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.kafkahq.clusters.EmbeddedSingleNodeKafkaCluster;
-import org.kafkahq.repositories.RecordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.IOException;
@@ -31,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+@Slf4j
 public class KafkaTestCluster implements Runnable, Stoppable {
     private static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.json");
 
@@ -43,8 +42,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_IN = "stream-in";
     public static final String TOPIC_STREAM_MAP = "stream-map";
     public static final String TOPIC_STREAM_COUNT = "stream-count";
-
-    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
 
     private EmbeddedSingleNodeKafkaCluster kafkaCluster;
     private KafkaTestUtils testUtils;
@@ -124,8 +121,8 @@ public class KafkaTestCluster implements Runnable, Stoppable {
 
         try {
             kafkaCluster.start();
-            logger.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
-            logger.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
+            log.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
+            log.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
 
             connectionString = ConnectionString.builder()
                 .kafka(kafkaCluster.bootstrapServers())
@@ -140,17 +137,17 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             }
 
             injectTestData();
-            logger.info("Test data injected");
+            log.info("Test data injected");
 
             Thread.sleep(5000);
-            logger.info("Test data injected sleep done");
+            log.info("Test data injected sleep done");
 
             if (reuse) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     try {
                         Files.delete(CS_PATH);
                     } catch (Exception e) {
-                        logger.error("Can't delete CS file", e);
+                        log.error("Can't delete CS file", e);
                     }
                 }));
             }
@@ -209,7 +206,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             TOPIC_STREAM_IN,
             1
         );
-        logger.debug("Stream started");
+        log.debug("Stream started");
 
         // compacted topic
         testUtils.createTopic(TOPIC_COMPACTED, 3, (short) 1);
@@ -233,25 +230,25 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             Thread.sleep(10L);
             testUtils.produceRecords(randomDatas(50, 0), TOPIC_COMPACTED, partition);
         }
-        logger.debug("Compacted topic created");
+        log.debug("Compacted topic created");
 
         // empty topic
         testUtils.createTopic(TOPIC_EMPTY, 12, (short) 1);
-        logger.debug("Empty topic created");
+        log.debug("Empty topic created");
 
         // random data
         testUtils.createTopic(TOPIC_RANDOM, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
         }
-        logger.debug("Random topic created");
+        log.debug("Random topic created");
 
         // huge data
         testUtils.createTopic(TOPIC_HUGE, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
-        logger.debug("Huge topic created");
+        log.debug("Huge topic created");
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {

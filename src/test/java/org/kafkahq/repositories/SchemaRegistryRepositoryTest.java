@@ -2,19 +2,24 @@ package org.kafkahq.repositories;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.avro.SchemaBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.kafkahq.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kafkahq.KafkaClusterExtension;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Schema;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SchemaRegistryRepositoryTest extends BaseTest {
-    private final SchemaRegistryRepository repository = app.require(SchemaRegistryRepository.class);
+@ExtendWith(KafkaClusterExtension.class)
+public class SchemaRegistryRepositoryTest {
+    @Inject
+    private SchemaRegistryRepository repository;
 
     private final String SUBJECT_1 = "SCHEMA_1";
     private final org.apache.avro.Schema SCHEMA_1_V1 = SchemaBuilder
@@ -45,7 +50,7 @@ public class SchemaRegistryRepositoryTest extends BaseTest {
         .name("meta").type().nullable().map().values().stringType().noDefault()
         .endRecord();
 
-    @Before
+    @BeforeEach
     public void cleanup() {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);

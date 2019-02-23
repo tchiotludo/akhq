@@ -3,39 +3,35 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
+import io.micronaut.http.sse.Event;
+import io.reactivex.Flowable;
 import lombok.*;
 import lombok.experimental.Wither;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class RecordRepository extends AbstractRepository implements Jooby.Module {
-    private static Logger logger = LoggerFactory.getLogger(RecordRepository.class);
-
+@Slf4j
+public class RecordRepository extends AbstractRepository {
     private final KafkaModule kafkaModule;
     private final TopicRepository topicRepository;
     private final SchemaRegistryRepository schemaRegistryRepository;
@@ -69,7 +65,7 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
             partitions.forEach(consumer::seek);
 
             partitions.forEach((topicPartition, first) ->
-                logger.trace(
+                log.trace(
                     "Consume [topic: {}] [partition: {}] [start: {}]",
                     topicPartition.topic(),
                     topicPartition.partition(),
@@ -335,76 +331,82 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         )).get();
     }
 
-
-    public SearchEnd search(Options options, SearchConsumer callback) throws ExecutionException, InterruptedException {
+    public Flowable<Event<SearchEvent>> search(Options options) throws ExecutionException, InterruptedException {
         KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
         Topic topic = topicRepository.findByName(options.topic);
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
-        SearchEvent searchEvent = new SearchEvent(topic);
 
-        callback.accept(searchEvent);
-        List<Record> all = new ArrayList<>();
+        AtomicInteger matchesCount = new AtomicInteger();
 
-        int emptyPoll = 0;
-        if (partitions.size() > 0) {
-            consumer.assign(partitions.keySet());
-            partitions.forEach(consumer::seek);
-            partitions.forEach((topicPartition, first) ->
-                logger.trace(
-                    "Search [topic: {}] [partition: {}] [start: {}]",
-                    topicPartition.topic(),
-                    topicPartition.partition(),
-                    first
-                )
-            );
-
-            synchronized (consumer) {
-                List<Record> list = new ArrayList<>();
-
-                do {
-                    list.removeIf(r -> true);
-                    ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-
-                    if (records.isEmpty()) {
-                        emptyPoll++;
-                    } else {
-                        emptyPoll = 0;
-                    }
-
-                    for (ConsumerRecord<byte[], byte[]> record : records) {
-
-                        if (callback.isClose()) {
-                            break;
-                        }
-
-                        searchEvent.updateProgress(record);
-
-                        if (searchFilter(options, record)) {
-                            list.add(newRecord(record, options));
-
-                            logger.trace(
-                                "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
-                                record.topic(),
-                                record.partition(),
-                                record.offset(),
-                                record.key()
-                            );
-                        }
-
-                    }
-
-                    if (list.size() > 0) {
-                        searchEvent.records = list;
-                        all.addAll(list);
-                    }
-
-                    callback.accept(searchEvent);
-                }
-                while (emptyPoll < 1 && all.size() <= options.getSize() && !callback.isClose());
-            }
+        if (partitions.size() == 0) {
+            return Flowable.just(new SearchEvent(topic).end());
         }
 
-        return new SearchEnd(emptyPoll < 1 ? options.pagination(all) : null);
+        synchronized (consumer) {
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+        }
+
+        partitions.forEach((topicPartition, first) ->
+            log.trace(
+                "Search [topic: {}] [partition: {}] [start: {}]",
+                topicPartition.topic(),
+                topicPartition.partition(),
+                first
+            )
+        );
+
+        return Flowable.generate(() -> new SearchEvent(topic), (searchEvent, emitter) -> {
+            // end
+            if (searchEvent.emptyPoll == 666) {
+                emitter.onComplete();
+                return searchEvent;
+            }
+
+            SearchEvent currentEvent = new SearchEvent(searchEvent);
+
+            synchronized (consumer) {
+                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+
+                if (records.isEmpty()) {
+                    currentEvent.emptyPoll++;
+                } else {
+                    currentEvent.emptyPoll = 0;
+                }
+
+                List<Record> list = new ArrayList<>();
+
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    currentEvent.updateProgress(record);
+
+                    if (searchFilter(options, record)) {
+                        list.add(newRecord(record, options));
+                        matchesCount.getAndIncrement();
+
+                        log.trace(
+                            "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
+                            record.topic(),
+                            record.partition(),
+                            record.offset(),
+                            record.key()
+                        );
+                    }
+                }
+
+                currentEvent.records = list;
+
+                if (list.size() > 0) {
+                    emitter.onNext(currentEvent.progress(options));
+                } else if (currentEvent.emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
+                    emitter.onNext(currentEvent.end());
+                    currentEvent.emptyPoll = 666;
+                } else {
+                    emitter.onNext(currentEvent.progress(options));
+                }
+            }
+
+            return currentEvent;
+        });
     }
 
     private boolean searchFilter(Options options, ConsumerRecord<byte[], byte[]> record) {
@@ -422,56 +424,59 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
     @ToString
     @EqualsAndHashCode
     @Getter
-    public abstract static class SearchConsumer implements Closeable, Consumer<SearchEvent> {
-        private boolean isClose = false;
-
-        @Override
-        public void close() throws IOException {
-            this.isClose = true;
-            logger.info("SearchConsumer closed called");
-        }
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SearchEnd {
-        @JsonProperty("after")
-        private String after;
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
     public static class SearchEvent {
-        @JsonProperty("offsets")
         private Map<Integer, Offset> offsets = new HashMap<>();
-
-        @JsonProperty("progress")
-        private Map<Integer, Long> progress = new HashMap<>();
-
-        @JsonProperty("records")
         private List<Record> records = new ArrayList<>();
+        private String after;
+        private double percent;
+        private double emptyPoll = 0;
+
+        private SearchEvent(SearchEvent event) {
+            this.offsets = event.offsets;
+        }
 
         private SearchEvent(Topic topic) {
             topic.getPartitions()
                 .forEach(partition -> {
-                    offsets.put(partition.getId(), new Offset(partition.getFirstOffset(), partition.getLastOffset()));
-                    progress.put(partition.getId(), partition.getLastOffset() - partition.getFirstOffset());
+                    offsets.put(partition.getId(), new Offset(partition.getFirstOffset(), partition.getFirstOffset(), partition.getLastOffset()));
                 });
         }
 
+        public Event<SearchEvent> end() {
+            this.percent = 100;
+
+            return Event.of(this).name("searchEnd");
+        }
+
+        public Event<SearchEvent> progress(Options options) {
+            long total = 0;
+            long current = 0;
+
+            for (Map.Entry<Integer, Offset> item : this.offsets.entrySet()) {
+                total += item.getValue().end - item.getValue().begin;
+                current += item.getValue().current - item.getValue().begin;
+            }
+
+            this.percent = (double) (current * 100) / total;
+            this.after = options.pagination(offsets);
+
+            return Event.of(this).name("searchBody");
+        }
+
+
         private void updateProgress(ConsumerRecord<byte[], byte[]> record) {
-            Offset offset = offsets.get(record.partition());
-            progress.put(record.partition(), offset.end - offset.begin - record.offset());
+            Offset offset = this.offsets.get(record.partition());
+            offset.current = record.offset();
         }
 
         @AllArgsConstructor
+        @Setter
         public static class Offset {
             @JsonProperty("begin")
             private final long begin;
+
+            @JsonProperty("current")
+            private long current;
 
             @JsonProperty("end")
             private final long end;
@@ -489,16 +494,19 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         }
         private String clusterId;
         private String topic;
-        private int size = 50;
+        private int size;
         private Map<Integer, Long> after = new HashMap<>();
-        private Sort sort = Sort.OLDEST;
+        private Sort sort;
         private Integer partition;
         private Long timestamp;
         private String search;
         private String schemaKey;
         private String schemaValue;
 
-        public Options(String clusterId, String topic) {
+        public Options(Environment environment, String clusterId, String topic) {
+            this.sort = environment.getProperty("kafkahq.topic-data.sort", Sort.class, Sort.OLDEST);
+            this.size = environment.getProperty("kafkahq.topic-data.size", Integer.class, 50);
+
             this.clusterId = clusterId;
             this.topic = topic;
         }
@@ -513,6 +521,20 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
         }
 
+        public String pagination(Map<Integer, SearchEvent.Offset> offsets) {
+            Map<Integer, Long> next = new HashMap<>(this.after);
+
+            for (Map.Entry<Integer, SearchEvent.Offset> offset : offsets.entrySet()) {
+                if (this.sort == Sort.OLDEST && (!next.containsKey(offset.getKey()) || next.get(offset.getKey()) < offset.getValue().current)) {
+                    next.put(offset.getKey(), offset.getValue().current);
+                } else if (this.sort == Sort.NEWEST && (!next.containsKey(offset.getKey()) || next.get(offset.getKey()) > offset.getValue().current)) {
+                    next.put(offset.getKey(), offset.getValue().current);
+                }
+            }
+
+            return paginationLink(next);
+        }
+
         public String pagination(List<Record> records) {
             Map<Integer, Long> next = new HashMap<>(this.after);
             for (Record record : records) {
@@ -523,6 +545,10 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
                 }
             }
 
+            return paginationLink(next);
+        }
+
+        private String paginationLink(Map<Integer, Long> next) {
             ArrayList<String> segment = new ArrayList<>();
 
             for (Map.Entry<Integer, Long> offset : next.entrySet()) {
@@ -568,11 +594,5 @@ public class RecordRepository extends AbstractRepository implements Jooby.Module
         private final TopicPartition topicPartition;
         private final long begin;
         private final long end;
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(RecordRepository.class);
     }
 }

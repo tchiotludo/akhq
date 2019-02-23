@@ -1,22 +1,28 @@
 package org.kafkahq.repositories;
 
 import org.apache.kafka.common.config.TopicConfig;
-import org.junit.Test;
-import org.kafkahq.BaseTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.kafkahq.KafkaClusterExtension;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Partition;
 
+import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TopicRepositoryTest extends BaseTest {
-    private final TopicRepository topicRepository = app.require(TopicRepository.class);
-    private final ConfigRepository configRepository = app.require(ConfigRepository.class);
+@ExtendWith(KafkaClusterExtension.class)
+public class TopicRepositoryTest {
+    @Inject
+    protected TopicRepository topicRepository;
+
+    @Inject
+    protected ConfigRepository configRepository;
 
     @Test
     public void list() throws ExecutionException, InterruptedException {

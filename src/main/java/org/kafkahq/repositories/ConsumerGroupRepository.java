@@ -1,29 +1,29 @@
 package org.kafkahq.repositories;
 
-import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Partition;
 import org.kafkahq.modules.KafkaModule;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
-public class ConsumerGroupRepository extends AbstractRepository implements Jooby.Module {
-    @Inject
+public class ConsumerGroupRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
+
+    @Inject
+    public ConsumerGroupRepository(KafkaModule kafkaModule) {
+        this.kafkaModule = kafkaModule;
+    }
 
     public List<ConsumerGroup> list(Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
@@ -102,11 +102,5 @@ public class ConsumerGroupRepository extends AbstractRepository implements Jooby
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
         kafkaModule.getAdminClient(clusterId).deleteConsumerGroups(Collections.singleton(name)).all().get();
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(ConsumerGroupRepository.class).toInstance(new ConsumerGroupRepository());
     }
 }

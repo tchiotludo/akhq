@@ -1,134 +1,154 @@
 package org.kafkahq.controllers;
 
-import com.google.inject.Inject;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import org.jooby.*;
-import org.jooby.mvc.GET;
-import org.jooby.mvc.POST;
-import org.jooby.mvc.Path;
+import io.micronaut.http.*;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.views.View;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
 
+import javax.inject.Inject;
 import java.io.IOException;
+import java.net.URI;
 
-@Path("/{cluster}/schema")
+@ThreadLocal
+@Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
-    @Inject
     private SchemaRegistryRepository schemaRepository;
 
-    @GET
-    public View list(Request request, String cluster) throws IOException, RestClientException {
+    @Inject
+    public SchemaController(SchemaRegistryRepository schemaRepository) {
+        this.schemaRepository = schemaRepository;
+    }
+
+    @View("schemaList")
+    @Get
+    public HttpResponse list(HttpRequest request, String cluster) throws IOException, RestClientException {
         return this.template(
             request,
             cluster,
-            Results
-                .html("schemaList")
-                .put("schemas", this.schemaRepository.getAll(cluster))
+            "schemas", this.schemaRepository.getAll(cluster)
         );
     }
 
-    @GET
-    @Path("create")
-    public View create(Request request, String cluster) throws IOException, RestClientException {
+    @View("schemaCreate")
+    @Get("create")
+    public HttpResponse create(HttpRequest request, String cluster) throws IOException, RestClientException {
         return this.template(
             request,
             cluster,
-            Results
-                .html("schemaCreate")
-                .put("config", this.schemaRepository.getDefaultConfig(cluster))
-                .put("compatibilityLevel", Schema.Config.getCompatibilityLevelConfigList())
+            "config", this.schemaRepository.getDefaultConfig(cluster),
+            "compatibilityLevel", Schema.Config.getCompatibilityLevelConfigList()
         );
     }
 
-    @POST
-    @Path("create")
-    public Result createSubmit(Request request, Response response, String cluster, String subject) throws Throwable {
+    @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse createSubmit(String cluster,
+                                     String subject,
+                                     String schema,
+                                     String compatibilityLevel)
+        throws Throwable
+    {
         if (this.schemaRepository.exist(cluster, subject)) {
-            this.toast(request, AbstractController.Toast.builder()
+            MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema/create"));
+
+            this.toast(response, AbstractController.Toast.builder()
                 .message("Subject '" + subject + "' already exits")
                 .type(AbstractController.Toast.Type.error)
                 .build()
             );
-            response.redirect("/" + cluster + "/schema/create");
-            return Results.ok();
+
+            return response;
         }
 
-        Toast toast = this.toast(request, RequestHelper.runnableToToast(
-            () -> registerSchema(request, cluster, subject),
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        Toast toast = this.toast(response, RequestHelper.runnableToToast(
+            () -> registerSchema(cluster, subject, schema, compatibilityLevel),
             "Schema '" + subject + "' is created",
             "Failed to create schema'" + subject + "'"
         ));
 
+        URI redirect;
+
         if (toast.getType() != Toast.Type.error) {
-            response.redirect("/" + cluster + "/schema/" + subject);
+            redirect = new URI("/" + cluster + "/schema/" + subject);
         } else {
-            response.redirect("/" + cluster + "/schema/create");
+            redirect = new URI("/" + cluster + "/schema/create");
         }
 
-        return Results.ok();
+        return response.status(HttpStatus.MOVED_PERMANENTLY)
+            .headers((headers) ->
+                headers.location(redirect)
+            );
     }
 
-    @GET
-    @Path("{subject}")
-    public View home(Request request, String cluster, String subject) throws IOException, RestClientException {
+    @View("schema")
+    @Get("{subject}")
+    public HttpResponse home(HttpRequest request, String cluster, String subject) throws IOException, RestClientException {
         return this.render(request, cluster, subject, "update");
     }
 
-    @POST
-    @Path("{subject}")
-    public Result updateSchema(Request request, Response response, String cluster, String subject) throws Throwable {
-        Toast toast = this.toast(request, RequestHelper.runnableToToast(
-            () -> registerSchema(request, cluster, subject),
+    @Post(value = "{subject}", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse updateSchema(String cluster,
+                                     String subject,
+                                     String schema,
+                                     String compatibilityLevel) throws Throwable {
+        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema/" + subject));
+
+        this.toast(response, RequestHelper.runnableToToast(
+            () -> registerSchema(cluster, subject, schema, compatibilityLevel),
             "Schema '" + subject + "' is updated",
-            "Failed to update schema'" + subject + "'"
+            "Failed to update schema '" + subject + "'"
         ));
 
-        response.redirect("/" + cluster + "/schema/" + subject);
-        return Results.ok();
+        return response;
     }
 
-    @GET
-    @Path("{subject}/{tab:(version)}")
-    public View tab(Request request, String cluster, String subject, String tab) throws IOException, RestClientException {
+    @View("schema")
+    @Get("{subject}/{tab:(version)}")
+    public HttpResponse tab(HttpRequest request, String cluster, String subject, String tab) throws IOException, RestClientException {
         return this.render(request, cluster, subject, tab);
     }
 
-    @GET
-    @Path("{subject}/delete")
-    public Result delete(Request request, String cluster, String subject) {
-        this.toast(request, RequestHelper.runnableToToast(() ->
+    @Get("{subject}/delete")
+    public HttpResponse delete(String cluster, String subject) {
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        this.toast(response, RequestHelper.runnableToToast(() ->
                 this.schemaRepository.delete(cluster, subject),
             "Subject from '" + subject + "' is deleted",
             "Failed to delete subject from '" + subject + "'"
         ));
 
-        return Results.ok();
+        return response;
     }
 
-    @GET
-    @Path("{subject}/version/{version}/delete")
-    public Result deleteVersion(Request request, String cluster, String subject, Integer version) {
-        this.toast(request, RequestHelper.runnableToToast(() ->
+    @Get("{subject}/version/{version}/delete")
+    public HttpResponse deleteVersion(HttpRequest request, String cluster, String subject, Integer version) {
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        this.toast(response, RequestHelper.runnableToToast(() ->
                 this.schemaRepository.deleteVersion(cluster, subject, version),
             "Version '" + version + "' from '" + subject + "' is deleted",
             "Failed to delete version '" + version + "' from '" + subject + "'"
         ));
 
-        return Results.ok();
+        return response;
     }
 
-
-    private Schema registerSchema(Request request, String cluster, String subject) throws IOException, RestClientException {
-        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(
-            request.param("schema").value()
-        );
+    private Schema registerSchema(String cluster, String subject, String schema, String compatibilityLevel) throws IOException, RestClientException {
+        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schema);
 
         Schema register = this.schemaRepository.register(cluster, subject, avroSchema);
 
         Schema.Config config = Schema.Config.builder()
             .compatibilityLevel(Schema.Config.CompatibilityLevelConfig.valueOf(
-                request.param("compatibility-level").value()
+                compatibilityLevel
             ))
             .build();
         this.schemaRepository.updateConfig(cluster, subject, config);
@@ -136,17 +156,15 @@ public class SchemaController extends AbstractController {
         return register;
     }
 
-    public View render(Request request, String cluster, String subject, String tab) throws IOException, RestClientException {
+    private HttpResponse render(HttpRequest request, String cluster, String subject, String tab) throws IOException, RestClientException {
         return this.template(
             request,
             cluster,
-            Results
-                .html("schema")
-                .put("tab", tab)
-                .put("schema", this.schemaRepository.getLatestVersion(cluster, subject))
-                .put("versions", this.schemaRepository.getAllVersions(cluster, subject))
-                .put("config", this.schemaRepository.getConfig(cluster, subject))
-                .put("compatibilityLevel", Schema.Config.getCompatibilityLevelConfigList())
+            "tab", tab,
+            "schema", this.schemaRepository.getLatestVersion(cluster, subject),
+            "versions", this.schemaRepository.getAllVersions(cluster, subject),
+            "config", this.schemaRepository.getConfig(cluster, subject),
+            "compatibilityLevel", Schema.Config.getCompatibilityLevelConfigList()
         );
     }
 }

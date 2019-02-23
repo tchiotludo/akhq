@@ -1,5 +1,5 @@
 FROM openjdk:8-jre-alpine
 WORKDIR /app
 COPY docker /
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 CMD ["./kafkahq"]

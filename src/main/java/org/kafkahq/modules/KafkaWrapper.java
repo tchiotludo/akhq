@@ -1,6 +1,6 @@
 package org.kafkahq.modules;
 
-import com.google.inject.Inject;
+
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -8,10 +8,7 @@ import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
-import org.jooby.scope.RequestScoped;
 import org.kafkahq.models.Partition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -19,15 +16,10 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
-@RequestScoped
 public class KafkaWrapper {
-    private static Logger logger = LoggerFactory.getLogger(KafkaWrapper.class);
-
     private KafkaModule kafkaModule;
-
     private String clusterId;
-    
-    @Inject
+
     public KafkaWrapper(KafkaModule kafkaModule, String clusterId) {
         this.kafkaModule = kafkaModule;
         this.clusterId = clusterId;

@@ -8,7 +8,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
  * Vars
  **********************************************************************************************************************/
 const srcDirectory = path.join(__dirname, 'assets');
-const dstDirectory = path.join(__dirname, 'public/static');
+const dstDirectory = path.join(__dirname, 'src/main/resources/static');
 
 /**********************************************************************************************************************\
  * Base
@@ -41,7 +41,6 @@ module.exports = (env, argv) => {
             assets: [
                 path.join(srcDirectory, 'css/assets.scss'),
             ],
-
         },
         output: {
             path: dstDirectory,
@@ -158,6 +157,7 @@ module.exports = (env, argv) => {
         config = merge(config, {
             devServer: {
                 host: '0.0.0.0',
+                disableHostCheck: true,
                 port: 8081,
                 overlay: true,
                 publicPath: '/static/',

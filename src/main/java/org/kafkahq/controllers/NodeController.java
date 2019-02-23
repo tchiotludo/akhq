@@ -1,13 +1,14 @@
 package org.kafkahq.controllers;
 
-import com.google.inject.Inject;
-import org.jooby.Request;
-import org.jooby.Response;
-import org.jooby.Results;
-import org.jooby.View;
-import org.jooby.mvc.GET;
-import org.jooby.mvc.POST;
-import org.jooby.mvc.Path;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.views.View;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Node;
 import org.kafkahq.modules.RequestHelper;
@@ -15,51 +16,55 @@ import org.kafkahq.repositories.ClusterRepository;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.LogDirRepository;
 
+import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
-@Path("/{cluster}/node")
+@ThreadLocal
+@Controller("${kafkahq.server.base-path:}/{cluster}/node")
 public class NodeController extends AbstractController {
-
-    @Inject
     private ClusterRepository clusterRepository;
-
-    @Inject
     private ConfigRepository configRepository;
-
-    @Inject
     private LogDirRepository logDirRepository;
 
-    @GET
-    public View list(Request request, String cluster) throws ExecutionException, InterruptedException {
+    @Inject
+    public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository) {
+        this.clusterRepository = clusterRepository;
+        this.configRepository = configRepository;
+        this.logDirRepository = logDirRepository;
+    }
+
+    @View("nodeList")
+    @Get
+    public HttpResponse list(HttpRequest request, String cluster) throws ExecutionException, InterruptedException {
         return this.template(
             request,
             cluster,
-            Results
-                .html("nodeList")
-                .put("cluster", this.clusterRepository.get())
+            "cluster", this.clusterRepository.get()
         );
     }
 
-    @GET
-    @Path("{nodeId}")
-    public View home(Request request, String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+    @View("node")
+    @Get("{nodeId}")
+    public HttpResponse home(HttpRequest request, String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, nodeId, "configs");
     }
 
-    @GET
-    @Path("{nodeId}/{tab:(logs)}")
-    public View tab(Request request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
+    @View("node")
+    @Get("{nodeId}/{tab:(logs)}")
+    public HttpResponse tab(HttpRequest request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, nodeId, tab);
     }
 
-    @POST
-    @Path("{nodeId}")
-    public void updateConfig(Request request, Response response, String cluster, Integer nodeId) throws Throwable {
-        List<Config> updated = RequestHelper.updatedConfigs(request, this.configRepository.findByBroker(nodeId));
+    @Post(value = "{nodeId}", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse updateConfig(HttpRequest request, String cluster, Integer nodeId, Map<String, String> configs) throws Throwable {
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(nodeId));
 
-        this.toast(request, RequestHelper.runnableToToast(() -> {
+        MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
+
+        this.toast(response, RequestHelper.runnableToToast(() -> {
                 if (updated.size() == 0) {
                     throw new IllegalArgumentException("No config to update");
                 }
@@ -74,10 +79,10 @@ public class NodeController extends AbstractController {
             "Failed to update node '" + nodeId + "' configs"
         ));
 
-        response.redirect(request.path());
+        return response;
     }
-    
-    public View render(Request request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
+
+    private HttpResponse render(HttpRequest request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
         Node node = this.clusterRepository.get()
             .getNodes()
             .stream()
@@ -93,13 +98,10 @@ public class NodeController extends AbstractController {
         return this.template(
             request,
             cluster,
-            Results
-                .html("node")
-                .put("tab", tab)
-                .put("node", node)
-                .put("logs", logDirRepository.findByBroker(node.getId()))
-                .put("configs", configs)
+            "tab", tab,
+            "node", node,
+            "logs", logDirRepository.findByBroker(node.getId()),
+            "configs", configs
         );
     }
-
 }

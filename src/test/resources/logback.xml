@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <property name="pattern" value="%d{ISO8601} %highlight(%-5.5level) %magenta(%-10.10thread) %cyan(%-26.26logger{26}) %msg%n" />
+    <withJansi>true</withJansi>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <immediateFlush>true</immediateFlush>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+        </filter>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>DENY</onMatch>
+        </filter>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <immediateFlush>true</immediateFlush>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDERR" />
+    </root>
+
+    <logger name="org.kafkahq" level="INFO" />
+    <logger name="io.micronaut" level="INFO" />
+
+    <logger name="org.apache.kafka.common.utils.AppInfoParser" level="ERROR" />
+    <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR" />
+    <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR" />
+    <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="ERROR" />
+    <logger name="kafka.server.BrokerMetadataCheckpoint" level="ERROR" />
+    <logger name="io.confluent.rest" level="ERROR" />
+    <logger name="io.confluent.kafka.schemaregistry" level="ERROR" />
+    <logger name="org.glassfish.jersey.internal.inject.Providers" level="ERROR" />
+</configuration>

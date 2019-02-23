@@ -1,14 +1,10 @@
 package org.kafkahq.repositories;
 
-import com.google.inject.Binder;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
-import org.jooby.Env;
-import org.jooby.Jooby;
 import org.kafkahq.models.LogDir;
 
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
-public class LogDirRepository extends AbstractRepository implements Jooby.Module {
+public class LogDirRepository extends AbstractRepository {
     public ArrayList<LogDir> list() throws ExecutionException, InterruptedException {
         ArrayList<LogDir> list = new ArrayList<>();
 
@@ -41,11 +37,5 @@ public class LogDirRepository extends AbstractRepository implements Jooby.Module
         return this.list().stream()
             .filter(item -> item.getBrokerId().equals(brokerId))
             .collect(Collectors.toList());
-    }
-
-    @SuppressWarnings("NullableProblems")
-    @Override
-    public void configure(Env env, Config conf, Binder binder) {
-        binder.bind(LogDirRepository.class).toInstance(new LogDirRepository());
     }
 }
