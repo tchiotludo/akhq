@@ -105,12 +105,7 @@ public class KafkaWrapper {
                         .collect(Collectors.toList());
 
                     KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-                    synchronized (consumer) {
                         Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
-                        // @FIXME: ugly hacks, on startup, first query can send a partial result, resending request works !
-                        if (begins.size() != collect.size()) {
-                            begins = consumer.beginningOffsets(collect);
-                        }
                         Map<TopicPartition, Long> ends = consumer.endOffsets(collect);
 
                         return begins.entrySet().stream()
@@ -125,7 +120,6 @@ public class KafkaWrapper {
                                     toList()
                                 )
                             ));
-                    }
                 },
                 "Describe Topics Offsets {}",
                 topics

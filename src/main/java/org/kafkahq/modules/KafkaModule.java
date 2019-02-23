@@ -110,18 +110,12 @@ public class KafkaModule {
         return this.adminClient.get(clusterId);
     }
 
-    private Map<String, KafkaConsumer<byte[], byte[]>> consumers = new HashMap<>();
-
     public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) {
-        if (!this.consumers.containsKey(clusterId)) {
-            this.consumers.put(clusterId, new KafkaConsumer<>(
-                this.getConsumerProperties(clusterId),
-                new ByteArrayDeserializer(),
-                new ByteArrayDeserializer()
-            ));
-        }
-
-        return this.consumers.get(clusterId);
+        return new KafkaConsumer<>(
+            this.getConsumerProperties(clusterId),
+            new ByteArrayDeserializer(),
+            new ByteArrayDeserializer()
+        );
     }
 
     public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) {

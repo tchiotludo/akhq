@@ -3,7 +3,6 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
@@ -73,12 +72,10 @@ public class RecordRepository extends AbstractRepository {
                 )
             );
 
-            synchronized (consumer) {
-                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
-                for (ConsumerRecord<byte[], byte[]> record : records) {
-                    list.add(newRecord(record, options));
-                }
+            for (ConsumerRecord<byte[], byte[]> record : records) {
+                list.add(newRecord(record, options));
             }
         }
         return list;
@@ -171,9 +168,7 @@ public class RecordRepository extends AbstractRepository {
                 do {
                     ConsumerRecords<byte[], byte[]> records;
 
-                    synchronized (consumer) {
-                        records = this.poll(consumer);
-                    }
+                    records = this.poll(consumer);
 
                     if (records.isEmpty()) {
                         emptyPoll++;
@@ -342,10 +337,8 @@ public class RecordRepository extends AbstractRepository {
             return Flowable.just(new SearchEvent(topic).end());
         }
 
-        synchronized (consumer) {
-            consumer.assign(partitions.keySet());
-            partitions.forEach(consumer::seek);
-        }
+        consumer.assign(partitions.keySet());
+        partitions.forEach(consumer::seek);
 
         partitions.forEach((topicPartition, first) ->
             log.trace(
@@ -365,44 +358,42 @@ public class RecordRepository extends AbstractRepository {
 
             SearchEvent currentEvent = new SearchEvent(searchEvent);
 
-            synchronized (consumer) {
-                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
-                if (records.isEmpty()) {
-                    currentEvent.emptyPoll++;
-                } else {
-                    currentEvent.emptyPoll = 0;
+            if (records.isEmpty()) {
+                currentEvent.emptyPoll++;
+            } else {
+                currentEvent.emptyPoll = 0;
+            }
+
+            List<Record> list = new ArrayList<>();
+
+            for (ConsumerRecord<byte[], byte[]> record : records) {
+                currentEvent.updateProgress(record);
+
+                if (searchFilter(options, record)) {
+                    list.add(newRecord(record, options));
+                    matchesCount.getAndIncrement();
+
+                    log.trace(
+                        "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
+                        record.topic(),
+                        record.partition(),
+                        record.offset(),
+                        record.key()
+                    );
                 }
+            }
 
-                List<Record> list = new ArrayList<>();
+            currentEvent.records = list;
 
-                for (ConsumerRecord<byte[], byte[]> record : records) {
-                    currentEvent.updateProgress(record);
-
-                    if (searchFilter(options, record)) {
-                        list.add(newRecord(record, options));
-                        matchesCount.getAndIncrement();
-
-                        log.trace(
-                            "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
-                            record.topic(),
-                            record.partition(),
-                            record.offset(),
-                            record.key()
-                        );
-                    }
-                }
-
-                currentEvent.records = list;
-
-                if (list.size() > 0) {
-                    emitter.onNext(currentEvent.progress(options));
-                } else if (currentEvent.emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
-                    emitter.onNext(currentEvent.end());
-                    currentEvent.emptyPoll = 666;
-                } else {
-                    emitter.onNext(currentEvent.progress(options));
-                }
+            if (list.size() > 0) {
+                emitter.onNext(currentEvent.progress(options));
+            } else if (currentEvent.emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
+                emitter.onNext(currentEvent.end());
+                currentEvent.emptyPoll = 666;
+            } else {
+                emitter.onNext(currentEvent.progress(options));
             }
 
             return currentEvent;
