@@ -14,12 +14,6 @@ public class App {
         );
 
         assets("/favicon.ico");
-
-        use("*", "/", (req, rsp, chain)  -> {
-            rsp.redirect("/" + this.require(KafkaModule.class).getClustersList().get(0) + "/topic");
-        });
-        use("*", "/{cluster}", (req, rsp, chain)  -> {
-            rsp.redirect("/" + req.param("cluster").value() + "/topic");
         });
         */
     }

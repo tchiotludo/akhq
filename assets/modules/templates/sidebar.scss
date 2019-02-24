@@ -13,11 +13,17 @@
         padding: 5px 10px;
         background: $tertiary;
         border-bottom: 4px solid $yellow;
-        h3 {
-            margin-bottom: 0;
-            text-align: center;
-            sup {
-                color: $yellow;
+        a {
+            h3 {
+                margin-bottom: 0;
+                text-align: center;
+                sup {
+                    color: $yellow;
+                }
+            }
+
+            &:hover {
+                text-decoration: none;
             }
         }
     }

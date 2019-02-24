@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Optional;
 
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
@@ -31,14 +32,23 @@ abstract public class AbstractController {
     private KafkaModule kafkaModule;
 
     @SuppressWarnings("unchecked")
-    protected HttpResponse template(HttpRequest request, String cluster, Object... values) {
-
+    protected Map templateData(Optional<String> cluster, Object... values) {
         Map datas = CollectionUtils.mapOf(values);
 
-        datas.put("clusterId", cluster);
         datas.put("clusters", this.kafkaModule.getClustersList());
-        datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(cluster) != null);
         datas.put("basePath", getBasePath());
+
+        cluster.ifPresent(s -> {
+            datas.put("clusterId", s);
+            datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
+        });
+
+        return datas;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected HttpResponse template(HttpRequest request, String cluster, Object... values) {
+        Map datas = templateData(Optional.of(cluster), values);
 
         MutableHttpResponse<Map> response = HttpResponse.ok();
 

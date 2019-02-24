@@ -32,9 +32,12 @@
         <div class="wrapper">
             <nav id="khq-sidebar">
                 <div class="sidebar-header">
-                    <h3><img src="${basePath}/static/img/logo.svg"/><sup><strong>HQ</strong></sup></h3>
+                    <a href="${basePath}/">
+                        <h3><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
+                    </a>
                 </div>
 
+                <#if clusterId??>
                 <ul class="list-unstyled components">
                     <li class="${(tab == "cluster")?then("active", "")}">
                         <a href="#clusters"
@@ -66,6 +69,7 @@
                     </li>
                     </#if>
                 </ul>
+                </#if>
             </nav>
 
             <div id="content">
