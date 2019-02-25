@@ -2,7 +2,7 @@
 <#-- @ftlvariable name="cluster" type="org.kafkahq.models.Cluster" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
-<#import "includes/template.ftl" as template>
+<#import "../includes/template.ftl" as template>
 
 <@template.header "404 Not Found", "node" />
 
