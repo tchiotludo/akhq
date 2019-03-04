@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.Byte[]>>" -->
@@ -45,7 +47,7 @@
                     </#list>
                 </table>
             </#if>
-            <pre class="mb-0 khq-data-highlight"><code>${data.getValueAsString()!"null"}</code></pre>
+            <pre class="mb-0 khq-data-highlight"><code>${data.getValueAsString()?esc!"null"}</code></pre>
         </td>
     </tr>
 </#list>
