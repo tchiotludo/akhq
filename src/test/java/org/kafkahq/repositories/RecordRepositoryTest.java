@@ -185,6 +185,14 @@ public class RecordRepositoryTest {
         assertEquals(3, searchAll(options));
     }
 
+    @Test
+    public void searchAvro() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_COUNT);
+        options.setSearch("count");
+
+        assertEquals(12, searchAll(options));
+    }
+
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
         AtomicInteger size = new AtomicInteger();
         AtomicBoolean hasNext = new AtomicBoolean(true);

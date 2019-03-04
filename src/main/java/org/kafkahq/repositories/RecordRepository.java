@@ -371,8 +371,9 @@ public class RecordRepository extends AbstractRepository {
             for (ConsumerRecord<byte[], byte[]> record : records) {
                 currentEvent.updateProgress(record);
 
-                if (searchFilter(options, record)) {
-                    list.add(newRecord(record, options));
+                Record current = newRecord(record, options);
+                if (searchFilter(options, current)) {
+                    list.add(current);
                     matchesCount.getAndIncrement();
 
                     log.trace(
@@ -400,16 +401,13 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    private boolean searchFilter(Options options, ConsumerRecord<byte[], byte[]> record) {
-        if (record.key().length > 0 && new String(record.key()).toLowerCase().contains(options.getSearch().toLowerCase())) {
+    private boolean searchFilter(Options options, Record record) {
+        if (record.getKeyAsString() != null && record.getKeyAsString().toLowerCase().contains(options.getSearch().toLowerCase())) {
             return true;
         }
 
-        if (record.value().length > 0 && new String(record.value()).toLowerCase().contains(options.getSearch().toLowerCase())) {
-            return true;
-        }
-
-        return false;
+        return record.getValueAsString() != null && record.getValueAsString().toLowerCase()
+            .contains(options.getSearch().toLowerCase());
     }
 
     @ToString
