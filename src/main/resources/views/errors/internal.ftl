@@ -6,7 +6,7 @@
 
 <#import "../includes/template.ftl" as template>
 
-<@template.header "500 Internal server error", "node" />
+<@template.header "500 Internal server error" />
 
 <code>${message}</code><br /><br />
 

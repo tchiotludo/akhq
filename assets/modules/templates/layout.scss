@@ -77,6 +77,11 @@ h1 {
         width: 100%;
     }
 
+    &.no-side-bar {
+        width: 100%;
+        margin-left: 0;
+    }
+
     padding: 20px 20px 65px;
     min-height: 100vh;
     transition: none;

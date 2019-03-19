@@ -4,7 +4,7 @@
 
 <#import "../includes/template.ftl" as template>
 
-<@template.header "404 Not Found", "node" />
+<@template.header "404 Not Found" />
 
 <p>
     The page you were looking for doesn't exist.

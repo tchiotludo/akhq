@@ -1,5 +1,8 @@
 # KafkaHQ
-> Kafka GUI for topics, topics data, consumers group, schema registry and more...
+[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
+
+> Kafka GUI for topics, topics data, consumers group, schema registry and more... 
+
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
 
@@ -87,8 +90,13 @@ Configuration file example in YML :
 ```yml
 kafkahq:
   server:
-    # if behind a reverse proxy, path to kafkahq with trailing slash
+    # if behind a reverse proxy, path to kafkahq with trailing slash (optionnal)
     base-path: ""
+    # Access log configuration (optionnal)
+    access-log:
+      enabled: true # true by default 
+      name: org.kafkahq.log.access # Logger name
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
 
   # default kafka properties for each clients, available for admin / producer / consumer (optionnal)
   clients-defaults:
@@ -116,10 +124,11 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
         
+  # Topic display data options (optionnal)
   topic-data:
-    # default sort order (OLDEST, NEWEST)
+    # default sort order (OLDEST, NEWEST) (default: OLDEST)
     sort: OLDEST
-    # max record per page
+    # max record per page (default: 50)
     size: 50
 ```
 

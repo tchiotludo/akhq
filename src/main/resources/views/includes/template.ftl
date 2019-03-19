@@ -7,7 +7,7 @@
 <#-- @ftlvariable name="toast" type="java.lang.String" -->
 <#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
 
-<#macro header title tab>
+<#macro header title tab="">
     <!DOCTYPE html>
     <html>
     <head>
@@ -30,6 +30,7 @@
             <script type="application/json">${toast?no_esc}</script>
         </#if>
         <div class="wrapper">
+            <#if tab != "">
             <nav id="khq-sidebar">
                 <div class="sidebar-header">
                     <a href="${basePath}/">
@@ -71,8 +72,8 @@
                 </ul>
                 </#if>
             </nav>
-
-            <div id="content">
+            </#if>
+            <div id="content" class="${(tab == "")?then("no-side-bar", "")}">
                 <div class="title">
                     <h1>
                         <button type="button" id="khq-sidebar-collapse" class="btn btn-dark d-md-none">
