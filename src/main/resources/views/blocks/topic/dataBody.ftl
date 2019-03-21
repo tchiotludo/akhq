@@ -47,7 +47,7 @@
                     </#list>
                 </table>
             </#if>
-            <pre class="mb-0 khq-data-highlight"><code>${data.getValueAsString()?esc!"null"}</code></pre>
+            <pre class="mb-0 khq-data-highlight"><code>${(data.getValueAsString()?esc)!"null"}</code></pre>
         </td>
     </tr>
 </#list>
