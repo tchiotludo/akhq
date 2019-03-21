@@ -1,7 +1,6 @@
 package org.kafkahq.controllers;
 
 
-import com.github.jstumpp.uups.Uups;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
@@ -12,49 +11,34 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
 import io.micronaut.http.hateoas.JsonError;
 import io.micronaut.http.hateoas.Link;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.views.ViewsRenderer;
+import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.modules.RequestHelper;
 
 import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 
+@Slf4j
 @Controller("/errors")
 public class ErrorController extends AbstractController {
     private final ViewsRenderer viewsRenderer;
     private final RequestHelper requestHelper;
-    private final Environment environment;
 
     @Value("${kafkahq.server.base-path}")
     protected String basePath;
 
     @Inject
-    public ErrorController(ViewsRenderer viewsRenderer, RequestHelper requestHelper, Environment environment) {
+    public ErrorController(ViewsRenderer viewsRenderer, RequestHelper requestHelper) {
         this.viewsRenderer = viewsRenderer;
         this.requestHelper = requestHelper;
-        this.environment = environment;
     }
 
     @Error(global = true)
     public HttpResponse error(HttpRequest request, Throwable e) {
-        if (isHtml(request) && environment.getActiveNames().contains("dev")) {
-            String s = Uups.renderHtml(
-                e,
-                500,
-                request.getMethod().name(),
-                request.getPath(),
-                request.getParameters().asMap(String.class, String.class),
-                new HashMap<>(),
-                request.getHeaders().asMap(String.class, String.class),
-                new HashMap<>()
-            );
-
-            return HttpResponse
-                .serverError()
-                .contentType(MediaType.TEXT_HTML)
-                .body(s);
-        } else if (isHtml(request)) {
+        if (isHtml(request)) {
             StringWriter stringWriter = new StringWriter();
             e.printStackTrace(new PrintWriter(stringWriter));
 

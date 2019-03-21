@@ -55,7 +55,7 @@ module.exports = (env, argv) => {
             ]
         },
         plugins: [
-            new CleanWebpackPlugin([dstDirectory]),
+            new CleanWebpackPlugin(),
             new ExtractTextPlugin({
                 filename: 'css/[name].css'
             }),
