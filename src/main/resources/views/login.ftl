@@ -20,7 +20,7 @@
         <div class="input-group-prepend">
             <span class="input-group-text"><i class="fa fa-lock"></i></span>
         </div>
-        <input type="text" name="password" class="form-control" placeholder="Password" aria-label="Password" required>
+        <input type="password" name="password" class="form-control" placeholder="Password" aria-label="Password" required>
     </div>
 
     <div class="form-group text-right">

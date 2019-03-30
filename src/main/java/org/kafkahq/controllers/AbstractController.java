@@ -121,10 +121,12 @@ abstract public class AbstractController {
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
-        return securityService
-            .getAuthentication()
-            .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-            .orElseGet(() -> expandRoles(this.defaultRoles));
+        return expandRoles(
+            securityService
+                .getAuthentication()
+                .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
+                .orElseGet(() -> this.defaultRoles)
+        );
     }
 
     @Builder
