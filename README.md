@@ -142,7 +142,10 @@ kafkahq:
 > Since KafkaHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
-KafkaHQ docker image support 2 environment variables to handle configuraiton :
+### Docker
+KafkaHQ docker image support 3 environment variables to handle configuraiton :
+* `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
+  /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
 

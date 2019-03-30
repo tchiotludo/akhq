@@ -8,21 +8,17 @@ volumes:
 
 services:
   kafkahq:
+    # build:
+    #   context: .
     image: tchiotludo/kafkahq
     environment:
-      MICRONAUT_APPLICATION_JSON: |
-        {
-          "kafkahq": {
-            "connections": {
-              "docker-kafka-server": {
-                  "properties": {
-                    "bootstrap.servers": "kafka:9092"
-                  },
-                  "schema-registry": "http://schema-registry:8085"
-              }
-            }
-          }
-        }
+      KAFKAHQ_CONFIGURATION: |
+        kafkahq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+              schema-registry: "http://schema-registry:8085"
     ports:
       - 8080:8080
     links:
