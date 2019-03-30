@@ -7,8 +7,9 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import org.kafkahq.configs.Role;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.TopicPartition;
 import org.kafkahq.modules.RequestHelper;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@ThreadLocal
+@Secured(Role.ROLE_GROUP_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/group")
 public class GroupController extends AbstractController {
     private ConsumerGroupRepository consumerGroupRepository;
@@ -70,6 +71,7 @@ public class GroupController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @View("groupUpdate")
     @Get("{groupName}/offsets")
     public HttpResponse offsets(HttpRequest request, String cluster, String groupName) throws ExecutionException, InterruptedException {
@@ -82,6 +84,7 @@ public class GroupController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Post(value = "{groupName}/offsets", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse offsetsSubmit(HttpRequest request, String cluster, String groupName, Map<String, Long> offset) throws Throwable {
         ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
@@ -108,6 +111,7 @@ public class GroupController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Get("{groupName}/offsets/start")
     public HttpResponse offsetsStart(HttpRequest request, String cluster, String groupName, String timestamp) throws ExecutionException, InterruptedException {
         ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
@@ -124,6 +128,7 @@ public class GroupController extends AbstractController {
         return HttpResponse.ok(offsetForTime);
     }
 
+    @Secured(Role.ROLE_GROUP_DELETE)
     @Get("{groupName}/delete")
     public HttpResponse delete(HttpRequest request, String cluster, String groupName) {
         MutableHttpResponse<Void> response = HttpResponse.ok();

@@ -1,8 +1,11 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="compatibilityLevel" type="java.util.List<java.lang.String>" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
 <#macro table schemas isVersion>
+    <#assign canDelete=roles?seq_contains("registry/" + (isVersion?then("version/", "")) + "delete")>
+
     <#-- @ftlvariable name="schemas" type="java.util.List<org.kafkahq.models.Schema>" -->
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0">
@@ -16,13 +19,15 @@
                     <#if isVersion == false>
                         <th class="khq-row-action"></th>
                     </#if>
-                    <th class="khq-row-action"></th>
+                    <#if canDelete == true>
+                        <th class="khq-row-action"></th>
+                    </#if>
                 </tr>
             </thead>
             <tbody>
                 <#if schemas?size == 0>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="${(canDelete == true && isVersion == true)?then("4", "3")}">
                             <div class="alert alert-info mb-0" role="alert">
                                 No schema available
                             </div>
@@ -40,21 +45,24 @@
                             <td class="khq-row-action khq-row-action-main">
                                 <a href="${basePath}/${clusterId}/schema/${schema.getSubject()}"><i class="fa fa-search"></i></a>
                             </td>
-                            <td class="khq-row-action">
-                                <a
-                                        href="${basePath}/${clusterId}/schema/${schema.getSubject()}/delete"
-                                        data-confirm="Do you want to delete schema: <code>${schema.getSubject()}</code> ?"
-                                ><i class="fa fa-trash"></i></a>
-                            </td>
-                        <#else>
-                            <td class="khq-row-action">
-                                <a
-                                        href="${basePath}/${clusterId}/schema/${schema.getSubject()}/version/${schema.getVersion()}/delete"
-                                        data-confirm="Do you want to delete version: <code>${schema.getVersion()} from ${schema.getSubject()}</code> ?"
-                                ><i class="fa fa-trash"></i></a>
-                            </td>
                         </#if>
-
+                        <#if canDelete == true>
+                            <#if isVersion == false>
+                                <td class="khq-row-action">
+                                    <a
+                                            href="${basePath}/${clusterId}/schema/${schema.getSubject()}/delete"
+                                            data-confirm="Do you want to delete schema: <code>${schema.getSubject()}</code> ?"
+                                    ><i class="fa fa-trash"></i></a>
+                                </td>
+                            <#else>
+                                <td class="khq-row-action">
+                                    <a
+                                            href="${basePath}/${clusterId}/schema/${schema.getSubject()}/version/${schema.getVersion()}/delete"
+                                            data-confirm="Do you want to delete version: <code>${schema.getVersion()} from ${schema.getSubject()}</code> ?"
+                                    ><i class="fa fa-trash"></i></a>
+                                </td>
+                            </#if>
+                        </#if>
                     </tr>
                     <tr>
                         <td colspan="5">

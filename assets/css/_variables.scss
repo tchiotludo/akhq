@@ -46,7 +46,6 @@ $dark: $gray-500 !default;
 $yiq-contrasted-threshold: 175 !default;
 
 // Body
-
 $body-bg: #171819 !default;
 $body-color: $white !default;
 
@@ -68,6 +67,7 @@ $input-border-color: transparent !default;
 $input-group-addon-color: $gray-500 !default;
 $input-group-addon-bg: $gray-700 !default;
 $input-disabled-bg: $gray-500 !default;
+$input-group-addon-border-color: $input-group-addon-bg;
 
 $custom-file-color: $gray-500 !default;
 $custom-file-border-color: $gray-700 !default;

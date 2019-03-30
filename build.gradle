@@ -104,6 +104,7 @@ dependencies {
     // micronaut
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
+    annotationProcessor "io.micronaut:micronaut-security"
     compile "io.micronaut:micronaut-inject"
     compile "io.micronaut:micronaut-validation"
     compile 'io.micronaut:micronaut-views'
@@ -142,6 +143,8 @@ dependencies {
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
     testCompile group: 'commons-codec', name: 'commons-codec', version: '1.11'
+    testImplementation 'org.hamcrest:hamcrest:2.1'
+    testImplementation 'org.hamcrest:hamcrest-library:2.1'
 }
 
 /**********************************************************************************************************************\

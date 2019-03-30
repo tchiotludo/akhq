@@ -1,7 +1,10 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
+<#assign canDelete=roles?seq_contains("topic/delete")>
+    
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>
 
@@ -33,7 +36,10 @@
                 <th class="text-nowrap">Factor</th>
                 <th class="text-nowrap">In Sync</th>
                 <th class="text-nowrap">Consumer Groups</th>
-                <th colspan="2" class="khq-row-action"></th>
+                <th class="khq-row-action"></th>
+                <#if canDelete == true>
+                    <th class="khq-row-action"></th>
+                </#if>
             </tr>
         </thead>
         <tbody>
@@ -72,22 +78,26 @@
                         <td class="khq-row-action khq-row-action-main">
                             <a href="${basePath}/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
                         </td>
-                        <td class="khq-row-action">
-                            <#if topic.isInternal() == false>
-                                <a
-                                    href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
-                                    data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"
-                                ><i class="fa fa-trash"></i></a>
-                            </#if>
-                        </td>
+                        <#if canDelete == true>
+                            <td class="khq-row-action">
+                                <#if topic.isInternal() == false>
+                                    <a
+                                        href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
+                                        data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"
+                                    ><i class="fa fa-trash"></i></a>
+                                </#if>
+                            </td>
+                        </#if>
                     </tr>
                 </#list>
         </tbody>
     </table>
 </div>
 
-<@template.bottom>
-    <a href="${basePath}/${clusterId}/topic/create" type="submit" class="btn btn-primary">Create a topic</a>
-</@template.bottom>
+<#if roles?seq_contains("topic/insert") == true>
+    <@template.bottom>
+        <a href="${basePath}/${clusterId}/topic/create" type="submit" class="btn btn-primary">Create a topic</a>
+    </@template.bottom>
+</#if>
 
 <@template.footer/>

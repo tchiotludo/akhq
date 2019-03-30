@@ -6,6 +6,7 @@
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="toast" type="java.lang.String" -->
 <#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
 <#macro header title tab="">
     <!DOCTYPE html>
@@ -34,7 +35,7 @@
             <nav id="khq-sidebar">
                 <div class="sidebar-header">
                     <a href="${basePath}/">
-                        <h3><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
+                        <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
                     </a>
                 </div>
 
@@ -55,34 +56,42 @@
                             </#list>
                         </ul>
                     </li>
-                    <li class="${(tab == "node")?then("active", "")}">
-                        <a href="${basePath}/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
-                    </li>
-                    <li class="${(tab == "topic")?then("active", "")}">
-                        <a href="${basePath}/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>
-                    </li>
-                    <li class="${(tab == "group")?then("active", "")}">
-                        <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
-                    </li>
-                    <#if registryEnabled?? && registryEnabled == true >
-                    <li class="${(tab == "schema")?then("active", "")}">
-                        <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
-                    </li>
+                    <#if roles?seq_contains("node") == true>
+                        <li class="${(tab == "node")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
+                        </li>
+                    </#if>
+                    <#if roles?seq_contains("group") == true>
+                        <li class="${(tab == "topic")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>
+                        </li>
+                    </#if>
+                    <#if roles?seq_contains("group") == true>
+                        <li class="${(tab == "group")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
+                        </li>
+                    </#if>
+                    <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true>
+                        <li class="${(tab == "schema")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
+                        </li>
                     </#if>
                 </ul>
                 </#if>
             </nav>
             </#if>
             <div id="content" class="${(tab == "")?then("no-side-bar", "")}">
-                <div class="title">
-                    <h1>
-                        <button type="button" id="khq-sidebar-collapse" class="btn btn-dark d-md-none">
-                            <i class="fa fa-bars"></i>
-                        </button>
+                <#if tab != "">
+                    <div class="title">
+                        <h1>
+                            <button type="button" id="khq-sidebar-collapse" class="btn btn-dark d-md-none">
+                                <i class="fa fa-bars"></i>
+                            </button>
 
-                        ${title}
-                    </h1>
-                </div>
+                            ${title}
+                        </h1>
+                    </div>
+                </#if>
 
                 <main>
 </#macro>

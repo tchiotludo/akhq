@@ -1,8 +1,12 @@
 <#-- @ftlvariable name="configs" type="java.util.ArrayList<org.kafkahq.models.Config>" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+
 <#if topic??>
     <#assign internal=topic.isInternal()>
+    <#assign canUpdate=roles?seq_contains("topic/config/update")>
 <#else>
     <#assign internal=false>
+    <#assign canUpdate=roles?seq_contains("node/config/update")>
 </#if>
 
 <form enctype="multipart/form-data" method="post" class="khq-form mb-0">
@@ -52,7 +56,7 @@
             </tbody>
         </table>
     </div>
-    <#if internal == false>
+    <#if internal == false && canUpdate == true>
         <div class="khq-submit">
             <button type="submit" class="btn btn-primary">Update configs</button>
         </div>

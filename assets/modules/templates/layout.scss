@@ -29,6 +29,14 @@ h1 {
     min-width: 0;
 }
 
+h3.logo {
+    margin-bottom: 0;
+    text-align: center;
+    sup {
+        color: $yellow;
+    }
+}
+
 .wrapper {
     display: flex;
     width: 100%;
@@ -80,6 +88,9 @@ h1 {
     &.no-side-bar {
         width: 100%;
         margin-left: 0;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
     }
 
     padding: 20px 20px 65px;

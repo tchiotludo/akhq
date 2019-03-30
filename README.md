@@ -1,7 +1,7 @@
 # KafkaHQ
 [![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
 
-> Kafka GUI for topics, topics data, consumers group, schema registry and more... 
+> Kafka GUI for topics, topics data, consumers group, schema registry and more...
 
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
@@ -49,7 +49,9 @@
   - Configurations view
   - Logs view
   - Configure a node
-
+- **Authentification and Roles**
+  - Read only mode
+  - BasicHttp with roles per user
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
@@ -78,67 +80,71 @@ docker run -d \
 
 * Install Java 8
 * Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
-* Create an [configuration files](#configuration) 
+* Create an [configuration files](#configuration)
 * Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`
 * Go to http://localhost:8080
 
 
 ## Configuration
-Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files.
-Configuration file example in YML :
+Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files. YML Configuration
+file example can be found here :[application.example.yml](application.example.yml)
 
-```yml
-kafkahq:
-  server:
-    # if behind a reverse proxy, path to kafkahq with trailing slash (optionnal)
-    base-path: ""
-    # Access log configuration (optionnal)
-    access-log:
-      enabled: true # true by default 
-      name: org.kafkahq.log.access # Logger name
-      format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
-
-  # default kafka properties for each clients, available for admin / producer / consumer (optionnal)
-  clients-defaults:
-    consumer:
-      properties:
-        isolation.level: read_committed
-
-  # list of kafka cluster available for kafkahq
-  connections:
-    # url friendly name for the cluster
-    my-cluster-1:
-      # standard kafka properties (optionnal)
-      properties:
-        bootstrap.servers: "kafka:9092"
-      # schema registry url (optionnal)
-      schema-registry: "http://schema-registry:8085"
-
-    my-cluster-2:
-      properties:
-        bootstrap.servers: "kafka:9093"
-        security.protocol: SSL
-        ssl.truststore.location: /app/truststore.jks
-        ssl.truststore.password: password
-        ssl.keystore.location: /app/keystore.jks
-        ssl.keystore.password: password
-        ssl.key.password: password
-        
-  # Topic display data options (optionnal)
-  topic-data:
-    # default sort order (OLDEST, NEWEST) (default: OLDEST)
-    sort: OLDEST
-    # max record per page (default: 50)
-    size: 50
-```
-
-* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash
-* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with trailing slash
+### Kafka cluster configuration 
 * `kafkahq.connections` is a key value configuration with :
   * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: the schema registry url *(optional)*
 
+### Security
+* `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
+  * `topic/read`
+  * `topic/insert`
+  * `topic/delete`
+  * `topic/config/update`
+  * `node/read`
+  * `node/config/update`
+  * `topic/data/read`
+  * `topic/data/insert`
+  * `topic/data/delete`
+  * `group/read`
+  * `group/delete`
+  * `group/offsets/update`
+  * `registry/read`
+  * `registry/insert`
+  * `registry/update`
+  * `registry/delete`
+  * `registry/version/delete`
+
+By default, security & roles is enabled by default but anonymous user have full access. You can completely disabled
+security with `micronaut.security.enabled: false`.
+
+If you need a read-only application, simply add this to your configuration files : 
+```yaml
+kafkahq:
+  security:
+    default-roles:
+      - topic/read
+      - node/read
+      - topic/data/read
+      - group/read
+      - registry/read
+```
+
+
+#### Basic Auth
+* `kafkahq.security.basic-auth`: List user & password with affected roles 
+  * `username`: login of user 
+    * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
+    * `roles`: Role for current users
+
+### Server 
+* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash
+
+### Kafka admin / producer / consumer default properties
+* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with
+  trailing slash
+
+### Micronaut configuration 
 > Since KafkaHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 

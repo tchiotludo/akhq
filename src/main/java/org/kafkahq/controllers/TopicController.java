@@ -3,7 +3,6 @@ package org.kafkahq.controllers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -13,13 +12,13 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
-import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.kafkahq.configs.Role;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
@@ -37,9 +36,8 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Secured(Role.ROLE_TOPIC_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/topic")
-@ThreadLocal
 public class TopicController extends AbstractController {
     private TopicRepository topicRepository;
     private ConfigRepository configRepository;
@@ -72,6 +70,7 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_INSERT)
     @View("topicCreate")
     @Get("create")
     public HttpResponse create(HttpRequest request, String cluster) {
@@ -81,6 +80,7 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_INSERT)
     @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse createSubmit(HttpRequest request,
                                      String cluster,
@@ -117,6 +117,7 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @View("topicProduce")
     @Get("{topicName}/produce")
     public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -129,6 +130,7 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post(value = "{topicName}/produce", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse produceSubmit(HttpRequest request,
                                       String cluster,
@@ -169,6 +171,7 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
     @View("topic")
     @Get("{topicName}")
     public HttpResponse home(HttpRequest request,
@@ -252,6 +255,7 @@ public class TopicController extends AbstractController {
             .build();
     }
 
+    @Secured(Role.ROLE_TOPIC_READ)
     @View("topic")
     @Get("{topicName}/{tab:(partitions|groups|configs|logs)}")
     public HttpResponse tab(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
@@ -271,6 +275,7 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
     @Post(value = "{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateConfig(HttpRequest request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(topicName));
@@ -294,6 +299,7 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Get("{topicName}/deleteRecord")
     public HttpResponse deleteRecord(String cluster, String topicName, Integer partition, String key) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
@@ -311,6 +317,7 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DELETE)
     @Get("{topicName}/delete")
     public HttpResponse delete(String cluster, String topicName) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
@@ -324,6 +331,7 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get("{topicName}/search/{search}")
     public Publisher<Event<?>> sse(String cluster,
                                           String topicName,

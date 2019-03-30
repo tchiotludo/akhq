@@ -2,6 +2,7 @@
 <#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
 <#import "includes/template.ftl" as template>
 
@@ -36,9 +37,11 @@
     </div>
 </div>
 
+<#if roles?seq_contains("group/offsets/update") == true>
 <@template.bottom>
     <a href="${basePath}/${clusterId}/group/${group.getId()}/offsets" type="submit" class="btn btn-primary">Update offsets</a>
 </@template.bottom>
+</#if>
 
 <@template.footer/>
 

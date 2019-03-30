@@ -5,8 +5,11 @@
 <#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.Byte[]>>" -->
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
+<#assign canDelete = roles?seq_contains("topic/data/delete") && canDeleteRecords>
 <#assign i=0>
+
 <#list datas as data>
     <#assign i++>
     <tr class="reduce <#if !(data.getValueAsString())??>deleted</#if>">
@@ -21,19 +24,19 @@
                 ${data.getHeaders()?size}
             </#if>
         </td>
-        <#if canDeleteRecords == true >
+        <#if canDelete == true >
             <td>
                 <#if data.getValue()??>
                     <a
                             href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKeyAsBase64()}"
-                            data-confirm="Do you want to delete record code>${data.getKeyAsString()} from topic ${topic.getName()}</code> ?"
+                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
         </#if>
     </tr>
     <tr<#if !(data.getValue())??> class="deleted"</#if>>
-        <td colspan="${(canDeleteRecords == true)?then("6", "5")}">
+        <td colspan="${(canDelete == true)?then("6", "5")}">
             <button type="button" class="close d-none" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>

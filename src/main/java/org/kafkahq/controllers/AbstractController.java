@@ -2,12 +2,14 @@ package org.kafkahq.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.cookie.Cookie;
+import io.micronaut.security.utils.SecurityService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -16,8 +18,8 @@ import org.kafkahq.modules.KafkaModule;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
@@ -31,12 +33,19 @@ abstract public class AbstractController {
     @Inject
     private KafkaModule kafkaModule;
 
+    @Inject
+    ApplicationContext applicationContext;
+
+    @Value("${kafkahq.security.default-roles}")
+    List<String> defaultRoles;
+
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
         Map datas = CollectionUtils.mapOf(values);
 
         datas.put("clusters", this.kafkaModule.getClustersList());
         datas.put("basePath", getBasePath());
+        datas.put("roles", getRights());
 
         cluster.ifPresent(s -> {
             datas.put("clusterId", s);
@@ -81,6 +90,41 @@ abstract public class AbstractController {
         response.cookie(cookie);
 
         return toast;
+    }
+
+    private static List<String> expandRoles(List<String> roles) {
+        return roles
+            .stream()
+            .map(s -> {
+                ArrayList<String> rolesExpanded = new ArrayList<>();
+
+                ArrayList<String> split = new ArrayList<>(Arrays.asList(s.split("/")));
+
+                while (split.size() > 0) {
+                    rolesExpanded.add(String.join("/", split));
+                    split.remove(split.size() - 1);
+                }
+
+                return rolesExpanded;
+            })
+            .flatMap(Collection::stream)
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getRights() {
+        if (!applicationContext.containsBean(SecurityService.class)) {
+            return expandRoles(this.defaultRoles);
+        }
+
+        SecurityService securityService = applicationContext.getBean(SecurityService.class);
+
+        return securityService
+            .getAuthentication()
+            .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
+            .orElseGet(() -> expandRoles(this.defaultRoles));
     }
 
     @Builder

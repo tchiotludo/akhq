@@ -3,6 +3,7 @@
 <#-- @ftlvariable name="configs" type="java.util.ArrayList<org.kafkahq.models.Config>" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/group.ftl" as groupTemplate>
@@ -72,7 +73,7 @@
     </div>
 </div>
 
-<#if tab != "configs">
+<#if tab != "configs" && roles?seq_contains("topic/data/insert")>
     <@template.bottom>
         <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" type="submit" class="btn btn-primary">Produce to topic</a>
     </@template.bottom>

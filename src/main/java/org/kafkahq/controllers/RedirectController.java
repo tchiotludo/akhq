@@ -3,15 +3,14 @@ package org.kafkahq.controllers;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.micronaut.runtime.context.scope.ThreadLocal;
-import lombok.extern.slf4j.Slf4j;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import org.kafkahq.modules.KafkaModule;
 
 import javax.inject.Inject;
 import java.net.URISyntaxException;
 
-@ThreadLocal
-@Slf4j
+@Secured(SecurityRule.IS_ANONYMOUS)
 @Controller
 public class RedirectController extends AbstractController {
     private KafkaModule kafkaModule;

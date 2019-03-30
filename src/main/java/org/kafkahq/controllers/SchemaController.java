@@ -5,8 +5,9 @@ import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import org.kafkahq.configs.Role;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
@@ -15,7 +16,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 
-@ThreadLocal
+@Secured(Role.ROLE_REGISTRY_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
@@ -35,6 +36,7 @@ public class SchemaController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_REGISTRY_INSERT)
     @View("schemaCreate")
     @Get("create")
     public HttpResponse create(HttpRequest request, String cluster) throws IOException, RestClientException {
@@ -46,6 +48,7 @@ public class SchemaController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_REGISTRY_INSERT)
     @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse createSubmit(String cluster,
                                      String subject,
@@ -93,6 +96,7 @@ public class SchemaController extends AbstractController {
         return this.render(request, cluster, subject, "update");
     }
 
+    @Secured(Role.ROLE_REGISTRY_UPDATE)
     @Post(value = "{subject}", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateSchema(String cluster,
                                      String subject,
@@ -115,6 +119,7 @@ public class SchemaController extends AbstractController {
         return this.render(request, cluster, subject, tab);
     }
 
+    @Secured(Role.ROLE_REGISTRY_DELETE)
     @Get("{subject}/delete")
     public HttpResponse delete(String cluster, String subject) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
@@ -128,6 +133,7 @@ public class SchemaController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_REGISTRY_VERSION_DELETE)
     @Get("{subject}/version/{version}/delete")
     public HttpResponse deleteVersion(HttpRequest request, String cluster, String subject, Integer version) {
         MutableHttpResponse<Void> response = HttpResponse.ok();

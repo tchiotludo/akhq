@@ -1,7 +1,9 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 
 <#import "node.ftl" as nodeTemplate>
+<#assign canDelete=roles?seq_contains("group/delete")>
 
 <#macro table groups>
     <#-- @ftlvariable name="groups" type="java.util.List<org.kafkahq.models.ConsumerGroup>" -->
@@ -15,13 +17,15 @@
                     <th>Members</th>
                     <th>Topics</th>
                     <th class="khq-row-action"></th>
-                    <th class="khq-row-action"></th>
+                    <#if canDelete == true>
+                        <th class="khq-row-action"></th>
+                    </#if>
                 </tr>
             </thead>
             <tbody>
                     <#if groups?size == 0>
                         <tr>
-                            <td colspan="7">
+                            <td colspan="${(canDelete == true)?then("7", "6")}">
                                 <div class="alert alert-info mb-0" role="alert">
                                     No consumer group available
                                 </div>
@@ -45,12 +49,14 @@
                             <td class="khq-row-action khq-row-action-main">
                                 <a href="${basePath}/${clusterId}/group/${group.getId()}" ><i class="fa fa-search"></i></a>
                             </td>
-                            <td class="khq-row-action">
-                                <a
-                                    href="${basePath}/${clusterId}/group/${group.getId()}/delete"
-                                    data-confirm="Do you want to delete consumer group: <code>${group.getId()}</code> ?"
-                                ><i class="fa fa-trash"></i></a>
-                            </td>
+                            <#if canDelete == true>
+                                <td class="khq-row-action">
+                                    <a
+                                        href="${basePath}/${clusterId}/group/${group.getId()}/delete"
+                                        data-confirm="Do you want to delete consumer group: <code>${group.getId()}</code> ?"
+                                    ><i class="fa fa-trash"></i></a>
+                                </td>
+                            </#if>
                         </tr>
                     </#list>
             </tbody>

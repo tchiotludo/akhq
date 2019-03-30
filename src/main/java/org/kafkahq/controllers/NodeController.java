@@ -7,8 +7,9 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.runtime.context.scope.ThreadLocal;
+import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import org.kafkahq.configs.Role;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Node;
 import org.kafkahq.modules.RequestHelper;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
-@ThreadLocal
+@Secured(Role.ROLE_NODE_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/node")
 public class NodeController extends AbstractController {
     private ClusterRepository clusterRepository;
@@ -58,6 +59,7 @@ public class NodeController extends AbstractController {
         return this.render(request, cluster, nodeId, tab);
     }
 
+    @Secured(Role.ROLE_NODE_CONFIG_UPDATE)
     @Post(value = "{nodeId}", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateConfig(HttpRequest request, String cluster, Integer nodeId, Map<String, String> configs) throws Throwable {
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(nodeId));

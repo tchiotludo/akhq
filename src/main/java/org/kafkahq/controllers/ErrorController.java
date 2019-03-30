@@ -2,7 +2,6 @@ package org.kafkahq.controllers;
 
 
 import io.micronaut.context.annotation.Value;
-import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -21,6 +20,7 @@ import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+@Secured(SecurityRule.IS_ANONYMOUS)
 @Slf4j
 @Controller("/errors")
 public class ErrorController extends AbstractController {

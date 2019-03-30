@@ -1,0 +1,65 @@
+kafkahq:
+  server:
+    base-path: "" # if behind a reverse proxy, path to kafkahq with trailing slash (optionnal)
+    access-log: # Access log configuration (optionnal)
+      enabled: true # true by default
+      name: org.kafkahq.log.access # Logger name
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
+
+  # default kafka properties for each clients, available for admin / producer / consumer (optionnal)
+  clients-defaults:
+    consumer:
+      properties:
+        isolation.level: read_committed
+
+  # list of kafka cluster available for kafkahq
+  connections:
+    my-cluster-1: # url friendly name for the cluster
+      properties: # standard kafka properties (optionnal)
+        bootstrap.servers: "kafka:9092"
+      schema-registry: "http://schema-registry:8085" # schema registry url (optionnal)
+
+    my-cluster-2:
+      properties:
+        bootstrap.servers: "kafka:9093"
+        security.protocol: SSL
+        ssl.truststore.location: /app/truststore.jks
+        ssl.truststore.password: password
+        ssl.keystore.location: /app/keystore.jks
+        ssl.keystore.password: password
+        ssl.key.password: password
+
+  # Topic display data options (optionnal)
+  topic-data:
+    sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
+    size: 50 # max record per page (default: 50)
+
+  # Auth & Roles (optionnal)
+  security:
+    default-roles: # Roles available for all the user even unlogged user
+      - topic/read
+      - topic/insert
+      - topic/delete
+      - topic/config/update
+      - node/read
+      - node/config/update
+      - topic/data/read
+      - topic/data/insert
+      - topic/data/delete
+      - group/read
+      - group/delete
+      - group/offsets/update
+      - registry/read
+      - registry/insert
+      - registry/update
+      - registry/delete
+      - registry/version/delete
+
+    # Basic auth configuration
+    basic-auth:
+      user: # Username
+        password: pass # Password in sha256
+        roles: # Role for current users
+          - topic/read
+          - group/read
+          - group/delete

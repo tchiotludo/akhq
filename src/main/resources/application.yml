@@ -10,6 +10,22 @@ micronaut:
       static:
         paths: classpath:static
         mapping: "${kafkahq.server.base-path:}/static/**"
+  security:
+    enabled: true
+    endpoints:
+      login:
+        enabled: true
+      logout:
+        enabled: true
+    session:
+      enabled: true
+      login-success-target-url: /
+      forbidden-target-url: /login/forbidden
+      unauthorized-target-url: /login/unauthorized
+      login-failure-target-url: /login/failed
+    intercept-url-map:
+      - pattern: "${kafkahq.server.base-path:}/static/**"
+        access: "isAnonymous()"
 
 jackson:
   module-scan: false
@@ -33,3 +49,23 @@ kafkahq:
   topic-data:
     sort: OLDEST
     size: 50
+
+  security:
+    default-roles:
+      - topic/read
+      - topic/insert
+      - topic/delete
+      - topic/config/update
+      - node/read
+      - node/config/update
+      - topic/data/read
+      - topic/data/insert
+      - topic/data/delete
+      - group/read
+      - group/delete
+      - group/offsets/update
+      - registry/read
+      - registry/insert
+      - registry/update
+      - registry/delete
+      - registry/version/delete
