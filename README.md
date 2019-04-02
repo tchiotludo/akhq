@@ -161,5 +161,14 @@ Just install docker & docker-compose, clone the repository and issue a simple `d
 Dev server is a java server & webpack-dev-server with live reload.
 
 
+## Credits
+
+Many thanks to:
+
+[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=KafkaHQ)
+
+[JetBrains](https://www.jetbrains.com/?from=KafkaHQ) for their free OpenSource license.
+
+
 ## License
 Apache 2.0 © [tchiotludo](https://github.com/tchiotludo)
