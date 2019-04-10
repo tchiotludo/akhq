@@ -105,21 +105,23 @@ public class KafkaWrapper {
                         .collect(Collectors.toList());
 
                     KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-                        Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
-                        Map<TopicPartition, Long> ends = consumer.endOffsets(collect);
+                    Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
+                    Map<TopicPartition, Long> ends = consumer.endOffsets(collect);
+                    consumer.close();
 
-                        return begins.entrySet().stream()
-                            .collect(groupingBy(
-                                o -> o.getKey().topic(),
-                                mapping(begin ->
-                                        new Partition.Offsets(
-                                            begin.getKey().partition(),
-                                            begin.getValue(),
-                                            ends.get(begin.getKey())
-                                        ),
-                                    toList()
-                                )
-                            ));
+                    return begins.entrySet().stream()
+                        .collect(groupingBy(
+                            o -> o.getKey().topic(),
+                            mapping(
+                                begin ->
+                                    new Partition.Offsets(
+                                        begin.getKey().partition(),
+                                        begin.getValue(),
+                                        ends.get(begin.getKey())
+                                    ),
+                                toList()
+                            )
+                        ));
                 },
                 "Describe Topics Offsets {}",
                 topics

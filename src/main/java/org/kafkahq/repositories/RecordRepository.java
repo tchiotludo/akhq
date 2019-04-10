@@ -78,6 +78,9 @@ public class RecordRepository extends AbstractRepository {
                 list.add(newRecord(record, options));
             }
         }
+
+        consumer.close();
+
         return list;
     }
 
@@ -93,7 +96,7 @@ public class RecordRepository extends AbstractRepository {
                     timestamp
                 ));
 
-            return consumer.offsetsForTimes(map)
+            List<TimeOffset> collect = consumer.offsetsForTimes(map)
                 .entrySet()
                 .stream()
                 .map(r -> r.getValue() != null ? new TimeOffset(
@@ -103,6 +106,10 @@ public class RecordRepository extends AbstractRepository {
                 ) : null)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+            consumer.close();
+
+            return collect;
 
         }, "Offsets for {} Timestamp {}", partitions, timestamp);
     }
@@ -145,7 +152,7 @@ public class RecordRepository extends AbstractRepository {
             }}
         );
 
-        return topic
+        List<Record> collect = topic
             .getPartitions()
             .stream()
             .map(partition -> getOffsetForSortNewest(consumer, partition, options, pollSizePerPartition)
@@ -191,8 +198,12 @@ public class RecordRepository extends AbstractRepository {
 
                 return Stream.of(list);
             })
-             .flatMap(List::stream)
-             .collect(Collectors.toList());
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+
+        consumer.close();
+
+        return collect;
     }
 
     private int pollSizePerPartition(Topic topic, Options options) {
@@ -353,6 +364,8 @@ public class RecordRepository extends AbstractRepository {
             // end
             if (searchEvent.emptyPoll == 666) {
                 emitter.onComplete();
+                consumer.close();
+
                 return searchEvent;
             }
 
