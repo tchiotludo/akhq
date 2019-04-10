@@ -2,7 +2,7 @@ buildscript {
     ext {
         micronautVersion = "1.1.+"
         confluentVersion = "5.1.+"
-        kafkaVersion = "2.1.+"
+        kafkaVersion = "2.2.+"
     }
 
     repositories {
@@ -20,7 +20,7 @@ buildscript {
 plugins {
     // micronaut
     id "io.spring.dependency-management" version "1.0.7.RELEASE"
-    id "com.github.johnrengelman.shadow" version "4.0.2"
+    id "com.github.johnrengelman.shadow" version "5.0.0"
     id "application"
     id "java"
     id "net.ltgt.apt-eclipse" version "0.21"
@@ -30,7 +30,7 @@ plugins {
     id "com.moowork.node" version "1.3.1"
     id 'io.franzbecker.gradle-lombok' version '2.1'
     id 'com.adarshr.test-logger' version '1.6.0'
-    id 'com.github.psxpaul.execfork' version '0.1.9'
+    id 'com.github.psxpaul.execfork' version '0.1.10'
     id "com.github.ben-manes.versions" version "0.21.0"
 }
 
