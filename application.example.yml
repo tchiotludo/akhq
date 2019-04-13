@@ -47,6 +47,7 @@ kafkahq:
   topic-data:
     sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
     size: 50 # max record per page (default: 50)
+    poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
 
   # Auth & Roles (optionnal)
   security:
