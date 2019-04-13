@@ -15,11 +15,15 @@ micronaut:
     endpoints:
       login:
         enabled: true
+        path: "${kafkahq.server.base-path:}/login"
       logout:
         enabled: true
+        path: "${kafkahq.server.base-path:}/logout"
+        get-allowed: true
     session:
       enabled: true
       login-success-target-url: "${kafkahq.server.base-path:}/"
+      logout-target-url: "${kafkahq.server.base-path:}/"
       forbidden-target-url: "${kafkahq.server.base-path:}/login/forbidden"
       unauthorized-target-url: "${kafkahq.server.base-path:}/login/unauthorized"
       login-failure-target-url: "${kafkahq.server.base-path:}/login/failed"

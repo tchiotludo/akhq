@@ -13,6 +13,7 @@ import io.micronaut.security.utils.SecurityService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Wither;
+import org.kafkahq.configs.BasicAuth;
 import org.kafkahq.modules.KafkaModule;
 
 import javax.inject.Inject;
@@ -39,6 +40,9 @@ abstract public class AbstractController {
     @Value("${kafkahq.security.default-roles}")
     List<String> defaultRoles;
 
+    @Inject
+    private List<BasicAuth> auths;
+
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
         Map datas = CollectionUtils.mapOf(values);
@@ -51,6 +55,17 @@ abstract public class AbstractController {
             datas.put("clusterId", s);
             datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
         });
+
+        if (applicationContext.containsBean(SecurityService.class)) {
+            datas.put("loginEnabled", auths.size() > 0);
+
+            SecurityService securityService = applicationContext.getBean(SecurityService.class);
+            securityService
+                .getAuthentication()
+                .ifPresent(authentication -> datas.put("username", authentication.getName()));
+        } else {
+            datas.put("loginEnabled", false);
+        }
 
         return datas;
     }

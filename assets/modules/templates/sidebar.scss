@@ -8,6 +8,8 @@
     font-size: $font-size-lg;
     border-right: 1px solid $nav-tabs-border-color;
     z-index: 2;
+    display: flex;
+    flex-direction: column;
 
     .sidebar-header {
         padding: 5px 10px;
@@ -21,6 +23,7 @@
     }
 
     ul {
+        flex-grow: 2;
         p {
             color: #fff;
             padding: 10px;
@@ -77,6 +80,18 @@
         font-size: 0.9em !important;
         padding-left: 30px !important;
         background: $tertiary;
+    }
+
+    .sidebar-log {
+        padding: 5px 10px;
+        background: $tertiary;
+        border-top: 1px solid $yellow;
+        a {
+            color: white;
+            &:hover {
+                text-decoration: none;
+            }
+        }
     }
 
     @include media-breakpoint-down(sm) {
