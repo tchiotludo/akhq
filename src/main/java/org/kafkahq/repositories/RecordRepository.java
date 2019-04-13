@@ -36,7 +36,7 @@ public class RecordRepository extends AbstractRepository {
     private final TopicRepository topicRepository;
     private final SchemaRegistryRepository schemaRegistryRepository;
 
-    @Value("${kafkahq.topic-data.poll-timeout}")
+    @Value("${kafkahq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
 
     @Inject

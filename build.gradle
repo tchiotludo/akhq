@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        micronautVersion = "1.1.+"
+        micronautVersion = "1.1.0"
         confluentVersion = "5.1.+"
         kafkaVersion = "2.2.+"
     }

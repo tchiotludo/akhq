@@ -39,7 +39,7 @@ script:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
       docker push tchiotludo/kafkahq:latest;
-    elif [ "$TRAVIS_BRANCH" == "develop" ]; then
+    elif [ "$TRAVIS_BRANCH" == "dev" ]; then
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
       docker push tchiotludo/kafkahq:$TRAVIS_BRANCH;
     fi
