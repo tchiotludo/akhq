@@ -83,7 +83,11 @@ configurations {
 
 run.classpath += configurations.developmentOnly
 test.classpath += configurations.developmentOnly
-run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dmicronaut.environments=dev')
+run.jvmArgs('-noverify', 
+        '-XX:TieredStopAtLevel=1', 
+        '-Dmicronaut.environments=dev', 
+        '-Dorg.xerial.snappy.use.systemlib=true'
+)
 
 tasks.withType(JavaCompile){
     options.encoding = "UTF-8"
