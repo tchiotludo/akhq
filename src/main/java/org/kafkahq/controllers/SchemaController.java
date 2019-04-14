@@ -79,9 +79,9 @@ public class SchemaController extends AbstractController {
         URI redirect;
 
         if (toast.getType() != Toast.Type.error) {
-            redirect = new URI("/" + cluster + "/schema/" + subject);
+            redirect = this.uri("/" + cluster + "/schema/" + subject);
         } else {
-            redirect = new URI("/" + cluster + "/schema/create");
+            redirect = this.uri("/" + cluster + "/schema/create");
         }
 
         return response.status(HttpStatus.MOVED_PERMANENTLY)

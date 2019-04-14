@@ -88,7 +88,7 @@
                                 ${username} (Logout)
                             </a>
                         <#else>
-                            <a href="${basePath}/login">
+                            <a href="${basePath}/login" data-turbolinks="false">
                                 <i class="fa fa-fw fa-sign-in" aria-hidden="true"></i>
                                 Login
                             </a>
