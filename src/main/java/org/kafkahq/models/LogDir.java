@@ -3,6 +3,7 @@ package org.kafkahq.models;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 
 @ToString
@@ -17,7 +18,7 @@ public class LogDir {
     private final long offsetLag;
     private final boolean isFuture;
 
-    public LogDir(Integer brokerId, String path, org.apache.kafka.common.TopicPartition topicPartition, DescribeLogDirsResponse.ReplicaInfo replicaInfo) {
+    public LogDir(Integer brokerId, String path, TopicPartition topicPartition, DescribeLogDirsResponse.ReplicaInfo replicaInfo) {
         this.brokerId = brokerId;
         this.path = path;
         this.topic = topicPartition.topic();

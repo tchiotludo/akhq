@@ -26,6 +26,13 @@ public class KafkaWrapperFilter implements HttpServerFilter {
 
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
+        if (kafkaModule.getClustersList().size() == 0) {
+            throw new IllegalArgumentException(
+                "Couldn't find any clusters on your configuration file, " +
+                "please ensure that the configuration file is loaded correctly"
+            );
+        }
+
         requestHelper
             .getClusterId(request)
             .ifPresent(s -> AbstractRepository.setWrapper(new KafkaWrapper(kafkaModule, s)));

@@ -98,6 +98,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         consumer.commitSync(offsets);
+        consumer.close();
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {

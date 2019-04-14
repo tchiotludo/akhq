@@ -38,6 +38,8 @@ public class ErrorController extends AbstractController {
 
     @Error(global = true)
     public HttpResponse error(HttpRequest request, Throwable e) {
+        log.error(e.getMessage(), e);
+
         if (isHtml(request)) {
             StringWriter stringWriter = new StringWriter();
             e.printStackTrace(new PrintWriter(stringWriter));
