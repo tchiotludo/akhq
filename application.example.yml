@@ -1,14 +1,14 @@
 kafkahq:
   server:
-    base-path: "" # if behind a reverse proxy, path to kafkahq with trailing slash (optionnal). Example: kafkahq is
+    base-path: "" # if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example: kafkahq is
                   # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/".
                   # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
-    access-log: # Access log configuration (optionnal)
+    access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.kafkahq.log.access # Logger name
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
 
-  # default kafka properties for each clients, available for admin / producer / consumer (optionnal)
+  # default kafka properties for each clients, available for admin / producer / consumer (optional)
   clients-defaults:
     consumer:
       properties:
@@ -17,9 +17,9 @@ kafkahq:
   # list of kafka cluster available for kafkahq
   connections:
     my-cluster-1: # url friendly name for the cluster
-      properties: # standard kafka properties (optionnal)
+      properties: # standard kafka properties (optional)
         bootstrap.servers: "kafka:9092"
-      schema-registry: "http://schema-registry:8085" # schema registry url (optionnal)
+      schema-registry: "http://schema-registry:8085" # schema registry url (optional)
 
     my-cluster-2:
       properties:
@@ -43,13 +43,13 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
 
-  # Topic display data options (optionnal)
+  # Topic display data options (optional)
   topic-data:
     sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
 
-  # Auth & Roles (optionnal)
+  # Auth & Roles (optional)
   security:
     default-roles: # Roles available for all the user even unlogged user
       - topic/read
