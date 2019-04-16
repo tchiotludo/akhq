@@ -22,8 +22,6 @@ cache:
 
 script:
   - set -e
-  # Docker Login
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # Gradle
   - ./gradlew --console=plain test
   - ./gradlew --console=plain shadowJar
@@ -32,14 +30,17 @@ script:
   - docker build . -t $TRAVIS_COMMIT
   # Docker Tag
   - if [ ! -z "$TRAVIS_TAG" ]; then
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_TAG;
       docker push tchiotludo/kafkahq:$TRAVIS_TAG;
     fi
   # Docker Branch
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
       docker push tchiotludo/kafkahq:latest;
-    elif [ "$TRAVIS_BRANCH" == "develop" ]; then
+    elif [ "$TRAVIS_BRANCH" == "dev" ]; then
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
       docker push tchiotludo/kafkahq:$TRAVIS_BRANCH;
     fi

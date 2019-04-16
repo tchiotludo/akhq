@@ -16,7 +16,7 @@ import java.util.Optional;
 @Requires(property = SecurityConfigurationProperties.PREFIX + ".enabled", value = StringUtils.TRUE)
 @Controller
 public class LoginController extends AbstractController {
-    @Get("/login{/failed:[a-zA-Z]+}")
+    @Get("${kafkahq.server.base-path:}/login{/failed:[a-zA-Z]+}")
     @View("login")
     public HttpResponse login(Optional<String> failed) {
         return HttpResponse

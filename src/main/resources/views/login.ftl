@@ -4,7 +4,7 @@
 
 <@template.header "Login" />
 
-<form class="khq-login" method="POST" action="/login">
+<form class="khq-login" method="POST" action="${basePath}/login">
     <div>
         <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
     </div>

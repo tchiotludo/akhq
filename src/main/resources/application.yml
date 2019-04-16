@@ -15,14 +15,18 @@ micronaut:
     endpoints:
       login:
         enabled: true
+        path: "${kafkahq.server.base-path:}/login"
       logout:
         enabled: true
+        path: "${kafkahq.server.base-path:}/logout"
+        get-allowed: true
     session:
       enabled: true
-      login-success-target-url: /
-      forbidden-target-url: /login/forbidden
-      unauthorized-target-url: /login/unauthorized
-      login-failure-target-url: /login/failed
+      login-success-target-url: "${kafkahq.server.base-path:}/"
+      logout-target-url: "${kafkahq.server.base-path:}/"
+      forbidden-target-url: "${kafkahq.server.base-path:}/login/forbidden"
+      unauthorized-target-url: "${kafkahq.server.base-path:}/login/unauthorized"
+      login-failure-target-url: "${kafkahq.server.base-path:}/login/failed"
     intercept-url-map:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
@@ -49,6 +53,7 @@ kafkahq:
   topic-data:
     sort: OLDEST
     size: 50
+    poll-timeout: 1000
 
   security:
     default-roles:

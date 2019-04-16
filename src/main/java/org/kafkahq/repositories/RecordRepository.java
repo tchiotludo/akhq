@@ -3,6 +3,7 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
@@ -34,6 +35,9 @@ public class RecordRepository extends AbstractRepository {
     private final KafkaModule kafkaModule;
     private final TopicRepository topicRepository;
     private final SchemaRegistryRepository schemaRegistryRepository;
+
+    @Value("${kafkahq.topic-data.poll-timeout:1000}")
+    protected int pollTimeout;
 
     @Inject
     public RecordRepository(KafkaModule kafkaModule, TopicRepository topicRepository, SchemaRegistryRepository schemaRegistryRepository) {
@@ -145,29 +149,31 @@ public class RecordRepository extends AbstractRepository {
     private List<Record> consumeNewest(Topic topic, Options options) {
         int pollSizePerPartition = pollSizePerPartition(topic, options);
 
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
-            options.clusterId,
-            new Properties() {{
-                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(pollSizePerPartition));
-            }}
-        );
-
-        List<Record> collect = topic
+        return topic
             .getPartitions()
-            .stream()
-            .map(partition -> getOffsetForSortNewest(consumer, partition, options, pollSizePerPartition)
-                .map(offset -> offset.withTopicPartition(
-                    new TopicPartition(
-                        partition.getTopic(),
-                        partition.getId()
-                    )
-                ))
+            .parallelStream()
+            .map(partition -> {
+                KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
+                    options.clusterId,
+                    new Properties() {{
+                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(pollSizePerPartition));
+                    }}
+                );
+
+                return getOffsetForSortNewest(consumer, partition, options, pollSizePerPartition)
+                        .map(offset -> offset.withTopicPartition(
+                            new TopicPartition(
+                                partition.getTopic(),
+                                partition.getId()
+                            )
+                        ));
+                }
             )
             .filter(Optional::isPresent)
             .map(Optional::get)
             .flatMap(topicPartitionOffset -> {
-                consumer.assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
-                consumer.seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
+                topicPartitionOffset.getConsumer().assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
+                topicPartitionOffset.getConsumer().seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
 
                 List<Record> list = new ArrayList<>();
                 int emptyPoll = 0;
@@ -175,7 +181,7 @@ public class RecordRepository extends AbstractRepository {
                 do {
                     ConsumerRecords<byte[], byte[]> records;
 
-                    records = this.poll(consumer);
+                    records = this.poll(topicPartitionOffset.getConsumer());
 
                     if (records.isEmpty()) {
                         emptyPoll++;
@@ -196,14 +202,12 @@ public class RecordRepository extends AbstractRepository {
 
                 Collections.reverse(list);
 
+                topicPartitionOffset.getConsumer().close();
+
                 return Stream.of(list);
             })
             .flatMap(List::stream)
             .collect(Collectors.toList());
-
-        consumer.close();
-
-        return collect;
     }
 
     private int pollSizePerPartition(Topic topic, Options options) {
@@ -274,6 +278,7 @@ public class RecordRepository extends AbstractRepository {
                 }
 
                 return EndOffsetBound.builder()
+                    .consumer(consumer)
                     .begin(first)
                     .end(last)
                     .build();
@@ -289,7 +294,7 @@ public class RecordRepository extends AbstractRepository {
         // First one wait for metadata and send records
         // Hack bellow can be used to wait for metadata
         */
-        return consumer.poll(5000);
+        return consumer.poll(this.pollTimeout);
 
         /*
         if (!records.isEmpty()) {
@@ -596,5 +601,6 @@ public class RecordRepository extends AbstractRepository {
         private final TopicPartition topicPartition;
         private final long begin;
         private final long end;
+        private final KafkaConsumer<byte[], byte[]> consumer;
     }
 }

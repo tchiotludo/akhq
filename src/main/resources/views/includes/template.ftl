@@ -7,6 +7,8 @@
 <#-- @ftlvariable name="toast" type="java.lang.String" -->
 <#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="username" type="java.lang.String" -->
+<#-- @ftlvariable name="loginEnabled" type="java.lang.Boolean" -->
 
 <#macro header title tab="">
     <!DOCTYPE html>
@@ -77,6 +79,22 @@
                         </li>
                     </#if>
                 </ul>
+                </#if>
+                <#if loginEnabled>
+                    <div class="sidebar-log">
+                        <#if username??>
+                            <a href="${basePath}/logout" data-turbolinks="false">
+                                <i class="fa fa-fw fa-sign-out" aria-hidden="true"></i>
+                                ${username} (Logout)
+                            </a>
+                        <#else>
+                            <a href="${basePath}/login" data-turbolinks="false">
+                                <i class="fa fa-fw fa-sign-in" aria-hidden="true"></i>
+                                Login
+                            </a>
+                        </#if>
+                        </a>
+                    </div>
                 </#if>
             </nav>
             </#if>

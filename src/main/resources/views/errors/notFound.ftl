@@ -20,7 +20,7 @@
     </p>
 
     <div class="text-right mt-5">
-        <a href="/" class="btn btn-primary btn-lg">Back to home</a>
+        <a href="${basePath}" class="btn btn-primary btn-lg">Back to home</a>
     </div>
 </div>
 
