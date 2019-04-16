@@ -129,7 +129,7 @@ abstract public class AbstractController {
     }
 
     @SuppressWarnings("unchecked")
-    private List<String> getRights() {
+    protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
             return expandRoles(this.defaultRoles);
         }
