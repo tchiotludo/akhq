@@ -78,14 +78,14 @@
     </div>
 </#macro>
 
-<#macro form config schema="">
+<#macro form config schema>
     <#-- @ftlvariable name="schema" type="org.kafkahq.models.Schema" -->
     <#-- @ftlvariable name="config" type="org.kafkahq.models.Schema.Config" -->
     <form enctype="multipart/form-data" method="post" class="khq-form khq-form-config">
         <div class="form-group row">
             <label for="name" class="col-sm-2 col-form-label">Subject</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" value="${(schema != "")?then(schema.getSubject()!, "")}" required ${(schema != "")?then(" readonly", "")}>
+                <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" value="${(schema?has_content)?then(schema.getSubject()!, "")}" required ${(schema?has_content)?then(" readonly", "")}>
             </div>
         </div>
 
@@ -102,17 +102,17 @@
         </div>
 
         <div class="form-group row">
-            <label for="schema" class="col-sm-2 col-form-label">${(schema != "")?then("Latest ", "")}Schema</label>
+            <label for="schema" class="col-sm-2 col-form-label">${(schema?has_content)?then("Latest ", "")}Schema</label>
             <div class="col-sm-10">
                 <div class="khq-ace-editor" data-type="json">
                     <div></div>
-                    <textarea class="form-control" name="schema" id="schema" placeholder="Schema">${(schema != "")?then(schema.getSchema()!, "")}</textarea>
+                    <textarea class="form-control" name="schema" id="schema" placeholder="Schema">${(schema?has_content)?then(schema.getSchema()!, "")}</textarea>
                 </div>
             </div>
         </div>
 
         <div class="khq-submit">
-            <button type="submit" class="btn btn-primary">${(schema != "")?then("Update", "Create")}</button>
+            <button type="submit" class="btn btn-primary">${(schema?has_content)?then("Update", "Create")}</button>
         </div>
     </form>
 </#macro>
