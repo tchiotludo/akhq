@@ -357,6 +357,7 @@ public class TopicController extends AbstractController {
         datas.put("canDeleteRecords", topic.canDeleteRecords(configRepository));
         datas.put("clusterId", cluster);
         datas.put("basePath", getBasePath());
+        datas.put("roles", getRights());
 
         return recordRepository
             .search(options)

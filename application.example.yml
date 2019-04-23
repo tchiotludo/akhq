@@ -16,12 +16,13 @@ kafkahq:
 
   # list of kafka cluster available for kafkahq
   connections:
-    my-cluster-1: # url friendly name for the cluster
+    my-cluster-plain-text: # url friendly name for the cluster
       properties: # standard kafka properties (optional)
         bootstrap.servers: "kafka:9092"
       schema-registry: "http://schema-registry:8085" # schema registry url (optional)
+      connect: "http://connect:8083" # connect url (optional)
 
-    my-cluster-2:
+    my-cluster-ssl:
       properties:
         bootstrap.servers: "kafka:9093"
         security.protocol: SSL
@@ -31,7 +32,7 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
 
-    my-cluster-3:
+    my-cluster-sasl:
       properties:
         bootstrap.servers: "kafka:9094"
         security.protocol: SASL_SSL
@@ -69,6 +70,11 @@ kafkahq:
       - registry/update
       - registry/delete
       - registry/version/delete
+      - connect/read
+      - connect/insert
+      - connect/update
+      - connect/delete
+      - connect/state/update
 
     # Basic auth configuration
     basic-auth:

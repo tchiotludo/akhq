@@ -125,7 +125,7 @@ public class SchemaController extends AbstractController {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
-                this.schemaRepository.delete(cluster, subject),
+            this.schemaRepository.delete(cluster, subject),
             "Subject from '" + subject + "' is deleted",
             "Failed to delete subject from '" + subject + "'"
         ));

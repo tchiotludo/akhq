@@ -12,7 +12,7 @@
     <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
 </div>
 
-<code>${message}</code><br /><br />
+<code>${message!}</code><br /><br />
 
 <pre><code>${stacktrace}</code></pre>
 

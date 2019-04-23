@@ -26,7 +26,7 @@ public class TopicRepositoryTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(11, topicRepository.list(Optional.empty()).size());
+        assertEquals(14, topicRepository.list(Optional.empty()).size());
     }
 
     @Test

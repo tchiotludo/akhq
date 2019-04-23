@@ -11,6 +11,7 @@ import java.util.Optional;
 @Getter
 public class Connection extends AbstractProperties {
     Optional<URL> schemaRegistry = Optional.empty();
+    Optional<URL> connect = Optional.empty();
 
     public Connection(@Parameter  String name) {
         super(name);

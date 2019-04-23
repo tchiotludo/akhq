@@ -37,6 +37,7 @@ logs/*
 
 ### Kafka HQ ###
 src/**/*-dev.yml
+connects-plugins/
 
 ## Docker
 .env

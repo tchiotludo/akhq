@@ -26,7 +26,9 @@
 
     <div class="tab-content">
         <#if tab == "update">
-            <@schemaTemplate.form config schema />
+            <div class="tab-pane active" role="tabpanel">
+                <@schemaTemplate.form config schema />
+            </div>
         </#if>
 
         <#if tab == "version">

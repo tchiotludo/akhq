@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        micronautVersion = "1.1.0"
+        micronautVersion = "1.1.+"
         confluentVersion = "5.1.+"
         kafkaVersion = "2.2.+"
     }
@@ -61,12 +61,13 @@ idea {
     }
 }
 
-configurations {
-    implementation {
-        exclude  group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude  group: 'log4j', module: 'log4j'
-    }
+configurations.all {
+    exclude  group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude  group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    exclude  group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude  group: 'org.apache.logging.log4j', module: 'log4j-api'
 }
+
 
 /**********************************************************************************************************************\
  * Micronaut
@@ -125,6 +126,11 @@ dependencies {
     compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     compile group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
     compile group: 'org.apache.avro', name: 'avro', version: '1.8.2'
+    compile group: 'org.sourcelab', name: 'kafka-connect-client', version: '2.0.+'
+
+    // log
+    compile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
+    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.26'
 
     // utils
     compileOnly group: "org.projectlombok", name: "lombok", version: "1.18.+"
@@ -143,9 +149,12 @@ dependencies {
     testCompile "org.apache.kafka:kafka_2.12:" + kafkaVersion
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion
     testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
+    testCompile "org.apache.kafka:connect-runtime:" + kafkaVersion
+    testCompile "org.apache.kafka:connect-file:" + kafkaVersion
+
     testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
-    testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
+    testCompile "io.confluent:kafka-connect-avro-converter:" + confluentVersion
     testCompile group: 'commons-codec', name: 'commons-codec', version: '1.11'
     testImplementation 'org.hamcrest:hamcrest:2.1'
     testImplementation 'org.hamcrest:hamcrest-library:2.1'

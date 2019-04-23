@@ -54,6 +54,7 @@ abstract public class AbstractController {
         cluster.ifPresent(s -> {
             datas.put("clusterId", s);
             datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
+            datas.put("connectEnabled", this.kafkaModule.getConnectRestClient(s) != null);
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
@@ -129,7 +130,7 @@ abstract public class AbstractController {
     }
 
     @SuppressWarnings("unchecked")
-    private List<String> getRights() {
+    protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
             return expandRoles(this.defaultRoles);
         }
