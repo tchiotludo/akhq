@@ -22,4 +22,10 @@ public class Role {
     public static final String ROLE_REGISTRY_UPDATE = "registry/update";
     public static final String ROLE_REGISTRY_DELETE = "registry/delete";
     public static final String ROLE_REGISTRY_VERSION_DELETE = "registry/version/delete";
+
+    public static final String ROLE_CONNECT_READ = "connect/read";
+    public static final String ROLE_CONNECT_INSERT = "connect/insert";
+    public static final String ROLE_CONNECT_UPDATE = "connect/update";
+    public static final String ROLE_CONNECT_DELETE = "connect/delete";
+    public static final String ROLE_CONNECT_STATE_UPDATE = "connect/state/update";
 }

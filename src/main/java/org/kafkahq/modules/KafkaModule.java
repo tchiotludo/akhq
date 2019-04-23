@@ -12,6 +12,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.kafkahq.configs.AbstractProperties;
 import org.kafkahq.configs.Connection;
 import org.kafkahq.configs.Default;
+import org.sourcelab.kafka.connect.apiclient.Configuration;
+import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -165,4 +167,21 @@ public class KafkaModule {
             Integer.MAX_VALUE
         );
     }
+
+    private Map<String, KafkaConnectClient> connectRestClient = new HashMap<>();
+
+    public KafkaConnectClient getConnectRestClient(String clusterId) {
+        if (!this.connectRestClient.containsKey(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
+
+            if (connection.getConnect().isPresent()) {
+                this.connectRestClient.put(clusterId, new KafkaConnectClient(
+                    new Configuration(connection.getConnect().get().toString())
+                ));
+            }
+        }
+
+        return this.connectRestClient.get(clusterId);
+    }
+
 }

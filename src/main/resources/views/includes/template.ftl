@@ -6,6 +6,7 @@
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="toast" type="java.lang.String" -->
 <#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
+<#-- @ftlvariable name="connectEnabled" type="java.lang.Boolean" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 <#-- @ftlvariable name="username" type="java.lang.String" -->
 <#-- @ftlvariable name="loginEnabled" type="java.lang.Boolean" -->
@@ -76,6 +77,11 @@
                     <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true>
                         <li class="${(tab == "schema")?then("active", "")}">
                             <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
+                        </li>
+                    </#if>
+                    <#if connectEnabled?? && connectEnabled == true && roles?seq_contains("connect") == true>
+                        <li class="${(tab == "connect")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/connect"><i class="fa fa-fw fa-exchange" aria-hidden="true"></i> Connect</a>
                         </li>
                     </#if>
                 </ul>

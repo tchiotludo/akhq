@@ -1,7 +1,7 @@
 # KafkaHQ
 [![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
 
-> Kafka GUI for topics, topics data, consumers group, schema registry and more...
+> Kafka GUI for topics, topics data, consumers group, schema registry, connect and more...
 
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
@@ -40,10 +40,12 @@
   - Update consumer group offsets to start / end / timestamp
 - **Schema Registry**
   - List schema
-  - Create a schema
-  - Update a schema
-  - Delete a schema
+  - Create / Update / Delete a schema
   - View and delete individual schema version
+- **Connect**
+  - List connect definition
+  - Create / Update / Delete a definition
+  - Pause / Resume / Restart a definition or a task
 - **Nodes**
   - List
   - Configurations view
@@ -94,6 +96,7 @@ file example can be found here :[application.example.yml](application.example.ym
   * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: the schema registry url *(optional)*
+  * `connect`: connect url *(optional)*
 
 ### Security
 * `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
@@ -128,6 +131,7 @@ kafkahq:
       - topic/data/read
       - group/read
       - registry/read
+      - connect/read
 ```
 
 
@@ -138,7 +142,9 @@ kafkahq:
     * `roles`: Role for current users
 
 ### Server 
-* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash
+* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
+  kafkahq is behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/". Not needed if you're
+  behind a reverse proxy with subdomain http://kafkahq.my-server/
 
 ### Kafka admin / producer / consumer default properties
 * `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with

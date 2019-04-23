@@ -74,3 +74,8 @@ kafkahq:
       - registry/update
       - registry/delete
       - registry/version/delete
+      - connect/read
+      - connect/insert
+      - connect/update
+      - connect/delete
+      - connect/state/update

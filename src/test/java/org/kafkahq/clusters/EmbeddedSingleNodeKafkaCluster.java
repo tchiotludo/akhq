@@ -10,12 +10,9 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Properties;
 
-/**
- * Runs an in-memory, "embedded" Kafka cluster with 1 ZooKeeper instance, 1 Kafka broker, and 1
- * Confluent Schema Registry instance.
- */
 @Slf4j
 public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
     private static final int DEFAULT_BROKER_PORT = 0; // 0 results in a random port being selected
@@ -29,34 +26,29 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
     private ZooKeeperEmbedded zookeeper;
     private KafkaEmbedded broker;
     private RestApp schemaRegistry;
+    private ConnectEmbedded connect;
     private final Properties brokerConfig;
     private boolean running;
 
-    /**
-     * Creates and starts the cluster.
-     *
-     * @param brokerConfig Additional broker configuration settings.
-     */
     public EmbeddedSingleNodeKafkaCluster(final Properties brokerConfig) {
         this.brokerConfig = new Properties();
         this.brokerConfig.putAll(brokerConfig);
     }
 
-    /**
-     * Creates and starts the cluster.
-     */
     public void start() throws Exception {
+        // zookeeper
         log.debug("Initiating embedded Kafka cluster startup");
         log.debug("Starting a ZooKeeper instance...");
         zookeeper = new ZooKeeperEmbedded();
         log.debug("ZooKeeper instance is running at {}", zookeeper.connectString());
 
+        // kafka
         final Properties effectiveBrokerConfig = effectiveBrokerConfigFrom(brokerConfig, zookeeper);
-        log.debug("Starting a Kafka instance on port {} ...",
-            effectiveBrokerConfig.getProperty(KafkaConfig$.MODULE$.PortProp()));
+        log.debug("Starting a Kafka instance on port {} ...", effectiveBrokerConfig.getProperty(KafkaConfig$.MODULE$.PortProp()));
         broker = new KafkaEmbedded(effectiveBrokerConfig);
         log.debug("Kafka instance is running at {}, connected to ZooKeeper at {}", broker.brokerList(), broker.zookeeperConnect());
 
+        // schema registry
         final Properties schemaRegistryProps = new Properties();
         schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG, KAFKASTORE_OPERATION_TIMEOUT_MS);
         schemaRegistryProps.put(SchemaRegistryConfig.DEBUG_CONFIG, KAFKASTORE_DEBUG);
@@ -64,7 +56,30 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
 
         schemaRegistry = new RestApp(0, zookeeperConnect(), KAFKA_SCHEMAS_TOPIC, AVRO_COMPATIBILITY_TYPE, schemaRegistryProps);
         schemaRegistry.start();
-        running = true;
+        log.debug("Schema registry is running at {}", schemaRegistryUrl());
+
+        // connect
+        ServerSocket s = new ServerSocket(0);
+
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", bootstrapServers());
+        properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
+        properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
+        properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
+        properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
+        properties.put("rest.port", "0");
+        properties.put("group.id", "connect-integration-test-");
+        properties.put("offset.storage.topic", "__connect-offsets");
+        properties.put("offset.storage.replication.factor", 1);
+        properties.put("config.storage.topic", "__connect-config");
+        properties.put("config.storage.replication.factor", 1);
+        properties.put("status.storage.topic", "__connect-status");
+        properties.put("status.storage.replication.factor", 1);
+
+        connect = new ConnectEmbedded(properties);
+        log.debug("Kafka Connect is running at {}", connectUrl());
+
+        running = false;
     }
 
     private Properties effectiveBrokerConfigFrom(final Properties brokerConfig, final ZooKeeperEmbedded zookeeper) {
@@ -93,12 +108,17 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         stop();
     }
 
-    /**
-     * Stops the cluster.
-     */
     public void stop() {
-        log.info("Stopping Confluent");
+        log.info("Stopping EmbeddedSingleNodeKafkaCluster");
         try {
+            try {
+                if (connect != null) {
+                    connect.stop();
+                }
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
+            }
+
             try {
                 if (schemaRegistry != null) {
                     schemaRegistry.stop();
@@ -106,9 +126,11 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
             } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
+
             if (broker != null) {
                 broker.stop();
             }
+
             try {
                 if (zookeeper != null) {
                     zookeeper.stop();
@@ -119,34 +141,22 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         } finally {
             running = false;
         }
-        log.info("Confluent Stopped");
+        log.info("EmbeddedSingleNodeKafkaCluster Stopped");
     }
 
-    /**
-     * This cluster's `bootstrap.servers` value.  Example: `127.0.0.1:9092`.
-     *
-     * You can use this to tell Kafka Streams applications, Kafka producers, and Kafka consumers (new
-     * consumer API) how to connect to this cluster.
-     */
     public String bootstrapServers() {
         return broker.brokerList();
     }
 
-    /**
-     * This cluster's ZK connection string aka `zookeeper.connect` in `hostnameOrIp:port` format.
-     * Example: `127.0.0.1:2181`.
-     *
-     * You can use this to e.g. tell Kafka consumers (old consumer API) how to connect to this
-     * cluster.
-     */
     public String zookeeperConnect() {
         return zookeeper.connectString();
     }
 
-    /**
-     * The "schema.registry.url" setting of the schema registry instance.
-     */
     public String schemaRegistryUrl() {
         return schemaRegistry.restConnect;
+    }
+
+    public String connectUrl() {
+        return connect.connectUrl();
     }
 }

@@ -39,7 +39,9 @@ public class KafkaClusterExtension implements BeforeAllCallback, AfterAllCallbac
                 "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
                 connectionString.getKafka(),
                 "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry",
-                connectionString.getSchemaRegistry()
+                connectionString.getSchemaRegistry(),
+                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect",
+                connectionString.getConnect()
             )
         ));
     }

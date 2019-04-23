@@ -52,4 +52,5 @@
     <logger name="io.confluent.rest" level="ERROR" />
     <logger name="io.confluent.kafka.schemaregistry" level="ERROR" />
     <logger name="org.glassfish.jersey.internal.inject.Providers" level="ERROR" />
+    <logger name="org.reflections" level="ERROR" />
 </configuration>

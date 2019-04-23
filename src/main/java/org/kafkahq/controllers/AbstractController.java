@@ -54,6 +54,7 @@ abstract public class AbstractController {
         cluster.ifPresent(s -> {
             datas.put("clusterId", s);
             datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
+            datas.put("connectEnabled", this.kafkaModule.getConnectRestClient(s) != null);
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
