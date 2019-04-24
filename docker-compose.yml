@@ -72,19 +72,27 @@ services:
 
   kafkacat:
     image: confluentinc/cp-kafkacat
-    command: >
-      sh -c "
-        echo '{\"_id\":\"5c4b2b45ab234c86955f0802\",\"index\":0,\"guid\":\"d3637b06-9940-4958-9f82-639001c14c34\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '{\"_id\":\"5c4b2b459ffa9bb0c0c249e1\",\"index\":1,\"guid\":\"08612fb5-40a7-45e5-9ff2-beb89a1b2835\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '{\"_id\":\"5c4b2b4545d7cbc7bf8b6e3e\",\"index\":2,\"guid\":\"4880280a-cf8b-4884-881e-7b64ebf2afd0\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '{\"_id\":\"5c4b2b45dab381e6b3024c6d\",\"index\":3,\"guid\":\"36d04c26-0dae-4a8e-a66e-bde9b3b6a745\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '{\"_id\":\"5c4b2b45d1103ce30dfe1947\",\"index\":4,\"guid\":\"14d53f2c-def3-406f-9dfb-c29963fdc37e\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '{\"_id\":\"5c4b2b45d6d3b5c51d3dacb7\",\"index\":5,\"guid\":\"a20cfc3a-934a-4b93-9a03-008ec651b5a4\"}' | kafkacat -P -b kafka:9092 -t json &&
-        echo '1,Sauncho,Attfield,sattfield0@netlog.com,Male,221.119.13.246' | kafkacat -P -b kafka:9092 -t csv &&
-        echo '2,Luci,Harp,lharp1@wufoo.com,Female,161.14.184.150' | kafkacat -P -b kafka:9092 -t csv &&
-        echo '3,Hanna,McQuillan,hmcquillan2@mozilla.com,Female,214.67.74.80' | kafkacat -P -b kafka:9092 -t csv &&
-        echo '4,Melba,Lecky,mlecky3@uiuc.edu,Female,158.112.18.189' | kafkacat -P -b kafka:9092 -t csv &&
-        echo '5,Mordecai,Hurdiss,mhurdiss4@rambler.ru,Male,175.123.45.143' | kafkacat -P -b kafka:9092 -t csv &&
-        kafkacat -b kafka:9092 -G json-consumer json"
+    command: 
+      - bash 
+      - -c 
+      - |
+        kafkacat -P -b kafka:9092 -t json << EOF
+        {"_id":"5c4b2b45ab234c86955f0802","index":0,"guid":"d3637b06-9940-4958-9f82-639001c14c34"}
+        {"_id":"5c4b2b459ffa9bb0c0c249e1","index":1,"guid":"08612fb5-40a7-45e5-9ff2-beb89a1b2835"}
+        {"_id":"5c4b2b4545d7cbc7bf8b6e3e","index":2,"guid":"4880280a-cf8b-4884-881e-7b64ebf2afd0"}
+        {"_id":"5c4b2b45dab381e6b3024c6d","index":3,"guid":"36d04c26-0dae-4a8e-a66e-bde9b3b6a745"}
+        {"_id":"5c4b2b45d1103ce30dfe1947","index":4,"guid":"14d53f2c-def3-406f-9dfb-c29963fdc37e"}
+        {"_id":"5c4b2b45d6d3b5c51d3dacb7","index":5,"guid":"a20cfc3a-934a-4b93-9a03-008ec651b5a4"}
+        EOF
+        
+        kafkacat -P -b kafka:9092 -t csv << EOF
+        1,Sauncho,Attfield,sattfield0@netlog.com,Male,221.119.13.246
+        2,Luci,Harp,lharp1@wufoo.com,Female,161.14.184.150
+        3,Hanna,McQuillan,hmcquillan2@mozilla.com,Female,214.67.74.80
+        4,Melba,Lecky,mlecky3@uiuc.edu,Female,158.112.18.189
+        5,Mordecai,Hurdiss,mhurdiss4@rambler.ru,Male,175.123.45.143
+        EOF
+
+        kafkacat -b kafka:9092 -G json-consumer json
     links:
       - kafka
