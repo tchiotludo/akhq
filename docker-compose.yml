@@ -19,6 +19,7 @@ services:
               properties:
                 bootstrap.servers: "kafka:9092"
               schema-registry: "http://schema-registry:8085"
+              connect: "http://connect:8083"
     ports:
       - 8080:8080
     links:
@@ -59,6 +60,33 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8085"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+
+  connect:
+    image: confluentinc/cp-kafka-connect
+    depends_on:
+      - kafka
+      - schema-registry
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_LISTENERS: http://0.0.0.0:8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_CONFIG_STORAGE_TOPIC: __connect-config
+      CONNECT_OFFSET_STORAGE_TOPIC: __connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: __connect-status
+      CONNECT_GROUP_ID: "kafka-connect"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_PLUGIN_PATH: ' /usr/share/java/'
 
   test-data:
     image: gradle:5.1.1-jdk

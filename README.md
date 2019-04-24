@@ -60,7 +60,8 @@
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
-It will start a Kafka node, a Zookeeper node, a Schema Registry, fill with some sample data, start a consumer group and a kafka stream & start KafkaHQ.
+It will start a Kafka node, a Zookeeper node, a Schema Registry, a Connect, fill with some sample data, start a consumer
+group and a kafka stream & start KafkaHQ.
 
 ## Installation
 
