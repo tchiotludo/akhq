@@ -93,6 +93,6 @@ services:
         5,Mordecai,Hurdiss,mhurdiss4@rambler.ru,Male,175.123.45.143
         EOF
 
-        kafkacat -b kafka:9092 -G json-consumer json
+        kafkacat -b kafka:9092 -o beginning -G json-consumer json
     links:
       - kafka
