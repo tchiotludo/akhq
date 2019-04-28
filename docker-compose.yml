@@ -18,8 +18,10 @@ services:
             docker-kafka-server:
               properties:
                 bootstrap.servers: "kafka:9092"
-              schema-registry: "http://schema-registry:8085"
-              connect: "http://connect:8083"
+              schema-registry:
+                url: "http://schema-registry:8085"
+              connect:
+                url: "http://connect:8083"
     ports:
       - 8080:8080
     links:

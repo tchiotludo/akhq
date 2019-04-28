@@ -38,9 +38,9 @@ public class KafkaClusterExtension implements BeforeAllCallback, AfterAllCallbac
             ImmutableMap.of(
                 "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
                 connectionString.getKafka(),
-                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry",
+                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry.url",
                 connectionString.getSchemaRegistry(),
-                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect",
+                "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect.url",
                 connectionString.getConnect()
             )
         ));

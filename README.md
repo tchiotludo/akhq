@@ -57,6 +57,7 @@
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
+* run `docker-compose pull` to be sure to have the last version of KafkaHQ
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
@@ -76,7 +77,7 @@ docker run -d \
     tchiotludo/kafkahq
 ```
 * With `-v /tmp/application.yml` must be an absolute path to configuration file
-* Go to http://localhost:8080
+* Go to <http://localhost:8080>
 
 
 ### Stand Alone
@@ -85,7 +86,7 @@ docker run -d \
 * Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
 * Create an [configuration files](#configuration)
 * Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`
-* Go to http://localhost:8080
+* Go to <http://localhost:8080>
 
 
 ## Configuration
@@ -96,8 +97,19 @@ file example can be found here :[application.example.yml](application.example.ym
 * `kafkahq.connections` is a key value configuration with :
   * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
-  * `schema-registry`: the schema registry url *(optional)*
-  * `connect`: connect url *(optional)*
+  * `schema-registry`: *(optional)*
+    * `url`: the schema registry url 
+    * `basic-auth.username`: schema registry basic auth username
+    * `basic-auth.password`: schema registry basic auth password
+  * `connect`: *(optional)*
+    * `url`: connect url 
+    * `basic-auth.username`: connect basic auth username
+    * `basic-auth.password`: connect basic auth password
+    * `ssl.trust-store`: /app/truststore.jks
+    * `ssl.trust-store-password`: trust-store-password
+    * `ssl.key-store`: /app/truststore.jks 
+    * `ssl.key-store-password`: key-store-password
+
 
 ### Security
 * `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
@@ -144,8 +156,8 @@ kafkahq:
 
 ### Server 
 * `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
-  kafkahq is behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/". Not needed if you're
-  behind a reverse proxy with subdomain http://kafkahq.my-server/
+  kafkahq is behind a reverse proxy with url <http://my-server/kafkahq>, set base-path: "/kafkahq/". Not needed if you're
+  behind a reverse proxy with subdomain <http://kafkahq.my-server/>
 
 ### Kafka admin / producer / consumer default properties
 * `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with

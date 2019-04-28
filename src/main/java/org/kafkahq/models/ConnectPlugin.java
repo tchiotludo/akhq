@@ -56,7 +56,11 @@ public class ConnectPlugin {
         private int order;
 
         public Definition(ConnectorPluginConfigValidationResults.Config.Definition definition) {
-            String displayCompare = definition.getDisplayName().toLowerCase().replaceAll("\\.", " ");
+            String displayCompare = null;
+
+            if (definition.getDisplayName() != null) {
+                displayCompare = definition.getDisplayName().toLowerCase().replaceAll("\\.", " ");
+            }
 
             this.name = definition.getName();
             this.type = definition.getType();
@@ -66,7 +70,7 @@ public class ConnectPlugin {
             this.documentation = definition.getDocumentation();
             this.group = definition.getGroup() == null ? "Others" : definition.getGroup();
             this.width = definition.getWidth();
-            this.displayName = displayCompare.equals(definition.getName().toLowerCase()) ? null : definition.getDisplayName();
+            this.displayName = displayCompare != null && displayCompare.equals(definition.getName().toLowerCase()) ? null : definition.getDisplayName();
             this.dependents = definition.getDependents();
             this.order = definition.getOrder();
         }

@@ -19,8 +19,21 @@ kafkahq:
     my-cluster-plain-text: # url friendly name for the cluster
       properties: # standard kafka properties (optional)
         bootstrap.servers: "kafka:9092"
-      schema-registry: "http://schema-registry:8085" # schema registry url (optional)
-      connect: "http://connect:8083" # connect url (optional)
+      schema-registry:
+        url: "http://schema-registry:8085" # schema registry url (optional)
+        basic-auth: # Basic Auth user / pass
+          username: basic-auth-user
+          password: basic-auth-pass
+      connect:
+        url: "http://connect:8083" # connect url (optional)
+        basic-auth: # Basic Auth user / pass (optional)
+          username: basic-auth-user
+          password: basic-auth-pass
+        ssl: # ssl store configuration (optional)
+          trust-store: /app/truststore.jks
+          trust-store-password: trust-store-password
+          key-store: /app/truststore.jks
+          key-store-password: key-store-password
 
     my-cluster-ssl:
       properties:

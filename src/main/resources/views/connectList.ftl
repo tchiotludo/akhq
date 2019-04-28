@@ -25,7 +25,7 @@
         <tbody>
             <#if connects?size == 0>
                 <tr>
-                    <td colspan="${(canDelete == true)?then("4", "3")}">
+                    <td colspan="${(canDelete == true)?then("5", "4")}">
                         <div class="alert alert-info mb-0" role="alert">
                             No connectors available
                         </div>
