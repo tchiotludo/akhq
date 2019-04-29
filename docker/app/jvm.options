@@ -39,9 +39,6 @@
 -Dfile.encoding=UTF-8
 -Duser.timezone=UTC
 
-# tells the Java library to use the preinstalled native library
--Dorg.xerial.snappy.use.systemlib=true
-
 # Jmx Remote
 -Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=8686

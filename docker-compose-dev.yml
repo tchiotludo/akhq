@@ -10,9 +10,7 @@ volumes:
 
 services:
   kafkahq:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
+    image: gradle:5.3.1-jre11-slim
     command: "gradle run --continuous"
     working_dir: /app
     volumes:

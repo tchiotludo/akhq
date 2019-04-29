@@ -86,8 +86,7 @@ run.classpath += configurations.developmentOnly
 test.classpath += configurations.developmentOnly
 run.jvmArgs('-noverify', 
         '-XX:TieredStopAtLevel=1', 
-        '-Dmicronaut.environments=dev', 
-        '-Dorg.xerial.snappy.use.systemlib=true'
+        '-Dmicronaut.environments=dev'
 )
 
 tasks.withType(JavaCompile){

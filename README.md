@@ -82,7 +82,7 @@ docker run -d \
 
 ### Stand Alone
 
-* Install Java 8
+* Install Java 11
 * Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
 * Create an [configuration files](#configuration)
 * Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`

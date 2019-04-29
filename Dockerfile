@@ -1,9 +1,4 @@
-FROM openjdk:8-jre-alpine
-
-RUN apk add --update \
-    libc6-compat \
-    java-snappy-native \
-  && rm -rf /var/cache/apk/*
+FROM openjdk:11-slim
 
 WORKDIR /app
 COPY docker /
