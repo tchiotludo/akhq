@@ -106,3 +106,17 @@ services:
     volumes:
       - ./connects-plugins:/usr/share/java/connects-plugins
 
+  ksql:
+    image: confluentinc/cp-ksql-server
+    depends_on:
+      - kafka
+    ports:
+      - 127.11.8.17:8088:8088
+    environment:
+      KSQL_BOOTSTRAP_SERVERS: "kafka:9092"
+      KSQL_HOST_NAME: ksql
+      KSQL_APPLICATION_ID: ksql
+      KSQL_LISTENERS: "http://0.0.0.0:8088"
+      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8085
+      KSQL_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'

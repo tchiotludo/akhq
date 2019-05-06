@@ -7,6 +7,7 @@ import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
+import io.confluent.ksql.rest.client.KsqlRestClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -232,4 +233,23 @@ public class KafkaModule {
         return this.connectRestClient.get(clusterId);
     }
 
+    private Map<String, KsqlRestClient> ksqlRestClient = new HashMap<>();
+
+    public KsqlRestClient getKsqlRestClient(String clusterId) {
+        if (!this.ksqlRestClient.containsKey(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
+
+            Properties properties = new Properties();
+            if (connection.getKsql().getProperties() != null) {
+                properties.putAll(connection.getKsql().getProperties());
+            }
+
+            this.ksqlRestClient.put(clusterId, new KsqlRestClient(
+                connection.getKsql().getUrl().toString(),
+                properties
+            ));
+        }
+
+        return this.ksqlRestClient.get(clusterId);
+    }
 }

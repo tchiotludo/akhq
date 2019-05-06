@@ -3,15 +3,18 @@ package org.kafkahq.configs;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.core.convert.format.MapFormat;
 import lombok.Getter;
 
 import java.net.URL;
+import java.util.Map;
 
 @EachProperty("kafkahq.connections")
 @Getter
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     Connect connect;
+    Ksql ksql;
 
     public Connection(@Parameter String name) {
         super(name);
@@ -53,6 +56,15 @@ public class Connection extends AbstractProperties {
             String keyStore;
             String keyStorePassword;
         }
+    }
+
+    @Getter
+    @ConfigurationProperties("ksql")
+    public static class Ksql {
+        URL url;
+
+        @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
+        Map<String, String> properties;
     }
 }
 

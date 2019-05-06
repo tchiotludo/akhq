@@ -123,6 +123,9 @@ dependencies {
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
+    compile group: "io.confluent.ksql", name: "ksql-rest-app", version: confluentVersion
+
+
     compile group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
     compile group: 'org.apache.avro', name: 'avro', version: '1.8.2'
     compile group: 'org.sourcelab', name: 'kafka-connect-client', version: '2.0.+'

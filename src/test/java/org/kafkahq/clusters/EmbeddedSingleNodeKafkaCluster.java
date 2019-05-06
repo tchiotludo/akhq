@@ -3,6 +3,8 @@ package org.kafkahq.clusters;
 import io.confluent.kafka.schemaregistry.RestApp;
 import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
+import io.confluent.ksql.rest.server.KsqlRestApplication;
+import io.confluent.ksql.rest.server.KsqlRestConfig;
 import kafka.server.KafkaConfig$;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -59,8 +61,6 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         log.debug("Schema registry is running at {}", schemaRegistryUrl());
 
         // connect
-        ServerSocket s = new ServerSocket(0);
-
         Properties properties = new Properties();
         properties.put("bootstrap.servers", bootstrapServers());
         properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
@@ -79,6 +79,32 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect = new ConnectEmbedded(properties);
         log.debug("Kafka Connect is running at {}", connectUrl());
 
+        /*
+        // ksql
+        Properties ksqlProperties = new Properties();
+        ksqlProperties.put("bootstrap.servers", bootstrapServers());
+        ksqlProperties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
+        ksqlProperties.put("key.converter.schema.registry.url", schemaRegistryUrl());
+        ksqlProperties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
+        ksqlProperties.put("value.converter.schema.registry.url", schemaRegistryUrl());
+        ksqlProperties.put("rest.port", "0");
+        ksqlProperties.put("group.id", "connect-integration-test-");
+        ksqlProperties.put("offset.storage.topic", "__connect-offsets");
+        ksqlProperties.put("offset.storage.replication.factor", 1);
+        ksqlProperties.put("config.storage.topic", "__connect-config");
+        ksqlProperties.put("config.storage.replication.factor", 1);
+        ksqlProperties.put("status.storage.topic", "__connect-status");
+        ksqlProperties.put("status.storage.replication.factor", 1);
+
+        connect = KsqlRestApplication.buildApplication(
+            new KsqlRestConfig(ksqlProperties),
+            booleanSupplier -> {
+                return false;
+            }
+        );
+        log.debug("Ksql is running at {}", connectUrl());
+
+        */
         running = false;
     }
 
