@@ -406,11 +406,14 @@ public class RecordRepository extends AbstractRepository {
 
             currentEvent.records = list;
 
+            if (matchesCount.get() >= options.getSize()) {
+                currentEvent.emptyPoll = 666;
+            }
+
             if (list.size() > 0) {
                 emitter.onNext(currentEvent.progress(options));
-            } else if (currentEvent.emptyPoll >= 1 || matchesCount.get() >= options.getSize()) {
+            } else if (currentEvent.emptyPoll >= 1) {
                 emitter.onNext(currentEvent.end());
-                currentEvent.emptyPoll = 666;
             } else {
                 emitter.onNext(currentEvent.progress(options));
             }

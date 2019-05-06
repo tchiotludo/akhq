@@ -13,7 +13,7 @@ $.widget("khq.search-sse", $.khq.widget, {
         let table = this.element.find('tbody');
         this._progressBar = this.element.find('.progress-bar');
         this._cancelButton = this.element.find('.progress-container button');
-            this._after = this.element.parent().find('nav .page-item.after');
+        this._after = this.element.parent().find('nav .page-item.after');
         this._after.addClass('disabled');
 
         this._eventSource = new EventSource(this._url()
@@ -44,7 +44,7 @@ $.widget("khq.search-sse", $.khq.widget, {
             }
 
             if (searchBody.after !== null) {
-                self._updateAfter(searchBody.percent);
+                self._updateAfter(searchBody.after);
             }
 
             if (searchBody.percent) {
@@ -56,7 +56,7 @@ $.widget("khq.search-sse", $.khq.widget, {
             self._close(e);
             let searchEnd = JSON.parse(e.data);
 
-            self._updateAfter(searchEnd.percent);
+            self._updateAfter(searchEnd.after);
             self._updateProgressBar(100);
         });
     },
