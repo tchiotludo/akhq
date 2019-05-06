@@ -423,12 +423,24 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private boolean searchFilter(Options options, Record record) {
-        if (record.getKeyAsString() != null && record.getKeyAsString().toLowerCase().contains(options.getSearch().toLowerCase())) {
+        if (record.getKeyAsString() != null && containsAll(options.getSearch(), record.getKeyAsString())) {
             return true;
         }
 
-        return record.getValueAsString() != null && record.getValueAsString().toLowerCase()
-            .contains(options.getSearch().toLowerCase());
+        return record.getValueAsString() != null && containsAll(options.getSearch(), record.getValueAsString());
+    }
+
+    private static boolean containsAll(String search, String in) {
+        String[] split = search.toLowerCase().split("\\s");
+        in = in.toLowerCase();
+
+        for (String k : split) {
+            if (!in.contains(k)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @ToString
