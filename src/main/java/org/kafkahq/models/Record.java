@@ -37,8 +37,9 @@ public class Record {
         this.key = record.key();
         this.value = record.value();
         for (Header header: record.headers()) {
-            this.headers.put(header.key(), new String(header.value()));
+            this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
         }
+
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
     }
 

@@ -45,7 +45,7 @@
                     <#list data.getHeaders() as key, value>
                         <tr>
                             <th>${key}</th>
-                            <td><pre class="mb-0">${value}</pre></td>
+                            <td><pre class="mb-0">${value!"null"}</pre></td>
                         </tr>
                     </#list>
                 </table>

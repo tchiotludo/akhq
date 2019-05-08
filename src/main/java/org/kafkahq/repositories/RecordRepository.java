@@ -328,7 +328,7 @@ public class RecordRepository extends AbstractRepository {
             headers
                 .entrySet()
                 .stream()
-                .map(entry -> new RecordHeader(entry.getKey(), entry.getValue().getBytes()))
+                .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
                 .collect(Collectors.toList())
         )).get();
     }

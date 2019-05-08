@@ -145,8 +145,11 @@ public class TopicController extends AbstractController {
 
         int i = 0;
         for (String headerKey : headers.get("headers[key]")) {
-            if (headerKey != null && !headerKey.equals("") && headers.get("headers[value]").get(i) != null && !headers.get("headers[value]").get(i).equals("")) {
-                finalHeaders.put(headerKey, headers.get("headers[value]").get(i));
+            if (headerKey != null && !headerKey.equals("") && headers.get("headers[value]").get(i) != null) {
+                finalHeaders.put(
+                    headerKey,
+                    headers.get("headers[value]").get(i).equals("") ? null : headers.get("headers[value]").get(i)
+                );
             }
             i++;
         }
