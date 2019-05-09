@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#macro badge node>
     <#-- @ftlvariable name="node" type="org.kafkahq.models.Node" -->
 

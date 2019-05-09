@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#function filesize num>
     <#assign order = num?round?c?length />
     <#assign thousands = ((order - 1) / 3)?floor />

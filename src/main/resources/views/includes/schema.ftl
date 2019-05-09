@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="compatibilityLevel" type="java.util.List<java.lang.String>" -->

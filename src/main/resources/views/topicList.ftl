@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->

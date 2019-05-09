@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter">

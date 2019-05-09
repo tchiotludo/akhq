@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="schemas" type="java.util.List<org.kafkahq.models.Schema>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->

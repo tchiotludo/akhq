@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 
 <#import "includes/template.ftl" as template>

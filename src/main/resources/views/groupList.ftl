@@ -1,3 +1,5 @@
+<#ftl output_format="HTML">
+
 <#-- @ftlvariable name="groups" type="java.util.ArrayList<org.kafkahq.models.ConsumerGroup>" -->
 
 <#import "includes/template.ftl" as template>
