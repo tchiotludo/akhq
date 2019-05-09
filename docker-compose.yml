@@ -3,6 +3,8 @@ version: '3.6'
 volumes:
   zookeeper-data:
     driver: local
+  zookeeper-log:
+    driver: local
   kafka-data:
     driver: local
 
@@ -31,7 +33,8 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper
     volumes:
-      - zookeeper-data:/var/lib/zookeeper
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
