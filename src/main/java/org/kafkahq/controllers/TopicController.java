@@ -93,6 +93,7 @@ public class TopicController extends AbstractController {
         List<Config> options = configs
             .entrySet()
             .stream()
+            .filter(r -> r.getKey().startsWith("configs"))
             .map(r -> new AbstractMap.SimpleEntry<>(
                 r.getKey().replaceAll("(configs\\[)(.*)(])", "$2"),
                 r.getValue()
