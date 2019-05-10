@@ -406,14 +406,12 @@ public class RecordRepository extends AbstractRepository {
 
             currentEvent.records = list;
 
-            if (matchesCount.get() >= options.getSize()) {
+            if (currentEvent.emptyPoll >= 1) {
                 currentEvent.emptyPoll = 666;
-            }
-
-            if (list.size() > 0) {
-                emitter.onNext(currentEvent.progress(options));
-            } else if (currentEvent.emptyPoll >= 1) {
                 emitter.onNext(currentEvent.end());
+            } else if (matchesCount.get() >= options.getSize()) {
+                currentEvent.emptyPoll = 666;
+                emitter.onNext(currentEvent.progress(options));
             } else {
                 emitter.onNext(currentEvent.progress(options));
             }
@@ -451,7 +449,7 @@ public class RecordRepository extends AbstractRepository {
         private List<Record> records = new ArrayList<>();
         private String after;
         private double percent;
-        private double emptyPoll = 0;
+        private int emptyPoll = 0;
 
         private SearchEvent(SearchEvent event) {
             this.offsets = event.offsets;

@@ -149,7 +149,7 @@ public class RecordRepositoryTest {
 
             if (datas.size() == 0) {
                 hasNext = false;
-            } else {
+            } else if (after != null) {
                 options.setAfter(after.getParametersByName("after").get(0).getValue());
             }
         } while (hasNext);
@@ -207,9 +207,11 @@ public class RecordRepositoryTest {
                 if (event.getName().equals("searchEnd")) {
                     if (event.getData().getAfter() == null) {
                         hasNext.set(false);
-                    } else {
-                        options.setAfter(event.getData().getAfter());
                     }
+                }
+
+                if (event.getData().getAfter() != null) {
+                    options.setAfter(event.getData().getAfter());
                 }
             });
 
