@@ -59,8 +59,6 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         log.debug("Schema registry is running at {}", schemaRegistryUrl());
 
         // connect
-        ServerSocket s = new ServerSocket(0);
-
         Properties properties = new Properties();
         properties.put("bootstrap.servers", bootstrapServers());
         properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");

@@ -4,6 +4,19 @@ kafkahq:
     access-log:
       enabled: false
 
+  topic:
+    default-view: HIDE_INTERNAL
+    internal-regexps:
+      - "^_.*$"
+      - "^.*_schemas$"
+      - "^.*connect-config$"
+      - "^.*connect-offsets$1"
+      - "^.*connect-status$"
+    stream-regexps:
+      - "^.*-changelog$"
+      - "^.*-repartition$"
+      - "^.*-rekey$"
+
   security:
     basic-auth:
       user:

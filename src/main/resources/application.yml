@@ -50,6 +50,19 @@ kafkahq:
         group.id: KafkaHQ
         enable.auto.commit: "false"
 
+  topic:
+    default-view: HIDE_INTERNAL
+    internal-regexps:
+      - "^_.*$"
+      - "^.*_schemas$"
+      - "^.*connect-config$"
+      - "^.*connect-offsets$1"
+      - "^.*connect-status$"
+    stream-regexps:
+      - "^.*-changelog$"
+      - "^.*-repartition$"
+      - "^.*-rekey$"
+
   topic-data:
     sort: OLDEST
     size: 50

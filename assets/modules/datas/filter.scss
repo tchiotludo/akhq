@@ -9,4 +9,17 @@
             order: 3;
         }
     }
+
+    @include media-breakpoint-up(sm) {
+        select {
+            max-width: 200px;
+        }
+    }
+
+    @include media-breakpoint-down(xs) {
+        button.btn-primary {
+            display: block;
+            width: 100%;
+        }
+    }
 }

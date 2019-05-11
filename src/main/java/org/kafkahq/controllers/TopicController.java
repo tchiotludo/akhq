@@ -3,6 +3,7 @@ package org.kafkahq.controllers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -44,6 +45,8 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
     private Environment environment;
+    @Value("${kafkahq.topic.default-view}")
+    private String defaultView;
 
     @Inject
     public TopicController(TopicRepository topicRepository,
@@ -61,12 +64,15 @@ public class TopicController extends AbstractController {
 
     @View("topicList")
     @Get
-    public HttpResponse list(HttpRequest request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
+    public HttpResponse list(HttpRequest request, String cluster, Optional<String> search, Optional<TopicRepository.TopicListView> show) throws ExecutionException, InterruptedException {
+        TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
+
         return this.template(
             request,
             cluster,
             "search", search,
-            "topics", this.topicRepository.list(search)
+            "topicListView", topicListView,
+            "topics", this.topicRepository.list(show.orElse(TopicRepository.TopicListView.valueOf(defaultView)), search)
         );
     }
 

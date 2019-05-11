@@ -110,7 +110,21 @@ file example can be found here :[application.example.yml](application.example.ym
     * `ssl.key-store`: /app/truststore.jks 
     * `ssl.key-store-password`: key-store-password
 
+### KafkaHQ configuration 
 
+#### Topic List 
+* `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
+* `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
+* `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
+
+
+#### Topic Data
+* `kafkahq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
+* `kafkahq.topic-data.size`: max record per page (default: 50)
+* `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
+  buffer (default: 1000).
+
+    
 ### Security
 * `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
   * `topic/read`

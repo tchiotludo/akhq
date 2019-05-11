@@ -26,12 +26,27 @@ public class TopicRepositoryTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(14, topicRepository.list(Optional.empty()).size());
+        assertEquals(14, topicRepository.list(TopicRepository.TopicListView.ALL, Optional.empty()).size());
+    }
+
+    @Test
+    public void listNoInternal() throws ExecutionException, InterruptedException {
+        assertEquals(9, topicRepository.list(TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty()).size());
+    }
+
+    @Test
+    public void listNoInternalStream() throws ExecutionException, InterruptedException {
+        assertEquals(7, topicRepository.list(TopicRepository.TopicListView.HIDE_INTERNAL_STREAM, Optional.empty()).size());
+    }
+
+    @Test
+    public void listNoStream() throws ExecutionException, InterruptedException {
+        assertEquals(12, topicRepository.list(TopicRepository.TopicListView.HIDE_STREAM, Optional.empty()).size());
     }
 
     @Test
     public void search() throws ExecutionException, InterruptedException {
-        assertEquals(1, topicRepository.list(Optional.of("ra do")).size());
+        assertEquals(1, topicRepository.list(TopicRepository.TopicListView.ALL, Optional.of("ra do")).size());
     }
 
     @Test

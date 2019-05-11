@@ -1,5 +1,6 @@
 package org.kafkahq.repositories;
 
+import io.micronaut.context.annotation.Value;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
@@ -19,6 +20,12 @@ public class TopicRepository extends AbstractRepository {
     private LogDirRepository logDirRepository;
     private ConfigRepository configRepository;
 
+    @Value("${kafkahq.topic.internal-regexps}")
+    protected List<String> internalRegexps;
+
+    @Value("${kafkahq.topic.stream-regexps}")
+    protected List<String> streamRegexps;
+
     @Inject
     public TopicRepository(KafkaModule kafkaModule, ConsumerGroupRepository consumerGroupRepository, LogDirRepository logDirRepository, ConfigRepository configRepository) {
         this.kafkaModule = kafkaModule;
@@ -27,13 +34,20 @@ public class TopicRepository extends AbstractRepository {
         this.configRepository = configRepository;
     }
 
-    public List<Topic> list(Optional<String> search) throws ExecutionException, InterruptedException {
+    public enum TopicListView {
+        ALL,
+        HIDE_INTERNAL,
+        HIDE_INTERNAL_STREAM,
+        HIDE_STREAM,
+    }
+
+    public List<Topic> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name())) {
+            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name())) {
                 list.add(item.name());
             }
         }
@@ -42,6 +56,19 @@ public class TopicRepository extends AbstractRepository {
         topics.sort(Comparator.comparing(Topic::getName));
 
         return topics;
+    }
+
+    public boolean isListViewMatch(TopicListView view, String value) {
+        switch (view) {
+            case HIDE_STREAM:
+                return !isStream(value);
+            case HIDE_INTERNAL:
+                return !isInternal(value);
+            case HIDE_INTERNAL_STREAM:
+                return !isInternal(value) && !isStream(value);
+        }
+
+        return true;
     }
 
     public Topic findByName(String name) throws ExecutionException, InterruptedException {
@@ -62,12 +89,26 @@ public class TopicRepository extends AbstractRepository {
                     description.getValue(),
                     consumerGroupRepository.findByTopic(description.getValue().name()),
                     logDirRepository.findByTopic(description.getValue().name()),
-                    topicOffsets.get(description.getValue().name())
+                    topicOffsets.get(description.getValue().name()),
+                    isInternal(description.getValue().name()),
+                    isStream(description.getValue().name())
                 )
             );
         }
 
         return list;
+    }
+
+    private boolean isInternal(String name) {
+        return this.internalRegexps
+            .stream()
+            .anyMatch(name::matches);
+    }
+
+    private boolean isStream(String name) {
+        return this.streamRegexps
+            .stream()
+            .anyMatch(name::matches);
     }
 
     public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {

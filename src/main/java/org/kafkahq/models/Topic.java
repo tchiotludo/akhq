@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 public class Topic {
     private String name;
     private boolean internal;
+    private boolean configInternal;
+    private boolean configStream;
     private final List<Partition> partitions = new ArrayList<>();
     private List<ConsumerGroup> consumerGroups;
 
@@ -27,11 +29,16 @@ public class Topic {
         TopicDescription description,
         List<ConsumerGroup> consumerGroup,
         List<LogDir> logDirs,
-        List<Partition.Offsets> offsets
+        List<Partition.Offsets> offsets,
+        boolean configInternal,
+        boolean configStream
     ) {
         this.name = description.name();
         this.internal = description.isInternal();
         this.consumerGroups = consumerGroup;
+
+        this.configInternal = configInternal;
+        this.configStream = configStream;
 
         for (TopicPartitionInfo partition : description.partitions()) {
             this.partitions.add(new Partition(
@@ -48,6 +55,14 @@ public class Topic {
                     ))
             ));
         }
+    }
+
+    public boolean isInternal() {
+        return this.internal || this.configInternal;
+    }
+
+    public boolean isStream() {
+        return this.configStream;
     }
 
     public List<Node.Partition> getReplicas() {

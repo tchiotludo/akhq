@@ -57,6 +57,20 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
 
+  # Topic list display options (optional)
+  topic:
+    default-view: HIDE_INTERNAL # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
+    internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
+      - "^_.*$"
+      - "^.*_schemas$"
+      - "^.*connect-config$"
+      - "^.*connect-offsets$1"
+      - "^.*connect-status$"
+    stream-regexps: # list of regexp to be considered as internal stream topic
+      - "^.*-changelog$"
+      - "^.*-repartition$"
+      - "^.*-rekey$"
+
   # Topic display data options (optional)
   topic-data:
     sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
