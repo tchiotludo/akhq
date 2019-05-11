@@ -150,7 +150,7 @@ kafkahq:
 
 #### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
-  * `username`: login of user 
+  * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `roles`: Role for current users
 
@@ -160,8 +160,8 @@ kafkahq:
   behind a reverse proxy with subdomain <http://kafkahq.my-server/>
 
 ### Kafka admin / producer / consumer default properties
-* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: if behind a reverse proxy, path to kafkahq with
-  trailing slash
+* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: default configuration for admin producer or
+  consumer. All properties from [Kafka documentation](https://kafka.apache.org/documentation/) is available.
 
 ### Micronaut configuration 
 > Since KafkaHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
