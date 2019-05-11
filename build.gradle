@@ -28,6 +28,7 @@ plugins {
 
     // kafkahq
     id "com.moowork.node" version "1.3.1"
+    id 'io.franzbecker.gradle-lombok' version '3.0.0'
     id 'com.adarshr.test-logger' version '1.6.0'
     id 'com.github.psxpaul.execfork' version '0.1.10'
     id "com.github.ben-manes.versions" version "0.21.0"
@@ -46,6 +47,11 @@ repositories {
     maven { url 'http://packages.confluent.io/maven/' }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url "https://jcenter.bintray.com" }
+}
+
+lombok {
+    version = '1.18.8'
+    sha256 = ""
 }
 
 idea {
@@ -99,10 +105,6 @@ gradle.taskGraph.whenReady { graph ->
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
-    // lombok
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor "org.projectlombok:lombok:1.18.8"
-
     // micronaut
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
