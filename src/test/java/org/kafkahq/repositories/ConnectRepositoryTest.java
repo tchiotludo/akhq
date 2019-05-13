@@ -52,20 +52,24 @@ public class ConnectRepositoryTest {
 
     @Test
     public void create() {
+        String path1 = ConnectRepository.class.getClassLoader().getResource("application.yml").getPath();
+        String path2 = ConnectRepository.class.getClassLoader().getResource("logback.xml").getPath();
+
         repository.create(
             KafkaTestCluster.CLUSTER_ID,
             "ConnectRepositoryTest",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
-                "file", "/etc/hosts",
+                "file", path1,
                 "topics", "test-topics1"
             )
         );
 
+
         List<ConnectDefinition> all = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID);
         assertEquals(1, all.size());
 
-        assertEquals("/etc/hosts", repository.getDefinition(
+        assertEquals(path1, repository.getDefinition(
             KafkaTestCluster.CLUSTER_ID,
             "ConnectRepositoryTest"
         ).getConfigs().get("file"));
@@ -75,12 +79,12 @@ public class ConnectRepositoryTest {
             "ConnectRepositoryTest",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
-                "file", "/etc/resolv.conf ",
+                "file", path2,
                 "topics", "test-topics1"
             )
         );
 
-        assertEquals("/etc/resolv.conf ", repository.getDefinition(
+        assertEquals(path2, repository.getDefinition(
             KafkaTestCluster.CLUSTER_ID,
             "ConnectRepositoryTest"
         ).getConfigs().get("file"));
