@@ -22,19 +22,6 @@
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:HeapDumpPath=/tmp/heapdump.log
 
-# GC logs
--XX:+PrintGCDetails
--XX:+PrintGCDateStamps
--XX:+PrintTenuringDistribution
--XX:+PrintGCApplicationStoppedTime
--Xloggc:/tmp/gc.log
--XX:+UseGCLogFileRotation
--XX:NumberOfGCLogFiles=32
--XX:GCLogFileSize=64m
-
-# Docker aware cpu/memory otions
--XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
-
 # Do not rely on the system configuration
 -Dfile.encoding=UTF-8
 -Duser.timezone=UTC

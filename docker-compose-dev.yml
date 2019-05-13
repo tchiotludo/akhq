@@ -25,7 +25,7 @@ services:
       - schema-registry
 
   webpack:
-    image: node:11
+    image: node:12
     command: "sh -c 'npm install && npm run dev'"
     working_dir: /app
     volumes:
