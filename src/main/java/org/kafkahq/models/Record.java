@@ -48,7 +48,11 @@ public class Record {
     }
 
     public String getKeyAsBase64() {
-        return new String(Base64.getEncoder().encode(value));
+        if (key == null) {
+            return null;
+        } else {
+            return new String(Base64.getEncoder().encode(key));
+        }
     }
 
     public String getValueAsString() {

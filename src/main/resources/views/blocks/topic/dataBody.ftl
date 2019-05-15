@@ -26,10 +26,10 @@
         </td>
         <#if canDelete == true >
             <td>
-                <#if data.getValue()??>
+                <#if data.getKeyAsBase64()??>
                     <a
                             href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKeyAsBase64()}"
-                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()} from topic ${topic.getName()}</code> ?"
+                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()!"null"} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
