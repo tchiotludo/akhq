@@ -84,7 +84,7 @@
                 <@template.bottom>
                     <#if definition.isPaused()>
                         <a
-                                href="${basePath}/${clusterId}/connect/${definition.getName()}/resume" type="submit" class="btn btn-primary mr-2"
+                                href="${basePath}/${clusterId}/connect/${definition.getName()}/resume" class="btn btn-primary mr-2"
                                 data-confirm="Do you want to resume definition: <code>${definition.getName()} </code> ?"
                         >
                             <i class="fa fa-forward" aria-hidden="true"></i> Resume Definition
@@ -98,7 +98,7 @@
                         </a>
 
                         <a
-                                href="${basePath}/${clusterId}/connect/${definition.getName()}/restart" type="submit" class="btn btn-primary mr-2"
+                                href="${basePath}/${clusterId}/connect/${definition.getName()}/restart" class="btn btn-primary mr-2"
                                 data-confirm="Do you want to restart definition: <code>${definition.getName()} </code> ?"
                         >
                             <i class="fa fa-play" aria-hidden="true"></i> Restart Definition

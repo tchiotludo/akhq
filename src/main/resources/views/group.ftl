@@ -41,7 +41,7 @@
 
 <#if roles?seq_contains("group/offsets/update") == true>
 <@template.bottom>
-    <a href="${basePath}/${clusterId}/group/${group.getId()}/offsets" type="submit" class="btn btn-primary">Update offsets</a>
+    <a href="${basePath}/${clusterId}/group/${group.getId()}/offsets" class="btn btn-primary">Update offsets</a>
 </@template.bottom>
 </#if>
 

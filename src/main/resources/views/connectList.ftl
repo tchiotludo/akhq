@@ -84,7 +84,7 @@
 
 <#if roles?seq_contains("connect/insert") == true>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/connect/create" type="submit" class="btn btn-primary">Create a defintion</a>
+        <a href="${basePath}/${clusterId}/connect/create" class="btn btn-primary">Create a defintion</a>
     </@template.bottom>
 </#if>
 
