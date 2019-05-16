@@ -161,12 +161,16 @@ kafkahq:
       - connect/read
 ```
 
-
 #### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
   * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `roles`: Role for current users
+
+> Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
+> loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
+> [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
+
 
 ### Server 
 * `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
