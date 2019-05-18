@@ -59,6 +59,7 @@ kafkahq:
 
   # Topic list display options (optional)
   topic:
+    page-size: 25 # number of topics per page (default : 25)
     default-view: HIDE_INTERNAL # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
     internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
       - "^_.*$"

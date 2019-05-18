@@ -11,7 +11,10 @@ import org.kafkahq.modules.KafkaModule;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
@@ -41,7 +44,7 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
-    public List<Topic> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<CompletableFuture<Topic>> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
@@ -52,10 +55,18 @@ public class TopicRepository extends AbstractRepository {
             }
         }
 
-        List<Topic> topics = this.findByName(list);
-        topics.sort(Comparator.comparing(Topic::getName));
+        list.sort(Comparator.comparing(s -> s));
 
-        return topics;
+        return list.stream()
+            .map(s -> CompletableFuture.supplyAsync(() -> {
+                try {
+                    return this.findByName(s);
+                }
+                catch(ExecutionException | InterruptedException ex) {
+                    throw new CompletionException(ex);
+                }
+            }))
+            .collect(Collectors.toList());
     }
 
     public boolean isListViewMatch(TopicListView view, String value) {

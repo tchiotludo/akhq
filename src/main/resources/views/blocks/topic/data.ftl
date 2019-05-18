@@ -18,7 +18,7 @@
     </button>
 
     <nav>
-        <#include "pagination.ftl" />
+        <#include "../pagination.ftl" />
     </nav>
 
     <div class="collapse navbar-collapse" id="topic-data">

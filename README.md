@@ -113,6 +113,7 @@ file example can be found here :[application.example.yml](application.example.ym
 ### KafkaHQ configuration 
 
 #### Topic List 
+* `kafkahq.topic.page-size` number of topics per page (default : 25)
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic

@@ -52,6 +52,7 @@ kafkahq:
 
   topic:
     default-view: HIDE_INTERNAL
+    page-size: 25
     internal-regexps:
       - "^_.*$"
       - "^.*_schemas$"
