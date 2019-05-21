@@ -1,0 +1,9 @@
+kafkahq:
+  connections:
+    docker-kafka-server:
+      properties:
+        bootstrap.servers: "helk-kafka:9092"
+      schema-registry:
+        url: "http://kafka-schema-registry:8085"
+      connect:
+        url: "http://kafka-connect:8083"

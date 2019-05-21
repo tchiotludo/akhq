@@ -13,22 +13,13 @@ services:
     # build:
     #   context: .
     image: tchiotludo/kafkahq
-    environment:
-      KAFKAHQ_CONFIGURATION: |
-        kafkahq:
-          connections:
-            docker-kafka-server:
-              properties:
-                bootstrap.servers: "kafka:9092"
-              schema-registry:
-                url: "http://schema-registry:8085"
-              connect:
-                url: "http://connect:8083"
+    volumes:
+      - ./app.yaml:/app/application.yaml
     ports:
       - 8080:8080
     links:
-      - kafka
-      - schema-registry
+      - helk-kafka
+      - kafka-schema-registry
 
   zookeeper:
     image: confluentinc/cp-zookeeper
@@ -38,7 +29,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
-  kafka:
+  helk-kafka:
     image: confluentinc/cp-kafka
     volumes:
       - kafka-data:/var/lib/kafka
@@ -49,43 +40,43 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://helk-kafka:9092
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
       KAFKA_JMX_PORT: 9091
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
     links:
       - zookeeper
 
-  schema-registry:
+  kafka-schema-registry:
     image: confluentinc/cp-schema-registry
     depends_on:
-      - kafka
+      - helk-kafka
     environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://helk-kafka:9092"
+      SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
       SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8085"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
 
-  connect:
+  kafka-connect:
     image: confluentinc/cp-kafka-connect
     depends_on:
-      - kafka
-      - schema-registry
+      - helk-kafka
+      - kafka-schema-registry
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_BOOTSTRAP_SERVERS: helk-kafka:9092
       CONNECT_REST_PORT: 8083
       CONNECT_REST_LISTENERS: http://0.0.0.0:8083
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECT_CONFIG_STORAGE_TOPIC: __connect-config
       CONNECT_OFFSET_STORAGE_TOPIC: __connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: __connect-status
       CONNECT_GROUP_ID: "kafka-connect"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://kafka-schema-registry:8085
       CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://kafaka-schema-registry:8085
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
@@ -100,16 +91,16 @@ services:
     volumes:
       - ./:/app
     links:
-      - kafka
-      - schema-registry
+      - helk-kafka
+      - kafka-schema-registry
 
   kafkacat:
     image: confluentinc/cp-kafkacat
-    command: 
-      - bash 
-      - -c 
+    command:
+      - bash
+      - -c
       - |
-        kafkacat -P -b kafka:9092 -t json << EOF
+        kafkacat -P -b helk-kafka:9092 -t json << EOF
         {"_id":"5c4b2b45ab234c86955f0802","index":0,"guid":"d3637b06-9940-4958-9f82-639001c14c34"}
         {"_id":"5c4b2b459ffa9bb0c0c249e1","index":1,"guid":"08612fb5-40a7-45e5-9ff2-beb89a1b2835"}
         {"_id":"5c4b2b4545d7cbc7bf8b6e3e","index":2,"guid":"4880280a-cf8b-4884-881e-7b64ebf2afd0"}
@@ -117,8 +108,8 @@ services:
         {"_id":"5c4b2b45d1103ce30dfe1947","index":4,"guid":"14d53f2c-def3-406f-9dfb-c29963fdc37e"}
         {"_id":"5c4b2b45d6d3b5c51d3dacb7","index":5,"guid":"a20cfc3a-934a-4b93-9a03-008ec651b5a4"}
         EOF
-        
-        kafkacat -P -b kafka:9092 -t csv << EOF
+
+        kafkacat -P -b helk-kafka:9092 -t csv << EOF
         1,Sauncho,Attfield,sattfield0@netlog.com,Male,221.119.13.246
         2,Luci,Harp,lharp1@wufoo.com,Female,161.14.184.150
         3,Hanna,McQuillan,hmcquillan2@mozilla.com,Female,214.67.74.80
@@ -126,6 +117,6 @@ services:
         5,Mordecai,Hurdiss,mhurdiss4@rambler.ru,Male,175.123.45.143
         EOF
 
-        kafkacat -b kafka:9092 -o beginning -G json-consumer json
+        kafkacat -b helk-kafka:9092 -o beginning -G json-consumer json
     links:
-      - kafka
+      - helk-kafka
