@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        micronautVersion = "1.1.1"
+        micronautVersion = "1.1.2"
         confluentVersion = "5.2.+"
         kafkaVersion = "2.2.+"
     }
@@ -25,6 +25,7 @@ plugins {
     id "java"
     id "net.ltgt.apt-eclipse" version "0.21"
     id "net.ltgt.apt-idea" version "0.21"
+    id "com.gorylenko.gradle-git-properties" version "2.0.0"
 
     // kafkahq
     id "com.moowork.node" version "1.3.1"
@@ -108,7 +109,7 @@ dependencies {
     // micronaut
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
-    annotationProcessor "io.micronaut:micronaut-security:" + micronautVersion
+    annotationProcessor "io.micronaut:micronaut-security"
     compile "io.micronaut:micronaut-inject"
     compile "io.micronaut:micronaut-validation"
     compile 'io.micronaut:micronaut-views'
@@ -117,8 +118,11 @@ dependencies {
     compile "io.micronaut:micronaut-http-server-netty"
     runtime "ch.qos.logback:logback-classic:1.2.3"
     runtime 'org.freemarker:freemarker:2.3.28'
-    compile "io.micronaut:micronaut-security:" + micronautVersion
-    compile "io.micronaut:micronaut-security-session:" + micronautVersion
+    compile "io.micronaut:micronaut-security"
+    compile "io.micronaut:micronaut-security-session"
+    compile "io.micronaut:micronaut-management"
+    compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
+    compile 'io.github.mweirauch:micrometer-jvm-extras:0.1.3'
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion

@@ -31,6 +31,28 @@ micronaut:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
 
+endpoints:
+  all:
+    path: "${kafkahq.server.base-path:}"
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: anonymous
+  info:
+    enabled: true
+    sensitive: false
+  metrics:
+    enabled: true
+    sensitive: false
+    export:
+      prometheus:
+        enabled: true
+        step: PT1M
+        descriptions: true
+  prometheus:
+    enabled: true
+    sensitive: false
+
 jackson:
   module-scan: false
 
