@@ -125,6 +125,7 @@
                 <th>Partition</th>
                 <th>Offset</th>
                 <th>Headers</th>
+                <th>Schema</th>
                 <#if canDeleteRecords == true >
                 <th class="khq-row-action"></th>
                 </#if>

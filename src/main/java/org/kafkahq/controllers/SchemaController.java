@@ -15,6 +15,7 @@ import org.kafkahq.repositories.SchemaRegistryRepository;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 @Secured(Role.ROLE_REGISTRY_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/schema")
@@ -34,6 +35,25 @@ public class SchemaController extends AbstractController {
             cluster,
             "schemas", this.schemaRepository.getAll(cluster)
         );
+    }
+
+    @Get("id/{id}")
+    public HttpResponse redirectId(HttpRequest request, String cluster, Integer id) throws IOException, RestClientException, URISyntaxException {
+        Schema find = this.schemaRepository.getById(cluster, id);
+
+        if (find != null) {
+            return HttpResponse.redirect(this.uri("/" + cluster + "/schema/" + find.getSubject() + "/version#" + id));
+        } else {
+            MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema"));
+
+            this.toast(response, AbstractController.Toast.builder()
+                .message("Unable to find avro schema for id '" + id + "'")
+                .type(AbstractController.Toast.Type.error)
+                .build()
+            );
+
+            return response;
+        }
     }
 
     @Secured(Role.ROLE_REGISTRY_INSERT)

@@ -56,6 +56,22 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return found;
     }
 
+    public Schema getById(String clusterId, Integer id) throws IOException, RestClientException {
+        for (Schema schema: this.getAll(clusterId)) {
+            if (schema.getId().equals(id)) {
+                return schema;
+            }
+
+            for (Schema version: this.getAllVersions(clusterId, schema.getSubject())) {
+                if (version.getId().equals(id)) {
+                    return schema;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Schema getLatestVersion(String clusterId, String subject) throws IOException, RestClientException {
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema latestVersion = this.kafkaModule
             .getRegistryRestClient(clusterId)
