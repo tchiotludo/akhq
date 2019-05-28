@@ -1,3 +1,7 @@
+micronaut:
+  metrics:
+    enabled: false
+
 kafkahq:
   server:
     base-path: ""
