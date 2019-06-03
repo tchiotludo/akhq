@@ -86,6 +86,9 @@ kafkahq:
       - "^.*-repartition$"
       - "^.*-rekey$"
 
+  schema:
+    page-size: 25
+
   topic-data:
     sort: OLDEST
     size: 50

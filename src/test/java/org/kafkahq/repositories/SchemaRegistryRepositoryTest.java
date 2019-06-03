@@ -12,6 +12,8 @@ import org.kafkahq.models.Schema;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,8 +63,14 @@ public class SchemaRegistryRepositoryTest {
 
     @Test
     public void getAll() throws IOException, RestClientException {
-        List<Schema> all = repository.getAll(KafkaTestCluster.CLUSTER_ID);
+        List<CompletableFuture<Schema>> all = repository.getAll(KafkaTestCluster.CLUSTER_ID, Optional.empty());
         assertEquals(3, all.size());
+    }
+
+    @Test
+    public void getAllSearch() throws IOException, RestClientException {
+        List<CompletableFuture<Schema>> all = repository.getAll(KafkaTestCluster.CLUSTER_ID, Optional.of("stream-count"));
+        assertEquals(1, all.size());
     }
 
     @Test
@@ -99,7 +107,7 @@ public class SchemaRegistryRepositoryTest {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V2);
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_2, SCHEMA_2);
 
-        assertEquals(5, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
+        assertEquals(5, repository.getAll(KafkaTestCluster.CLUSTER_ID, Optional.empty()).size());
         assertEquals(SCHEMA_1_V2, repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).getSchema());
         assertEquals(2, repository.getAllVersions(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).size());
 
@@ -111,7 +119,7 @@ public class SchemaRegistryRepositoryTest {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1);
         repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
 
-        assertEquals(3, repository.getAll(KafkaTestCluster.CLUSTER_ID).size());
+        assertEquals(3, repository.getAll(KafkaTestCluster.CLUSTER_ID, Optional.empty()).size());
     }
 
     @Test

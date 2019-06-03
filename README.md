@@ -125,6 +125,10 @@ file example can be found here :[application.example.yml](application.example.ym
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
+
+#### Schema List 
+* `kafkahq.schema.page-size` number of schemas per page (default : 25)
+
     
 ### Security
 * `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :

@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -25,19 +28,19 @@ public class SchemaRegistryRepository extends AbstractRepository {
         this.kafkaModule = kafkaModule;
     }
 
-    public List<Schema> getAll(String clusterId) throws IOException, RestClientException {
+    public List<CompletableFuture<Schema>> getAll(String clusterId, Optional<String> search) throws IOException, RestClientException {
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .getAllSubjects()
             .stream()
-            .map(s -> {
+            .filter(s -> isSearchMatch(search, s))
+            .map(s -> CompletableFuture.supplyAsync(() -> {
                 try {
                     return getLatestVersion(clusterId, s);
                 } catch (RestClientException | IOException e) {
                     throw new RuntimeException(e);
                 }
-
-            })
+            }))
             .collect(Collectors.toList());
     }
 
@@ -56,8 +59,10 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return found;
     }
 
-    public Schema getById(String clusterId, Integer id) throws IOException, RestClientException {
-        for (Schema schema: this.getAll(clusterId)) {
+    public Schema getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        for (CompletableFuture<Schema> future: this.getAll(clusterId, Optional.empty())) {
+            Schema schema = future.get();
+
             if (schema.getId().equals(id)) {
                 return schema;
             }
