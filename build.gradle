@@ -96,7 +96,7 @@ tasks.withType(JavaCompile){
 }
 
 gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(run)) {
+    if (graph.hasTask(run) || graph.hasTask(testClasses)) {
         webpack.enabled = false
         npmInstall.enabled = false
     }

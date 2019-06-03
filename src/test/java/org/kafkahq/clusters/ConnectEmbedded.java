@@ -3,7 +3,6 @@ package org.kafkahq.clusters;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.connect.runtime.Connect;
-import org.apache.kafka.connect.runtime.HerderProvider;
 import org.apache.kafka.connect.runtime.Worker;
 import org.apache.kafka.connect.runtime.WorkerConfigTransformer;
 import org.apache.kafka.connect.runtime.distributed.DistributedConfig;
@@ -33,8 +32,7 @@ public class ConnectEmbedded {
 
 
         RestServer rest = new RestServer(config);
-        HerderProvider provider = new HerderProvider();
-        rest.start(provider, plugins);
+        rest.initializeServer();
 
         URI advertisedUrl = rest.advertisedUrl();
         String workerId = advertisedUrl.getHost() + ":" + advertisedUrl.getPort();
@@ -66,8 +64,6 @@ public class ConnectEmbedded {
 
         connect = new Connect(herder, rest);
         connect.start();
-
-        provider.setHerder(herder);
 
         log.debug("Startup of embedded Kafka connect at {} completed ...", connect.restUrl());
     }
