@@ -12,6 +12,7 @@ import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.config.internals.BrokerSecurityConfigs;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,8 +62,8 @@ public class Config {
         for(Class<?> cls : classes) {
             try {
                 Field declaredField = cls.getDeclaredField(docName);
-                return declaredField.get(cls.newInstance()).toString();
-            } catch (NoSuchFieldException | IllegalAccessException | InstantiationException e) { }
+                return declaredField.get(cls.getDeclaredConstructor().newInstance()).toString();
+            } catch (NoSuchFieldException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) { }
         }
 
         return null;

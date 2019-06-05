@@ -113,6 +113,7 @@ file example can be found here :[application.example.yml](application.example.ym
 ### KafkaHQ configuration 
 
 #### Topic List 
+* `kafkahq.topic.page-size` number of topics per page (default : 25)
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
@@ -123,6 +124,10 @@ file example can be found here :[application.example.yml](application.example.ym
 * `kafkahq.topic-data.size`: max record per page (default: 50)
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
+
+
+#### Schema List 
+* `kafkahq.schema.page-size` number of schemas per page (default : 25)
 
     
 ### Security
@@ -161,12 +166,16 @@ kafkahq:
       - connect/read
 ```
 
-
 #### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
   * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `roles`: Role for current users
+
+> Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
+> loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
+> [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
+
 
 ### Server 
 * `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
@@ -187,6 +196,17 @@ KafkaHQ docker image support 3 environment variables to handle configuraiton :
   /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
+
+## Monitoring endpoint 
+Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
+following micronaut configuration below.
+
+* `/info` [Info Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#infoEndpoint) with git status
+  informations.
+* `/health` [Health Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#healthEndpoint)
+* `/loggers` [Loggers Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#loggersEndpoint)
+* `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
+* `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
 ## Development Environment
 A docker-compose is provide to start a development environnement.

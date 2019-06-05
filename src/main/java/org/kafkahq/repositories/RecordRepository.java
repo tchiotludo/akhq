@@ -538,7 +538,7 @@ public class RecordRepository extends AbstractRepository {
             Splitter.on('_')
                 .withKeyValueSeparator('-')
                 .split(after)
-                .forEach((key, value) -> this.after.put(new Integer(key), new Long(value)));
+                .forEach((key, value) -> this.after.put(Integer.valueOf(key), Long.valueOf(value)));
         }
 
         public String pagination(Map<Integer, SearchEvent.Offset> offsets) {

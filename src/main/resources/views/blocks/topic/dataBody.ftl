@@ -24,19 +24,27 @@
                 ${data.getHeaders()?size}
             </#if>
         </td>
+        <td class="text-right">
+            <#if data.getKeySchemaId()??>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getKeySchemaId()}" class="badge badge-info">Key: ${data.getKeySchemaId()}</a>
+            </#if>
+            <#if data.getValueSchemaId()??>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getValueSchemaId()}" class="badge badge-info">Value: ${data.getValueSchemaId()}</a>
+            </#if>
+        </td>
         <#if canDelete == true >
             <td>
-                <#if data.getValue()??>
+                <#if data.getKeyAsBase64()??>
                     <a
                             href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKeyAsBase64()}"
-                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()} from topic ${topic.getName()}</code> ?"
+                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()!"null"} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
         </#if>
     </tr>
     <tr<#if !(data.getValue())??> class="deleted"</#if>>
-        <td colspan="${(canDelete == true)?then("6", "5")}">
+        <td colspan="${(canDelete == true)?then("7", "6")}">
             <button type="button" class="close d-none" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>

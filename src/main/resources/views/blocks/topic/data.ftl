@@ -18,7 +18,7 @@
     </button>
 
     <nav>
-        <#include "pagination.ftl" />
+        <#include "../pagination.ftl" />
     </nav>
 
     <div class="collapse navbar-collapse" id="topic-data">
@@ -34,7 +34,7 @@
                 </a>
                 <div class="dropdown-menu">
                     <#list navbar["sort"]["values"] as k, v >
-                        <a class="dropdown-item" href="${basePath}${k}">
+                        <a class="dropdown-item" href="${k}">
                             <i class="fa fa-fw fa-sort-numeric-desc" aria-hidden="true"></i> ${v?lower_case?cap_first}
                         </a>
                     </#list>
@@ -52,7 +52,7 @@
                 </a>
                 <div class="dropdown-menu">
                     <#list navbar["partition"]["values"] as k, v >
-                        <a class="dropdown-item" href="${basePath}${k}">${v}</a>
+                        <a class="dropdown-item" href="${k}">${v}</a>
                     </#list>
                 </div>
             </li>
@@ -125,6 +125,7 @@
                 <th>Partition</th>
                 <th>Offset</th>
                 <th>Headers</th>
+                <th>Schema</th>
                 <#if canDeleteRecords == true >
                 <th class="khq-row-action"></th>
                 </#if>

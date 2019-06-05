@@ -77,7 +77,7 @@
 
 <#if tab != "configs" && roles?seq_contains("topic/data/insert")>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" type="submit" class="btn btn-primary">Produce to topic</a>
+        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" class="btn btn-primary">Produce to topic</a>
     </@template.bottom>
 </#if>
 

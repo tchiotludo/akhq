@@ -27,6 +27,7 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.kafkahq.utils.CompletablePaged;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,8 @@ public class TopicController extends AbstractController {
     private Environment environment;
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
+    @Value("${kafkahq.topic.page-size:25}")
+    private Integer pageSize;
 
     @Inject
     public TopicController(TopicRepository topicRepository,
@@ -64,15 +68,37 @@ public class TopicController extends AbstractController {
 
     @View("topicList")
     @Get
-    public HttpResponse list(HttpRequest request, String cluster, Optional<String> search, Optional<TopicRepository.TopicListView> show) throws ExecutionException, InterruptedException {
+    public HttpResponse list(
+        HttpRequest request, String cluster,
+        Optional<String> search,
+        Optional<TopicRepository.TopicListView> show,
+        Optional<Integer> page
+    ) throws ExecutionException, InterruptedException {
         TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
+        List<CompletableFuture<Topic>> list = this.topicRepository.list(
+            show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
+            search
+        );
+
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        CompletablePaged<Topic> paged = new CompletablePaged<>(
+            list,
+            this.pageSize,
+            uri,
+            page.orElse(1)
+        );
 
         return this.template(
             request,
             cluster,
             "search", search,
             "topicListView", topicListView,
-            "topics", this.topicRepository.list(show.orElse(TopicRepository.TopicListView.valueOf(defaultView)), search)
+            "topics", paged.complete(),
+            "pagination", ImmutableMap.builder()
+                .put("size", paged.size())
+                .put("before", paged.before().toNormalizedURI(false).toString())
+                .put("after", paged.after().toNormalizedURI(false).toString())
+                .build()
         );
     }
 
@@ -232,8 +258,8 @@ public class TopicController extends AbstractController {
 
     private ImmutableMap<Object, Object> dataPagination(Topic topic, RecordRepository.Options options, List<Record> data, URIBuilder uri) {
         return ImmutableMap.builder()
-            .put("size", options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
-            .put("before", options.before(data, uri).toNormalizedURI(false).toString())
+            .put("size", "≈ " + (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())))
+            // .put("before", options.before(data, uri).toNormalizedURI(false).toString())
             .put("after", options.after(data, uri).toNormalizedURI(false).toString())
             .build();
     }

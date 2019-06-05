@@ -98,7 +98,7 @@
 
 <#if roles?seq_contains("topic/insert") == true>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/topic/create" type="submit" class="btn btn-primary">Create a topic</a>
+        <a href="${basePath}/${clusterId}/topic/create" class="btn btn-primary">Create a topic</a>
     </@template.bottom>
 </#if>
 

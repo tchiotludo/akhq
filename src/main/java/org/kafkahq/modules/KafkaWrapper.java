@@ -11,6 +11,7 @@ import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,7 @@ public class KafkaWrapper {
         return this.listTopics;
     }
 
-    private Map<String, TopicDescription> describeTopics = new HashMap<>();
+    private Map<String, TopicDescription> describeTopics = new ConcurrentHashMap<>();
 
     public Map<String, TopicDescription> describeTopics(List<String> topics) throws ExecutionException, InterruptedException {
         List<String> list = new ArrayList<>(topics);
@@ -83,7 +84,7 @@ public class KafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<String, List<Partition.Offsets>> describeTopicsOffsets = new HashMap<>();
+    private Map<String, List<Partition.Offsets>> describeTopicsOffsets = new ConcurrentHashMap<>();
 
     public Map<String, List<Partition.Offsets>> describeTopicsOffsets(List<String> topics) throws ExecutionException, InterruptedException {
         List<String> list = new ArrayList<>(topics);
@@ -150,7 +151,7 @@ public class KafkaWrapper {
         return this.listConsumerGroups;
     }
 
-    private Map<String, ConsumerGroupDescription> describeConsumerGroups = new HashMap<>();
+    private Map<String, ConsumerGroupDescription> describeConsumerGroups = new ConcurrentHashMap<>();
 
     public Map<String, ConsumerGroupDescription> describeConsumerGroups(List<String> topics) throws ExecutionException, InterruptedException {
         List<String> list = new ArrayList<>(topics);
@@ -176,7 +177,7 @@ public class KafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupOffset = new HashMap<>();
+    private Map<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupOffset = new ConcurrentHashMap<>();
 
     public Map<TopicPartition, OffsetAndMetadata> consumerGroupsOffsets(String groupId) throws ExecutionException, InterruptedException {
         if (!this.consumerGroupOffset.containsKey(groupId)) {
@@ -215,7 +216,11 @@ public class KafkaWrapper {
         return this.logDirs;
     }
 
-    private Map<ConfigResource, Config> describeConfigs = new HashMap<>();
+    private Map<ConfigResource, Config> describeConfigs = new ConcurrentHashMap<>();
+
+    public void clearConfigCache() {
+        this.describeConfigs = new ConcurrentHashMap<>();
+    }
 
     public Map<ConfigResource, Config> describeConfigs(ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
         List<String> list = new ArrayList<>(names);

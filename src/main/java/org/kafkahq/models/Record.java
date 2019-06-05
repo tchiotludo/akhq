@@ -24,7 +24,9 @@ public class Record {
     private final long timestamp;
     private final TimestampType timestampType;
     private final byte[] key;
+    private final Integer keySchemaId;
     private final byte[] value;
+    private final Integer valueSchemaId;
     private final Map<String, String> headers = new HashMap<>();
     private final KafkaAvroDeserializer kafkaAvroDeserializer;
 
@@ -35,7 +37,9 @@ public class Record {
         this.timestamp = record.timestamp();
         this.timestampType = record.timestampType();
         this.key = record.key();
+        this.keySchemaId = getAvroSchemaId(this.key);
         this.value = record.value();
+        this.valueSchemaId = getAvroSchemaId(this.value);
         for (Header header: record.headers()) {
             this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
         }
@@ -44,21 +48,25 @@ public class Record {
     }
 
     public String getKeyAsString() {
-        return convertToString(key);
+        return convertToString(key, keySchemaId);
     }
 
     public String getKeyAsBase64() {
-        return new String(Base64.getEncoder().encode(value));
+        if (key == null) {
+            return null;
+        } else {
+            return new String(Base64.getEncoder().encode(key));
+        }
     }
 
     public String getValueAsString() {
-        return convertToString(value);
+        return convertToString(value, valueSchemaId);
     }
 
-    private String convertToString(byte[] payload) {
+    private String convertToString(byte[] payload, Integer keySchemaId) {
         if (payload == null) {
             return null;
-        } else  if (isAvroPayload(payload)) {
+        } else  if (keySchemaId != null) {
             try {
                 GenericRecord deserialize = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
                 return deserialize.toString();
@@ -70,19 +78,18 @@ public class Record {
         }
     }
 
-    private static boolean isAvroPayload(byte[] payload) {
-        boolean convert = false;
+    private static Integer getAvroSchemaId(byte[] payload) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
 
             if (magicBytes == 0 && schemaId >= 0) {
-                convert = true;
+                return schemaId;
             }
         } catch (Exception ignore) {
 
         }
-        return convert;
+        return null;
     }
 }

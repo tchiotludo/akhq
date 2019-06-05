@@ -10,11 +10,13 @@
 
 <@template.header "Schema Registry", "schema" />
 
+<#include "blocks/navbar-search.ftl" />
+
 <@schemaTemplate.table schemas false />
 
 <#if roles?seq_contains("registry/insert") == true>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/schema/create" type="submit" class="btn btn-primary">Create a subject</a>
+        <a href="${basePath}/${clusterId}/schema/create" class="btn btn-primary">Create a subject</a>
     </@template.bottom>
 </#if>
 
