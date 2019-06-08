@@ -3,6 +3,9 @@ import "../widget";
 import ace from 'ace-builds';
 import "ace-builds/src-noconflict/theme-merbivore_soft";
 import "ace-builds/src-noconflict/mode-json";
+import "ace-builds/src-noconflict/ext-searchbox";
+import "ace-builds/src-noconflict/ext-error_marker";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 $.widget("khq.ace-editor", $.khq.widget, {
 
