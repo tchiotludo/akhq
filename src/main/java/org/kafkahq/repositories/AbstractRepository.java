@@ -25,4 +25,12 @@ abstract public class AbstractRepository {
 
         return count == split.length;
     }
+
+    public static boolean isTopicMatchRegex(Optional<String> regex, String value){
+        if(!regex.isPresent()){
+            return true;
+        }
+
+        return value.matches(regex.get());
+    }
 }

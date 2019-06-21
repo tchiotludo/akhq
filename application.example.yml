@@ -1,8 +1,8 @@
 kafkahq:
   server:
     base-path: "" # if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example: kafkahq is
-                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/".
-                  # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
+      # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/".
+    # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.kafkahq.log.access # Logger name
@@ -110,5 +110,4 @@ kafkahq:
         password: pass # Password in sha256
         roles: # Role for current users
           - topic/read
-          - group/read
-          - group/delete
+        topics: ".*" # Regex to filter the topics this user can see

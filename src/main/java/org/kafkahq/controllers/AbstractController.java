@@ -19,6 +19,7 @@ import org.kafkahq.modules.KafkaModule;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,7 @@ abstract public class AbstractController {
     List<String> defaultRoles;
 
     @Inject
-    private List<BasicAuth> auths;
+    protected List<BasicAuth> auths;
 
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
@@ -143,6 +144,20 @@ abstract public class AbstractController {
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
                 .orElseGet(() -> this.defaultRoles)
         );
+    }
+
+    protected Optional<String> topicRegexFromUser(Principal user) {
+
+        Optional<String> regex = Optional.empty();
+
+        if(user != null){
+            Optional<BasicAuth> auth = this.auths.stream().filter(e -> e.getUsername().equals(user.getName())).findFirst();
+            if(auth.isPresent()){
+                regex = Optional.of(auth.get().getTopics());
+            }
+        }
+
+        return regex;
     }
 
     @Builder

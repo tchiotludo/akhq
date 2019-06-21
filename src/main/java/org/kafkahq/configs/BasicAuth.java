@@ -14,6 +14,7 @@ public class BasicAuth {
     String username;
     String password;
     List<String> roles;
+    String topics;
 
     public BasicAuth(@Parameter String username) {
         this.username = username;

@@ -44,13 +44,13 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
-    public List<CompletableFuture<Topic>> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<CompletableFuture<Topic>> list(TopicListView view, Optional<String> search, Optional<String> topicsRegex) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name())) {
+            if (isSearchMatch(search, item.name()) && isTopicMatchRegex(topicsRegex, item.name()) && isListViewMatch(view, item.name())) {
                 list.add(item.name());
             }
         }

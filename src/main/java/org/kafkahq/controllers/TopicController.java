@@ -19,6 +19,7 @@ import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.kafkahq.configs.BasicAuth;
 import org.kafkahq.configs.Role;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
@@ -30,14 +31,19 @@ import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.utils.CompletablePaged;
 import org.reactivestreams.Publisher;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
+import static org.kafkahq.repositories.AbstractRepository.isTopicMatchRegex;
 
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/topic")
@@ -69,15 +75,18 @@ public class TopicController extends AbstractController {
     @View("topicList")
     @Get
     public HttpResponse list(
-        HttpRequest request, String cluster,
-        Optional<String> search,
-        Optional<TopicRepository.TopicListView> show,
-        Optional<Integer> page
-    ) throws ExecutionException, InterruptedException {
+            HttpRequest request, String cluster,
+            Optional<String> search,
+            Optional<TopicRepository.TopicListView> show,
+            Optional<Integer> page,
+            @Nullable Principal user
+            ) throws ExecutionException, InterruptedException {
+
+
         TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
         List<CompletableFuture<Topic>> list = this.topicRepository.list(
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
-            search
+            search, topicRegexFromUser(user)
         );
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
@@ -217,10 +226,20 @@ public class TopicController extends AbstractController {
                              Optional<Integer> partition,
                              Optional<RecordRepository.Options.Sort> sort,
                              Optional<String> timestamp,
-                             Optional<String> search)
-        throws ExecutionException, InterruptedException
-    {
-        Topic topic = this.topicRepository.findByName(topicName);
+                             Optional<String> search,
+                             @Nullable Principal user)
+            throws ExecutionException, InterruptedException, URISyntaxException {
+
+        Topic topic = null;
+
+        if(!isTopicMatchRegex(topicRegexFromUser(user), topicName)) {
+            MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/login/unauthorized"));
+            return response;
+        }else{
+            topic = this.topicRepository.findByName(topicName);
+        }
+
+
 
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         after.ifPresent(options::setAfter);
