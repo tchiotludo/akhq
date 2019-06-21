@@ -1,25 +1,37 @@
 package org.kafkahq.controllers;
 
+import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.Role;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
+import org.kafkahq.utils.CompletablePaged;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Secured(Role.ROLE_REGISTRY_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
+
+    @Value("${kafkahq.schema.page-size:25}")
+    private Integer pageSize;
 
     @Inject
     public SchemaController(SchemaRegistryRepository schemaRepository) {
@@ -28,12 +40,52 @@ public class SchemaController extends AbstractController {
 
     @View("schemaList")
     @Get
-    public HttpResponse list(HttpRequest request, String cluster) throws IOException, RestClientException {
+    public HttpResponse list(
+        HttpRequest request,
+        String cluster,
+        Optional<String> search,
+        Optional<Integer> page
+    ) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        List<CompletableFuture<Schema>> list = this.schemaRepository.getAll(cluster, search);
+
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        CompletablePaged<Schema> paged = new CompletablePaged<>(
+            list,
+            this.pageSize,
+            uri,
+            page.orElse(1)
+        );
+
         return this.template(
             request,
             cluster,
-            "schemas", this.schemaRepository.getAll(cluster)
+            "schemas", paged.complete(),
+            "search", search,
+            "pagination", ImmutableMap.builder()
+                .put("size", paged.size())
+                .put("before", paged.before().toNormalizedURI(false).toString())
+                .put("after", paged.after().toNormalizedURI(false).toString())
+                .build()
         );
+    }
+
+    @Get("id/{id}")
+    public HttpResponse redirectId(HttpRequest request, String cluster, Integer id) throws IOException, RestClientException, URISyntaxException, ExecutionException, InterruptedException {
+        Schema find = this.schemaRepository.getById(cluster, id);
+
+        if (find != null) {
+            return HttpResponse.redirect(this.uri("/" + cluster + "/schema/" + find.getSubject() + "/version#" + id));
+        } else {
+            MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/schema"));
+
+            this.toast(response, AbstractController.Toast.builder()
+                .message("Unable to find avro schema for id '" + id + "'")
+                .type(AbstractController.Toast.Type.error)
+                .build()
+            );
+
+            return response;
+        }
     }
 
     @Secured(Role.ROLE_REGISTRY_INSERT)

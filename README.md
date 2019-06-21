@@ -125,6 +125,10 @@ file example can be found here :[application.example.yml](application.example.ym
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
+
+#### Schema List 
+* `kafkahq.schema.page-size` number of schemas per page (default : 25)
+
     
 ### Security
 * `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
@@ -192,6 +196,17 @@ KafkaHQ docker image support 3 environment variables to handle configuraiton :
   /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
+
+## Monitoring endpoint 
+Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
+following micronaut configuration below.
+
+* `/info` [Info Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#infoEndpoint) with git status
+  informations.
+* `/health` [Health Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#healthEndpoint)
+* `/loggers` [Loggers Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#loggersEndpoint)
+* `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
+* `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
 ## Development Environment
 A docker-compose is provide to start a development environnement.

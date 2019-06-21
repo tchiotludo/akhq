@@ -10,6 +10,8 @@
 
 <@template.header "Schema Registry", "schema" />
 
+<#include "blocks/navbar-search.ftl" />
+
 <@schemaTemplate.table schemas false />
 
 <#if roles?seq_contains("registry/insert") == true>

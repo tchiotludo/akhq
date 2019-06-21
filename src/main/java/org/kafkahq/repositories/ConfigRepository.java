@@ -63,10 +63,18 @@ public class ConfigRepository extends AbstractRepository {
     }
 
     private void update(String clusterId, ConfigResource.Type type, String name, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
-        List<ConfigEntry> entries = configs
+        List<ConfigEntry> entries = new ArrayList<>();
+
+        this.find(type, Collections.singletonList(name))
+            .get(name)
+            .stream()
+            .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
+            .forEach(config -> entries.add(new ConfigEntry(config.getName(), config.getValue())));
+
+        configs
             .stream()
             .map(config -> new ConfigEntry(config.getName(), config.getValue()))
-            .collect(Collectors.toList());
+            .forEach(entries::add);
 
         kafkaModule.getAdminClient(clusterId)
             .alterConfigs(ImmutableMap.of(
@@ -75,6 +83,8 @@ public class ConfigRepository extends AbstractRepository {
             ))
             .all()
             .get();
+
+        kafkaWrapper.clearConfigCache();
     }
 
     public static List<org.kafkahq.models.Config> updatedConfigs(Map<String, String> request, List<org.kafkahq.models.Config> configs) {

@@ -1,8 +1,6 @@
 version: '3.6'
 
 volumes:
-  gradle-cache:
-    driver: local
   zookeeper-data:
     driver: local
   zookeeper-log:
@@ -17,7 +15,6 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-      - gradle-cache:/home/gradle/.gradle
     ports:
       - 127.11.8.17:8080:8080
     depends_on:

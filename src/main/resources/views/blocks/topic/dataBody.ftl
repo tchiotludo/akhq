@@ -24,6 +24,14 @@
                 ${data.getHeaders()?size}
             </#if>
         </td>
+        <td class="text-right">
+            <#if data.getKeySchemaId()??>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getKeySchemaId()}" class="badge badge-info">Key: ${data.getKeySchemaId()}</a>
+            </#if>
+            <#if data.getValueSchemaId()??>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getValueSchemaId()}" class="badge badge-info">Value: ${data.getValueSchemaId()}</a>
+            </#if>
+        </td>
         <#if canDelete == true >
             <td>
                 <#if data.getKeyAsBase64()??>
@@ -36,7 +44,7 @@
         </#if>
     </tr>
     <tr<#if !(data.getValue())??> class="deleted"</#if>>
-        <td colspan="${(canDelete == true)?then("6", "5")}">
+        <td colspan="${(canDelete == true)?then("7", "6")}">
             <button type="button" class="close d-none" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>

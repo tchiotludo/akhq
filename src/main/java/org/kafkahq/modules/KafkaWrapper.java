@@ -218,6 +218,10 @@ public class KafkaWrapper {
 
     private Map<ConfigResource, Config> describeConfigs = new ConcurrentHashMap<>();
 
+    public void clearConfigCache() {
+        this.describeConfigs = new ConcurrentHashMap<>();
+    }
+
     public Map<ConfigResource, Config> describeConfigs(ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
         List<String> list = new ArrayList<>(names);
         list.removeIf((value) -> this.describeConfigs.entrySet()
