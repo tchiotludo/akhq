@@ -6,6 +6,7 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="displayTopic" type="java.lang.Boolean" -->
 
 <#assign canDelete = roles?seq_contains("topic/data/delete") && canDeleteRecords>
 <#assign i=0>
@@ -13,6 +14,9 @@
 <#list datas as data>
     <#assign i++>
     <tr class="reduce <#if !(data.getValueAsString())??>deleted</#if>">
+        <#if displayTopic?? && displayTopic == true>
+            <td>${data.getTopic()}</td>
+        </#if>
         <td><code class="key">${data.getKeyAsString()!"null"}</code></td>
         <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
         <td class="text-right">${data.getPartition()}</td>
@@ -44,7 +48,7 @@
         </#if>
     </tr>
     <tr<#if !(data.getValue())??> class="deleted"</#if>>
-        <td colspan="${(canDelete == true)?then("7", "6")}">
+        <td colspan="${(canDelete == true || (displayTopic?? && displayTopic) == true)?then("7", "6")}">
             <button type="button" class="close d-none" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>

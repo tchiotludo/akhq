@@ -314,7 +314,7 @@ public class RecordRepository extends AbstractRepository {
         */
     }
 
-    private Record newRecord(ConsumerRecord<byte[], byte[]> record, Options options) {
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
         return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId));
     }
 
@@ -420,7 +420,11 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    private boolean searchFilter(Options options, Record record) {
+    private boolean searchFilter(BaseOptions options, Record record) {
+        if (options.getSearch() == null) {
+            return true;
+        }
+
         if (record.getKeyAsString() != null && containsAll(options.getSearch(), record.getKeyAsString())) {
             return true;
         }
@@ -503,28 +507,104 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
+    public Flowable<Event<TailEvent>> tail(TailOptions options) throws ExecutionException, InterruptedException {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+
+        List<Topic> topics = topicRepository.findByName(options.topics);
+
+        consumer
+            .assign(topics
+                .stream()
+                .flatMap(topic -> topic.getPartitions()
+                    .stream()
+                    .map(partition -> new TopicPartition(topic.getName(), partition.getId()))
+                )
+                .collect(Collectors.toList())
+            );
+
+        if (options.getAfter() != null) {
+            options
+                .getAfter()
+                .forEach(s -> {
+                    String[] split = s.split(",");
+                    consumer.seek(
+                        new TopicPartition(split[0], Integer.parseInt(split[1])),
+                        Long.parseLong(split[2])
+                    );
+                });
+        }
+
+        return Flowable.generate(TailEvent::new, (state, subscriber) -> {
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+
+            List<Record> list = new ArrayList<>();
+
+            for (ConsumerRecord<byte[], byte[]> record : records) {
+
+                state.offsets.put(
+                    ImmutableMap.of(
+                        record.topic(),
+                        record.partition()
+                    ),
+                    record.offset()
+                );
+
+                Record current = newRecord(record, options);
+                if (searchFilter(options, current)) {
+                    list.add(current);
+                    log.trace(
+                        "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
+                        record.topic(),
+                        record.partition(),
+                        record.offset(),
+                        record.key()
+                    );
+                }
+            }
+
+            state.records = list;
+            subscriber.onNext(Event.of(state).name("tailBody"));
+
+            return state;
+        });
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class TailEvent {
+        private List<Record> records = new ArrayList<>();
+        private Map<Map<String, Integer>, Long> offsets = new HashMap<>();
+    }
+
     @ToString
     @EqualsAndHashCode
     @Getter
     @Setter
-    public static class Options {
+    abstract public static class BaseOptions {
+        protected String clusterId;
+        protected String search;
+    }
+
+    @ToString
+    @EqualsAndHashCode(callSuper = true)
+    @Getter
+    @Setter
+    public static class Options extends BaseOptions {
         public enum Sort {
             OLDEST,
             NEWEST,
         }
-        private String clusterId;
         private String topic;
         private int size;
         private Map<Integer, Long> after = new HashMap<>();
         private Sort sort;
         private Integer partition;
         private Long timestamp;
-        private String search;
-        private String schemaKey;
-        private String schemaValue;
 
         public Options(Environment environment, String clusterId, String topic) {
             this.sort = environment.getProperty("kafkahq.topic-data.sort", Sort.class, Sort.OLDEST);
+            //noinspection ConstantConditions
             this.size = environment.getProperty("kafkahq.topic-data.size", Integer.class, 50);
 
             this.clusterId = clusterId;
@@ -596,6 +676,20 @@ public class RecordRepository extends AbstractRepository {
             }
 
             return uri.addParameter("before", pagination(records));
+        }
+    }
+
+    @ToString
+    @EqualsAndHashCode(callSuper = true)
+    @Getter
+    @Setter
+    public static class TailOptions extends BaseOptions {
+        private List<String> topics;
+        protected List<String> after;
+
+        public TailOptions(String clusterId, List<String> topics) {
+            this.clusterId = clusterId;
+            this.topics = topics;
         }
     }
 

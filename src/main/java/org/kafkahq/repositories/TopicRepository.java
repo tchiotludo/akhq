@@ -45,6 +45,20 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<CompletableFuture<Topic>> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+        return all(view, search)
+            .stream()
+            .map(s -> CompletableFuture.supplyAsync(() -> {
+                try {
+                    return this.findByName(s);
+                }
+                catch(ExecutionException | InterruptedException ex) {
+                    throw new CompletionException(ex);
+                }
+            }))
+            .collect(Collectors.toList());
+    }
+
+    public List<String> all(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
@@ -55,18 +69,9 @@ public class TopicRepository extends AbstractRepository {
             }
         }
 
-        list.sort(Comparator.comparing(s -> s));
+        list.sort(Comparator.comparing(String::toLowerCase));
 
-        return list.stream()
-            .map(s -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    return this.findByName(s);
-                }
-                catch(ExecutionException | InterruptedException ex) {
-                    throw new CompletionException(ex);
-                }
-            }))
-            .collect(Collectors.toList());
+        return list;
     }
 
     public boolean isListViewMatch(TopicListView view, String value) {

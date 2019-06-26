@@ -52,6 +52,10 @@ table {
             }
         }
 
+        tr.fade-in {
+            animation: fade-in 0.3s;
+        }
+
         tr:hover {
             pre code:after {
                 background: linear-gradient(transparent, $table-hover-bg);
@@ -100,5 +104,16 @@ table {
                 background-color: lighten($table-bg, 0.1);
             }
         }
+    }
+}
+
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }

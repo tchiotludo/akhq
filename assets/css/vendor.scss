@@ -27,3 +27,29 @@ $bs-datetimepicker-primary-border-color: $dropdown-border-color;
 @import "../../node_modules/tempusdominus-bootstrap-4/src/sass/tempusdominus-bootstrap-4";
 @import "../../node_modules/highlight.js/styles/darkula.css";
 
+@import "../../node_modules/bootstrap-select/sass/bootstrap-select";
+
+.bootstrap-select {
+    width: auto !important;
+    .dropdown-toggle {
+        border-color: $input-border-color;
+    }
+
+    .dropdown-menu {
+        min-width: 320px;
+        li a {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .form-inline {
+        .bootstrap-select {
+            width: 100% !important;
+        }
+
+    }
+}
+

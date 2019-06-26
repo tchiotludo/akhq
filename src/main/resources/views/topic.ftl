@@ -77,7 +77,13 @@
 
 <#if tab != "configs" && roles?seq_contains("topic/data/insert")>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" class="btn btn-primary">Produce to topic</a>
+        <a href="${basePath}/${clusterId}/tail/?topics=${topic.getName()}" class="btn btn-secondary mr-2">
+            <i class="fa fa-fw fa-level-down" aria-hidden="true"></i> Live Tail
+        </a>
+
+        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" class="btn btn-primary">
+            <i class="fa fa-plus" aria-hidden="true"></i> Produce to topic
+        </a>
     </@template.bottom>
 </#if>
 

@@ -64,9 +64,14 @@
                             <a href="${basePath}/${clusterId}/node"><i class="fa fa-fw fa-laptop" aria-hidden="true"></i> Nodes</a>
                         </li>
                     </#if>
-                    <#if roles?seq_contains("group") == true>
+                    <#if roles?seq_contains("topic") == true>
                         <li class="${(tab == "topic")?then("active", "")}">
                             <a href="${basePath}/${clusterId}/topic"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Topics</a>
+                        </li>
+                    </#if>
+                    <#if roles?seq_contains("topic/data") == true>
+                        <li class="${(tab == "tail")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/tail"><i class="fa fa-fw fa-level-down" aria-hidden="true"></i> Live Tail</a>
                         </li>
                     </#if>
                     <#if roles?seq_contains("group") == true>
@@ -108,7 +113,7 @@
                 <#if tab != "">
                     <div class="title">
                         <h1>
-                            <button type="button" id="khq-sidebar-collapse" class="btn btn-dark d-md-none">
+                            <button type="button" id="khq-sidebar-collapse" class="btn btn-secondary d-md-none">
                                 <i class="fa fa-bars"></i>
                             </button>
 

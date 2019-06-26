@@ -7,10 +7,12 @@ import '../modules/datas/data-confirm';
 import '../modules/datas/highlight';
 import '../modules/datas/search-navbar';
 import '../modules/datas/search-sse';
+import '../modules/datas/tail-sse';
 import '../modules/forms/ace';
 import '../modules/forms/config';
 import '../modules/forms/get';
 import '../modules/forms/multiple';
+import '../modules/forms/select';
 import '../modules/tables/row-action';
 import '../modules/templates/sidebar';
 import '../modules/templates/toast'

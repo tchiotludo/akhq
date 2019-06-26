@@ -50,6 +50,50 @@ h3.logo {
     border: 1px solid #262424;
 }
 
+.khq-sticky {
+    position: sticky;
+    z-index: 100;
+    top: 0;
+}
+
+.khq-nav {
+    @include media-breakpoint-up(lg) {
+        input, button, select, .bootstrap-select{
+            margin-right: ($spacer * .5)
+        }
+    }
+
+    @include media-breakpoint-down(md) {
+        input, button, select {
+            margin-top: ($spacer * .5)
+        }
+
+        .navbar-toggler {
+            margin-top: 0;
+        }
+
+        input, .bootstrap-select, select {
+            width: 100% !important;
+        }
+
+        button.btn-primary {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-group {
+            width: 100%;
+        }
+    }
+
+    .btn-group {
+        button {
+            margin-right: 0;
+        }
+    }
+
+}
+
 .ace_editor, .table-responsive {
     ::-webkit-scrollbar {
         width: $scrollbar-width;

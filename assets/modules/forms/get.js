@@ -9,13 +9,11 @@ $.widget("khq.form-get", $.khq.widget, {
 
         self.element.on("submit", function (e) {
             e.preventDefault();
-            let url = self._url();
+            let url = self._url().search("");
 
             $.each($(this).serializeArray(), function (key, value) {
                 if (value.value) {
-                    url.setSearch(value.name, value.value);
-                } else {
-                    url.removeSearch(value.name);
+                    url.addSearch(value.name, value.value);
                 }
             });
 

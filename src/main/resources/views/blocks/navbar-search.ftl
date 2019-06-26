@@ -3,7 +3,7 @@
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
 <#-- @ftlvariable name="topicListView" type="org.kafkahq.repositories.TopicRepository.TopicListView" -->
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter">
+<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-nav">
     <button class="navbar-toggler"
             type="button"
             data-toggle="collapse"
@@ -21,7 +21,7 @@
     </#if>
     
     <div class="collapse navbar-collapse" id="navbar-search">
-        <form class="form-inline mr-auto mt-sm-2 mt-2 khq-form-get" method="get">
+        <form class="form-inline mr-auto khq-form-get" method="get">
             <input class="form-control"
                    name="search"
                    placeholder="Search"
@@ -31,7 +31,7 @@
                         value="${search.get()}"
                     </#if> />
             <#if topicListView??>
-                <select name="show" class="custom-select ml-sm-2 mt-2 mt-sm-0">
+                <select name="show" class="khq-select" data-style="btn-white">
                     <option ${(topicListView.toString() == "ALL")?then("selected", "")} value="ALL">Show all topics</option>
                     <option ${(topicListView.toString() == "HIDE_INTERNAL")?then("selected", "")} value="HIDE_INTERNAL">Hide internal topics</option>
                     <option ${(topicListView.toString() == "HIDE_INTERNAL_STREAM")?then("selected", "")} value="HIDE_INTERNAL_STREAM">Hide internal & stream topics</option>
@@ -39,8 +39,8 @@
                 </select>
             </#if>
 
-            <button class="btn btn-primary ml-sm-2 mt-2 mt-sm-0" type="submit">
-                <span class="d-sm-none">Search </span><i class="fa fa-search"></i>
+            <button class="btn btn-primary" type="submit">
+                <span class="d-md-none">Search </span><i class="fa fa-search"></i>
             </button>
         </form>
     </div>

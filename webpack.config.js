@@ -31,6 +31,7 @@ module.exports = (env, argv) => {
                 'bytes',
                 'humanize-duration',
                 'ace-builds',
+                'bootstrap-select',
                 path.join(srcDirectory, 'css/vendor.scss')
             ],
             main: [

@@ -43,6 +43,11 @@ $danger: $red !default;
 $light: $gray-800 !default;
 $dark: $gray-500 !default;
 
+$theme-colors: (
+    "tertiary": $tertiary,
+    "white": $white
+);
+
 $yiq-contrasted-threshold: 175 !default;
 
 // Body
@@ -62,8 +67,6 @@ $table-dark-color: $white !default;
 $table-hover-bg: darken($primary, 25%);
 
 // Forms
-$input-border-width: 0;
-$input-border-color: transparent !default;
 $input-group-addon-color: $gray-500 !default;
 $input-group-addon-bg: $gray-700 !default;
 $input-disabled-bg: $gray-500 !default;

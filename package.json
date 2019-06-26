@@ -6,6 +6,7 @@
   "dependencies": {
     "ace-builds": "^1.4.4",
     "bootstrap": "^4.3.1",
+    "bootstrap-select": "^1.13.10",
     "bytes": "^3.1.0",
     "font-awesome": "^4.7.0",
     "highlight.js": "^9.15.6",

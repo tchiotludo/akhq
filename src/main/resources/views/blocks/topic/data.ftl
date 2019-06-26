@@ -6,7 +6,7 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter">
+<nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-nav">
     <button class="navbar-toggler"
             type="button"
             data-toggle="collapse"
@@ -134,7 +134,7 @@
         <tbody>
             <#if datas?size == 0 && !navbar["search"]["current"].isPresent()>
                 <tr>
-                    <td colspan="${canDeleteRecords?then("6", "5")}">
+                    <td colspan="${canDeleteRecords?then("7", "6")}">
                         <div class="alert alert-info mb-0" role="alert">
                             No data available
                         </div>

@@ -39,7 +39,10 @@ $.widget("khq.search-sse", $.khq.widget, {
             let searchBody = JSON.parse(e.data);
 
             if (searchBody.body) {
-                table.append(searchBody.body);
+                const tr = $(searchBody.body);
+                tr.addClass("fade-in");
+                table.append(tr);
+
                 $(document).trigger('khq.refresh');
             }
 
