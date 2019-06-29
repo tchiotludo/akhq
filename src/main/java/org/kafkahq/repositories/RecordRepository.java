@@ -20,6 +20,7 @@ import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.Debug;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -47,7 +48,7 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public List<Record> consume(Options options) throws ExecutionException, InterruptedException {
-        return this.kafkaModule.debug(() -> {
+        return Debug.call(() -> {
             Topic topicsDetail = topicRepository.findByName(options.topic);
 
             if (options.sort == Options.Sort.OLDEST) {
@@ -55,7 +56,7 @@ public class RecordRepository extends AbstractRepository {
             } else {
                 return consumeNewest(topicsDetail, options);
             }
-        }, "Consume with options {}", options);
+        }, "Consume with options {}", Collections.singletonList(options.toString()));
     }
 
     private List<Record> consumeOldest(Topic topic, Options options) {
@@ -89,7 +90,7 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public List<TimeOffset> getOffsetForTime(String clusterId, List<org.kafkahq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
-        return this.kafkaModule.debug(() -> {
+        return Debug.call(() -> {
             Map<TopicPartition, Long> map = new HashMap<>();
 
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(clusterId);
@@ -115,7 +116,7 @@ public class RecordRepository extends AbstractRepository {
 
             return collect;
 
-        }, "Offsets for {} Timestamp {}", partitions, timestamp);
+        }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
     }
 
     @ToString

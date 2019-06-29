@@ -17,7 +17,6 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.AbstractProperties;
 import org.kafkahq.configs.Connection;
 import org.kafkahq.configs.Default;
-import org.kafkahq.utils.Debug;
 import org.sourcelab.kafka.connect.apiclient.Configuration;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
@@ -28,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -40,21 +37,6 @@ public class KafkaModule {
 
     @Inject
     private List<Default> defaults;
-
-    public <T> T debug(Callable<T> task, String format, Object... arguments) throws ExecutionException, InterruptedException {
-        long startTime = System.currentTimeMillis();
-        T call;
-
-        try {
-            call = task.call();
-            log.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
-            return call;
-        } catch (InterruptedException | ExecutionException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new RuntimeException("Error for " + format, exception);
-        }
-    }
 
     public List<String> getClustersList() {
         return this.connections

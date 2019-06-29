@@ -9,6 +9,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
+import org.kafkahq.utils.Lock;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,14 +31,14 @@ public class KafkaWrapper {
 
     public DescribeClusterResult describeCluster() throws ExecutionException, InterruptedException {
         if (this.cluster == null) {
-            this.cluster = this.kafkaModule.debug(() -> {
+            this.cluster = Lock.call(() -> {
                 DescribeClusterResult cluster = kafkaModule.getAdminClient(clusterId).describeCluster();
 
                 cluster.clusterId().get();
                 cluster.nodes().get();
                 cluster.controller().get();
                 return cluster;
-            }, "Cluster");
+            }, "Cluster", null);
         }
 
         return this.cluster;
@@ -47,11 +48,12 @@ public class KafkaWrapper {
 
     public Collection<TopicListing> listTopics() throws ExecutionException, InterruptedException {
         if (this.listTopics == null) {
-            this.listTopics = this.kafkaModule.debug(
+            this.listTopics = Lock.call(
                 () -> kafkaModule.getAdminClient(clusterId).listTopics(
                     new ListTopicsOptions().listInternal(true)
                 ).listings().get(),
-                "List topics"
+                "List topics",
+                null
             );
         }
 
@@ -65,7 +67,7 @@ public class KafkaWrapper {
         list.removeIf(value -> this.describeTopics.containsKey(value));
 
         if (list.size() > 0) {
-            Map<String, TopicDescription> description = this.kafkaModule.debug(
+            Map<String, TopicDescription> description = Lock.call(
                 () -> kafkaModule.getAdminClient(clusterId)
                     .describeTopics(list)
                     .all()
@@ -91,7 +93,7 @@ public class KafkaWrapper {
         list.removeIf(value -> this.describeTopicsOffsets.containsKey(value));
 
         if (list.size() > 0) {
-            Map<String, List<Partition.Offsets>> finalOffsets = this.kafkaModule.debug(
+            Map<String, List<Partition.Offsets>> finalOffsets = Lock.call(
                 () -> {
                     List<TopicPartition> collect = this.describeTopics(topics).entrySet()
                         .stream()
@@ -142,9 +144,10 @@ public class KafkaWrapper {
 
     public Collection<ConsumerGroupListing> listConsumerGroups() throws ExecutionException, InterruptedException {
         if (this.listConsumerGroups == null) {
-            this.listConsumerGroups = this.kafkaModule.debug(
+            this.listConsumerGroups = Lock.call(
                 () -> kafkaModule.getAdminClient(clusterId).listConsumerGroups().all().get(),
-                "List ConsumerGroups"
+                "List ConsumerGroups",
+                null
             );
         }
 
@@ -158,7 +161,7 @@ public class KafkaWrapper {
         list.removeIf(value -> this.describeConsumerGroups.containsKey(value));
 
         if (list.size() > 0) {
-            Map<String, ConsumerGroupDescription> description = this.kafkaModule.debug(
+            Map<String, ConsumerGroupDescription> description = Lock.call(
                 () -> kafkaModule.getAdminClient(clusterId)
                     .describeConsumerGroups(list)
                     .all()
@@ -181,13 +184,13 @@ public class KafkaWrapper {
 
     public Map<TopicPartition, OffsetAndMetadata> consumerGroupsOffsets(String groupId) throws ExecutionException, InterruptedException {
         if (!this.consumerGroupOffset.containsKey(groupId)) {
-            Map<TopicPartition, OffsetAndMetadata> description = this.kafkaModule.debug(
+            Map<TopicPartition, OffsetAndMetadata> description = Lock.call(
                 () -> kafkaModule.getAdminClient(clusterId)
                     .listConsumerGroupOffsets(groupId)
                     .partitionsToOffsetAndMetadata()
                     .get(),
                 "ConsumerGroup Offsets {}",
-                groupId
+                Collections.singletonList(groupId)
             );
 
             this.consumerGroupOffset.put(groupId, description);
@@ -200,7 +203,7 @@ public class KafkaWrapper {
 
     public Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>> describeLogDir() throws ExecutionException, InterruptedException {
         if (this.logDirs == null) {
-            this.logDirs = this.kafkaModule.debug(() ->
+            this.logDirs = Lock.call(() ->
                     kafkaModule.getAdminClient(clusterId)
                         .describeLogDirs(this.describeCluster().nodes().get()
                             .stream()
@@ -209,7 +212,8 @@ public class KafkaWrapper {
                         )
                         .all()
                         .get(),
-                "List Log dir"
+                "List Log dir",
+                null
             );
         }
 
@@ -231,7 +235,7 @@ public class KafkaWrapper {
         );
 
         if (list.size() > 0) {
-            Map<ConfigResource, Config> description = this.kafkaModule.debug(() -> kafkaModule.getAdminClient(clusterId)
+            Map<ConfigResource, Config> description = Lock.call(() -> kafkaModule.getAdminClient(clusterId)
                 .describeConfigs(list.stream()
                     .map(s -> new ConfigResource(type, s))
                     .collect(Collectors.toList())

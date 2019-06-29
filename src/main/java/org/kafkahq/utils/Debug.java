@@ -5,6 +5,10 @@ import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+
 public class Debug {
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
     private static final String name = Thread.currentThread().getStackTrace()[2].getClassName();
@@ -53,6 +57,22 @@ public class Debug {
 
         for (Object arg : args) {
             log.trace("\033[46;30m " + arg.getClass().getName() + " \033[0m " + toJson(arg));
+        }
+    }
+
+    public static <T> T call(Callable<T> task, String format, List<String> arguments) throws ExecutionException, InterruptedException {
+        long startTime = System.currentTimeMillis();
+        T call;
+
+        try {
+            call = task.call();
+
+            log.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
+            return call;
+        } catch (InterruptedException | ExecutionException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new RuntimeException("Error for " + format, exception);
         }
     }
 }

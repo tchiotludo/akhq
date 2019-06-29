@@ -71,6 +71,7 @@ kafkahq:
         isolation.level: read_committed
         group.id: KafkaHQ
         enable.auto.commit: "false"
+        default.api.timeout.ms: 5000
 
   topic:
     default-view: HIDE_INTERNAL
