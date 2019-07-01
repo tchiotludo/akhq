@@ -1,5 +1,6 @@
 # KafkaHQ
 [![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
+![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/kafkahq.svg)
 
 > Kafka GUI for topics, topics data, consumers group, schema registry, connect and more...
 
