@@ -16,7 +16,7 @@ kafkahq:
 
   # list of kafka cluster available for kafkahq
   connections:
-    my-cluster-plain-text: # url friendly name for the cluster
+    my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
       properties: # standard kafka properties (optional)
         bootstrap.servers: "kafka:9092"
       schema-registry:

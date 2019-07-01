@@ -95,7 +95,7 @@ file example can be found here :[application.example.yml](application.example.ym
 
 ### Kafka cluster configuration 
 * `kafkahq.connections` is a key value configuration with :
-  * `key`: must be an url friendly string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
+  * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url 
