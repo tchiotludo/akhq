@@ -1,7 +1,7 @@
 kafkahq:
   server:
-    base-path: "" # if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example: kafkahq is
-                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq/".
+    base-path: "" # if behind a reverse proxy, path to kafkahq without trailing slash (optional). Example: kafkahq is
+                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq".
                   # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
