@@ -234,6 +234,23 @@ KafkaHQ docker image support 3 environment variables to handle configuraiton :
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
 
+#### How to mount configuration file
+
+Take care when you mount configuration files to not remove kafkahq files located on /app.
+You need to explicitely mount the `/app/application.yml` and not mount the `/app` directory.
+This will remove the KafkaHQ binnaries and give you this error: `
+/usr/local/bin/docker-entrypoint.sh: 9: exec: ./kafkahq: not found`
+
+```yaml
+volumeMounts:
+- mountPath: /app/application.yml
+  subPath: application.yml
+  name: config
+  readOnly: true
+
+``` 
+
+
 ## Monitoring endpoint 
 Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
 following micronaut configuration below.
