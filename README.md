@@ -111,6 +111,42 @@ file example can be found here :[application.example.yml](application.example.ym
     * `ssl.key-store`: /app/truststore.jks 
     * `ssl.key-store-password`: key-store-password
 
+#### SSL Kafka Cluster with basic auth
+Configuration example for kafka cluster secured by ssl for saas provider like aiven (full https & basic auth):
+
+You need to generate a jks & p12 file from pem, cert files give by saas provider.
+```bash
+openssl pkcs12 -export -inkey service.key -in service.cert -out client.keystore.p12 -name service_key
+keytool -import -file ca.pem -alias CA -keystore client.truststore.jks
+```
+
+Configurations will look like this example: 
+
+```yaml
+kafkahq:
+  connections:
+    ssl-dev:
+      properties:
+        bootstrap.servers: "{{host}}.aivencloud.com:12835"
+        security.protocol: SSL
+        ssl.truststore.location: {{path}}/avnadmin.truststore.jks
+        ssl.truststore.password: {{password}}
+        ssl.keystore.type: "PKCS12"
+        ssl.keystore.location: {{path}}/avnadmin.keystore.p12
+        ssl.keystore.password: {{password}}
+        ssl.key.password: {{password}}
+      schema-registry:
+        url: "https://{{host}}.aivencloud.com:12838"
+        basic-auth:
+          username: avnadmin
+          password: {{password}}
+      connect:
+        url: "https://{{host}}.aivencloud.com:{{port}}"
+        basic-auth:
+          username: avnadmin
+          password: {{password}}
+```
+
 ### KafkaHQ configuration 
 
 #### Topic List 
