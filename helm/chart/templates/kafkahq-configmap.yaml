@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kafkahq.fullname" . }}-kafkahq-configmap
+  labels:
+    app: {{ template "kafkahq.name" . }}
+    chart: {{ template "kafkahq.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  application.yml: |+
+     kafkahq:
+        server:
+          access-log: # Access log configuration (optional)
+            enabled: true # true by default
+            name: org.kafkahq.log.access # Logger name
+            format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
+
+        # default kafka properties for each clients, available for admin / producer / consumer (optional)
+        clients-defaults:
+          consumer:
+            properties:
+              isolation.level: read_committed
+
+        # list of kafka cluster available for kafkahq
+        connections:
+          kafka-server: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
+            properties: # standard kafka properties (optional)
+              bootstrap.servers: {{ .Values.kafka.bootstrapServers }}
+            {{ if .Values.schemaRegistry.url }}
+            schema-registry:
+              url: {{ .Values.schemaRegistry.url }}
+            {{ end }}
+            {{ if .Values.connect.url }}
+            connect:
+              url: {{ .Values.connect.url }}
+            {{ end }}
+        # Topic list display options (optional)
+        topic:
+          page-size: 15 # number of topics per page (default : 25)
+          default-view: {{ .Values.topic.defaultView }} # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
+          internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
+            - "^_.*$"
+            - "^.*_schemas$"
+            - "^.*connect-config$"
+            - "^.*connect-offsets$1"
+            - "^.*connect-status$"
+          stream-regexps: # list of regexp to be considered as internal stream topic
+            - "^.*-changelog$"
+            - "^.*-repartition$"
+            - "^.*-rekey$"
+
+        # Topic display data options (optional)
+        topic-data:
+          sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
+          size: 30 # max record per page (default: 50)
+          poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
+
+        {{ if .Values.readOnly }}
+        security:
+          default-roles:
+            - topic/read
+            - node/read
+            - topic/data/read
+            - group/read
+            - registry/read
+            - connect/read
+        {{ end }}

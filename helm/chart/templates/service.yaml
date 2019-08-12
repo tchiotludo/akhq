@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kafkahq.fullname" . }}
+  labels:
+    app: {{ template "kafkahq.name" . }}
+    chart: {{ template "kafkahq.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+      - name: kafka-hq
+        port: {{ .Values.servicePort }}
+  selector:
+    app: {{ template "kafkahq.name" . }}
+    release: {{ .Release.Name }}

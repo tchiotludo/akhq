@@ -1,0 +1,86 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "kafkahq.fullname" . }}
+  labels:
+    app: {{ template "kafkahq.name" . }}
+    chart: {{ template "kafkahq.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "kafkahq.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/kafkahq-configmap.yaml") . | sha256sum }}
+        {{- if .Values.prometheus.enabled }}
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '{{ .Values.prometheus.port }}'
+        prometheus.io/path: '{{ .Values.prometheus.path }}'
+        {{- end }}
+      labels:
+        app: {{ template "kafkahq.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ template "kafkahq.name" . }}
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+        # https://github.com/tchiotludo/kafkahq/blob/0.9.0/docker/app/jvm.options
+        command:
+        - java
+        - -server
+        - -Dfile.encoding=UTF-8
+        - -Djava.awt.headless=true
+        - -XX:+HeapDumpOnOutOfMemoryError
+        - -Dfile.encoding=UTF-8
+        - -Duser.timezone=UTC
+        - -Dmicronaut.config.files=/etc/kafkahq/application.yml
+        - -Dcom.sun.management.jmxremote
+        - -Dcom.sun.management.jmxremote.port=8686
+        - -Dcom.sun.management.jmxremote.local.only=false
+        - -Dcom.sun.management.jmxremote.authenticate=false
+        - -Dcom.sun.management.jmxremote.ssl=false
+        - -jar
+        - kafkahq.jar
+        env:
+          - name: "_JAVA_OPTIONS"
+            value: {{ toYaml .Values.jvmOptions | trimSuffix "\n" | quote }}
+        ports:
+          - name: server
+            containerPort: {{ .Values.servicePort}}
+            protocol: TCP
+        volumeMounts:
+        - name: kafkahq-config
+          mountPath: /etc/kafkahq
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          failureThreshold: 24
+          httpGet:
+            path: /health
+            port: server
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+      volumes:
+      - name: kafkahq-config
+        configMap:
+          name: {{ template "kafkahq.fullname" . }}-kafkahq-configmap
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
