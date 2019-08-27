@@ -43,14 +43,16 @@ public class ConnectDefinition {
     }
 
     public String getShortClassName() {
-        return this.getConfigs()
+        String[] split = this.getConfigs()
             .entrySet()
             .stream()
             .filter(entry -> entry.getKey().equals("connector.class"))
             .findFirst()
             .orElseThrow(() -> new NoSuchElementException("Couldn't find connector.class config"))
             .getValue()
+                .split("\\.")
         ;
+        return split[split.length - 1];
     }
 
     public String getConfigsAsJson() {
