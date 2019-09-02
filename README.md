@@ -155,6 +155,13 @@ kafkahq:
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
 
+#### Topic creation default values
+
+These parameters are the default values used in the topic creation page.
+
+* `kafkahq.topic.retention` Default retention in ms
+* `kafkahq.topic.replication` Default number of replica to use
+* `kafkahq.topic.partition` Default number of partition
 
 #### Topic Data
 * `kafkahq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
