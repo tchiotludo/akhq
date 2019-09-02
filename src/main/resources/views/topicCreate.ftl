@@ -3,6 +3,10 @@
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>
 
+<#-- @ftlvariable name="replication" type="java.lang.Integer" -->
+<#-- @ftlvariable name="retention" type="java.lang.Integer" -->
+<#-- @ftlvariable name="partition" type="java.lang.Integer" -->
+
 <@template.header "Create a topic", "topic" />
 
 <form enctype="multipart/form-data" method="post" class="khq-form khq-form-config">
@@ -15,13 +19,13 @@
     <div class="form-group row">
         <label for="partition" class="col-sm-2 col-form-label">Partition</label>
         <div class="col-sm-10">
-            <input type="number" min="1" class="form-control" name="partition" id="partition" placeholder="Partition" value="1" required>
+            <input type="number" min="1" class="form-control" name="partition" id="partition" placeholder="Partition" value="${partition}" required>
         </div>
     </div>
     <div class="form-group row">
         <label for="replication" class="col-sm-2 col-form-label">Replicator Factor</label>
         <div class="col-sm-10">
-            <input type="number" min="1" class="form-control" name="replication"  id="replication" placeholder="Replicator Factor" value="1" required>
+            <input type="number" min="1" class="form-control" name="replication"  id="replication" placeholder="Replicator Factor" value="${replication}" required>
         </div>
     </div>
     <fieldset class="form-group">
@@ -52,7 +56,7 @@
     <div class="form-group row">
         <label for="configs[retention.ms]" class="col-sm-2 col-form-label">Retention</label>
         <div class="col-sm-10">
-            <input type="number" class="form-control" name="configs[retention.ms]" id="configs[retention.ms]" placeholder="Retention" value="86400000">
+            <input type="number" class="form-control" name="configs[retention.ms]" id="configs[retention.ms]" placeholder="Retention" value="${retention}">
         </div>
     </div>
     <div class="khq-submit">
