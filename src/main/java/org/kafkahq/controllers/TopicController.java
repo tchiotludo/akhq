@@ -31,7 +31,6 @@ import org.kafkahq.utils.CompletablePaged;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
@@ -52,11 +51,11 @@ public class TopicController extends AbstractController {
     private String defaultView;
     @Value("${kafkahq.topic.page-size:25}")
     private Integer pageSize;
-    @Value("${kafkahq.topic.replication:1}")
+    @Value("${kafkahq.topic.replication}")
     private Integer replicationFactor;
-    @Value("${kafkahq.topic.retention:86400000}")
+    @Value("${kafkahq.topic.retention}")
     private Integer retentionPeriod;
-    @Value("${kafkahq.topic.partition:1}")
+    @Value("${kafkahq.topic.partition}")
     private Integer partitionCount;
 
     @Inject
@@ -116,9 +115,9 @@ public class TopicController extends AbstractController {
         return this.template(
             request,
             cluster,
-                "replication", this.replicationFactor,
-                "retention", this.retentionPeriod.toString(),
-                "partition", this.partitionCount
+            "replication", this.replicationFactor,
+            "retention", this.retentionPeriod.toString(),
+            "partition", this.partitionCount
         );
     }
 
