@@ -76,6 +76,9 @@ kafkahq:
   topic:
     default-view: HIDE_INTERNAL
     page-size: 25
+    replication: 1
+    retention: 86400000
+    partition: 1
     internal-regexps:
       - "^_.*$"
       - "^.*_schemas$"

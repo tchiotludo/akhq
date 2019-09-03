@@ -51,6 +51,12 @@ public class TopicController extends AbstractController {
     private String defaultView;
     @Value("${kafkahq.topic.page-size:25}")
     private Integer pageSize;
+    @Value("${kafkahq.topic.replication}")
+    private Integer replicationFactor;
+    @Value("${kafkahq.topic.retention}")
+    private Integer retentionPeriod;
+    @Value("${kafkahq.topic.partition}")
+    private Integer partitionCount;
 
     @Inject
     public TopicController(TopicRepository topicRepository,
@@ -108,7 +114,10 @@ public class TopicController extends AbstractController {
     public HttpResponse create(HttpRequest request, String cluster) {
         return this.template(
             request,
-            cluster
+            cluster,
+            "replication", this.replicationFactor,
+            "retention", this.retentionPeriod.toString(),
+            "partition", this.partitionCount
         );
     }
 
