@@ -62,7 +62,13 @@
                                 ≈ ${topic.getSize()}
                             </span>
                         </td>
-                        <td>${functions.filesize(topic.getLogDirSize())}</td>
+                        <td>
+                            <#if topic.getLogDirSize().isEmpty()>
+                                n/a
+                            <#else>
+                                ${functions.filesize(topic.getLogDirSize().get())}
+                            </#if>
+                        </td>
                         <td>${topic.getPartitions()?size}</td>
                         <td>${topic.getReplicas()?size}</td>
                         <td>${topic.getInSyncReplicas()?size}</td>

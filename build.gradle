@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        micronautVersion = "1.1.3"
+        micronautVersion = "1.2.0.RC2"
         confluentVersion = "5.2.+"
-        kafkaVersion = "2.2.+"
+        kafkaVersion = "2.2.1"
     }
 
     repositories {
@@ -19,7 +19,7 @@ buildscript {
 
 plugins {
     // micronaut
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+id "io.spring.dependency-management" version "1.0.8.RELEASE"
     id "com.github.johnrengelman.shadow" version "5.0.0"
     id "application"
     id "java"

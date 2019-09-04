@@ -11,6 +11,7 @@ import org.kafkahq.repositories.ConfigRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -86,10 +87,19 @@ public class Topic {
             .collect(Collectors.toList());
     }
 
-    public long getLogDirSize() {
-        return this.getPartitions().stream()
+    public Optional<Long> getLogDirSize() {
+        Integer logDirCount = this.getPartitions().stream()
+            .map(r -> r.getLogDir().size())
+            .reduce(0, Integer::sum);
+
+        if (logDirCount == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(this.getPartitions().stream()
             .map(Partition::getLogDirSize)
-            .reduce(0L, Long::sum);
+            .reduce(0L, Long::sum)
+        );
     }
 
     public long getSize() {

@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
+import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 import org.kafkahq.utils.Lock;
@@ -203,15 +204,24 @@ public class KafkaWrapper {
 
     public Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>> describeLogDir() throws ExecutionException, InterruptedException {
         if (this.logDirs == null) {
-            this.logDirs = Lock.call(() ->
-                    kafkaModule.getAdminClient(clusterId)
-                        .describeLogDirs(this.describeCluster().nodes().get()
-                            .stream()
-                            .map(Node::id)
-                            .collect(Collectors.toList())
-                        )
-                        .all()
-                        .get(),
+            this.logDirs = Lock.call(() -> {
+                    try {
+                        return kafkaModule.getAdminClient(clusterId)
+                            .describeLogDirs(this.describeCluster().nodes().get()
+                                .stream()
+                                .map(Node::id)
+                                .collect(Collectors.toList())
+                            )
+                            .all()
+                            .get();
+                    } catch (ExecutionException e) {
+                        if (e.getCause() instanceof ClusterAuthorizationException) {
+                            return new HashMap<>();
+                        }
+
+                        throw e;
+                    }
+                },
                 "List Log dir",
                 null
             );
