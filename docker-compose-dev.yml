@@ -17,6 +17,8 @@ services:
       - ./:/app
     ports:
       - 127.11.8.17:8080:8080
+    environment:
+      MICRONAUT_IO_WATCH_RESTART: "true"
     depends_on:
       - kafka
       - schema-registry

@@ -87,7 +87,8 @@ run.classpath += configurations.developmentOnly
 test.classpath += configurations.developmentOnly
 run.jvmArgs('-noverify', 
         '-XX:TieredStopAtLevel=1', 
-        '-Dmicronaut.environments=dev'
+        '-Dmicronaut.environments=dev',
+        '-Dmicronaut.io.watch.restart=true'
 )
 
 tasks.withType(JavaCompile){

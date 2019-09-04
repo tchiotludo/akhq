@@ -4,7 +4,7 @@ micronaut:
   io:
     watch:
       paths: src/main
-      restart: true
+      restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
       static:

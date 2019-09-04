@@ -56,6 +56,13 @@ public class CompletablePaged <T> {
 
         List<CompletableFuture<T>> futuresList = list.subList(start, end);
 
+        list
+            .stream()
+            .filter(r -> !futuresList.contains(r))
+            .forEach(r -> {
+                r.cancel(true);
+            });
+
         CompletableFuture<Void> allFuturesResult = CompletableFuture.allOf(
             futuresList.toArray(new CompletableFuture[0])
         );
