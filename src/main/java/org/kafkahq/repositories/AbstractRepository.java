@@ -20,7 +20,7 @@ abstract public class AbstractRepository {
         String[] split = search.get().split(" ");
 
         long count = Arrays.stream(split)
-            .filter(s -> value.toLowerCase().contains(s))
+            .filter(s -> value.toLowerCase().contains(s.toLowerCase()))
             .count();
 
         return count == split.length;
