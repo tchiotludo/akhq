@@ -4,8 +4,7 @@ import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.KafkaClusterExtension;
+import org.kafkahq.AbstractTest;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Record;
 
@@ -22,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@ExtendWith(KafkaClusterExtension.class)
-public class RecordRepositoryTest {
+public class RecordRepositoryTest extends AbstractTest {
     @Inject
     private RecordRepository repository;
     

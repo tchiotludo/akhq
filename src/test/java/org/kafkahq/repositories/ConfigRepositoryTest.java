@@ -2,8 +2,7 @@ package org.kafkahq.repositories;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.KafkaClusterExtension;
+import org.kafkahq.AbstractTest;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Config;
 
@@ -15,8 +14,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-@ExtendWith(KafkaClusterExtension.class)
-public class ConfigRepositoryTest {
+public class ConfigRepositoryTest extends AbstractTest {
     @Inject
     private ConfigRepository repository;
 

@@ -266,7 +266,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         return keysAndValues;
     }
 
-    private class Provider implements KafkaProvider {
+    private static class Provider implements KafkaProvider {
         private ConnectionString connectionString;
 
         public Provider(ConnectionString connection) {

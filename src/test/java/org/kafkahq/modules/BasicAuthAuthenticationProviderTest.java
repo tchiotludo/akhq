@@ -3,9 +3,9 @@ package org.kafkahq.modules;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
-import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import org.junit.jupiter.api.Test;
+import org.kafkahq.AbstractTest;
 
 import javax.inject.Inject;
 import java.util.Collection;
@@ -14,8 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@MicronautTest(propertySources = "application.yml")
-public class BasicAuthAuthenticationProviderTest {
+public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     @Inject
     BasicAuthAuthenticationProvider auth;
 

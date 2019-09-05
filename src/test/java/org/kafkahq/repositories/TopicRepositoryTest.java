@@ -3,6 +3,7 @@ package org.kafkahq.repositories;
 import org.apache.kafka.common.config.TopicConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kafkahq.AbstractTest;
 import org.kafkahq.KafkaClusterExtension;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Config;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(KafkaClusterExtension.class)
-public class TopicRepositoryTest {
+public class TopicRepositoryTest extends AbstractTest {
     @Inject
     protected TopicRepository topicRepository;
 
