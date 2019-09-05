@@ -169,6 +169,9 @@ These parameters are the default values used in the topic creation page.
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
+#### Consumer Groups List 
+* `kafkahq.consumer-groups.page-size` number of consumer groups per page (default : 25)
+
 
 #### Schema List 
 * `kafkahq.schema.page-size` number of schemas per page (default : 25)

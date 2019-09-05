@@ -13,6 +13,8 @@ import org.kafkahq.modules.KafkaModule;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -25,7 +27,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
         this.kafkaModule = kafkaModule;
     }
 
-    public List<ConsumerGroup> list(Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<CompletableFuture<ConsumerGroup>> list(Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups()) {
@@ -34,10 +36,19 @@ public class ConsumerGroupRepository extends AbstractRepository {
             }
         }
 
-        List<ConsumerGroup> groups = this.findByName(list);
-        groups.sort(Comparator.comparing(ConsumerGroup::getId));
+        list.sort(Comparator.comparing(String::toLowerCase));
 
-        return groups;
+        return list
+            .stream()
+            .map(s -> CompletableFuture.supplyAsync(() -> {
+                try {
+                    return this.findByName(s);
+                }
+                catch(ExecutionException | InterruptedException ex) {
+                    throw new CompletionException(ex);
+                }
+            }))
+            .collect(Collectors.toList());
     }
 
     public ConsumerGroup findByName(String name) throws ExecutionException, InterruptedException {
@@ -71,7 +82,18 @@ public class ConsumerGroupRepository extends AbstractRepository {
     }
 
     public List<ConsumerGroup> findByTopic(String topic) throws ExecutionException, InterruptedException {
-        return this.list(Optional.empty()).stream()
+        List<CompletableFuture<ConsumerGroup>> list = this.list(Optional.empty());
+
+        List<ConsumerGroup> completed = CompletableFuture.allOf(list.toArray(new CompletableFuture[0]))
+            .thenApply(s ->
+                list.stream().
+                    map(CompletableFuture::join).
+                    collect(Collectors.toList())
+            )
+            .get();
+
+        return completed
+            .stream()
             .filter(consumerGroups ->
                 consumerGroups.getActiveTopics()
                     .stream()

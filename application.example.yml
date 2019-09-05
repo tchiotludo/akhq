@@ -81,9 +81,13 @@ kafkahq:
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
 
-  # Schama list display options (optional)
+  # Schema list display options (optional)
   schema:
     page-size: 25 # number of schemas per page (default : 25)
+
+  # Consumer groups list display options (optional)
+  consumer-groups:
+    page-size: 25 # number of consumer groups per page (default : 25)
 
   # Auth & Roles (optional)
   security:
