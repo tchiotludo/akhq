@@ -30,10 +30,10 @@
         </td>
         <td class="text-right">
             <#if data.getKeySchemaId()??>
-                <a href="${basePath}/${clusterId}/schema/id/${data.getKeySchemaId()}" class="badge badge-info">Key: ${data.getKeySchemaId()}</a>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getKeySchemaId()?c}" class="badge badge-info">Key: ${data.getKeySchemaId()?c}</a>
             </#if>
             <#if data.getValueSchemaId()??>
-                <a href="${basePath}/${clusterId}/schema/id/${data.getValueSchemaId()}" class="badge badge-info">Value: ${data.getValueSchemaId()}</a>
+                <a href="${basePath}/${clusterId}/schema/id/${data.getValueSchemaId()?c}" class="badge badge-info">Value: ${data.getValueSchemaId()?c}</a>
             </#if>
         </td>
         <#if canDelete == true >
