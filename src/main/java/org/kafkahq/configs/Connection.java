@@ -1,6 +1,7 @@
 package org.kafkahq.configs;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
 import lombok.Getter;
@@ -19,12 +20,14 @@ public class Connection extends AbstractProperties {
 
     @Getter
     @ConfigurationProperties("schema-registry")
+    @Context
     public static class SchemaRegistry {
         URL url;
         BasicAuth basicAuth;
 
         @Getter
         @ConfigurationProperties("basic-auth")
+        @Context
         public static class BasicAuth {
             String username;
             String password;
@@ -33,6 +36,7 @@ public class Connection extends AbstractProperties {
 
     @Getter
     @ConfigurationProperties("connect")
+    @Context
     public static class Connect {
         URL url;
         BasicAuth basicAuth;
@@ -40,6 +44,7 @@ public class Connection extends AbstractProperties {
 
         @Getter
         @ConfigurationProperties("basic-auth")
+        @Context
         public static class BasicAuth {
             String username;
             String password;
@@ -47,6 +52,7 @@ public class Connection extends AbstractProperties {
 
         @Getter
         @ConfigurationProperties("ssl")
+        @Context
         public static class Ssl {
             String trustStore;
             String trustStorePassword;
