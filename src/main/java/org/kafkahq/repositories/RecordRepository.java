@@ -33,23 +33,21 @@ import java.util.stream.Stream;
 @Singleton
 @Slf4j
 public class RecordRepository extends AbstractRepository {
-    private final KafkaModule kafkaModule;
-    private final TopicRepository topicRepository;
-    private final SchemaRegistryRepository schemaRegistryRepository;
+    @Inject
+    private KafkaModule kafkaModule;
+
+    @Inject
+    private TopicRepository topicRepository;
+
+    @Inject
+    private SchemaRegistryRepository schemaRegistryRepository;
 
     @Value("${kafkahq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
 
-    @Inject
-    public RecordRepository(KafkaModule kafkaModule, TopicRepository topicRepository, SchemaRegistryRepository schemaRegistryRepository) {
-        this.kafkaModule = kafkaModule;
-        this.topicRepository = topicRepository;
-        this.schemaRegistryRepository = schemaRegistryRepository;
-    }
-
-    public List<Record> consume(Options options) throws ExecutionException, InterruptedException {
+    public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
-            Topic topicsDetail = topicRepository.findByName(options.topic);
+            Topic topicsDetail = topicRepository.findByName(clusterId, options.topic);
 
             if (options.sort == Options.Sort.OLDEST) {
                 return consumeOldest(topicsDetail, options);
@@ -343,9 +341,9 @@ public class RecordRepository extends AbstractRepository {
         )).get();
     }
 
-    public Flowable<Event<SearchEvent>> search(Options options) throws ExecutionException, InterruptedException {
+    public Flowable<Event<SearchEvent>> search(String clusterId, Options options) throws ExecutionException, InterruptedException {
         KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-        Topic topic = topicRepository.findByName(options.topic);
+        Topic topic = topicRepository.findByName(clusterId, options.topic);
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
         AtomicInteger matchesCount = new AtomicInteger();
@@ -508,10 +506,10 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
-    public Flowable<Event<TailEvent>> tail(TailOptions options) throws ExecutionException, InterruptedException {
+    public Flowable<Event<TailEvent>> tail(String clusterId, TailOptions options) throws ExecutionException, InterruptedException {
         KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
-        List<Topic> topics = topicRepository.findByName(options.topics);
+        List<Topic> topics = topicRepository.findByName(clusterId, options.topics);
 
         consumer
             .assign(topics

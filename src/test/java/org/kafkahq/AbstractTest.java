@@ -7,9 +7,7 @@ import io.micronaut.test.support.TestPropertyProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
-import org.kafkahq.repositories.AbstractRepository;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -48,7 +46,7 @@ abstract public class AbstractTest implements TestPropertyProvider {
 
     @BeforeEach
     public void beforeEach() {
-        KafkaModule kafkaModule = applicationContext.getBean(KafkaModule.class);
-        AbstractRepository.setWrapper(new KafkaWrapper(kafkaModule, KafkaTestCluster.CLUSTER_ID));
+        KafkaWrapper kafkaWrapper = applicationContext.getBean(KafkaWrapper.class);
+        applicationContext.inject(kafkaWrapper);
     }
 }

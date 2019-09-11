@@ -7,6 +7,7 @@ import org.apache.kafka.clients.admin.TopicListing;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.modules.KafkaWrapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,9 +19,19 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
+    @Inject
+    KafkaWrapper kafkaWrapper;
+
+    @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
     private ConsumerGroupRepository consumerGroupRepository;
+
+    @Inject
     private LogDirRepository logDirRepository;
+
+    @Inject
     private ConfigRepository configRepository;
 
     @Value("${kafkahq.topic.internal-regexps}")
@@ -29,14 +40,6 @@ public class TopicRepository extends AbstractRepository {
     @Value("${kafkahq.topic.stream-regexps}")
     protected List<String> streamRegexps;
 
-    @Inject
-    public TopicRepository(KafkaModule kafkaModule, ConsumerGroupRepository consumerGroupRepository, LogDirRepository logDirRepository, ConfigRepository configRepository) {
-        this.kafkaModule = kafkaModule;
-        this.consumerGroupRepository = consumerGroupRepository;
-        this.logDirRepository = logDirRepository;
-        this.configRepository = configRepository;
-    }
-
     public enum TopicListView {
         ALL,
         HIDE_INTERNAL,
@@ -44,12 +47,12 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
-    public List<CompletableFuture<Topic>> list(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        return all(view, search)
+    public List<CompletableFuture<Topic>> list(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+        return all(clusterId, view, search)
             .stream()
             .map(s -> CompletableFuture.supplyAsync(() -> {
                 try {
-                    return this.findByName(s);
+                    return this.findByName(clusterId, s);
                 }
                 catch(ExecutionException | InterruptedException ex) {
                     throw new CompletionException(ex);
@@ -58,10 +61,10 @@ public class TopicRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public List<String> all(TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
-        Collection<TopicListing> listTopics = kafkaWrapper.listTopics();
+        Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         for (TopicListing item : listTopics) {
             if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name())) {
@@ -87,24 +90,24 @@ public class TopicRepository extends AbstractRepository {
         return true;
     }
 
-    public Topic findByName(String name) throws ExecutionException, InterruptedException {
-        Optional<Topic> topics = this.findByName(Collections.singletonList(name)).stream().findFirst();
+    public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
+        Optional<Topic> topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
 
         return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
-    public List<Topic> findByName(List<String> topics) throws ExecutionException, InterruptedException {
+    public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
 
-        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(topics).entrySet();
-        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(topics);
+        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
+        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
             list.add(
                 new Topic(
                     description.getValue(),
-                    consumerGroupRepository.findByTopic(description.getValue().name()),
-                    logDirRepository.findByTopic(description.getValue().name()),
+                    consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
+                    logDirRepository.findByTopic(clusterId, description.getValue().name()),
                     topicOffsets.get(description.getValue().name()),
                     isInternal(description.getValue().name()),
                     isStream(description.getValue().name())

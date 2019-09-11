@@ -130,7 +130,7 @@ public class RecordRepositoryTest extends AbstractTest {
         List<Record> all = new ArrayList<>();
 
         do {
-            List<Record> datas = repository.consume(options);
+            List<Record> datas = repository.consume(KafkaTestCluster.CLUSTER_ID, options);
             all.addAll(datas);
 
             datas.forEach(record -> log.debug(
@@ -196,7 +196,7 @@ public class RecordRepositoryTest extends AbstractTest {
         AtomicBoolean hasNext = new AtomicBoolean(true);
 
         do {
-            repository.search(options).blockingSubscribe(event -> {
+            repository.search(KafkaTestCluster.CLUSTER_ID, options).blockingSubscribe(event -> {
                 size.addAndGet(event.getData().getRecords().size());
 
                 assertTrue(event.getData().getPercent() >= 0);

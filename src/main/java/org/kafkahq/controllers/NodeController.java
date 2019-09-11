@@ -43,7 +43,7 @@ public class NodeController extends AbstractController {
         return this.template(
             request,
             cluster,
-            "cluster", this.clusterRepository.get()
+            "cluster", this.clusterRepository.get(cluster)
         );
     }
 
@@ -62,7 +62,7 @@ public class NodeController extends AbstractController {
     @Secured(Role.ROLE_NODE_CONFIG_UPDATE)
     @Post(value = "{nodeId}", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateConfig(HttpRequest request, String cluster, Integer nodeId, Map<String, String> configs) throws Throwable {
-        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(nodeId));
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId));
 
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
@@ -85,14 +85,14 @@ public class NodeController extends AbstractController {
     }
 
     private HttpResponse render(HttpRequest request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
-        Node node = this.clusterRepository.get()
+        Node node = this.clusterRepository.get(cluster)
             .getNodes()
             .stream()
             .filter(e -> e.getId() == nodeId)
             .findFirst()
             .orElseThrow(() -> new NoSuchElementException("Node '" + nodeId + "' doesn't exist"));
 
-        List<Config> configs = this.configRepository.findByBroker(nodeId);
+        List<Config> configs = this.configRepository.findByBroker(cluster, nodeId);
         configs.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
             (o1.isReadOnly() ? 1 : -1 )
         );
@@ -102,7 +102,7 @@ public class NodeController extends AbstractController {
             cluster,
             "tab", tab,
             "node", node,
-            "logs", logDirRepository.findByBroker(node.getId()),
+            "logs", logDirRepository.findByBroker(cluster, node.getId()),
             "configs", configs
         );
     }

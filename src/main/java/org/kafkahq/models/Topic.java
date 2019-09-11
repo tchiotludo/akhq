@@ -118,13 +118,13 @@ public class Topic {
         throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
     }
 
-    public Boolean canDeleteRecords(ConfigRepository configRepository) throws ExecutionException, InterruptedException {
+    public Boolean canDeleteRecords(String clusterId, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
         if (this.isInternal()) {
             return false;
         }
 
         return configRepository
-            .findByTopic(this.getName())
+            .findByTopic(clusterId, this.getName())
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
             .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));

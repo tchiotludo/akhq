@@ -27,27 +27,27 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(14, topicRepository.list(TopicRepository.TopicListView.ALL, Optional.empty()).size());
+        assertEquals(14, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.empty()).size());
     }
 
     @Test
     public void listNoInternal() throws ExecutionException, InterruptedException {
-        assertEquals(9, topicRepository.list(TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty()).size());
+        assertEquals(9, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty()).size());
     }
 
     @Test
     public void listNoInternalStream() throws ExecutionException, InterruptedException {
-        assertEquals(7, topicRepository.list(TopicRepository.TopicListView.HIDE_INTERNAL_STREAM, Optional.empty()).size());
+        assertEquals(7, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_INTERNAL_STREAM, Optional.empty()).size());
     }
 
     @Test
     public void listNoStream() throws ExecutionException, InterruptedException {
-        assertEquals(12, topicRepository.list(TopicRepository.TopicListView.HIDE_STREAM, Optional.empty()).size());
+        assertEquals(12, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_STREAM, Optional.empty()).size());
     }
 
     @Test
     public void search() throws ExecutionException, InterruptedException {
-        assertEquals(1, topicRepository.list(TopicRepository.TopicListView.ALL, Optional.of("ra do")).size());
+        assertEquals(1, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.of("ra do")).size());
     }
 
     @Test
@@ -56,13 +56,13 @@ public class TopicRepositoryTest extends AbstractTest {
             new Config(TopicConfig.SEGMENT_MS_CONFIG, "1000")
         ));
 
-        Optional<String> option = configRepository.findByTopic("create")
+        Optional<String> option = configRepository.findByTopic(KafkaTestCluster.CLUSTER_ID, "create")
             .stream()
             .filter(r -> r.getName().equals(TopicConfig.SEGMENT_MS_CONFIG))
             .findFirst()
             .map(Config::getValue);
 
-        assertEquals(8, topicRepository.findByName("create").getPartitions().size());
+        assertEquals(8, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "create").getPartitions().size());
         assertEquals("1000", option.get());
 
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "create");
@@ -71,7 +71,7 @@ public class TopicRepositoryTest extends AbstractTest {
     @Test
     public void offset() throws ExecutionException, InterruptedException {
         Optional<Partition> compacted = topicRepository
-            .findByName(KafkaTestCluster.TOPIC_COMPACTED)
+            .findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED)
             .getPartitions()
             .stream()
             .filter(partition -> partition.getId() == 0)
@@ -84,6 +84,6 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void partition() throws ExecutionException, InterruptedException {
-        assertEquals(3, topicRepository.findByName(KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
+        assertEquals(3, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
     }
 }

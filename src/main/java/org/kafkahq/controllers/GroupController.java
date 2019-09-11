@@ -49,7 +49,7 @@ public class GroupController extends AbstractController {
     @Get
     public HttpResponse list(HttpRequest request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
 
-        List<CompletableFuture<ConsumerGroup>> list = this.consumerGroupRepository.list(search);
+        List<CompletableFuture<ConsumerGroup>> list = this.consumerGroupRepository.list(cluster, search);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
 
         CompletablePaged<ConsumerGroup> paged = new CompletablePaged<>(
@@ -85,7 +85,7 @@ public class GroupController extends AbstractController {
     }
 
     private HttpResponse render(HttpRequest request, String cluster, String groupName, String tab) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
         return this.template(
             request,
@@ -99,7 +99,7 @@ public class GroupController extends AbstractController {
     @View("groupUpdate")
     @Get("{groupName}/offsets")
     public HttpResponse offsets(HttpRequest request, String cluster, String groupName) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
         return this.template(
             request,
@@ -111,7 +111,7 @@ public class GroupController extends AbstractController {
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Post(value = "{groupName}/offsets", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse offsetsSubmit(HttpRequest request, String cluster, String groupName, Map<String, Long> offset) throws Throwable {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
         Map<TopicPartition, Long> offsets = group.getOffsets()
             .stream()
@@ -138,7 +138,7 @@ public class GroupController extends AbstractController {
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Get("{groupName}/offsets/start")
     public HttpResponse offsetsStart(HttpRequest request, String cluster, String groupName, String timestamp) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
         List<RecordRepository.TimeOffset> offsetForTime = recordRepository.getOffsetForTime(
             cluster,

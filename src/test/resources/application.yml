@@ -26,3 +26,8 @@ kafkahq:
           - registry/version/delete
           - group/read
           - group/delete
+
+micronaut:
+  caches:
+    kafka-wrapper:
+      maximum-size: 0

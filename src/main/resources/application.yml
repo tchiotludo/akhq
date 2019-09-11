@@ -30,6 +30,10 @@ micronaut:
     intercept-url-map:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
+  caches:
+    kafka-wrapper:
+      record-stats: true
+      expire-after-write: 0s
 
 endpoints:
   all:
@@ -50,6 +54,9 @@ endpoints:
         step: PT1M
         descriptions: true
   prometheus:
+    enabled: true
+    sensitive: false
+  caches:
     enabled: true
     sensitive: false
 

@@ -20,13 +20,10 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
-    private KafkaModule kafkaModule;
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
     @Inject
-    public ConnectRepository(KafkaModule kafkaModule) {
-        this.kafkaModule = kafkaModule;
-    }
+    private KafkaModule kafkaModule;
+
+    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String name) {

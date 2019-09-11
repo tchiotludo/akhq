@@ -58,7 +58,7 @@ public class ConfigRepositoryTest extends AbstractTest {
 
     private Config getConfig(String name) throws ExecutionException, InterruptedException {
         return repository
-                .findByTopic(KafkaTestCluster.TOPIC_HUGE)
+                .findByTopic(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE)
                 .stream()
                 .filter(config -> config.getName().equals(name))
                 .findAny()
