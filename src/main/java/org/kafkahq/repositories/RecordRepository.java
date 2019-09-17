@@ -213,7 +213,7 @@ public class RecordRepository extends AbstractRepository {
         if (options.partition != null) {
             return options.size;
         } else {
-            return (int) Math.round(options.size * 1.0 / topic.getPartitions().size());
+            return (int) Math.ceil(options.size * 1.0 / topic.getPartitions().size());
         }
     }
 
