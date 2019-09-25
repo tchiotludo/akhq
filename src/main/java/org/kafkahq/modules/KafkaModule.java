@@ -180,16 +180,14 @@ public class KafkaModule {
 
             if (connection.getConnect() != null) {
                 URIBuilder uri = URIBuilder.fromString(connection.getConnect().getUrl().toString());
+                Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
 
                 if (connection.getConnect().getBasicAuth() != null) {
-                    uri = uri.withHost(
-                        connection.getConnect().getBasicAuth().getUsername() + ":" +
-                            connection.getConnect().getBasicAuth().getPassword() + "@" +
-                            uri.getHost().get()
+                    configuration.useBasicAuth(
+                        connection.getConnect().getBasicAuth().getUsername(),
+                        connection.getConnect().getBasicAuth().getPassword()
                     );
                 }
-
-                Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
 
                 if (connection.getConnect().getSsl() != null) {
                     if (connection.getConnect().getSsl().getTrustStore() != null) {
