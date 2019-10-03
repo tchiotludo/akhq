@@ -20,4 +20,6 @@
     </@template.bottom>
 </#if>
 
+<#include "blocks/navbar-pagination.ftl" />
+
 <@template.footer/>

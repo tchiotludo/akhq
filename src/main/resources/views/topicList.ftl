@@ -102,6 +102,8 @@
     </table>
 </div>
 
+<#include "blocks/navbar-pagination.ftl" />
+
 <#if roles?seq_contains("topic/insert") == true>
     <@template.bottom>
         <a href="${basePath}/${clusterId}/topic/create" class="btn btn-primary">Create a topic</a>
