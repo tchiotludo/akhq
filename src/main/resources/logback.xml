@@ -38,5 +38,4 @@
     </root>
 
     <logger name="org.apache" level="WARN" />
-    <logger name="org.kafkahq" level="TRACE" />
 </configuration>

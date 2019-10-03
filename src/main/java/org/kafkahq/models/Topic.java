@@ -66,19 +66,21 @@ public class Topic {
         return this.configStream;
     }
 
-    public List<Node.Partition> getReplicas() {
+    public long getReplicaCount() {
         return this.getPartitions().stream()
             .flatMap(partition -> partition.getNodes().stream())
+            .map(Node::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .count();
     }
 
-    public List<Node.Partition> getInSyncReplicas() {
+    public long getInSyncReplicaCount() {
         return this.getPartitions().stream()
             .flatMap(partition -> partition.getNodes().stream())
             .filter(Node.Partition::isInSyncReplicas)
+            .map(Node::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .count();
     }
 
     public List<LogDir> getLogDir() {

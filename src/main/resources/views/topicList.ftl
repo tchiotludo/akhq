@@ -70,8 +70,8 @@
                             </#if>
                         </td>
                         <td>${topic.getPartitions()?size}</td>
-                        <td>${topic.getReplicas()?size}</td>
-                        <td>${topic.getInSyncReplicas()?size}</td>
+                        <td>${topic.getReplicaCount()}</td>
+                        <td><span class="${(topic.getReplicaCount() > topic.getInSyncReplicaCount())?then("text-warning", "")}">${topic.getInSyncReplicaCount()}</span></td>
                         <td>
                             <#list topic.getConsumerGroups() as group>
                                 <#assign active = group.isActiveTopic(topic.getName()) >

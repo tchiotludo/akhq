@@ -25,7 +25,7 @@
                 <td><@nodeTemplate.badge partition.getLeader()/></td>
                 <td>
                     <#list partition.getNodes() as replica>
-                        <@nodeTemplate.badge replica/>
+                        <@nodeTemplate.badge replica replica.isInSyncReplicas()?then("success", "warning")/>
                     </#list>
                 </td>
                 <td>
