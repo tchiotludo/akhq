@@ -17,4 +17,12 @@ abstract public class AbstractRepository {
 
         return count == split.length;
     }
+
+    public static boolean isTopicMatchRegex(Optional<String> regex, String topic){
+        if(!regex.isPresent()){
+            return true;
+        }
+
+        return topic.matches(regex.get());
+    }
 }

@@ -19,8 +19,7 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
         for(BasicAuth auth : auths) {
             if (authenticationRequest.getIdentity().equals(auth.getUsername()) &&
                 auth.isValidPassword((String) authenticationRequest.getSecret())) {
-                UserDetails userDetails = new UserDetails(auth.getUsername(), auth.getRoles());
-
+                UserDetails userDetails = new UserDetails(auth.getUsername(), auth.getRoles(), auth.getAttributes());
                 return Flowable.just(userDetails);
             }
         }

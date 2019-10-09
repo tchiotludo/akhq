@@ -1,6 +1,9 @@
 package org.kafkahq.repositories;
 
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
@@ -33,6 +36,9 @@ public class TopicRepository extends AbstractRepository {
 
     @Inject
     private ConfigRepository configRepository;
+
+    @Inject
+    ApplicationContext applicationContext;
 
     @Value("${kafkahq.topic.internal-regexps}")
     protected List<String> internalRegexps;
@@ -67,7 +73,7 @@ public class TopicRepository extends AbstractRepository {
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name())) {
+            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(getTopicRegex(), item.name())) {
                 list.add(item.name());
             }
         }
@@ -91,8 +97,11 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
-        Optional<Topic> topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
 
+        Optional<Topic> topics = Optional.empty();
+        if(isTopicMatchRegex(getTopicRegex(),name)) {
+            topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
+        }
         return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
@@ -102,17 +111,21 @@ public class TopicRepository extends AbstractRepository {
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
+        Optional<String> topicRegex = getTopicRegex();
+
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-            list.add(
-                new Topic(
-                    description.getValue(),
-                    consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
-                    logDirRepository.findByTopic(clusterId, description.getValue().name()),
-                    topicOffsets.get(description.getValue().name()),
-                    isInternal(description.getValue().name()),
-                    isStream(description.getValue().name())
-                )
-            );
+            if(isTopicMatchRegex(topicRegex, description.getValue().name())){
+                list.add(
+                    new Topic(
+                        description.getValue(),
+                        consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
+                        logDirRepository.findByTopic(clusterId, description.getValue().name()),
+                        topicOffsets.get(description.getValue().name()),
+                        isInternal(description.getValue().name()),
+                        isStream(description.getValue().name())
+                    )
+                );
+            }
         }
 
         return list;
@@ -146,4 +159,20 @@ public class TopicRepository extends AbstractRepository {
             .all()
             .get();
     }
+
+    private Optional<String> getTopicRegex() {
+        if (applicationContext.containsBean(SecurityService.class)) {
+            SecurityService securityService = applicationContext.getBean(SecurityService.class);
+            Optional<Authentication> authentication = securityService.getAuthentication();
+            if(authentication.isPresent()){
+                Authentication auth = authentication.get();
+                Object topicRegex;
+                if(auth.getAttributes() != null && (topicRegex = auth.getAttributes().get("topics")) != null){
+                    return Optional.of(topicRegex.toString());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
 }

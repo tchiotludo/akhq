@@ -19,7 +19,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     BasicAuthAuthenticationProvider auth;
 
     @Test
-    public void sucess() {
+    public void success() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(new UsernamePasswordCredentials(
                 "user",
@@ -32,6 +32,8 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
 
         assertTrue(userDetail.isAuthenticated());
         assertEquals("user", userDetail.getUsername());
+        assertEquals("test.*", userDetail.getAttributes("roles", "user").get("topics"));
+
 
         Collection<String> roles = userDetail.getRoles();
 

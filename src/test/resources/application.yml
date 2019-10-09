@@ -26,6 +26,8 @@ kafkahq:
           - registry/version/delete
           - group/read
           - group/delete
+        attributes:
+          topics: "test.*"
 
 micronaut:
   caches:
