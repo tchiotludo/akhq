@@ -100,16 +100,16 @@ file example can be found here :[application.example.yml](application.example.ym
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url 
-    * `basic-auth.username`: schema registry basic auth username
-    * `basic-auth.password`: schema registry basic auth password
+    * `basic-auth-username`: schema registry basic auth username
+    * `basic-auth-password`: schema registry basic auth password
   * `connect`: *(optional)*
     * `url`: connect url 
-    * `basic-auth.username`: connect basic auth username
-    * `basic-auth.password`: connect basic auth password
-    * `ssl.trust-store`: /app/truststore.jks
-    * `ssl.trust-store-password`: trust-store-password
-    * `ssl.key-store`: /app/truststore.jks 
-    * `ssl.key-store-password`: key-store-password
+    * `basic-auth-username`: connect basic auth username
+    * `basic-auth-password`: connect basic auth password
+    * `ssl-trust-store`: /app/truststore.jks
+    * `ssl-trust-store-password`: trust-store-password
+    * `ssl-key-store`: /app/truststore.jks 
+    * `ssl-key-store-password`: key-store-password
 
 #### SSL Kafka Cluster with basic auth
 Configuration example for kafka cluster secured by ssl for saas provider like aiven (full https & basic auth):
@@ -137,14 +137,12 @@ kafkahq:
         ssl.key.password: {{password}}
       schema-registry:
         url: "https://{{host}}.aivencloud.com:12838"
-        basic-auth:
-          username: avnadmin
-          password: {{password}}
+        basic-auth-username: avnadmin
+        basic-auth-password: {{password}}
       connect:
         url: "https://{{host}}.aivencloud.com:{{port}}"
-        basic-auth:
-          username: avnadmin
-          password: {{password}}
+        basic-auth-username: avnadmin
+        basic-auth-password: {{password}}
 ```
 
 ### KafkaHQ configuration 

@@ -145,14 +145,14 @@ public class KafkaModule {
                     connection.getSchemaRegistry().getUrl().toString()
                 );
 
-                if (connection.getSchemaRegistry().getBasicAuth() != null) {
+                if (connection.getSchemaRegistry().getBasicAuthUsername() != null) {
                     BasicAuthCredentialProvider basicAuthCredentialProvider = BasicAuthCredentialProviderFactory
                         .getBasicAuthCredentialProvider(
                             new UserInfoCredentialProvider().alias(),
                             ImmutableMap.of(
                                 "schema.registry.basic.auth.user.info",
-                                connection.getSchemaRegistry().getBasicAuth().getUsername() + ":" +
-                                    connection.getSchemaRegistry().getBasicAuth().getPassword()
+                                connection.getSchemaRegistry().getBasicAuthUsername() + ":" +
+                                    connection.getSchemaRegistry().getBasicAuthPassword()
                             )
                         );
                     restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
@@ -182,27 +182,25 @@ public class KafkaModule {
                 URIBuilder uri = URIBuilder.fromString(connection.getConnect().getUrl().toString());
                 Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
 
-                if (connection.getConnect().getBasicAuth() != null) {
+                if (connection.getConnect().getBasicAuthUsername() != null) {
                     configuration.useBasicAuth(
-                        connection.getConnect().getBasicAuth().getUsername(),
-                        connection.getConnect().getBasicAuth().getPassword()
+                        connection.getConnect().getBasicAuthUsername(),
+                        connection.getConnect().getBasicAuthPassword()
                     );
                 }
 
-                if (connection.getConnect().getSsl() != null) {
-                    if (connection.getConnect().getSsl().getTrustStore() != null) {
-                        configuration.useTrustStore(
-                            new File(connection.getConnect().getSsl().getTrustStore()),
-                            connection.getConnect().getSsl().getTrustStorePassword()
-                        );
-                    }
+                if (connection.getConnect().getSslTrustStore() != null) {
+                    configuration.useTrustStore(
+                        new File(connection.getConnect().getSslTrustStore()),
+                        connection.getConnect().getSslTrustStorePassword()
+                    );
+                }
 
-                    if (connection.getConnect().getSsl().getKeyStore() != null) {
-                        configuration.useTrustStore(
-                            new File(connection.getConnect().getSsl().getKeyStore()),
-                            connection.getConnect().getSsl().getKeyStorePassword()
-                        );
-                    }
+                if (connection.getConnect().getSslKeyStore() != null) {
+                    configuration.useTrustStore(
+                        new File(connection.getConnect().getSslKeyStore()),
+                        connection.getConnect().getSslKeyStorePassword()
+                    );
                 }
 
                 this.connectRestClient.put(clusterId, new KafkaConnectClient(configuration));

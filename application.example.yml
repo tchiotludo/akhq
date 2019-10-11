@@ -21,19 +21,19 @@ kafkahq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
-        basic-auth: # Basic Auth user / pass
-          username: basic-auth-user
-          password: basic-auth-pass
+        # Basic Auth user / pass
+        basic-auth-username: basic-auth-user
+        basic-auth-password: basic-auth-pass
       connect:
         url: "http://connect:8083" # connect url (optional)
-        basic-auth: # Basic Auth user / pass (optional)
-          username: basic-auth-user
-          password: basic-auth-pass
-        ssl: # ssl store configuration (optional)
-          trust-store: /app/truststore.jks
-          trust-store-password: trust-store-password
-          key-store: /app/truststore.jks
-          key-store-password: key-store-password
+        # Basic Auth user / pass (optional)
+        basic-auth-username: basic-auth-user
+        basic-auth-password: basic-auth-pass
+        # ssl store configuration (optional)
+        ssl-trust-store: /app/truststore.jks
+        ssl-trust-store-password: trust-store-password
+        ssl-key-store: /app/truststore.jks
+        ssl-key-store-password: key-store-password
 
     my-cluster-ssl:
       properties:
