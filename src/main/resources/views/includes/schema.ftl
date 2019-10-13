@@ -66,6 +66,7 @@
                             </#if>
                         </#if>
                     </tr>
+                    <#if schema.getSchema()??>
                     <tr>
                         <td colspan="5">
                             <button type="button" class="close d-none" aria-label="Close">
@@ -74,6 +75,14 @@
                             <pre class="mb-0 khq-data-highlight"><code>${schema.getSchema()}</code></pre>
                         </td>
                     </tr>
+                    <#else>
+                        <tr>
+                            <td colspan="5">
+                                <div class="alert alert-warning" role="alert">
+                                    Invalid avro schema with error : ${schema.getException()}
+                                </div>
+                        </tr>
+                    </#if>
                 </#list>
             </tbody>
         </table>

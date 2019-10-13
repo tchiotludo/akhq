@@ -1,6 +1,10 @@
 package org.kafkahq.models;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
 
 import java.util.ArrayList;
@@ -17,13 +21,15 @@ public class Schema {
     private final Integer id;
     private final String subject;
     private final Integer version;
-    private final org.apache.avro.Schema schema;
+    private org.apache.avro.Schema schema;
+    private Exception exception;
 
     public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema) {
         this.id = schema.getId();
         this.subject = schema.getSubject();
         this.version = schema.getVersion();
-        this.schema = parser.parse(schema.getSchema());
+
+            this.schema = parser.parse(schema.getSchema());
     }
 
     @ToString
