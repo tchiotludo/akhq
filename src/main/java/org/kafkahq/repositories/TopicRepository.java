@@ -73,7 +73,8 @@ public class TopicRepository extends AbstractRepository {
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(getTopicRegex(), item.name())) {
+            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(
+                getTopicFilterRegex(), item.name())) {
                 list.add(item.name());
             }
         }
@@ -99,7 +100,7 @@ public class TopicRepository extends AbstractRepository {
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
 
         Optional<Topic> topics = Optional.empty();
-        if(isTopicMatchRegex(getTopicRegex(),name)) {
+        if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
             topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
         }
         return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
@@ -111,7 +112,7 @@ public class TopicRepository extends AbstractRepository {
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
-        Optional<String> topicRegex = getTopicRegex();
+        Optional<String> topicRegex = getTopicFilterRegex();
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
             if(isTopicMatchRegex(topicRegex, description.getValue().name())){
@@ -160,15 +161,14 @@ public class TopicRepository extends AbstractRepository {
             .get();
     }
 
-    private Optional<String> getTopicRegex() {
+    private Optional<String> getTopicFilterRegex() {
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             Optional<Authentication> authentication = securityService.getAuthentication();
-            if(authentication.isPresent()){
+            if (authentication.isPresent()) {
                 Authentication auth = authentication.get();
-                Object topicRegex;
-                if(auth.getAttributes() != null && (topicRegex = auth.getAttributes().get("topics")) != null){
-                    return Optional.of(topicRegex.toString());
+                if (auth.getAttributes().get("topics-filter-regexp") != null) {
+                    return Optional.of(auth.getAttributes().get("topics-filter-regexp").toString());
                 }
             }
         }

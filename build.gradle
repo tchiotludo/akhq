@@ -40,7 +40,7 @@ apply plugin: "com.commercehub.gradle.plugin.avro"
 group "org.kafkahq"
 version "0.1"
 mainClassName = "org.kafkahq.App"
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     mavenLocal()

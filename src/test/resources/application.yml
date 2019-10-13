@@ -27,7 +27,7 @@ kafkahq:
           - group/read
           - group/delete
         attributes:
-          topics: "test.*"
+          topics-filter-regexp: "test.*"
 
 micronaut:
   caches:

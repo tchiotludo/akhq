@@ -32,7 +32,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
 
         assertTrue(userDetail.isAuthenticated());
         assertEquals("user", userDetail.getUsername());
-        assertEquals("test.*", userDetail.getAttributes("roles", "user").get("topics"));
+        assertEquals("test.*", userDetail.getAttributes("roles", "user").get("topics-filter-regexp"));
 
 
         Collection<String> roles = userDetail.getRoles();

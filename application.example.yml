@@ -123,3 +123,6 @@ kafkahq:
           - topic/read
           - group/read
           - group/delete
+        attributes:
+          # Regexp to filter topic available for current user
+          topics-filter-regexp: "test.*"

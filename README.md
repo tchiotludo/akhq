@@ -55,6 +55,7 @@
 - **Authentification and Roles**
   - Read only mode
   - BasicHttp with roles per user
+  - Filter topics with regexp for current user
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
@@ -216,6 +217,7 @@ kafkahq:
   * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `roles`: Role for current users
+    * `attributes.topics-filter-regexp`: Regexp to filter topic available for current user
 
 > Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
