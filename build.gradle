@@ -85,8 +85,8 @@ configurations {
 
 run.classpath += configurations.developmentOnly
 test.classpath += configurations.developmentOnly
-run.jvmArgs('-noverify', 
-        '-XX:TieredStopAtLevel=1', 
+run.jvmArgs('-noverify',
+        '-XX:TieredStopAtLevel=1',
         '-Dmicronaut.environments=dev',
         '-Dmicronaut.io.watch.restart=true'
 )
@@ -147,6 +147,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-api"
     testCompile "io.micronaut.test:micronaut-test-junit5"
     testRuntime "org.junit.jupiter:junit-jupiter-engine"
+    testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
 
     // test
     testCompile "com.salesforce.kafka.test:kafka-junit5:3.1.1"
