@@ -70,7 +70,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             .kafka("kafka:9092")
             .connect("http://connect:8083")
             .build();
-        
+
         testUtils = new KafkaTestUtils(new Provider(this.connectionString));
     }
 
@@ -214,8 +214,9 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.createTopic(TOPIC_COMPACTED, 3, (short) 1);
         testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
             new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
-            new Config(Collections.singletonList(
-                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
+            new Config(List.of(
+                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT),
+                new ConfigEntry(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0")
             ))
         )).all().get();
 
