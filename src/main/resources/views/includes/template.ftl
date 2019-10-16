@@ -40,6 +40,7 @@
                     <a href="${basePath}/">
                         <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
                     </a>
+                    <div class="version">${tag}</div>
                 </div>
 
                 <#if clusterId??>
