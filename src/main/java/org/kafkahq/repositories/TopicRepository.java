@@ -7,6 +7,7 @@ import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
@@ -16,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -54,16 +54,14 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<CompletableFuture<Topic>> list(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        return all(clusterId, view, search)
+        List<String> topics = all(clusterId, view, search)
             .stream()
-            .map(s -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    return this.findByName(clusterId, s);
-                }
-                catch(ExecutionException | InterruptedException ex) {
-                    throw new CompletionException(ex);
-                }
-            }))
+            .collect(Collectors.toList());
+
+        // XXX: The interface wants us to wrap these, so do that.
+        return this.findByName(clusterId, topics)
+            .stream()
+            .map(CompletableFuture::completedFuture)
             .collect(Collectors.toList());
     }
 
@@ -112,6 +110,8 @@ public class TopicRepository extends AbstractRepository {
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
+        Map<String, List<ConsumerGroup>> topicConsumerGroups = consumerGroupRepository.findByTopic(clusterId, topics);
+
         Optional<String> topicRegex = getTopicFilterRegex();
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
@@ -119,7 +119,7 @@ public class TopicRepository extends AbstractRepository {
                 list.add(
                     new Topic(
                         description.getValue(),
-                        consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
+                        topicConsumerGroups.getOrDefault(description.getValue().name(), Collections.emptyList()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
                         isInternal(description.getValue().name()),

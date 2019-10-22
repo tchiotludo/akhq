@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class ConsumerGroupRepository extends AbstractRepository {
@@ -38,16 +39,10 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         list.sort(Comparator.comparing(String::toLowerCase));
 
-        return list
+        // XXX: The interface wants us to wrap these, so do that.
+        return this.findByName(clusterId, list)
             .stream()
-            .map(s -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    return this.findByName(clusterId, s);
-                }
-                catch(ExecutionException | InterruptedException ex) {
-                    throw new CompletionException(ex);
-                }
-            }))
+            .map(CompletableFuture::completedFuture)
             .collect(Collectors.toList());
     }
 
@@ -82,6 +77,12 @@ public class ConsumerGroupRepository extends AbstractRepository {
     }
 
     public List<ConsumerGroup> findByTopic(String clusterId, String topic) throws ExecutionException, InterruptedException {
+        Optional<List<ConsumerGroup>> consumerGroups = Optional.of(this.findByTopic(clusterId, Collections.singletonList(topic)).get(topic));
+
+        return consumerGroups.orElse(Collections.emptyList());
+    }
+
+    public Map<String, List<ConsumerGroup>> findByTopic(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         List<CompletableFuture<ConsumerGroup>> list = this.list(clusterId, Optional.empty());
 
         List<ConsumerGroup> completed = CompletableFuture.allOf(list.toArray(new CompletableFuture[0]))
@@ -94,15 +95,9 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         return completed
             .stream()
-            .filter(consumerGroups ->
-                consumerGroups.getActiveTopics()
-                    .stream()
-                    .anyMatch(s -> Objects.equals(s, topic)) ||
-                    consumerGroups.getTopics()
-                        .stream()
-                        .anyMatch(s -> Objects.equals(s, topic))
-            )
-            .collect(Collectors.toList());
+            .flatMap(consumerGroup -> Stream.concat(consumerGroup.getActiveTopics().stream(), consumerGroup.getTopics().stream()).distinct().map(topic -> new AbstractMap.SimpleImmutableEntry<>(topic, consumerGroup)))
+            .filter(entry -> topics.contains(entry.getKey()))
+            .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 
     public void updateOffsets(String clusterId, String name, Map<org.kafkahq.models.TopicPartition, Long> offset) {
