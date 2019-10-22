@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,27 +54,34 @@ public class ConsumerGroupRepository extends AbstractRepository {
     }
 
     public List<ConsumerGroup> findByName(String clusterId, List<String> groups) throws ExecutionException, InterruptedException {
-        ArrayList<ConsumerGroup> list = new ArrayList<>();
+        Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, groups);
+        Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
+            .map(group -> {
+                try {
+                    return new AbstractMap.SimpleEntry<>(group, kafkaWrapper.consumerGroupsOffsets(clusterId, group));
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        List<String> topics = groupGroupsOffsets.values().stream()
+            .map(Map::keySet)
+            .flatMap(Set::stream)
+            .map(TopicPartition::topic)
+            .distinct()
+            .collect(Collectors.toList());
+        Map<String, List<Partition.Offsets>> topicTopicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
-        Set<Map.Entry<String, ConsumerGroupDescription>> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, groups).entrySet();
-
-        for (Map.Entry<String, ConsumerGroupDescription> description : consumerDescriptions) {
-            Map<TopicPartition, OffsetAndMetadata> groupsOffsets = kafkaWrapper.consumerGroupsOffsets(clusterId, description.getKey());
-            Map<String, List<Partition.Offsets>> topicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, groupsOffsets.entrySet()
-                .stream()
-                .map(item -> item.getKey().topic())
-                .distinct()
-                .collect(Collectors.toList())
-            );
-
-            list.add(new ConsumerGroup(
-                description.getValue(),
-                groupsOffsets,
-                topicsOffsets
-            ));
-        }
-
-        return list;
+        return consumerDescriptions.values().stream()
+            .map(consumerGroupDescription -> new ConsumerGroup(
+                consumerGroupDescription,
+                groupGroupsOffsets.get(consumerGroupDescription.groupId()),
+                groupGroupsOffsets.get(consumerGroupDescription.groupId()).keySet().stream()
+                    .map(TopicPartition::topic)
+                    .distinct()
+                    .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
+            ))
+            .collect(Collectors.toList());
     }
 
     public List<ConsumerGroup> findByTopic(String clusterId, String topic) throws ExecutionException, InterruptedException {
