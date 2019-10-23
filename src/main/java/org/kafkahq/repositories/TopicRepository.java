@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.kafkahq.models.ConsumerGroup;
+import org.kafkahq.models.LogDir;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
@@ -111,6 +112,7 @@ public class TopicRepository extends AbstractRepository {
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
         Map<String, List<ConsumerGroup>> topicConsumerGroups = consumerGroupRepository.findByTopic(clusterId, topics);
+        Map<String, List<LogDir>> topicLogDirs = logDirRepository.findByTopic(clusterId, topics);
 
         Optional<String> topicRegex = getTopicFilterRegex();
 
@@ -120,7 +122,7 @@ public class TopicRepository extends AbstractRepository {
                     new Topic(
                         description.getValue(),
                         topicConsumerGroups.getOrDefault(description.getValue().name(), Collections.emptyList()),
-                        logDirRepository.findByTopic(clusterId, description.getValue().name()),
+                        topicLogDirs.getOrDefault(description.getValue().name(), Collections.emptyList()),
                         topicOffsets.get(description.getValue().name()),
                         isInternal(description.getValue().name()),
                         isStream(description.getValue().name())

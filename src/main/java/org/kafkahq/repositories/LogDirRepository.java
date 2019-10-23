@@ -8,8 +8,10 @@ import org.kafkahq.modules.KafkaWrapper;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -33,9 +35,15 @@ public class LogDirRepository extends AbstractRepository {
     }
 
     public List<LogDir> findByTopic(String clusterId, String topic) throws ExecutionException, InterruptedException {
+        Optional<List<LogDir>> logDirs = Optional.of(this.findByTopic(clusterId, Collections.singletonList(topic)).get(topic));
+
+        return logDirs.orElse(Collections.emptyList());
+    }
+
+    public Map<String, List<LogDir>> findByTopic(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         return this.list(clusterId).stream()
-            .filter(item -> item.getTopic().equals(topic))
-            .collect(Collectors.toList());
+            .filter(item -> topics.contains(item.getTopic()))
+            .collect(Collectors.groupingBy(LogDir::getTopic));
     }
 
     public List<LogDir> findByBroker(String clusterId, Integer brokerId) throws ExecutionException, InterruptedException {
