@@ -7,6 +7,7 @@ import '../modules/datas/data-confirm';
 import '../modules/datas/highlight';
 import '../modules/datas/search-navbar';
 import '../modules/datas/search-sse';
+import '../modules/datas/after-offset';
 import '../modules/datas/tail-sse';
 import '../modules/forms/ace';
 import '../modules/forms/config';

@@ -29,11 +29,6 @@ $.widget("khq.search-navbar", $.khq.widget, {
             url.removeSearch(input.attr('name'));
         }
 
-        if (input.val() !== this._value) {
-            url.removeSearch('after');
-        }
-
-
         turbolinks.visit(url);
     }
 });
