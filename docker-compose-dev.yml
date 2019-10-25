@@ -10,11 +10,13 @@ volumes:
 
 services:
   kafkahq:
-    image: gradle:5.3.1-jre11-slim
+    image: gradle:5.6-jdk11
     command: "gradle run --continuous"
     working_dir: /app
     volumes:
       - ./:/app
+      - /app/.gradle
+      - ./gradle/gradle.properties:/root/.gradle/gradle.properties
     ports:
       - 127.11.8.17:8080:8080
     environment:
