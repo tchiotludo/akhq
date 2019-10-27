@@ -113,7 +113,7 @@
                    data-toggle="dropdown"
                    aria-haspopup="true"
                    aria-expanded="false">
-                    <strong>After offset:</strong> ()
+                    <strong>After:</strong>
                 </a>
                 <div class="dropdown-menu khq-offset-navbar">
                     <div class="input-group">

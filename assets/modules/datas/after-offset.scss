@@ -1,17 +1,27 @@
 
 .khq-offset-navbar{
 
-  max-height:500px;
+  max-height:400px;
   overflow: auto;
 
   .offset-navbar-partition-label{
     white-space: nowrap;
     text-align: right;
     padding-right: 4px;
+    width: 75px;
   }
   .offset-navbar-partition-td{
     padding-bottom: 10px;
   }
+
+  .input-group{
+    flex-direction: column;
+  }
+
+  .input-group table{
+    width: 100%;
+  }
+
   .input-group-append {
     margin-left: auto;
   }
