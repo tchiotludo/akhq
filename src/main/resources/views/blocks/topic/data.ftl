@@ -2,6 +2,7 @@
 
 <#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.String>>" -->
 <#-- @ftlvariable name="navbar" type="java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>>" -->
+<#-- @ftlvariable name="partitions" type="int" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
@@ -99,6 +100,42 @@
                                 <#if navbar["search"]["current"].isPresent()>
                                     value="${navbar["search"]["current"].get()}"
                                 </#if> />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle"
+                   href="#"
+                   role="button"
+                   data-toggle="dropdown"
+                   aria-haspopup="true"
+                   aria-expanded="false">
+                    <strong>Offsets:</strong>
+                </a>
+                <div class="dropdown-menu khq-offset-navbar">
+                    <div class="input-group">
+                        <table>
+                            <#list 0..partitions-1 as partition>
+                                <tr>
+                                    <td class="offset-navbar-partition-label offset-navbar-partition-td">Partition ${partition} : </td>
+                                    <td class="offset-navbar-partition-td">
+                                        <input class="form-control"
+                                               type="number"
+                                               min="0"
+                                           name="${partition}"
+                                           type="text"
+                                            <#if navbar["offset"][partition?string]??>
+                                                value="${navbar["offset"][partition?string]}"
+                                            </#if>
+                                        />
+                                    </td>
+                                </tr>
+                            </#list>
+
+                        </table>
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="button">OK</button>
                         </div>

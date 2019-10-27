@@ -261,6 +261,7 @@ public class TopicController extends AbstractController {
             "topic", topic,
             "canDeleteRecords", topic.canDeleteRecords(cluster, configRepository),
             "datas", data,
+            "partitions", topic.getPartitions().size(),
             "navbar", dataNavbar(options, uri, partitionUrls),
             "pagination", dataPagination(topic, options, data, uri)
         );
@@ -298,7 +299,13 @@ public class TopicController extends AbstractController {
                 .put("current", Optional.ofNullable(options.getSearch()))
                 .build()
             )
-            .build();
+            .put("offset", ImmutableMap.builder()
+                .putAll(options.getAfter().entrySet().stream().collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        Map.Entry::getValue
+                )))
+                .build()
+            ).build();
     }
 
     @Secured(Role.ROLE_TOPIC_READ)
@@ -415,7 +422,6 @@ public class TopicController extends AbstractController {
 
                 if (event.getData().getRecords().size() > 0) {
                     datas.put("datas", event.getData().getRecords());
-
                     StringWriter stringWriter = new StringWriter();
                     try {
                         freemarkerViewsRenderer.render("topicSearch", datas).writeTo(stringWriter);
