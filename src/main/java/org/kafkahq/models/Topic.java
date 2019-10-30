@@ -23,6 +23,7 @@ public class Topic {
     private boolean internal;
     private boolean configInternal;
     private boolean configStream;
+    private List<User> users = new ArrayList<>();
     private final List<Partition> partitions = new ArrayList<>();
     private List<ConsumerGroup> consumerGroups;
 

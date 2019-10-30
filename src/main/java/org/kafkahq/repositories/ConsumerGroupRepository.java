@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.resource.ResourceType;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Partition;
 import org.kafkahq.modules.KafkaModule;
@@ -26,6 +27,9 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private UserRepository userRepository;
 
     public List<CompletableFuture<ConsumerGroup>> list(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
@@ -52,9 +56,11 @@ public class ConsumerGroupRepository extends AbstractRepository {
     }
 
     public ConsumerGroup findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
-        Optional<ConsumerGroup> topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
+        Optional<ConsumerGroup> consumerGroup = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
 
-        return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
+        consumerGroup.ifPresent(cg -> cg.getUsers().addAll(userRepository.findByResourceType(clusterId, ResourceType.GROUP, name)));
+
+        return consumerGroup.orElseThrow(() -> new NoSuchElementException("Consumer Group '" + name + "' doesn't exist"));
     }
 
     public List<ConsumerGroup> findByName(String clusterId, List<String> groups) throws ExecutionException, InterruptedException {

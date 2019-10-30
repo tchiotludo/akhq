@@ -79,7 +79,7 @@ public class GroupController extends AbstractController {
     }
 
     @View("group")
-    @Get("{groupName}/{tab:(topics|members)}")
+    @Get("{groupName}/{tab:(topics|members|acls)}")
     public HttpResponse tab(HttpRequest request, String cluster, String tab, String groupName) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, groupName, tab);
     }

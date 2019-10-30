@@ -17,6 +17,8 @@ public class Role {
     public static final String ROLE_GROUP_DELETE = "group/delete";
     public static final String ROLE_GROUP_OFFSETS_UPDATE = "group/offsets/update";
 
+    public static final String ROLE_USER_READ = "user/read";
+
     public static final String ROLE_REGISTRY_READ = "registry/read";
     public static final String ROLE_REGISTRY_INSERT = "registry/insert";
     public static final String ROLE_REGISTRY_UPDATE = "registry/update";

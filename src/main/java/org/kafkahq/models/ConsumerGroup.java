@@ -20,6 +20,7 @@ public class ConsumerGroup {
     private final String partitionAssignor;
     private final ConsumerGroupState state;
     private final Node coordinator;
+    private final ArrayList<User> users = new ArrayList<>();
     private final ArrayList<Consumer> members = new ArrayList<>();
     private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 

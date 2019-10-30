@@ -190,6 +190,7 @@ These parameters are the default values used in the topic creation page.
   * `group/read`
   * `group/delete`
   * `group/offsets/update`
+  * `user/read`
   * `registry/read`
   * `registry/insert`
   * `registry/update`

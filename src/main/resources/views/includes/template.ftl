@@ -80,6 +80,11 @@
                             <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
                         </li>
                     </#if>
+                    <#if roles?seq_contains("user") == true>
+                        <li class="${(tab == "user")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/user"><i class="fa fa-fw fa-users" aria-hidden="true"></i> Users</a>
+                        </li>
+                    </#if>
                     <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true>
                         <li class="${(tab == "schema")?then("active", "")}">
                             <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
