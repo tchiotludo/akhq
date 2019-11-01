@@ -27,7 +27,7 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.Paged;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -81,14 +80,14 @@ public class TopicController extends AbstractController {
         Optional<Integer> page
     ) throws ExecutionException, InterruptedException {
         TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
-        List<CompletableFuture<Topic>> list = this.topicRepository.list(
+        List<String> list = this.topicRepository.all(
             cluster,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
             search
         );
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Topic> paged = new CompletablePaged<>(
+        Paged<String> paged = new Paged<>(
             list,
             this.pageSize,
             uri,
@@ -100,7 +99,7 @@ public class TopicController extends AbstractController {
             cluster,
             "search", search,
             "topicListView", topicListView,
-            "topics", paged.complete(),
+            "topics", this.topicRepository.findByName(cluster, paged.page()),
             "pagination", ImmutableMap.builder()
                 .put("size", paged.size())
                 .put("before", paged.before().toNormalizedURI(false).toString())
