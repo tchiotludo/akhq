@@ -55,9 +55,7 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<CompletableFuture<Topic>> list(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        List<String> topics = all(clusterId, view, search)
-            .stream()
-            .collect(Collectors.toList());
+        List<String> topics = all(clusterId, view, search);
 
         // XXX: The interface wants us to wrap these, so do that.
         return this.findByName(clusterId, topics)
