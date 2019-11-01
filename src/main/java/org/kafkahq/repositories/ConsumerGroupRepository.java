@@ -29,20 +29,21 @@ public class ConsumerGroupRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     public List<CompletableFuture<ConsumerGroup>> list(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
-        ArrayList<String> list = new ArrayList<>();
-
-        for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups(clusterId)) {
-            if (isSearchMatch(search, item.groupId())) {
-                list.add(item.groupId());
-            }
-        }
-
-        list.sort(Comparator.comparing(String::toLowerCase));
+        List<String> groups = all(clusterId, search);
 
         // XXX: The interface wants us to wrap these, so do that.
-        return this.findByName(clusterId, list)
+        return this.findByName(clusterId, groups)
             .stream()
             .map(CompletableFuture::completedFuture)
+            .collect(Collectors.toList());
+    }
+
+    public List<String> all(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
+        return kafkaWrapper.listConsumerGroups(clusterId)
+            .stream()
+            .filter(item -> isSearchMatch(search, item.groupId()))
+            .map(ConsumerGroupListing::groupId)
+            .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
     }
 

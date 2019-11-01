@@ -18,7 +18,7 @@ import org.kafkahq.models.TopicPartition;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
-import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.Paged;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -49,10 +49,10 @@ public class GroupController extends AbstractController {
     @Get
     public HttpResponse list(HttpRequest request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
 
-        List<CompletableFuture<ConsumerGroup>> list = this.consumerGroupRepository.list(cluster, search);
+        List<String> list = this.consumerGroupRepository.all(cluster, search);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
 
-        CompletablePaged<ConsumerGroup> paged = new CompletablePaged<>(
+        Paged<String> paged = new Paged<>(
             list,
             this.pageSize,
             uri,
@@ -63,7 +63,7 @@ public class GroupController extends AbstractController {
             request,
             cluster,
             "search", search,
-            "groups", paged.complete(),
+            "groups", this.consumerGroupRepository.findByName(cluster, paged.page()),
             "pagination", ImmutableMap.builder()
                 .put("size", paged.size())
                 .put("before", paged.before().toNormalizedURI(false).toString())
