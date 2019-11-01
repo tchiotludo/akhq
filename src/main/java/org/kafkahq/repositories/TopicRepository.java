@@ -65,20 +65,15 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        ArrayList<String> list = new ArrayList<>();
-
-        Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
-
-        for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(
-                getTopicFilterRegex(), item.name())) {
-                list.add(item.name());
-            }
-        }
-
-        list.sort(Comparator.comparing(String::toLowerCase));
-
-        return list;
+        return kafkaWrapper.listTopics(clusterId)
+            .stream()
+            .filter(item -> 
+                isSearchMatch(search, item.name())
+                && isListViewMatch(view, item.name())
+                && isTopicMatchRegex(getTopicFilterRegex(), item.name()))
+            .map(TopicListing::name)
+            .sorted(Comparator.comparing(String::toLowerCase))
+            .collect(Collectors.toList());
     }
 
     public boolean isListViewMatch(TopicListView view, String value) {
