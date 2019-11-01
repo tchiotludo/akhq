@@ -124,6 +124,7 @@ public class TopicRepository extends AbstractRepository {
                 isInternal(topicDescription.name()),
                 isStream(topicDescription.name())
             ))
+            .sorted(Comparator.comparing(Topic::getName))
             .collect(Collectors.toList());
     }
 
