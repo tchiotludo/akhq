@@ -106,8 +106,6 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
-        ArrayList<Topic> list = new ArrayList<>();
-
         Collection<TopicDescription> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).values();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
@@ -116,22 +114,17 @@ public class TopicRepository extends AbstractRepository {
 
         Optional<String> topicRegex = getTopicFilterRegex();
 
-        for (TopicDescription description : topicDescriptions) {
-            if (isTopicMatchRegex(topicRegex, description.name())) {
-                list.add(
-                    new Topic(
-                        description,
-                        topicConsumerGroups.getOrDefault(description.name(), Collections.emptyList()),
-                        topicLogDirs.getOrDefault(description.name(), Collections.emptyList()),
-                        topicOffsets.get(description.name()),
-                        isInternal(description.name()),
-                        isStream(description.name())
-                    )
-                );
-            }
-        }
-
-        return list;
+        return topicDescriptions.stream()
+            .filter(topicDescription -> isTopicMatchRegex(topicRegex, topicDescription.name()))
+            .map(topicDescription -> new Topic(
+                topicDescription,
+                topicConsumerGroups.getOrDefault(topicDescription.name(), Collections.emptyList()),
+                topicLogDirs.getOrDefault(topicDescription.name(), Collections.emptyList()),
+                topicOffsets.get(topicDescription.name()),
+                isInternal(topicDescription.name()),
+                isStream(topicDescription.name())
+            ))
+            .collect(Collectors.toList());
     }
 
     private boolean isInternal(String name) {
