@@ -108,7 +108,7 @@ public class TopicRepository extends AbstractRepository {
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
 
-        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
+        Collection<TopicDescription> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).values();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
         Map<String, List<ConsumerGroup>> topicConsumerGroups = consumerGroupRepository.findByTopic(clusterId, topics);
@@ -116,16 +116,16 @@ public class TopicRepository extends AbstractRepository {
 
         Optional<String> topicRegex = getTopicFilterRegex();
 
-        for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-            if(isTopicMatchRegex(topicRegex, description.getValue().name())){
+        for (TopicDescription description : topicDescriptions) {
+            if (isTopicMatchRegex(topicRegex, description.name())) {
                 list.add(
                     new Topic(
-                        description.getValue(),
-                        topicConsumerGroups.getOrDefault(description.getValue().name(), Collections.emptyList()),
-                        topicLogDirs.getOrDefault(description.getValue().name(), Collections.emptyList()),
-                        topicOffsets.get(description.getValue().name()),
-                        isInternal(description.getValue().name()),
-                        isStream(description.getValue().name())
+                        description,
+                        topicConsumerGroups.getOrDefault(description.name(), Collections.emptyList()),
+                        topicLogDirs.getOrDefault(description.name(), Collections.emptyList()),
+                        topicOffsets.get(description.name()),
+                        isInternal(description.name()),
+                        isStream(description.name())
                     )
                 );
             }
