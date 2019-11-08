@@ -6,7 +6,7 @@ import org.apache.kafka.common.acl.*;
 import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.kafkahq.models.User;
+import org.kafkahq.models.AccessControlList;
 import org.kafkahq.modules.KafkaWrapper;
 
 import javax.inject.Inject;
@@ -17,36 +17,36 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
-public class UserRepository extends AbstractRepository {
+public class AccessControlListRepository extends AbstractRepository {
 
     @Inject
     private KafkaWrapper kafkaWrapper;
 
-    public List<User> findAll(String clusterId, Optional<String> search) {
+    public List<AccessControlList> findAll(String clusterId, Optional<String> search) {
         try {
             return kafkaWrapper.describeAcls(clusterId, AclBindingFilter.ANY).stream()
                     .map(acl -> acl.entry().principal())
                     .distinct()
                     .filter(principal -> isSearchMatch(search, principal))
-                    .map(User::new)
+                    .map(AccessControlList::new)
                     .collect(Collectors.toList());
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);
         }
     }
 
-    public User findByUser(String clusterId, String encodedUser, Optional<String> resourceType) {
-        String username = User.decodeUsername(encodedUser);
+    public AccessControlList findByPrincipal(String clusterId, String encodedPrincipal, Optional<String> resourceType) {
+        String principal = AccessControlList.decodePrincipal(encodedPrincipal);
         try {
-            var userAcls = kafkaWrapper.describeAcls(clusterId, filterForUsername(username, resourceType))
+            var aclBindings = kafkaWrapper.describeAcls(clusterId, filterForPrincipal(principal, resourceType))
                     .stream().collect(Collectors.toList());
-            return toUser(username, userAcls);
+            return toAcl(principal, aclBindings);
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);
         }
     }
 
-    public List<User> findByResourceType(String clusterId, ResourceType resourceType, String resourceName) {
+    public List<AccessControlList> findByResourceType(String clusterId, ResourceType resourceType, String resourceName) {
         try {
             return kafkaWrapper.describeAcls(clusterId, filterForResource(resourceType, resourceName))
                     .stream()
@@ -55,7 +55,7 @@ public class UserRepository extends AbstractRepository {
                                     acl -> acl.entry().principal(),
                                     Collectors.toList()))
                     .entrySet().stream()
-                    .map(entry -> toUser(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+                    .map(entry -> toAcl(entry.getKey(), entry.getValue())).collect(Collectors.toList());
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);
         }
@@ -66,37 +66,37 @@ public class UserRepository extends AbstractRepository {
         return new AclBindingFilter(resourcePatternFilter, AccessControlEntryFilter.ANY);
     }
 
-    private AclBindingFilter filterForUsername(String username, Optional<String> resourceTypeFilter) {
+    private AclBindingFilter filterForPrincipal(String principal, Optional<String> resourceTypeFilter) {
         ResourceType resourceType = resourceTypeFilter.isPresent() ? ResourceType.fromString(resourceTypeFilter.get()) : ResourceType.ANY;
-        AccessControlEntryFilter accessControlEntryFilter = new AccessControlEntryFilter(username, null, AclOperation.ANY, AclPermissionType.ANY);
+        AccessControlEntryFilter accessControlEntryFilter = new AccessControlEntryFilter(principal, null, AclOperation.ANY, AclPermissionType.ANY);
         ResourcePatternFilter resourcePatternFilter = new ResourcePatternFilter(resourceType, null, PatternType.ANY);
         return new AclBindingFilter(resourcePatternFilter, accessControlEntryFilter);
     }
 
-    private User toUser(String username, List<AclBinding> userAcls) {
-        User user = new User(username, new HashMap<>());
+    private AccessControlList toAcl(String principal, List<AclBinding> aclBindings) {
+        var permissions = new HashMap<String, Map<AccessControlList.HostResource,List<String>>>();
 
-        userAcls.stream()
+        aclBindings.stream()
                 .collect(Collectors.groupingBy(
                         acl -> new HostResourceType(
-                                new User.HostResource(
+                                new AccessControlList.HostResource(
                                         acl.entry().host(),
                                         acl.pattern().patternType().name().toLowerCase() + ":" + acl.pattern().name()),
                                 acl.pattern().resourceType()),
-                        Collectors.mapping(acl -> acl.entry().operation().name(), Collectors.toList()))
+                        Collectors.mapping(aclBinding -> aclBinding.entry().operation().name(), Collectors.toList()))
                 )
                 .entrySet().stream()
                 .forEach(entry -> {
-                    user.getAcls().putIfAbsent(entry.getKey().resourceType.name().toLowerCase(), new HashMap<>());
-                    user.getAcls().get(entry.getKey().resourceType.name().toLowerCase()).put(entry.getKey().hostResource, entry.getValue());
+                    permissions.putIfAbsent(entry.getKey().resourceType.name().toLowerCase(), new HashMap<>());
+                    permissions.get(entry.getKey().resourceType.name().toLowerCase()).put(entry.getKey().hostResource, entry.getValue());
                 });
-        return user;
+        return new AccessControlList(principal, permissions);
     }
 
     @Data
     @AllArgsConstructor
     class HostResourceType {
-        private User.HostResource hostResource;
+        private AccessControlList.HostResource hostResource;
         private ResourceType resourceType;
     }
 }

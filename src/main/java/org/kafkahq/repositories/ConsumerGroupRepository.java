@@ -29,7 +29,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     @Inject
-    private UserRepository userRepository;
+    private AccessControlListRepository aclRepository;
 
     public List<CompletableFuture<ConsumerGroup>> list(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
@@ -58,8 +58,6 @@ public class ConsumerGroupRepository extends AbstractRepository {
     public ConsumerGroup findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
         Optional<ConsumerGroup> consumerGroup = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
 
-        consumerGroup.ifPresent(cg -> cg.getUsers().addAll(userRepository.findByResourceType(clusterId, ResourceType.GROUP, name)));
-
         return consumerGroup.orElseThrow(() -> new NoSuchElementException("Consumer Group '" + name + "' doesn't exist"));
     }
 
@@ -80,7 +78,8 @@ public class ConsumerGroupRepository extends AbstractRepository {
             list.add(new ConsumerGroup(
                 description.getValue(),
                 groupsOffsets,
-                topicsOffsets
+                topicsOffsets,
+                aclRepository.findByResourceType(clusterId, ResourceType.GROUP, description.getValue().groupId())
             ));
         }
 

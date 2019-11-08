@@ -22,7 +22,7 @@
                href="${basePath}/${clusterId}/group/${group.getId()}/members"
                role="tab">Members</a>
         </li>
-        <#if roles?seq_contains("user") == true>
+        <#if roles?seq_contains("acls") == true>
             <li class="nav-item">
                 <a class="nav-link ${(tab == "acls")?then("active", "")}"
                    href="${basePath}/${clusterId}/group/${group.getId()}/acls"
@@ -43,11 +43,11 @@
             <#include "blocks/group/members.ftl" />
         </div>
         </#if>
-        <#if tab == "acls" && roles?seq_contains("user") == true>
+        <#if tab == "acls" && roles?seq_contains("acls") == true>
             <div class="tab-pane active" role="tabpanel">
                 <#assign resourceType="group"/>
-                <#assign users=group.getUsers()/>
-                <#include "blocks/acls.ftl" />
+                <#assign acls=group.getAcls()/>
+                <#include "blocks/resourceTypeAcls.ftl" />
             </div>
         </#if>
     </div>

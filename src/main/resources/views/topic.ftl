@@ -35,7 +35,7 @@
                href="${basePath}/${clusterId}/topic/${topic.getName()}/configs"
                role="tab">Configs</a>
         </li>
-        <#if roles?seq_contains("user") == true>
+        <#if roles?seq_contains("acls") == true>
             <li class="nav-item">
                 <a class="nav-link ${(tab == "acls")?then("active", "")}"
                    href="${basePath}/${clusterId}/topic/${topic.getName()}/acls"
@@ -74,11 +74,11 @@
         </div>
         </#if>
 
-        <#if tab == "acls" && roles?seq_contains("user") == true>
+        <#if tab == "acls" && roles?seq_contains("acls") == true>
             <div class="tab-pane active" role="tabpanel">
                 <#assign resourceType="topic"/>
-                <#assign users=topic.getUsers()/>
-                <#include "blocks/acls.ftl" />
+                <#assign acls=topic.getAcls()/>
+                <#include "blocks/resourceTypeAcls.ftl" />
             </div>
         </#if>
 

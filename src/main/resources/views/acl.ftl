@@ -1,7 +1,7 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="user" type="org.kafkahq.models.User" -->
+<#-- @ftlvariable name="acl" type="org.kafkahq.models.AccessControlList" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
@@ -9,18 +9,18 @@
 <#import "includes/group.ftl" as groupTemplate>
 <#import "includes/log.ftl" as logTemplate>
 
-<@template.header "User : " + user.getName(), "user" />
+<@template.header "Principal : " + acl.getPrincipal(), "acls" />
 
 <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link ${(tab == "topic")?then("active", "")}"
-               href="${basePath}/${clusterId}/user/${user.getEncodedName()}/"
+               href="${basePath}/${clusterId}/acls/${acl.getEncodedPrincipal()}/"
                role="tab">Topics</a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${(tab == "group")?then("active", "")}"
-               href="${basePath}/${clusterId}/user/${user.getEncodedName()}/group"
+               href="${basePath}/${clusterId}/acls/${acl.getEncodedPrincipal()}/group"
                role="tab">Groups</a>
         </li>
     </ul>
@@ -37,8 +37,8 @@
         </thead>
         <tbody>
         <#assign aclCounter=0>
-        <#if user.getAcls()[tab]?? >
-            <#assign topicAcls=user.getAcls()[tab]>
+        <#if acl.getPermissions()[tab]?? >
+            <#assign topicAcls=acl.getPermissions()[tab]>
 
 
             <#assign key_list = topicAcls?keys/>
@@ -63,7 +63,9 @@
         <#if aclCounter == 0 >
             <tr>
                 <td colspan="3">
-                    No ACL found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    <div class="alert alert-warning mb-0" role="alert">
+                        No ACL found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    </div>
                 </td>
             </tr>
         </#if>

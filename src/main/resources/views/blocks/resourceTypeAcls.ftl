@@ -2,7 +2,7 @@
 
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="resourceType" type="java.lang.String" -->
-<#-- @ftlvariable name="users" type="java.util.List<Users>" -->
+<#-- @ftlvariable name="acls" type="java.util.List<org.kafkahq.models.AccessControlList>" -->
 
 
 <div class="table-responsive">
@@ -16,8 +16,8 @@
         </thead>
         <tbody>
         <#assign aclCounter=0>
-        <#list users as user>
-            <#assign topicAcls=user.getAcls()[resourceType?lower_case]>
+        <#list acls as acl>
+            <#assign topicAcls=acl.getPermissions()[resourceType?lower_case]>
             <#assign key_list = topicAcls?keys/>
             <#assign value_list = topicAcls?values/>
             <#list key_list as key>
@@ -25,7 +25,7 @@
                 <#assign seq_index = key_list?seq_index_of(key) />
                 <#assign key_value = value_list[seq_index]/>
                 <tr>
-                    <td>${user.getName()}</td>
+                    <td>${acl.getPrincipal()}</td>
                     <td>${key.getHost()}</td>
                     <td>
                         <h5>
@@ -41,7 +41,9 @@
         <#if aclCounter == 0 >
             <tr>
                 <td colspan="3">
-                    No ACLS found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    <div class="alert alert-warning mb-0" role="alert">
+                        No ACLS found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    </div>
                 </td>
             </tr>
         </#if>

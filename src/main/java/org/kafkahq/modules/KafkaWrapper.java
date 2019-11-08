@@ -179,7 +179,7 @@ public class KafkaWrapper {
                                 .values()
                                 .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof SecurityDisabledException) {
+                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException ) {
                             return Collections.emptyList();
                         }
                         throw e;

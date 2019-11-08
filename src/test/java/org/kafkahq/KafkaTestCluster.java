@@ -267,31 +267,31 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         List<AclBinding> bindings = new ArrayList<>();
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:myuser", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:myuser", "*", AclOperation.READ, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:myotheruser", "*", AclOperation.WRITE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:tata", "*", AclOperation.WRITE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:myuser", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
-                new AccessControlEntry("user:myuser", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
-                new AccessControlEntry("user:myotheruser", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:tata", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
-                new AccessControlEntry("user:myuser", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
 
         testUtils.getAdminClient().createAcls(bindings).all().get();

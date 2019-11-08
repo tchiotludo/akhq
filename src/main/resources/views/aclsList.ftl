@@ -1,14 +1,14 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="users" type="java.util.List<org.kafkahq.models.User>" -->
+<#-- @ftlvariable name="acls" type="java.util.List<org.kafkahq.models.AccessControlList>" -->
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/group.ftl" as groupTemplate>
 <#import "includes/log.ftl" as logTemplate>
 
-<@template.header "Users", "user" />
+<@template.header "Acls", "acls" />
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-nav">
     <button class="navbar-toggler"
@@ -42,22 +42,24 @@
     <table class="table table-bordered table-striped table-hover mb-0">
         <thead class="thead-dark">
         <tr>
-            <th colspan="2">User</th>
+            <th colspan="2">Principals</th>
         </tr>
         </thead>
         <tbody>
-        <#list users as user>
+        <#list acls as acl>
             <tr>
-                <td>${user.getName()}</td>
+                <td>${acl.getPrincipal()}</td>
                 <td class="khq-row-action khq-row-action-main">
-                    <a href="${basePath}/${clusterId}/user/${user.getEncodedName()}" ><i class="fa fa-search"></i></a>
+                    <a href="${basePath}/${clusterId}/acls/${acl.getEncodedPrincipal()}" ><i class="fa fa-search"></i></a>
                 </td>
             </tr>
         </#list>
-        <#if users?size == 0 >
+        <#if acls?size == 0 >
             <tr>
                 <td colspan="2">
-                    No user found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    <div class="alert alert-warning mb-0" role="alert">
+                        No acl found, or the "authorizer.class.name" parameter is not configured on the cluster.
+                    </div>
                 </td>
             </tr>
         </#if>

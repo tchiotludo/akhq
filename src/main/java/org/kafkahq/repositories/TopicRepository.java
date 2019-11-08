@@ -39,7 +39,7 @@ public class TopicRepository extends AbstractRepository {
     private ConfigRepository configRepository;
 
     @Inject
-    private UserRepository userRepository;
+    private AccessControlListRepository aclRepository;
 
     @Inject
     ApplicationContext applicationContext;
@@ -106,7 +106,6 @@ public class TopicRepository extends AbstractRepository {
         Optional<Topic> topic = Optional.empty();
         if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
             topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
-            topic.ifPresent(t -> t.getUsers().addAll(userRepository.findByResourceType(clusterId, ResourceType.TOPIC, t.getName())));
         }
 
         return topic.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
@@ -128,6 +127,7 @@ public class TopicRepository extends AbstractRepository {
                         consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
+                        aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, description.getValue().name()),
                         isInternal(description.getValue().name()),
                         isStream(description.getValue().name())
                     )
