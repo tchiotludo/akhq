@@ -16,8 +16,15 @@ import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.acl.AccessControlEntry;
+import org.apache.kafka.common.acl.AclBinding;
+import org.apache.kafka.common.acl.AclOperation;
+import org.apache.kafka.common.acl.AclPermissionType;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.resource.PatternType;
+import org.apache.kafka.common.resource.ResourcePattern;
+import org.apache.kafka.common.resource.ResourceType;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.kafkahq.clusters.EmbeddedSingleNodeKafkaCluster;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -83,6 +90,9 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             put("log.roll.ms", "1");
             put("log.cleaner.backoff.ms", "1");
             put("log.segment.delete.delay.ms", "1");
+            put("authorizer.class.name", "kafka.security.auth.SimpleAclAuthorizer");
+            put("allow.everyone.if.no.acl.found", "true");
+
 
             // Segment config
             put(TopicConfig.SEGMENT_MS_CONFIG, "1");
@@ -252,6 +262,41 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
         log.debug("Huge topic created");
+
+
+        List<AclBinding> bindings = new ArrayList<>();
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
+                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
+                new AccessControlEntry("user:tata", "*", AclOperation.WRITE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
+                new AccessControlEntry("user:tata", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
+                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+
+        testUtils.getAdminClient().createAcls(bindings).all().get();
+
+        log.debug("bindings acls added");
     }
 
     private static Map<byte[], byte[]> randomDatas(int size, Integer start) {

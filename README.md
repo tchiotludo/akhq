@@ -17,6 +17,7 @@
   - List
   - Configurations view
   - Partitions view
+  - ACLS view
   - Consumers groups assignments view
   - Node leader & assignments view
   - Create a topic
@@ -35,6 +36,7 @@
 - **Consumer Groups** (only with kafka internal storage, not with old Zookepper)
   - List with lag, topics assignments
   - Partitions view & lag
+  - ACLS view
   - Node leader & assignments view
   - Display active and pending consumers groups
   - Delete a consumer group
@@ -52,6 +54,9 @@
   - Configurations view
   - Logs view
   - Configure a node
+- **ACLS**
+  - List principals
+  - List principals topic & group acls
 - **Authentification and Roles**
   - Read only mode
   - BasicHttp with roles per user
@@ -190,6 +195,7 @@ These parameters are the default values used in the topic creation page.
   * `group/read`
   * `group/delete`
   * `group/offsets/update`
+  * `acls/read`
   * `registry/read`
   * `registry/insert`
   * `registry/update`

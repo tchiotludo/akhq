@@ -127,6 +127,7 @@ kafkahq:
       - registry/update
       - registry/delete
       - registry/version/delete
+      - acls/read
       - connect/read
       - connect/insert
       - connect/update

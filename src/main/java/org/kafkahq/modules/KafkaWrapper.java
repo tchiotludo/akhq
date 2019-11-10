@@ -7,8 +7,11 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.acl.AclBinding;
+import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
+import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 import org.kafkahq.utils.Lock;
@@ -165,6 +168,25 @@ public class KafkaWrapper {
             .get(),
             "Describe Topic Config {}",
             names
+        );
+    }
+
+    public Collection<AclBinding> describeAcls(String clusterId, AclBindingFilter filter) throws ExecutionException, InterruptedException {
+        return Lock.call(() -> {
+                    try {
+                        return kafkaModule.getAdminClient(clusterId)
+                                .describeAcls(filter)
+                                .values()
+                                .get();
+                    } catch (ExecutionException e) {
+                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException ) {
+                            return Collections.emptyList();
+                        }
+                        throw e;
+                    }
+                },
+                "Describe Acls config",
+                null
         );
     }
 }

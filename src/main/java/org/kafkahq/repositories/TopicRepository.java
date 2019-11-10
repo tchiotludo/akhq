@@ -7,6 +7,7 @@ import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.apache.kafka.common.resource.ResourceType;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
@@ -36,6 +37,9 @@ public class TopicRepository extends AbstractRepository {
 
     @Inject
     private ConfigRepository configRepository;
+
+    @Inject
+    private AccessControlListRepository aclRepository;
 
     @Inject
     ApplicationContext applicationContext;
@@ -99,11 +103,12 @@ public class TopicRepository extends AbstractRepository {
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
 
-        Optional<Topic> topics = Optional.empty();
+        Optional<Topic> topic = Optional.empty();
         if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
-            topics = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
+            topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
         }
-        return topics.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
+
+        return topic.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
@@ -122,6 +127,7 @@ public class TopicRepository extends AbstractRepository {
                         consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
+                        aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, description.getValue().name()),
                         isInternal(description.getValue().name()),
                         isStream(description.getValue().name())
                     )

@@ -310,7 +310,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_READ)
     @View("topic")
-    @Get("{topicName}/{tab:(partitions|groups|configs|logs)}")
+    @Get("{topicName}/{tab:(partitions|groups|configs|logs|acls)}")
     public HttpResponse tab(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, topicName,  tab);
     }

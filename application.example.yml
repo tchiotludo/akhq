@@ -104,6 +104,7 @@ kafkahq:
       - group/read
       - group/delete
       - group/offsets/update
+      - acls/read
       - registry/read
       - registry/insert
       - registry/update

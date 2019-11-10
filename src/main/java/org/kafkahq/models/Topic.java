@@ -23,6 +23,7 @@ public class Topic {
     private boolean internal;
     private boolean configInternal;
     private boolean configStream;
+    private final List<AccessControlList> acls = new ArrayList<>();
     private final List<Partition> partitions = new ArrayList<>();
     private List<ConsumerGroup> consumerGroups;
 
@@ -31,6 +32,7 @@ public class Topic {
         List<ConsumerGroup> consumerGroup,
         List<LogDir> logDirs,
         List<Partition.Offsets> offsets,
+        List<AccessControlList> acls,
         boolean configInternal,
         boolean configStream
     ) {
@@ -40,6 +42,7 @@ public class Topic {
 
         this.configInternal = configInternal;
         this.configStream = configStream;
+        this.acls.addAll(acls);
 
         for (TopicPartitionInfo partition : description.partitions()) {
             this.partitions.add(new Partition(
