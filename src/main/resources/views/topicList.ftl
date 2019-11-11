@@ -63,7 +63,7 @@
                             </span>
                         </td>
                         <td>
-                            <#if topic.getLogDirSize()?? || topic.getLogDirSize().isEmpty() >
+                            <#if topic.getLogDirSize().isEmpty() >
                                 n/a
                             <#else>
                                 ${functions.filesize(topic.getLogDirSize().get())}

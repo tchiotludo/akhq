@@ -28,6 +28,7 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.CompletablePagedService;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -47,10 +48,10 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
     private Environment environment;
+    private CompletablePagedService completablePagedService;
+
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
-    @Value("${kafkahq.topic.page-size:25}")
-    private Integer pageSize;
     @Value("${kafkahq.topic.replication}")
     private Integer replicationFactor;
     @Value("${kafkahq.topic.retention}")
@@ -59,17 +60,20 @@ public class TopicController extends AbstractController {
     private Integer partitionCount;
 
     @Inject
-    public TopicController(TopicRepository topicRepository,
-                           ConfigRepository configRepository,
-                           RecordRepository recordRepository,
-                           FreemarkerViewsRenderer freemarkerViewsRenderer,
-                           Environment environment)
-    {
+    public TopicController(
+        TopicRepository topicRepository,
+        ConfigRepository configRepository,
+        RecordRepository recordRepository,
+        FreemarkerViewsRenderer freemarkerViewsRenderer,
+        Environment environment,
+        CompletablePagedService completablePagedService
+    ) {
         this.topicRepository = topicRepository;
         this.configRepository = configRepository;
         this.recordRepository = recordRepository;
         this.freemarkerViewsRenderer = freemarkerViewsRenderer;
         this.environment = environment;
+        this.completablePagedService = completablePagedService;
     }
 
     @View("topicList")
@@ -88,12 +92,7 @@ public class TopicController extends AbstractController {
         );
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Topic> paged = new CompletablePaged<>(
-            list,
-            this.pageSize,
-            uri,
-            page.orElse(1)
-        );
+        CompletablePaged<Topic> paged = completablePagedService.of(list, uri, page.orElse(1));
 
         return this.template(
             request,

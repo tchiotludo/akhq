@@ -80,9 +80,12 @@ kafkahq:
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
+  pagination:
+    page-size: 25
+    threads: 16
+
   topic:
     default-view: HIDE_INTERNAL
-    page-size: 25
     replication: 1
     retention: 86400000
     partition: 1
@@ -96,12 +99,6 @@ kafkahq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-
-  schema:
-    page-size: 25
-
-  consumer-groups:
-    page-size: 25
 
   topic-data:
     sort: OLDEST

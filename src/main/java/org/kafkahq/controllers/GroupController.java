@@ -19,6 +19,7 @@ import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.CompletablePagedService;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -35,14 +36,17 @@ import java.util.stream.Collectors;
 public class GroupController extends AbstractController {
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;
-
-    @Value("${kafkahq.consumer-groups.page-size:25}")
-    private Integer pageSize;
+    private CompletablePagedService completablePagedService;
 
     @Inject
-    public GroupController(ConsumerGroupRepository consumerGroupRepository, RecordRepository recordRepository) {
+    public GroupController(
+        ConsumerGroupRepository consumerGroupRepository,
+        RecordRepository recordRepository,
+        CompletablePagedService completablePagedService
+    ) {
         this.consumerGroupRepository = consumerGroupRepository;
         this.recordRepository = recordRepository;
+        this.completablePagedService = completablePagedService;
     }
 
     @View("groupList")
@@ -51,13 +55,7 @@ public class GroupController extends AbstractController {
 
         List<CompletableFuture<ConsumerGroup>> list = this.consumerGroupRepository.list(cluster, search);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-
-        CompletablePaged<ConsumerGroup> paged = new CompletablePaged<>(
-            list,
-            this.pageSize,
-            uri,
-            page.orElse(1)
-        );
+        CompletablePaged<ConsumerGroup> paged = completablePagedService.of(list, uri, page.orElse(1));
 
         return this.template(
             request,

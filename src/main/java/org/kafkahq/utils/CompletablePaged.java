@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class CompletablePaged <T> {
     private List<CompletableFuture<T>> list;
     private Integer pageSize;
+    private ExecutorService executorService;
     private URIBuilder uri;
     private Integer currentPage;
 
@@ -20,6 +20,7 @@ public class CompletablePaged <T> {
     }
 
     public URIBuilder before() {
+
         if (currentPage - 1 > 0) {
             return uri.addParameter("page", String.valueOf(currentPage - 1));
         } else {
@@ -67,11 +68,13 @@ public class CompletablePaged <T> {
             futuresList.toArray(new CompletableFuture[0])
         );
 
-        return allFuturesResult.thenApply(s ->
+        return allFuturesResult.thenApplyAsync(s ->
             futuresList.stream().
                 map(CompletableFuture::join).
-                collect(Collectors.toList())
+                collect(Collectors.toList()),
+            this.executorService
         )
             .get();
+
     }
 }

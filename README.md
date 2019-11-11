@@ -153,8 +153,11 @@ kafkahq:
 
 ### KafkaHQ configuration 
 
+#### Pagination
+* `kafkahq.pagination.page-size` number of topics per page (default : 25)
+* `kafkahq.pagination.threads` number of parallel threads to resolve current page (default : 16). This setting can have a signifiant impact on performance on list page since it will fetch in parallel the Kafka API.
+
 #### Topic List 
-* `kafkahq.topic.page-size` number of topics per page (default : 25)
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
@@ -172,13 +175,6 @@ These parameters are the default values used in the topic creation page.
 * `kafkahq.topic-data.size`: max record per page (default: 50)
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
-
-#### Consumer Groups List 
-* `kafkahq.consumer-groups.page-size` number of consumer groups per page (default : 25)
-
-
-#### Schema List 
-* `kafkahq.schema.page-size` number of schemas per page (default : 25)
 
     
 ### Security

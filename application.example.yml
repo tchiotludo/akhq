@@ -57,12 +57,15 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
 
+  pagination:
+    page-size: 25 # number of elements per page (default : 25)
+    threads: 16 # Number of parallel threads to resolve page
+
   # Topic list display options (optional)
   topic:
     retention: 172800000 # default retention period when creating topic
     partition: 3 #  default number of partition when creating topic
     replication: 3 # default number of replicas when creating topic
-    page-size: 25 # number of topics per page (default : 25)
     default-view: HIDE_INTERNAL # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
     internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
       - "^_.*$"
@@ -80,14 +83,6 @@ kafkahq:
     sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
-
-  # Schema list display options (optional)
-  schema:
-    page-size: 25 # number of schemas per page (default : 25)
-
-  # Consumer groups list display options (optional)
-  consumer-groups:
-    page-size: 25 # number of consumer groups per page (default : 25)
 
   # Auth & Roles (optional)
   security:
