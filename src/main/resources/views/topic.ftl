@@ -35,6 +35,13 @@
                href="${basePath}/${clusterId}/topic/${topic.getName()}/configs"
                role="tab">Configs</a>
         </li>
+        <#if roles?seq_contains("acls") == true>
+            <li class="nav-item">
+                <a class="nav-link ${(tab == "acls")?then("active", "")}"
+                   href="${basePath}/${clusterId}/topic/${topic.getName()}/acls"
+                   role="tab">ACLS</a>
+            </li>
+        </#if>
         <li class="nav-item">
             <a class="nav-link ${(tab == "logs")?then("active", "")}"
                href="${basePath}/${clusterId}/topic/${topic.getName()}/logs"
@@ -65,6 +72,14 @@
         <div class="tab-pane active" role="tabpanel">
             <#include "blocks/configs.ftl" />
         </div>
+        </#if>
+
+        <#if tab == "acls" && roles?seq_contains("acls") == true>
+            <div class="tab-pane active" role="tabpanel">
+                <#assign resourceType="topic"/>
+                <#assign acls=topic.getAcls()/>
+                <#include "blocks/resourceTypeAcls.ftl" />
+            </div>
         </#if>
 
         <#if tab == "logs">

@@ -11,6 +11,7 @@ import org.kafkahq.repositories.ConfigRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class Topic {
     private boolean internal;
     private boolean configInternal;
     private boolean configStream;
+    private final List<AccessControlList> acls = new ArrayList<>();
     private final List<Partition> partitions = new ArrayList<>();
     private List<ConsumerGroup> consumerGroups;
 
@@ -30,6 +32,7 @@ public class Topic {
         List<ConsumerGroup> consumerGroup,
         List<LogDir> logDirs,
         List<Partition.Offsets> offsets,
+        List<AccessControlList> acls,
         boolean configInternal,
         boolean configStream
     ) {
@@ -39,6 +42,7 @@ public class Topic {
 
         this.configInternal = configInternal;
         this.configStream = configStream;
+        this.acls.addAll(acls);
 
         for (TopicPartitionInfo partition : description.partitions()) {
             this.partitions.add(new Partition(
@@ -65,19 +69,21 @@ public class Topic {
         return this.configStream;
     }
 
-    public List<Node.Partition> getReplicas() {
+    public long getReplicaCount() {
         return this.getPartitions().stream()
             .flatMap(partition -> partition.getNodes().stream())
+            .map(Node::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .count();
     }
 
-    public List<Node.Partition> getInSyncReplicas() {
+    public long getInSyncReplicaCount() {
         return this.getPartitions().stream()
             .flatMap(partition -> partition.getNodes().stream())
             .filter(Node.Partition::isInSyncReplicas)
+            .map(Node::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .count();
     }
 
     public List<LogDir> getLogDir() {
@@ -86,10 +92,19 @@ public class Topic {
             .collect(Collectors.toList());
     }
 
-    public long getLogDirSize() {
-        return this.getPartitions().stream()
+    public Optional<Long> getLogDirSize() {
+        Integer logDirCount = this.getPartitions().stream()
+            .map(r -> r.getLogDir().size())
+            .reduce(0, Integer::sum);
+
+        if (logDirCount == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(this.getPartitions().stream()
             .map(Partition::getLogDirSize)
-            .reduce(0L, Long::sum);
+            .reduce(0L, Long::sum)
+        );
     }
 
     public long getSize() {
@@ -108,13 +123,13 @@ public class Topic {
         throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
     }
 
-    public Boolean canDeleteRecords(ConfigRepository configRepository) throws ExecutionException, InterruptedException {
+    public Boolean canDeleteRecords(String clusterId, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
         if (this.isInternal()) {
             return false;
         }
 
         return configRepository
-            .findByTopic(this.getName())
+            .findByTopic(clusterId, this.getName())
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
             .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));

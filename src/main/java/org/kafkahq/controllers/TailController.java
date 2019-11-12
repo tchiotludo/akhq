@@ -55,7 +55,7 @@ public class TailController extends AbstractController {
             cluster,
             "search", search,
             "topics", topics.orElse(new ArrayList<>()),
-            "topicsList", this.topicRepository.all(TopicRepository.TopicListView.ALL, Optional.empty()),
+            "topicsList", this.topicRepository.all(cluster, TopicRepository.TopicListView.ALL, Optional.empty()),
             "size", size.orElse(100)
         );
     }
@@ -80,7 +80,7 @@ public class TailController extends AbstractController {
         datas.put("roles", getRights());
 
         return recordRepository
-            .tail(options)
+            .tail(cluster, options)
             .map(event -> {
                 TailBody tailBody = new TailBody();
                 tailBody.offsets = event.getData()

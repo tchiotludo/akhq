@@ -15,10 +15,16 @@
         padding: 5px 10px;
         background: $tertiary;
         border-bottom: 4px solid $yellow;
+        position:relative;
         a {
             &:hover {
                 text-decoration: none;
             }
+        }
+        .version{
+            position:absolute;
+            right:5px;
+            bottom:0px;
         }
     }
 

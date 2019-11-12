@@ -28,6 +28,7 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.CompletablePagedService;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -47,23 +48,32 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
     private Environment environment;
+    private CompletablePagedService completablePagedService;
+
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
-    @Value("${kafkahq.topic.page-size:25}")
-    private Integer pageSize;
+    @Value("${kafkahq.topic.replication}")
+    private Integer replicationFactor;
+    @Value("${kafkahq.topic.retention}")
+    private Integer retentionPeriod;
+    @Value("${kafkahq.topic.partition}")
+    private Integer partitionCount;
 
     @Inject
-    public TopicController(TopicRepository topicRepository,
-                           ConfigRepository configRepository,
-                           RecordRepository recordRepository,
-                           FreemarkerViewsRenderer freemarkerViewsRenderer,
-                           Environment environment)
-    {
+    public TopicController(
+        TopicRepository topicRepository,
+        ConfigRepository configRepository,
+        RecordRepository recordRepository,
+        FreemarkerViewsRenderer freemarkerViewsRenderer,
+        Environment environment,
+        CompletablePagedService completablePagedService
+    ) {
         this.topicRepository = topicRepository;
         this.configRepository = configRepository;
         this.recordRepository = recordRepository;
         this.freemarkerViewsRenderer = freemarkerViewsRenderer;
         this.environment = environment;
+        this.completablePagedService = completablePagedService;
     }
 
     @View("topicList")
@@ -76,17 +86,13 @@ public class TopicController extends AbstractController {
     ) throws ExecutionException, InterruptedException {
         TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
         List<CompletableFuture<Topic>> list = this.topicRepository.list(
+            cluster,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
             search
         );
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Topic> paged = new CompletablePaged<>(
-            list,
-            this.pageSize,
-            uri,
-            page.orElse(1)
-        );
+        CompletablePaged<Topic> paged = completablePagedService.of(list, uri, page.orElse(1));
 
         return this.template(
             request,
@@ -108,7 +114,10 @@ public class TopicController extends AbstractController {
     public HttpResponse create(HttpRequest request, String cluster) {
         return this.template(
             request,
-            cluster
+            cluster,
+            "replication", this.replicationFactor,
+            "retention", this.retentionPeriod.toString(),
+            "partition", this.partitionCount
         );
     }
 
@@ -154,7 +163,7 @@ public class TopicController extends AbstractController {
     @View("topicProduce")
     @Get("{topicName}/produce")
     public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(topicName);
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         return this.template(
             request,
@@ -220,7 +229,7 @@ public class TopicController extends AbstractController {
                              Optional<String> search)
         throws ExecutionException, InterruptedException
     {
-        Topic topic = this.topicRepository.findByName(topicName);
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         after.ifPresent(options::setAfter);
@@ -233,7 +242,7 @@ public class TopicController extends AbstractController {
         List<Record> data = new ArrayList<>();
 
         if (options.getSearch() == null) {
-            data = this.recordRepository.consume(options);
+            data = this.recordRepository.consume(cluster, options);
         }
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
@@ -249,8 +258,9 @@ public class TopicController extends AbstractController {
             cluster,
             "tab", "data",
             "topic", topic,
-            "canDeleteRecords", topic.canDeleteRecords(configRepository),
+            "canDeleteRecords", topic.canDeleteRecords(cluster, configRepository),
             "datas", data,
+            "partitions", topic.getPartitions().size(),
             "navbar", dataNavbar(options, uri, partitionUrls),
             "pagination", dataPagination(topic, options, data, uri)
         );
@@ -288,19 +298,25 @@ public class TopicController extends AbstractController {
                 .put("current", Optional.ofNullable(options.getSearch()))
                 .build()
             )
-            .build();
+            .put("offset", ImmutableMap.builder()
+                .putAll(options.getAfter().entrySet().stream().collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        Map.Entry::getValue
+                )))
+                .build()
+            ).build();
     }
 
     @Secured(Role.ROLE_TOPIC_READ)
     @View("topic")
-    @Get("{topicName}/{tab:(partitions|groups|configs|logs)}")
+    @Get("{topicName}/{tab:(partitions|groups|configs|logs|acls)}")
     public HttpResponse tab(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, topicName,  tab);
     }
 
     private HttpResponse render(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(topicName);
-        List<Config> configs = this.configRepository.findByTopic(topicName);
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+        List<Config> configs = this.configRepository.findByTopic(cluster, topicName);
 
         return this.template(
             request,
@@ -314,7 +330,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
     @Post(value = "{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateConfig(HttpRequest request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
-        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(topicName));
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName));
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
         this.toast(response, RequestHelper.runnableToToast(() -> {
@@ -378,7 +394,7 @@ public class TopicController extends AbstractController {
                                           Optional<String> search)
         throws ExecutionException, InterruptedException
     {
-        Topic topic = topicRepository.findByName(topicName);
+        Topic topic = topicRepository.findByName(cluster, topicName);
 
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         after.ifPresent(options::setAfter);
@@ -390,13 +406,13 @@ public class TopicController extends AbstractController {
 
         Map<String, Object> datas = new HashMap<>();
         datas.put("topic", topic);
-        datas.put("canDeleteRecords", topic.canDeleteRecords(configRepository));
+        datas.put("canDeleteRecords", topic.canDeleteRecords(cluster, configRepository));
         datas.put("clusterId", cluster);
         datas.put("basePath", getBasePath());
         datas.put("roles", getRights());
 
         return recordRepository
-            .search(options)
+            .search(cluster, options)
             .map(event -> {
                 SearchBody searchBody = new SearchBody(
                     event.getData().getPercent(),
@@ -405,7 +421,6 @@ public class TopicController extends AbstractController {
 
                 if (event.getData().getRecords().size() > 0) {
                     datas.put("datas", event.getData().getRecords());
-
                     StringWriter stringWriter = new StringWriter();
                     try {
                         freemarkerViewsRenderer.render("topicSearch", datas).writeTo(stringWriter);

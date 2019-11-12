@@ -4,8 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.KafkaClusterExtension;
+import org.kafkahq.AbstractTest;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.ConnectDefinition;
 import org.kafkahq.models.ConnectPlugin;
@@ -18,8 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@ExtendWith(KafkaClusterExtension.class)
-public class ConnectRepositoryTest {
+public class ConnectRepositoryTest extends AbstractTest {
     @Inject
     private ConnectRepository repository;
 

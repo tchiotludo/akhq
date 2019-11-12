@@ -23,8 +23,8 @@
                     <#if logs?size == 0>
                         <tr>
                             <td colspan="6">
-                                <div class="alert alert-info mb-0" role="alert">
-                                    No log dir available
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    Missing ACL to list logs
                                 </div>
                             </td>
                         </tr>

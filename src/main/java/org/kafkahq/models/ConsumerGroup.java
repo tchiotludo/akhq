@@ -20,13 +20,15 @@ public class ConsumerGroup {
     private final String partitionAssignor;
     private final ConsumerGroupState state;
     private final Node coordinator;
+    private final ArrayList<AccessControlList> acls = new ArrayList<>();
     private final ArrayList<Consumer> members = new ArrayList<>();
     private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 
     public ConsumerGroup(
         ConsumerGroupDescription groupDescription,
         Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> groupOffset,
-        Map<String, List<Partition.Offsets>> topicsOffsets
+        Map<String, List<Partition.Offsets>> topicsOffsets,
+        List<AccessControlList> acls
     ) {
         this.id = groupDescription.groupId();
         this.isSimpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
@@ -79,6 +81,8 @@ public class ConsumerGroup {
                 }
             }
         }
+
+        this.acls.addAll(acls);
 
         this.offsets.sort(Comparator
             .comparing(TopicPartition.ConsumerGroupOffset::getTopic)

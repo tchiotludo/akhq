@@ -2,7 +2,6 @@ package org.kafkahq.controllers;
 
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -15,6 +14,7 @@ import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
 import org.kafkahq.utils.CompletablePaged;
+import org.kafkahq.utils.CompletablePagedService;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -29,13 +29,12 @@ import java.util.concurrent.ExecutionException;
 @Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
-
-    @Value("${kafkahq.schema.page-size:25}")
-    private Integer pageSize;
+    private CompletablePagedService completablePagedService;
 
     @Inject
-    public SchemaController(SchemaRegistryRepository schemaRepository) {
+    public SchemaController(SchemaRegistryRepository schemaRepository, CompletablePagedService completablePagedService) {
         this.schemaRepository = schemaRepository;
+        this.completablePagedService = completablePagedService;
     }
 
     @View("schemaList")
@@ -49,12 +48,7 @@ public class SchemaController extends AbstractController {
         List<CompletableFuture<Schema>> list = this.schemaRepository.getAll(cluster, search);
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Schema> paged = new CompletablePaged<>(
-            list,
-            this.pageSize,
-            uri,
-            page.orElse(1)
-        );
+        CompletablePaged<Schema> paged = completablePagedService.of(list, uri, page.orElse(1));
 
         return this.template(
             request,

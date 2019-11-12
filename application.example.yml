@@ -21,19 +21,19 @@ kafkahq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
-        basic-auth: # Basic Auth user / pass
-          username: basic-auth-user
-          password: basic-auth-pass
+        # Basic Auth user / pass
+        basic-auth-username: basic-auth-user
+        basic-auth-password: basic-auth-pass
       connect:
         url: "http://connect:8083" # connect url (optional)
-        basic-auth: # Basic Auth user / pass (optional)
-          username: basic-auth-user
-          password: basic-auth-pass
-        ssl: # ssl store configuration (optional)
-          trust-store: /app/truststore.jks
-          trust-store-password: trust-store-password
-          key-store: /app/truststore.jks
-          key-store-password: key-store-password
+        # Basic Auth user / pass (optional)
+        basic-auth-username: basic-auth-user
+        basic-auth-password: basic-auth-pass
+        # ssl store configuration (optional)
+        ssl-trust-store: /app/truststore.jks
+        ssl-trust-store-password: trust-store-password
+        ssl-key-store: /app/truststore.jks
+        ssl-key-store-password: key-store-password
 
     my-cluster-ssl:
       properties:
@@ -57,9 +57,15 @@ kafkahq:
         ssl.keystore.password: password
         ssl.key.password: password
 
+  pagination:
+    page-size: 25 # number of elements per page (default : 25)
+    threads: 16 # Number of parallel threads to resolve page
+
   # Topic list display options (optional)
   topic:
-    page-size: 25 # number of topics per page (default : 25)
+    retention: 172800000 # default retention period when creating topic
+    partition: 3 #  default number of partition when creating topic
+    replication: 3 # default number of replicas when creating topic
     default-view: HIDE_INTERNAL # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
     internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
       - "^_.*$"
@@ -78,10 +84,6 @@ kafkahq:
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
 
-  # Schama list display options (optional)
-  schema:
-    page-size: 25 # number of schemas per page (default : 25)
-
   # Auth & Roles (optional)
   security:
     default-roles: # Roles available for all the user even unlogged user
@@ -97,6 +99,7 @@ kafkahq:
       - group/read
       - group/delete
       - group/offsets/update
+      - acls/read
       - registry/read
       - registry/insert
       - registry/update
@@ -116,3 +119,6 @@ kafkahq:
           - topic/read
           - group/read
           - group/delete
+        attributes:
+          # Regexp to filter topic available for current user
+          topics-filter-regexp: "test.*"

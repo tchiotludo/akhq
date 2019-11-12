@@ -1,16 +1,14 @@
 package org.kafkahq.applications;
 
 import io.micronaut.runtime.server.EmbeddedServer;
-import io.micronaut.test.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
+import org.kafkahq.AbstractTest;
 
 import javax.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest
-public class ServerTest {
-
+public class ServerTest extends AbstractTest {
     @Inject
     EmbeddedServer embeddedServer;
 

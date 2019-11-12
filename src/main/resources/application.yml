@@ -4,7 +4,7 @@ micronaut:
   io:
     watch:
       paths: src/main
-      restart: true
+      restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
       static:
@@ -30,6 +30,10 @@ micronaut:
     intercept-url-map:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
+  caches:
+    kafka-wrapper:
+      record-stats: true
+      expire-after-write: 0s
 
 endpoints:
   all:
@@ -52,6 +56,9 @@ endpoints:
   prometheus:
     enabled: true
     sensitive: false
+  caches:
+    enabled: true
+    sensitive: false
 
 jackson:
   module-scan: false
@@ -71,11 +78,17 @@ kafkahq:
         isolation.level: read_committed
         group.id: KafkaHQ
         enable.auto.commit: "false"
-        default.api.timeout.ms: 5000
+        default.api.timeout.ms: 15000
+
+  pagination:
+    page-size: 25
+    threads: 16
 
   topic:
     default-view: HIDE_INTERNAL
-    page-size: 25
+    replication: 1
+    retention: 86400000
+    partition: 1
     internal-regexps:
       - "^_.*$"
       - "^.*_schemas$"
@@ -86,9 +99,6 @@ kafkahq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-
-  schema:
-    page-size: 25
 
   topic-data:
     sort: OLDEST
@@ -114,6 +124,7 @@ kafkahq:
       - registry/update
       - registry/delete
       - registry/version/delete
+      - acls/read
       - connect/read
       - connect/insert
       - connect/update

@@ -20,13 +20,10 @@ import java.util.stream.Collectors;
 @Singleton
 public class SchemaRegistryRepository extends AbstractRepository {
     public static final int ERROR_NOT_FOUND = 40401;
-    private KafkaModule kafkaModule;
-    private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
 
     @Inject
-    public SchemaRegistryRepository(KafkaModule kafkaModule) {
-        this.kafkaModule = kafkaModule;
-    }
+    private KafkaModule kafkaModule;
+    private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
 
     public List<CompletableFuture<Schema>> getAll(String clusterId, Optional<String> search) throws IOException, RestClientException {
         return this.kafkaModule

@@ -4,8 +4,7 @@ import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.KafkaClusterExtension;
+import org.kafkahq.AbstractTest;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Record;
 
@@ -22,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@ExtendWith(KafkaClusterExtension.class)
-public class RecordRepositoryTest {
+public class RecordRepositoryTest extends AbstractTest {
     @Inject
     private RecordRepository repository;
     
@@ -132,7 +130,7 @@ public class RecordRepositoryTest {
         List<Record> all = new ArrayList<>();
 
         do {
-            List<Record> datas = repository.consume(options);
+            List<Record> datas = repository.consume(KafkaTestCluster.CLUSTER_ID, options);
             all.addAll(datas);
 
             datas.forEach(record -> log.debug(
@@ -198,7 +196,7 @@ public class RecordRepositoryTest {
         AtomicBoolean hasNext = new AtomicBoolean(true);
 
         do {
-            repository.search(options).blockingSubscribe(event -> {
+            repository.search(KafkaTestCluster.CLUSTER_ID, options).blockingSubscribe(event -> {
                 size.addAndGet(event.getData().getRecords().size());
 
                 assertTrue(event.getData().getPercent() >= 0);

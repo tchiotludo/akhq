@@ -11,5 +11,7 @@
 
 <@groupTemplate.table groups />
 
+<#include "blocks/navbar-pagination.ftl" />
+
 <@template.footer/>
 

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.modules.KafkaWrapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -14,14 +15,18 @@ import java.util.stream.Collectors;
 @Singleton
 public class ConfigRepository extends AbstractRepository {
     @Inject
+    KafkaWrapper kafkaWrapper;
+
+    @Inject
     private KafkaModule kafkaModule;
 
-    public List<org.kafkahq.models.Config> findByBroker(Integer name) throws ExecutionException, InterruptedException {
-        return this.findByBrokers(Collections.singletonList(name)).get(String.valueOf(name));
+    public List<org.kafkahq.models.Config> findByBroker(String clusterId, Integer name) throws ExecutionException, InterruptedException {
+        return this.findByBrokers(clusterId, Collections.singletonList(name)).get(String.valueOf(name));
     }
 
-    public Map<String, List<org.kafkahq.models.Config>> findByBrokers(List<Integer> names) throws ExecutionException, InterruptedException {
+    public Map<String, List<org.kafkahq.models.Config>> findByBrokers(String clusterId, List<Integer> names) throws ExecutionException, InterruptedException {
         return this.find(
+            clusterId,
             ConfigResource.Type.BROKER,
             names
                 .stream()
@@ -30,18 +35,18 @@ public class ConfigRepository extends AbstractRepository {
         );
     }
 
-    public List<org.kafkahq.models.Config> findByTopic(String name) throws ExecutionException, InterruptedException {
-        return this.findByTopics(Collections.singletonList(name)).get(name);
+    public List<org.kafkahq.models.Config> findByTopic(String clusterId, String name) throws ExecutionException, InterruptedException {
+        return this.findByTopics(clusterId, Collections.singletonList(name)).get(name);
     }
 
-    public Map<String, List<org.kafkahq.models.Config>> findByTopics(List<String> names) throws ExecutionException, InterruptedException {
-        return this.find(ConfigResource.Type.TOPIC, names);
+    public Map<String, List<org.kafkahq.models.Config>> findByTopics(String clusterId, List<String> names) throws ExecutionException, InterruptedException {
+        return this.find(clusterId, ConfigResource.Type.TOPIC, names);
     }
 
-    private Map<String, List<org.kafkahq.models.Config>> find(ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
+    private Map<String, List<org.kafkahq.models.Config>> find(String clusterId, ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
         Map<String, List<org.kafkahq.models.Config>> map = new HashMap<>();
 
-        kafkaWrapper.describeConfigs(type, names).forEach((key, value) -> {
+        kafkaWrapper.describeConfigs(clusterId, type, names).forEach((key, value) -> {
             List<org.kafkahq.models.Config> collect = value.entries()
                 .stream()
                 .map(org.kafkahq.models.Config::new)
@@ -65,7 +70,7 @@ public class ConfigRepository extends AbstractRepository {
     private void update(String clusterId, ConfigResource.Type type, String name, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
         List<ConfigEntry> entries = new ArrayList<>();
 
-        this.find(type, Collections.singletonList(name))
+        this.find(clusterId, type, Collections.singletonList(name))
             .get(name)
             .stream()
             .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
@@ -83,8 +88,6 @@ public class ConfigRepository extends AbstractRepository {
             ))
             .all()
             .get();
-
-        kafkaWrapper.clearConfigCache();
     }
 
     public static List<org.kafkahq.models.Config> updatedConfigs(Map<String, String> request, List<org.kafkahq.models.Config> configs) {

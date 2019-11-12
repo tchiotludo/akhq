@@ -40,6 +40,7 @@
                     <a href="${basePath}/">
                         <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
                     </a>
+                    <div class="version">${tag}</div>
                 </div>
 
                 <#if clusterId??>
@@ -77,6 +78,11 @@
                     <#if roles?seq_contains("group") == true>
                         <li class="${(tab == "group")?then("active", "")}">
                             <a href="${basePath}/${clusterId}/group"><i class="fa fa-fw fa-object-group" aria-hidden="true"></i> Consumer Groups</a>
+                        </li>
+                    </#if>
+                    <#if roles?seq_contains("acls") == true>
+                        <li class="${(tab == "acls")?then("active", "")}">
+                            <a href="${basePath}/${clusterId}/acls"><i class="fa fa-fw fa-key" aria-hidden="true"></i> ACLS</a>
                         </li>
                     </#if>
                     <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true>

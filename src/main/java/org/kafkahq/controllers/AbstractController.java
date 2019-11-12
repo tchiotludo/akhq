@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.experimental.Wither;
 import org.kafkahq.configs.BasicAuth;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.VersionProvider;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -32,6 +33,9 @@ abstract public class AbstractController {
     protected String basePath;
 
     @Inject
+    private VersionProvider versionProvider;
+
+    @Inject
     private KafkaModule kafkaModule;
 
     @Inject
@@ -47,6 +51,7 @@ abstract public class AbstractController {
     protected Map templateData(Optional<String> cluster, Object... values) {
         Map datas = CollectionUtils.mapOf(values);
 
+        datas.put("tag", versionProvider.getTag());
         datas.put("clusters", this.kafkaModule.getClustersList());
         datas.put("basePath", getBasePath());
         datas.put("roles", getRights());

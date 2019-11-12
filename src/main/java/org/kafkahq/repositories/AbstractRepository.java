@@ -1,17 +1,9 @@
 package org.kafkahq.repositories;
 
-import org.kafkahq.modules.KafkaWrapper;
-
 import java.util.Arrays;
 import java.util.Optional;
 
 abstract public class AbstractRepository {
-    protected static KafkaWrapper kafkaWrapper;
-
-    public static void setWrapper(KafkaWrapper kafkaWrapper) {
-        AbstractRepository.kafkaWrapper = kafkaWrapper;
-    }
-
     public static boolean isSearchMatch(Optional<String> search, String value) {
         if (!search.isPresent()) {
             return true;
@@ -20,9 +12,17 @@ abstract public class AbstractRepository {
         String[] split = search.get().split(" ");
 
         long count = Arrays.stream(split)
-            .filter(s -> value.toLowerCase().contains(s))
+            .filter(s -> value.toLowerCase().contains(s.toLowerCase()))
             .count();
 
         return count == split.length;
+    }
+
+    public static boolean isTopicMatchRegex(Optional<String> regex, String topic){
+        if(!regex.isPresent()){
+            return true;
+        }
+
+        return topic.matches(regex.get());
     }
 }

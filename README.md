@@ -17,6 +17,7 @@
   - List
   - Configurations view
   - Partitions view
+  - ACLS view
   - Consumers groups assignments view
   - Node leader & assignments view
   - Create a topic
@@ -35,6 +36,7 @@
 - **Consumer Groups** (only with kafka internal storage, not with old Zookepper)
   - List with lag, topics assignments
   - Partitions view & lag
+  - ACLS view
   - Node leader & assignments view
   - Display active and pending consumers groups
   - Delete a consumer group
@@ -52,9 +54,13 @@
   - Configurations view
   - Logs view
   - Configure a node
+- **ACLS**
+  - List principals
+  - List principals topic & group acls
 - **Authentification and Roles**
   - Read only mode
   - BasicHttp with roles per user
+  - Filter topics with regexp for current user
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
@@ -100,35 +106,75 @@ file example can be found here :[application.example.yml](application.example.ym
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url 
-    * `basic-auth.username`: schema registry basic auth username
-    * `basic-auth.password`: schema registry basic auth password
+    * `basic-auth-username`: schema registry basic auth username
+    * `basic-auth-password`: schema registry basic auth password
   * `connect`: *(optional)*
     * `url`: connect url 
-    * `basic-auth.username`: connect basic auth username
-    * `basic-auth.password`: connect basic auth password
-    * `ssl.trust-store`: /app/truststore.jks
-    * `ssl.trust-store-password`: trust-store-password
-    * `ssl.key-store`: /app/truststore.jks 
-    * `ssl.key-store-password`: key-store-password
+    * `basic-auth-username`: connect basic auth username
+    * `basic-auth-password`: connect basic auth password
+    * `ssl-trust-store`: /app/truststore.jks
+    * `ssl-trust-store-password`: trust-store-password
+    * `ssl-key-store`: /app/truststore.jks 
+    * `ssl-key-store-password`: key-store-password
+
+#### SSL Kafka Cluster with basic auth
+Configuration example for kafka cluster secured by ssl for saas provider like aiven (full https & basic auth):
+
+You need to generate a jks & p12 file from pem, cert files give by saas provider.
+```bash
+openssl pkcs12 -export -inkey service.key -in service.cert -out client.keystore.p12 -name service_key
+keytool -import -file ca.pem -alias CA -keystore client.truststore.jks
+```
+
+Configurations will look like this example: 
+
+```yaml
+kafkahq:
+  connections:
+    ssl-dev:
+      properties:
+        bootstrap.servers: "{{host}}.aivencloud.com:12835"
+        security.protocol: SSL
+        ssl.truststore.location: {{path}}/avnadmin.truststore.jks
+        ssl.truststore.password: {{password}}
+        ssl.keystore.type: "PKCS12"
+        ssl.keystore.location: {{path}}/avnadmin.keystore.p12
+        ssl.keystore.password: {{password}}
+        ssl.key.password: {{password}}
+      schema-registry:
+        url: "https://{{host}}.aivencloud.com:12838"
+        basic-auth-username: avnadmin
+        basic-auth-password: {{password}}
+      connect:
+        url: "https://{{host}}.aivencloud.com:{{port}}"
+        basic-auth-username: avnadmin
+        basic-auth-password: {{password}}
+```
 
 ### KafkaHQ configuration 
 
+#### Pagination
+* `kafkahq.pagination.page-size` number of topics per page (default : 25)
+* `kafkahq.pagination.threads` number of parallel threads to resolve current page (default : 16). This setting can have a signifiant impact on performance on list page since it will fetch in parallel the Kafka API.
+
 #### Topic List 
-* `kafkahq.topic.page-size` number of topics per page (default : 25)
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
 
+#### Topic creation default values
+
+These parameters are the default values used in the topic creation page.
+
+* `kafkahq.topic.retention` Default retention in ms
+* `kafkahq.topic.replication` Default number of replica to use
+* `kafkahq.topic.partition` Default number of partition
 
 #### Topic Data
 * `kafkahq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
 * `kafkahq.topic-data.size`: max record per page (default: 50)
 * `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
-
-
-#### Schema List 
-* `kafkahq.schema.page-size` number of schemas per page (default : 25)
 
     
 ### Security
@@ -145,6 +191,7 @@ file example can be found here :[application.example.yml](application.example.ym
   * `group/read`
   * `group/delete`
   * `group/offsets/update`
+  * `acls/read`
   * `registry/read`
   * `registry/insert`
   * `registry/update`
@@ -172,6 +219,7 @@ kafkahq:
   * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `roles`: Role for current users
+    * `attributes.topics-filter-regexp`: Regexp to filter topic available for current user
 
 > Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
@@ -197,6 +245,23 @@ KafkaHQ docker image support 3 environment variables to handle configuraiton :
   /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
+
+#### How to mount configuration file
+
+Take care when you mount configuration files to not remove kafkahq files located on /app.
+You need to explicitely mount the `/app/application.yml` and not mount the `/app` directory.
+This will remove the KafkaHQ binnaries and give you this error: `
+/usr/local/bin/docker-entrypoint.sh: 9: exec: ./kafkahq: not found`
+
+```yaml
+volumeMounts:
+- mountPath: /app/application.yml
+  subPath: application.yml
+  name: config
+  readOnly: true
+
+``` 
+
 
 ## Monitoring endpoint 
 Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
