@@ -30,10 +30,6 @@ micronaut:
     intercept-url-map:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
-  caches:
-    kafka-wrapper:
-      record-stats: true
-      expire-after-write: 0s
     ldap:
       default:
         enabled: true
@@ -46,6 +42,11 @@ micronaut:
         groups:
           enabled: true
           base: "dc=example,dc=com"
+  caches:
+    kafka-wrapper:
+      record-stats: true
+      expire-after-write: 0s
+
 
 endpoints:
   all:
