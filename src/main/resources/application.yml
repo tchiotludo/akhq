@@ -34,6 +34,18 @@ micronaut:
     kafka-wrapper:
       record-stats: true
       expire-after-write: 0s
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: 'ldap://ldap.forumsys.com:389'
+          managerDn: 'cn=read-only-admin,dc=example,dc=com'
+          managerPassword: 'password'
+        search:
+          base: "dc=example,dc=com"
+        groups:
+          enabled: true
+          base: "dc=example,dc=com"
 
 endpoints:
   all:
@@ -64,6 +76,11 @@ jackson:
   module-scan: false
 
 kafkahq:
+  connections:
+    my-cluster-plain-text: # url friendly name for the cluster
+      properties: # standard kafka properties (optional)
+        bootstrap.servers: "localhost:9092"
+
   server:
     base-path: ""
     access-log:
@@ -106,6 +123,56 @@ kafkahq:
     poll-timeout: 1000
 
   security:
+    groups:
+      admin:
+        roles:
+          - 'topic/read'
+        ldapGroup: Scientists
+      topic-reader:
+        roles:
+          - 'topic/read'
+          - 'topic/insert'
+          - 'topic/delete'
+          - 'topic/config/update'
+          - 'group/read'
+          - 'group/delete'
+        ldapGroup: Scientists
+      topic-writer:
+        roles:
+          - 'topic/insert'
+        ldapGroup: Scientists
+
+    basic-auth:
+      oldWayUser: # Old way user that must still work
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        roles: # Role for current users
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - group/read
+          - group/delete
+        attributes:
+          # Regexp to filter topic available for current user
+          topics-filter-regexp: "test.*"
+      newWayUser: # new user that will use group instead of listing roles
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        group: topic-reader
+        attributes:
+          topics-filter-regexp: "test.*"
+      newWayUserWithAnExtraRole: # new user that will use group instead of listing roles
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        group: topic-reader
+        roles:
+          - group/read
+        attributes:
+          topics-filter-regexp: "test.*"
+      newAdminUser: # new user that will use group instead of listing roles
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        group: admin
+        attributes:
+          topics-filter-regexp: "test.*"
+
     default-roles:
       - topic/read
       - topic/insert

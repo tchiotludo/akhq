@@ -124,6 +124,7 @@ dependencies {
     compile "io.micronaut:micronaut-management"
     compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
     compile 'io.github.mweirauch:micrometer-jvm-extras:0.1.4'
+    compile "io.micronaut.configuration:micronaut-security-ldap"
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
