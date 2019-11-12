@@ -11,10 +11,14 @@ import javax.inject.Singleton;
 import java.util.List;
 
 
+
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
     @Inject
     private List<BasicAuth> auths;
+
+    @Inject
+    private UserGroupUtils userGroupUtils;
 
     @Inject
     private UserGroupUtils userGroupUtils;

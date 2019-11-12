@@ -39,6 +39,9 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     private UserGroupUtils userGroupUtils;
 
+    @Inject
+    private UserGroupUtils userGroupUtils;
+
     @Value("${kafkahq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
