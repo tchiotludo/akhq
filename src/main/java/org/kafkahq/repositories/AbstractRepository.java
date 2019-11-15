@@ -1,6 +1,7 @@
 package org.kafkahq.repositories;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 abstract public class AbstractRepository {
@@ -18,11 +19,17 @@ abstract public class AbstractRepository {
         return count == split.length;
     }
 
-    public static boolean isTopicMatchRegex(Optional<String> regex, String topic){
+    public static boolean isTopicMatchRegex(Optional<List<String>> regex, String topic){
         if(!regex.isPresent()){
             return true;
         }
 
-        return topic.matches(regex.get());
+        for (String strRegex:
+             regex.get()) {
+            if(topic.matches(strRegex)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

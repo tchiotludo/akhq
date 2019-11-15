@@ -1,5 +1,7 @@
 package org.kafkahq.modules;
 
+import io.micronaut.configuration.security.ldap.context.AttributesConvertibleValues;
+import io.micronaut.core.convert.value.ConvertibleValues;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
@@ -8,25 +10,23 @@ import org.junit.jupiter.api.Test;
 import org.kafkahq.AbstractTest;
 
 import javax.inject.Inject;
+import javax.naming.directory.BasicAttributes;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BasicAuthAuthenticationProviderTest extends AbstractTest {
+public class LdapContextAuthenticationMapperTest extends AbstractTest {
     @Inject
-    BasicAuthAuthenticationProvider auth;
+    LdapContextAuthenticationMapper mapper;
 
     @Test
-    public void success() {
-        AuthenticationResponse response = Flowable
-            .fromPublisher(auth.authenticate(new UsernamePasswordCredentials(
-                "user",
-                "pass"
-            ))).blockingFirst();
+    public void map() {
+
+        AuthenticationResponse response = mapper.map( new AttributesConvertibleValues(new BasicAttributes()),"user",  Collections.singleton("ldap-admin"));
 
         assertThat(response, instanceOf(UserDetails.class));
 
@@ -44,14 +44,5 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
         assertEquals("test.*", ((List)userDetail.getAttributes("roles", "username").get("topics-filter-regexp")).get(0));
     }
 
-    @Test
-    public void failed() {
-        AuthenticationResponse response = Flowable
-            .fromPublisher(auth.authenticate(new UsernamePasswordCredentials(
-                "user2",
-                "pass2"
-            ))).blockingFirst();
 
-        assertFalse(response.isAuthenticated());
-    }
 }

@@ -117,7 +117,7 @@ public class TopicRepository extends AbstractRepository {
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
-        Optional<String> topicRegex = getTopicFilterRegex();
+        Optional<List<String>> topicRegex = getTopicFilterRegex();
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
             if(isTopicMatchRegex(topicRegex, description.getValue().name())){
@@ -167,14 +167,14 @@ public class TopicRepository extends AbstractRepository {
             .get();
     }
 
-    private Optional<String> getTopicFilterRegex() {
+    private Optional<List<String>> getTopicFilterRegex() {
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             Optional<Authentication> authentication = securityService.getAuthentication();
             if (authentication.isPresent()) {
                 Authentication auth = authentication.get();
                 if (auth.getAttributes().get("topics-filter-regexp") != null) {
-                    return Optional.of(auth.getAttributes().get("topics-filter-regexp").toString());
+                    return Optional.of((List<String>)auth.getAttributes().get("topics-filter-regexp"));
                 }
             }
         }
