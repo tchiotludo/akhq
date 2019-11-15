@@ -30,18 +30,19 @@ micronaut:
     intercept-url-map:
       - pattern: "${kafkahq.server.base-path:}/static/**"
         access: "isAnonymous()"
-    ldap:
-      default:
-        enabled: true
-        context:
-          server: 'ldap://ldap.forumsys.com:389'
-          managerDn: 'cn=read-only-admin,dc=example,dc=com'
-          managerPassword: 'password'
-        search:
-          base: "dc=example,dc=com"
-        groups:
-          enabled: true
-          base: "dc=example,dc=com"
+     # Ldap configuration
+#    ldap:
+#      default:
+#        enabled: true
+#        context:
+#          server: ''
+#          managerDn: ''
+#          managerPassword: ''
+#        search:
+#          base: ''
+#        groups:
+#          enabled: true
+#          base: ''
   caches:
     kafka-wrapper:
       record-stats: true
@@ -167,31 +168,23 @@ kafkahq:
           - topic/read
         attributes:
           topics-filter-regexp: "test\\.reader.*"
-      topic-writer:
-        roles:
-          - topic/insert
-          - topic/delete
-          - topic/config/update
-        attributes:
-          topics-filter-regexp: "test\\.writer.*"
     basic-auth:
-      my-admin: # Old way user that must still work
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        groups: # Role for current users
+      admin:
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1  # pass
+        groups: # Groups for current users
           - admin
-      my-user: # Old way user that must still work
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        groups: # Role for current users
+      user:
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1 # pass
+        groups:
           - topic-reader
-    ldap:
-      group:
-        Scientists: # ldap group name
-          groups:
-            - topic-writer
-            - topic-reader
-        group2-name-on-ldap:
-          groups:
-            - admin
+#    ldap:
+#      group:
+#        group1-name-on-ldap: # ldap group name
+#          groups:
+#            - topic-reader
+#        group2-name-on-ldap:
+#          groups:
+#            - admin
 
     default-roles:
       - topic/read
