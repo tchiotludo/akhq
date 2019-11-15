@@ -22,6 +22,10 @@ public class UserGroupUtils {
      * @return list of roles
      */
     public List<String> getUserRoles(List<String> groups) {
+        if(this.kafkaHqGroups == null || groups == null) {
+            return new ArrayList<>();
+        }
+
         return this.kafkaHqGroups.stream()
                 .filter(group -> groups.contains(group.getName()))
                 .flatMap(group -> group.getRoles().stream())
@@ -35,9 +39,13 @@ public class UserGroupUtils {
      * @return Map<attribute_name, List<attribute_value>>
      */
     public Map<String, Object> getUserAttributes(List<String> groups) {
+        if(this.kafkaHqGroups == null || groups == null) {
+            return null;
+        }
+
         return this.kafkaHqGroups.stream()
                 .filter(group -> groups.contains(group.getName()))
-                .flatMap(group -> group.getAttributes().entrySet().stream())
+                .flatMap(group -> (group.getAttributes() != null)? group.getAttributes().entrySet().stream(): null)
                 .collect(Collectors.toMap(
                         item -> item.getKey(),
                         item -> new ArrayList<>(Arrays.asList(item.getValue())),
