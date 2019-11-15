@@ -21,10 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -134,7 +131,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topics-filter-regexp", "rando.*"));
+        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topics-filter-regexp", new ArrayList<>(Arrays.asList("rando.*"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

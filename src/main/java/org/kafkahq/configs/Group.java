@@ -4,17 +4,18 @@ import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
 import lombok.Getter;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 @EachProperty("kafkahq.security.groups")
 @Getter
-public class SecurityGroup {
+public class Group {
 
     String name;
-    String ldapGroup;
-    Set<String> roles;
+    List<String> roles;
+    Map<String, Object> attributes;
 
-    public SecurityGroup(@Parameter String name) {
+    public Group(@Parameter String name) {
         this.name = name;
     }
 }

@@ -81,6 +81,16 @@ kafkahq:
     my-cluster-plain-text: # url friendly name for the cluster
       properties: # standard kafka properties (optional)
         bootstrap.servers: "localhost:9092"
+      connect:
+        url: "http://connect:8083" # connect url (optional)
+        # Basic Auth user / pass (optional)
+        basic-auth-username: basic-auth-user
+        basic-auth-password: basic-auth-pass
+        # ssl store configuration (optional)
+        ssl-trust-store: /app/truststore.jks
+        ssl-trust-store-password: trust-store-password
+        ssl-key-store: /app/truststore.jks
+        ssl-key-store-password: key-store-password
 
   server:
     base-path: ""
@@ -127,74 +137,83 @@ kafkahq:
     groups:
       admin:
         roles:
-          - 'topic/read'
-        ldapGroup: Scientists
-      topic-reader:
-        roles:
-          - 'topic/read'
-          - 'topic/insert'
-          - 'topic/delete'
-          - 'topic/config/update'
-          - 'group/read'
-          - 'group/delete'
-        ldapGroup: Scientists
-      topic-writer:
-        roles:
-          - 'topic/insert'
-        ldapGroup: Scientists
-
-    basic-auth:
-      oldWayUser: # Old way user that must still work
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        roles: # Role for current users
           - topic/read
           - topic/insert
           - topic/delete
           - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
           - group/read
           - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
         attributes:
-          # Regexp to filter topic available for current user
           topics-filter-regexp: "test.*"
-      newWayUser: # new user that will use group instead of listing roles
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        group: topic-reader
-        attributes:
-          topics-filter-regexp: "test.*"
-      newWayUserWithAnExtraRole: # new user that will use group instead of listing roles
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        group: topic-reader
+      topic-reader:
         roles:
-          - group/read
+          - topic/read
         attributes:
-          topics-filter-regexp: "test.*"
-      newAdminUser: # new user that will use group instead of listing roles
+          topics-filter-regexp: "test\\.reader.*"
+      topic-writer:
+        roles:
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+        attributes:
+          topics-filter-regexp: "test\\.writer.*"
+    basic-auth:
+      my-admin: # Old way user that must still work
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        group: admin
-        attributes:
-          topics-filter-regexp: "test.*"
+        groups: # Role for current users
+          - admin
+      my-user: # Old way user that must still work
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups: # Role for current users
+          - topic-reader
+    ldap:
+      group:
+        Scientists: # ldap group name
+          groups:
+            - topic-writer
+            - topic-reader
+        group2-name-on-ldap:
+          groups:
+            - admin
 
     default-roles:
       - topic/read
-      - topic/insert
-      - topic/delete
-      - topic/config/update
-      - node/read
-      - node/config/update
-      - topic/data/read
-      - topic/data/insert
-      - topic/data/delete
-      - group/read
-      - group/delete
-      - group/offsets/update
-      - registry/read
-      - registry/insert
-      - registry/update
-      - registry/delete
-      - registry/version/delete
-      - acls/read
-      - connect/read
-      - connect/insert
-      - connect/update
-      - connect/delete
-      - connect/state/update
+#      - topic/insert
+#      - topic/delete
+#      - topic/config/update
+#      - node/read
+#      - node/config/update
+#      - topic/data/read
+#      - topic/data/insert
+#      - topic/data/delete
+#      - group/read
+#      - group/delete
+#      - group/offsets/update
+#      - registry/read
+#      - registry/insert
+#      - registry/update
+#      - registry/delete
+#      - registry/version/delete
+#      - acls/read
+#      - connect/read
+#      - connect/insert
+#      - connect/update
+#      - connect/delete
+#      - connect/state/update

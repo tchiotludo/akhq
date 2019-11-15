@@ -6,11 +6,11 @@ import io.micronaut.context.annotation.Replaces;
 import io.micronaut.core.convert.value.ConvertibleValues;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
+import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -18,16 +18,27 @@ import java.util.stream.Collectors;
 public class LdapContextAuthenticationMapper implements ContextAuthenticationMapper {
 
     @Inject
-    private List<SecurityGroup> securityGroups;
+    private List<LdapGroup> kafkaHQLdapGroups;
+
+    @Inject
+    private UserGroupUtils userGroupUtils;
 
     @Override
     public AuthenticationResponse map(ConvertibleValues<Object> attributes, String username, Set<String> groups) {
-        // Get all KafkaHQ Group roles by ldap group name
-        List<String> roles = securityGroups.stream()
-                    .filter(securityGroup -> groups.contains(securityGroup.getLdapGroup()))
-                    .flatMap(securityGroup -> securityGroup.getRoles().stream())
-                    .distinct()
-                    .collect(Collectors.toList());
-        return new UserDetails(username, roles);
+
+        List<String> kafkaHQgroups = getUserKafkaHQGroups(groups);
+        return new UserDetails(username, userGroupUtils.getUserRoles(kafkaHQgroups), userGroupUtils.getUserAttributes(kafkaHQgroups));
     }
+
+    private List<String> getUserKafkaHQGroups(Set<String> ldapGroups) {
+
+        return this.kafkaHQLdapGroups.stream()
+                .filter(ldapGroup -> ldapGroups.stream().map(String::toLowerCase).anyMatch(s -> s.equals(ldapGroup.getName().toLowerCase())) )
+                .flatMap(ldapGroup -> ldapGroup.groups.stream())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+
+
 }

@@ -18,9 +18,8 @@ kafkahq:
       - "^.*-rekey$"
 
   security:
-    basic-auth:
-      user:
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+    groups:
+      admin:
         roles:
           - topic/read
           - registry/version/delete
@@ -28,6 +27,12 @@ kafkahq:
           - group/delete
         attributes:
           topics-filter-regexp: "test.*"
+    basic-auth:
+      user:
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - admin
+
 
 micronaut:
   caches:

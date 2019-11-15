@@ -7,17 +7,13 @@ import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @EachProperty("kafkahq.security.basic-auth")
 @Getter
 public class BasicAuth {
     String username;
     String password;
-    Set<String> roles;
-    String group;
-    Map<String, Object> attributes;
+    List<String> groups;
 
     public BasicAuth(@Parameter String username) {
         this.username = username;
