@@ -8,7 +8,8 @@ import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.List;
+
 
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {

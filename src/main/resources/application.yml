@@ -78,21 +78,6 @@ jackson:
   module-scan: false
 
 kafkahq:
-  connections:
-    my-cluster-plain-text: # url friendly name for the cluster
-      properties: # standard kafka properties (optional)
-        bootstrap.servers: "localhost:9092"
-      connect:
-        url: "http://connect:8083" # connect url (optional)
-        # Basic Auth user / pass (optional)
-        basic-auth-username: basic-auth-user
-        basic-auth-password: basic-auth-pass
-        # ssl store configuration (optional)
-        ssl-trust-store: /app/truststore.jks
-        ssl-trust-store-password: trust-store-password
-        ssl-key-store: /app/truststore.jks
-        ssl-key-store-password: key-store-password
-
   server:
     base-path: ""
     access-log:
@@ -135,57 +120,6 @@ kafkahq:
     poll-timeout: 1000
 
   security:
-    groups:
-      admin:
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - topic/config/update
-          - node/read
-          - node/config/update
-          - topic/data/read
-          - topic/data/insert
-          - topic/data/delete
-          - group/read
-          - group/delete
-          - group/offsets/update
-          - registry/read
-          - registry/insert
-          - registry/update
-          - registry/delete
-          - registry/version/delete
-          - acls/read
-          - connect/read
-          - connect/insert
-          - connect/update
-          - connect/delete
-          - connect/state/update
-        attributes:
-          topics-filter-regexp: "test.*"
-      topic-reader:
-        roles:
-          - topic/read
-        attributes:
-          topics-filter-regexp: "test\\.reader.*"
-    basic-auth:
-      admin:
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1  # pass
-        groups: # Groups for current users
-          - admin
-      user:
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1 # pass
-        groups:
-          - topic-reader
-#    ldap:
-#      group:
-#        group1-name-on-ldap: # ldap group name
-#          groups:
-#            - topic-reader
-#        group2-name-on-ldap:
-#          groups:
-#            - admin
-
     default-roles:
       - topic/read
       - topic/insert
