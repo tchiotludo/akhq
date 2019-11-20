@@ -161,6 +161,7 @@ dependencies {
     testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testCompile "io.confluent:kafka-connect-avro-converter:" + confluentVersion
     testCompile group: 'commons-codec', name: 'commons-codec', version: '1.12'
+    testCompile group: 'org.codehaus.jackson', name: 'jackson-mapper-lgpl', version: '1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.1'
     testImplementation 'org.hamcrest:hamcrest-library:2.1'
 }
