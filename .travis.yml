@@ -29,17 +29,17 @@ script:
   - cp build/libs/kafkahq-*.jar docker/app/kafkahq.jar
   - docker build . -t $TRAVIS_COMMIT
   # Docker Tag
-  - if [ ! -z "$TRAVIS_TAG" ]; then
+  - if [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ ! -z "$TRAVIS_TAG" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_TAG;
       docker push tchiotludo/kafkahq:$TRAVIS_TAG;
     fi
   # Docker Branch
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+  - if [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ "$TRAVIS_BRANCH" == "master" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
       docker push tchiotludo/kafkahq:latest;
-    elif [ "$TRAVIS_BRANCH" == "dev" ]; then
+    elif [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ "$TRAVIS_BRANCH" == "dev" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
       docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
       docker push tchiotludo/kafkahq:$TRAVIS_BRANCH;
