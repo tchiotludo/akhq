@@ -175,7 +175,11 @@ public class TopicRepository extends AbstractRepository {
                 Authentication auth = authentication.get();
                 if (auth.getAttributes().get("topics-filter-regexp") != null) {
                     //noinspection unchecked
-                    return Optional.of((List<String>)auth.getAttributes().get("topics-filter-regexp"));
+                    if(auth.getAttributes().get("topics-filter-regexp") instanceof List) {
+                        return Optional.of((List<String>) auth.getAttributes().get("topics-filter-regexp"));
+                    } else {
+                        return Optional.empty();
+                    }
                 }
             }
         }
