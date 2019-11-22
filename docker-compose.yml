@@ -107,7 +107,7 @@ services:
     image: confluentinc/cp-kafkacat
     command:
       - bash
-      - -c 
+      - -c
       - |
         kafkacat -P -b kafka:9092 -t json << EOF
         {"_id":"5c4b2b45ab234c86955f0802","index":0,"guid":"d3637b06-9940-4958-9f82-639001c14c34"}
