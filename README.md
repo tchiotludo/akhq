@@ -60,7 +60,9 @@
 - **Authentification and Roles**
   - Read only mode
   - BasicHttp with roles per user
-  - Filter topics with regexp for current user
+  - User groups configuration  
+  - Filter topics with regexp for current groups
+  - Ldap configuration to match KafkaHQ groups/roles
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
@@ -214,16 +216,82 @@ kafkahq:
       - connect/read
 ```
 
+#### Groups
+Define groups with specific roles for your users
+* `kafkahq.security.groups`: Groups list definition
+  * `group-name`: Group identifier
+    * `roles`: Roles list for the group
+    * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
+
+
 #### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
-  * `actual-username`: login of the current user as a yaml key (may be anything email, login, ...)
+  * `actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
-    * `roles`: Role for current users
-    * `attributes.topics-filter-regexp`: Regexp to filter topic available for current user
+    * `groups`: Groups for current user
 
 > Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
 > [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
+
+
+
+#### LDAP
+Configure how the ldap groups will be matched in KafkaHQ groups 
+* `kafkahq.security.ldap.group`: Ldap groups list
+  * `ldap-group-name`: Ldap group name (same name as in ldap)
+    * `groups`: KafkaHQ group list to be used for current ldap group
+
+Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
+
+Configure ldap connection in micronaut
+```yaml
+micronaut:
+  security:
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: 'ldap://ldap.forumsys.com:389'
+          managerDn: 'cn=read-only-admin,dc=example,dc=com'
+          managerPassword: 'password'
+        search:
+          base: "dc=example,dc=com"
+        groups:
+          enabled: true
+          base: "dc=example,dc=com"
+```
+
+Configure KafkaHQ groups and Ldap groups
+```yaml
+kafkahq:
+  security:
+    groups:
+      topic-reader: # Group name
+        roles:  # roles for the group
+          - topic/read
+        attributes:
+          # Regexp to filter topic available for group
+          topics-filter-regexp: "test\\.reader.*"
+      topic-writer: 
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+        attributes:
+          topics-filter-regexp: "test.*"
+    ldap:
+      group:
+        mathematicians:
+          groups:
+            - topic-reader
+        scientists:
+          groups:
+            - topic-reader
+            - topic-writer
+```
+
 
 
 ### Server 
