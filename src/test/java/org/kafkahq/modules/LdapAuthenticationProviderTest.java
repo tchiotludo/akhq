@@ -142,7 +142,7 @@ public class LdapAuthenticationProviderTest {
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topics-filter-regexp"));
+        List<String> topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topics-filter-regexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
