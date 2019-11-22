@@ -34,8 +34,8 @@ public class LdapContextAuthenticationMapper implements ContextAuthenticationMap
 
     /**
      * Get KafkaHQ Groups configured in Ldap groups
-     * @param ldapGroups
-     * @return
+     * @param ldapGroups  list of ldap groups associated to the user
+     * @return list of KafkaHQ groups configured for the ldap groups. See in application.yml property kafkahq.security.ldap
      */
     private List<String> getUserKafkaHQGroups(Set<String> ldapGroups) {
         return this.kafkaHQLdapGroups.stream()
