@@ -49,7 +49,7 @@ public class UserGroupUtils {
                 Map.Entry::getKey,
                 item -> new ArrayList<>(Collections.singletonList(item.getValue())),
                 (e1, e2) -> {
-                    return ((List) e1).addAll((List) e2);
+                    ((List) e1).addAll((List) e2); return e1;
                 }
             ));
     }
