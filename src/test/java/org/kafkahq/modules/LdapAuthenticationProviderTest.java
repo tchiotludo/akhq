@@ -46,7 +46,6 @@ import static org.mockito.Mockito.when;
 @MicronautTest(propertySources = "application.yml")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LdapAuthenticationProviderTest {
-
     @Inject
     ContextBuilder contextBuilder;
 
@@ -79,14 +78,14 @@ public class LdapAuthenticationProviderTest {
     public void success() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
-        List<LdapSearchResult> listResults = Arrays.asList(new LdapSearchResult(new BasicAttributes(), "dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
 
         when(ldapSearchService.searchFirst(any(DirContext.class), any(SearchSettings.class))).thenReturn(optionalResult);
         when(ldapSearchService.search(any(DirContext.class), any(SearchSettings.class))).thenReturn(listResults);
 
-        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-admin")));
+        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList("ldap-admin")));
 
         AuthenticationResponse response = Flowable
                 .fromPublisher(ldapAuthenticationProvider.authenticate(new UsernamePasswordCredentials(
@@ -114,7 +113,7 @@ public class LdapAuthenticationProviderTest {
     public void successWithMultipleLdapGroups() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
-        List<LdapSearchResult> listResults = Arrays.asList(new LdapSearchResult(new BasicAttributes(), "dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(),"dn"));
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
 
@@ -143,7 +142,7 @@ public class LdapAuthenticationProviderTest {
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topics-filter-regexp"));
+        List topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topics-filter-regexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
@@ -153,14 +152,14 @@ public class LdapAuthenticationProviderTest {
     public void successWithoutRoles() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
-        List<LdapSearchResult> listResults = Arrays.asList(new LdapSearchResult(new BasicAttributes(), "dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
 
         when(ldapSearchService.searchFirst(any(DirContext.class), any(SearchSettings.class))).thenReturn(optionalResult);
         when(ldapSearchService.search(any(DirContext.class), any(SearchSettings.class))).thenReturn(listResults);
 
-        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-other-group")));
+        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList(("ldap-other-group"))));
 
         AuthenticationResponse response = Flowable
                 .fromPublisher(ldapAuthenticationProvider.authenticate(new UsernamePasswordCredentials(
@@ -177,7 +176,6 @@ public class LdapAuthenticationProviderTest {
 
         Collection<String> roles = userDetail.getRoles();
         assertThat(roles, hasSize(0));
-
     }
 
     @Test
@@ -197,10 +195,5 @@ public class LdapAuthenticationProviderTest {
 
         assertThat(response, instanceOf(AuthenticationFailed.class));
         assertFalse(response.isAuthenticated());
-
-
     }
-
-
-
 }
