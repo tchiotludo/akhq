@@ -16,7 +16,6 @@ import lombok.experimental.Wither;
 import org.kafkahq.configs.BasicAuth;
 import org.kafkahq.configs.LdapGroup;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.utils.Debug;
 import org.kafkahq.utils.UserGroupUtils;
 import org.kafkahq.utils.VersionProvider;
 
@@ -145,7 +144,6 @@ abstract public class AbstractController {
 
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
-        Debug.print(this.defaultGroups);
         if (!applicationContext.containsBean(SecurityService.class)) {
             return expandRoles(this.userGroupUtils.getUserRoles(this.defaultGroups));
         }
