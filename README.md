@@ -216,15 +216,25 @@ kafkahq:
       - connect/read
 ```
 
-#### Groups
+
+
+#### Auth
+
+##### Groups
+
+Groups allow you to limit user 
+
 Define groups with specific roles for your users
 * `kafkahq.security.groups`: Groups list definition
   * `group-name`: Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
 
+2 defaults group are available :
+- `admin` with all right
+- `reader` with only read acces on all KafkaHQ
 
-#### Basic Auth
+##### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
   * `actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
@@ -236,7 +246,7 @@ Define groups with specific roles for your users
 
 
 
-#### LDAP
+##### LDAP
 Configure how the ldap groups will be matched in KafkaHQ groups 
 * `kafkahq.security.ldap.group`: Ldap groups list
   * `ldap-group-name`: Ldap group name (same name as in ldap)
@@ -291,8 +301,6 @@ kafkahq:
             - topic-reader
             - topic-writer
 ```
-
-
 
 ### Server 
 * `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
