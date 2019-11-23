@@ -1,3 +1,19 @@
+micronaut:
+  security:
+    # Ldap authentificaton configuration
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: 'ldap://ldap.forumsys.com:389'
+          managerDn: 'cn=read-only-admin,dc=example,dc=com'
+          managerPassword: 'password'
+        search:
+          base: "dc=example,dc=com"
+        groups:
+          enabled: true
+          base: "dc=example,dc=com"
+
 kafkahq:
   server:
     base-path: "" # if behind a reverse proxy, path to kafkahq without trailing slash (optional). Example: kafkahq is
@@ -86,30 +102,8 @@ kafkahq:
 
   # Auth & Roles (optional)
   security:
-    default-roles: # Roles available for all the user even unlogged user
-      - topic/read
-      - topic/insert
-      - topic/delete
-      - topic/config/update
-      - node/read
-      - node/config/update
-      - topic/data/read
-      - topic/data/insert
-      - topic/data/delete
-      - group/read
-      - group/delete
-      - group/offsets/update
-      - acls/read
-      - registry/read
-      - registry/insert
-      - registry/update
-      - registry/delete
-      - registry/version/delete
-      - connect/read
-      - connect/insert
-      - connect/update
-      - connect/delete
-      - connect/state/update
+    default-groups: # Default groups for all the user even unlogged user
+      - admin
 
     # Groups definition
     groups:
