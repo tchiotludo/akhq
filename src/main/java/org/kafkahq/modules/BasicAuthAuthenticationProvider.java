@@ -13,7 +13,6 @@ import java.util.List;
 
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
-
     @Inject
     private List<BasicAuth> auths;
 
@@ -36,6 +35,4 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
 
         return Flowable.just(new AuthenticationFailed());
     }
-
-
 }
