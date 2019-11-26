@@ -18,7 +18,8 @@ $.widget("khq.search-sse", $.khq.widget, {
 
         this._eventSource = new EventSource(this._url()
             .clone()
-            .filename(this._url().filename() + "/search/" + this._url().search(true).search)
+            .segment('search')
+            .segmentCoded(this._url().search(true).search)
             .removeSearch("search")
             .toString()
         );
