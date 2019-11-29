@@ -12,6 +12,7 @@ import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,11 +45,17 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     ApplicationContext applicationContext;
 
+    @Inject
+    private UserGroupUtils userGroupUtils;
+
     @Value("${kafkahq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
     @Value("${kafkahq.topic.stream-regexps}")
     protected List<String> streamRegexps;
+
+    @Value("${kafkahq.security.default-groups}")
+    private List<String> defaultGroups;
 
     public enum TopicListView {
         ALL,
@@ -168,22 +175,30 @@ public class TopicRepository extends AbstractRepository {
     }
 
     private Optional<List<String>> getTopicFilterRegex() {
+
+        List<String> topicFilterRegex = new ArrayList<>();
+
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             Optional<Authentication> authentication = securityService.getAuthentication();
             if (authentication.isPresent()) {
                 Authentication auth = authentication.get();
-                if (auth.getAttributes().get("topics-filter-regexp") != null) {
-                    //noinspection unchecked
-                    if(auth.getAttributes().get("topics-filter-regexp") instanceof List) {
-                        return Optional.of((List<String>) auth.getAttributes().get("topics-filter-regexp"));
-                    } else {
-                        return Optional.empty();
-                    }
-                }
+                topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(auth.getAttributes()));
             }
         }
-        return Optional.empty();
+        // get topic filter regex for default groups
+        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(userGroupUtils.getUserAttributes(this.defaultGroups)));
+
+        return Optional.of(topicFilterRegex);
+    }
+
+    private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
+        if (attributes.get("topics-filter-regexp") != null) {
+            if (attributes.get("topics-filter-regexp") instanceof List) {
+                return (List<String>)attributes.get("topics-filter-regexp");
+            }
+        }
+        return new ArrayList<>();
     }
 
 }

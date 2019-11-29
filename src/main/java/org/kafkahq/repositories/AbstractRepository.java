@@ -20,7 +20,7 @@ abstract public class AbstractRepository {
     }
 
     public static boolean isTopicMatchRegex(Optional<List<String>> regex, String topic) {
-        if (regex.isEmpty()) {
+        if (regex.isEmpty() || regex.get().isEmpty()) {
             return true;
         }
 
