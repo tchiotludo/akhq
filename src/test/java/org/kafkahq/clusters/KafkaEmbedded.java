@@ -4,10 +4,12 @@ import com.google.common.io.Files;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
+import kafka.server.KafkaServerStartable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.network.ListenerName;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.utils.Time;
+import scala.Option;
 
 import java.io.File;
 import java.util.Properties;
@@ -60,11 +62,9 @@ public class KafkaEmbedded {
     }
 
     public String brokerList() {
-        return String.join(
-            ":",
-            kafka.config().hostName(),
-            Integer.toString(kafka.boundPort(ListenerName.forSecurityProtocol(SecurityProtocol.PLAINTEXT)))
-        );
+        final Object listenerConfig = effectiveConfig.get(KafkaConfig$.MODULE$.InterBrokerListenerNameProp());
+        return kafka.config().hostName() + ":" + kafka.boundPort(
+            new ListenerName(listenerConfig != null ? listenerConfig.toString() : "PLAINTEXT"));
     }
 
     public String zookeeperConnect() {
