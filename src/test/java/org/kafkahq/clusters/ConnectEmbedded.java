@@ -2,6 +2,7 @@ package org.kafkahq.clusters;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.utils.Time;
+import org.apache.kafka.connect.connector.policy.NoneConnectorClientConfigOverridePolicy;
 import org.apache.kafka.connect.runtime.Connect;
 import org.apache.kafka.connect.runtime.Worker;
 import org.apache.kafka.connect.runtime.WorkerConfigTransformer;
@@ -40,7 +41,7 @@ public class ConnectEmbedded {
         KafkaOffsetBackingStore offsetBackingStore = new KafkaOffsetBackingStore();
         offsetBackingStore.configure(config);
 
-        Worker worker = new Worker(workerId, time, plugins, config, offsetBackingStore);
+        Worker worker = new Worker(workerId, time, plugins, config, offsetBackingStore, new NoneConnectorClientConfigOverridePolicy());
         WorkerConfigTransformer configTransformer = worker.configTransformer();
 
         Converter internalValueConverter = worker.getInternalValueConverter();
@@ -59,7 +60,8 @@ public class ConnectEmbedded {
             ConnectUtils.lookupKafkaClusterId(config),
             statusBackingStore,
             configBackingStore,
-            advertisedUrl.toString()
+            advertisedUrl.toString(),
+            new NoneConnectorClientConfigOverridePolicy()
         );
 
         connect = new Connect(herder, rest);
