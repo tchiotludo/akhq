@@ -58,6 +58,8 @@ public class TopicController extends AbstractController {
     private Integer retentionPeriod;
     @Value("${kafkahq.topic.partition}")
     private Integer partitionCount;
+    @Value("${kafkahq.topic.skip-consumer-groups}")
+    protected Boolean skipConsumerGroups;
 
     @Inject
     public TopicController(
@@ -100,6 +102,7 @@ public class TopicController extends AbstractController {
             "search", search,
             "topicListView", topicListView,
             "topics", paged.complete(),
+            "skipConsumerGroups", skipConsumerGroups,
             "pagination", ImmutableMap.builder()
                 .put("size", paged.size())
                 .put("before", paged.before().toNormalizedURI(false).toString())

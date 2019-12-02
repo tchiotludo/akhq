@@ -4,6 +4,7 @@
 <#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="skipConsumerGroups" type="java.lang.Boolean" -->
 
 <#assign canDelete=roles?seq_contains("topic/delete")>
     
@@ -21,7 +22,9 @@
                 <th colspan="3">Topics</th>
                 <th colspan="1">Partitions</th>
                 <th colspan="2">Replications</th>
-                <th>Consumers Groups</th>
+                <#if skipConsumerGroups == false>
+                    <th>Consumers Groups</th>
+                </#if>
                 <th colspan="2" class="khq-row-action"></th>
             </tr>
         </thead>
@@ -37,7 +40,9 @@
                 -->
                 <th class="text-nowrap">Factor</th>
                 <th class="text-nowrap">In Sync</th>
-                <th class="text-nowrap">Consumer Groups</th>
+                <#if skipConsumerGroups == false>
+                    <th class="text-nowrap">Consumer Groups</th>
+                </#if>
                 <th class="khq-row-action"></th>
                 <#if canDelete == true>
                     <th class="khq-row-action"></th>
@@ -72,17 +77,19 @@
                         <td>${topic.getPartitions()?size}</td>
                         <td>${topic.getReplicaCount()}</td>
                         <td><span class="${(topic.getReplicaCount() > topic.getInSyncReplicaCount())?then("text-warning", "")}">${topic.getInSyncReplicaCount()}</span></td>
-                        <td>
-                            <#list topic.getConsumerGroups() as group>
-                                <#assign active = group.isActiveTopic(topic.getName()) >
-                                <a href="${basePath}/${clusterId}/group/${group.getId()}" class="btn btn-sm mb-1 btn-${active?then("success", "warning")} ">
-                                    ${group.getId()}
-                                    <span class="badge badge-light">
-                                        Lag: ${group.getOffsetLag(topic.getName())}
-                                    </span>
-                                </a><br/>
-                            </#list>
-                        </td>
+                        <#if skipConsumerGroups == false>
+                            <td>
+                                <#list topic.getConsumerGroups() as group>
+                                    <#assign active = group.isActiveTopic(topic.getName()) >
+                                    <a href="${basePath}/${clusterId}/group/${group.getId()}" class="btn btn-sm mb-1 btn-${active?then("success", "warning")} ">
+                                        ${group.getId()}
+                                        <span class="badge badge-light">
+                                            Lag: ${group.getOffsetLag(topic.getName())}
+                                        </span>
+                                    </a><br/>
+                                </#list>
+                            </td>
+                        </#if>
                         <td class="khq-row-action khq-row-action-main">
                             <a href="${basePath}/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
                         </td>

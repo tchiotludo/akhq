@@ -39,6 +39,7 @@ kafkahq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
+    skip-consumer-groups: false
 
   security:
     default-groups:
