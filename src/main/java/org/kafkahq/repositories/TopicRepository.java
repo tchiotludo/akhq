@@ -12,6 +12,7 @@ import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,11 +45,17 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     ApplicationContext applicationContext;
 
+    @Inject
+    private UserGroupUtils userGroupUtils;
+
     @Value("${kafkahq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
     @Value("${kafkahq.topic.stream-regexps}")
     protected List<String> streamRegexps;
+
+    @Value("${kafkahq.security.default-groups}")
+    private List<String> defaultGroups;
 
     @Value("${kafkahq.topic.skip-consumer-groups}")
     protected Boolean skipConsumerGroups;
@@ -120,7 +127,7 @@ public class TopicRepository extends AbstractRepository {
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
-        Optional<String> topicRegex = getTopicFilterRegex();
+        Optional<List<String>> topicRegex = getTopicFilterRegex();
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
             if(isTopicMatchRegex(topicRegex, description.getValue().name())){
@@ -170,18 +177,31 @@ public class TopicRepository extends AbstractRepository {
             .get();
     }
 
-    private Optional<String> getTopicFilterRegex() {
+    private Optional<List<String>> getTopicFilterRegex() {
+
+        List<String> topicFilterRegex = new ArrayList<>();
+
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             Optional<Authentication> authentication = securityService.getAuthentication();
             if (authentication.isPresent()) {
                 Authentication auth = authentication.get();
-                if (auth.getAttributes().get("topics-filter-regexp") != null) {
-                    return Optional.of(auth.getAttributes().get("topics-filter-regexp").toString());
-                }
+                topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(auth.getAttributes()));
             }
         }
-        return Optional.empty();
+        // get topic filter regex for default groups
+        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(userGroupUtils.getUserAttributes(this.defaultGroups)));
+
+        return Optional.of(topicFilterRegex);
+    }
+
+    private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
+        if (attributes.get("topics-filter-regexp") != null) {
+            if (attributes.get("topics-filter-regexp") instanceof List) {
+                return (List<String>)attributes.get("topics-filter-regexp");
+            }
+        }
+        return new ArrayList<>();
     }
 
 }

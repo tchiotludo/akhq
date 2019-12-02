@@ -1,3 +1,26 @@
+micronaut:
+  application:
+    name: kafkahq
+
+  security:
+    enabled: true
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: ''
+          managerDn: ''
+          managerPassword: ''
+        search:
+          base: ''
+        groups:
+          enabled: true
+          base: ''
+  caches:
+    kafka-wrapper:
+      maximum-size: 0
+
+
 kafkahq:
   server:
     base-path: ""
@@ -19,18 +42,42 @@ kafkahq:
     skip-consumer-groups: false
 
   security:
+    default-groups:
+      no-filter
+    groups:
+      admin:
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
+        attributes:
+          topics-filter-regexp: "test.*"
+      operator:
+        roles:
+          - topic/read
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+        attributes:
+          topics-filter-regexp: "test-operator.*"
+      no-filter:
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
     basic-auth:
       user:
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        roles:
-          - topic/read
-          - registry/version/delete
-          - group/read
-          - group/delete
-        attributes:
-          topics-filter-regexp: "test.*"
+        groups:
+          - admin
+    ldap:
+      group:
+        ldap-admin:
+          groups:
+            - admin
+        ldap-operator:
+          groups:
+            - operator
 
-micronaut:
-  caches:
-    kafka-wrapper:
-      maximum-size: 0

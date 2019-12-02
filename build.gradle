@@ -123,6 +123,7 @@ dependencies {
     compile "io.micronaut:micronaut-security-session"
     compile "io.micronaut:micronaut-management"
     compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
+    compile "io.micronaut.configuration:micronaut-security-ldap"
     compile 'io.github.mweirauch:micrometer-jvm-extras:0.2.0'
 
     // kafka

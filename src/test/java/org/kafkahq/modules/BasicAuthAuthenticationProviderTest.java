@@ -9,6 +9,8 @@ import org.kafkahq.AbstractTest;
 
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -32,14 +34,14 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
 
         assertTrue(userDetail.isAuthenticated());
         assertEquals("user", userDetail.getUsername());
-        assertEquals("test.*", userDetail.getAttributes("roles", "user").get("topics-filter-regexp"));
-
 
         Collection<String> roles = userDetail.getRoles();
 
         assertThat(roles, hasSize(4));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
+
+        assertEquals("test.*", ((List)userDetail.getAttributes("roles", "username").get("topics-filter-regexp")).get(0));
     }
 
     @Test

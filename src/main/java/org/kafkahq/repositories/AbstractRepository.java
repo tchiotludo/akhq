@@ -1,11 +1,12 @@
 package org.kafkahq.repositories;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 abstract public class AbstractRepository {
     public static boolean isSearchMatch(Optional<String> search, String value) {
-        if (!search.isPresent()) {
+        if (search.isEmpty()) {
             return true;
         }
 
@@ -18,11 +19,16 @@ abstract public class AbstractRepository {
         return count == split.length;
     }
 
-    public static boolean isTopicMatchRegex(Optional<String> regex, String topic){
-        if(!regex.isPresent()){
+    public static boolean isTopicMatchRegex(Optional<List<String>> regex, String topic) {
+        if (regex.isEmpty() || regex.get().isEmpty()) {
             return true;
         }
 
-        return topic.matches(regex.get());
+        for (String strRegex : regex.get()) {
+            if (topic.matches(strRegex)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

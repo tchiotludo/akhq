@@ -1,3 +1,19 @@
+micronaut:
+  security:
+    # Ldap authentificaton configuration
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: 'ldap://ldap.forumsys.com:389'
+          managerDn: 'cn=read-only-admin,dc=example,dc=com'
+          managerPassword: 'password'
+        search:
+          base: "dc=example,dc=com"
+        groups:
+          enabled: true
+          base: "dc=example,dc=com"
+
 kafkahq:
   server:
     base-path: "" # if behind a reverse proxy, path to kafkahq without trailing slash (optional). Example: kafkahq is
@@ -87,39 +103,59 @@ kafkahq:
 
   # Auth & Roles (optional)
   security:
-    default-roles: # Roles available for all the user even unlogged user
-      - topic/read
-      - topic/insert
-      - topic/delete
-      - topic/config/update
-      - node/read
-      - node/config/update
-      - topic/data/read
-      - topic/data/insert
-      - topic/data/delete
-      - group/read
-      - group/delete
-      - group/offsets/update
-      - acls/read
-      - registry/read
-      - registry/insert
-      - registry/update
-      - registry/delete
-      - registry/version/delete
-      - connect/read
-      - connect/insert
-      - connect/update
-      - connect/delete
-      - connect/state/update
+    default-groups: # Default groups for all the user even unlogged user
+      - admin
+
+    # Groups definition
+    groups:
+      admin: # Group name
+        roles:  # roles for the group
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
+        attributes:
+          # Regexp to filter topic available for group
+          topics-filter-regexp: "test.*"
+      topic-reader: # Other group
+        roles:
+          - topic/read
+        attributes:
+          topics-filter-regexp: "test\\.reader.*"
 
     # Basic auth configuration
     basic-auth:
       user: # Username
         password: pass # Password in sha256
-        roles: # Role for current users
-          - topic/read
-          - group/read
-          - group/delete
-        attributes:
-          # Regexp to filter topic available for current user
-          topics-filter-regexp: "test.*"
+        groups: # Groups for the user
+          - admin
+          - topic-reader
+
+    # Ldap Groups configuration (when using ldap)
+    ldap:
+      group:
+        group-ldap-1: # ldap group name
+          groups: # KafkaHQ groups list
+            - topic-reader
+        group-ldap-2:
+          groups:
+            - admin
