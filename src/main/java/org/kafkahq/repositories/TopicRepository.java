@@ -50,6 +50,9 @@ public class TopicRepository extends AbstractRepository {
     @Value("${kafkahq.topic.stream-regexps}")
     protected List<String> streamRegexps;
 
+    @Value("${kafkahq.topic.skip-consumer-groups}")
+    protected Boolean skipConsumerGroups;
+
     public enum TopicListView {
         ALL,
         HIDE_INTERNAL,
@@ -124,7 +127,7 @@ public class TopicRepository extends AbstractRepository {
                 list.add(
                     new Topic(
                         description.getValue(),
-                        consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
+                        this.skipConsumerGroups ? Collections.emptyList() : consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
                         aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, description.getValue().name()),

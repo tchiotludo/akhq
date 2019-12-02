@@ -161,6 +161,7 @@ kafkahq:
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
+* `kafkahq.topic.skip-consumer-groups` disable loading of consumer group information when showing topics (`true`), default is to load the information
 
 #### Topic creation default values
 

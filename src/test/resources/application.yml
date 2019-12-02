@@ -16,6 +16,7 @@ kafkahq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
+    skip-consumer-groups: false
 
   security:
     basic-auth:
