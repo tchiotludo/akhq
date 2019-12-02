@@ -225,7 +225,9 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
             new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
             new Config(List.of(
-                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
+                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT),
+                new ConfigEntry(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0"),
+                new ConfigEntry(TopicConfig.MAX_COMPACTION_LAG_MS_CONFIG, "1")
             ))
         )).all().get();
 
