@@ -356,6 +356,11 @@ A docker-compose is provide to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
+## Who's using KafkaHQ 
+* [Adeo](https://www.adeo.com/)
+* [Auchan Retail](https://www.auchan-retail.com/)
+* [Leroy Merlin](https://www.leroymerlin.fr/)
+
 
 ## Credits
 
