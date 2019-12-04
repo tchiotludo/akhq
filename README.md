@@ -361,7 +361,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [Auchan Retail](https://www.auchan-retail.com/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [La Redoute](https://laredoute.io/)
-
+* [Nuxeo](https://www.nuxeo.com/)
 
 ## Credits
 
