@@ -14,7 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Wither;
 import org.kafkahq.configs.BasicAuth;
+import org.kafkahq.configs.LdapGroup;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.UserGroupUtils;
 import org.kafkahq.utils.VersionProvider;
 
 import javax.inject.Inject;
@@ -39,13 +41,19 @@ abstract public class AbstractController {
     private KafkaModule kafkaModule;
 
     @Inject
-    ApplicationContext applicationContext;
-
-    @Value("${kafkahq.security.default-roles}")
-    List<String> defaultRoles;
+    private ApplicationContext applicationContext;
 
     @Inject
-    private List<BasicAuth> auths;
+    private UserGroupUtils userGroupUtils;
+
+    @Value("${kafkahq.security.default-groups}")
+    private List<String> defaultGroups;
+
+    @Inject
+    private List<BasicAuth> basicAuths;
+
+    @Inject
+    private List<LdapGroup> ldapAuths;
 
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
@@ -63,7 +71,7 @@ abstract public class AbstractController {
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            datas.put("loginEnabled", auths.size() > 0);
+            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0);
 
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             securityService
@@ -137,7 +145,7 @@ abstract public class AbstractController {
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.defaultRoles);
+            return expandRoles(this.userGroupUtils.getUserRoles(this.defaultGroups));
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -146,7 +154,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.defaultRoles)
+                .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
         );
     }
 

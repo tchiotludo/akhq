@@ -86,13 +86,13 @@ public class KafkaTestCluster implements Runnable, Stoppable {
 
         kafkaCluster = new EmbeddedSingleNodeKafkaCluster(new Properties() {{
             // Log config
-            put("log.min.cleanable.dirty.ratio", "0.01");
+            put("log.min.cleanable.dirty.ratio", "0");
             put("log.roll.ms", "1");
             put("log.cleaner.backoff.ms", "1");
             put("log.segment.delete.delay.ms", "1");
+            put("max.compaction.lag.ms", "1");
             put("authorizer.class.name", "kafka.security.auth.SimpleAclAuthorizer");
             put("allow.everyone.if.no.acl.found", "true");
-
 
             // Segment config
             put(TopicConfig.SEGMENT_MS_CONFIG, "1");
@@ -225,8 +225,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
             new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
             new Config(List.of(
-                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT),
-                new ConfigEntry(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0")
+                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
             ))
         )).all().get();
 

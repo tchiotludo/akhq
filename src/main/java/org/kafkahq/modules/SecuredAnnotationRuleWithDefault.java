@@ -4,6 +4,7 @@ import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.rules.SecuredAnnotationRule;
 import io.micronaut.security.token.RolesFinder;
+import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,14 +19,17 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
         super(rolesFinder);
     }
 
-    @Value("${kafkahq.security.default-roles}")
-    List<String> defaultRoles;
+    @Value("${kafkahq.security.default-groups}")
+    List<String> defaultGroups;
+
+    @Inject
+    private UserGroupUtils userGroupUtils;
 
     @Override
     protected List<String> getRoles(Map<String, Object> claims) {
         List<String> roles = super.getRoles(claims);
 
-        roles.addAll(defaultRoles);
+        roles.addAll(this.userGroupUtils.getUserRoles(defaultGroups));
 
         return roles;
     }
