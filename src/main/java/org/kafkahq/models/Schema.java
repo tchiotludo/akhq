@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 public class Schema {
-    private final Parser parser = new Parser();
+    private static final Parser parser = new Parser();
 
     private final Integer id;
     private final String subject;
@@ -29,7 +29,12 @@ public class Schema {
         this.subject = schema.getSubject();
         this.version = schema.getVersion();
 
+        try {
             this.schema = parser.parse(schema.getSchema());
+        } catch (AvroTypeException e) {
+            this.schema = null;
+            this.exception = e;
+        }
     }
 
     @ToString
