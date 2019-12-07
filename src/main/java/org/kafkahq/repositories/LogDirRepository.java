@@ -3,7 +3,7 @@ package org.kafkahq.repositories;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.LogDir;
-import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.modules.AbstractKafkaWrapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class LogDirRepository extends AbstractRepository {
     @Inject
-    KafkaWrapper kafkaWrapper;
+    AbstractKafkaWrapper kafkaWrapper;
 
     public ArrayList<LogDir> list(String clusterId) throws ExecutionException, InterruptedException {
         ArrayList<LogDir> list = new ArrayList<>();

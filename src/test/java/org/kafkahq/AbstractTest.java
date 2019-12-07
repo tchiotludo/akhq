@@ -1,16 +1,12 @@
 package org.kafkahq;
 
 import com.google.common.collect.ImmutableMap;
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kafkahq.modules.KafkaWrapper;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
 
@@ -20,9 +16,6 @@ import java.util.Map;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(KafkaClusterExtension.class)
 abstract public class AbstractTest implements TestPropertyProvider {
-    @Inject
-    private ApplicationContext applicationContext;
-
     @Nonnull
     @Override
     public Map<String, String> getProperties() {
@@ -42,11 +35,5 @@ abstract public class AbstractTest implements TestPropertyProvider {
             "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect.url",
             connectionString.getConnect()
         );
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        KafkaWrapper kafkaWrapper = applicationContext.getBean(KafkaWrapper.class);
-        applicationContext.inject(kafkaWrapper);
     }
 }

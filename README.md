@@ -157,7 +157,6 @@ kafkahq:
 
 #### Pagination
 * `kafkahq.pagination.page-size` number of topics per page (default : 25)
-* `kafkahq.pagination.threads` number of parallel threads to resolve current page (default : 16). This setting can have a significant impact on performance on list page since it will fetch in parallel the Kafka API.
 
 #### Topic List 
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)

@@ -7,7 +7,7 @@ import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
 import org.kafkahq.models.AccessControlList;
-import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.modules.AbstractKafkaWrapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class AccessControlListRepository extends AbstractRepository {
 
     @Inject
-    private KafkaWrapper kafkaWrapper;
+    private AbstractKafkaWrapper kafkaWrapper;
 
     public List<AccessControlList> findAll(String clusterId, Optional<String> search) {
         try {

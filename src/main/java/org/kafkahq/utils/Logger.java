@@ -10,16 +10,13 @@ import java.util.concurrent.ExecutionException;
 
 @Singleton
 @Slf4j
-public class Lock {
+public class Logger {
     public static <T> T call(Callable<T> task, String format, List<String> arguments) throws ExecutionException, InterruptedException {
         long startTime = System.currentTimeMillis();
         T call;
 
         try {
-            String lockKey = format + String.join("-", arguments == null ? Collections.emptyList() : arguments);
-            synchronized(lockKey.intern()) {
-                call = task.call();
-            }
+            call = task.call();
 
             log.debug("{} ms -> " + format, (System.currentTimeMillis() - startTime), arguments);
             return call;

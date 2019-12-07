@@ -37,6 +37,7 @@ public class UserGroupUtils {
      * @param groups list of user groups
      * @return Map<attribute_name, List < attribute_value>>
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getUserAttributes(List<String> groups) {
         if (this.kafkaHqGroups == null || groups == null) {
             return null;

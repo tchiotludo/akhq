@@ -18,17 +18,20 @@ import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.Role;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
+import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.RequestHelper;
+import org.kafkahq.repositories.AccessControlListRepository;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.utils.CompletablePaged;
-import org.kafkahq.utils.CompletablePagedService;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -36,19 +39,19 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/topic")
 public class TopicController extends AbstractController {
+    private AbstractKafkaWrapper kafkaWrapper;
     private TopicRepository topicRepository;
     private ConfigRepository configRepository;
     private RecordRepository recordRepository;
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
     private Environment environment;
-    private CompletablePagedService completablePagedService;
+    private AccessControlListRepository aclRepository;
 
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
@@ -60,22 +63,26 @@ public class TopicController extends AbstractController {
     private Integer partitionCount;
     @Value("${kafkahq.topic.skip-consumer-groups}")
     protected Boolean skipConsumerGroups;
+    @Value("${kafkahq.pagination.page-size}")
+    private Integer pageSize;
 
     @Inject
     public TopicController(
+        AbstractKafkaWrapper kafkaWrapper,
         TopicRepository topicRepository,
         ConfigRepository configRepository,
         RecordRepository recordRepository,
         FreemarkerViewsRenderer freemarkerViewsRenderer,
         Environment environment,
-        CompletablePagedService completablePagedService
+        AccessControlListRepository aclRepository
     ) {
+        this.kafkaWrapper = kafkaWrapper;
         this.topicRepository = topicRepository;
         this.configRepository = configRepository;
         this.recordRepository = recordRepository;
         this.freemarkerViewsRenderer = freemarkerViewsRenderer;
         this.environment = environment;
-        this.completablePagedService = completablePagedService;
+        this.aclRepository = aclRepository;
     }
 
     @View("topicList")
@@ -87,26 +94,28 @@ public class TopicController extends AbstractController {
         Optional<Integer> page
     ) throws ExecutionException, InterruptedException {
         TopicRepository.TopicListView topicListView = show.orElse(TopicRepository.TopicListView.valueOf(defaultView));
-        List<CompletableFuture<Topic>> list = this.topicRepository.list(
+
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+
+        PagedList<Topic> list = this.topicRepository.list(
             cluster,
+            pagination,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
             search
         );
-
-        URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Topic> paged = completablePagedService.of(list, uri, page.orElse(1));
 
         return this.template(
             request,
             cluster,
             "search", search,
             "topicListView", topicListView,
-            "topics", paged.complete(),
+            "topics", list,
             "skipConsumerGroups", skipConsumerGroups,
             "pagination", ImmutableMap.builder()
-                .put("size", paged.size())
-                .put("before", paged.before().toNormalizedURI(false).toString())
-                .put("after", paged.after().toNormalizedURI(false).toString())
+                .put("size", list.total())
+                .put("before", list.before().toNormalizedURI(false).toString())
+                .put("after", list.after().toNormalizedURI(false).toString())
                 .build()
         );
     }
@@ -326,6 +335,7 @@ public class TopicController extends AbstractController {
             cluster,
             "tab", tab,
             "topic", topic,
+            "acls", aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topic.getName()),
             "configs", configs
         );
     }
@@ -378,7 +388,7 @@ public class TopicController extends AbstractController {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
-                this.topicRepository.delete(cluster, topicName),
+                this.kafkaWrapper.deleteTopics(cluster, topicName),
             "Topic '" + topicName + "' is deleted",
             "Failed to delete topic " + topicName
         ));

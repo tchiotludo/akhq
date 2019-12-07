@@ -11,15 +11,18 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.Role;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.TopicPartition;
+import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.RequestHelper;
+import org.kafkahq.repositories.AccessControlListRepository;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
-import org.kafkahq.utils.CompletablePaged;
-import org.kafkahq.utils.CompletablePagedService;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -27,45 +30,50 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_GROUP_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/group")
 public class GroupController extends AbstractController {
+    private AbstractKafkaWrapper kafkaWrapper;
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;
-    private CompletablePagedService completablePagedService;
+    private AccessControlListRepository aclRepository;
+
+    @Value("${kafkahq.pagination.page-size}")
+    private Integer pageSize;
 
     @Inject
     public GroupController(
+        AbstractKafkaWrapper kafkaWrapper,
         ConsumerGroupRepository consumerGroupRepository,
         RecordRepository recordRepository,
-        CompletablePagedService completablePagedService
+        AccessControlListRepository aclRepository
     ) {
+        this.kafkaWrapper = kafkaWrapper;
         this.consumerGroupRepository = consumerGroupRepository;
         this.recordRepository = recordRepository;
-        this.completablePagedService = completablePagedService;
+        this.aclRepository = aclRepository;
     }
 
     @View("groupList")
     @Get
     public HttpResponse list(HttpRequest request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
-
-        List<CompletableFuture<ConsumerGroup>> list = this.consumerGroupRepository.list(cluster, search);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<ConsumerGroup> paged = completablePagedService.of(list, uri, page.orElse(1));
+        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+
+        PagedList<ConsumerGroup> list = this.consumerGroupRepository.list(cluster, pagination, search);
 
         return this.template(
             request,
             cluster,
             "search", search,
-            "groups", paged.complete(),
+            "groups", list,
             "pagination", ImmutableMap.builder()
-                .put("size", paged.size())
-                .put("before", paged.before().toNormalizedURI(false).toString())
-                .put("after", paged.after().toNormalizedURI(false).toString())
+                .put("size", list.total())
+                .put("before", list.before().toNormalizedURI(false).toString())
+                .put("after", list.after().toNormalizedURI(false).toString())
                 .build()
         );
     }
@@ -89,7 +97,8 @@ public class GroupController extends AbstractController {
             request,
             cluster,
            "tab", tab,
-            "group", group
+            "group", group,
+            "acls", aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName)
         );
     }
 
@@ -156,7 +165,7 @@ public class GroupController extends AbstractController {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
-                this.consumerGroupRepository.delete(cluster, groupName),
+                this.kafkaWrapper.deleteConsumerGroups(cluster, groupName),
             "Consumer group '" + groupName + "' is deleted",
             "Failed to consumer group " + groupName
         ));
