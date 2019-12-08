@@ -16,11 +16,13 @@
 
 <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link ${(tab == "data")?then("active", "")}"
-               href="${basePath}/${clusterId}/topic/${topic.getName()}"
-               role="tab">Data</a>
-        </li>
+        <#if roles?seq_contains("topic/data/read")>
+            <li class="nav-item">
+                <a class="nav-link ${(tab == "data")?then("active", "")}"
+                   href="${basePath}/${clusterId}/topic/${topic.getName()}"
+                   role="tab">Data</a>
+            </li>
+        </#if>
         <li class="nav-item">
             <a class="nav-link ${(tab == "partitions")?then("active", "")}"
                href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions"
