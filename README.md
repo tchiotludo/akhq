@@ -351,15 +351,38 @@ following micronaut configuration below.
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
 ## Development Environment
+
+### Early dev image
+
+You can have access to last feature / bug fix with docker dev image automatically build on tag `dev`
+```bash
+docker pull tchiotludo/kafkahq:dev
+```
+
+The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar : 
+
+Get it from docker image 
+```bash
+docker pull tchiotludo/kafkahq:dev
+docker run --rm --name=kafkahq -it tchiotludo/kafkahq:dev
+docker cp kafkahq:/app/kafkahq.jar . 
+```
+Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/kafkahq-*.jar`
+
+
+### Development Server
+
 A docker-compose is provide to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
+
+
 ## Who's using KafkaHQ 
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
-* [Leroy Merlin](https://www.leroymerlin.fr/)
 * [La Redoute](https://laredoute.io/)
+* [Leroy Merlin](https://www.leroymerlin.fr/)
 * [Nuxeo](https://www.nuxeo.com/)
 
 ## Credits

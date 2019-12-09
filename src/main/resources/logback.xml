@@ -37,7 +37,5 @@
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.kafkahq" level="DEBUG" />
-
     <logger name="org.apache" level="WARN" />
 </configuration>
