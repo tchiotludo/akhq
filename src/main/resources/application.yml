@@ -64,6 +64,18 @@ jackson:
   module-scan: false
 
 kafkahq:
+  connections:
+    my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
+      properties: # standard kafka properties (optional)
+        bootstrap.servers: "localhost:9092"
+      schema-registry:
+        url: "http://localhost:8085"
+      connect:
+        - name: "my-first-connect"
+          url: "http://localhost:8083"
+        - name: "my-second-connect"
+          url: "http://localhost:8084" # connect url (optional)
+
   server:
     base-path: ""
     access-log:

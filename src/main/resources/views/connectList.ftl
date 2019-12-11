@@ -1,9 +1,10 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
+<#-- @ftlvariable name="connectId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
-<#-- @ftlvariable name="connects" type="java.util.List<org.kafkahq.models.ConnectDefinition>" -->
+<#-- @ftlvariable name="connectsDef" type="java.util.List<org.kafkahq.models.ConnectDefinition>" -->
 
 <#import "includes/template.ftl" as template>
 
@@ -25,7 +26,7 @@
             </tr>
         </thead>
         <tbody>
-            <#if connects?size == 0>
+            <#if connectsDef?size == 0>
                 <tr>
                     <td colspan="${(canDelete == true)?then("5", "4")}">
                         <div class="alert alert-info mb-0" role="alert">
@@ -34,7 +35,7 @@
                     </td>
                 </tr>
             </#if>
-            <#list connects as connect>
+            <#list connectsDef as connect>
                 <tr>
                     <td>${connect.getName()}</td>
                     <td>
@@ -57,12 +58,12 @@
                         </#list>
                     </td>
                     <td class="khq-row-action khq-row-action-main">
-                        <a href="${basePath}/${clusterId}/connect/${connect.getName()}" ><i class="fa fa-search"></i></a>
+                        <a href="${basePath}/${clusterId}/connect/${connectId}/${connect.getName()}" ><i class="fa fa-search"></i></a>
                     </td>
                     <#if canDelete == true>
                         <td class="khq-row-action">
                             <a
-                                    href="${basePath}/${clusterId}/connect/${connect.getName()}/delete"
+                                    href="${basePath}/${clusterId}/connect/${connectId}/${connect.getName()}/delete"
                                     data-confirm="Do you want to delete definition: <code>${connect.getName()}</code> ?"
                             ><i class="fa fa-trash"></i></a>
                         </td>
@@ -84,7 +85,7 @@
 
 <#if roles?seq_contains("connect/insert") == true>
     <@template.bottom>
-        <a href="${basePath}/${clusterId}/connect/create" class="btn btn-primary">Create a defintion</a>
+        <a href="${basePath}/${clusterId}/connect/${connectId}/create" class="btn btn-primary">Create a definition</a>
     </@template.bottom>
 </#if>
 
