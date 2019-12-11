@@ -1,6 +1,11 @@
 # KafkaHQ
-[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
+
 ![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/kafkahq.svg)
+![License](https://img.shields.io/github/license/tchiotludo/kafkahq)
+![Docker Pull](https://img.shields.io/docker/pulls/tchiotludo/kafkahq.svg)
+![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/kafkahq/total)
+![Github Start](https://img.shields.io/github/stars/tchiotludo/kafkahq.svg)
+[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
 
 > Kafka GUI for topics, topics data, consumers group, schema registry, connect and more...
 
