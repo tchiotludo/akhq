@@ -389,6 +389,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [Nuxeo](https://www.nuxeo.com/)
+* [GetYourGuide](https://www.getyourguide.com)
 
 ## Credits
 
