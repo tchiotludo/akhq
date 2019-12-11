@@ -172,38 +172,43 @@ public class KafkaModule {
         );
     }
 
-    private Map<String, KafkaConnectClient> connectRestClient = new HashMap<>();
+    private Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
 
-    public KafkaConnectClient getConnectRestClient(String clusterId) {
+    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) {
         if (!this.connectRestClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
-            if (connection.getConnect() != null) {
-                URIBuilder uri = URIBuilder.fromString(connection.getConnect().getUrl().toString());
-                Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
+            if (connection.getConnect() != null && !connection.getConnect().isEmpty()) {
 
-                if (connection.getConnect().getBasicAuthUsername() != null) {
-                    configuration.useBasicAuth(
-                        connection.getConnect().getBasicAuthUsername(),
-                        connection.getConnect().getBasicAuthPassword()
-                    );
-                }
+                Map<String,KafkaConnectClient> mapConnects = new HashMap<>();
+                connection.getConnect().forEach(connect -> {
 
-                if (connection.getConnect().getSslTrustStore() != null) {
-                    configuration.useTrustStore(
-                        new File(connection.getConnect().getSslTrustStore()),
-                        connection.getConnect().getSslTrustStorePassword()
-                    );
-                }
+                    URIBuilder uri = URIBuilder.fromString(connect.getUrl().toString());
+                    Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
 
-                if (connection.getConnect().getSslKeyStore() != null) {
-                    configuration.useTrustStore(
-                        new File(connection.getConnect().getSslKeyStore()),
-                        connection.getConnect().getSslKeyStorePassword()
-                    );
-                }
+                    if (connect.getBasicAuthUsername() != null) {
+                        configuration.useBasicAuth(
+                                connect.getBasicAuthUsername(),
+                                connect.getBasicAuthPassword()
+                        );
+                    }
 
-                this.connectRestClient.put(clusterId, new KafkaConnectClient(configuration));
+                    if (connect.getSslTrustStore() != null) {
+                        configuration.useTrustStore(
+                                new File(connect.getSslTrustStore()),
+                                connect.getSslTrustStorePassword()
+                        );
+                    }
+
+                    if (connect.getSslKeyStore() != null) {
+                        configuration.useTrustStore(
+                                new File(connect.getSslKeyStore()),
+                                connect.getSslKeyStorePassword()
+                        );
+                    }
+                    mapConnects.put(connect.getName(), new KafkaConnectClient(configuration));
+                });
+                this.connectRestClient.put(clusterId, mapConnects);
             }
         }
 

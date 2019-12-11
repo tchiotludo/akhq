@@ -23,7 +23,7 @@ public class ConnectRepositoryTest extends AbstractTest {
 
     @Test
     public void getPlugins() {
-        List<ConnectPlugin> all = repository.getPlugins(KafkaTestCluster.CLUSTER_ID);
+        List<ConnectPlugin> all = repository.getPlugins(KafkaTestCluster.CLUSTER_ID, "");
         assertEquals(2, all.size());
     }
 
@@ -31,6 +31,7 @@ public class ConnectRepositoryTest extends AbstractTest {
     public void getPlugin() {
         Optional<ConnectPlugin> plugin = repository.getPlugin(
             KafkaTestCluster.CLUSTER_ID,
+            "",
             "FileStreamSinkConnector"
         );
 
@@ -43,7 +44,7 @@ public class ConnectRepositoryTest extends AbstractTest {
     @BeforeEach
     public void cleanup() {
         try {
-            repository.delete(KafkaTestCluster.CLUSTER_ID, "ConnectRepositoryTest");
+            repository.delete(KafkaTestCluster.CLUSTER_ID, "", "ConnectRepositoryTest");
         } catch (Exception ignored) {
         }
     }
@@ -55,6 +56,7 @@ public class ConnectRepositoryTest extends AbstractTest {
 
         repository.create(
             KafkaTestCluster.CLUSTER_ID,
+            "",
             "ConnectRepositoryTest",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
@@ -64,16 +66,18 @@ public class ConnectRepositoryTest extends AbstractTest {
         );
 
 
-        List<ConnectDefinition> all = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID);
+        List<ConnectDefinition> all = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "");
         assertEquals(1, all.size());
 
         assertEquals(path1, repository.getDefinition(
             KafkaTestCluster.CLUSTER_ID,
+            "",
             "ConnectRepositoryTest"
         ).getConfigs().get("file"));
 
         repository.update(
             KafkaTestCluster.CLUSTER_ID,
+            "",
             "ConnectRepositoryTest",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
@@ -84,10 +88,11 @@ public class ConnectRepositoryTest extends AbstractTest {
 
         assertEquals(path2, repository.getDefinition(
             KafkaTestCluster.CLUSTER_ID,
+            "",
             "ConnectRepositoryTest"
         ).getConfigs().get("file"));
 
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "ConnectRepositoryTest");
-        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID).size());
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "","ConnectRepositoryTest");
+        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "").size());
     }
 }
