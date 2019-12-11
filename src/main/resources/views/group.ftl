@@ -5,6 +5,7 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="acls" type="java.util.ArrayList<org.kafkahq.models.AccessControlList>" -->
 
 <#import "includes/template.ftl" as template>
 
@@ -46,7 +47,7 @@
         <#if tab == "acls" && roles?seq_contains("acls") == true>
             <div class="tab-pane active" role="tabpanel">
                 <#assign resourceType="group"/>
-                <#assign acls=group.getAcls()/>
+                <#assign acls=acls/>
                 <#include "blocks/resourceTypeAcls.ftl" />
             </div>
         </#if>

@@ -6,6 +6,7 @@ import io.micronaut.security.authentication.DefaultAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.common.config.TopicConfig;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.kafkahq.KafkaClusterExtension;
 import org.kafkahq.KafkaTestCluster;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Partition;
+import org.kafkahq.utils.Pagination;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -48,39 +50,74 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(14, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.empty()).size());
+        assertEquals(14, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.ALL,
+            Optional.empty()
+        ).size());
     }
 
     @Test
     public void listNoInternal() throws ExecutionException, InterruptedException {
-        assertEquals(9, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty()).size());
+        assertEquals(9, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.HIDE_INTERNAL,
+            Optional.empty()
+        ).size());
     }
 
     @Test
     public void listNoInternalStream() throws ExecutionException, InterruptedException {
-        assertEquals(7, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_INTERNAL_STREAM, Optional.empty()).size());
+        assertEquals(7, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
+            Optional.empty()
+        ).size());
     }
 
     @Test
     public void listNoStream() throws ExecutionException, InterruptedException {
-        assertEquals(12, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.HIDE_STREAM, Optional.empty()).size());
+        assertEquals(12, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.HIDE_STREAM,
+            Optional.empty()
+        ).size());
     }
 
     @Test
     public void listWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
-        assertEquals(1, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.empty()).size());
+        assertEquals(1, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.ALL,
+            Optional.empty()
+        ).size());
     }
 
     @Test
     public void search() throws ExecutionException, InterruptedException {
-        assertEquals(1, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.of("ra do")).size());
+        assertEquals(1, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.ALL,
+            Optional.of("ra do")
+        ).size());
     }
 
     @Test
     public void searchWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
-        assertEquals(0, topicRepository.list(KafkaTestCluster.CLUSTER_ID, TopicRepository.TopicListView.ALL, Optional.of("stream")).size());
+        assertEquals(0, topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.ALL,
+            Optional.of("stream")
+        ).size());
     }
 
     @Test

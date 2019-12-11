@@ -1,6 +1,11 @@
 # KafkaHQ
-[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
+
 ![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/kafkahq.svg)
+![License](https://img.shields.io/github/license/tchiotludo/kafkahq)
+![Docker Pull](https://img.shields.io/docker/pulls/tchiotludo/kafkahq.svg)
+![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/kafkahq/total)
+![Github Start](https://img.shields.io/github/stars/tchiotludo/kafkahq.svg)
+[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
 
 > Kafka GUI for topics, topics data, consumers group, schema registry, connect and more...
 
@@ -157,7 +162,6 @@ kafkahq:
 
 #### Pagination
 * `kafkahq.pagination.page-size` number of topics per page (default : 25)
-* `kafkahq.pagination.threads` number of parallel threads to resolve current page (default : 16). This setting can have a significant impact on performance on list page since it will fetch in parallel the Kafka API.
 
 #### Topic List 
 * `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
@@ -352,15 +356,38 @@ following micronaut configuration below.
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
 ## Development Environment
+
+### Early dev image
+
+You can have access to last feature / bug fix with docker dev image automatically build on tag `dev`
+```bash
+docker pull tchiotludo/kafkahq:dev
+```
+
+The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar : 
+
+Get it from docker image 
+```bash
+docker pull tchiotludo/kafkahq:dev
+docker run --rm --name=kafkahq -it tchiotludo/kafkahq:dev
+docker cp kafkahq:/app/kafkahq.jar . 
+```
+Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/kafkahq-*.jar`
+
+
+### Development Server
+
 A docker-compose is provide to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
+
+
 ## Who's using KafkaHQ 
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
-* [Leroy Merlin](https://www.leroymerlin.fr/)
 * [La Redoute](https://laredoute.io/)
+* [Leroy Merlin](https://www.leroymerlin.fr/)
 * [Nuxeo](https://www.nuxeo.com/)
 
 ## Credits

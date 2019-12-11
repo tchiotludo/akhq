@@ -4,31 +4,24 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
-import org.apache.kafka.common.resource.ResourceType;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Topic;
-import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.modules.AbstractKafkaWrapper;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
     @Inject
-    KafkaWrapper kafkaWrapper;
-
-    @Inject
-    private KafkaModule kafkaModule;
+    private AbstractKafkaWrapper kafkaWrapper;
 
     @Inject
     private ConsumerGroupRepository consumerGroupRepository;
@@ -39,11 +32,9 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     private ConfigRepository configRepository;
 
-    @Inject
-    private AccessControlListRepository aclRepository;
 
     @Inject
-    ApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
     @Inject
     private UserGroupUtils userGroupUtils;
@@ -67,18 +58,10 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
-    public List<CompletableFuture<Topic>> list(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        return all(clusterId, view, search)
-            .stream()
-            .map(s -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    return this.findByName(clusterId, s);
-                }
-                catch(ExecutionException | InterruptedException ex) {
-                    throw new CompletionException(ex);
-                }
-            }))
-            .collect(Collectors.toList());
+    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+        List<String> all = all(clusterId, view, search);
+
+        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
@@ -137,13 +120,14 @@ public class TopicRepository extends AbstractRepository {
                         this.skipConsumerGroups ? Collections.emptyList() : consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
-                        aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, description.getValue().name()),
                         isInternal(description.getValue().name()),
                         isStream(description.getValue().name())
                     )
                 );
             }
         }
+
+        list.sort(Comparator.comparing(Topic::getName));
 
         return list;
     }
@@ -161,20 +145,12 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.kafkahq.models.Config> configs) throws ExecutionException, InterruptedException {
-        kafkaModule
-            .getAdminClient(clusterId)
-            .createTopics(Collections.singleton(new NewTopic(name, partitions, replicationFactor)))
-            .all()
-            .get();
-
+        kafkaWrapper.createTopics(clusterId, name, partitions, replicationFactor);
         configRepository.updateTopic(clusterId, name, configs);
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule.getAdminClient(clusterId)
-            .deleteTopics(Collections.singleton(name))
-            .all()
-            .get();
+        kafkaWrapper.deleteTopics(clusterId, name);
     }
 
     private Optional<List<String>> getTopicFilterRegex() {
@@ -195,6 +171,7 @@ public class TopicRepository extends AbstractRepository {
         return Optional.of(topicFilterRegex);
     }
 
+    @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
         if (attributes.get("topics-filter-regexp") != null) {
             if (attributes.get("topics-filter-regexp") instanceof List) {

@@ -91,7 +91,7 @@
                             </td>
                         </#if>
                         <td class="khq-row-action khq-row-action-main">
-                            <a href="${basePath}/${clusterId}/topic/${topic.getName()}" ><i class="fa fa-search"></i></a>
+                            <a href="${basePath}/${clusterId}/topic/${topic.getName()}${roles?seq_contains("topic/data/read")?then("", "/partitions")}" ><i class="fa fa-search"></i></a>
                         </td>
                         <#if canDelete == true>
                             <td class="khq-row-action">

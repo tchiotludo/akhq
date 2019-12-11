@@ -6,6 +6,7 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="acls" type="java.util.ArrayList<org.kafkahq.models.AccessControlList>" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/group.ftl" as groupTemplate>
@@ -15,11 +16,13 @@
 
 <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link ${(tab == "data")?then("active", "")}"
-               href="${basePath}/${clusterId}/topic/${topic.getName()}"
-               role="tab">Data</a>
-        </li>
+        <#if roles?seq_contains("topic/data/read")>
+            <li class="nav-item">
+                <a class="nav-link ${(tab == "data")?then("active", "")}"
+                   href="${basePath}/${clusterId}/topic/${topic.getName()}"
+                   role="tab">Data</a>
+            </li>
+        </#if>
         <li class="nav-item">
             <a class="nav-link ${(tab == "partitions")?then("active", "")}"
                href="${basePath}/${clusterId}/topic/${topic.getName()}/partitions"
@@ -77,7 +80,6 @@
         <#if tab == "acls" && roles?seq_contains("acls") == true>
             <div class="tab-pane active" role="tabpanel">
                 <#assign resourceType="topic"/>
-                <#assign acls=topic.getAcls()/>
                 <#include "blocks/resourceTypeAcls.ftl" />
             </div>
         </#if>

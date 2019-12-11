@@ -3,8 +3,7 @@ package org.kafkahq.repositories;
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
-import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.modules.AbstractKafkaWrapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,10 +14,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class ConfigRepository extends AbstractRepository {
     @Inject
-    KafkaWrapper kafkaWrapper;
-
-    @Inject
-    private KafkaModule kafkaModule;
+    AbstractKafkaWrapper kafkaWrapper;
 
     public List<org.kafkahq.models.Config> findByBroker(String clusterId, Integer name) throws ExecutionException, InterruptedException {
         return this.findByBrokers(clusterId, Collections.singletonList(name)).get(String.valueOf(name));
@@ -81,13 +77,10 @@ public class ConfigRepository extends AbstractRepository {
             .map(config -> new ConfigEntry(config.getName(), config.getValue()))
             .forEach(entries::add);
 
-        kafkaModule.getAdminClient(clusterId)
-            .alterConfigs(ImmutableMap.of(
-                new ConfigResource(type, name),
-                new org.apache.kafka.clients.admin.Config(entries)
-            ))
-            .all()
-            .get();
+        kafkaWrapper.alterConfigs(clusterId, ImmutableMap.of(
+            new ConfigResource(type, name),
+            new org.apache.kafka.clients.admin.Config(entries)
+        ));
     }
 
     public static List<org.kafkahq.models.Config> updatedConfigs(Map<String, String> request, List<org.kafkahq.models.Config> configs) {

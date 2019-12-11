@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 public class Schema {
-    private static final Parser parser = new Parser();
+    private final Parser parser = new Parser();
 
     private final Integer id;
     private final String subject;

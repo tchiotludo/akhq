@@ -5,15 +5,13 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -25,19 +23,27 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
     private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
 
-    public List<CompletableFuture<Schema>> getAll(String clusterId, Optional<String> search) throws IOException, RestClientException {
-        return this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .getAllSubjects()
+    public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        return PagedList.of(all(clusterId, search), pagination, list -> list
             .stream()
-            .filter(s -> isSearchMatch(search, s))
-            .map(s -> CompletableFuture.supplyAsync(() -> {
+            .map(s -> {
                 try {
                     return getLatestVersion(clusterId, s);
                 } catch (RestClientException | IOException e) {
                     throw new RuntimeException(e);
                 }
-            }))
+            })
+            .collect(Collectors.toList())
+        );
+    }
+
+    public List<String> all(String clusterId, Optional<String> search) throws  IOException, RestClientException {
+        return kafkaModule
+            .getRegistryRestClient(clusterId)
+            .getAllSubjects()
+            .stream()
+            .filter(s -> isSearchMatch(search, s))
+            .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
     }
 
@@ -57,16 +63,10 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        for (CompletableFuture<Schema> future: this.getAll(clusterId, Optional.empty())) {
-            Schema schema = future.get();
-
-            if (schema.getId().equals(id)) {
-                return schema;
-            }
-
-            for (Schema version: this.getAllVersions(clusterId, schema.getSubject())) {
+        for (String subject: this.all(clusterId, Optional.empty())) {
+            for (Schema version: this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
-                    return schema;
+                    return version;
                 }
             }
         }

@@ -6,32 +6,33 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.resource.ResourceType;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Partition;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.modules.KafkaWrapper;
+import org.kafkahq.modules.AbstractKafkaWrapper;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Singleton
 public class ConsumerGroupRepository extends AbstractRepository {
     @Inject
-    KafkaWrapper kafkaWrapper;
+    AbstractKafkaWrapper kafkaWrapper;
 
     @Inject
     private KafkaModule kafkaModule;
 
-    @Inject
-    private AccessControlListRepository aclRepository;
+    public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search) throws ExecutionException, InterruptedException {
+        return PagedList.of(all(clusterId, search), pagination, groupsList -> this.findByName(clusterId, groupsList));
+    }
 
-    public List<CompletableFuture<ConsumerGroup>> list(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<String> all(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups(clusterId)) {
@@ -42,17 +43,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         list.sort(Comparator.comparing(String::toLowerCase));
 
-        return list
-            .stream()
-            .map(s -> CompletableFuture.supplyAsync(() -> {
-                try {
-                    return this.findByName(clusterId, s);
-                }
-                catch(ExecutionException | InterruptedException ex) {
-                    throw new CompletionException(ex);
-                }
-            }))
-            .collect(Collectors.toList());
+        return list;
     }
 
     public ConsumerGroup findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
@@ -62,42 +53,43 @@ public class ConsumerGroupRepository extends AbstractRepository {
     }
 
     public List<ConsumerGroup> findByName(String clusterId, List<String> groups) throws ExecutionException, InterruptedException {
-        ArrayList<ConsumerGroup> list = new ArrayList<>();
+        Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, groups);
 
-        Set<Map.Entry<String, ConsumerGroupDescription>> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, groups).entrySet();
+        Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
+            .map(group -> {
+                try {
+                    return new AbstractMap.SimpleEntry<>(group, kafkaWrapper.consumerGroupsOffsets(clusterId, group));
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String, ConsumerGroupDescription> description : consumerDescriptions) {
-            Map<TopicPartition, OffsetAndMetadata> groupsOffsets = kafkaWrapper.consumerGroupsOffsets(clusterId, description.getKey());
-            Map<String, List<Partition.Offsets>> topicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, groupsOffsets.entrySet()
-                .stream()
-                .map(item -> item.getKey().topic())
-                .distinct()
-                .collect(Collectors.toList())
-            );
+        List<String> topics = groupGroupsOffsets.values().stream()
+            .map(Map::keySet)
+            .flatMap(Set::stream)
+            .map(TopicPartition::topic)
+            .distinct()
+            .collect(Collectors.toList());
+        Map<String, List<Partition.Offsets>> topicTopicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
-            list.add(new ConsumerGroup(
-                description.getValue(),
-                groupsOffsets,
-                topicsOffsets,
-                aclRepository.findByResourceType(clusterId, ResourceType.GROUP, description.getValue().groupId())
-            ));
-        }
-
-        return list;
+        return consumerDescriptions.values().stream()
+            .map(consumerGroupDescription -> new ConsumerGroup(
+                consumerGroupDescription,
+                groupGroupsOffsets.get(consumerGroupDescription.groupId()),
+                groupGroupsOffsets.get(consumerGroupDescription.groupId()).keySet().stream()
+                    .map(TopicPartition::topic)
+                    .distinct()
+                    .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
+            ))
+            .collect(Collectors.toList());
     }
 
     public List<ConsumerGroup> findByTopic(String clusterId, String topic) throws ExecutionException, InterruptedException {
-        List<CompletableFuture<ConsumerGroup>> list = this.list(clusterId, Optional.empty());
+        List<String> groupName = this.all(clusterId, Optional.empty());
+        List<ConsumerGroup> list = this.findByName(clusterId, groupName);
 
-        List<ConsumerGroup> completed = CompletableFuture.allOf(list.toArray(new CompletableFuture[0]))
-            .thenApply(s ->
-                list.stream().
-                    map(CompletableFuture::join).
-                    collect(Collectors.toList())
-            )
-            .get();
-
-        return completed
+        return list
             .stream()
             .filter(consumerGroups ->
                 consumerGroups.getActiveTopics()
@@ -126,9 +118,5 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         consumer.commitSync(offsets);
         consumer.close();
-    }
-
-    public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule.getAdminClient(clusterId).deleteConsumerGroups(Collections.singleton(name)).all().get();
     }
 }

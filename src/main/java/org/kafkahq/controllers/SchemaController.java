@@ -2,6 +2,7 @@ package org.kafkahq.controllers;
 
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -13,28 +14,27 @@ import org.kafkahq.configs.Role;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.SchemaRegistryRepository;
-import org.kafkahq.utils.CompletablePaged;
-import org.kafkahq.utils.CompletablePagedService;
+import org.kafkahq.utils.PagedList;
+import org.kafkahq.utils.Pagination;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Secured(Role.ROLE_REGISTRY_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
-    private CompletablePagedService completablePagedService;
+
+    @Value("${kafkahq.pagination.page-size}")
+    private Integer pageSize;
 
     @Inject
-    public SchemaController(SchemaRegistryRepository schemaRepository, CompletablePagedService completablePagedService) {
+    public SchemaController(SchemaRegistryRepository schemaRepository) {
         this.schemaRepository = schemaRepository;
-        this.completablePagedService = completablePagedService;
     }
 
     @View("schemaList")
@@ -45,20 +45,21 @@ public class SchemaController extends AbstractController {
         Optional<String> search,
         Optional<Integer> page
     ) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        List<CompletableFuture<Schema>> list = this.schemaRepository.getAll(cluster, search);
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        CompletablePaged<Schema> paged = completablePagedService.of(list, uri, page.orElse(1));
+        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+
+        PagedList<Schema> list = this.schemaRepository.list(cluster, pagination, search);
 
         return this.template(
             request,
             cluster,
-            "schemas", paged.complete(),
+            "schemas", list,
             "search", search,
             "pagination", ImmutableMap.builder()
-                .put("size", paged.size())
-                .put("before", paged.before().toNormalizedURI(false).toString())
-                .put("after", paged.after().toNormalizedURI(false).toString())
+                .put("size", list.total())
+                .put("before", list.before().toNormalizedURI(false).toString())
+                .put("after", list.after().toNormalizedURI(false).toString())
                 .build()
         );
     }

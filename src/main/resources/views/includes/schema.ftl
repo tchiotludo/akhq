@@ -92,7 +92,7 @@
 <#macro form config schema>
     <#-- @ftlvariable name="schema" type="org.kafkahq.models.Schema" -->
     <#-- @ftlvariable name="config" type="org.kafkahq.models.Schema.Config" -->
-    <#assign canUpdate=(schema?has_content && roles?seq_contains("schema/update") == true) || roles?seq_contains("schema/insert") == true>
+    <#assign canUpdate=(schema?has_content && roles?seq_contains("registry/update") == true) || roles?seq_contains("registry/insert") == true>
     <form enctype="multipart/form-data" method="post" class="khq-form khq-form-config">
         <fieldset ${(!canUpdate)?then("disabled=\"disabled\"", "")}>
             <div class="form-group row">
