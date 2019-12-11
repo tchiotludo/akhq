@@ -5,13 +5,11 @@ import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import kafka.server.KafkaConfig$;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Properties;
 
 @Slf4j
@@ -27,7 +25,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
     private ZooKeeperEmbedded zookeeper;
     private KafkaEmbedded broker;
     private RestApp schemaRegistry;
-    private ConnectEmbedded connect;
+    private ConnectEmbedded connect1, connect2;
     private final Properties brokerConfig;
     private boolean running;
 
@@ -59,24 +57,43 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         schemaRegistry.start();
         log.debug("Schema registry is running at {}", schemaRegistryUrl());
 
-        // connect
-        Properties properties = new Properties();
-        properties.put("bootstrap.servers", bootstrapServers());
-        properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
-        properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
-        properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
-        properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        properties.put("rest.port", "0");
-        properties.put("group.id", "connect-integration-test-");
-        properties.put("offset.storage.topic", "__connect-offsets");
-        properties.put("offset.storage.replication.factor", 1);
-        properties.put("config.storage.topic", "__connect-config");
-        properties.put("config.storage.replication.factor", 1);
-        properties.put("status.storage.topic", "__connect-status");
-        properties.put("status.storage.replication.factor", 1);
+        // connect-1
+        Properties connect1Properties = new Properties();
+        connect1Properties.put("bootstrap.servers", bootstrapServers());
+        connect1Properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
+        connect1Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
+        connect1Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
+        connect1Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
+        connect1Properties.put("rest.port", "0");
+        connect1Properties.put("group.id", "connect-1-integration-test-");
+        connect1Properties.put("offset.storage.topic", "__connect-1-offsets");
+        connect1Properties.put("offset.storage.replication.factor", 1);
+        connect1Properties.put("config.storage.topic", "__connect-1-config");
+        connect1Properties.put("config.storage.replication.factor", 1);
+        connect1Properties.put("status.storage.topic", "__connect-1-status");
+        connect1Properties.put("status.storage.replication.factor", 1);
 
-        connect = new ConnectEmbedded(properties);
-        log.debug("Kafka Connect is running at {}", connectUrl());
+        // connect-2
+        Properties connect2Properties = new Properties();
+        connect2Properties.put("bootstrap.servers", bootstrapServers());
+        connect2Properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
+        connect2Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
+        connect2Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
+        connect2Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
+        connect2Properties.put("rest.port", "0");
+        connect2Properties.put("group.id", "connect-2-integration-test-");
+        connect2Properties.put("offset.storage.topic", "__connect-2-offsets");
+        connect2Properties.put("offset.storage.replication.factor", 1);
+        connect2Properties.put("config.storage.topic", "__connect-2-config");
+        connect2Properties.put("config.storage.replication.factor", 1);
+        connect2Properties.put("status.storage.topic", "__connect-2-status");
+        connect2Properties.put("status.storage.replication.factor", 1);
+
+        connect1 = new ConnectEmbedded(connect1Properties);
+        log.debug("Kafka Connect-1 is running at {}", connect1Url());
+
+        connect2 = new ConnectEmbedded(connect2Properties);
+        log.debug("Kafka Connect-2 is running at {}", connect2Url());
 
         running = false;
     }
@@ -110,8 +127,16 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         log.info("Stopping EmbeddedSingleNodeKafkaCluster");
         try {
             try {
-                if (connect != null) {
-                    connect.stop();
+                if (connect1 != null) {
+                    connect1.stop();
+                }
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                if (connect2 != null) {
+                    connect2.stop();
                 }
             } catch (final Exception e) {
                 throw new RuntimeException(e);
@@ -154,7 +179,11 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         return schemaRegistry.restConnect;
     }
 
-    public String connectUrl() {
-        return connect.connectUrl();
+    public String connect1Url() {
+        return connect1.connectUrl();
+    }
+
+    public String connect2Url() {
+        return connect2.connectUrl();
     }
 }
