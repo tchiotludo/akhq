@@ -2,7 +2,7 @@ buildscript {
     ext {
         micronautVersion = "1.2.7"
         confluentVersion = "5.3.+"
-        kafkaVersion = "2.3.1"
+        kafkaVersion = "2.4.0"
     }
 
     repositories {
