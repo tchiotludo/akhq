@@ -122,8 +122,8 @@ abstract public class AbstractController {
     protected <T> Toast toast(MutableHttpResponse<T> response, Toast toast) {
         Cookie cookie = Cookie
             .of(SESSION_TOAST, gson.toJson(toast
-                    .withTitle(toast.getTitle() != null ? toast.getTitle().replaceAll(";", ",") : null)
-                    .withMessage(toast.getMessage() != null ? toast.getMessage().replaceAll(";", ",") : null)
+                .withTitle(toast.getTitle() != null ? toast.getTitle().replaceAll(";", ",") : null)
+                .withMessage(toast.getMessage() != null ? toast.getMessage().replaceAll(";", ",") : null)
             ))
             .path("/");
 
@@ -163,9 +163,9 @@ abstract public class AbstractController {
 
         return expandRoles(
             securityService
-                    .getAuthentication()
-                    .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                    .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
+                .getAuthentication()
+                .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
+                .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
         );
     }
 
