@@ -115,7 +115,8 @@ file example can be found here :[application.example.yml](application.example.ym
     * `url`: the schema registry url 
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
-  * `connect`: *(optional)*
+  * `connect`: *(optional list, define each connector as a element of a list)*
+    * `name`: connect name
     * `url`: connect url 
     * `basic-auth-username`: connect basic auth username
     * `basic-auth-password`: connect basic auth password
@@ -153,9 +154,10 @@ kafkahq:
         basic-auth-username: avnadmin
         basic-auth-password: {{password}}
       connect:
-        url: "https://{{host}}.aivencloud.com:{{port}}"
-        basic-auth-username: avnadmin
-        basic-auth-password: {{password}}
+        - name: connect-1
+          url: "https://{{host}}.aivencloud.com:{{port}}"
+          basic-auth-username: avnadmin
+          basic-auth-password: {{password}}
 ```
 
 ### KafkaHQ configuration 
