@@ -10,6 +10,8 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Map;
 
+import static java.util.Map.entry;
+
 // https://github.com/micronaut-projects/micronaut-test/commit/0f32d13876decfc33f3f94238e280552422bf170#diff-985f52f80183621fbb0bc4f031044158R16
 // https://github.com/micronaut-projects/micronaut-test/issues/32
 @MicronautTest(propertySources = "application.yml")
@@ -27,13 +29,19 @@ abstract public class AbstractTest implements TestPropertyProvider {
             throw new RuntimeException(e);
         }
 
-        return ImmutableMap.of(
-            "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
-            connectionString.getKafka(),
-            "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry.url",
-            connectionString.getSchemaRegistry(),
-            "kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect.url",
-            connectionString.getConnect()
-        );
+        return ImmutableMap.<String, String>builder()
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
+                    connectionString.getKafka())
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry.url",
+                    connectionString.getSchemaRegistry())
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].name",
+                    "connect-1")
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].url",
+                    connectionString.getConnect1())
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].name",
+                    "connect-2")
+                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].url",
+                    connectionString.getConnect2())
+                .build();
     }
 }

@@ -58,7 +58,7 @@ public class ConnectRepositoryTest extends AbstractTest {
         repository.create(
             KafkaTestCluster.CLUSTER_ID,
             "connect-1",
-            "ConnectRepositoryTes1",
+            "ConnectRepositoryTest1",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path1,
@@ -69,7 +69,7 @@ public class ConnectRepositoryTest extends AbstractTest {
         repository.create(
             KafkaTestCluster.CLUSTER_ID,
             "connect-2",
-            "ConnectRepositoryTes2",
+            "ConnectRepositoryTest2",
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path1,

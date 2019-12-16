@@ -60,7 +60,7 @@ public class TopicRepository extends AbstractRepository {
 
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
         List<String> all = all(clusterId, view, search);
-
+    System.out.println(all);
         return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
     }
 

@@ -4,7 +4,7 @@
 <#-- @ftlvariable name="connectId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
-<#-- @ftlvariable name="connectsDef" type="java.util.List<org.kafkahq.models.ConnectDefinition>" -->
+<#-- @ftlvariable name="connects" type="java.util.List<org.kafkahq.models.ConnectDefinition>" -->
 
 <#import "includes/template.ftl" as template>
 
@@ -26,7 +26,7 @@
             </tr>
         </thead>
         <tbody>
-            <#if connectsDef?size == 0>
+            <#if connects?size == 0>
                 <tr>
                     <td colspan="${(canDelete == true)?then("5", "4")}">
                         <div class="alert alert-info mb-0" role="alert">
@@ -35,7 +35,7 @@
                     </td>
                 </tr>
             </#if>
-            <#list connectsDef as connect>
+            <#list connects as connect>
                 <tr>
                     <td>${connect.getName()}</td>
                     <td>

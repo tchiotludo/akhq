@@ -35,7 +35,7 @@ public class ConnectController extends AbstractController {
             request,
             cluster,
                 "connectId", connectId,
-            "connectsDef", this.connectRepository.getDefinitions(cluster, connectId)
+            "connects", this.connectRepository.getDefinitions(cluster, connectId)
         );
     }
 
@@ -80,7 +80,7 @@ public class ConnectController extends AbstractController {
         URI redirect;
 
         if (toast.getType() != Toast.Type.error) {
-            redirect = this.uri("/" + cluster + "/connect/" + connectId);
+            redirect = this.uri("/" + cluster + "/connect/" + connectId + "/" + name);
         } else {
             redirect = this.uri("/" + cluster + "/connect/" + connectId  + "/create"); // @TODO: redirect with class
         }
