@@ -64,7 +64,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect1Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
         connect1Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
         connect1Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect1Properties.put("rest.port", "8083");
+        connect1Properties.put("rest.port", "0");
         connect1Properties.put("group.id", "connect-1-integration-test-");
         connect1Properties.put("offset.storage.topic", "__connect-1-offsets");
         connect1Properties.put("offset.storage.replication.factor", 1);
@@ -80,7 +80,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect2Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
         connect2Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
         connect2Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect2Properties.put("rest.port", "8084");
+        connect2Properties.put("rest.port", "0");
         connect2Properties.put("group.id", "connect-2-integration-test-");
         connect2Properties.put("offset.storage.topic", "__connect-2-offsets");
         connect2Properties.put("offset.storage.replication.factor", 1);
