@@ -34,7 +34,7 @@ public class ConnectController extends AbstractController {
         return this.template(
             request,
             cluster,
-                "connectId", connectId,
+            "connectId", connectId,
             "connects", this.connectRepository.getDefinitions(cluster, connectId)
         );
     }
@@ -48,7 +48,7 @@ public class ConnectController extends AbstractController {
         return this.template(
             request,
             cluster,
-                "connectId", connectId,
+            "connectId", connectId,
             "plugins", plugins,
             "pluginDefinition", type
                 .flatMap(s -> plugins.stream()
