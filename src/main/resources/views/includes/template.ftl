@@ -92,24 +92,24 @@
                             <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
                         </li>
                     </#if>
-                    <#if roles?seq_contains("connect") == true && (connectList?size > 0)>
-                        <li class="${(tab == "connect")?then("active", "")}">
-                            <a href="#connects"
-                               data-toggle="collapse"
-                               aria-expanded="false"
-                               class="dropdown-toggle"><i
-                                        class="fa fa-fw fa fa-exchange"
-                                        aria-hidden="true"></i> Connects <span class="badge badge-success">${(connectId??)?then(connectId,"")}</span></a>
-                            <ul class="collapse list-unstyled" id="connects">
-                                <#list connectList as connect>
-                                    <li>
-                                        <a href="${basePath}/${clusterId}/connect/${connect}" >${connect}</a>
-                                    </li>
-                                </#list>
-                            </ul>
-                        </li>
-
-
+                    <#if (connectList)??>
+                        <#if roles?seq_contains("connect") == true && (connectList?size > 0)>
+                            <li class="${(tab == "connect")?then("active", "")}">
+                                <a href="#connects"
+                                   data-toggle="collapse"
+                                   aria-expanded="false"
+                                   class="dropdown-toggle"><i
+                                            class="fa fa-fw fa fa-exchange"
+                                            aria-hidden="true"></i> Connects <span class="badge badge-success">${(connectId??)?then(connectId,"")}</span></a>
+                                <ul class="collapse list-unstyled" id="connects">
+                                    <#list connectList as connect>
+                                        <li>
+                                            <a href="${basePath}/${clusterId}/connect/${connect}" >${connect}</a>
+                                        </li>
+                                    </#list>
+                                </ul>
+                            </li>
+                        </#if>
                     </#if>
                 </ul>
                 </#if>
