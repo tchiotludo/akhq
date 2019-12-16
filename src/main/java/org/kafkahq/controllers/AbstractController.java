@@ -18,6 +18,7 @@ import org.kafkahq.configs.LdapGroup;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.UserGroupUtils;
 import org.kafkahq.utils.VersionProvider;
+import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -28,8 +29,8 @@ import java.util.stream.Collectors;
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
     private static Gson gson = new GsonBuilder()
-        .enableComplexMapKeySerialization()
-        .create();
+            .enableComplexMapKeySerialization()
+            .create();
 
     @Value("${kafkahq.server.base-path}")
     protected String basePath;
@@ -67,7 +68,12 @@ abstract public class AbstractController {
         cluster.ifPresent(s -> {
             datas.put("clusterId", s);
             datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
-            datas.put("connectList", this.kafkaModule.getConnectRestClient(s).keySet());
+
+            Map<String, KafkaConnectClient> connectClientMap = this.kafkaModule.getConnectRestClient(s);
+            if (connectClientMap != null) {
+                Set<String> filteredConnects = filterConnectList(connectClientMap.keySet());
+                datas.put("connectList", filteredConnects);
+            }
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
@@ -75,13 +81,18 @@ abstract public class AbstractController {
 
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             securityService
-                .getAuthentication()
-                .ifPresent(authentication -> datas.put("username", authentication.getName()));
+                    .getAuthentication()
+                    .ifPresent(authentication -> datas.put("username", authentication.getName()));
         } else {
             datas.put("loginEnabled", false);
         }
 
         return datas;
+    }
+
+    private Set<String> filterConnectList(Set<String> keySet) {
+        keySet.removeIf(key -> key.equals(""));
+        return keySet;
     }
 
     @SuppressWarnings("unchecked")
@@ -91,17 +102,17 @@ abstract public class AbstractController {
         MutableHttpResponse<Map> response = HttpResponse.ok();
 
         request.getCookies()
-            .findCookie(SESSION_TOAST)
-            .ifPresent(s -> {
-                datas.put("toast", s.getValue());
-                response.cookie(Cookie.of(SESSION_TOAST, "").maxAge(0).path("/"));
-            });
+                .findCookie(SESSION_TOAST)
+                .ifPresent(s -> {
+                    datas.put("toast", s.getValue());
+                    response.cookie(Cookie.of(SESSION_TOAST, "").maxAge(0).path("/"));
+                });
 
         return response.body(datas);
     }
 
     protected String getBasePath() {
-        return basePath.replaceAll("/$","");
+        return basePath.replaceAll("/$", "");
     }
 
     protected URI uri(String path) throws URISyntaxException {
@@ -110,11 +121,11 @@ abstract public class AbstractController {
 
     protected <T> Toast toast(MutableHttpResponse<T> response, Toast toast) {
         Cookie cookie = Cookie
-            .of(SESSION_TOAST, gson.toJson(toast
-                .withTitle(toast.getTitle() != null ? toast.getTitle().replaceAll(";", ",") : null)
-                .withMessage(toast.getMessage() != null ? toast.getMessage().replaceAll(";", ",") : null)
-            ))
-            .path("/");
+                .of(SESSION_TOAST, gson.toJson(toast
+                        .withTitle(toast.getTitle() != null ? toast.getTitle().replaceAll(";", ",") : null)
+                        .withMessage(toast.getMessage() != null ? toast.getMessage().replaceAll(";", ",") : null)
+                ))
+                .path("/");
 
         response.cookie(cookie);
 
@@ -123,23 +134,23 @@ abstract public class AbstractController {
 
     private static List<String> expandRoles(List<String> roles) {
         return roles
-            .stream()
-            .map(s -> {
-                ArrayList<String> rolesExpanded = new ArrayList<>();
+                .stream()
+                .map(s -> {
+                    ArrayList<String> rolesExpanded = new ArrayList<>();
 
-                ArrayList<String> split = new ArrayList<>(Arrays.asList(s.split("/")));
+                    ArrayList<String> split = new ArrayList<>(Arrays.asList(s.split("/")));
 
-                while (split.size() > 0) {
-                    rolesExpanded.add(String.join("/", split));
-                    split.remove(split.size() - 1);
-                }
+                    while (split.size() > 0) {
+                        rolesExpanded.add(String.join("/", split));
+                        split.remove(split.size() - 1);
+                    }
 
-                return rolesExpanded;
-            })
-            .flatMap(Collection::stream)
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
+                    return rolesExpanded;
+                })
+                .flatMap(Collection::stream)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -151,10 +162,10 @@ abstract public class AbstractController {
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
         return expandRoles(
-            securityService
-                .getAuthentication()
-                .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
+                securityService
+                        .getAuthentication()
+                        .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
+                        .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
         );
     }
 

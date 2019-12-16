@@ -34,7 +34,7 @@ micronaut:
     kafka-wrapper:
       record-stats: true
       expire-after-write: 0s
-
+      maximum-size: 1000
 endpoints:
   all:
     path: "${kafkahq.server.base-path:}"
@@ -59,30 +59,39 @@ endpoints:
   caches:
     enabled: true
     sensitive: false
-
 jackson:
   module-scan: false
-
 kafkahq:
   connections:
     my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
       properties: # standard kafka properties (optional)
-        bootstrap.servers: "localhost:9092"
+        bootstrap.servers: localhost:9092
       schema-registry:
-        url: "http://localhost:8085"
+        url: http://localhost:8085
       connect:
         - name: "my-first-connect"
           url: "http://localhost:8083"
         - name: "my-second-connect"
-          url: "http://localhost:8084" # connect url (optional)
+          url: "http://connect:8083" # connect url (optional)
+        - name: ""
+          url: "http://connect:8083" # connect url (optional)
 
+#      connect:
+#        url: "http://connect:8083" # connect url (optional)
+#        # Basic Auth user / pass (optional)
+#        basic-auth-username: basic-auth-user
+#        basic-auth-password: basic-auth-pass
+#        # ssl store configuration (optional)
+#        ssl-trust-store: /app/truststore.jks
+#        ssl-trust-store-password: trust-store-password
+#        ssl-key-store: /app/truststore.jks
+#        ssl-key-store-password: key-store-password
   server:
     base-path: ""
     access-log:
       enabled: true
       name: org.kafkahq.log.access
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
-
   clients-defaults:
     consumer:
       properties:
@@ -91,11 +100,9 @@ kafkahq:
         group.id: KafkaHQ
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
-
   pagination:
     page-size: 25
     threads: 16
-
   topic:
     default-view: HIDE_INTERNAL
     replication: 1
@@ -112,41 +119,39 @@ kafkahq:
       - "^.*-repartition$"
       - "^.*-rekey$"
     skip-consumer-groups: false
-
   topic-data:
     sort: OLDEST
     size: 50
     poll-timeout: 1000
-
   security:
     default-groups:
       - admin
     groups:
       admin:
         roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
       reader:
         roles:
           - topic/read

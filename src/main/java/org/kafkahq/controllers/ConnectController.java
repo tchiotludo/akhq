@@ -80,9 +80,9 @@ public class ConnectController extends AbstractController {
         URI redirect;
 
         if (toast.getType() != Toast.Type.error) {
-            redirect = this.uri("/" + cluster + "/connect/" + name);
+            redirect = this.uri("/" + cluster + "/connect/" + connectId);
         } else {
-            redirect = this.uri("/" + cluster + "/connect/create"); // @TODO: redirect with class
+            redirect = this.uri("/" + cluster + "/connect/" + connectId  + "/create"); // @TODO: redirect with class
         }
 
         return response.status(HttpStatus.MOVED_PERMANENTLY)
@@ -126,7 +126,7 @@ public class ConnectController extends AbstractController {
                                          String name,
                                          String transformsValue,
                                          Map<String, String> configs) throws Throwable {
-        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/connect"));
+        MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/connect/" + connectId));
         Map<String, String> validConfigs = ConnectRepository.validConfigs(configs, transformsValue);
 
         this.toast(response, RequestHelper.runnableToToast(
