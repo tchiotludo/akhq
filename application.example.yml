@@ -41,15 +41,26 @@ kafkahq:
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass
       connect:
-        url: "http://connect:8083" # connect url (optional)
-        # Basic Auth user / pass (optional)
-        basic-auth-username: basic-auth-user
-        basic-auth-password: basic-auth-pass
-        # ssl store configuration (optional)
-        ssl-trust-store: /app/truststore.jks
-        ssl-trust-store-password: trust-store-password
-        ssl-key-store: /app/truststore.jks
-        ssl-key-store-password: key-store-password
+        - name: connect-1
+          url: "http://connect:8083"
+          # Basic Auth user / pass (optional)
+          basic-auth-username: basic-auth-user
+          basic-auth-password: basic-auth-pass
+          # ssl store configuration (optional)
+          ssl-trust-store: /app/truststore.jks
+          ssl-trust-store-password: trust-store-password
+          ssl-key-store: /app/truststore.jks
+          ssl-key-store-password: key-store-password
+        - name: connect-2
+          url: "http://connect:8084"
+          # Basic Auth user / pass (optional)
+          basic-auth-username: basic-auth-user
+          basic-auth-password: basic-auth-pass
+          # ssl store configuration (optional)
+          ssl-trust-store: /app/truststore.jks
+          ssl-trust-store-password: trust-store-password
+          ssl-key-store: /app/truststore.jks
+          ssl-key-store-password: key-store-password
 
     my-cluster-ssl:
       properties:

@@ -18,6 +18,7 @@ import org.kafkahq.configs.LdapGroup;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.UserGroupUtils;
 import org.kafkahq.utils.VersionProvider;
+import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -67,7 +68,12 @@ abstract public class AbstractController {
         cluster.ifPresent(s -> {
             datas.put("clusterId", s);
             datas.put("registryEnabled", this.kafkaModule.getRegistryRestClient(s) != null);
-            datas.put("connectEnabled", this.kafkaModule.getConnectRestClient(s) != null);
+
+            Map<String, KafkaConnectClient> connectClientMap = this.kafkaModule.getConnectRestClient(s);
+            if (connectClientMap != null) {
+                Set<String> filteredConnects = filterConnectList(connectClientMap.keySet());
+                datas.put("connectList", filteredConnects);
+            }
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
@@ -82,6 +88,11 @@ abstract public class AbstractController {
         }
 
         return datas;
+    }
+
+    private Set<String> filterConnectList(Set<String> keySet) {
+        keySet.removeIf(key -> key.equals(""));
+        return keySet;
     }
 
     @SuppressWarnings("unchecked")
