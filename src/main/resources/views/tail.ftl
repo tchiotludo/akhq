@@ -1,4 +1,4 @@
-<#ftl output_format="HTML">
+<#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
 <#-- @ftlvariable name="topicsList" type="java.util.List<java.lang.String>" -->
