@@ -26,43 +26,48 @@ public class ConnectRepository extends AbstractRepository {
     private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
-    public ConnectDefinition getDefinition(String clusterId, String name) {
+    public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
         return new ConnectDefinition(
             this.kafkaModule
                 .getConnectRestClient(clusterId)
+                .get(connectId)
                 .getConnector(name),
             this.kafkaModule
                 .getConnectRestClient(clusterId)
+                .get(connectId)
                 .getConnectorStatus(name)
         );
     }
 
     @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
-    public List<ConnectDefinition> getDefinitions(String clusterId) {
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .getConnectors()
             .stream()
-            .map(s -> getDefinition(clusterId, s))
+            .map(s -> getDefinition(clusterId, connectId, s))
             .collect(Collectors.toList());
     }
 
 
-    public Optional<ConnectPlugin> getPlugin(String clusterId, String className) {
-        return this.getPlugins(clusterId)
+    public Optional<ConnectPlugin> getPlugin(String clusterId, String connectId, String className) {
+        return this.getPlugins(clusterId, connectId)
             .stream()
             .filter(connectPlugin -> connectPlugin.getShortClassName().equals(className))
             .findFirst();
     }
 
-    public List<ConnectPlugin> getPlugins(String clusterId) {
+    public List<ConnectPlugin> getPlugins(String clusterId, String connectId) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .getConnectorPlugins()
             .stream()
             .map(s -> new ConnectPlugin(
                 s,this.kafkaModule
                 .getConnectRestClient(clusterId)
+                .get(connectId)
                 .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
                     Iterables.getLast(Arrays.asList(s.getClassName().split("/"))),
                     ImmutableMap.of(
@@ -74,49 +79,56 @@ public class ConnectRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public ConnectDefinition create(String clusterId, String name, Map<String, String> configs) {
+    public ConnectDefinition create(String clusterId, String connectId, String name, Map<String, String> configs) {
         this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .addConnector(new NewConnectorDefinition(name, configs));
 
-        return getDefinition(clusterId, name);
+        return getDefinition(clusterId, connectId, name);
     }
 
-    public ConnectDefinition update(String clusterId, String name, Map<String, String> configs) {
+    public ConnectDefinition update(String clusterId, String connectId, String name, Map<String, String> configs) {
         this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .updateConnectorConfig(name, configs);
 
-        return getDefinition(clusterId, name);
+        return getDefinition(clusterId, connectId, name);
     }
 
-    public boolean delete(String clusterId, String name) {
+    public boolean delete(String clusterId, String connectId, String name) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .deleteConnector(name);
     }
 
-    public boolean pause(String clusterId, String name) {
+    public boolean pause(String clusterId, String connectId, String name) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .pauseConnector(name);
     }
 
-    public boolean resume(String clusterId, String name) {
+    public boolean resume(String clusterId, String connectId, String name) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .resumeConnector(name);
     }
 
-    public boolean restart(String clusterId, String name) {
+    public boolean restart(String clusterId, String connectId, String name) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .restartConnector(name);
     }
 
-    public boolean restartTask(String clusterId, String name, int task) {
+    public boolean restartTask(String clusterId, String connectId, String name, int task) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
+            .get(connectId)
             .restartConnectorTask(name, task);
     }
 

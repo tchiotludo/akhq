@@ -75,7 +75,8 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         this.connectionString = new ConnectionString.ConnectionStringBuilder()
             .schemaRegistry("http://schema-registry:8085")
             .kafka("kafka:9092")
-            .connect("http://connect:8083")
+            .connect1("http://connect:8083")
+            .connect2("http://connect:8084")
             .build();
 
         testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -134,13 +135,15 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             kafkaCluster.start();
             log.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
             log.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
-            log.info("Kafka Connect started on {}", kafkaCluster.connectUrl());
+            log.info("Kafka Connect started on {}", kafkaCluster.connect1Url());
+            log.info("Kafka Connect started on {}", kafkaCluster.connect2Url());
 
             connectionString = ConnectionString.builder()
                 .kafka(kafkaCluster.bootstrapServers())
                 .zookeeper(kafkaCluster.zookeeperConnect())
                 .schemaRegistry(kafkaCluster.schemaRegistryUrl())
-                .connect(kafkaCluster.connectUrl())
+                .connect1(kafkaCluster.connect1Url())
+                .connect2(kafkaCluster.connect2Url())
                 .build();
 
             testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -351,6 +354,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         private String kafka;
         private String zookeeper;
         private String schemaRegistry;
-        private String connect;
+        private String connect1;
+        private String connect2;
     }
 }
