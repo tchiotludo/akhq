@@ -1,4 +1,4 @@
-<#ftl output_format="HTML">
+<#ftl output_format="HTML" encoding="UTF-8">
 
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>

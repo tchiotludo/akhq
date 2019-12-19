@@ -1,4 +1,4 @@
-<#ftl output_format="HTML">
+<#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
