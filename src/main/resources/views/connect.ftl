@@ -59,7 +59,7 @@
                                     <td>${task.getId()}</td>
                                     <td>${task.getWorkerId()}</td>
                                     <td>
-                                        <span class="btn btn-sm mb-1 btn-${class} ">
+                                        <span class="btn btn-sm mb-1 btn-${class}" title="${task.getState()}" data-toggle="popover" data-content="${task.getTrace()?trim}">
                                             ${task.getState()}
                                         </span>
                                     </td>
@@ -74,6 +74,16 @@
                                         </td>
                                     </#if>
                                 </tr>
+                                <#if task.getTrace()??>
+                                  <tr>
+                                    <td colspan="5">
+                                      <button type="button" class="close d-none" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                      </button>
+                                      <pre class="mb-0 khq-data-highlight"><code>${task.getTrace()}</code></pre>
+                                    </td>
+                                  </tr>
+                                </#if>
                             </#list>
                         </tbody>
                     </table>

@@ -18,6 +18,7 @@ import '../modules/tables/row-action';
 import '../modules/templates/sidebar';
 import '../modules/templates/toast'
 import '../modules/templates/tooltip';
+import '../modules/templates/popover';
 
 import '../modules/forms/datetime';
 import '../modules/datas/datetime';
