@@ -125,6 +125,8 @@ public class Topic {
             return false;
         }
 
+        if (configRepository.findByTopic(clusterId, this.getName()) == null) return false;
+
         return configRepository
             .findByTopic(clusterId, this.getName())
             .stream()

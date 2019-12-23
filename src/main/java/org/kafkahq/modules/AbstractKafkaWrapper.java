@@ -11,6 +11,7 @@ import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
+import org.apache.kafka.common.errors.UnsupportedVersionException;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 import org.kafkahq.utils.Logger;
@@ -247,7 +248,7 @@ abstract public class AbstractKafkaWrapper {
                             .all()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof ClusterAuthorizationException) {
+                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof UnsupportedVersionException) {
                             return new HashMap<>();
                         }
 
@@ -275,17 +276,27 @@ abstract public class AbstractKafkaWrapper {
         );
 
         if (list.size() > 0) {
-            Map<ConfigResource, Config> description =  Logger.call(() -> kafkaModule.getAdminClient(clusterId)
-                    .describeConfigs(names.stream()
-                        .map(s -> new ConfigResource(type, s))
-                        .collect(Collectors.toList())
-                    )
-                    .all()
-                    .get(),
-                "Describe Topic Config {}",
-                names
-            );
+            Map<ConfigResource, Config> description = Logger.call(
+                    () -> {
+                        try {
+                            return kafkaModule.getAdminClient(clusterId)
+                                    .describeConfigs(names.stream()
+                                            .map(s -> new ConfigResource(type, s))
+                                            .collect(Collectors.toList())
+                                    )
+                                    .all()
+                                    .get();
+                        } catch(ExecutionException e) {
+                            if (e.getCause() instanceof UnsupportedVersionException) {
+                                return new HashMap<>();
+                            }
 
+                            throw e;
+                        }
+                    },
+                    "Describe Topic Config {}",
+                    names
+            );
             this.describeConfigs.get(clusterId).putAll(description);
         }
 
@@ -321,7 +332,10 @@ abstract public class AbstractKafkaWrapper {
                             .values()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException) {
+                        if (e.getCause() instanceof SecurityDisabledException ||
+                                e.getCause() instanceof ClusterAuthorizationException ||
+                                e.getCause() instanceof UnsupportedVersionException
+                        ) {
                             return Collections.emptyList();
                         }
                         throw e;

@@ -35,17 +35,17 @@ public class Partition {
         }
     }
 
-    public Node.Partition getLeader() {
+    public Optional<Node.Partition> getLeader() {
         return nodes
             .stream()
             .filter(Node.Partition::isLeader)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Leader not found"));
+            .findFirst();
+            //.orElseThrow(() -> new NoSuchElementException("Leader not found"));
     }
 
     public long getLogDirSize() {
         return this.getLogDir().stream()
-            .filter(logDir -> logDir.getBrokerId() == this.getLeader().getId())
+            .filter(logDir -> this.getLeader().isPresent() && logDir.getBrokerId() == this.getLeader().get().getId())
             .map(LogDir::getSize)
             .reduce(0L, Long::sum);
     }

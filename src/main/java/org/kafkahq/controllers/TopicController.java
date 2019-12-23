@@ -328,7 +328,7 @@ public class TopicController extends AbstractController {
 
     private HttpResponse render(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
-        List<Config> configs = this.configRepository.findByTopic(cluster, topicName);
+        List<Config> configs = Optional.ofNullable(this.configRepository.findByTopic(cluster, topicName)).orElse(Collections.emptyList());
 
         return this.template(
             request,
