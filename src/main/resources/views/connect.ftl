@@ -1,6 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
+<#-- @ftlvariable name="connectId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
@@ -18,12 +19,12 @@
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link ${(tab == "tasks")?then("active", "")}"
-               href="${basePath}/${clusterId}/connect/${definition.getName()}"
+               href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}"
                role="tab">Tasks</a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${(tab == "configs")?then("active", "")}"
-               href="${basePath}/${clusterId}/connect/${definition.getName()}/configs"
+               href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}/configs"
                role="tab">Configs</span></a>
         </li>
     </ul>
@@ -66,7 +67,7 @@
                                     <#if canStateChange == true>
                                         <td class="khq-row-action">
                                             <a
-                                                    href="${basePath}/${clusterId}/connect/${definition.getName()}/tasks/${task.getId()}/restart" title="Restart"
+                                                    href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}/tasks/${task.getId()}/restart" title="Restart"
                                                     data-confirm="Do you want to restart task: <code>${task.getId()} from ${task.getConnector()} </code> ?"
                                             >
                                                 <i class="fa fa-play" aria-hidden="true"></i>
@@ -94,21 +95,21 @@
                 <@template.bottom>
                     <#if definition.isPaused()>
                         <a
-                                href="${basePath}/${clusterId}/connect/${definition.getName()}/resume" class="btn btn-primary mr-2"
+                                href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}/resume" class="btn btn-primary mr-2"
                                 data-confirm="Do you want to resume definition: <code>${definition.getName()} </code> ?"
                         >
                             <i class="fa fa-forward" aria-hidden="true"></i> Resume Definition
                         </a>
                     <#else>
                         <a
-                                href="${basePath}/${clusterId}/connect/${definition.getName()}/pause" type="pause" class="btn btn-primary mr-2"
+                                href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}/pause" type="pause" class="btn btn-primary mr-2"
                                 data-confirm="Do you want to pause definition: <code>${definition.getName()} </code> ?"
                         >
                             <i class="fa fa-pause" aria-hidden="true"></i> Pause Definition
                         </a>
 
                         <a
-                                href="${basePath}/${clusterId}/connect/${definition.getName()}/restart" class="btn btn-primary mr-2"
+                                href="${basePath}/${clusterId}/connect/${connectId}/${definition.getName()}/restart" class="btn btn-primary mr-2"
                                 data-confirm="Do you want to restart definition: <code>${definition.getName()} </code> ?"
                         >
                             <i class="fa fa-play" aria-hidden="true"></i> Restart Definition

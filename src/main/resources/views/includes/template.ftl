@@ -10,6 +10,8 @@
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 <#-- @ftlvariable name="username" type="java.lang.String" -->
 <#-- @ftlvariable name="loginEnabled" type="java.lang.Boolean" -->
+<#-- @ftlvariable name="connectList" type="java.util.List<java.lang.String>" -->
+<#-- @ftlvariable name="connectId" type="java.lang.String" -->
 
 <#macro header title tab="">
     <!DOCTYPE html>
@@ -90,10 +92,24 @@
                             <a href="${basePath}/${clusterId}/schema"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Schema Registry</a>
                         </li>
                     </#if>
-                    <#if connectEnabled?? && connectEnabled == true && roles?seq_contains("connect") == true>
-                        <li class="${(tab == "connect")?then("active", "")}">
-                            <a href="${basePath}/${clusterId}/connect"><i class="fa fa-fw fa-exchange" aria-hidden="true"></i> Connect</a>
-                        </li>
+                    <#if (connectList)??>
+                        <#if roles?seq_contains("connect") == true && (connectList?size > 0)>
+                            <li class="${(tab == "connect")?then("active", "")}">
+                                <a href="#connects"
+                                   data-toggle="collapse"
+                                   aria-expanded="false"
+                                   class="dropdown-toggle"><i
+                                            class="fa fa-fw fa fa-exchange"
+                                            aria-hidden="true"></i> Connects <span class="badge badge-success">${(connectId??)?then(connectId,"")}</span></a>
+                                <ul class="collapse list-unstyled" id="connects">
+                                    <#list connectList as connect>
+                                        <li>
+                                            <a href="${basePath}/${clusterId}/connect/${connect}" >${connect}</a>
+                                        </li>
+                                    </#list>
+                                </ul>
+                            </li>
+                        </#if>
                     </#if>
                 </ul>
                 </#if>
