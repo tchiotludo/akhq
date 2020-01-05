@@ -95,12 +95,26 @@ docker run -d \
 
 
 ### Stand Alone
-
 * Install Java 11
 * Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
 * Create an [configuration files](#configuration)
 * Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`
 * Go to <http://localhost:8080>
+
+
+### Running in Kubernetes (using a Helm Chart)
+* Clone the repository:
+```sh
+git clone https://github.com/tchiotludo/kafkahq && cd kafkahq/deploy/helm
+```
+* Update helm values located in [deploy/helm/values.yaml](deploy/helm/values.yaml)
+  * `configuration` values will contains all related configuration that you can find in [application.example.yml](application.example.yml) and will be store in a `ConfigMap`
+  * `secrets` values will contains all sensitive configurations (with credentials) that you can find in [application.example.yml](application.example.yml) and will be store in `Secret`
+  * Both values will be merged at startup
+* Apply the chart:
+```sh
+helm install --name=kafkahq-release-name  .
+```
 
 
 ## Configuration

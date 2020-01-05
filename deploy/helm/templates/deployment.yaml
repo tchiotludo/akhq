@@ -23,8 +23,8 @@ spec:
         {{- if .Values.configuration }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
-        {{- if .Values.connections }}
-        checksum/connections: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- if .Values.secrets }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.image.annotations }}
           {{- toYaml . | nindent 8 }}
@@ -38,11 +38,11 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           env:
-          {{- if .Values.connections }}
+          {{- if .Values.secrets }}
           - name: MICRONAUT_ENVIRONMENTS
-            value: connections
+            value: secrets
           - name: MICRONAUT_CONFIG_FILES
-            value: /app/application.yml,/app/application-connections.yml
+            value: /app/application.yml,/app/application-secrets.yml
           {{- end }}
           {{- with .Values.image.extraEnv }}
 {{ toYaml . | trim | indent 12 }}
@@ -54,10 +54,10 @@ spec:
               mountPath: /app/application.yml
               subPath: application.yml
           {{- end }}
-          {{- if .Values.connections }}
-            - name: connections
-              mountPath: /app/application-connections.yml
-              subPath: application-connections.yml
+          {{- if .Values.secrets }}
+            - name: secrets
+              mountPath: /app/application-secrets.yml
+              subPath: application-secrets.yml
           {{- end }}
           ports:
             - name: http
@@ -91,8 +91,8 @@ spec:
         configMap:
           name: {{ template "kafkahq.fullname" . }}
       {{- end }}
-      {{- if .Values.connections }}
-      - name: connections
+      {{- if .Values.secrets }}
+      - name: secrets
         secret:
-          secretName: {{ template "kafkahq.fullname" . }}-connections
+          secretName: {{ template "kafkahq.fullname" . }}-secrets
       {{- end }}
