@@ -60,7 +60,7 @@
                                     <td>${task.getId()}</td>
                                     <td>${task.getWorkerId()}</td>
                                     <td>
-                                        <span class="btn btn-sm mb-1 btn-${class}" title="${task.getState()}" data-toggle="popover" data-content="${task.getTrace()?trim}">
+                                        <span class="btn btn-sm mb-1 btn-${class}" title="${task.getState()}">
                                             ${task.getState()}
                                         </span>
                                     </td>
