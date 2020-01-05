@@ -132,7 +132,7 @@ module.exports = (env, argv) => {
                 {
                     test: /\.(jpe?g|png|gif|svg)$/,
                     exclude: [
-                        /\/fonts\//
+                        /[\\/]fonts[\\/]/
                     ],
                     loader: 'file-loader',
                     options: {
@@ -143,7 +143,7 @@ module.exports = (env, argv) => {
                 {
                     test: /\.(eot|svg|ttf|woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
                     include: [
-                        /\/fonts\//
+                        /[\\/]fonts[\\/]/
                     ],
                     loader: 'file-loader?name=font/[name].[ext]',
                 }
