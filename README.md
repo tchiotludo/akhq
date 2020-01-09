@@ -7,7 +7,7 @@
 ![Github Start](https://img.shields.io/github/stars/tchiotludo/kafkahq.svg)
 [![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
 
-> Kafka GUI for topics, topics data, consumers group, schema registry, connect and more...
+> Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
@@ -402,18 +402,23 @@ Dev server is a java server & webpack-dev-server with live reload.
 ## Who's using KafkaHQ 
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
+* [Bell](https://www.bell.ca)
+* [Boulanger](https://www.boulanger.com/)
+* [GetYourGuide](https://www.getyourguide.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [Nuxeo](https://www.nuxeo.com/)
-* [GetYourGuide](https://www.getyourguide.com)
+* [Pipedrive](https://www.pipedrive.com)
+
 
 ## Credits
 
 Many thanks to:
 
-[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=KafkaHQ)
+* Logo & favicon used is from [Apache Kafka](http://kafka.apache.org/).
+* [JetBrains](https://www.jetbrains.com/?from=KafkaHQ) for their free OpenSource license.
 
-[JetBrains](https://www.jetbrains.com/?from=KafkaHQ) for their free OpenSource license.
+[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=KafkaHQ)
 
 
 ## License
