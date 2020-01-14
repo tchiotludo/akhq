@@ -27,7 +27,7 @@ configuration: |
 ##... and secret for connection information
 secrets: |
   kafkahq:
-    secrets:
+    connections:
       my-cluster-plain-text:
         properties:
           bootstrap.servers: "kafka:9092"
