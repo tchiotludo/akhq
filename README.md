@@ -407,6 +407,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [GetYourGuide](https://www.getyourguide.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
+* [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
 
