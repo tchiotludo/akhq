@@ -129,6 +129,7 @@ file example can be found here :[application.example.yml](application.example.ym
     * `url`: the schema registry url 
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
+    * `properties`: all the configurations for registry client, especially ssl configuration
   * `connect`: *(optional list, define each connector as a element of a list)*
     * `name`: connect name
     * `url`: connect url 
@@ -167,6 +168,7 @@ kafkahq:
         url: "https://{{host}}.aivencloud.com:12838"
         basic-auth-username: avnadmin
         basic-auth-password: {{password}}
+        properties: {}
       connect:
         - name: connect-1
           url: "https://{{host}}.aivencloud.com:{{port}}"

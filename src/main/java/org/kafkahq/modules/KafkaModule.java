@@ -158,6 +158,10 @@ public class KafkaModule {
                     restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
                 }
 
+                if (connection.getSchemaRegistry().getProperties() != null) {
+                    restService.configure(connection.getSchemaRegistry().getProperties());
+                }
+
                 this.registryRestClient.put(clusterId, restService);
             }
         }
@@ -165,11 +169,22 @@ public class KafkaModule {
         return this.registryRestClient.get(clusterId);
     }
 
+    private Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
+
     public SchemaRegistryClient getRegistryClient(String clusterId) {
-        return new CachedSchemaRegistryClient(
-            this.getRegistryRestClient(clusterId),
-            Integer.MAX_VALUE
-        );
+        if (!this.registryClient.containsKey(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
+
+            SchemaRegistryClient client = new CachedSchemaRegistryClient(
+                this.getRegistryRestClient(clusterId),
+                Integer.MAX_VALUE,
+                connection.getSchemaRegistry().getProperties()
+            );
+
+            this.registryClient.put(clusterId, client);
+        }
+
+        return this.registryClient.get(clusterId);
     }
 
     private Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();

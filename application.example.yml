@@ -40,6 +40,8 @@ kafkahq:
         # Basic Auth user / pass
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass
+        properties: # standard kafka properties (optional)
+          ssl.protocol: TLS
       connect:
         - name: connect-1
           url: "http://connect:8083"
