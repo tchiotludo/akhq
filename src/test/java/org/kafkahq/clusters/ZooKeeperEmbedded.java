@@ -14,6 +14,9 @@ import java.io.IOException;
 @Slf4j
 public class ZooKeeperEmbedded {
     private final TestingServer server;
+    static {
+        System.setProperty("zookeeper.admin.enableServer", "false");
+    }
 
     /**
      * Creates and starts a ZooKeeper instance.
