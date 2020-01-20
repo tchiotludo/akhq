@@ -66,14 +66,16 @@ public class RecordRepository extends AbstractRepository {
             consumer.assign(partitions.keySet());
             partitions.forEach(consumer::seek);
 
-            partitions.forEach((topicPartition, first) ->
-                log.trace(
-                    "Consume [topic: {}] [partition: {}] [start: {}]",
-                    topicPartition.topic(),
-                    topicPartition.partition(),
-                    first
-                )
-            );
+            if (log.isTraceEnabled()) {
+                partitions.forEach((topicPartition, first) ->
+                    log.trace(
+                        "Consume [topic: {}] [partition: {}] [start: {}]",
+                        topicPartition.topic(),
+                        topicPartition.partition(),
+                        first
+                    )
+                );
+            }
 
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
@@ -174,6 +176,15 @@ public class RecordRepository extends AbstractRepository {
                 topicPartitionOffset.getConsumer().assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
                 topicPartitionOffset.getConsumer().seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
 
+                if (log.isTraceEnabled()) {
+                    log.trace(
+                        "Consume Newest [topic: {}] [partition: {}] [start: {}]",
+                        topicPartitionOffset.getTopicPartition().topic(),
+                        topicPartitionOffset.getTopicPartition().partition(),
+                        topicPartitionOffset.getBegin()
+                    );
+                }
+
                 List<Record> list = new ArrayList<>();
                 int emptyPoll = 0;
 
@@ -185,6 +196,13 @@ public class RecordRepository extends AbstractRepository {
                     if (records.isEmpty()) {
                         emptyPoll++;
                     } else {
+                        if (log.isTraceEnabled()) {
+                            log.trace(
+                                "Empty pool [topic: {}] [partition: {}]",
+                                topicPartitionOffset.getTopicPartition().topic(),
+                                topicPartitionOffset.getTopicPartition().partition()
+                            );
+                        }
                         emptyPoll = 0;
                     }
 
