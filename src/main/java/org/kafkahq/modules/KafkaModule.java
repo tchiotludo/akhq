@@ -178,7 +178,7 @@ public class KafkaModule {
             SchemaRegistryClient client = new CachedSchemaRegistryClient(
                 this.getRegistryRestClient(clusterId),
                 Integer.MAX_VALUE,
-                connection.getSchemaRegistry().getProperties()
+                connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null
             );
 
             this.registryClient.put(clusterId, client);
