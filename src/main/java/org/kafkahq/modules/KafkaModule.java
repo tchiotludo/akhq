@@ -134,39 +134,33 @@ public class KafkaModule {
         return this.producers.get(clusterId);
     }
 
-    private Map<String, RestService> registryRestClient = new HashMap<>();
-
     public RestService getRegistryRestClient(String clusterId) {
-        if (!this.registryRestClient.containsKey(clusterId)) {
-            Connection connection = this.getConnection(clusterId);
+        Connection connection = this.getConnection(clusterId);
 
-            if (connection.getSchemaRegistry() != null) {
-                RestService restService = new RestService(
-                    connection.getSchemaRegistry().getUrl().toString()
-                );
+        if (connection.getSchemaRegistry() != null) {
+            RestService restService = new RestService(
+                connection.getSchemaRegistry().getUrl().toString()
+            );
 
-                if (connection.getSchemaRegistry().getBasicAuthUsername() != null) {
-                    BasicAuthCredentialProvider basicAuthCredentialProvider = BasicAuthCredentialProviderFactory
-                        .getBasicAuthCredentialProvider(
-                            new UserInfoCredentialProvider().alias(),
-                            ImmutableMap.of(
-                                "schema.registry.basic.auth.user.info",
-                                connection.getSchemaRegistry().getBasicAuthUsername() + ":" +
-                                    connection.getSchemaRegistry().getBasicAuthPassword()
-                            )
-                        );
-                    restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
-                }
-
-                if (connection.getSchemaRegistry().getProperties() != null) {
-                    restService.configure(connection.getSchemaRegistry().getProperties());
-                }
-
-                this.registryRestClient.put(clusterId, restService);
+            if (connection.getSchemaRegistry().getBasicAuthUsername() != null) {
+                BasicAuthCredentialProvider basicAuthCredentialProvider = BasicAuthCredentialProviderFactory
+                    .getBasicAuthCredentialProvider(
+                        new UserInfoCredentialProvider().alias(),
+                        ImmutableMap.of(
+                            "schema.registry.basic.auth.user.info",
+                            connection.getSchemaRegistry().getBasicAuthUsername() + ":" +
+                                connection.getSchemaRegistry().getBasicAuthPassword()
+                        )
+                    );
+                restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
             }
-        }
 
-        return this.registryRestClient.get(clusterId);
+            if (connection.getSchemaRegistry().getProperties() != null) {
+                restService.configure(connection.getSchemaRegistry().getProperties());
+            }
+            return restService;
+        }
+        return null;
     }
 
     private Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
