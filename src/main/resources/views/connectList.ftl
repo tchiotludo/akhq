@@ -39,11 +39,15 @@
                 <tr>
                     <td>${connect.getName()}</td>
                     <td>
-                        <#if connect.getType() == "source">
-                            <i class="fa fa-forward" aria-hidden="true"></i>
-                        <#else>
-                            <i class="fa fa-backward" aria-hidden="true"></i>
-                        </#if>
+                        <#attempt>
+                            <#if connect.getType() == "source">
+                                <i class="fa fa-forward" aria-hidden="true"></i>
+                            <#else>
+                                <i class="fa fa-backward" aria-hidden="true"></i>
+                            </#if>
+                        <#recover>
+                            <i class="fa fa-question-circle" aria-hidden="true"></i>
+                        </#attempt>
                         ${connect.getShortClassName()}
                     </td>
                     <td>
