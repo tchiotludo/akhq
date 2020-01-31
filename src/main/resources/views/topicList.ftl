@@ -31,8 +31,8 @@
         <thead class="thead-dark">
             <tr>
                 <th class="text-nowrap">Name</th>
+                <th class="text-nowrap">Count</th>
                 <th class="text-nowrap">Size</th>
-                <th class="text-nowrap">Weight</th>
                 <th class="text-nowrap">Total</th>
                 <!--
                 <th class="text-nowrap">Available</th>
