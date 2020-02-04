@@ -11,6 +11,7 @@ import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import org.kafkahq.models.Partition;
 import org.kafkahq.utils.Logger;
@@ -247,7 +248,7 @@ abstract public class AbstractKafkaWrapper {
                             .all()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof ClusterAuthorizationException) {
+                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
                             return new HashMap<>();
                         }
 
@@ -321,7 +322,7 @@ abstract public class AbstractKafkaWrapper {
                             .values()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException) {
+                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
                             return Collections.emptyList();
                         }
                         throw e;
