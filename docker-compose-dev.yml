@@ -10,7 +10,7 @@ volumes:
 
 services:
   kafkahq:
-    image: gradle:6.0-jdk11
+    image: gradle:6.1.1-jdk11
     command: "gradle run --continuous"
     working_dir: /app
     volumes:
