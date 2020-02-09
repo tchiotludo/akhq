@@ -1,0 +1,19 @@
+.khq-multiple {
+    > div {
+        display: flex;
+        flex-direction: row;
+        margin-bottom:  $form-group-margin-bottom;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        > * {
+            margin-right:  $form-group-margin-bottom;
+
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+}
