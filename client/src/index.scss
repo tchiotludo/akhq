@@ -1,0 +1,40 @@
+// assets/css
+@import "assets/css/init.scss";
+@import "assets/css/variables.scss";
+@import "assets/css/main.scss";
+@import "assets/css/vendor.scss";
+
+// assets/modules/datas
+@import "assets/modules/datas/after-offset.scss";
+@import "assets/modules/datas/filter.scss";
+@import "assets/modules/datas/highlight.scss";
+
+// assets/modules/forms
+@import "assets/modules/forms/ace.scss";
+@import "assets/modules/forms/datetime.scss";
+@import "assets/modules/forms/multiple.scss";
+@import "assets/modules/forms/select.scss";
+
+// assets/modules/tables
+@import "assets/modules/tables/row-action.scss";
+@import "assets/modules/tables/table.scss";
+
+// assets/modules/templates
+@import "assets/modules/templates/bootstrap.scss";
+@import "assets/modules/templates/layout.scss";
+@import "assets/modules/templates/login.scss";
+@import "assets/modules/templates/sidebar.scss";
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
