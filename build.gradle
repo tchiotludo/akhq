@@ -261,6 +261,11 @@ copyClientResources.doFirst {
     }
 }
 
+task assembleServerAndClient(dependsOn: ['copyClientResources', ':shadowJar']) {
+    group = 'build'
+    description = 'Build combined server & client JAR'
+}
+
 jar.dependsOn "webpack"
 processResources.dependsOn 'webpack'
 

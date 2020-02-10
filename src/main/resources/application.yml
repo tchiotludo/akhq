@@ -1,6 +1,9 @@
 micronaut:
   application:
     name: kafkahq
+  server:
+    cors:
+      enabled: true
   io:
     watch:
       paths: src/main
@@ -11,7 +14,7 @@ micronaut:
         paths: classpath:static
         mapping: "${kafkahq.server.base-path:}/static/**"
   security:
-    enabled: true
+    enabled: false
     endpoints:
       login:
         enabled: true
