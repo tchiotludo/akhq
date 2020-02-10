@@ -28,7 +28,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.2.0"
 
     // kafkahq
-    id "com.moowork.node" version "1.3.1"
+    id "com.github.node-gradle.node" version "1.3.0"
     id 'io.franzbecker.gradle-lombok' version '3.2.0'
     id 'com.adarshr.test-logger' version '2.0.0'
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -234,14 +234,36 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
 /**********************************************************************************************************************\
  * Node + Webpack
  **********************************************************************************************************************/
-import com.moowork.gradle.node.task.NodeTask
+node {
+    npmWorkDir = file('client')
+    nodeModulesDir = file('client')
+    download = true
+}
 
-task webpack(type: NodeTask, dependsOn: "npmInstall") {
+task react(type: NpmTask, dependsOn: 'npmInstall') {
+    args = ['run','start']
+}
+
+
+task webpack(type: NpmTask, dependsOn: 'npmInstall') {
+    args = ['run','build']
+}
+
+task copyClientResources(dependsOn: 'webpack') {
     group = 'build'
-    description = 'Build with webpack assets'
-    script = project.file("node_modules/.bin/webpack")
-    outputs.dir("src/main/resources/static")
-    args = ["-p", "--mode production"]
+    description = 'Copy client resources into server'
+}
+
+copyClientResources.doFirst {
+    copy {
+        from "client/build"
+        into "src/main/resources/static"
+    }
+}
+
+task assembleServerAndClient(dependsOn: ['copyClientResources', ':shadowJar']) {
+    group = 'build'
+    description = 'Build combined server & client JAR'
 }
 
 jar.dependsOn "webpack"

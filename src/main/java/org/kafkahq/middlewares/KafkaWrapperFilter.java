@@ -21,12 +21,13 @@ public class KafkaWrapperFilter implements HttpServerFilter {
 
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
-        if (kafkaModule.getClustersList().size() == 0) {
-            throw new IllegalArgumentException(
-                "Couldn't find any clusters on your configuration file, " +
-                "please ensure that the configuration file is loaded correctly"
-            );
-        }
+// TODO: Remove this filter now?
+//        if (kafkaModule.getClustersList().size() == 0) {
+//            throw new IllegalArgumentException(
+//                "Couldn't find any clusters on your configuration file, " +
+//                "please ensure that the configuration file is loaded correctly"
+//            );
+//        }
 
         return chain.proceed(request);
     }
