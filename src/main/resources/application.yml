@@ -7,12 +7,11 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
-      default:
-        enabled: true
-        mapping: "/**"
-        paths: "classpath:static"
+      static:
+        paths: classpath:static
+        mapping: "${kafkahq.server.base-path:}/static/**"
   security:
-    enabled: false
+    enabled: true
     endpoints:
       login:
         enabled: true
@@ -65,6 +64,15 @@ jackson:
   module-scan: false
 
 kafkahq:
+  connections:
+    my-cluster:
+      properties:
+        bootstrap.servers: localhost:9092
+      schema-registry:
+        url: "localhost:8085"
+      connect:
+        - name: connect-1
+          url: "http://localhost:8083"
   server:
     base-path: ""
     access-log:
@@ -113,29 +121,29 @@ kafkahq:
     groups:
       admin:
         roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
       reader:
         roles:
           - topic/read
