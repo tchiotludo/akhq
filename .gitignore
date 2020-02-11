@@ -21,6 +21,8 @@ build/*
 src/main/resources/static
 node_modules
 node/
+client/node_modules
+client/build
 
 ### Ide ###
 .idea/*
