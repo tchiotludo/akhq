@@ -1,57 +1,65 @@
 {
-    /*
-     * ENVIRONMENTS
-     * =================
-     */
+  /*
+   * ENVIRONMENTS
+   * =================
+   */
 
-     "env": {
-        "commonjs": true,
-        "es6": true,
-        "node": true,
-        "browser": true
-      },
-      "extends": "eslint:recommended",
+  "env": {
+    "commonjs": false,
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "extends": "eslint:recommended",
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
     /*
      * ENFORCING OPTIONS
      * =================
      */
-  
+
     // Force all variable names to use either camelCase style or UPPER_CASE
     // with underscores.
-    "camelcase": true,
-  
+    "camelcase": "warn",
+
     // Prohibit use of == and != in favor of === and !==.
-    "eqeqeq": true,
-  
-    // Enforce tab width of 2 spaces.
-    "indent": 2,
-  
+    "eqeqeq": "error",
+
     // Prohibit use of a variable before it is defined.
-    "latedef": true,
-  
+    "no-use-before-define": "error",
+
     // Enforce line length to 100 characters
-    "maxlen": 100,
-  
+    "max-len": ["error", 100],
+
     // Require capitalized names for constructor functions.
-    "newcap": true,
-  
+    "new-cap": "error",
+
     // Enforce use of single quotation marks for strings.
-    "quotmark": "single",
-  
-    // Enforce placing 'use strict' at the top function scope
-    "strict": true,
-  
+    "quotes": ["error", "single"],
+
     // Prohibit use of explicitly undeclared variables.
-    "undef": true,
-  
+    "no-undef": "error",
+
     // Warn when variables are defined but never used.
-    "unused": true,
-  
+    "no-unused-vars": "warn",
+
+    "no-var": "error",
+
+    "no-duplicate-imports": "error",
+
     /*
      * RELAXING OPTIONS
      * =================
      */
-  
+
     // Suppress warnings about == null comparisons.
-    "eqnull": true
+    "no-eq-null": "off"
   }
+}

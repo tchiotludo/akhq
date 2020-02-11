@@ -1,8 +1,13 @@
 {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": true,
-    "extends": ["plugin:prettier/recommended"],
-    "printWidth": 100
+  "parser": "babel",
+  "trailingComma": "none",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "extends": ["plugin:prettier/recommended"],
+  "printWidth": 100,
+  "arrowParens": "avoid",
+  "bracketSpacing": false,
+  "jsxBracketSameLine": false
+
 }
