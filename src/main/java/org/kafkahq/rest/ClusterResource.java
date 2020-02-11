@@ -4,11 +4,14 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import org.kafkahq.models.Cluster;
 import org.kafkahq.service.ClusterService;
+import org.kafkahq.service.dto.ClusterDTO;
+import org.kafkahq.service.mapper.ClusterMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller("${kafkahq.server.base-path:}/api")
 public class ClusterResource {
@@ -23,8 +26,9 @@ public class ClusterResource {
     }
 
     @Get("/clusters")
-    public List<Cluster> fetchAllClusters() {
+    public List<ClusterDTO> fetchAllClusters() {
         log.debug("fetch all clusters");
-        return clusterService.getAllClusters();
+        return clusterService
+                .getAllClusters();
     }
 }

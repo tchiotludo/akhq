@@ -2,6 +2,8 @@ package org.kafkahq.service;
 
 import org.kafkahq.models.Cluster;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.service.dto.ClusterDTO;
+import org.kafkahq.service.mapper.ClusterMapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,11 +20,11 @@ public class ClusterService {
         this.kafkaModule = kafkaModule;
     }
 
-    public List<Cluster> getAllClusters() {
+    public List<ClusterDTO> getAllClusters() {
         return kafkaModule
                 .getClustersList()
                 .stream()
-                .map(Cluster::new)
+                .map(ClusterDTO::new)
                 .collect(Collectors.toList());
     }
 }

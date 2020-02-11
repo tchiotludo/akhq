@@ -4,6 +4,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import org.kafkahq.configs.Connect;
 import org.kafkahq.service.ConnectService;
+import org.kafkahq.service.dto.ConnectDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,9 @@ public class ConnectResource {
     public ConnectResource(ConnectService connectService) {
         this.connectService = connectService;
     }
-    
+
     @Get("/connects")
-    public List<Connect> fetchAllConnectsFromCluster(String clusterId) {
+    public List<ConnectDTO> fetchAllConnectsFromCluster(String clusterId) {
         log.debug("fetch all connects from cluster {}", clusterId);
         return connectService.getAllConnectsFromCLuster(clusterId);
     }
