@@ -7,6 +7,19 @@ volumes:
   kafka-data:
     driver: local
 services:
+  kafkahq:
+    image: tchiotludo/kafkahq
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - 8090:8080
+    volumes:
+      - ./kafkahq.yml:/app/application.yml
+    links:
+      - zookeeper:zookeper
+      - kafka:kafka
+
   zookeeper:
     image: confluentinc/cp-zookeeper
     volumes:
@@ -54,7 +67,9 @@ services:
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka:9092
       CONNECT_REST_PORT: 8083
+      CONNECT_HOST_NAME: connect-1
       CONNECT_REST_LISTENERS: http://connect-1:8083
+      CONNECT_LISTENERS: http://connect-1:8083
       CONNECT_REST_ADVERTISED_HOST_NAME: connect-1
       CONNECT_CONFIG_STORAGE_TOPIC: __connect-1-config
       CONNECT_OFFSET_STORAGE_TOPIC: __connect-1-offsets
