@@ -3,13 +3,17 @@ package org.kafkahq.service;
 import org.kafkahq.models.Cluster;
 import org.kafkahq.modules.KafkaModule;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Singleton
 public class ClusterService {
 
     private KafkaModule kafkaModule;
 
+    @Inject
     public ClusterService(KafkaModule kafkaModule) {
         this.kafkaModule = kafkaModule;
     }
@@ -18,7 +22,7 @@ public class ClusterService {
         return kafkaModule
                 .getClustersList()
                 .stream()
-                .map(clusterId -> new Cluster(clusterId))
+                .map(Cluster::new)
                 .collect(Collectors.toList());
     }
 }
