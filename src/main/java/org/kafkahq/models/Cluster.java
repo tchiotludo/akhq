@@ -25,9 +25,4 @@ public class Cluster {
 
         this.controller = new Node(result.controller().get());
     }
-
-    public Cluster(String id) {
-        this.id = id;
-        this.controller = null;
-    }
 }
