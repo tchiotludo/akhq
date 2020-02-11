@@ -46,7 +46,7 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
-    private Connection getConnection(String cluster) {
+    public Connection getConnection(String cluster) {
         return this.connections
             .stream()
             .filter(r -> r.getName().equals(cluster))
