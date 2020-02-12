@@ -149,6 +149,45 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    public void successWithLdapGroupAndUserRole() throws NamingException {
+
+        Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(),"dn"));
+
+        when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
+
+        when(ldapSearchService.searchFirst(any(DirContext.class), any(SearchSettings.class))).thenReturn(optionalResult);
+        when(ldapSearchService.search(any(DirContext.class), any(SearchSettings.class))).thenReturn(listResults);
+
+        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-admin")));
+
+        AuthenticationResponse response = Flowable
+                        .fromPublisher(ldapAuthenticationProvider.authenticate(new UsernamePasswordCredentials(
+                                        "user2",
+                                        "pass"
+                        ))).blockingFirst();
+
+        assertThat(response, instanceOf(UserDetails.class));
+
+        UserDetails userDetail = (UserDetails) response;
+
+        assertTrue(userDetail.isAuthenticated());
+        assertEquals("user2", userDetail.getUsername());
+
+        Collection<String> roles = userDetail.getRoles();
+
+        assertThat(roles, hasSize(7));
+        assertThat(roles, hasItem("topic/read"));
+        assertThat(roles, hasItem("registry/version/delete"));
+        assertThat(roles, hasItem("topic/data/read"));
+
+        List<String> topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topics-filter-regexp"));
+        assertThat(topicsFilterList, hasSize(2));
+        assertThat(topicsFilterList, hasItem("test.*"));
+        assertThat(topicsFilterList, hasItem("test-operator.*"));
+    }
+
+    @Test
     public void successWithoutRoles() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));

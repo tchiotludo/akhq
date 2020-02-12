@@ -411,6 +411,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
 * [Bell](https://www.bell.ca)
+* [BMW Group](https://www.bmwgroup.com)
 * [Boulanger](https://www.boulanger.com/)
 * [GetYourGuide](https://www.getyourguide.com)
 * [La Redoute](https://laredoute.io/)
