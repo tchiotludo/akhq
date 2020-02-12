@@ -295,7 +295,7 @@ micronaut:
           base: "dc=example,dc=com"
 ```
 
-Configure KafkaHQ groups and Ldap groups
+Configure KafkaHQ groups and Ldap groups and users
 ```yaml
 kafkahq:
   security:
@@ -323,6 +323,12 @@ kafkahq:
           groups:
             - topic-reader
             - topic-writer
+      user:
+        franz:
+          groups:
+            - topic-reader
+            - topic-writer
+
 ```
 
 ### Server 

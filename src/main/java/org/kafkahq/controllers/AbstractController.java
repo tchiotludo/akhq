@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.experimental.Wither;
 import org.kafkahq.configs.BasicAuth;
 import org.kafkahq.configs.LdapGroup;
+import org.kafkahq.configs.LdapUser;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.UserGroupUtils;
 import org.kafkahq.utils.VersionProvider;
@@ -56,6 +57,9 @@ abstract public class AbstractController {
     @Inject
     private List<LdapGroup> ldapAuths;
 
+    @Inject
+    private List<LdapUser> ldapUsers;
+
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
         Map datas = CollectionUtils.mapOf(values);
@@ -77,7 +81,7 @@ abstract public class AbstractController {
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0);
+            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0);
 
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             securityService
