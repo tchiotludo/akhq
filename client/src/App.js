@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.scss';
-import Dashboard from './components/dashboard';
+import Dashboard from './container/dashboard';
 import {BrowserRouter as Router, Redirect, Route, Switch} from 'react-router-dom';
-import Login from './components/login';
-import Topic from './components/tabs/topic/topic';
+import Login from './container/login';
+import Topic from './container/tabs/topic/topic';
 
 function App() {
     return (
