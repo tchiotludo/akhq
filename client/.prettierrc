@@ -7,7 +7,7 @@
   "extends": ["plugin:prettier/recommended"],
   "printWidth": 100,
   "arrowParens": "avoid",
-  "bracketSpacing": false,
+  "bracketSpacing": true,
   "jsxBracketSameLine": false
 
 }
