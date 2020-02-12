@@ -80,4 +80,7 @@ kafkahq:
         ldap-operator:
           groups:
             - operator
-
+      user:
+        user2:
+          groups:
+            - operator

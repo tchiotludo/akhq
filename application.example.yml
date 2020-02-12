@@ -172,3 +172,10 @@ kafkahq:
         group-ldap-2:
           groups:
             - admin
+      user:
+        riemann: # ldap user id
+          groups: # KafkaHQ groups list
+            - topic-reader
+        einstein:
+          groups:
+            - admin
