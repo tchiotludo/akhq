@@ -25,14 +25,14 @@ public class ClusterResource {
 
     @Get("/clusters")
     public List<ClusterDTO> fetchAllClusters() {
-        log.debug("fetch all clusters");
+        log.debug("Fetch all clusters");
         return clusterService
                 .getAllClusters();
     }
 
     @Get("/cluster/nodes")
     public List<NodeDTO> fetchAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
-        log.debug("fetch all nodes from cluster {}", clusterId);
+        log.debug("Fetch all nodes from cluster {}", clusterId);
         return clusterService.getAllNodesFromCluster(clusterId);
     }
 }

@@ -25,7 +25,7 @@ public class ConnectResource {
 
     @Get("/connects")
     public List<ConnectDTO> fetchAllConnectsFromCluster(String clusterId) {
-        log.debug("fetch all connects from cluster {}", clusterId);
+        log.debug("Fetch all connects from cluster {}", clusterId);
         return connectService.getAllConnectsFromCLuster(clusterId);
     }
 }
