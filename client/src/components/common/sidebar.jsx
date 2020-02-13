@@ -3,16 +3,17 @@ import logo from "../../images/logo.svg";
 import TabContainer from "react-bootstrap/TabContainer";
 import { Link } from "react-router-dom";
 //import { getBsProps } from "react-bootstrap/lib/utils/bootstrapUtils";
-import  api from "../../services/api";
+import api from "../../services/api";
 import endpoints from "../../services/endpoints";
-
 
 // Adaptation of template.ftl
 
 function Sidebar({ selectedTab, clusterId }) {
+  api.get(endpoints.clusters).then(result => console.log(result));
+  api.get(endpoints.connects).then(result => console.log(result));
   const tag = "Snapshot";
-  const allClusters =() => api.get(endpoints.clusters);
-  const allConnects = () =>  api.get(endpoints.connects);
+  const allClusters = () => api.get(endpoints.clusters);
+  const allConnects = () => api.get(endpoints.connects);
 
   return (
     <div className="wrapper">
@@ -46,7 +47,7 @@ function Sidebar({ selectedTab, clusterId }) {
               <ul className="collapse list-unstyled" id="clusters">
                 {allClusters}
                 {/*for loop that dis*/}
-                {/*<#list clusters as cluster>*/ allClusters}
+                {/*<#list clusters as cluster> allClusters.map( cluster => <li key={cluster._id} className="list-group-item"></li>)*/}
                 <li>
                   {/*if that checks if a cluster is selected */}
                   {/*className="${(cluster == clusterId)?then("active", "")}"*/}
@@ -125,7 +126,7 @@ function Sidebar({ selectedTab, clusterId }) {
                 </span>
               </Link>
               <ul className="collapse list-unstyled" id="connects">
-                {/*<#list connectList as connect>*/allConnects}
+                {/*<#list connectList as connect>*/ allConnects}
                 <li>
                   {/*<a href="#">*/}
                   {/*    /!*${connect}*!/*/}
