@@ -1,15 +1,17 @@
 import React from 'react';
 import './App.scss';
-import Dashboard from './components/dashboard';
-import {BrowserRouter as Router, Redirect, Route, Switch} from 'react-router-dom';
-import Login from './components/login';
-import Topic from './components/tabs/topic/topic';
+import Dashboard from './containers/Dashboard/Dashboard';
+import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
+import Login from './containers/Login/Login';
+import Topic from './containers/Tab/Tabs/TopicList/Topic/Topic';
+import NodesList from '.container/NodesList';
 
 function App() {
   return (
     <Router>
       <Switch>
         <Route path="/login" component={Login} />
+        <Route path="/nodes" component={NodesList} />
         <Route path="/:clusterId/:tab" exact component={Dashboard} />
         <Route path="/:clusterId/:tab/:action" exact component={Dashboard} />
         <Redirect from="/:clusterId" exact to="/:clusterId/topic" />
