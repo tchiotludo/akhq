@@ -8,21 +8,21 @@ import endpoints from '../../services/endpoints';
 
 // Adaptation of template.ftl
 class Sidebar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
+  state = {
+    selectedCluster: ''
+  };
 
   componentDidMount() {
-    this.handleGetConnects();
     this.handleGetClusters();
+    console.log(this.props.clusterId);
+    this.setState({selectedCluster: this.props.clusterId});
   }
 
   async handleGetClusters() {
     let allClusters = {};
-    console.log('clusters endpoint', endpoints.uriClusters);
     try {
-      allClusters = await api.get(endpoints.uriClusters);
+      allClusters = await api.get(endpoints.uriClusters());
+      this.handleGetConnects();
       console.log(allClusters);
     } catch (err) {
       console.log('Erro allClusters');
@@ -30,9 +30,9 @@ class Sidebar extends Component {
   }
   async handleGetConnects() {
     let allConnects = {};
-    console.log('connects endpoint', endpoints.uriConnects);
+    console.log('connects endpoint', endpoints.uriConnects(this.state.selectedCluster));
     try {
-      allConnects = await api.get(endpoints.uriConnects);
+      allConnects = await api.get(endpoints.uriConnects(this.state.selectedCluster));
       console.log(allConnects);
     } catch (err) {
       console.log('Erro allConnects');
