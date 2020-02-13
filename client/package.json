@@ -13,6 +13,7 @@
     "lodash": "^4.17.15",
     "react-datetime-bootstrap": "^1.4.7",
     "node-sass": "^4.13.1",
+    "prop-types": "^15.7.2",
     "react": "^16.12.0",
     "react-bootstrap": "^1.0.0-beta.16",
     "react-dom": "^16.12.0",
