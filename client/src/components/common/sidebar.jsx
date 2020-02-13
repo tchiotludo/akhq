@@ -10,21 +10,37 @@ import endpoints from '../../services/endpoints';
 class Sidebar extends Component {
   constructor(props) {
     super(props);
-    api.get(endpoints.connects).then(result => console.log(result));
-   
-    this.state = {    };
+    this.state = {};
   }
-  async handleGetClusters  () {
-    const allClusters = await api.get(endpoints.clusters);
-    console.log(allClusters);
+
+  componentDidMount() {
+    this.handleGetConnects();
+    this.handleGetClusters();
   }
-  async handleGetConnects (){
-    const allConnects = await api.get(endpoints.connects);
-    console.log(allConnects);
+
+  async handleGetClusters() {
+    let allClusters = {};
+    console.log('clusters endpoint', endpoints.uriClusters);
+    try {
+      allClusters = await api.get(endpoints.uriClusters);
+      console.log(allClusters);
+    } catch (err) {
+      console.log('Erro allClusters');
+    }
+  }
+  async handleGetConnects() {
+    let allConnects = {};
+    console.log('connects endpoint', endpoints.uriConnects);
+    try {
+      allConnects = await api.get(endpoints.uriConnects);
+      console.log(allConnects);
+    } catch (err) {
+      console.log('Erro allConnects');
+    }
   }
 
   render() {
-    const{selectedTab, clusterId} = this.props; 
+    const {selectedTab, clusterId} = this.props;
     const tag = 'Snapshot';
     return (
       <div className="wrapper">

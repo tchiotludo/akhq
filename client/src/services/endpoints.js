@@ -7,3 +7,5 @@ const uriClusters = id => {
 const uriConnects = id => {
   return `${apiUrl}/connects${id && '/' + id}`;
 };
+
+export default {apiUrl, uriClusters, uriConnects};
