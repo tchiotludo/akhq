@@ -4,7 +4,7 @@ import Dashboard from './containers/Dashboard/Dashboard';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import Login from './containers/Login/Login';
 import Topic from './containers/Tab/Tabs/TopicList/Topic/Topic';
-import NodesList from '.container/NodesList';
+import NodesList from './containers/NodesList';
 
 function App() {
   return (
