@@ -1,10 +1,10 @@
 import React from 'react';
 import './App.scss';
-import Dashboard from './components/dashboard';
+import Dashboard from './container/Dashboard/Dashboard';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
-import Login from './components/login';
-import Topic from './components/tabs/topic/topic';
-import NodesList from './containers/NodesList';
+import Login from './container/Login/Login';
+import Topic from './container/Tab/Tabs/TopicList/Topic/Topic';
+import NodesList from '.container/NodesList';
 
 function App() {
   return (
