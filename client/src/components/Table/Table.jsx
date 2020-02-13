@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import * as constants from '../../utils/constants';
+import './styles.scss';
 
 class Table extends Component {
   state = {};
@@ -9,66 +10,98 @@ class Table extends Component {
   componentDidMount() {}
 
   renderHeader() {
-    const { has2Headers, firstHeader, colNames } = this.props;
+    const { has2Headers, firstHeader, colNames, actions } = this.props;
 
     return (
       <>
         {has2Headers && (
           <thead className="thead-dark">
-            <tr>
+            <tr key="firstHeader">
               {firstHeader.map((column, index) => {
                 return (
-                  <th key={column.colName + index} colSpan={column.colSpan}>
+                  <th
+                    className="header-text"
+                    key={`firstHead${column.colName}${index}`}
+                    colSpan={column.colSpan}
+                  >
                     {column.colName}
                   </th>
                 );
               })}
+              {actions && actions.length > 0 && <th colSpan={actions.length} />}
             </tr>
           </thead>
         )}
         <thead className="thead-dark">
-          <tr>
+          <tr key="secondHeader">
             {colNames.map((column, index) => {
-              return <th key={column.colName + index}>{column}</th>;
+              return (
+                <th className="header-text" key={`secondHead${column.colName}${index}`}>
+                  {column}
+                </th>
+              );
             })}
+            {actions && actions.length > 0 && <th colSpan={actions.length} />}
           </tr>
         </thead>
       </>
     );
   }
 
-  renderRow(row) {
-    return <tr>{row.map(element => {})}</tr>;
+  renderRow(row, index) {
+    const { toPresent, actions } = this.props;
+    return (
+      <tr key={`tableRow${index}`}>
+        {Object.keys(row).map(key => {
+          if (toPresent.find(elem => elem === key)) {
+            return <td>{row[key]}</td>;
+          }
+        })}
+        {actions && actions.length > 0 && this.renderActions(row)}
+      </tr>
+    );
   }
 
   renderActions(row) {
-    const { actions } = this.props;
+    const { actions, onAdd, onDetails, onDelete } = this.props;
 
     return (
       <>
-        {actions.find(el => el === constants.VIEW_TABLE) && (
-          <td className="khq-row-action khq-row-action-main">
-            <Link to={row.url || '/'}>
+        {actions.find(el => el === constants.ADD_TABLE) && (
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              onClick={() => {
+                onAdd && onAdd();
+              }}
+            >
               <i className="fa fa-search" />
-            </Link>
+            </span>
           </td>
         )}
-        {actions.find(el => el === constants.EDIT_TABLE) && (
-          <td className="khq-row-action khq-row-action-main">
-            <Link to={row.url || '/'}>
+        {actions.find(el => el === constants.TABLE_DETAILS) && (
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              onClick={() => {
+                onDetails && onDetails();
+              }}
+            >
               <i className="fa fa-search" />
-            </Link>
+            </span>
           </td>
         )}
         {actions.find(el => el === constants.DELETE_TABLE) && (
-          <td className="khq-row-action khq-row-action-main">
-            <Link to={row.url || '/'}>
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              onClick={() => {
+                onDelete && onDelete();
+              }}
+            >
               <i className="fa fa-search" />
-            </Link>
+            </span>
           </td>
         )}
-        {actions.find(el => el === constants.ADD_TABLE) && (
-          <td className="khq-row-action khq-row-action-main">
+        {actions.find(el => el === constants.EDIT_TABLE) && (
+          <td className="khq-row-action khq-row-action-main action-hover">
             <Link to={row.url || '/'}>
               <i className="fa fa-search" />
             </Link>
@@ -79,15 +112,27 @@ class Table extends Component {
   }
 
   render() {
-    const { data } = this.props;
+    const { data, colNames } = this.props;
 
     return (
       <div className="table-responsive">
         <table className="table table-bordered table-striped table-hover mb-0">
           {this.renderHeader()}
-          {data.map(row => {
-            this.renderRow(row);
-          })}
+          <tbody>
+            {data && data.length > 0 ? (
+              data.map((row, index) => {
+                return this.renderRow(row, index);
+              })
+            ) : (
+              <tr>
+                <td colSpan={colNames.length}>
+                  <div className="alert alert-info mb-0" role="alert">
+                    No topic available
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
     );
@@ -106,7 +151,7 @@ Table.propTypes = {
   data: PropTypes.array,
   colNames: PropTypes.array,
   actions: PropTypes.array,
-  onEdit: PropTypes.func,
+  onDetails: PropTypes.func,
   onDelete: PropTypes.func,
   toPresent: PropTypes.array
 };

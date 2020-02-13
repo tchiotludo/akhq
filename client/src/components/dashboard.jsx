@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Sidebar from './common/sidebar';
 import Cluster from './tabs/cluster';
 import Tail from './tabs/tail';
-import Node from './tabs/node';
+import Node from '../containers/NodesList';
 import Group from './tabs/group';
 import Acls from './tabs/acls';
 import Connect from './tabs/connect';
@@ -25,7 +25,7 @@ class Dashboard extends Component {
     showErrorToast: false,
     errorToastTitle: '',
     errorToastMessage: '',
-    errorToastTimeout: 6000, // in ms
+    errorToastTimeout: 6000 // in ms
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -38,7 +38,7 @@ class Dashboard extends Component {
       successToastMessage,
       showErrorToast,
       errorToastTitle,
-      errorToastMessage,
+      errorToastMessage
     } = nextProps.location;
 
     return {
@@ -50,7 +50,7 @@ class Dashboard extends Component {
       successToastMessage: successToastMessage,
       showErrorToast: showErrorToast,
       errorToastTitle: errorToastTitle,
-      errorToastMessage: errorToastMessage,
+      errorToastMessage: errorToastMessage
     };
   }
 
@@ -70,7 +70,7 @@ class Dashboard extends Component {
         this.props.history.push({
           pathname: `/${clusterId}/topic`,
           showSuccessToast: false,
-          successToastMessage: '',
+          successToastMessage: ''
         });
       }, this.state.successToastTimeout);
     }
@@ -81,7 +81,7 @@ class Dashboard extends Component {
           pathname: `/${clusterId}/topic`,
           showErrorToast: false,
           errorToastTitle: '',
-          errorToastMessage: '',
+          errorToastMessage: ''
         });
       }, this.state.errorToastTimeout);
     }
@@ -151,7 +151,7 @@ class Dashboard extends Component {
       successToastMessage,
       showErrorToast,
       errorToastTitle,
-      errorToastMessage,
+      errorToastMessage
     } = this.state;
 
     return (
