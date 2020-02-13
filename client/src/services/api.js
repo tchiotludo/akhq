@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const get = url =>
   new Promise((resolve, reject) => {
@@ -48,4 +48,4 @@ const remove = url =>
       });
   });
 
-export default { get, put, post, remove };
+export default {get, put, post, remove};
