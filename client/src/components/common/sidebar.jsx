@@ -9,39 +9,62 @@ import endpoints from '../../services/endpoints';
 // Adaptation of template.ftl
 class Sidebar extends Component {
   state = {
-    selectedCluster: ''
+    selectedCluster: this.props.clusterId,
+    selectedConnect: {},
+    allClusters: [],
+    allConnects: [],
+    showClusters: false,
+    showConnects: false
   };
 
   componentDidMount() {
     this.handleGetClusters();
-    console.log(this.props.clusterId);
-    this.setState({selectedCluster: this.props.clusterId});
+    this.handleGetConnects(this.state.selectedCluster);
   }
 
   async handleGetClusters() {
     let allClusters = {};
     try {
       allClusters = await api.get(endpoints.uriClusters());
-      this.handleGetConnects();
-      console.log(allClusters);
+      this.setState({allClusters: allClusters.data});
     } catch (err) {
-      console.log('Erro allClusters');
+      console.log('Erro allClusters:' + err);
     }
   }
-  async handleGetConnects() {
+
+  async handleGetConnects(selectedCluster) {
     let allConnects = {};
-    console.log('connects endpoint', endpoints.uriConnects(this.state.selectedCluster));
     try {
-      allConnects = await api.get(endpoints.uriConnects(this.state.selectedCluster));
-      console.log(allConnects);
+      allConnects = await api.get(endpoints.uriConnects(selectedCluster));
+      this.setState({allConnects: allConnects.data, selectedConnect: allConnects.data[0]});
     } catch (err) {
-      console.log('Erro allConnects');
+      console.log('Erro allConnects:' + err);
     }
   }
 
   render() {
     const {selectedTab, clusterId} = this.props;
+    const {
+      selectedConnect,
+      selectedCluster,
+      allClusters,
+      allConnects,
+      showClusters,
+      showConnects
+    } = this.state;
     const tag = 'Snapshot';
+    const listClusters = allClusters.map(cluster => (
+      <li key={cluster.id} className="list-group-item">
+        {cluster.id}
+      </li>
+    ));
+    const listConnects = allConnects.map(connect => (
+      <li key={connect.name} className="list-group-item">
+        {connect.name}
+      </li>
+    ));
+
+    console.log('connects', listConnects);
     return (
       <div className="wrapper">
         <TabContainer id="khq-sidebar-tabs" defaultActiveKey="first">
@@ -64,14 +87,21 @@ class Sidebar extends Component {
                 <Link
                   to={`/${clusterId}/topic`}
                   data-toggle="collapse"
-                  aria-expanded="false"
+                  aria-expanded={showClusters}
                   className="dropdown-toggle"
+                  onClick={() => {
+                    this.setState({showClusters: !showClusters});
+                  }}
                 >
                   <i className="fa fa-fw fa fa-database" aria-hidden="true" />
                   Clusters
-                  <span className="badge badge-success">{/*${clusterId}*/}</span>
+                  <span className="badge badge-success">
+                    {/*${(connectId??)?then(connectId,"")}*/}
+                    {selectedCluster}
+                  </span>
                 </Link>
-                <ul className="collapse list-unstyled" id="clusters">
+                <ul className={`list-unstyled ${showClusters ? 'show' : 'collapse'}`} id="clusters">
+                  {listClusters}
                   {/*array*/}
                   {/*for loop that dis*/}
                   {/*<#list clusters as cluster> allClusters.map( cluster =>
@@ -87,7 +117,7 @@ class Sidebar extends Component {
               {/*<#if roles?seq_contains("node") == true>*/}
               {/*    <li className="${(tab == "node")?then("active", "")}">*/}
               <li className={this.selectedTab === 'node' ? 'active' : ''}>
-                <Link to={`/${this.clusterId}/node`}>
+                <Link to={`/${selectedCluster}/node`}>
                   <i className="fa fa-fw fa-laptop" aria-hidden="true" /> Nodes
                 </Link>
               </li>
@@ -97,7 +127,7 @@ class Sidebar extends Component {
               <li className={this.selectedTab === 'topic' ? 'active' : ''}>
                 {/*<a href="${basePath}/${clusterId}/topic">
             <i className="fa fa-fw fa-list" aria-hidden="true"></i> Topic</a>*/}
-                <Link to={`/${this.clusterId}/topic`}>
+                <Link to={`/${selectedCluster}/topic`}>
                   <i className="fa fa-fw fa-list" aria-hidden="true" /> Topics
                 </Link>
               </li>
@@ -105,7 +135,7 @@ class Sidebar extends Component {
               {/*<#if roles?seq_contains("topic/data") == true>*/}
               {/*    <li className="${(tab == "tail")?then("active", "")}">*/}
               <li className={this.selectedTab === 'tail' ? 'active' : ''}>
-                <Link to={`/${this.clusterId}/tail`}>
+                <Link to={`/${selectedCluster}/tail`}>
                   <i className="fa fa-fw fa-level-down" aria-hidden="true" /> Live Tail
                 </Link>
               </li>
@@ -113,7 +143,7 @@ class Sidebar extends Component {
               {/*<#if roles?seq_contains("group") == true>*/}
               {/*    <li className="${(tab == "group")?then("active", "")}">*/}
               <li className={this.selectedTab === 'group' ? 'active' : ''}>
-                <Link to={`/${this.clusterId}/group`}>
+                <Link to={`/${selectedCluster}/group`}>
                   <i className="fa fa-fw fa-object-group" aria-hidden="true" /> Consumer Groups
                 </Link>
               </li>
@@ -121,7 +151,7 @@ class Sidebar extends Component {
               {/*<#if roles?seq_contains("acls") == true>*/}
               {/*    <li className="${(tab == "acls")?then("active", "")}">*/}
               <li className={this.selectedTab === 'acls' ? 'active' : ''}>
-                <Link to={`/${this.clusterId}/acls`}>
+                <Link to={`/${selectedCluster}/acls`}>
                   <i className="fa fa-fw fa-key" aria-hidden="true" /> ACLS
                 </Link>
               </li>
@@ -130,7 +160,7 @@ class Sidebar extends Component {
           true && roles?seq_contains("registry") == true>*/}
               {/*    <li className="${(tab == "schema")?then("active", "")}">*/}
               <li className={this.selectedTab === 'schema' ? 'active' : ''}>
-                <Link to={`/${this.clusterId}/schema`}>
+                <Link to={`/${selectedCluster}/schema`}>
                   <i className="fa fa-fw fa-cogs" aria-hidden="true" /> Schema Registry
                 </Link>
               </li>
@@ -140,25 +170,29 @@ class Sidebar extends Component {
               {/*<li className="${(tab == "connect")?then("active", "")}">*/}
               <li className={this.selectedTab === 'connect' ? 'active' : ''}>
                 <Link
-                  to={`/${this.clusterId}/connect`}
+                  to={`/${selectedCluster}/connect`}
                   data-toggle="collapse"
-                  aria-expanded="false"
+                  aria-expanded={showConnects}
                   className="dropdown-toggle"
+                  onClick={() => {
+                    this.setState({showConnects: !showConnects});
+                  }}
                 >
                   <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
                   <span className="badge badge-success">
                     {/*${(connectId??)?then(connectId,"")}*/}
-                    connect-1
+                    {selectedConnect.name}
                   </span>
                 </Link>
-                <ul className="collapse list-unstyled" id="connects">
-                  {/*<#list connectList as connect>*/ this.allConnects}
-                  <li>
-                    {/*<a href="#">*/}
-                    {/*    /!*${connect}*!/*/}
-                    {/*    connect-1*/}
-                    {/*</a>*/}
-                  </li>
+                <ul className={`list-unstyled ${showConnects ? 'show' : 'collapse'}`} id="connects">
+                  {/*<#list connectList as connect>*/}
+
+                  {listConnects}
+                  {/*<a href="#">*/}
+                  {/*    /!*${connect}*!/*/}
+                  {/*    connect-1*/}
+                  {/*</a>*/}
+
                   {/*</#list>*/}
                 </ul>
               </li>
