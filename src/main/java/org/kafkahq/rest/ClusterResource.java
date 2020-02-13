@@ -2,16 +2,14 @@ package org.kafkahq.rest;
 
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import org.kafkahq.models.Cluster;
 import org.kafkahq.service.ClusterService;
 import org.kafkahq.service.dto.ClusterDTO;
-import org.kafkahq.service.mapper.ClusterMapper;
+import org.kafkahq.service.dto.NodeDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.inject.Inject;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutionException;
 
 @Controller("${kafkahq.server.base-path:}/api")
 public class ClusterResource {
@@ -27,8 +25,14 @@ public class ClusterResource {
 
     @Get("/clusters")
     public List<ClusterDTO> fetchAllClusters() {
-        log.debug("fetch all clusters");
+        log.debug("Fetch all clusters");
         return clusterService
                 .getAllClusters();
+    }
+
+    @Get("/cluster/nodes")
+    public List<NodeDTO> fetchAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
+        log.debug("Fetch all nodes from cluster {}", clusterId);
+        return clusterService.getAllNodesFromCluster(clusterId);
     }
 }
