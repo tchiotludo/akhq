@@ -9,4 +9,4 @@ const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
-export default {apiUrl, uriClusters, uriConnects};
+export default { apiUrl, uriClusters, uriConnects };

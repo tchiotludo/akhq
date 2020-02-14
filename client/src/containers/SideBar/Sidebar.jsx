@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import logo from '../../images/logo.svg';
 import TabContainer from 'react-bootstrap/TabContainer';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import endpoints from '../../services/endpoints';
 
@@ -25,7 +25,7 @@ class Sidebar extends Component {
     let allClusters = {};
     try {
       allClusters = await api.get(endpoints.uriClusters());
-      this.setState({allClusters: allClusters.data});
+      this.setState({ allClusters: allClusters.data });
     } catch (err) {
       console.log('Erro allClusters:' + err);
     }
@@ -35,19 +35,19 @@ class Sidebar extends Component {
     let allConnects = {};
     try {
       allConnects = await api.get(endpoints.uriConnects(selectedCluster));
-      this.setState({allConnects: allConnects.data, selectedConnect: allConnects.data[0]});
+      this.setState({ allConnects: allConnects.data, selectedConnect: allConnects.data[0] });
     } catch (err) {
       console.log('Erro allConnects:' + err);
     }
   }
 
   setClustersAndConnects = () => {
-    const {allClusters, allConnects} = this.state;
+    const { allClusters, allConnects } = this.state;
     const listClusters = allClusters.map(cluster => (
       <li
         key={cluster.id}
         className="list-group-item"
-        onClick={() => this.setState({selectedCluster: cluster.id})}
+        onClick={() => this.changeSelectedCLuster(cluster)}
       >
         {cluster.id}
       </li>
@@ -56,20 +56,25 @@ class Sidebar extends Component {
       <li
         key={connect.name}
         className="list-group-item"
-        onClick={() => this.setState({selectedConnect: connect})}
+        onClick={() => this.setState({ selectedConnect: connect })}
       >
         {connect.name}
       </li>
     ));
-    return {listClusters, listConnects};
+    return { listClusters, listConnects };
+  };
+
+  changeSelectedCLuster = newSelectedCluster => {
+    this.setState({ selectedCluster: newSelectedCluster.id });
+    this.handleGetConnects(newSelectedCluster.id);
   };
 
   render() {
-    const {selectedTab} = this.props;
-    const {selectedConnect, selectedCluster, showClusters, showConnects} = this.state;
+    const { selectedTab } = this.props;
+    const { selectedConnect, selectedCluster, showClusters, showConnects } = this.state;
     const tag = 'Snapshot';
 
-    const {listConnects, listClusters} = this.setClustersAndConnects();
+    const { listConnects, listClusters } = this.setClustersAndConnects();
 
     console.log('connects', listConnects);
     return (
@@ -95,7 +100,7 @@ class Sidebar extends Component {
                   aria-expanded={showClusters}
                   className="dropdown-toggle"
                   onClick={() => {
-                    this.setState({showClusters: !showClusters});
+                    this.setState({ showClusters: !showClusters });
                   }}
                 >
                   <i className="fa fa-fw fa fa-database" aria-hidden="true" />
@@ -143,7 +148,7 @@ class Sidebar extends Component {
                   aria-expanded={showConnects}
                   className="dropdown-toggle"
                   onClick={() => {
-                    this.setState({showConnects: !showConnects});
+                    this.setState({ showConnects: !showConnects });
                   }}
                 >
                   <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
