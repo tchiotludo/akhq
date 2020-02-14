@@ -1,12 +1,15 @@
-const apiUrl = 'http://localhost:8080/api';
+export const apiUrl = 'http://localhost:8080/api';
 
-const uriClusters = id => {
-  return `${apiUrl}/clusters${id ? '?id=' + id : ''}`;
+export const uriClusters = id => {
+  return `${apiUrl}/clusters${id ? '?clusterId=' + id : ''}`;
 };
 
-const uriConnects = id => {
-  console.log(id);
+export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
-export default { apiUrl, uriClusters, uriConnects };
+export const uriNodes = id => {
+  return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
+};
+
+export default { apiUrl, uriClusters, uriConnects, uriNodes };

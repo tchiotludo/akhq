@@ -5,13 +5,13 @@ import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-d
 import Login from './containers/Login/Login';
 import Topic from './containers/Tab/Tabs/TopicList/Topic/Topic';
 import NodesList from './containers/NodesList';
+import NodeDetails from './containers/NodeDetails';
 
 function App() {
   return (
     <Router>
       <Switch>
         <Route path="/login" component={Login} />
-        <Route path="/nodes" component={NodesList} />
         <Route path="/:clusterId/:tab" exact component={Dashboard} />
         <Route path="/:clusterId/:tab/:action" exact component={Dashboard} />
         <Redirect from="/:clusterId" exact to="/:clusterId/topic" />
