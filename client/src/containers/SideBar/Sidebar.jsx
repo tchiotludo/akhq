@@ -42,23 +42,15 @@ class Sidebar extends Component {
   }
 
   setClustersAndConnects = () => {
-    const { allClusters, allConnects } = this.state;
+    const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
     const listClusters = allClusters.map(cluster => (
-      <li
-        key={cluster.id}
-        className="list-group-item"
-        onClick={() => this.changeSelectedCLuster(cluster)}
-      >
-        {cluster.id}
+      <li key={cluster.id} onClick={() => this.changeSelectedCLuster(cluster)}>
+        <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
       </li>
     ));
     const listConnects = allConnects.map(connect => (
-      <li
-        key={connect.name}
-        className="list-group-item"
-        onClick={() => this.setState({ selectedConnect: connect })}
-      >
-        {connect.name}
+      <li key={connect.name} onClick={() => this.setState({ selectedConnect: connect })}>
+        <a className={selectedConnect.name === connect.name ? ' active' : ''}>{connect.name}</a>
       </li>
     ));
     return { listClusters, listConnects };
@@ -68,6 +60,16 @@ class Sidebar extends Component {
     this.setState({ selectedCluster: newSelectedCluster.id });
     this.handleGetConnects(newSelectedCluster.id);
   };
+
+  renderMenuItem(selectedCluster, selectedTab, iconClassName, tab, label) {
+    return (
+      <li className={selectedTab === tab ? 'active' : ''}>
+        <Link to={`/${selectedCluster}/${tab}`}>
+          <i className={iconClassName} aria-hidden="true" /> {label}
+        </Link>
+      </li>
+    );
+  }
 
   render() {
     const { selectedTab } = this.props;
@@ -111,36 +113,48 @@ class Sidebar extends Component {
                   {listClusters}
                 </ul>
               </li>
-              <li className={this.selectedTab === 'node' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/node`}>
-                  <i className="fa fa-fw fa-laptop" aria-hidden="true" /> Nodes
-                </Link>
-              </li>
-              <li className={this.selectedTab === 'topic' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/topic`}>
-                  <i className="fa fa-fw fa-list" aria-hidden="true" /> Topics
-                </Link>
-              </li>
-              <li className={this.selectedTab === 'tail' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/tail`}>
-                  <i className="fa fa-fw fa-level-down" aria-hidden="true" /> Live Tail
-                </Link>
-              </li>
-              <li className={this.selectedTab === 'group' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/group`}>
-                  <i className="fa fa-fw fa-object-group" aria-hidden="true" /> Consumer Groups
-                </Link>
-              </li>
-              <li className={this.selectedTab === 'acls' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/acls`}>
-                  <i className="fa fa-fw fa-key" aria-hidden="true" /> ACLS
-                </Link>
-              </li>
-              <li className={this.selectedTab === 'schema' ? 'active' : ''}>
-                <Link to={`/${selectedCluster}/schema`}>
-                  <i className="fa fa-fw fa-cogs" aria-hidden="true" /> Schema Registry
-                </Link>
-              </li>
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-laptop',
+                'node',
+                'Nodes'
+              )}
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-list',
+                'topic',
+                'Topics'
+              )}
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-level-down',
+                'tail',
+                'Live Tail'
+              )}
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-object-group',
+                'group',
+                'Consumer Groups'
+              )}
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-key',
+                'acls',
+                'ACLS'
+              )}
+              {this.renderMenuItem(
+                selectedCluster,
+                this.selectedTab,
+                'fa fa-fw fa-cogs',
+                'schema',
+                'Schema Registry'
+              )}
               <li className={this.selectedTab === 'connect' ? 'active' : ''}>
                 <Link
                   to={`/${selectedCluster}/connect`}
@@ -157,7 +171,7 @@ class Sidebar extends Component {
                 <ul className={`list-unstyled ${showConnects ? 'show' : 'collapse'}`} id="connects">
                   {listConnects}
                 </ul>
-              </li>
+              </li>{' '}
             </ul>
             <div className="sidebar-log">
               <Link to="/login" data-turbolinks="false">
