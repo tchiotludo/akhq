@@ -389,6 +389,7 @@ form.khq-form div.khq-submit .btn,
 #khq-sidebar ul li a:hover {
   background: #0085b4;
   text-decoration: none;
+  cursor: pointer;
 }
 
 #khq-sidebar ul li.active > a {
@@ -6066,6 +6067,8 @@ a.badge-white:focus, a.badge-white.focus {
   margin-bottom: -1px;
   background-color: #303030;
   border: 1px solid #444;
+  cursor: pointer;
+  
 }
 
 .list-group-item:first-child {
