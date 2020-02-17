@@ -10,6 +10,7 @@ class NodesList extends Component {
   };
 
   componentDidMount() {
+    console.log('NodeList', this.props);
     this.getNodes();
   }
 
