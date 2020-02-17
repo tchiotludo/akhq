@@ -10,7 +10,7 @@ class Table extends Component {
   componentDidMount() {}
 
   renderHeader() {
-    const { has2Headers, firstHeader, colNames, actions } = this.props;
+    const { has2Headers, firstHeader, colNames, actions, data } = this.props;
 
     return (
       <>
@@ -28,7 +28,9 @@ class Table extends Component {
                   </th>
                 );
               })}
-              {actions && actions.length > 0 && <th colSpan={actions.length} />}
+              {actions && actions.length > 0 && data && data.length > 0 && (
+                <th colSpan={actions.length} />
+              )}
             </tr>
           </thead>
         )}
@@ -41,7 +43,9 @@ class Table extends Component {
                 </th>
               );
             })}
-            {actions && actions.length > 0 && <th colSpan={actions.length} />}
+            {actions && actions.length > 0 && data && data.length > 0 && (
+              <th colSpan={actions.length} />
+            )}
           </tr>
         </thead>
       </>
@@ -67,7 +71,7 @@ class Table extends Component {
 
     return (
       <>
-        {actions.find(el => el === constants.ADD_TABLE) && (
+        {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
               onClick={() => {
@@ -82,14 +86,14 @@ class Table extends Component {
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
               onClick={() => {
-                onDetails && onDetails();
+                onDetails && onDetails(row.id);
               }}
             >
               <i className="fa fa-search" />
             </span>
           </td>
         )}
-        {actions.find(el => el === constants.DELETE_TABLE) && (
+        {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
               onClick={() => {
@@ -100,7 +104,7 @@ class Table extends Component {
             </span>
           </td>
         )}
-        {actions.find(el => el === constants.EDIT_TABLE) && (
+        {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <Link to={row.url || '/'}>
               <i className="fa fa-search" />

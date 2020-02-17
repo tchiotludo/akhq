@@ -13,7 +13,7 @@ import TopicCreate from '../Tab/Tabs/TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Topic from '../Tab/Tabs/TopicList/Topic';
-
+import NodeDetails from '../NodeDetails';
 class Dashboard extends Component {
   state = {
     clusterId: '',
@@ -118,6 +118,7 @@ class Dashboard extends Component {
   renderActionTab = () => {
     const { clusterId, selectedTab, action } = this.state;
 
+    console.log('HERE', action);
     // eslint-disable-next-line default-case
     switch (selectedTab) {
       case 'topic':
@@ -128,7 +129,8 @@ class Dashboard extends Component {
             return <Topic clusterId={clusterId} topicId={action} />;
         }
       case 'node':
-        break;
+        console.log('nodenode', action);
+        return <NodeDetails clusterId={clusterId} nodeId={action} />;
       case 'tail':
         break;
       case 'group':
