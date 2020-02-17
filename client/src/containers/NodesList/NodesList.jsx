@@ -56,7 +56,7 @@ class NodesList extends Component {
           onDetails={id => {
             console.log('Node', id);
 
-            history.push(`/${selectedCluster}/nodes/${id}`);
+            history.push(`/${selectedCluster}/node/${id}`);
           }}
         />
       </div>

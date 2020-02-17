@@ -9,8 +9,8 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        console.log('err', err);
-        reject(console.log(err));
+        console.error('GET', err);
+        reject();
       });
   });
 
