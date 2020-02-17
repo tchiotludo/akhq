@@ -3,7 +3,7 @@ package org.kafkahq.service;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.ClusterRepository;
 import org.kafkahq.service.dto.ClusterDTO;
-import org.kafkahq.service.dto.NodeDTO;
+import org.kafkahq.service.dto.node.NodeDTO;
 import org.kafkahq.service.mapper.NodeMapper;
 import javax.inject.Inject;
 import javax.inject.Singleton;
