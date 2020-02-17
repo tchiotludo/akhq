@@ -1,18 +1,20 @@
 import axios from 'axios';
 
-const get = url =>
+export const get = url =>
   new Promise((resolve, reject) => {
     axios
       .get(url)
       .then(res => {
+        console.log('success', res);
         resolve(res);
       })
       .catch(err => {
+        console.log('err', err);
         reject(console.log(err));
       });
   });
 
-const put = (url, body) =>
+export const put = (url, body) =>
   new Promise((resolve, reject) => {
     axios
       .put(url, body)
@@ -24,7 +26,7 @@ const put = (url, body) =>
       });
   });
 
-const post = (url, body) =>
+export const post = (url, body) =>
   new Promise((resolve, reject) => {
     axios
       .post(url, body)
@@ -36,7 +38,7 @@ const post = (url, body) =>
       });
   });
 
-const remove = url =>
+export const remove = url =>
   new Promise((resolve, reject) => {
     axios
       .delete(url)
@@ -48,4 +50,4 @@ const remove = url =>
       });
   });
 
-export default {get, put, post, remove};
+export default { get, put, post, remove };

@@ -3,60 +3,59 @@ import { Link } from 'react-router-dom';
 import Header from '../Header';
 import Table from '../../components/Table';
 import * as constants from '../../utils/constants';
+import { get } from '../../services/api';
+import { uriNodes } from '../../services/endpoints';
 
 class NodesList extends Component {
   state = {
-    data: []
+    data: [],
+    selectedCluster: ''
   };
 
   componentDidMount() {
     this.getNodes();
   }
 
-  getNodes() {
+  async getNodes() {
     let nodes = [];
-    //api call
-    this.handleData(nodes);
+    let selectedClusterId = 'my-cluster';
+    try {
+      nodes = await get(uriNodes(selectedClusterId));
+      this.handleData(nodes.data);
+      this.setState({ selectedCluster: selectedClusterId });
+    } catch (err) {
+      console.log('Error:', err);
+    }
   }
 
   handleData(nodes) {
     let tableNodes = nodes.map(node => {
       return {
-        id: node.id,
-        host: node.host,
-        idToShow: <span>{node.id}</span>
+        id: node.id || '',
+        host: node.host || '',
+        idToShow: <span className="badge badge-info">{node.id || ''}</span>,
+        port: node.port || '',
+        rack: node.rack || ''
       };
     });
-    this.setState({ nodes });
+    this.setState({ data: tableNodes });
   }
 
   render() {
     const { history } = this.props;
+    const { data, selectedCluster } = this.state;
     return (
       <div id="content">
         <Header title="Nodes" />
         <Table
           colNames={['Id', 'Host', 'Racks']}
           toPresent={['idToShow', 'host', 'rack']}
-          data={[
-            {
-              id: 1102,
-              idToShow: <span className="badge badge-info">1102</span>,
-              host: 'kafka9092',
-              rack: '',
-              url: ''
-            },
-            {
-              id: 1102,
-              idToShow: <span className="badge badge-info">1102</span>,
-              host: 'kafka9092',
-              rack: '',
-              url: ''
-            }
-          ]}
+          data={data}
           actions={[constants.TABLE_DETAILS]}
-          onDetails={() => {
-            history.push('/');
+          onDetails={id => {
+            console.log('Node', id);
+
+            history.push(`/${selectedCluster}/nodes/${id}`);
           }}
         />
       </div>
