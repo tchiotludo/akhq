@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+
 import Header from '../../../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -14,16 +15,21 @@ import { getTopicByName } from '../../../../../utils/FakeTopicService';
 class Topic extends Component {
   state = {
     clusterId: '',
-    topic: {},
+    topic: {
+      _id: Date.now(),
+      name: 'test',
+      partition: 1,
+      replication: 1,
+      cleanup: 'delete',
+      retention: 50
+    },
     selectedTab: 'data'
   };
 
   componentDidMount() {
-    const { clusterId, topicId } = this.props;
-    const topic = getTopicByName(clusterId, topicId);
-    console.log(this.props);
+    const { clusterId, topicId } = this.props.match.params;
 
-    this.setState({ clusterId, topic });
+    this.setState({ clusterId });
   }
 
   selectTab = tab => {
@@ -57,9 +63,10 @@ class Topic extends Component {
   }
 
   render() {
+    const { topic } = this.state;
     return (
       <div id="content">
-        <Header title="Topic" />
+        <Header title={`Topic ${topic.name}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {/*#if roles?seq_contains("topic/data/read")*/}

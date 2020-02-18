@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Table from '../../../../components/Table';
+
 import Header from '../../../Header';
 import SearchBar from '../../../../components/SearchBar';
 import Pagination from '../../../../components/Pagination';
@@ -54,7 +54,7 @@ class TopicList extends Tab {
 
   renderTopics() {
     const { topics } = this.state;
-    const { clusterId } = this.props.data;
+    const { clusterId } = this.props.match.params;
 
     if (topics.length === 0) {
       return (
@@ -143,41 +143,46 @@ class TopicList extends Tab {
 
   render() {
     const { topics } = this.state;
-    const { clusterId } = this.props.data;
-    const firstColumns = [
-      { colName: 'Topics', colSpan: 3 },
-      { colName: 'Partitions', colSpan: 1 },
-      { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 },
-      { colName: '', colSpan: 1 }
-    ];
-    const columnNames = [
-      'Name',
-      'Size',
-      'Weight',
-      'Total',
-      'Factor',
-      'In Sync',
-      'Consumer Groups',
-      ''
-    ];
+    const { clusterId } = this.props.match.params;
 
     return (
       <div id="content">
         <Header title="Topics" />
         <SearchBar pagination={true} topicListView={true} />
-
-        <Table
-          has2Headers
-          firstHeader={firstColumns}
-          colNames={columnNames}
-          onDetails={this.handleOnDetails}
-          onDelete={this.handleOnDelete}
-        ></Table>
-
-        {/*#if topics?size == 0*/}
-        {this.renderTopics()}
-        {/*</#if>
+        <div className="table-responsive">
+          <table className="table table-bordered table-striped table-hover mb-0">
+            <thead className="thead-dark">
+              <tr>
+                <th colSpan="3">Topics</th>
+                <th colSpan="1">Partitions</th>
+                <th colSpan="2">Replications</th>
+                {/*<#if skipConsumerGroups== false>*/}
+                <th>Consumers Groups</th>
+                {/*</#if>*/}
+                <th colSpan="2" className="khq-row-action" />
+              </tr>
+            </thead>
+            <thead className="thead-dark">
+              <tr>
+                <th className="text-nowrap">Name</th>
+                <th className="text-nowrap">Size</th>
+                <th className="text-nowrap">Weight</th>
+                <th className="text-nowrap">Total</th>
+                <th className="text-nowrap">Factor</th>
+                <th className="text-nowrap">In Sync</th>
+                {/*<#if skipConsumerGroups== false>*/}
+                <th className="text-nowrap">Consumer Groups</th>
+                {/*</#if>*/}
+                <th className="khq-row-action"></th>
+                {/*<#if canDelete== true>*/}
+                <th className="khq-row-action"></th>
+                {/*</#if>*/}
+              </tr>
+            </thead>
+            <tbody>
+              {/*#if topics?size == 0*/}
+              {this.renderTopics()}
+              {/*</#if>
     <#list topics as topic>
     <tr>
         <td>${topic.getName()}</td>
@@ -231,6 +236,9 @@ class TopicList extends Tab {
 </#if>
 </tr>
 </#list>*/}
+            </tbody>
+          </table>
+        </div>
 
         <Pagination />
 

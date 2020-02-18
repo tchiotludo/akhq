@@ -118,7 +118,6 @@ class Dashboard extends Component {
   renderActionTab = () => {
     const { clusterId, selectedTab, action } = this.state;
 
-    console.log('HERE', action);
     // eslint-disable-next-line default-case
     switch (selectedTab) {
       case 'topic':
@@ -129,7 +128,6 @@ class Dashboard extends Component {
             return <Topic clusterId={clusterId} topicId={action} />;
         }
       case 'node':
-        console.log('nodenode', action);
         return <NodeDetails clusterId={clusterId} nodeId={action} />;
       case 'tail':
         break;
