@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import Header from '../Header';
 import Table from '../../components/Table';
 import * as constants from '../../utils/constants';
-import { get } from '../../services/api';
-import { uriNodes } from '../../services/endpoints';
+import { get } from '../../utils/api';
+import { uriNodes } from '../../utils/endpoints';
 
 class NodesList extends Component {
   state = {
@@ -29,6 +29,7 @@ class NodesList extends Component {
   }
 
   handleData(nodes) {
+    console.log(nodes);
     let tableNodes = nodes.map(node => {
       return {
         id: node.id || '',
