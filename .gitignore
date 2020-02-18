@@ -20,7 +20,6 @@ build/*
 ### Assets
 src/main/resources/static
 node_modules
-node/
 client/node_modules
 client/build
 
