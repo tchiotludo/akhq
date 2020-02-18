@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import logo from '../../images/logo.svg';
 import TabContainer from 'react-bootstrap/TabContainer';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import api from '../../services/api';
 import endpoints from '../../services/endpoints';
+import constants from '../../utils/constants';
 
 // Adaptation of template.ftl
 class Sidebar extends Component {
   state = {
-    selectedCluster: this.props.clusterId,
+    selectedTab: constants.TOPIC,
+    selectedCluster: '',
     selectedConnect: {},
     allClusters: [],
     allConnects: [],
@@ -17,15 +19,26 @@ class Sidebar extends Component {
   };
 
   componentDidMount() {
-    this.handleGetClusters();
-    this.handleGetConnects(this.state.selectedCluster);
+    this.handleGetClusters(selectedCluster => {
+      this.handleGetConnects(selectedCluster);
+    });
   }
 
-  async handleGetClusters() {
+  async handleGetClusters(callback = () => {}) {
     let allClusters = {};
     try {
       allClusters = await api.get(endpoints.uriClusters());
-      this.setState({ allClusters: allClusters.data });
+      this.setState(
+        { allClusters: allClusters.data, selectedCluster: allClusters.data[0].id },
+        () => {
+          const { selectedCluster } = this.state;
+          this.props.history.push({
+            pathname: `/${selectedCluster}/topic`,
+            selectedCluster
+          });
+          callback(selectedCluster);
+        }
+      );
     } catch (err) {
       console.log('Erro allClusters:' + err);
     }
@@ -44,26 +57,48 @@ class Sidebar extends Component {
   setClustersAndConnects = () => {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
     const listClusters = allClusters.map(cluster => (
-      <li key={cluster.id} onClick={() => this.changeSelectedCLuster(cluster)}>
+      <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
         <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
       </li>
     ));
     const listConnects = allConnects.map(connect => (
-      <li key={connect.name} onClick={() => this.setState({ selectedConnect: connect })}>
+      <li key={connect.name} onClick={() => this.changeSelectedConnect(connect)}>
         <a className={selectedConnect.name === connect.name ? ' active' : ''}>{connect.name}</a>
       </li>
     ));
     return { listClusters, listConnects };
   };
 
-  changeSelectedCLuster = newSelectedCluster => {
-    this.setState({ selectedCluster: newSelectedCluster.id });
-    this.handleGetConnects(newSelectedCluster.id);
-  };
+  changeSelectedCluster(newSelectedCluster) {
+    this.setState({ selectedCluster: newSelectedCluster.id }, () => {
+      const { selectedCluster } = this.state;
+      this.props.history.push({
+        pathname: `/${selectedCluster}/topic`,
+        selectedCluster
+      });
+      this.handleGetConnects(selectedCluster);
+    });
+  }
 
-  renderMenuItem(selectedCluster, selectedTab, iconClassName, tab, label) {
+  changeSelectedConnect(connect) {
+    this.setState({ selectedConnect: connect }, () => {
+      const { selectedConnect, selectedCluster } = this.state;
+      this.props.history.push({
+        pathname: `/${selectedCluster}/connect/${selectedConnect.name}`,
+        selectedCluster
+      });
+    });
+  }
+
+  renderMenuItem(iconClassName, tab, label) {
+    const { selectedCluster, selectedTab } = this.state;
     return (
-      <li className={selectedTab === tab ? 'active' : ''}>
+      <li
+        className={selectedTab === tab ? 'active' : ''}
+        onClick={() => {
+          this.setState({ selectedTab: tab });
+        }}
+      >
         <Link to={`/${selectedCluster}/${tab}`}>
           <i className={iconClassName} aria-hidden="true" /> {label}
         </Link>
@@ -72,13 +107,16 @@ class Sidebar extends Component {
   }
 
   render() {
-    const { selectedTab } = this.props;
-    const { selectedConnect, selectedCluster, showClusters, showConnects } = this.state;
+    const {
+      selectedConnect,
+      selectedCluster,
+      showClusters,
+      showConnects,
+      selectedTab
+    } = this.state;
     const tag = 'Snapshot';
 
     const { listConnects, listClusters } = this.setClustersAndConnects();
-
-    console.log('connects', listConnects);
     return (
       <div className="wrapper">
         <TabContainer id="khq-sidebar-tabs" defaultActiveKey="first">
@@ -95,14 +133,14 @@ class Sidebar extends Component {
               <div className="version">{tag}</div>
             </div>
             <ul className="list-unstyled components">
-              <li className={selectedTab === 'cluster' ? 'active' : ''}>
+              <li className={selectedTab === constants.CLUSTER ? 'active' : ''}>
                 <Link
                   to={`/${selectedCluster}/topic`}
                   data-toggle="collapse"
                   aria-expanded={showClusters}
                   className="dropdown-toggle"
                   onClick={() => {
-                    this.setState({ showClusters: !showClusters });
+                    this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                   }}
                 >
                   <i className="fa fa-fw fa fa-database" aria-hidden="true" />
@@ -113,56 +151,20 @@ class Sidebar extends Component {
                   {listClusters}
                 </ul>
               </li>
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-laptop',
-                'node',
-                'Nodes'
-              )}
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-list',
-                'topic',
-                'Topics'
-              )}
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-level-down',
-                'tail',
-                'Live Tail'
-              )}
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-object-group',
-                'group',
-                'Consumer Groups'
-              )}
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-key',
-                'acls',
-                'ACLS'
-              )}
-              {this.renderMenuItem(
-                selectedCluster,
-                this.selectedTab,
-                'fa fa-fw fa-cogs',
-                'schema',
-                'Schema Registry'
-              )}
-              <li className={this.selectedTab === 'connect' ? 'active' : ''}>
+              {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+              {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+              {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
+              {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
+              {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
+              {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+              <li className={selectedTab === constants.CONNECT ? 'active' : ''}>
                 <Link
                   to={`/${selectedCluster}/connect`}
                   data-toggle="collapse"
                   aria-expanded={showConnects}
                   className="dropdown-toggle"
                   onClick={() => {
-                    this.setState({ showConnects: !showConnects });
+                    this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
                 >
                   <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
@@ -186,4 +188,4 @@ class Sidebar extends Component {
   }
 }
 
-export default Sidebar;
+export default withRouter(Sidebar);

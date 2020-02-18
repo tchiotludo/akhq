@@ -7,13 +7,11 @@ class NodeDetails extends Component {
     port: ''
   };
 
-  componentDidMount() {
-    console.log('Node Details...', this.props.clusterId);
-  }
+  componentDidMount() {}
 
   render() {
     const { host, port } = this.state;
-    const { nodeId } = this.props;
+    const { nodeId } = this.props.match.params;
     return (
       <div id="content" style={{ height: '100%' }}>
         <Header title={`Node: ${nodeId}`} />
