@@ -4,7 +4,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import org.kafkahq.service.ClusterService;
 import org.kafkahq.service.dto.ClusterDTO;
-import org.kafkahq.service.dto.NodeDTO;
+import org.kafkahq.service.dto.node.NodeDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
