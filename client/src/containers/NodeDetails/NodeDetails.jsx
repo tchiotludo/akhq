@@ -1,82 +1,113 @@
 import React, { Component } from 'react';
 import Header from '../Header';
+import { get } from '../../services/api';
+import { uriNodesConfigs } from '../../services/endpoints';
+import Table from '../../components/Table';
+import './styles.scss';
 
 class NodeDetails extends Component {
   state = {
     host: '',
-    port: ''
+    port: '',
+    data: [],
+    selectedCluster: this.props.match.params.clusterId,
+    selectedNode: this.props.match.params.nodeId
   };
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.getNodesConfig();
+  }
 
-  render() {
-    const { host, port } = this.state;
-    const { nodeId } = this.props.match.params;
+  async getNodesConfig() {
+    let configs = [];
+    const { selectedCluster, selectedNode } = this.state;
+    try {
+      configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
+      this.handleData(configs.data);
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  }
+
+  getInput(value, name, readOnly) {
     return (
       <div>
-        <div id="content" style={{ height: '100%' }}>
-          <Header title={`Node: ${nodeId}`} />
-        </div>
+        <input
+          type="text"
+          onChange={console.log('done')}
+          className="form-control"
+          autoComplete="off"
+          value={value}
+          readOnly={readOnly}
+        />
+        <small className="humanize form-text text-muted"></small>
+      </div>
+    );
+  }
 
-        <div class="tabs-container">
-          <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-              <a class="nav-link active" href="/my-cluster-plain-text/node/1002" role="tab">
-                Configs
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link " href="/my-cluster-plain-text/node/1002/logs" role="tab">
-                Logs
-              </a>
-            </li>
-          </ul>
+  handleTypeAndSensitive(configType, configSensitive) {
+    const type = configType === 'DEFAULT_CONFIG' ? 'secondary' : 'warning';
+    return (
+      <div>
+        <span className={'badge badge-' + type}> {configType}</span>
+        {configSensitive ? (
+          <i className="sensitive fa fa-exclamation-triangle text-danger" aria-hidden="true"></i>
+        ) : (
+          ''
+        )}
+      </div>
+    );
+  }
 
-          <div class="tab-content">
-            <div class="tab-pane active" role="tabpanel">
-              <form enctype="multipart/form-data" method="post" class="khq-form mb-0">
-                <div class="table-responsive">
-                  <table
-                    class="table table-bordered table-striped table-hover 
-        mb-0 khq-form-config"
-                  >
-                    <thead class="thead-dark">
-                      <tr>
-                        <th>Name</th>
-                        <th>Value</th>
-                        <th>Type</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          {/* hardcorded value  */}
-                          advertised.listeners
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            class="form-control"
-                            autocomplete="off"
-                            name="configs[advertised.listeners]"
-                            value="PLAINTEXT://kafka:9092"
-                          />
-                          <small class="humanize form-text text-muted"></small>
-                        </td>
-                        <td>
-                          <span class="badge badge-warning">
-                            {/* hardcoded value */}
-                            STATIC_BROKER_CONFIG
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+  handleNameAndDescription(name, description) {
+    const descript = description ? (
+      <a className="text-secondary" data-toggle="tooltip" title={description}>
+        <i className="fa fa-question-circle" aria-hidden="true"></i>
+      </a>
+    ) : (
+      ''
+    );
+    return (
+      <div>
+        {name} {descript}
+      </div>
+    );
+  }
+
+  handleData(configs) {
+    let tableNodes = configs.map(config => {
+      return {
+        nameAndDescription: this.handleNameAndDescription(config.name, config.description),
+        value: this.getInput(config.value, config.name, config.readOnly),
+        typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+      };
+    });
+    this.setState({ data: tableNodes });
+  }
+
+  render() {
+    const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
+
+    return (
+      <div id="content" style={{ height: '100%' }}>
+        <Header title={`Node: ${nodeId}`} />
+        <ul className="nav nav-tabs" role="tablist">
+          <li className="nav-item">
+            <a className="nav-link active" href="#" role="tab">
+              Configs
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link " href="#" role="tab">
+              Logs
+            </a>
+          </li>
+        </ul>
+        <Table
+          colNames={['Name', 'Value', 'Type']}
+          toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
+          data={data}
+        />
       </div>
     );
   }
