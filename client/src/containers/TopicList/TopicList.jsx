@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Table from '../../../../components/Table';
-import Header from '../../../Header';
-import SearchBar from '../../../../components/SearchBar';
-import Pagination from '../../../../components/Pagination';
-import Tab from '../../Tab';
-import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-import { getTopics, deleteTopic } from '../../../../utils/FakeTopicService';
+import Table from '../../components/Table';
+import Header from '../Header';
+import SearchBar from '../../components/SearchBar';
+import Pagination from '../../components/Pagination';
+import Tab from '../Tab/Tab';
+import ConfirmModal from '../../components/Modal/ConfirmModal';
+import { getTopics, deleteTopic } from '../../utils/FakeTopicService';
 
 // Adaptation of topicList.ftl
 
@@ -54,7 +54,7 @@ class TopicList extends Tab {
 
   renderTopics() {
     const { topics } = this.state;
-    const { clusterId } = this.props.data;
+    const { clusterId } = this.props.match.params;
 
     if (topics.length === 0) {
       return (

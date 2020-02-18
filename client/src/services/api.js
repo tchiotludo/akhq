@@ -5,12 +5,11 @@ export const get = url =>
     axios
       .get(url)
       .then(res => {
-        console.log('success', res);
         resolve(res);
       })
       .catch(err => {
-        console.log('err', err);
-        reject(console.log(err));
+        console.error('GET', err);
+        reject();
       });
   });
 
