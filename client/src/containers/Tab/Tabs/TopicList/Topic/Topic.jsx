@@ -28,7 +28,6 @@ class Topic extends Component {
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-    console.log(clusterId, topicId);
 
     this.setState({ clusterId });
   }

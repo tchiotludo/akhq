@@ -5,7 +5,6 @@ export const get = url =>
     axios
       .get(url)
       .then(res => {
-        console.log('success', res);
         resolve(res);
       })
       .catch(err => {

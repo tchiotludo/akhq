@@ -13,7 +13,6 @@ class NodesList extends Component {
   };
 
   componentDidMount() {
-    console.log('NodeList', this.props);
     this.getNodes();
   }
 
@@ -54,8 +53,6 @@ class NodesList extends Component {
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {
-            console.log('Node', id);
-
             history.push(`/${selectedCluster}/node/${id}`);
           }}
         />

@@ -5,7 +5,6 @@ import { baseUrl } from './services/endpoints';
 import Routes from './utils/Routes';
 
 function App() {
-  console.log('apiUrl', baseUrl);
   return (
     <Router>
       <Routes location={baseUrl} />

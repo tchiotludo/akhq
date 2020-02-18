@@ -54,7 +54,6 @@ class TopicList extends Tab {
 
   renderTopics() {
     const { topics } = this.state;
-    console.log('HISTORY', this.props);
     const { clusterId } = this.props.match.params;
 
     if (topics.length === 0) {
