@@ -29,6 +29,17 @@ class NodeDetails extends Component {
     }
   }
 
+  handleData(configs) {
+    let tableNodes = configs.map(config => {
+      return {
+        nameAndDescription: this.handleNameAndDescription(config.name, config.description),
+        value: this.getInput(config.value, config.name, config.readOnly),
+        typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+      };
+    });
+    this.setState({ data: tableNodes });
+  }
+
   getInput(value, name, readOnly) {
     return (
       <div>
@@ -74,15 +85,15 @@ class NodeDetails extends Component {
     );
   }
 
-  handleData(configs) {
-    let tableNodes = configs.map(config => {
-      return {
-        nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-        value: this.getInput(config.value, config.name, config.readOnly),
-        typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
-      };
-    });
-    this.setState({ data: tableNodes });
+  renderTabs(tabName, isActive) {
+    const active = isActive ? 'active' : '';
+    return (
+      <li className="nav-item">
+        <a className={`nav-link ${active}`} href="#" role="tab">
+          {tabName}
+        </a>
+      </li>
+    );
   }
 
   render() {
@@ -92,16 +103,8 @@ class NodeDetails extends Component {
       <div id="content" style={{ height: '100%' }}>
         <Header title={`Node: ${nodeId}`} />
         <ul className="nav nav-tabs" role="tablist">
-          <li className="nav-item">
-            <a className="nav-link active" href="#" role="tab">
-              Configs
-            </a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link " href="#" role="tab">
-              Logs
-            </a>
-          </li>
+          {this.renderTabs('Configs', true)}
+          {this.renderTabs('Logs', false)}
         </ul>
         <Table
           colNames={['Name', 'Value', 'Type']}
