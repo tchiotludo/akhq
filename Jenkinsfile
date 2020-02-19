@@ -39,10 +39,4 @@ pipeline{
 
     }
 
-    post {
-        always {
-            echo "Job finished."
-            step([$class: 'Mailer', recipients: 'tiago.diogo@polarising.com', notifyEveryUnstableBuild: true, sendToIndividuals: true])
-        }
-    }
 }
