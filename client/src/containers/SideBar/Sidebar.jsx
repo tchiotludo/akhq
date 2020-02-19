@@ -70,7 +70,7 @@ class Sidebar extends Component {
   };
 
   changeSelectedCluster(newSelectedCluster) {
-    this.setState({ selectedCluster: newSelectedCluster.id }, () => {
+    this.setState({ selectedCluster: newSelectedCluster.id, showClusters: false }, () => {
       const { selectedCluster } = this.state;
       this.props.history.push({
         pathname: `/${selectedCluster}/topic`,
@@ -79,9 +79,10 @@ class Sidebar extends Component {
       this.handleGetConnects(selectedCluster);
     });
   }
+  ss;
 
   changeSelectedConnect(connect) {
-    this.setState({ selectedConnect: connect }, () => {
+    this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
       this.props.history.push({
         pathname: `/${selectedCluster}/connect/${selectedConnect.name}`,
@@ -147,7 +148,12 @@ class Sidebar extends Component {
                   Clusters
                   <span className="badge badge-success">{selectedCluster}</span>
                 </Link>
-                <ul className={`list-unstyled ${showClusters ? 'show' : 'collapse'}`} id="clusters">
+                <ul
+                  className={`list-unstyled ${
+                    showClusters && selectedTab === constants.CLUSTER ? 'show' : 'collapse'
+                  }`}
+                  id="clusters"
+                >
                   {listClusters}
                 </ul>
               </li>
