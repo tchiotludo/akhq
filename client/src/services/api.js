@@ -1,4 +1,5 @@
 import axios from 'axios';
+import history from '../utils/history';
 
 export const get = url =>
   new Promise((resolve, reject) => {
@@ -9,6 +10,8 @@ export const get = url =>
       })
       .catch(err => {
         console.error('GET', err);
+        console.log('history', history);
+        history.replace('/error');
         reject();
       });
   });
@@ -21,7 +24,7 @@ export const put = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(console.log(err));
+        reject();
       });
   });
 
@@ -33,7 +36,7 @@ export const post = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(console.log(err));
+        reject();
       });
   });
 
@@ -45,7 +48,7 @@ export const remove = url =>
         resolve(res);
       })
       .catch(err => {
-        reject(console.log(err));
+        reject();
       });
   });
 
