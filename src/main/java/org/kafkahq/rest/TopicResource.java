@@ -1,20 +1,14 @@
 package org.kafkahq.rest;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
 import io.micronaut.context.annotation.Value;
-import io.micronaut.http.HttpRequest;
-import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.kafkahq.models.Topic;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.service.TopicService;
 import org.kafkahq.service.dto.TopicDTO;
-import org.kafkahq.utils.PagedList;
-import org.kafkahq.utils.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +20,6 @@ public class TopicResource {
     private final Logger log = LoggerFactory.getLogger(TopicResource.class);
 
     private TopicService topicService;
-    private TopicRepository topicRepository;
-
-    @Value("${kafkahq.topic.default-view}")
-    private String defaultView;
-    @Value("${kafkahq.pagination.page-size}")
-    private Integer pageSize;
 
     @Inject 
     public TopicResource(TopicService topicService){

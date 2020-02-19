@@ -16,8 +16,7 @@ import java.util.List;
 public class TopicMapper {
 
     public TopicDTO fromTopicToTopicDTO(Topic topic) {
-        List<ConsumerGroup> emptyList = new ArrayList<ConsumerGroup>();
-        //emptyList.add(new ConsumerGroup(new ConsumerGroupDescription("as", true, new ArrayList<>(), "", ConsumerGroupState.COMPLETING_REBALANCE, new Node(1,"",1)),new HashMap<>(), new HashMap<>()));
+        List<ConsumerGroup> emptyList = new ArrayList<>();
         return new TopicDTO(topic.getName(), (int)topic.getSize(), Math.toIntExact(topic.getLogDirSize().get()), Integer.toString(topic.getPartitions().size()), Long.toString(topic.getReplicaCount()) ,Long.toString(topic.getInSyncReplicaCount()), (topic.getConsumerGroups().size() >0) ? topic.getConsumerGroups() : emptyList);
     }
 }

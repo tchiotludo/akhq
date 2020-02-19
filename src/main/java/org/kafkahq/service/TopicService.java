@@ -2,7 +2,6 @@ package org.kafkahq.service;
 
 import io.micronaut.context.annotation.Value;
 import org.apache.kafka.clients.admin.TopicListing;
-import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
@@ -48,9 +47,7 @@ public class TopicService {
         List<Topic> topicList = listTopics.stream().map(topicListing -> {
             try {
                 return topicRepository.findByName(clusterId, topicListing.name());
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
             return null;
@@ -84,25 +81,10 @@ public class TopicService {
     }
 
     public List<TopicDTO> getAllTopicsByType(String clusterId, String view) throws ExecutionException, InterruptedException {
-        //TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
+        /*TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
 
-        /*URIBuilder uri = URIBuilder.fromURI(request.getUri());*/
-       /*Pagination pagination = new Pagination(pageSize, 1);
-
-        PagedList<Topic> pagedList = this.topicRepository.list(
-                clusterId,
-                pagination,
-                topicListView,
-                Optional.empty()
-        );
-        List<TopicDTO> topicDTOList = new ArrayList<>();
-        pagedList
-            .stream()
-            .map(topicDTOItem -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topicDTOItem))).collect(Collectors.toList());
-
-        return topicDTOList;*/
-
-
+       URIBuilder uri = URIBuilder.fromURI(request.getUri());
+       Pagination pagination = new Pagination(pageSize, 1);*/
        return getAll(clusterId, view, "");
     }
 }
