@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
+import { get } from '../../services/api';
+import { uriClusters } from '../../services/endpoints';
 
 class ErrorPage extends Component {
   static propTypes = {
@@ -9,9 +11,20 @@ class ErrorPage extends Component {
     errorData: PropTypes.object
   };
 
+  componentDidMount() {
+    this.handleRetry();
+  }
+
+  async handleRetry() {
+    const { history } = this.props;
+    try {
+      let response = await get(uriClusters());
+      history.push(`/${response.data[0].id}/topic`);
+    } catch (err) {}
+  }
+
   render() {
     const { title, message, errorData } = this.props;
-    console.log('error?', this.props);
     return (
       <div id="content" className="no-side-bar">
         <div className="mb-5">

@@ -28,10 +28,12 @@ class Routes extends Component {
   }
 
   render() {
-    const { location, match } = this.props;
+    const { location, match, history } = this.props;
     const { clusterId } = this.state;
     let path = location.pathname.split('/');
-    if (path[0] === 'error') {
+    console.log('path', path);
+    if (path[1] === 'error') {
+      //history.push('/error');
       return (
         <Switch>
           <Route exact path="/error" component={ErrorPage} />
