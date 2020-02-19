@@ -107,8 +107,7 @@ kafkahq:
     poll-timeout: 1000
 
   security:
-    default-groups:
-      - admin
+    default-group: admin
     groups:
       admin:
         roles:

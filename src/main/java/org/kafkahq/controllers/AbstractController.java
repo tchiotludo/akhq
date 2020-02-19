@@ -48,8 +48,8 @@ abstract public class AbstractController {
     @Inject
     private UserGroupUtils userGroupUtils;
 
-    @Value("${kafkahq.security.default-groups}")
-    private List<String> defaultGroups;
+    @Value("${kafkahq.security.default-group}")
+    private String defaultGroups;
 
     @Inject
     private List<BasicAuth> basicAuths;
@@ -160,7 +160,7 @@ abstract public class AbstractController {
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.userGroupUtils.getUserRoles(this.defaultGroups));
+            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)));
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -169,7 +169,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
+                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)))
         );
     }
 

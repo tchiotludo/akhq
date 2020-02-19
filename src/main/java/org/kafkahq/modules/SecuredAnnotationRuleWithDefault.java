@@ -8,6 +8,7 @@ import org.kafkahq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +20,8 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
         super(rolesFinder);
     }
 
-    @Value("${kafkahq.security.default-groups}")
-    List<String> defaultGroups;
+    @Value("${kafkahq.security.default-group}")
+    String defaultGroups;
 
     @Inject
     private UserGroupUtils userGroupUtils;
@@ -29,7 +30,7 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
     protected List<String> getRoles(Map<String, Object> claims) {
         List<String> roles = super.getRoles(claims);
 
-        roles.addAll(this.userGroupUtils.getUserRoles(defaultGroups));
+        roles.addAll(this.userGroupUtils.getUserRoles(Collections.singletonList(defaultGroups)));
 
         return roles;
     }

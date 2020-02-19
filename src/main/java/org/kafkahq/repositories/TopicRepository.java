@@ -45,8 +45,8 @@ public class TopicRepository extends AbstractRepository {
     @Value("${kafkahq.topic.stream-regexps}")
     protected List<String> streamRegexps;
 
-    @Value("${kafkahq.security.default-groups}")
-    private List<String> defaultGroups;
+    @Value("${kafkahq.security.default-group}")
+    private String defaultGroups;
 
     @Value("${kafkahq.topic.skip-consumer-groups}")
     protected Boolean skipConsumerGroups;
@@ -166,7 +166,9 @@ public class TopicRepository extends AbstractRepository {
             }
         }
         // get topic filter regex for default groups
-        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(userGroupUtils.getUserAttributes(this.defaultGroups)));
+        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
+            userGroupUtils.getUserAttributes(Collections.singletonList(this.defaultGroups))
+        ));
 
         return Optional.of(topicFilterRegex);
     }

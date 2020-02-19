@@ -116,9 +116,7 @@ kafkahq:
 
   # Auth & Roles (optional)
   security:
-    default-groups: # Default groups for all the user even unlogged user
-      - admin
-
+    default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
       admin: # Group name

@@ -248,6 +248,8 @@ kafkahq:
 Groups allow you to limit user 
 
 Define groups with specific roles for your users
+* `kafkahq.security.default-groups`: Default groups for all the user even unlogged user
+
 * `kafkahq.security.groups`: Groups list definition
   * `group-name`: Group identifier
     * `roles`: Roles list for the group

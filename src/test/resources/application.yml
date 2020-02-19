@@ -42,8 +42,7 @@ kafkahq:
     skip-consumer-groups: false
 
   security:
-    default-groups:
-      no-filter
+    default-group: no-filter
     groups:
       admin:
         roles:
