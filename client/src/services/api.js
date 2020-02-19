@@ -1,9 +1,8 @@
 import axios from 'axios';
 import history from '../utils/history';
-import { useHistory } from 'react-router-dom';
+
 export const get = url =>
   new Promise((resolve, reject) => {
-    let error = useHistory();
     axios
       .get(url)
       .then(res => {
