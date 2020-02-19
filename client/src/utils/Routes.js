@@ -12,8 +12,31 @@ import Group from '../containers/Tab/Tabs/Group';
 import Acls from '../containers/Tab/Tabs/Acls';
 import Schema from '../containers/Tab/Tabs/Schema';
 import Connect from '../containers/Tab/Tabs/Connect';
+import ErrorPage from '../containers/ErrorPage';
+import api from '../services/api';
+import endpoints from '../services/endpoints';
 
-const Routes = ({ location }) => {
+const Routes = ({ location, match }) => {
+  let path = location.pathname.split('/');
+  let clusterId = '';
+  api
+    .get(endpoints.uriClusters())
+    .then(res => {
+      console.log('here', res.data[0].id);
+      clusterId = res.data[0].id;
+    })
+    .catch(err => {
+      console.error('Error loading clusters.');
+    });
+  console.log('clusterId', clusterId);
+  if (path[0] === 'error') {
+    return (
+      <Switch>
+        <Route exact path="/error" component={ErrorPage} />
+      </Switch>
+    );
+  }
+
   return (
     <Base>
       <Switch location={location}>
@@ -27,7 +50,16 @@ const Routes = ({ location }) => {
         <Route exact path="/:clusterId/schema" component={Schema} />
         <Route exact path="/:clusterId/connect" component={Connect} />
         <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
-        <Redirect to="/" component={NodesList} />
+        <Redirect
+          path="/"
+          to={
+            match.params.clusterId
+              ? '/:clusterId/topic'
+              : !match.params.clusterId && clusterId
+              ? `/${clusterId}/topic`
+              : '/error'
+          }
+        />
       </Switch>
     </Base>
   );

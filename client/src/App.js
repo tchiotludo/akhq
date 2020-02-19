@@ -5,6 +5,7 @@ import { baseUrl } from './services/endpoints';
 import Routes from './utils/Routes';
 
 function App() {
+  localStorage.setItem('fetchClusters', true);
   return (
     <Router>
       <Routes location={baseUrl} />
