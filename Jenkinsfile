@@ -7,6 +7,14 @@ pipeline{
         skipDefaultCheckout()
     }
 
+    tools {
+        jdk 'jdk11'
+    }
+
+    environment {
+        JAVA_HOME = "${tool 'jdk11'}"
+    }
+
     stages {
 
         stage('checkout') {
@@ -30,4 +38,5 @@ pipeline{
         }
 
     }
+
 }
