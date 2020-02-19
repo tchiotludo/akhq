@@ -41,7 +41,6 @@ public class TopicService {
     }
 
     public List<TopicDTO> getAllTopics(String clusterId) throws ExecutionException, InterruptedException {
-        //return kafkaModule.getTopicsList().stream().map(TopicDTO::new).collect(Collectors.toList());
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         List<Topic> topicList = listTopics.stream().map(topicListing -> {
@@ -81,10 +80,6 @@ public class TopicService {
     }
 
     public List<TopicDTO> getAllTopicsByType(String clusterId, String view) throws ExecutionException, InterruptedException {
-        /*TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
-
-       URIBuilder uri = URIBuilder.fromURI(request.getUri());
-       Pagination pagination = new Pagination(pageSize, 1);*/
        return getAll(clusterId, view, "");
     }
 }
