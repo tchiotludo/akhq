@@ -4,6 +4,7 @@ import { get } from '../../services/api';
 import { uriNodesConfigs } from '../../services/endpoints';
 import Table from '../../components/Table';
 import './styles.scss';
+import converters from '../../utils/converters';
 
 class NodeDetails extends Component {
   state = {
@@ -30,6 +31,7 @@ class NodeDetails extends Component {
   }
 
   handleData(configs) {
+    console.log(configs);
     let tableNodes = configs.map(config => {
       return {
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
@@ -98,7 +100,16 @@ class NodeDetails extends Component {
 
   render() {
     const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
-
+    console.log(1500, converters.showBytes(1500));
+    console.log(15000, converters.showBytes(150000000));
+    console.log(150555, converters.showBytes(15055500000));
+    console.log(1500, converters.showTime(1500));
+    console.log(15000, converters.showTime(15000));
+    console.log(150555, converters.showTime(150555));
+    console.log(604800000, converters.showTime(604800000));
+    console.log(86400000, converters.showTime(86400000));
+    console.log(150000000000, converters.showTime(150000000000));
+    console.log(150000000000000, converters.showTime(150000000000000));
     return (
       <div id="content" style={{ height: '100%' }}>
         <Header title={`Node: ${nodeId}`} />
