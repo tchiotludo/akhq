@@ -7,14 +7,6 @@ pipeline{
         skipDefaultCheckout()
     }
 
-    tools {
-        jdk 'jdk11'
-    }
-
-    environment {
-        JAVA_HOME = "${tool 'jdk11'}"
-    }
-
     stages {
 
         stage('checkout') {
@@ -37,12 +29,5 @@ pipeline{
             }
         }
 
-    }
-
-    post {
-        always {
-            echo "Job finished."
-            step([$class: 'Mailer', recipients: 'tiago.diogo@polarising.com', notifyEveryUnstableBuild: true, sendToIndividuals: true])
-        }
     }
 }
