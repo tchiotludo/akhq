@@ -13,8 +13,8 @@ import Acls from '../containers/Tab/Tabs/Acls';
 import Schema from '../containers/Tab/Tabs/Schema';
 import Connect from '../containers/Tab/Tabs/Connect';
 import ErrorPage from '../containers/ErrorPage';
-import api from '../services/api';
-import endpoints from '../services/endpoints';
+import api from '../utils/api';
+import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 
 class Routes extends Component {
@@ -48,8 +48,8 @@ class Routes extends Component {
           <Route exact path="/:clusterId/node" component={NodesList} />
           <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
           <Route exact path="/:clusterId/topic" component={TopicList} />
-          <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
           <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
+          <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
           <Route exact path="/:clusterId/tail" component={Tail} />
           <Route exact path="/:clusterId/group" component={Group} />
           <Route exact path="/:clusterId/acls" component={Acls} />
