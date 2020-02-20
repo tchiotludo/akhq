@@ -20,13 +20,11 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
-    console.log('param', this.props);
     try {
       nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      console.log('history', history);
       history.replace('/error');
     }
   }

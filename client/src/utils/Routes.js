@@ -16,7 +16,7 @@ import ErrorPage from '../containers/ErrorPage';
 
 class Routes extends Component {
   render() {
-    const { location, match } = this.props;
+    const { location, match, clusterId } = this.props;
 
     let path = location.pathname.split('/');
     if (path[1] === 'error') {
@@ -45,8 +45,8 @@ class Routes extends Component {
             to={
               match.params.clusterId
                 ? '/:clusterId/topic'
-                : !match.params.clusterId && this.props.clusterId
-                ? `/${this.props.clusterId}/topic`
+                : !match.params.clusterId && clusterId
+                ? `/${clusterId}/topic`
                 : '/error'
             }
           />

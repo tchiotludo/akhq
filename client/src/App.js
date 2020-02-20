@@ -17,7 +17,6 @@ class App extends React.Component {
   }
   render() {
     const { clusterId } = this.state;
-    console.log('Cluster?', clusterId);
     if (clusterId) {
       return (
         <Router history={history}>
