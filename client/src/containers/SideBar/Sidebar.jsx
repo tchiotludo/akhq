@@ -106,7 +106,8 @@ class Sidebar extends Component {
         }}
       >
         <Link to={`/${selectedCluster}/${tab}`}>
-          <i className={iconClassName} aria-hidden="true" /> {label}
+          <i className={iconClassName} aria-hidden="true" />
+          {label}
         </Link>
       </li>
     );
