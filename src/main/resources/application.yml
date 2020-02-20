@@ -10,11 +10,12 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
-      static:
-        paths: classpath:static
-        mapping: "${kafkahq.server.base-path:}/static/**"
-  security:
-    enabled: false
+      default:
+        enabled: true
+        mapping: "/**"
+        paths: "classpath:static"
+    security:
+      enabled: false
     endpoints:
       login:
         enabled: true
