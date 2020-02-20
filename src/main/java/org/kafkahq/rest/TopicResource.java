@@ -27,14 +27,14 @@ public class TopicResource {
     }
 
     @Get("/topicsByType")
-    public List<TopicDTO> fetchAllTopicsByType(String topicId, String view) throws ExecutionException, InterruptedException {
+    public List<TopicDTO> fetchAllTopicsByType(String clusterId, String view) throws ExecutionException, InterruptedException {
         log.debug("Fetch all topics by type");
-        return topicService.getAllTopicsByType(topicId, view);
+        return topicService.getAllTopicsByType(clusterId, view);
     }
-
     @Get("/topicsByName")
-    public List<TopicDTO> fetchAllTopicsByName(String topicId, String view, String search) throws ExecutionException, InterruptedException {
+    public List<TopicDTO> fetchAllTopicsByName(String clusterId, String view, String search) throws ExecutionException, InterruptedException {
         log.debug("Fetch all topics by name");
-        return topicService.getAllTopicsByName(topicId, view, search);
+        return topicService.getAllTopicsByName(clusterId, view, search);
     }
 }
+

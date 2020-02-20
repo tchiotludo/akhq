@@ -15,6 +15,13 @@ export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };
 
+export const uriTopics = (id, view, search) => {
+  return `${apiUrl}/${
+    search
+      ? 'topicsByName?clusterId=' + id + '&view=' + view + '&search=' + search
+      : 'topicsByType?clusterId=' + id + '&view=' + view
+  } `;
+};
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -22,4 +29,4 @@ export const uriNodesConfigs = (clusterId, nodeId) => {
   );
 };
 
-export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs };
+export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
