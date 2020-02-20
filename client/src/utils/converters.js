@@ -13,6 +13,7 @@ export function handleType(value) {
 }
 
 export function showTime(milliseconds) {
+  if (!milliseconds) return '0 seconds';
   //converts value to bigger type possible: year, month, week, day, hour, minute, second
   const value = handleConvert(milliseconds, 'ms', { exclude: ['ms', 'mu', 'ns'] });
   const valueIsSecond = Boolean(value.unit === 's'); //check if is second
@@ -37,6 +38,7 @@ export function showTime(milliseconds) {
 }
 
 export function showBytes(bytes) {
+  if (!bytes) return '0B';
   const value = handleConvert(bytes, 'B');
   return `${value.val.toFixed(2)}${value.unit}`;
 }

@@ -9,6 +9,9 @@ import org.kafkahq.service.dto.node.LogDTO;
 import org.kafkahq.service.dto.node.NodeDTO;
 
 import javax.inject.Singleton;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Singleton
 public class NodeMapper {
@@ -20,11 +23,11 @@ public class NodeMapper {
     public ConfigDTO fromConfigToConfigDTO(Config config) {
         DataType dataType;
         try {
-            switch (config.getName().substring(config.getName().length() - 1, config.getName().lastIndexOf(":"))) {
-                case "ms":
+            switch (config.getName().substring(config.getName().lastIndexOf("."))) {
+                case ".ms":
                     dataType = DataType.MILLI;
                     break;
-                case "size":
+                case ".size":
                     dataType = DataType.BYTES;
                     break;
                 default:
