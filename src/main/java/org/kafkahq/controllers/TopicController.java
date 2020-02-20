@@ -218,7 +218,9 @@ public class TopicController extends AbstractController {
                     finalHeaders,
                     key.filter(r -> !r.equals("")),
                     partition,
-                    timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
+                    timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli()),
+                    Optional.empty(),
+                    Optional.empty()
                 )
             ,
             "Record created",

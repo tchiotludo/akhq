@@ -20,6 +20,12 @@
         </div>
     </div>
     <div class="form-group row">
+
+
+        <label for="key-schema" class="col-sm-2 col-form-label">Key Schema id</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="key-schema" id="key-schema" autocomplete="off" placeholder="Key Schema id">
+        </div>
         <label for="key" class="col-sm-2 col-form-label">Key</label>
         <div class="col-sm-10">
             <input type="text" class="form-control" name="key" id="key" autocomplete="off" placeholder="Key">
@@ -42,6 +48,11 @@
         </div>
     </div>
     <div class="form-group row">
+        <label for="value-schema" class="col-sm-2 col-form-label">Value Schema id</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="value-schema" id="value-schema" autocomplete="off" placeholder="Value Schema id">
+        </div>
+
         <label for="value" class="col-sm-2 col-form-label">Value</label>
         <div class="col-sm-10">
             <div class="khq-ace-editor">

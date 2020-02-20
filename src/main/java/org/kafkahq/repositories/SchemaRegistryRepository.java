@@ -3,6 +3,7 @@ package org.kafkahq.repositories;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.PagedList;
@@ -22,6 +23,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     @Inject
     private KafkaModule kafkaModule;
     private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
+    private Map<String, KafkaAvroSerializer> kafkaAvroSerializers = new HashMap<>();
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search), pagination, list -> list
