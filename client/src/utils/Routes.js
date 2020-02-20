@@ -18,23 +18,11 @@ import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 
 class Routes extends Component {
-  state = {
-    clusterId: ''
-  };
-
-  componentDidMount() {
-    api.get(endpoints.uriClusters()).then(res => {
-      this.setState({ clusterId: res.data[0].id });
-    });
-  }
-
   render() {
-    const { location, match, history } = this.props;
-    const { clusterId } = this.state;
+    const { location, match, clusterId } = this.props;
+
     let path = location.pathname.split('/');
-    console.log('path', path);
     if (path[1] === 'error') {
-      //history.push('/error');
       return (
         <Switch>
           <Route exact path="/error" component={ErrorPage} />

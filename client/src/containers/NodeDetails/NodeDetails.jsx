@@ -26,7 +26,7 @@ class NodeDetails extends Component {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);
     } catch (err) {
-      console.log('Error:', err);
+      console.error('Error:', err);
     }
   }
 
