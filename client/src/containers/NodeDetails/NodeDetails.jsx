@@ -34,14 +34,27 @@ class NodeDetails extends Component {
     let tableNodes = configs.map(config => {
       return {
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-        value: this.getInput(config.value, config.name, config.readOnly),
+        value: this.getInput(config.value, config.name, config.readOnly, config.dataType),
         typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
       };
     });
     this.setState({ data: tableNodes });
   }
 
-  getInput(value, name, readOnly) {
+  handleDataType(dataType, value) {
+    switch (dataType) {
+      case 'MILLI':
+        return (
+          <small className="humanize form-text text-muted">{converters.showTime(value)}</small>
+        );
+      case 'BYTES':
+        return (
+          <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
+        );
+    }
+  }
+
+  getInput(value, name, readOnly, dataType) {
     return (
       <div>
         <input
@@ -52,7 +65,7 @@ class NodeDetails extends Component {
           value={value}
           readOnly={readOnly}
         />
-        <small className="humanize form-text text-muted"></small>
+        {this.handleDataType(dataType, value)}
       </div>
     );
   }
@@ -80,7 +93,7 @@ class NodeDetails extends Component {
       ''
     );
     return (
-      <div>
+      <div className="name-color">
         {name} {descript}
       </div>
     );
