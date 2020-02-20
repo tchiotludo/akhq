@@ -68,20 +68,22 @@ class TopicList extends Tab {
     let search = this.state.search;
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
-      this.handleTopics(topics.data);
-      this.setState({ selectedCluster: selectedClusterId });
+      if (topics.data) {
+        this.handleTopics(topics.data);
+        this.setState({ selectedCluster: selectedClusterId });
+      }
     } catch (err) {
       console.log('Error :' + err);
     }
   }
 
   handleTopics(topics) {
-    console.log('handle topics', topics);
     if (!topics) {
       console.log('Not getting anything from backend');
     }
-    /* let tableTopics = topics.map(topic => {
-       topic.size = 0;
+    let tableTopics = [];
+    topics.map(topic => {
+      topic.size = 0;
       topic.logDirSize = 0;
       tableTopics.push({
         name: topic.name,
@@ -89,10 +91,11 @@ class TopicList extends Tab {
         weight: topic.count,
         partitionsTotal: topic.total,
         replicationFactor: topic.factor,
-        replicationInSync: <span>{topic.inSync}</span>
+        replicationInSync: <span>{topic.inSync}</span>,
+        groupComponent: topic.logDirSize
       });
     });
-    this.setState({ topics: tableTopics });*/
+    this.setState({ topics: tableTopics });
   }
 
   render() {
@@ -129,7 +132,6 @@ class TopicList extends Tab {
           topic={this.state.selectedTopic}
           onChangeTopic={topic => {
             this.setState({ topic });
-            console.log('topic', topic);
           }}
         />
 
@@ -137,11 +139,20 @@ class TopicList extends Tab {
           has2Headers
           firstHeader={firstColumns}
           colNames={columnNames}
+          data={topics}
           onDetails={this.handleOnDetails}
           onDelete={this.handleOnDelete}
+          toPresent={[
+            'name',
+            'size',
+            'weight',
+            'partitionsTotal',
+            'replicationFactor',
+            'replicationInSync',
+            'groupComponent'
+          ]}
+          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         ></Table>
-
-        {this.handleTopics()}
 
         <Pagination />
 

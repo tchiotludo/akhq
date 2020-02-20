@@ -100,7 +100,7 @@ class Table extends Component {
                 onDelete && onDelete();
               }}
             >
-              <i className="fa fa-search" />
+              <i className="fa fa-trash" />
             </span>
           </td>
         )}
