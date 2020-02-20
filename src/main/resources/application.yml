@@ -40,8 +40,8 @@ micronaut:
       expire-after-write: 0s
 
 endpoints:
-#  all:
-#    path: "${kafkahq.server.base-path:}"
+  all:
+    path: "${kafkahq.server.base-path:}"
   health:
     enabled: true
     sensitive: false
