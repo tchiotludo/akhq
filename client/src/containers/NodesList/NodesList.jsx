@@ -18,12 +18,17 @@ class NodesList extends Component {
 
   async getNodes() {
     let nodes = [];
-    const { selectedCluster } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
+    const { history } = this.props;
+    console.log('param', this.props);
     try {
-      nodes = await get(uriNodes(selectedCluster));
+      nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
-      this.setState({ selectedCluster });
-    } catch (err) {}
+      this.setState({ selectedCluster: clusterId });
+    } catch (err) {
+      console.log('history', history);
+      history.push('/error-page');
+    }
   }
 
   handleData(nodes) {
