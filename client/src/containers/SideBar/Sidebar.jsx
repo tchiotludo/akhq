@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import logo from '../../images/logo.svg';
 import TabContainer from 'react-bootstrap/TabContainer';
 import { Link, withRouter } from 'react-router-dom';
-import api from '../../services/api';
-import endpoints from '../../services/endpoints';
+import api from '../../utils/api';
+import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
 
 // Adaptation of template.ftl
@@ -106,7 +106,8 @@ class Sidebar extends Component {
         }}
       >
         <Link to={`/${selectedCluster}/${tab}`}>
-          <i className={iconClassName} aria-hidden="true" /> {label}
+          <i className={iconClassName} aria-hidden="true" />
+          {label}
         </Link>
       </li>
     );

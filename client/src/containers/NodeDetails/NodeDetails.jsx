@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Header from '../Header';
-import { get } from '../../services/api';
-import { uriNodesConfigs } from '../../services/endpoints';
+import { get } from '../../utils/api';
+import { uriNodesConfigs } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import './styles.scss';
 import converters from '../../utils/converters';
