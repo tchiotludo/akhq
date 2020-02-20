@@ -8,27 +8,34 @@ class ErrorPage extends Component {
   static propTypes = {
     title: PropTypes.string,
     message: PropTypes.string,
-    errorData: PropTypes.object
+    status: PropTypes.string
+  };
+
+  state = {
+    title: '',
+    message: '',
+    status: ''
   };
 
   componentDidMount() {
-    console.log('here');
-    //this.handleRetry();
+    const { data, status } = this.props.history.location.state.errorData.response;
+    this.setState({ title: data.title, message: data.description, status });
   }
 
   async handleRetry() {
     const { history } = this.props;
     try {
       let response = await get(uriClusters());
-      console.log('response', response);
       if (response.data.length > 0) {
         history.replace(`/${response.data[0].id}/topic`);
       }
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   render() {
-    const { title, message, errorData } = this.props;
+    const { title, message } = this.state;
     return (
       <div id="content" className="no-side-bar">
         <div className="mb-5">
