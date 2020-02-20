@@ -1,3 +1,5 @@
+import { node } from 'prop-types';
+
 export const apiUrl = 'http://localhost:8080/api';
 export const baseUrl = 'http://localhost:8080';
 
@@ -13,4 +15,11 @@ export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };
 
-export default { apiUrl, uriClusters, uriConnects, uriNodes };
+export const uriNodesConfigs = (clusterId, nodeId) => {
+  return (
+    `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${nodeId ? '&nodeId=' + nodeId : ''}`
+  );
+};
+
+export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs };
