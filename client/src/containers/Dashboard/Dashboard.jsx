@@ -8,11 +8,11 @@ import Group from '../Tab/Tabs/Group';
 import Acls from '../Tab/Tabs/Acls';
 import Connect from '../Tab/Tabs/Connect';
 import Schema from '../Tab/Tabs/Schema';
-import TopicList from '../Tab/Tabs/TopicList';
-import TopicCreate from '../Tab/Tabs/TopicList/TopicCreate/TopicCreate';
+import TopicList from '../TopicList';
+import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
-import Topic from '../Tab/Tabs/TopicList/Topic';
+import Topic from '../TopicList/Topic';
 import NodeDetails from '../NodeDetails';
 class Dashboard extends Component {
   state = {
