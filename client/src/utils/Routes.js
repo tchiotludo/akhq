@@ -13,23 +13,11 @@ import Acls from '../containers/Tab/Tabs/Acls';
 import Schema from '../containers/Tab/Tabs/Schema';
 import Connect from '../containers/Tab/Tabs/Connect';
 import ErrorPage from '../containers/ErrorPage';
-import api from './api';
-import endpoints from './endpoints';
 
 class Routes extends Component {
-  state = {
-    clusterId: ''
-  };
-
-  componentDidMount() {
-    api.get(endpoints.uriClusters()).then(res => {
-      this.setState({ clusterId: res.data[0].id });
-    });
-  }
-
   render() {
     const { location, match } = this.props;
-    const { clusterId } = this.state;
+
     let path = location.pathname.split('/');
     if (path[1] === 'error') {
       return (
@@ -57,8 +45,8 @@ class Routes extends Component {
             to={
               match.params.clusterId
                 ? '/:clusterId/topic'
-                : !match.params.clusterId && clusterId
-                ? `/${clusterId}/topic`
+                : !match.params.clusterId && this.props.clusterId
+                ? `/${this.props.clusterId}/topic`
                 : '/error'
             }
           />
