@@ -10,9 +10,7 @@ export const get = url =>
       })
       .catch(err => {
         console.error('GET', err);
-        console.log('history', history);
-        history.replace('/error');
-        reject();
+        reject(err);
       });
   });
 

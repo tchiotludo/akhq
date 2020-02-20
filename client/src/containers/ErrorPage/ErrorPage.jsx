@@ -13,7 +13,7 @@ class ErrorPage extends Component {
 
   componentDidMount() {
     console.log('here');
-    this.handleRetry();
+    //this.handleRetry();
   }
 
   async handleRetry() {
@@ -22,9 +22,8 @@ class ErrorPage extends Component {
       let response = await get(uriClusters());
       console.log('response', response);
       if (response.data.length > 0) {
-        history.goBack();
+        history.replace(`/${response.data[0].id}/topic`);
       }
-      //history.replace(`/${response.data[0].id}/topic`);
     } catch (err) {}
   }
 
