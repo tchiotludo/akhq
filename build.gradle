@@ -266,8 +266,8 @@ task assembleServerAndClient(dependsOn: ['copyClientResources', ':shadowJar']) {
     description = 'Build combined server & client JAR'
 }
 
-jar.dependsOn "webpack"
-processResources.dependsOn 'webpack'
+jar.dependsOn 'copyClientResources'
+processResources.dependsOn 'copyClientResources'
 
 clean.delete << file("src/main/resources/static")
 
