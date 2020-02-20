@@ -18,8 +18,6 @@ class ErrorPage extends Component {
   };
 
   componentDidMount() {
-    //this.handleRetry();
-    console.log('Error: ', this.props);
     const { data, status } = this.props.history.location.state.errorData.response;
     this.setState({ title: data.title, message: data.description, status });
   }
