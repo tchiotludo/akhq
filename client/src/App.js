@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { baseUrl } from './services/endpoints';
+import { baseUrl } from './utils/endpoints';
 import Routes from './utils/Routes';
 import history from './utils/history';
 

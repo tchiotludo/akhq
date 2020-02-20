@@ -13,8 +13,8 @@ import Acls from '../containers/Tab/Tabs/Acls';
 import Schema from '../containers/Tab/Tabs/Schema';
 import Connect from '../containers/Tab/Tabs/Connect';
 import ErrorPage from '../containers/ErrorPage';
-import api from '../services/api';
-import endpoints from '../services/endpoints';
+import api from './api';
+import endpoints from './endpoints';
 
 class Routes extends Component {
   state = {
@@ -28,12 +28,10 @@ class Routes extends Component {
   }
 
   render() {
-    const { location, match, history } = this.props;
+    const { location, match } = this.props;
     const { clusterId } = this.state;
     let path = location.pathname.split('/');
-    console.log('path', path);
     if (path[1] === 'error') {
-      //history.push('/error');
       return (
         <Switch>
           <Route exact path="/error" component={ErrorPage} />
