@@ -15,6 +15,10 @@ export const uriNodes = id => {
 
 export default { apiUrl, uriClusters, uriConnects, uriNodes };
 
-export const uriTopics = id => {
-  return `${apiUrl}/topicsByType${id ? '?topicId=' + id : ''}`;
+export const uriTopics = (id, view, search) => {
+  return `${apiUrl}/${
+    search
+      ? 'topicsByName?clusterId=' + id + '?view=' + view + '?search=' + search
+      : 'topicsByType?clusterId=' + id + '?view=' + view
+  } `;
 };

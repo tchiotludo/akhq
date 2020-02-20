@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-
 import Header from '../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -14,7 +13,6 @@ import TopicLogs from './TopicLogs';
 class Topic extends Component {
   state = {
     clusterId: '',
-
     topic: {
       _id: Date.now(),
       name: 'test',
@@ -23,7 +21,6 @@ class Topic extends Component {
       cleanup: 'delete',
       retention: 50
     },
-
     selectedTab: 'data'
   };
 
@@ -68,7 +65,6 @@ class Topic extends Component {
     return (
       <div id="content">
         <Header title={`Topic ${topic.name}`} />
-
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {/*#if roles?seq_contains("topic/data/read")*/}
@@ -201,11 +197,13 @@ class Topic extends Component {
 
 // <#if tab != " configs" && roles?seq_contains(" topic/data/insert")>
 //     <@template.bottom>
-//         <a href=" ${basePath}/${clusterId}/tail/?topics= ${topic.getName()}" className="btn btn-secondary mr-2">
+//         <a href=" ${basePath}/${clusterId}/tail/?topics= ${topic.getName()}"
+// className="btn btn-secondary mr-2">
 //             <i className="fa fa-fw fa-level-down" aria-hidden=" true"></i> Live Tail
 //         </a>
 //
-//         <a href=" ${basePath}/${clusterId}/topic/${topic.getName()}/produce" className="btn btn-primary">
+//         <a href=" ${basePath}/${clusterId}/topic/${topic.getName()}/produce"
+//className="btn btn-primary">
 //             <i className="fa fa-plus" aria-hidden=" true"></i> Produce to topic
 //         </a>
 //     </@template.bottom>

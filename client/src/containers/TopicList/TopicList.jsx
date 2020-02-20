@@ -8,15 +8,18 @@ import Tab from '../Tab/Tab';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
+import constants from '../../utils/constants';
 // Adaptation of topicList.ftl
 
 class TopicList extends Tab {
   state = {
     topics: [],
     showDeleteModal: false,
-    selectedCluster: '',
+    selectedCluster: 'my-cluster',
     deleteMessage: '',
     deleteData: {},
+    selectedTopic: constants.TOPICS.ALL,
+    search: '',
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -60,9 +63,12 @@ class TopicList extends Tab {
 
   async getTopics() {
     let topics = {};
-    let selectedClusterId = 'my-cluster';
+    let selectedClusterId = this.state.selectedCluster;
+    let selectedTopic = this.state.selectedTopic;
+    let search = this.state.search;
+
     try {
-      topics = await api.get(endpoints.uriTopics(selectedClusterId));
+      topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
       this.handleTopics(topics.data);
       this.setState({ selectedCluster: selectedClusterId });
     } catch (err) {
@@ -71,8 +77,11 @@ class TopicList extends Tab {
   }
 
   handleTopics(topics) {
-      console.log(topics);
-   /*  let tableTopics = topics.map(topic => {
+    console.log('handle topics',topics);
+    if (!topics) {
+      console.log('Not getting anything from backend');
+    }
+    /*  let tableTopics = topics.map(topic => {
     
          topic.size = 0;
       topic.logDirSize = 0;
@@ -111,10 +120,25 @@ class TopicList extends Tab {
       ''
     ];
 
+    console.log('selected cluster', this.state.selectedCluster);
+    console.log('selected topic', this.state.selectedTopic);
+    console.log('search',this.state.search);
     return (
       <div id="content">
         <Header title="Topics" />
-        <SearchBar pagination={true} topicListView={true} />
+        <SearchBar
+          pagination={true}
+          topicListView={true}
+          value={this.state.value}
+          onChangeValue={value => {
+            this.setState({ value });
+          }}
+          topic={this.state.selectedTopic}
+          onChangeTopic={topic => {
+            this.setState({ topic });
+            console.log('topic', topic);
+          }}
+        />
 
         <Table
           has2Headers
