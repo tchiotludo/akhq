@@ -66,37 +66,36 @@ class TopicList extends Tab {
     let selectedClusterId = this.state.selectedCluster;
     let selectedTopic = this.state.selectedTopic;
     let search = this.state.search;
-
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
-      this.handleTopics(topics.data);
-      this.setState({ selectedCluster: selectedClusterId });
+      if (topics.data) {
+        this.handleTopics(topics.data);
+        this.setState({ selectedCluster: selectedClusterId });
+      }
     } catch (err) {
       console.log('Error :' + err);
     }
   }
 
   handleTopics(topics) {
-    console.log('handle topics',topics);
     if (!topics) {
       console.log('Not getting anything from backend');
     }
-    /*  let tableTopics = topics.map(topic => {
-    
-         topic.size = 0;
+    let tableTopics = [];
+    topics.map(topic => {
+      topic.size = 0;
       topic.logDirSize = 0;
       tableTopics.push({
-        id: topic._id,
         name: topic.name,
         size: <span className="text-nowrap">≈ {topic.size}</span>,
-        logDirSize: topic.logDirSize ? 'n/a' : topic.logDirSize,
-        partition: topic.partition,
-        replicationFactor: topic.replication,
-        replicationInSync: <span>{topic.replication}</span>
+        weight: topic.count,
+        partitionsTotal: topic.total,
+        replicationFactor: topic.factor,
+        replicationInSync: <span>{topic.inSync}</span>,
+        groupComponent: topic.logDirSize
       });
-      
     });
-    this.setState({ topics: tableTopics });*/
+    this.setState({ topics: tableTopics });
   }
 
   render() {
@@ -120,9 +119,6 @@ class TopicList extends Tab {
       ''
     ];
 
-    console.log('selected cluster', this.state.selectedCluster);
-    console.log('selected topic', this.state.selectedTopic);
-    console.log('search',this.state.search);
     return (
       <div id="content">
         <Header title="Topics" />
@@ -136,7 +132,6 @@ class TopicList extends Tab {
           topic={this.state.selectedTopic}
           onChangeTopic={topic => {
             this.setState({ topic });
-            console.log('topic', topic);
           }}
         />
 
@@ -144,11 +139,20 @@ class TopicList extends Tab {
           has2Headers
           firstHeader={firstColumns}
           colNames={columnNames}
+          data={topics}
           onDetails={this.handleOnDetails}
           onDelete={this.handleOnDelete}
+          toPresent={[
+            'name',
+            'size',
+            'weight',
+            'partitionsTotal',
+            'replicationFactor',
+            'replicationInSync',
+            'groupComponent'
+          ]}
+          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         ></Table>
-
-        {this.handleTopics()}
 
         <Pagination />
 
