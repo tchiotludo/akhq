@@ -66,7 +66,6 @@ class TopicList extends Tab {
     let selectedClusterId = this.state.selectedCluster;
     let selectedTopic = this.state.selectedTopic;
     let search = this.state.search;
-
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
       this.handleTopics(topics.data);
@@ -77,24 +76,21 @@ class TopicList extends Tab {
   }
 
   handleTopics(topics) {
-    console.log('handle topics',topics);
+    console.log('handle topics', topics);
     if (!topics) {
       console.log('Not getting anything from backend');
     }
-    /*  let tableTopics = topics.map(topic => {
-    
-         topic.size = 0;
+    /* let tableTopics = topics.map(topic => {
+       topic.size = 0;
       topic.logDirSize = 0;
       tableTopics.push({
-        id: topic._id,
         name: topic.name,
         size: <span className="text-nowrap">≈ {topic.size}</span>,
-        logDirSize: topic.logDirSize ? 'n/a' : topic.logDirSize,
-        partition: topic.partition,
-        replicationFactor: topic.replication,
-        replicationInSync: <span>{topic.replication}</span>
+        weight: topic.count,
+        partitionsTotal: topic.total,
+        replicationFactor: topic.factor,
+        replicationInSync: <span>{topic.inSync}</span>
       });
-      
     });
     this.setState({ topics: tableTopics });*/
   }
@@ -120,9 +116,6 @@ class TopicList extends Tab {
       ''
     ];
 
-    console.log('selected cluster', this.state.selectedCluster);
-    console.log('selected topic', this.state.selectedTopic);
-    console.log('search',this.state.search);
     return (
       <div id="content">
         <Header title="Topics" />

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
-import { get } from '../../services/api';
-import { uriClusters } from '../../services/endpoints';
+import { get } from '../../utils/api';
+import { uriClusters } from '../../utils/endpoints';
 
 class ErrorPage extends Component {
   static propTypes = {

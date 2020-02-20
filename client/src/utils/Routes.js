@@ -13,8 +13,8 @@ import Acls from '../containers/Tab/Tabs/Acls';
 import Schema from '../containers/Tab/Tabs/Schema';
 import Connect from '../containers/Tab/Tabs/Connect';
 import ErrorPage from '../containers/ErrorPage';
-import api from '../services/api';
-import endpoints from '../services/endpoints';
+import api from '../utils/api';
+import endpoints from '../utils/endpoints';
 
 class Routes extends Component {
   state = {
