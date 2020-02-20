@@ -106,8 +106,8 @@ public class Topic {
 
     public long getSize() {
         return this.getPartitions().stream()
-            .map(partition -> partition.getLastOffset() - partition.getFirstOffset())
-            .reduce(0L, Long::sum);
+                .map(partition -> partition.getLastOffset() - partition.getFirstOffset())
+                .reduce(0L, Long::sum);
     }
 
     public long getSize(int partition) {
