@@ -31,7 +31,6 @@ class NodeDetails extends Component {
   }
 
   handleData(configs) {
-    console.log(configs);
     let tableNodes = configs.map(config => {
       return {
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
