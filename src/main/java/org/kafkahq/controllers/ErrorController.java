@@ -22,7 +22,7 @@ import java.io.StringWriter;
 
 @Secured(SecurityRule.IS_ANONYMOUS)
 @Slf4j
-@Controller("/errors")
+//@Controller("/errors")
 public class ErrorController extends AbstractController {
     private final ViewsRenderer viewsRenderer;
     private final RequestHelper requestHelper;
