@@ -143,3 +143,5 @@ kafkahq:
           - registry/read
           - acls/read
           - connect/read
+      no-roles:
+        roles: []

@@ -275,9 +275,11 @@ Define groups with specific roles for your users
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
 
-2 defaults group are available :
+
+3 defaults group are available :
 - `admin` with all right
 - `reader` with only read acces on all KafkaHQ
+- `no-roles` without any roles, that force user to login 
 
 ##### Basic Auth
 * `kafkahq.security.basic-auth`: List user & password with affected roles 
