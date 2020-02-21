@@ -5,12 +5,14 @@ import org.kafkahq.models.LogDir;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.LogDirRepository;
 import org.kafkahq.service.dto.node.ConfigDTO;
+import org.kafkahq.service.dto.node.ConfigOperationDTO;
 import org.kafkahq.service.dto.node.LogDTO;
 import org.kafkahq.service.mapper.NodeMapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -43,5 +45,23 @@ public class NodeService {
         List<LogDir> logList = logDirRepository.findByBroker(clusterId, nodeId);
 
         return logList.stream().map(logDir -> nodeMapper.fromLogDirToLogDTO(logDir)).collect(Collectors.toList());
+    }
+
+    public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws Throwable {
+        List<Config> updated = ConfigRepository.updatedConfigs(configOperation.getConfigs(), this.configRepository.findByBroker(configOperation.getClusterId(), configOperation.getNodeId()));
+
+        if (updated.size() == 0) {
+            throw new IllegalArgumentException("No config to update");
+        }
+
+        this.configRepository.updateBroker(
+                configOperation.getClusterId(),
+                configOperation.getNodeId(),
+                updated
+        );
+
+        return updated.stream()
+                .map(config -> nodeMapper.fromConfigToConfigDTO(config))
+                .collect(Collectors.toList());
     }
 }
