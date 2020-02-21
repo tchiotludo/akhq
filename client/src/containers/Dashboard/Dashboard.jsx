@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 
 import Sidebar from '../SideBar';
-import Cluster from '../Tab/Tabs/Cluster';
-import Tail from '../Tab/Tabs/Tail';
+import Cluster from '../Cluster';
+import Tail from '../Tail';
 import NodesList from '../NodesList';
-import Group from '../Tab/Tabs/Group';
-import Acls from '../Tab/Tabs/Acls';
-import Connect from '../Tab/Tabs/Connect';
-import Schema from '../Tab/Tabs/Schema';
+import Group from '../Group';
+import Acls from '../Acls';
+import Connect from '../Connect';
+import Schema from '../Schema';
 import TopicList from '../TopicList';
 import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';

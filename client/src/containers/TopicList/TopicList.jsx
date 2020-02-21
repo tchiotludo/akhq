@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Table from '../../components/Table';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
-import Tab from '../Tab/Tab';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
 // Adaptation of topicList.ftl
 
-class TopicList extends Tab {
+class TopicList extends Component {
   state = {
     topics: [],
     showDeleteModal: false,
