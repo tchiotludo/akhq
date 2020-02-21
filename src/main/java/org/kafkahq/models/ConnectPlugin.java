@@ -1,8 +1,6 @@
 package org.kafkahq.models;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigValidationResults;
 
@@ -10,6 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ToString
 @EqualsAndHashCode
@@ -24,13 +23,33 @@ public class ConnectPlugin {
         this.className = connectorPlugin.getClassName();
         this.type = connectorPlugin.getType();
         this.version = connectorPlugin.getVersion();
-        this.definitions = results.getConfigs()
-            .stream()
-            .map(config -> new Definition(config.getDefinition()))
+        this.definitions = Stream.concat(
+            results.getConfigs()
+                .stream()
+                .map(config -> new Definition(config.getDefinition())),
+            registryDefintion()
+        )
             .sorted(Comparator.comparing(Definition::getGroup, (s1, s2) -> s1.equals("Others") ? 1 : s1.compareTo(s2))
                 .thenComparing(Definition::getOrder)
             )
             .collect(Collectors.toList());
+    }
+
+    public Stream<Definition> registryDefintion() {
+        return Stream.of(
+            Definition.builder()
+                .name("key.converter.schema.registry.url")
+                .group("Schema Registry")
+                .displayName("Key schema registry Url")
+                .importance("MEDIUM")
+                .build(),
+            Definition.builder()
+                .name("value.converter.schema.registry.url")
+                .group("Schema Registry")
+                .displayName("Value schema registry Url")
+                .importance("MEDIUM")
+                .build()
+        );
     }
 
     public String getShortClassName() {
@@ -39,7 +58,9 @@ public class ConnectPlugin {
         return split[split.length - 1];
     }
 
+    @Builder
     @ToString
+    @AllArgsConstructor
     @EqualsAndHashCode
     @Getter
     public static final class Definition {
