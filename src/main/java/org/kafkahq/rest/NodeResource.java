@@ -41,7 +41,7 @@ public class NodeResource {
     }
 
     @Post("cluster/nodes/update-configs")
-    public List<ConfigDTO> updateNodeConfigs(@Body ConfigOperationDTO configOperation) throws ExecutionException, InterruptedException  {
+    public List<ConfigDTO> updateNodeConfigs(@Body ConfigOperationDTO configOperation) throws Throwable {
         log.debug("update node {} configs from cluster: {}", configOperation.getNodeId(), configOperation.getClusterId());
         return nodeService.updateConfigs(configOperation);
     }

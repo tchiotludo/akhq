@@ -47,9 +47,20 @@ public class NodeService {
         return logList.stream().map(logDir -> nodeMapper.fromLogDirToLogDTO(logDir)).collect(Collectors.toList());
     }
 
-    public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws ExecutionException, InterruptedException {
-        return ConfigRepository.updatedConfigs(configOperation.getConfigs(), this.configRepository.findByBroker(configOperation.getClusterId(), configOperation.getNodeId()))
-                .stream()
+    public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws Throwable {
+        List<Config> updated = ConfigRepository.updatedConfigs(configOperation.getConfigs(), this.configRepository.findByBroker(configOperation.getClusterId(), configOperation.getNodeId()));
+
+        if (updated.size() == 0) {
+            throw new IllegalArgumentException("No config to update");
+        }
+
+        this.configRepository.updateBroker(
+                configOperation.getClusterId(),
+                configOperation.getNodeId(),
+                updated
+        );
+
+        return updated.stream()
                 .map(config -> nodeMapper.fromConfigToConfigDTO(config))
                 .collect(Collectors.toList());
     }
