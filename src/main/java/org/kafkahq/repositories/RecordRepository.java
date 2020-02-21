@@ -36,6 +36,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
+import org.kafkahq.modules.AvroSerializer;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.Debug;
 
@@ -376,17 +377,18 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp, Optional<Integer> keySchemaId, Optional<Integer> valueSchemaId) throws ExecutionException, InterruptedException {
+        AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
         if(key.isPresent() ){
             if(keySchemaId.isPresent()) {
-                keyAsBytes = toAvro(clusterId, key.get(), keySchemaId.get());
+                keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
             } else {
                 keyAsBytes = key.get().getBytes();
             }
         }
         if(value != null && valueSchemaId.isPresent()){
-            valueAsBytes = toAvro(clusterId, value, valueSchemaId.get());
+            valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
         } else {
             valueAsBytes = value != null ? value.getBytes() : null;
         }
@@ -395,40 +397,7 @@ public class RecordRepository extends AbstractRepository {
     }
 
 
-    private byte[] toAvro(String clusterId, String json, Integer schemaId) {
-        byte[] asBytes;
-        try {
-            Schema schema = this.kafkaModule.getRegistryClient(clusterId).getById(schemaId);
-            asBytes = this.fromJsonToAvro(json.trim(), schema, schemaId);
-        } catch (IOException | RestClientException e) {
-            throw new RuntimeException(String.format("Can't retrieve schema %d in registry", schemaId), e);
-        }
-        return asBytes;
-    }
 
-    private byte[] fromJsonToAvro(String json, Schema schema, int schemaId) throws IOException {
-        json = json.replaceAll("\n", "");
-        log.trace("encoding message {} with schema {}",json, schema);
-        InputStream input = new ByteArrayInputStream(json.getBytes());
-        DataInputStream din = new DataInputStream(input);
-
-        Decoder decoder = DecoderFactory.get().jsonDecoder(schema, din);
-
-        DatumReader<Object> reader = new GenericDatumReader<>(schema);
-        Object datum = reader.read(null, decoder);
-
-        GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(0);
-        outputStream.write(ByteBuffer.allocate(4).putInt(schemaId).array());
-
-        Encoder e = EncoderFactory.get().binaryEncoder(outputStream, null);
-
-        w.write(datum, e);
-        e.flush();
-
-        return outputStream.toByteArray();
-    }
 
 
     public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
