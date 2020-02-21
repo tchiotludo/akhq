@@ -322,13 +322,15 @@ Configure KafkaHQ groups and Ldap groups and users
 kafkahq:
   security:
     groups:
-      topic-reader: # Group name
+      topic-reader: # just a key, no matter will be override by name below
+        name: "topic-reader" # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
-      topic-writer: 
+      topic-writer: # just a key, no matter will be override by name below
+        name: "topic-writer" # Group name
         roles:
           - topic/read
           - topic/insert

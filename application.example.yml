@@ -164,10 +164,12 @@ kafkahq:
     # Ldap Groups configuration (when using ldap)
     ldap:
       group:
-        group-ldap-1: # ldap group name
+        group-ldap-1: # just a key, no matter will be override by name below
+          name: "group-ldap-1"
           groups: # KafkaHQ groups list
             - topic-reader
         group-ldap-2:
+          name: "group-ldap-2"
           groups:
             - admin
       user:
