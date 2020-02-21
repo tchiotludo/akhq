@@ -12,6 +12,26 @@
 
 ![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
 
+
+## Contents
+
+- [Features](#features)
+- [Quick Preview](#quick-preview)
+- [Installation](#installation)
+    - [Docker](#docker)
+    - [Stand Alone](#stand-alone)
+    - [Kubernetes using Helm](#running-in-kubernetes-using-a-helm-chart)
+- [Configuration](#configuration)
+    - [Kafka cluster](#kafka-cluster-configuration)
+    - [KafkaHQ](#kafkahq-configuration)
+    - [Security](#security)
+    - [Server](#server)
+    - [Micronaut](#micronaut-configuration)
+- [Monitoring Endpoint](#monitoring-endpoint)
+- [Development Environment](#development-environment)
+- [Who's using KafkaHQ](#whos-using-kafkahq)
+
+
 ## Features
 
 - **General**
@@ -248,7 +268,7 @@ kafkahq:
 Groups allow you to limit user 
 
 Define groups with specific roles for your users
-* `kafkahq.security.default-groups`: Default groups for all the user even unlogged user
+* `kafkahq.security.default-group`: Default group for all the user even unlogged user
 
 * `kafkahq.security.groups`: Groups list definition
   * `group-name`: Group identifier
