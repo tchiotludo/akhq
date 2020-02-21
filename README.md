@@ -317,6 +317,20 @@ micronaut:
           base: "dc=example,dc=com"
 ```
 
+If you want to enable anonymous auth to your LDAP server you can pass : 
+```yaml
+managerDn: ''
+managerPassword: ''
+```
+
+Debuging ldap connection can be done with 
+```bash
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8080/loggers/io.micronaut.configuration.security
+```
+
+
 Configure KafkaHQ groups and Ldap groups and users
 ```yaml
 kafkahq:
@@ -402,6 +416,15 @@ following micronaut configuration below.
 * `/loggers` [Loggers Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#loggersEndpoint)
 * `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
+
+## Debugging KakfaHQ performance issues 
+
+You can debug all query duration from KafkaHQ with this commands
+```bash
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8080/loggers/org.kafkahq
+```
 
 ## Development Environment
 
