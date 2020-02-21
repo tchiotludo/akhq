@@ -19,7 +19,10 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
+import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
@@ -41,8 +44,10 @@ import javax.inject.Singleton;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -391,18 +396,19 @@ public class RecordRepository extends AbstractRepository {
 
 
     private byte[] toAvro(String clusterId, String json, Integer schemaId) {
-        byte[] keyAsBytes = null;
+        byte[] asBytes;
         try {
-            Schema keySchema = this.kafkaModule.getRegistryClient(clusterId).getById(schemaId);
-            keyAsBytes = this.fromJsonToAvro(json, keySchema);
+            Schema schema = this.kafkaModule.getRegistryClient(clusterId).getById(schemaId);
+            asBytes = this.fromJsonToAvro(json.trim(), schema, schemaId);
         } catch (IOException | RestClientException e) {
-            // TODO what if?
+            throw new RuntimeException(String.format("Can't retrieve schema %d in registry", schemaId), e);
         }
-        return keyAsBytes;
+        return asBytes;
     }
 
-
-    private byte[] fromJsonToAvro(String json, Schema schema) throws IOException {
+    private byte[] fromJsonToAvro(String json, Schema schema, int schemaId) throws IOException {
+        json = json.replaceAll("\n", "");
+        log.trace("encoding message {} with schema {}",json, schema);
         InputStream input = new ByteArrayInputStream(json.getBytes());
         DataInputStream din = new DataInputStream(input);
 
@@ -413,6 +419,8 @@ public class RecordRepository extends AbstractRepository {
 
         GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(0);
+        outputStream.write(ByteBuffer.allocate(4).putInt(schemaId).array());
 
         Encoder e = EncoderFactory.get().binaryEncoder(outputStream, null);
 

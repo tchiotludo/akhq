@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @ToString
 @EqualsAndHashCode

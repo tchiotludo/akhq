@@ -20,12 +20,12 @@
         </div>
     </div>
     <div class="form-group row">
-
-
-        <label for="key-schema" class="col-sm-2 col-form-label">Key Schema id</label>
+        <label for="key-schema" class="col-sm-2 col-form-label">Key schema id</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" name="key-schema" id="key-schema" autocomplete="off" placeholder="Key Schema id">
+            <input type="text" class="form-control" name="keySchema" id="key-schema" autocomplete="off" placeholder="Key Schema id">
         </div>
+    </div>
+    <div class="form-group row">
         <label for="key" class="col-sm-2 col-form-label">Key</label>
         <div class="col-sm-10">
             <input type="text" class="form-control" name="key" id="key" autocomplete="off" placeholder="Key">
@@ -41,6 +41,7 @@
             </div>
         </div>
     </div>
+
     <div class="form-group row">
         <label for="timestamp" class="col-sm-2 col-form-label">Timestamp</label>
         <div class="col-sm-10 khq-datetime">
@@ -48,11 +49,12 @@
         </div>
     </div>
     <div class="form-group row">
-        <label for="value-schema" class="col-sm-2 col-form-label">Value Schema id</label>
+        <label for="value-schema" class="col-sm-2 col-form-label">Value schema id</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" name="value-schema" id="value-schema" autocomplete="off" placeholder="Value Schema id">
+            <input type="text" class="form-control" name="valueSchema" id="value-schema" autocomplete="off" placeholder="Value Schema id">
         </div>
-
+    </div>
+    <div class="form-group row">
         <label for="value" class="col-sm-2 col-form-label">Value</label>
         <div class="col-sm-10">
             <div class="khq-ace-editor">

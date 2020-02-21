@@ -193,7 +193,9 @@ public class TopicController extends AbstractController {
                                       Optional<String> key,
                                       Optional<Integer> partition,
                                       Optional<String> timestamp,
-                                      Map<String, List<String>> headers)
+                                      Map<String, List<String>> headers,
+                                      Optional<Integer> keySchema,
+                                      Optional<Integer> valueSchema)
     {
         Map<String, String> finalHeaders = new HashMap<>();
 
@@ -219,8 +221,8 @@ public class TopicController extends AbstractController {
                     key.filter(r -> !r.equals("")),
                     partition,
                     timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli()),
-                    Optional.empty(),
-                    Optional.empty()
+                    keySchema,
+                    valueSchema
                 )
             ,
             "Record created",
