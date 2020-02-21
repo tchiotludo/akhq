@@ -19,6 +19,20 @@ class Sidebar extends Component {
   };
 
   componentDidMount() {
+    let tabs = [
+      constants.CLUSTER,
+      constants.CONNECT,
+      constants.GROUP,
+      constants.NODE,
+      constants.SCHEMA,
+      constants.TAIL,
+      constants.TOPIC,
+      constants.ACLS
+    ];
+    let path = this.props.location.pathname.split('/');
+    if (tabs.find(el => el === path[2])) {
+      this.setState({ selectedTab: path[2] });
+    }
     this.handleGetClusters(selectedCluster => {
       this.handleGetConnects(selectedCluster);
     });

@@ -15,7 +15,7 @@ class TopicList extends Tab {
   state = {
     topics: [],
     showDeleteModal: false,
-    selectedCluster: 'my-cluster',
+    selectedCluster: '',
     deleteMessage: '',
     deleteData: {},
     selectedTopic: constants.TOPICS.ALL,
@@ -30,7 +30,10 @@ class TopicList extends Tab {
   };
 
   componentDidMount() {
-    this.getTopics();
+    let { clusterId } = this.props.match.params;
+    this.setState({ selectedCluster: clusterId }, () => {
+      this.getTopics();
+    });
   }
 
   showDeleteModal = (deleteMessage, deleteData) => {
@@ -62,17 +65,20 @@ class TopicList extends Tab {
   }
 
   async getTopics() {
+    let { history } = this.props;
     let topics = {};
     let selectedClusterId = this.state.selectedCluster;
     let selectedTopic = this.state.selectedTopic;
     let search = this.state.search;
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
+      console.log('Topics', topics, selectedClusterId);
       if (topics.data) {
         this.handleTopics(topics.data);
         this.setState({ selectedCluster: selectedClusterId });
       }
     } catch (err) {
+      history.replace('/error', { errorData: err });
       console.log('Error :' + err);
     }
   }
