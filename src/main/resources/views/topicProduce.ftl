@@ -1,6 +1,8 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="schemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
+
 
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>
@@ -22,9 +24,21 @@
     <div class="form-group row">
         <label for="key-schema" class="col-sm-2 col-form-label">Key schema id</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" name="keySchema" id="key-schema" autocomplete="off" placeholder="Key Schema id">
+            <select
+                    name="keySchema"
+                    id="key-schema"
+                    class="khq-select form-control col-sm-4"
+                    data-style="btn-white"
+                    data-live-search="true"
+                    title="Schemas"
+            >
+                <#list schemasList as schema>
+                    <option value="${schema.getId()}">${schema.getSubject()}</option>
+                </#list>
+            </select>
         </div>
     </div>
+
     <div class="form-group row">
         <label for="key" class="col-sm-2 col-form-label">Key</label>
         <div class="col-sm-10">
@@ -41,17 +55,28 @@
             </div>
         </div>
     </div>
-
     <div class="form-group row">
         <label for="timestamp" class="col-sm-2 col-form-label">Timestamp</label>
         <div class="col-sm-10 khq-datetime">
-            <input type="text" class="form-control datetimepicker-input" name="timestamp" id="timestamp" autocomplete="off" data-toggle="datetimepicker" data-target="#timestamp" placeholder="Timestamp"/>
+            <input type="text" class="form-control datetimepicker-input" name="timestamp" id="timestamp"
+                   autocomplete="off" data-toggle="datetimepicker" data-target="#timestamp" placeholder="Timestamp"/>
         </div>
     </div>
     <div class="form-group row">
         <label for="value-schema" class="col-sm-2 col-form-label">Value schema id</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" name="valueSchema" id="value-schema" autocomplete="off" placeholder="Value Schema id">
+            <select
+                    name="valueSchema"
+                    id="value-schema"
+                    class="khq-select form-control col-sm-4"
+                    data-style="btn-white"
+                    data-live-search="true"
+                    title="Schemas"
+            >
+                <#list schemasList as schema>
+                    <option value="${schema.getId()}">${schema.getSubject()}</option>
+                </#list>
+            </select>
         </div>
     </div>
     <div class="form-group row">

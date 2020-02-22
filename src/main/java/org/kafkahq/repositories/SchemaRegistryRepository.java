@@ -6,6 +6,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.AvroSerializer;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.utils.CheckedFunction;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
 
@@ -14,6 +15,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -26,17 +28,23 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private AvroSerializer avroSerializer;
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        return PagedList.of(all(clusterId, search), pagination, list -> list
-            .stream()
-            .map(s -> {
-                try {
-                    return getLatestVersion(clusterId, s);
-                } catch (RestClientException | IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .collect(Collectors.toList())
-        );
+        return PagedList.of(all(clusterId, search), pagination, list -> this.toSchemasLastestVersion(list, clusterId));
+    }
+
+    public List<Schema> listAll(String clusterId, Optional<String> search) throws IOException, RestClientException {
+        return toSchemasLastestVersion(all(clusterId, search), clusterId);
+    }
+
+    private List<Schema> toSchemasLastestVersion(List<String> subjectList, String clusterId){
+        return subjectList .stream()
+                .map(s -> {
+                    try {
+                        return getLatestVersion(clusterId, s);
+                    } catch (RestClientException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     public List<String> all(String clusterId, Optional<String> search) throws  IOException, RestClientException {

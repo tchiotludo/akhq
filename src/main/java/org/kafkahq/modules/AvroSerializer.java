@@ -46,7 +46,7 @@ public class AvroSerializer {
     }
 
     private byte[] fromJsonToAvro(String json, Schema schema, int schemaId) throws IOException {
-        log.trace("encoding message {} with schema {}",json, schema);
+        log.trace("encoding message {} with schema {} and id {}",json, schema, schemaId);
         InputStream input = new ByteArrayInputStream(json.getBytes());
         DataInputStream din = new DataInputStream(input);
 
