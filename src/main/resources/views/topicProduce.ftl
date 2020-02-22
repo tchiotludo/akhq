@@ -1,8 +1,8 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
-<#-- @ftlvariable name="schemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
-
+<#-- @ftlvariable name="keySchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
+<#-- @ftlvariable name="valueSchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>
@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="form-group row">
-        <label for="key-schema" class="col-sm-2 col-form-label">Key schema id</label>
+        <label for="key-schema" class="col-sm-2 col-form-label">Key schema</label>
         <div class="col-sm-10">
             <select
                     name="keySchema"
@@ -30,9 +30,9 @@
                     class="khq-select form-control col-sm-4"
                     data-style="btn-white"
                     data-live-search="true"
-                    title="Schemas"
+                    title="Key schemas"
             >
-                <#list schemasList as schema>
+                <#list keySchemasList as schema>
                     <option value="${schema.getId()}">${schema.getSubject()}</option>
                 </#list>
             </select>
@@ -63,7 +63,7 @@
         </div>
     </div>
     <div class="form-group row">
-        <label for="value-schema" class="col-sm-2 col-form-label">Value schema id</label>
+        <label for="value-schema" class="col-sm-2 col-form-label">Value schema</label>
         <div class="col-sm-10">
             <select
                     name="valueSchema"
@@ -71,9 +71,9 @@
                     class="khq-select form-control col-sm-4"
                     data-style="btn-white"
                     data-live-search="true"
-                    title="Schemas"
+                    title="Value schemas"
             >
-                <#list schemasList as schema>
+                <#list valueSchemasList as schema>
                     <option value="${schema.getId()}">${schema.getSubject()}</option>
                 </#list>
             </select>

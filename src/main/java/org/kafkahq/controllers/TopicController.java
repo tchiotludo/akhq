@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.Role;
+import org.kafkahq.middlewares.SchemaComparator;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Schema;
@@ -56,6 +57,8 @@ import java.util.stream.Collectors;
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/topic")
 public class TopicController extends AbstractController {
+    public static final String VALUE_SUFFIX = "-value";
+    public static final String KEY_SUFFIX = "-key";
     private AbstractKafkaWrapper kafkaWrapper;
     private TopicRepository topicRepository;
     private ConfigRepository configRepository;
@@ -192,11 +195,21 @@ public class TopicController extends AbstractController {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         List<Schema> schemas = this.schemaRegistryRepository.listAll(cluster, Optional.empty());
+        List<Schema> keySchemas = schemas.stream()
+                .filter(schema -> !schema.getSubject().endsWith(VALUE_SUFFIX))
+                .sorted(new SchemaComparator(topicName, true))
+                .collect(Collectors.toList());
+        List<Schema> valueSchemas = schemas.stream()
+                .filter(schema -> !schema.getSubject().endsWith(KEY_SUFFIX))
+                .sorted(new SchemaComparator(topicName, false))
+                .collect(Collectors.toList());
+
         return this.template(
             request,
             cluster,
             "topic", topic,
-                "schemasList", schemas
+                "keySchemasList", keySchemas,
+                "valueSchemasList", valueSchemas
         );
     }
 
