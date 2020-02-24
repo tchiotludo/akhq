@@ -22,6 +22,9 @@ export const uriTopics = (id, view, search) => {
       : 'topicsByType?clusterId=' + id + '&view=' + view
   } `;
 };
+
+export const uriTopicsCreate = () => 'topic/create';
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -29,4 +32,12 @@ export const uriNodesConfigs = (clusterId, nodeId) => {
   );
 };
 
-export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
+export default {
+  apiUrl,
+  uriClusters,
+  uriConnects,
+  uriNodes,
+  uriNodesConfigs,
+  uriTopics,
+  uriTopicsCreate
+};
