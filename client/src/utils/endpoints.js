@@ -22,6 +22,7 @@ export const uriTopics = (id, view, search) => {
       : 'topicsByType?clusterId=' + id + '&view=' + view
   } `;
 };
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
