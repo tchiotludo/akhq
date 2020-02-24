@@ -66,7 +66,6 @@ class TopicList extends Tab {
       topic.size = 0;
       topic.logDirSize = 0;
 
-      //TODO find out where all the extra topic info comes from (i.e skipeConsumerGroups or replicaCount)
       renderedTopics.push(
         <tr key={topic._id}>
           <td>{topic.name}</td>
