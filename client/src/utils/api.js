@@ -9,8 +9,15 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        console.error('GET', err);
-        reject(err);
+        console.log('err', err);
+        if (err.response) {
+          console.log('1');
+          return history.replace('/error', { errorData: err });
+        } else {
+          console.log('2');
+          return history.replace('/error');
+        }
+        // reject(err);
       });
   });
 
@@ -22,7 +29,7 @@ export const put = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject();
+        reject(err);
       });
   });
 

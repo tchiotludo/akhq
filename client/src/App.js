@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.scss';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { baseUrl, uriClusters } from './utils/endpoints';
 import Routes from './utils/Routes';
 import history from './utils/history';
@@ -11,9 +11,14 @@ class App extends React.Component {
   };
 
   componentDidMount() {
-    api.get(uriClusters()).then(res => {
-      this.setState({ clusterId: res.data[0].id });
-    });
+    api
+      .get(uriClusters())
+      .then(res => {
+        this.setState({ clusterId: res.data[0].id });
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
   }
   render() {
     const { clusterId } = this.state;
