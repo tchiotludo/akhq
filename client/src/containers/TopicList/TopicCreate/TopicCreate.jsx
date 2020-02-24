@@ -8,10 +8,10 @@ class TopicCreate extends Form {
   state = {
     formData: {
       name: '',
-      partition: 0,
-      replication: 0,
+      partition: 1,
+      replication: 1,
       cleanup: 'delete',
-      retention: 0
+      retention: 86400000
     },
     errors: {}
   };
@@ -32,9 +32,7 @@ class TopicCreate extends Form {
     retention: Joi.number().label('Retention')
   };
 
-  componentDidMount() {
-    this.setState({ formData: this.props.location.state.formData });
-  }
+  componentDidMount() {}
 
   onCleanupChange = value => {
     let { formData } = { ...this.state };
