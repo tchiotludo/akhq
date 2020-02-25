@@ -23,6 +23,13 @@ export const uriTopics = (id, view, search) => {
   } `;
 };
 
+export const uriTopicsPartitions = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/cluster/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +

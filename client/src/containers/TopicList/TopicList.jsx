@@ -104,7 +104,8 @@ class TopicList extends Component {
   }
 
   render() {
-    const { topics } = this.state;
+    const { topics, selectedCluster, selectedTopic } = this.state;
+    const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
       { colName: 'Topics', colSpan: 3 },
@@ -156,6 +157,9 @@ class TopicList extends Component {
             'replicationInSync',
             'groupComponent'
           ]}
+          onDetails={id => {
+            history.push(`/${selectedCluster}/topic/${id}`);
+          }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         ></Table>
 
