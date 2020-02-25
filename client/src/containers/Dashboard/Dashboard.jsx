@@ -13,7 +13,7 @@ import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Topic from '../TopicList/Topic';
-import NodeDetails from '../NodeDetails';
+import Node from '../NodesList/Node/Node';
 class Dashboard extends Component {
   state = {
     clusterId: '',
@@ -128,7 +128,7 @@ class Dashboard extends Component {
             return <Topic clusterId={clusterId} topicId={action} />;
         }
       case 'node':
-        return <NodeDetails clusterId={clusterId} nodeId={action} />;
+        return <tails clusterId={clusterId} nodeId={action} />;
       case 'tail':
         break;
       case 'group':

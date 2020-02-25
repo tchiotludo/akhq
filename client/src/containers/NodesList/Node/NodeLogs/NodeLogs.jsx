@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Header from '../../../Header/Header';
 import { get } from '../../../../utils/api';
-import { uriNodesConfigs } from '../../../../utils/endpoints';
+import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import converters from '../../../../utils/converters';
 
@@ -16,32 +16,34 @@ class NodeLogs extends Component {
 
   componentDidMount() {
     this.getNodesLogs();
-    console.log('props: ',this.props);
+    console.log('props: ', this.props);
   }
 
   async getNodesLogs() {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
-    
+
     try {
-      configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
+      configs = await get(uriNodesLogs(selectedCluster, selectedNode));
       this.handleData(configs.data);
     } catch (err) {
       console.error('Error:', err);
     }
   }
 
-  handleData(configs) {
-    let tableNodes = configs.map(config => {
+  handleData(logs) {
+    console.log(logs);
+    let tableNodes = logs.map(log => {
       return {
-        nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-        value: this.getInput(config.value, config.name, config.readOnly, config.dataType),
-        typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+        broker: log.broker,
+        topic:log.topic,
+        partition:log.partition,
+        size:log.size,
+        offsetLag:log.offsetLag
       };
     });
     this.setState({ data: tableNodes });
   }
-
 
   renderTabs(tabName, isActive) {
     const active = isActive ? 'active' : '';
@@ -59,8 +61,8 @@ class NodeLogs extends Component {
     return (
       <div>
         <Table
-          colNames={['Broker', 'Topic', 'Partition','Size','OffsetLag']}
-          toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
+          colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
+          toPresent={['broker', 'topic', 'partition','size','offsetLag']}
           data={data}
         />
       </div>
