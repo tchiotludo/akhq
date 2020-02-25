@@ -12,7 +12,7 @@ import Group from '../containers/Group';
 import Acls from '../containers/Acls';
 import Schema from '../containers/Schema';
 import Connect from '../containers/Connect';
-import ErrorPage from '../containers/ErrorPage';
+import ErrorBoundary from '../containers/ErrorBoundary';
 import api from '../utils/api';
 import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
@@ -22,13 +22,13 @@ class Routes extends Component {
     const { location, match, clusterId } = this.props;
 
     let path = location.pathname.split('/');
-    if (path[1] === 'error') {
-      return (
-        <Switch>
-          <Route exact path="/error" component={ErrorPage} />
-        </Switch>
-      );
-    }
+    // if (path[1] === 'error') {
+    //   return (
+    //     <Switch>
+    //       <Route exact path="/error" component={ErrorBoundary} />
+    //     </Switch>
+    //   );
+    // }
 
     return (
       <Base>
@@ -47,11 +47,11 @@ class Routes extends Component {
           <Redirect
             path="/"
             to={
-              match.params.clusterId
-                ? '/:clusterId/topic'
-                : !match.params.clusterId && clusterId
-                ? `/${clusterId}/topic`
-                : '/error'
+              '/:clusterId/topic' + match.params.clusterId
+              // ? '/:clusterId/topic'
+              // : !match.params.clusterId && clusterId
+              // ? `/${clusterId}/topic`
+              // : '/error'
             }
           />
         </Switch>

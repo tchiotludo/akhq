@@ -1,6 +1,11 @@
 import axios from 'axios';
 import history from './history';
 
+const handleError = err => {
+  console.log('error', err);
+  return err;
+};
+
 export const get = url =>
   new Promise((resolve, reject) => {
     axios
@@ -9,15 +14,7 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        console.log('err', err);
-        if (err.response) {
-          console.log('1');
-          return history.replace('/error', { errorData: err });
-        } else {
-          console.log('2');
-          return history.replace('/error');
-        }
-        // reject(err);
+        reject(handleError(err));
       });
   });
 
@@ -29,7 +26,7 @@ export const put = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(err);
+        reject(handleError(err));
       });
   });
 
@@ -41,7 +38,7 @@ export const post = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject();
+        reject(handleError(err));
       });
   });
 
@@ -53,7 +50,7 @@ export const remove = url =>
         resolve(res);
       })
       .catch(err => {
-        reject();
+        reject(handleError(err));
       });
   });
 

@@ -5,6 +5,7 @@ import { baseUrl, uriClusters } from './utils/endpoints';
 import Routes from './utils/Routes';
 import history from './utils/history';
 import api from './utils/api';
+import ErrorBoundary from './containers/ErrorBoundary';
 class App extends React.Component {
   state = {
     clusterId: ''
@@ -25,7 +26,9 @@ class App extends React.Component {
     if (clusterId) {
       return (
         <Router history={history}>
-          <Routes clusterId={clusterId} location={baseUrl} />
+          <ErrorBoundary>
+            <Routes clusterId={clusterId} location={baseUrl} />
+          </ErrorBoundary>
         </Router>
       );
     }
