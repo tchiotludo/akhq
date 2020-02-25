@@ -1,4 +1,4 @@
-package org.kafkahq.service.dto;
+package org.kafkahq.service.dto.topic;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
