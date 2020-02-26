@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
 import Joi from 'joi-browser';
 import _ from 'lodash';
@@ -14,8 +14,8 @@ class Form extends Component {
   };
 
   validate = () => {
-    const options = {abortEarly: false};
-    const {error} = Joi.validate(this.state.formData, this.schema);
+    const options = { abortEarly: false };
+    const { error } = Joi.validate(this.state.formData, this.schema);
     if (!error) return null;
 
     const errors = {};
@@ -26,10 +26,10 @@ class Form extends Component {
     return errors;
   };
 
-  validateProperty = ({name, value}) => {
-    const obj = {[name]: value};
-    const schema = {[name]: this.schema[name]};
-    const {error} = Joi.validate(obj, schema);
+  validateProperty = ({ name, value }) => {
+    const obj = { [name]: value };
+    const schema = { [name]: this.schema[name] };
+    const { error } = Joi.validate(obj, schema);
 
     return error ? error.details[0].message : null;
   };
@@ -38,15 +38,15 @@ class Form extends Component {
     e.preventDefault();
 
     const errors = this.validate();
-    this.setState({errors: errors || {}});
+    this.setState({ errors: errors || {} });
 
     if (errors) return;
 
     this.doSubmit();
   };
 
-  handleChange = ({currentTarget: input}) => {
-    const errors = {...this.state.errors};
+  handleChange = ({ currentTarget: input }) => {
+    const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
     if (errorMessage) {
       errors[input.name] = errorMessage;
@@ -54,9 +54,9 @@ class Form extends Component {
       delete errors[input.name];
     }
 
-    const formData = {...this.state.formData};
+    const formData = { ...this.state.formData };
     formData[input.name] = input.value;
-    this.setState({formData, errors});
+    this.setState({ formData, errors });
   };
 
   renderButton = (label, click, className, type) => {
@@ -74,8 +74,8 @@ class Form extends Component {
     );
   };
 
-  renderInput = (name, label, placeholder, type = 'text') => {
-    const {formData, errors} = this.state;
+  renderInput = (name, label, placeholder, type = 'text', rest) => {
+    const { formData, errors } = this.state;
 
     return (
       <Input
@@ -86,12 +86,13 @@ class Form extends Component {
         placeholder={placeholder}
         onChange={this.handleChange}
         error={errors[name]}
+        {...rest}
       />
     );
   };
 
   renderSelect = (name, label, items) => {
-    const {formData, errors} = this.state;
+    const { formData, errors } = this.state;
 
     return (
       <Select
@@ -106,7 +107,7 @@ class Form extends Component {
   };
 
   renderRadioGroup = (name, label, options, onChange) => {
-    const {formData} = this.state;
+    const { formData } = this.state;
     const items = [];
 
     for (let option of options) {

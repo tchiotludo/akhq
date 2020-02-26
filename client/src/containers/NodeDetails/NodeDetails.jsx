@@ -1,19 +1,26 @@
 import React, { Component } from 'react';
 import Header from '../Header';
+import Form from '../../components/Form/Form';
 import { get } from '../../utils/api';
 import { uriNodesConfigs } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import './styles.scss';
 import converters from '../../utils/converters';
+import _ from 'lodash';
+import Joi from 'joi-browser';
 
-class NodeDetails extends Component {
+class NodeDetails extends Form {
   state = {
     host: '',
     port: '',
     data: [],
     selectedCluster: this.props.match.params.clusterId,
-    selectedNode: this.props.match.params.nodeId
+    selectedNode: this.props.match.params.nodeId,
+    formData: {},
+    errors: {}
   };
+
+  schema = {};
 
   componentDidMount() {
     this.getNodesConfig();
@@ -32,12 +39,14 @@ class NodeDetails extends Component {
 
   handleData(configs) {
     let tableNodes = configs.map(config => {
+      this.createValidationSchema(config);
       return {
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
         value: this.getInput(config.value, config.name, config.readOnly, config.dataType),
         typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
       };
     });
+    console.log(this.state.formData, this.schema);
     this.setState({ data: tableNodes });
   }
 
@@ -54,17 +63,40 @@ class NodeDetails extends Component {
     }
   }
 
+  createValidationSchema(config) {
+    let validation;
+    if (config.dataType === 'TEXT') {
+      validation = Joi.string().required();
+    } else {
+      validation = Joi.number()
+        .min(0)
+        .required();
+    }
+    this.schema[config.name] = validation;
+  }
+
   getInput(value, name, readOnly, dataType) {
+    this.setState({
+      formData: {
+        [name]: value
+      }
+    });
+
     return (
       <div>
-        <input
+        {/* <input
           type="text"
           onChange={console.log('done')}
           className="form-control"
           autoComplete="off"
           value={value}
           readOnly={readOnly}
-        />
+        /> */}
+        {this.renderInput(name, '', '', 'text', {
+          autoComplete: 'off',
+          value,
+          readOnly
+        })}
         {this.handleDataType(dataType, value)}
       </div>
     );
@@ -124,6 +156,7 @@ class NodeDetails extends Component {
           toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
           data={data}
         />
+        {this.renderButton('Create', undefined, undefined, 'submit')}
       </div>
     );
   }
