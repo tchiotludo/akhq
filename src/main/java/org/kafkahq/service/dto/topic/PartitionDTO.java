@@ -13,7 +13,31 @@ import java.util.List;
 public class PartitionDTO {
     private int id;
     private int leader;
-    private List<Pair<Integer, Boolean>> replicas;
-    private Pair<Long, Long> offsets;
-    private Pair<Long, Long> size;
+    private List<ReplicaDTO> replicas;
+    private OffsetsDTO offsets;
+    private SizesDTO size;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ReplicaDTO {
+        private int id;
+        private boolean inSync;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OffsetsDTO {
+        private long firstOffset;
+        private long lastOffset;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SizesDTO {
+        private long minSize;
+        private long maxSize;
+    }
 }
