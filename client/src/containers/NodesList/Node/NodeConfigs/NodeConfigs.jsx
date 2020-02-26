@@ -16,13 +16,13 @@ class NodeConfigs extends Component {
 
   componentDidMount() {
     this.getNodesConfig();
-    console.log('props: ',this.props);
+    console.log('props: ', this.props);
   }
 
   async getNodesConfig() {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
-    
+
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);

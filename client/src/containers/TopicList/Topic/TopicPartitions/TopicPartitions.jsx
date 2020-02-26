@@ -7,7 +7,7 @@ class TopicPartitions extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topic.id
+    selectedTopic: this.props.topic
   };
 
   componentDidMount() {
@@ -18,9 +18,10 @@ class TopicPartitions extends Component {
   async getTopicsPartitions() {
     let partitions = [];
     const { selectedCluster, selectedTopic } = this.state;
-
+    console.log('cluster', selectedCluster);
+    console.log('topic', selectedTopic);
     try {
-        partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
+      partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       this.handleData(partitions.data);
     } catch (err) {
       console.error('Error:', err);
@@ -28,26 +29,54 @@ class TopicPartitions extends Component {
   }
 
   handleData(partitions) {
-    console.log('partitions',partitions);
+    console.log('partitions', partitions);
+
+    if (!partitions) {
+      console.log('Not getting anything from backend');
+    }
     let tablePartitions = partitions.map(partition => {
       return {
         id: partition.id,
         leader: partition.leader,
-        partition: partition.partition,
-        size: partition.size,
-        offsetLag: partition.offsetLag
+        replicas: partition.replicas,
+        offsets: partition.offsets,
+        size: partition.size
       };
     });
     this.setState({ data: tablePartitions });
   }
+  /*
+  handleLeader(leader){
+    return 
+  }
+
+  handleReplicas(replicas){
+    replicas.map(replica=>{
+      switch(replica)
+    })
+  }
+
+  handleOffsets(offsets){
+    return (
+      $(offsets.firstOffset)
+      ---->
+      $(offsets.lastOffset)
+    )
+
+  }
+
+  handleSize(size){
+
+  }
+*/
 
   render() {
-    const { data, selectedTopic, selectedCluster } = this.state;
+    const { data } = this.state;
     return (
       <div>
         <Table
-          colNames={['id', 'Leader', 'Replicas', 'Offset', 'Size']}
-          toPresent={['id', 'leader', 'replicas', 'offset','size']}
+          colNames={['id', 'Leader', 'Replicas', 'Offsets', 'Size']}
+          toPresent={['id', 'leader', 'replicas', 'offsets', 'size']}
           data={data}
         />
       </div>

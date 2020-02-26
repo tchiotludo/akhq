@@ -25,7 +25,7 @@ export const uriTopics = (id, view, search) => {
 
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
-    `${apiUrl}/cluster/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${topicId ? '&topicId=' + topicId : ''}`
   );
 };

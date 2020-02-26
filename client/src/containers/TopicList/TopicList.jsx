@@ -55,10 +55,6 @@ class TopicList extends Component {
     });
   };
 
-  handleOnDetails() {
-    console.log('handleOnDetails');
-  }
-
   handleOnDelete() {
     console.log('handleOnDelete');
   }
@@ -91,6 +87,7 @@ class TopicList extends Component {
       topic.size = 0;
       topic.logDirSize = 0;
       tableTopics.push({
+        id: topic.name,
         name: topic.name,
         size: <span className="text-nowrap">≈ {topic.size}</span>,
         weight: topic.count,
@@ -146,7 +143,6 @@ class TopicList extends Component {
           firstHeader={firstColumns}
           colNames={columnNames}
           data={topics}
-          onDetails={this.handleOnDetails}
           onDelete={this.handleOnDelete}
           toPresent={[
             'name',
