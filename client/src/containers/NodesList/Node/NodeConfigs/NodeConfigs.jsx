@@ -16,7 +16,7 @@ class NodeConfigs extends Component {
 
   componentDidMount() {
     this.getNodesConfig();
-    console.log('props: ', this.props);
+
   }
 
   async getNodesConfig() {

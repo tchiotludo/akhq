@@ -30,7 +30,6 @@ class NodeLogs extends Component {
   }
 
   handleData(logs) {
-    console.log(logs);
     let tableNodes = logs.map(log => {
       return {
         broker: log.broker,
