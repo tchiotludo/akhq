@@ -30,4 +30,11 @@ export const uriNodesConfigs = (clusterId, nodeId) => {
   );
 };
 
+export const uriNodesLogs = (clusterId, nodeId) => {
+  return (
+    `${apiUrl}/cluster/nodes/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${nodeId ? '&nodeId=' + nodeId : ''}`
+  );
+};
+
 export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
