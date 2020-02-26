@@ -3,6 +3,7 @@ import Header from '../../../Header/Header';
 import { get } from '../../../../utils/api';
 import { uriNodesConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
+import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
 import _ from 'lodash';
 import Joi from 'joi-browser';
@@ -37,8 +38,16 @@ class NodeConfigs extends Form {
   }
 
   handleData(configs) {
-    let tableNodes = configs.map(config => {
+    configs.map(config => {
       this.createValidationSchema(config);
+    });
+
+    let tableNodes = configs.map(config => {
+      // this.setState({
+      //   formData: {
+      //     [config.name]: isNaN(+config.value) ? config.value : +config.value
+      //   }
+      // });
       return {
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
         value: this.getInput(config.value, config.name, config.readOnly, config.dataType),
@@ -63,6 +72,7 @@ class NodeConfigs extends Form {
   }
 
   createValidationSchema(config) {
+    let { formData } = this.state;
     let validation;
     if (config.dataType === 'TEXT') {
       validation = Joi.string().required();
@@ -72,15 +82,12 @@ class NodeConfigs extends Form {
         .required();
     }
     this.schema[config.name] = validation;
+
+    formData[config.name] = isNaN(+config.value) ? config.value : +config.value;
+    this.setState({ formData });
   }
 
   getInput(value, name, readOnly, dataType) {
-    this.setState({
-      formData: {
-        [name]: value
-      }
-    });
-
     return (
       <div>
         {/* <input
@@ -91,9 +98,8 @@ class NodeConfigs extends Form {
           value={value}
           readOnly={readOnly}
         /> */}
-        {this.renderInput(name, '', '', 'text', {
+        {this.renderInput(name, '', 'Default', 'text', {
           autoComplete: 'off',
-          value,
           readOnly
         })}
         {this.handleDataType(dataType, value)}
@@ -144,14 +150,16 @@ class NodeConfigs extends Form {
   render() {
     const { data, selectedNode, selectedCluster } = this.state;
     return (
-      <div>
-        <Table
-          colNames={['Name', 'Value', 'Type']}
-          toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
-          data={data}
-        />
-        {this.renderButton('Create', undefined, undefined, 'submit')}
-      </div>
+      <form encType="multipart/form-data" className="khq-form mb-0">
+        <div>
+          <Table
+            colNames={['Name', 'Value', 'Type']}
+            toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
+            data={data}
+          />
+          {this.renderButton('Create', undefined, undefined, 'submit')}
+        </div>
+      </form>
     );
   }
 }

@@ -46,6 +46,7 @@ class Form extends Component {
   };
 
   handleChange = ({ currentTarget: input }) => {
+    console.log(input.value);
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
     if (errorMessage) {
@@ -54,9 +55,10 @@ class Form extends Component {
       delete errors[input.name];
     }
 
-    const formData = { ...this.state.formData };
+    const { formData } = this.state;
     formData[input.name] = input.value;
     this.setState({ formData, errors });
+    console.log(this.state.formData);
   };
 
   renderButton = (label, click, className, type) => {
@@ -76,6 +78,7 @@ class Form extends Component {
 
   renderInput = (name, label, placeholder, type = 'text', rest) => {
     const { formData, errors } = this.state;
+    console.log(formData[name]);
 
     return (
       <Input
