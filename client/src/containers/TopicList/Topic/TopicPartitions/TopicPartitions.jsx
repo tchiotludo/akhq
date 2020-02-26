@@ -37,38 +37,35 @@ class TopicPartitions extends Component {
     let tablePartitions = partitions.map(partition => {
       return {
         id: partition.id,
-        leader: partition.leader,
-        replicas: partition.replicas,
-        offsets: partition.offsets,
-        size: partition.size
+        leader: this.handleLeader(partition.leader),
+        replicas: this.handleLeader.handleReplicas(partition.replicas),
+        offsets: this.handleOffsets(partition.offsets),
+        size: this.handleSize(partition.size)
       };
     });
     this.setState({ data: tablePartitions });
   }
-  /*
-  handleLeader(leader){
-    return 
+
+  handleLeader(leader) {
+    return;
   }
 
-  handleReplicas(replicas){
-    replicas.map(replica=>{
-      switch(replica)
-    })
+  handleReplicas(replicas) {
+    replicas.map(replica => {
+      switch (replica.inSync) {
+        case true:
+          return <span className="label label-sucess"> {replica.id}</span>;
+        case false:
+          return <span className="label label-danger"> {replica.id}</span>;
+      }
+    });
   }
 
-  handleOffsets(offsets){
-    return (
-      $(offsets.firstOffset)
-      ---->
-      $(offsets.lastOffset)
-    )
-
+  handleOffsets(offsets) {
+    return <label>$(offsets.firstOffset) ----> $(offsets.lastOffset)</label>;
   }
 
-  handleSize(size){
-
-  }
-*/
+  handleSize(size) {}
 
   render() {
     const { data } = this.state;
