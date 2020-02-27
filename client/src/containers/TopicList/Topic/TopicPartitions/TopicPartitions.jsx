@@ -27,10 +27,6 @@ class TopicPartitions extends Component {
   }
 
   handleData(partitions) {
-
-    if (!partitions) {
-      console.log('Not getting anything from backend');
-    }
     let tablePartitions = partitions.map(partition => {
       return {
         id: partition.id,
