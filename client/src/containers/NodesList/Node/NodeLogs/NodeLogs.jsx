@@ -16,7 +16,6 @@ class NodeLogs extends Component {
 
   componentDidMount() {
     this.getNodesLogs();
-    console.log('props: ', this.props);
   }
 
   async getNodesLogs() {
@@ -35,10 +34,10 @@ class NodeLogs extends Component {
     let tableNodes = logs.map(log => {
       return {
         broker: log.broker,
-        topic:log.topic,
-        partition:log.partition,
-        size:log.size,
-        offsetLag:log.offsetLag
+        topic: log.topic,
+        partition: log.partition,
+        size: log.size,
+        offsetLag: log.offsetLag
       };
     });
     this.setState({ data: tableNodes });
@@ -61,7 +60,7 @@ class NodeLogs extends Component {
       <div>
         <Table
           colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
-          toPresent={['broker', 'topic', 'partition','size','offsetLag']}
+          toPresent={['broker', 'topic', 'partition', 'size', 'offsetLag']}
           data={data}
         />
       </div>

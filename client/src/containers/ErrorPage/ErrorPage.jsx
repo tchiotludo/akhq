@@ -1,41 +1,32 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
-import { get } from '../../utils/api';
-import { uriClusters } from '../../utils/endpoints';
 
 class ErrorPage extends Component {
   static propTypes = {
-    title: PropTypes.string,
-    message: PropTypes.string,
-    status: PropTypes.string
+    children: PropTypes.element
   };
-
   state = {
-    title: '',
-    message: '',
-    status: ''
+    title: null,
+    description: null
   };
 
   componentDidMount() {
-    const { data, status } = this.props.history.location.state.errorData.response;
-    this.setState({ title: data.title, message: data.description, status });
-  }
-
-  async handleRetry() {
-    const { history } = this.props;
-    try {
-      let response = await get(uriClusters());
-      if (response.data.length > 0) {
-        history.replace(`/${response.data[0].id}/topic`);
+    if (this.props.location && this.props.location.state.errorData) {
+      let { errorData } = this.props.location.state;
+      if (errorData.response) {
+        let { title, description } = errorData.response.data;
+        this.setState({ title, description });
       }
-    } catch (err) {
-      console.error(err);
     }
   }
 
+  /**
+   * If there will be a reload button, use this at onClick: window.location.reload()
+   */
+
   render() {
-    const { title, message } = this.state;
+    const { title, description } = this.state;
     return (
       <div id="content" className="no-side-bar">
         <div className="mb-5">
@@ -46,11 +37,11 @@ class ErrorPage extends Component {
             </sup>
           </h3>
         </div>
-        <code>{title || ''}</code>
+        <code>{title || 'Error'}</code>
         <br />
         <br />
         <pre>
-          <code>{message || ''}</code>
+          <code>{description || 'Something went wrong.'}</code>
         </pre>
       </div>
     );
