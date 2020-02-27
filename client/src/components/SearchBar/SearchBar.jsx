@@ -24,7 +24,6 @@ class SearchBar extends Component {
   }
 
   setTopic(topic) {
-    console.log('topicsearshbar', topic);
     this.setState({ topic }, () => {
       this.props.onChangeTopic(topic);
     });
