@@ -24,14 +24,14 @@ class ErrorBoundary extends Component {
     this.setState({ error, info, hasError: true });
   }
 
-  // componentWillReceiveProps(nextProps) {
-  //   if (window.location.pathname === '/error') {
-  //     console.log('error is true', history);
-  //     this.setState({ hasError: true });
-  //   } else {
-  //     this.setState({ hasError: false });
-  //   }
-  // }
+  componentWillReceiveProps(nextProps) {
+    if (window.location.pathname === '/error') {
+      console.log('error is true', history);
+      this.setState({ hasError: true });
+    } else {
+      this.setState({ hasError: false });
+    }
+  }
 
   /**
    * If there will be a reload button, use this at onClick: window.location.reload()
@@ -41,7 +41,7 @@ class ErrorBoundary extends Component {
     const { error, info, hasError } = this.state;
     const { children } = this.props;
     if (hasError) {
-      return <ErrorPage />;
+      return <ErrorPage history={history} />;
     }
     return children;
   }

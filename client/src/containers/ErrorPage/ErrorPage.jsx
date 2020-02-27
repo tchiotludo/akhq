@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
+import history from '../../utils/history';
 
 class ErrorPage extends Component {
   static propTypes = {
@@ -12,12 +13,17 @@ class ErrorPage extends Component {
   };
 
   componentDidMount() {
-    if (this.props.location && this.props.location.state.errorData) {
-      let { errorData } = this.props.location.state;
-      if (errorData.response) {
-        let { title, description } = errorData.response.data;
-        this.setState({ title, description });
-      }
+    console.log('history', history);
+    let errorData = {};
+    if (this.props.location && this.props.history.location.state) {
+      errorData = this.props.history.location.state.errorData;
+    } else if (history.location && history.location.state) {
+      errorData = history.location.state.errorData;
+    }
+
+    if (errorData.response) {
+      let { title, description } = errorData.response.data;
+      this.setState({ title, description });
     }
   }
 
