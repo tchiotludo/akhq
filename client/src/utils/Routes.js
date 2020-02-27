@@ -5,7 +5,7 @@ import Login from '../containers/Login/Login';
 import TopicList from '../containers/TopicList';
 import Topic from '../containers/TopicList/Topic';
 import NodesList from '../containers/NodesList/NodesList';
-import NodeDetails from '../components/NodesList/Node';
+import NodeDetails from '../containers/NodesList/Node';
 import Base from '../components/Base/Base.jsx';
 import Tail from '../containers/Tail';
 import Group from '../containers/Group';
