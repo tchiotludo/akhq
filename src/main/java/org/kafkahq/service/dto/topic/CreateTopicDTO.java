@@ -14,5 +14,4 @@ public class CreateTopicDTO {
     private short replicatorFactor;
     private String cleanupPolicy;
     private String retention;
-
 }
