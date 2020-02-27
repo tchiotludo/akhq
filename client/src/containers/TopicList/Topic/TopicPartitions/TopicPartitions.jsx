@@ -13,14 +13,11 @@ class TopicPartitions extends Component {
 
   componentDidMount() {
     this.getTopicsPartitions();
-    console.log('props: ', this.props);
   }
 
   async getTopicsPartitions() {
     let partitions = [];
     const { selectedCluster, selectedTopic } = this.state;
-    console.log('cluster', selectedCluster);
-    console.log('topic', selectedTopic);
     try {
       partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       this.handleData(partitions.data);
@@ -30,7 +27,6 @@ class TopicPartitions extends Component {
   }
 
   handleData(partitions) {
-    console.log('partitions', partitions);
 
     if (!partitions) {
       console.log('Not getting anything from backend');
@@ -48,44 +44,36 @@ class TopicPartitions extends Component {
   }
 
   handleLeader(leader) {
-    return <span className="label label-primary"> {leader}</span>;
+    return <span className="badge badge-primary"> {leader}</span>;
   }
 
   handleReplicas(replicas) {
-    replicas.map(replica => {
-      switch (replica.inSync) {
-        case true:
-          return <span className="label label-sucess"> {replica.id}</span>;
-        case false:
-          return <span className="label label-danger"> {replica.id}</span>;
-      }
+    return replicas.map(replica => {
+      return (
+        <span key={replica.id} className={replica.inSync ? 'badge badge-success' : 'badge badge-danger'}>
+          {' '}
+          {replica.id}
+        </span>
+      );
     });
   }
 
   handleOffsets(offsets) {
     return (
       <label>
-        {offsets.firstOffset}--->{offsets.lastOffset}
+        {offsets.firstOffset} ⤑ {offsets.lastOffset}
       </label>
     );
   }
 
   handleSize(size) {
-    return <label>{converters.showBytes(size)}</label>;
+    return (
+      <label>
+        {size.minSize} - {converters.showBytes(size.maxSize,0)}
+      </label>
+    );
   }
 
-  handleDataType(dataType, value) {
-    switch (dataType) {
-      case 'MILLI':
-        return (
-          <small className="humanize form-text text-muted">{converters.showTime(value)}</small>
-        );
-      case 'BYTES':
-        return (
-          <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
-        );
-    }
-  }
   render() {
     const { data } = this.state;
     return (
