@@ -45,11 +45,6 @@ class NodeConfigs extends Form {
     });
 
     let tableNodes = configs.map(config => {
-      // this.setState({
-      //   formData: {
-      //     [config.name]: isNaN(+config.value) ? config.value : +config.value
-      //   }
-      // });
       return {
         id: config.name,
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
