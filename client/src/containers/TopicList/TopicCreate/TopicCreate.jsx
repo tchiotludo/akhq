@@ -53,9 +53,10 @@ class TopicCreate extends Form {
       topicId: formData.name,
       partition: formData.partition,
       replicatorFactor: formData.replication,
-      cleanupPolicy: formData.cleanup,
+      cleanupPolicy: formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
       retention: formData.retention
     }; // || topicService.getTopic(clusterId, topicId)
+    console.log('topic', topic);
     post(uriTopicsCreate(), topic).then(res => {
       this.props.history.push({
         pathname: `/${clusterId}/topic`,
