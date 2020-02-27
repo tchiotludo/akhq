@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { uriTopicsPartitions } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
+import converters from '../../../../utils/converters';
 
 class TopicPartitions extends Component {
   state = {
@@ -38,7 +39,7 @@ class TopicPartitions extends Component {
       return {
         id: partition.id,
         leader: this.handleLeader(partition.leader),
-        replicas: this.handleLeader.handleReplicas(partition.replicas),
+        replicas: this.handleReplicas(partition.replicas),
         offsets: this.handleOffsets(partition.offsets),
         size: this.handleSize(partition.size)
       };
@@ -47,7 +48,7 @@ class TopicPartitions extends Component {
   }
 
   handleLeader(leader) {
-    return;
+    return <span className="label label-primary"> {leader}</span>;
   }
 
   handleReplicas(replicas) {
@@ -62,11 +63,29 @@ class TopicPartitions extends Component {
   }
 
   handleOffsets(offsets) {
-    return <label>$(offsets.firstOffset) ----> $(offsets.lastOffset)</label>;
+    return (
+      <label>
+        {offsets.firstOffset}--->{offsets.lastOffset}
+      </label>
+    );
   }
 
-  handleSize(size) {}
+  handleSize(size) {
+    return <label>{converters.showBytes(size)}</label>;
+  }
 
+  handleDataType(dataType, value) {
+    switch (dataType) {
+      case 'MILLI':
+        return (
+          <small className="humanize form-text text-muted">{converters.showTime(value)}</small>
+        );
+      case 'BYTES':
+        return (
+          <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
+        );
+    }
+  }
   render() {
     const { data } = this.state;
     return (
