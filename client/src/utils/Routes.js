@@ -5,7 +5,7 @@ import Login from '../containers/Login/Login';
 import TopicList from '../containers/TopicList';
 import Topic from '../containers/TopicList/Topic';
 import NodesList from '../containers/NodesList/NodesList';
-import NodeDetails from '../containers/NodeDetails';
+import Node from '../containers/NodesList/Node/Node';
 import Base from '../components/Base/Base.jsx';
 import Tail from '../containers/Tail';
 import Group from '../containers/Group';
@@ -34,7 +34,7 @@ class Routes extends Component {
       <Base>
         <Switch location={location}>
           <Route exact path="/:clusterId/node" component={NodesList} />
-          <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
+          <Route exact path="/:clusterId/node/:nodeId" component={Node} />
           <Route exact path="/:clusterId/topic" component={TopicList} />
           <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
           <Route exact path="/:clusterId/topic/:topicId" component={Topic} />

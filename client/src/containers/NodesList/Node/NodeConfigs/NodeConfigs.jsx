@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
-import Header from '../Header';
-import { get } from '../../utils/api';
-import { uriNodesConfigs } from '../../utils/endpoints';
-import Table from '../../components/Table';
-import './styles.scss';
-import converters from '../../utils/converters';
+import Header from '../../../Header/Header';
+import { get } from '../../../../utils/api';
+import { uriNodesConfigs } from '../../../../utils/endpoints';
+import Table from '../../../../components/Table';
+import converters from '../../../../utils/converters';
 
-class NodeDetails extends Component {
+class NodeConfigs extends Component {
   state = {
     host: '',
     port: '',
     data: [],
-    selectedCluster: this.props.match.params.clusterId,
-    selectedNode: this.props.match.params.nodeId
+    selectedCluster: this.props.clusterId,
+    selectedNode: this.props.nodeId
   };
 
   componentDidMount() {
@@ -22,6 +21,7 @@ class NodeDetails extends Component {
   async getNodesConfig() {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
+    
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);
@@ -111,14 +111,9 @@ class NodeDetails extends Component {
   }
 
   render() {
-    const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
+    const { data, selectedNode, selectedCluster } = this.state;
     return (
-      <div id="content" style={{ height: '100%' }}>
-        <Header title={`Node: ${nodeId}`} />
-        <ul className="nav nav-tabs" role="tablist">
-          {this.renderTabs('Configs', true)}
-          {this.renderTabs('Logs', false)}
-        </ul>
+      <div>
         <Table
           colNames={['Name', 'Value', 'Type']}
           toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
@@ -129,4 +124,4 @@ class NodeDetails extends Component {
   }
 }
 
-export default NodeDetails;
+export default NodeConfigs;
