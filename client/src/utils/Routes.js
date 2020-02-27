@@ -29,10 +29,8 @@ class Routes extends Component {
     if (clusterId.length <= 0) {
       clusterId = this.props.clusterId;
     }
-    console.log('route', path, clusterId);
 
     if (path[1] === 'error') {
-      console.log('here routes');
       return (
         <Switch>
           <Route exact path="/error" component={ErrorPage} />
