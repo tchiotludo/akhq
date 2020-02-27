@@ -13,7 +13,14 @@ const Input = props => {
         <div></div>
       )}
       <div className="col-sm-10">
-        <input {...rest} name={name} id={name} className="form-control" placeholder={placeholder} />
+        <input
+          {...rest}
+          key={name}
+          name={name}
+          id={name}
+          className="form-control"
+          placeholder={placeholder}
+        />
 
         {error && <div className="alert alert-danger mt-1 p-1">{error}</div>}
       </div>
