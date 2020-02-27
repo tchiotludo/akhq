@@ -12,7 +12,6 @@ class ErrorPage extends Component {
   };
 
   componentDidMount() {
-    console.log('Error props', this.props);
     if (this.props.location && this.props.location.state.errorData) {
       let { errorData } = this.props.location.state;
       if (errorData.response) {

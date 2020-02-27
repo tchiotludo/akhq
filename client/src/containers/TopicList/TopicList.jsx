@@ -64,7 +64,6 @@ class TopicList extends Component {
   }
 
   async getTopics() {
-    console.log('here topics');
     let { history } = this.props;
     let topics = {};
     let selectedClusterId = this.state.selectedCluster;
@@ -72,14 +71,12 @@ class TopicList extends Component {
     let search = this.state.search;
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
-      console.log('Topics', topics, selectedClusterId);
       if (topics.data) {
         this.handleTopics(topics.data);
         this.setState({ selectedCluster: selectedClusterId });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
-      console.log('Error on Topics :' + err);
     }
   }
 

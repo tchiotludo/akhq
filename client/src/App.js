@@ -14,7 +14,6 @@ class App extends React.Component {
     api
       .get(uriClusters())
       .then(res => {
-        console.log('res in App.js', res);
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
