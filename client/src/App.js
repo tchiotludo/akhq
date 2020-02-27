@@ -5,6 +5,7 @@ import { baseUrl, uriClusters } from './utils/endpoints';
 import Routes from './utils/Routes';
 import history from './utils/history';
 import api from './utils/api';
+import Loading from '../src/containers/Loading/loading';
 class App extends React.Component {
   state = {
     clusterId: ''
@@ -24,7 +25,8 @@ class App extends React.Component {
         </Router>
       );
     }
-    return <span />;
+
+    return <Loading />;
   }
 }
 

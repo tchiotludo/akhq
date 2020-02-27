@@ -16,6 +16,7 @@ import ErrorPage from '../containers/ErrorPage';
 import api from '../utils/api';
 import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
+import Loading from '../containers/Loading/loading';
 
 class Routes extends Component {
   render() {
