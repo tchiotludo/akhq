@@ -22,9 +22,17 @@ export const uriTopics = (id, view, search) => {
       : 'topicsByType?clusterId=' + id + '&view=' + view
   } `;
 };
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${nodeId ? '&nodeId=' + nodeId : ''}`
+  );
+};
+
+export const uriNodesLogs = (clusterId, nodeId) => {
+  return (
+    `${apiUrl}/cluster/nodes/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${nodeId ? '&nodeId=' + nodeId : ''}`
   );
 };
