@@ -23,7 +23,7 @@ export const uriTopics = (id, view, search) => {
   } `;
 };
 
-export const uriTopicsCreate = () => 'topic/create';
+export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
 
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (

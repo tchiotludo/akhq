@@ -50,14 +50,19 @@ class TopicCreate extends Form {
     const { clusterId } = this.props.match.params;
     const topic = {
       clusterId,
-      name: formData.name,
+      topicId: formData.name,
       partition: formData.partition,
-      replication: formData.replication,
-      cleanup: formData.cleanup,
+      replicatorFactor: formData.replication,
+      cleanupPolicy: formData.cleanup,
       retention: formData.retention
     }; // || topicService.getTopic(clusterId, topicId)
-    console.log('topic', topic);
-    //post(uriTopicsCreate(), {})
+    post(uriTopicsCreate(), topic).then(res => {
+      this.props.history.push({
+        pathname: `/${clusterId}/topic`,
+        showSuccessToast: true,
+        successToastMessage: `Topic '${formData.name}' was created successfully.`
+      });
+    });
 
     /* const response = saveTopic(topic);
 
