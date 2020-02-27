@@ -46,14 +46,11 @@ class Sidebar extends Component {
         { allClusters: allClusters.data, selectedCluster: allClusters.data[0].id },
         () => {
           const { selectedCluster } = this.state;
-          const fetchCluster = localStorage.getItem('fetchCluster');
-          if (fetchCluster) {
-            this.props.history.push({
-              pathname: `/${selectedCluster}/topic`,
-              selectedCluster
-            });
-            localStorage.setItem('fetchCluster', false);
-          }
+
+          // this.props.history.push({
+          //   pathname: `/${selectedCluster}/topic`,
+          //   selectedCluster
+          // });
 
           callback(selectedCluster);
         }

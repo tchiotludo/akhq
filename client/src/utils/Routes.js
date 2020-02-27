@@ -16,47 +16,52 @@ import ErrorBoundary from '../containers/ErrorBoundary';
 import api from '../utils/api';
 import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
+import ErrorPage from '../containers/ErrorPage';
+import history from '../utils/history';
 
 class Routes extends Component {
   render() {
-    const { location, match, clusterId } = this.props;
+    const { location, match } = this.props;
+    let path = window.location.pathname.split('/');
 
-    let path = location.pathname.split('/');
-    // if (path[1] === 'error') {
-    //   return (
-    //     <Switch>
-    //       <Route exact path="/error" component={ErrorBoundary} />
-    //     </Switch>
-    //   );
-    // }
+    let clusterId = '';
+    clusterId = path[1];
+    if (clusterId.length <= 0) {
+      clusterId = this.props.clusterId;
+    }
+    console.log('route', path, clusterId);
 
-    return (
-      <Base>
-        <Switch location={location}>
-          <Route exact path="/:clusterId/node" component={NodesList} />
-          <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
-          <Route exact path="/:clusterId/topic" component={TopicList} />
-          <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
-          <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
-          <Route exact path="/:clusterId/tail" component={Tail} />
-          <Route exact path="/:clusterId/group" component={Group} />
-          <Route exact path="/:clusterId/acls" component={Acls} />
-          <Route exact path="/:clusterId/schema" component={Schema} />
-          <Route exact path="/:clusterId/connect" component={Connect} />
-          <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
-          <Redirect
-            path="/"
-            to={
-              '/:clusterId/topic' + match.params.clusterId
-              // ? '/:clusterId/topic'
-              // : !match.params.clusterId && clusterId
-              // ? `/${clusterId}/topic`
-              // : '/error'
-            }
-          />
+    if (path[1] === 'error') {
+      console.log('here routes');
+      return (
+        <Switch>
+          <Route exact path="/error" component={ErrorPage} />
         </Switch>
-      </Base>
-    );
+      );
+    }
+    if (clusterId.length > 0) {
+      return (
+        <Base>
+          <Switch location={location}>
+            <Route exact path="/:clusterId/topic" component={TopicList} />
+            <Route exact path="/:clusterId/node" component={NodesList} />
+            <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
+
+            <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
+            <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
+            <Route exact path="/:clusterId/tail" component={Tail} />
+            <Route exact path="/:clusterId/group" component={Group} />
+            <Route exact path="/:clusterId/acls" component={Acls} />
+            <Route exact path="/:clusterId/schema" component={Schema} />
+            <Route exact path="/:clusterId/connect" component={Connect} />
+            <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
+            {/* <Route exact path="/error" component={ErrorPage} /> */}
+            <Redirect from="/" to={`/${clusterId}/topic`} />
+          </Switch>
+        </Base>
+      );
+    }
+    return <span />;
   }
 }
 export default withRouter(Routes);

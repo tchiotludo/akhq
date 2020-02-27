@@ -64,6 +64,7 @@ class TopicList extends Component {
   }
 
   async getTopics() {
+    console.log('here topics');
     let { history } = this.props;
     let topics = {};
     let selectedClusterId = this.state.selectedCluster;
@@ -78,7 +79,7 @@ class TopicList extends Component {
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
-      console.log('Error :' + err);
+      console.log('Error on Topics :' + err);
     }
   }
 

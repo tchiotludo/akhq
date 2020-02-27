@@ -25,7 +25,8 @@ class NodesList extends Component {
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      // history.replace('/error', { errorData: err });
+      console.log('error', err);
+      history.replace('/error', { errorData: err });
     }
   }
 

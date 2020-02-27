@@ -2,7 +2,6 @@ import axios from 'axios';
 import history from './history';
 
 const handleError = err => {
-  console.log('error', err);
   return err;
 };
 
@@ -14,6 +13,8 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
+        console.log('got here from', history.location.pathname);
+        history.replace('/error', { errorData: err });
         reject(handleError(err));
       });
   });
