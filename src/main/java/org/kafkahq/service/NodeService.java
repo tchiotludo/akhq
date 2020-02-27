@@ -64,6 +64,4 @@ public class NodeService {
                 .map(config -> nodeMapper.fromConfigToConfigDTO(config))
                 .collect(Collectors.toList());
     }
-
-
 }
