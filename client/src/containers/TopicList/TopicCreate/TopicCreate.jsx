@@ -34,10 +34,6 @@ class TopicCreate extends Form {
     retention: Joi.number().label('Retention')
   };
 
-  componentDidMount() {
-    console.log(this.props);
-  }
-
   onCleanupChange = value => {
     let { formData } = { ...this.state };
     formData.cleanup = value;
