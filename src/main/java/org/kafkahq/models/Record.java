@@ -30,7 +30,7 @@ public class Record {
     private final Map<String, String> headers = new HashMap<>();
     private final KafkaAvroDeserializer kafkaAvroDeserializer;
 
-    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer) {
+    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer, byte[] value) {
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -38,7 +38,7 @@ public class Record {
         this.timestampType = record.timestampType();
         this.key = record.key();
         this.keySchemaId = getAvroSchemaId(this.key);
-        this.value = record.value();
+        this.value = value;
         this.valueSchemaId = getAvroSchemaId(this.value);
         for (Header header: record.headers()) {
             this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
