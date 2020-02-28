@@ -58,7 +58,7 @@
   - Filter per partitions
   - Filter with a starting time
   - Filter data with a search string
-- **Consumer Groups** (only with kafka internal storage, not with old Zookepper)
+- **Consumer Groups** (only with kafka internal storage, not with old Zookeeper)
   - List with lag, topics assignments
   - Partitions view & lag
   - ACLS view
