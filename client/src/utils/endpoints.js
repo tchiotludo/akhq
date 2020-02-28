@@ -21,6 +21,8 @@ export const uriTopics = (id, view, search) => {
   } `;
 };
 
+export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
