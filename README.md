@@ -22,7 +22,7 @@
     - [Stand Alone](#stand-alone)
     - [Kubernetes using Helm](#running-in-kubernetes-using-a-helm-chart)
 - [Configuration](#configuration)
-    - [JVM.options file](#run-with-another-jvm-options-file)
+    - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
     - [KafkaHQ](#kafkahq-configuration)
     - [Security](#security)
