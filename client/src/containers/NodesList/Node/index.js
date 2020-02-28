@@ -1,3 +1,3 @@
-import Nodes from './Nodes';
+import Node from './Node';
 
-export default Nodes;
+export default Node;
