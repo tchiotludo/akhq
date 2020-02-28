@@ -58,7 +58,7 @@ class Table extends Component {
       <tr key={`tableRow${index}`}>
         {Object.keys(row).map(key => {
           if (toPresent.find(elem => elem === key)) {
-            return <td key={key}>{row[key]}</td>;
+            return <td key={`tableColumn${key}`}>{row[key]}</td>;
           }
         })}
         {actions && actions.length > 0 && this.renderActions(row)}
@@ -86,7 +86,6 @@ class Table extends Component {
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
               onClick={() => {
-                console.log('doRow', row);
                 onDetails && onDetails(row.id);
               }}
             >

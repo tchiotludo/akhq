@@ -23,6 +23,8 @@ export const uriTopics = (id, view, search) => {
   } `;
 };
 
+export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -35,6 +37,10 @@ export const uriNodesConfigs = (clusterId, nodeId) => {
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${nodeId ? '&nodeId=' + nodeId : ''}`
   );
+};
+
+export const uriNodesUpdateConfigs = () => {
+  return `${apiUrl}/cluster/nodes/update-configs`;
 };
 
 export const uriNodesLogs = (clusterId, nodeId) => {

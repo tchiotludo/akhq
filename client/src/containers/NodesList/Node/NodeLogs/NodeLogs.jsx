@@ -14,7 +14,6 @@ class NodeLogs extends Component {
 
   componentDidMount() {
     this.getNodesLogs();
-    console.log('props: ', this.props);
   }
 
   async getNodesLogs() {
