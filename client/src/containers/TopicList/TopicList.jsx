@@ -55,10 +55,6 @@ class TopicList extends Component {
     });
   };
 
-  handleOnDetails() {
-    console.log('handleOnDetails');
-  }
-
   handleOnDelete() {
     console.log('handleOnDelete');
   }
@@ -89,6 +85,7 @@ class TopicList extends Component {
       topic.size = 0;
       topic.logDirSize = 0;
       tableTopics.push({
+        id: topic.name,
         name: topic.name,
         size: <span className="text-nowrap">≈ {topic.size}</span>,
         weight: topic.count,
@@ -102,7 +99,8 @@ class TopicList extends Component {
   }
 
   render() {
-    const { topics } = this.state;
+    const { topics, selectedCluster, selectedTopic } = this.state;
+    const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
       { colName: 'Topics', colSpan: 3 },
@@ -143,7 +141,6 @@ class TopicList extends Component {
           firstHeader={firstColumns}
           colNames={columnNames}
           data={topics}
-          onDetails={this.handleOnDetails}
           onDelete={this.handleOnDelete}
           toPresent={[
             'name',
@@ -154,6 +151,9 @@ class TopicList extends Component {
             'replicationInSync',
             'groupComponent'
           ]}
+          onDetails={id => {
+            history.push(`/${selectedCluster}/topic/${id}`);
+          }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         ></Table>
 
