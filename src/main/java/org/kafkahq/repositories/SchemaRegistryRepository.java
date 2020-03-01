@@ -1,21 +1,24 @@
 package org.kafkahq.repositories;
 
+import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.AvroSerializer;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.utils.CheckedFunction;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -48,8 +51,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public List<String> all(String clusterId, Optional<String> search) throws  IOException, RestClientException {
-        return kafkaModule
-            .getRegistryRestClient(clusterId)
+        Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
+                .getRegistryRestClient(clusterId));
+        if(maybeRegistryRestClient.isEmpty()){
+            return List.of();
+        }
+        return maybeRegistryRestClient.get()
             .getAllSubjects()
             .stream()
             .filter(s -> isSearchMatch(search, s))

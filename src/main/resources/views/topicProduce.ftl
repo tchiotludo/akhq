@@ -21,24 +21,25 @@
             </select>
         </div>
     </div>
-    <div class="form-group row">
-        <label for="key-schema" class="col-sm-2 col-form-label">Key schema</label>
-        <div class="col-sm-10">
-            <select
-                    name="keySchema"
-                    id="key-schema"
-                    class="khq-select form-control col-sm-4"
-                    data-style="btn-white"
-                    data-live-search="true"
-                    title="Key schemas"
-            >
-                <#list keySchemasList as schema>
-                    <option value="${schema.getId()}">${schema.getSubject()}</option>
-                </#list>
-            </select>
+    <#if keySchemasList?size!=0 >
+        <div class="form-group row">
+            <label for="key-schema" class="col-sm-2 col-form-label">Key schema</label>
+            <div class="col-sm-10">
+                <select
+                        name="keySchema"
+                        id="key-schema"
+                        class="khq-select form-control col-sm-4"
+                        data-style="btn-white"
+                        data-live-search="true"
+                        title="Key schemas"
+                >
+                    <#list keySchemasList as schema>
+                        <option value="${schema.getId()}">${schema.getSubject()}</option>
+                    </#list>
+                </select>
+            </div>
         </div>
-    </div>
-
+    </#if>
     <div class="form-group row">
         <label for="key" class="col-sm-2 col-form-label">Key</label>
         <div class="col-sm-10">
@@ -62,23 +63,25 @@
                    autocomplete="off" data-toggle="datetimepicker" data-target="#timestamp" placeholder="Timestamp"/>
         </div>
     </div>
-    <div class="form-group row">
-        <label for="value-schema" class="col-sm-2 col-form-label">Value schema</label>
-        <div class="col-sm-10">
-            <select
-                    name="valueSchema"
-                    id="value-schema"
-                    class="khq-select form-control col-sm-4"
-                    data-style="btn-white"
-                    data-live-search="true"
-                    title="Value schemas"
-            >
-                <#list valueSchemasList as schema>
-                    <option value="${schema.getId()}">${schema.getSubject()}</option>
-                </#list>
-            </select>
+    <#if valueSchemasList?size!=0>
+        <div class="form-group row">
+            <label for="value-schema" class="col-sm-2 col-form-label">Value schema</label>
+            <div class="col-sm-10">
+                <select
+                        name="valueSchema"
+                        id="value-schema"
+                        class="khq-select form-control col-sm-4"
+                        data-style="btn-white"
+                        data-live-search="true"
+                        title="Value schemas"
+                >
+                    <#list valueSchemasList as schema>
+                        <option value="${schema.getId()}">${schema.getSubject()}</option>
+                    </#list>
+                </select>
+            </div>
         </div>
-    </div>
+    </#if>
     <div class="form-group row">
         <label for="value" class="col-sm-2 col-form-label">Value</label>
         <div class="col-sm-10">

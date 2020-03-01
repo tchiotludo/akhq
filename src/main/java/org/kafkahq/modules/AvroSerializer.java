@@ -34,7 +34,7 @@ public class AvroSerializer {
         this.registryClient = registryClient;
     }
 
-    public byte[] toAvro(String json, Integer schemaId) {
+    public byte[] toAvro(String json, int schemaId) {
         byte[] asBytes;
         try {
             Schema schema = this.registryClient.getById(schemaId);
