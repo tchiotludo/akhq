@@ -1,18 +1,27 @@
 import React, { Component } from 'react';
 import Header from '../../../Header/Header';
-import { get } from '../../../../utils/api';
-import { uriNodesConfigs } from '../../../../utils/endpoints';
+import { get, post } from '../../../../utils/api';
+import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
+import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
+import _ from 'lodash';
+import Joi from 'joi-browser';
 
-class NodeConfigs extends Component {
+class NodeConfigs extends Form {
   state = {
     host: '',
     port: '',
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedNode: this.props.nodeId
+    selectedNode: this.props.nodeId,
+    formData: {},
+    changedConfigs: {},
+    errors: {},
+    configs: []
   };
+
+  schema = {};
 
   componentDidMount() {
     this.getNodesConfig();
@@ -21,7 +30,7 @@ class NodeConfigs extends Component {
   async getNodesConfig() {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
-    
+
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);
@@ -31,14 +40,24 @@ class NodeConfigs extends Component {
   }
 
   handleData(configs) {
+    configs.map(config => {
+      this.createValidationSchema(config);
+    });
+
     let tableNodes = configs.map(config => {
       return {
+        id: config.name,
         nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-        value: this.getInput(config.value, config.name, config.readOnly, config.dataType),
+        value: this.getInput(
+          this.state.formData[config.name],
+          config.name,
+          config.readOnly,
+          config.dataType
+        ),
         typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
       };
     });
-    this.setState({ data: tableNodes });
+    this.setState({ data: tableNodes, configs });
   }
 
   handleDataType(dataType, value) {
@@ -54,17 +73,94 @@ class NodeConfigs extends Component {
     }
   }
 
+  createValidationSchema(config) {
+    let { formData } = this.state;
+    let validation;
+    if (isNaN(config.value)) {
+      validation = Joi.any();
+    } else {
+      validation = Joi.any();
+    }
+    this.schema[config.name] = validation;
+
+    formData[config.name] = isNaN(+config.value) ? config.value : +config.value;
+    this.setState({ formData });
+  }
+
+  onChange({ currentTarget: input }) {
+    let { data, configs } = this.state;
+    let config = {};
+    let newData = data.map(row => {
+      if (row.id === input.name) {
+        config = configs.find(config => config.name === input.name);
+        let { formData, changedConfigs } = this.state;
+        formData[input.name] = input.value;
+        if (input.value === config.value) {
+          delete changedConfigs[input.name];
+        } else {
+          changedConfigs[input.name] = input.value;
+        }
+
+        this.setState({ formData, changedConfigs });
+        return {
+          id: config.name,
+          nameAndDescription: this.handleNameAndDescription(config.name, config.description),
+          value: this.getInput(
+            this.state.formData[config.name],
+            config.name,
+            config.readOnly,
+            config.dataType
+          ),
+          typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+        };
+      }
+      return row;
+    });
+
+    this.setState({ data: newData });
+  }
+
+  async doSubmit() {
+    const { selectedCluster, selectedNode, changedConfigs } = this.state;
+    try {
+      await post(uriNodesUpdateConfigs(), {
+        clusterId: selectedCluster,
+        nodeId: selectedNode,
+        configs: changedConfigs
+      });
+
+      this.setState({ state: this.state });
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  }
+
   getInput(value, name, readOnly, dataType) {
     return (
       <div>
-        <input
-          type="text"
-          onChange={console.log('done')}
-          className="form-control"
-          autoComplete="off"
-          value={value}
-          readOnly={readOnly}
-        />
+        {dataType === 'TEXT' ? (
+          <input
+            type="text"
+            onChange={value => this.onChange(value)}
+            className="form-control"
+            autoComplete="off"
+            value={value}
+            readOnly={readOnly}
+            name={name}
+            placeholder="Default"
+          />
+        ) : (
+          <input
+            type="number"
+            onChange={value => this.onChange(value)}
+            className="form-control"
+            autoComplete="off"
+            value={value}
+            readOnly={readOnly}
+            name={name}
+            placeholder="Default"
+          />
+        )}
         {this.handleDataType(dataType, value)}
       </div>
     );
@@ -113,13 +209,20 @@ class NodeConfigs extends Component {
   render() {
     const { data, selectedNode, selectedCluster } = this.state;
     return (
-      <div>
-        <Table
-          colNames={['Name', 'Value', 'Type']}
-          toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
-          data={data}
-        />
-      </div>
+      <form
+        encType="multipart/form-data"
+        className="khq-form mb-0"
+        onSubmit={() => this.handleSubmit()}
+      >
+        <div>
+          <Table
+            colNames={['Name', 'Value', 'Type']}
+            toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
+            data={data}
+          />
+          {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
+        </div>
+      </form>
     );
   }
 }

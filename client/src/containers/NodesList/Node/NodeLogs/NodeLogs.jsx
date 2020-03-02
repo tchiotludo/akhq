@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import Header from '../../../Header/Header';
 import { get } from '../../../../utils/api';
 import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
-import converters from '../../../../utils/converters';
 
 class NodeLogs extends Component {
   state = {
@@ -19,12 +17,12 @@ class NodeLogs extends Component {
   }
 
   async getNodesLogs() {
-    let configs = [];
+    let logs = [];
     const { selectedCluster, selectedNode } = this.state;
 
     try {
-      configs = await get(uriNodesLogs(selectedCluster, selectedNode));
-      this.handleData(configs.data);
+      logs = await get(uriNodesLogs(selectedCluster, selectedNode));
+      this.handleData(logs.data);
     } catch (err) {
       console.error('Error:', err);
     }
@@ -43,19 +41,8 @@ class NodeLogs extends Component {
     this.setState({ data: tableNodes });
   }
 
-  renderTabs(tabName, isActive) {
-    const active = isActive ? 'active' : '';
-    return (
-      <li className="nav-item">
-        <a className={`nav-link ${active}`} href="#" role="tab">
-          {tabName}
-        </a>
-      </li>
-    );
-  }
-
   render() {
-    const { data, selectedNode, selectedCluster } = this.state;
+    const { data } = this.state;
     return (
       <div>
         <Table

@@ -48,7 +48,8 @@ public class NodeService {
     }
 
     public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws Throwable {
-        List<Config> updated = ConfigRepository.updatedConfigs(configOperation.getConfigs(), this.configRepository.findByBroker(configOperation.getClusterId(), configOperation.getNodeId()));
+        Map<String, String> configs = nodeMapper.convertConfigsMap(configOperation.getConfigs());
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(configOperation.getClusterId(), configOperation.getNodeId()));
 
         if (updated.size() == 0) {
             throw new IllegalArgumentException("No config to update");
