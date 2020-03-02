@@ -18,6 +18,7 @@ import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import history from '../utils/history';
+import Loading from '../containers/Loading/loading';
 
 class Routes extends Component {
   render() {
@@ -59,7 +60,7 @@ class Routes extends Component {
         </Base>
       );
     }
-    return <span />;
+    return <Loading />;
   }
 }
 export default withRouter(Routes);
