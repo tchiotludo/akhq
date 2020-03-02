@@ -3,6 +3,9 @@
 <#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
 <#-- @ftlvariable name="keySchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
 <#-- @ftlvariable name="valueSchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
+<#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
+<#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
+
 
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>
@@ -21,7 +24,7 @@
             </select>
         </div>
     </div>
-    <#if keySchemasList?size!=0 >
+    <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true && keySchemasList?size!=0>
         <div class="form-group row">
             <label for="key-schema" class="col-sm-2 col-form-label">Key schema</label>
             <div class="col-sm-10">
@@ -63,7 +66,7 @@
                    autocomplete="off" data-toggle="datetimepicker" data-target="#timestamp" placeholder="Timestamp"/>
         </div>
     </div>
-    <#if valueSchemasList?size!=0>
+    <#if registryEnabled?? && registryEnabled == true && roles?seq_contains("registry") == true  && valueSchemasList?size!=0>
         <div class="form-group row">
             <label for="value-schema" class="col-sm-2 col-form-label">Value schema</label>
             <div class="col-sm-10">
