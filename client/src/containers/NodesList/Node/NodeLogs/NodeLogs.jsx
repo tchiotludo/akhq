@@ -46,8 +46,40 @@ class NodeLogs extends Component {
     return (
       <div>
         <Table
-          colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
-          toPresent={['broker', 'topic', 'partition', 'size', 'offsetLag']}
+          columns={[
+            {
+              id: 'broker',
+              accessor: 'broker',
+              colName: 'Broker',
+              type: 'text'
+            },
+            {
+              id: 'topic',
+              accessor: 'topic',
+              colName: 'Topic',
+              type: 'text'
+            },
+            {
+              id: 'partition',
+              accessor: 'partition',
+              colName: 'Partition',
+              type: 'text'
+            },
+            {
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
+              type: 'text'
+            },
+            {
+              id: 'offsetLag',
+              accessor: 'offsetLag',
+              colName: 'OffsetLag',
+              type: 'text'
+            }
+          ]}
+          //colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
+          //toPresent={['broker', 'topic', 'partition', 'size', 'offsetLag']}
           data={data}
         />
       </div>

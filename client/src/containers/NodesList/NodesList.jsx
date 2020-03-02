@@ -72,7 +72,7 @@ class NodesList extends Component {
               type: 'text'
             }
           ]}
-          toPresent={['idToShow', 'host', 'rack']}
+          //toPresent={['idToShow', 'host', 'rack']}
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {

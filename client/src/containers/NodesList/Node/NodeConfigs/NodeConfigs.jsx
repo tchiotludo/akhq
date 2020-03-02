@@ -47,14 +47,12 @@ class NodeConfigs extends Form {
     let tableNodes = configs.map(config => {
       return {
         id: config.name,
-        nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-        value: this.getInput(
-          this.state.formData[config.name],
-          config.name,
-          config.readOnly,
-          config.dataType
-        ),
-        typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+        name: config.name,
+        description: config.description,
+        readOnly: config.readOnly,
+        dataType: config.dataType,
+        type: config.type,
+        sensitive: config.sensitive
       };
     });
     this.setState({ data: tableNodes, configs });
@@ -104,14 +102,12 @@ class NodeConfigs extends Form {
         this.setState({ formData, changedConfigs });
         return {
           id: config.name,
-          nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-          value: this.getInput(
-            this.state.formData[config.name],
-            config.name,
-            config.readOnly,
-            config.dataType
-          ),
-          typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+          name: config.name,
+          description: config.description,
+          readOnly: config.readOnly,
+          dataType: config.dataType,
+          type: config.type,
+          sensitive: config.sensitive
         };
       }
       return row;
@@ -208,6 +204,23 @@ class NodeConfigs extends Form {
 
   render() {
     const { data, selectedNode, selectedCluster } = this.state;
+    // const test = {
+    //   id: config.name,
+    //   name: config.name,
+    //   description: config.description,
+    //   readOnly: config.readOnly,
+    //   dataType: config.dataType,
+    //   type: config.type,
+    //   sensitive: config.sensitive,
+    //   nameAndDescription: this.handleNameAndDescription(config.name, config.description),
+    //   value: this.getInput(
+    //     this.state.formData[config.name],
+    //     config.name,
+    //     config.readOnly,
+    //     config.dataType
+    //   ),
+    //   typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
+    // };
     return (
       <form
         encType="multipart/form-data"
@@ -216,8 +229,42 @@ class NodeConfigs extends Form {
       >
         <div>
           <Table
-            colNames={['Name', 'Value', 'Type']}
-            toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
+            columns={[
+              {
+                id: 'nameAndDescription',
+                accessor: 'nameAndDescription',
+                colName: 'Name',
+                type: 'text',
+                cell: obj => {
+                  return this.handleNameAndDescription(obj.name, obj.description);
+                }
+              },
+              {
+                id: 'value',
+                accessor: 'value',
+                colName: 'Value',
+                type: 'text',
+                cell: obj => {
+                  return this.getInput(
+                    this.state.formData[obj.name],
+                    obj.name,
+                    obj.readOnly,
+                    obj.dataType
+                  );
+                }
+              },
+              {
+                id: 'typeAndSensitive',
+                accessor: 'typeAndSensitive',
+                colName: 'Type',
+                type: 'text',
+                cell: obj => {
+                  return this.handleTypeAndSensitive(obj.type, obj.sensitive);
+                }
+              }
+            ]}
+            //colNames={['Name', 'Value', 'Type']}
+            //toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
             data={data}
           />
           {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
