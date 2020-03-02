@@ -54,23 +54,21 @@ class TopicCreate extends Form {
     topic.retention = formData.retention;
 
     /* const response = saveTopic(topic);
-
-    if (response.error) {
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showErrorToast: true,
-        errorToastTitle: response.error.title,
-        errorToastMessage: response.error.message
-      });
-    } else {
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showSuccessToast: true,
-        successToastMessage: `Topic '${topic.name}' is created`
-      });
-    }
-  
-*/
+      if (response.error) {
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showErrorToast: true,
+          errorToastTitle: response.error.title,
+          errorToastMessage: response.error.message
+        });
+      } else {
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showSuccessToast: true,
+          successToastMessage: `Topic '${topic.name}' is created`
+        });
+      }
+    */
   }
   render() {
     return (

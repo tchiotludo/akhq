@@ -34,7 +34,7 @@ class NodesList extends Component {
       return {
         id: node.id || '',
         host: node.host || '',
-        idToShow: <span className="badge badge-info">{node.id || ''}</span>,
+        //idToShow: ,
         port: node.port || '',
         rack: node.rack || ''
       };
@@ -49,7 +49,29 @@ class NodesList extends Component {
       <div id="content">
         <Header title="Nodes" />
         <Table
-          colNames={['Id', 'Host', 'Racks']}
+          columns={[
+            {
+              id: 'id',
+              accessor: 'id',
+              colName: 'Id',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span className="badge badge-info">{obj[col.accessor] || ''}</span>;
+              }
+            },
+            {
+              id: 'host',
+              accessor: 'host',
+              colName: 'Host',
+              type: 'text'
+            },
+            {
+              id: 'racks',
+              accessor: 'rack',
+              colName: 'Racks',
+              type: 'text'
+            }
+          ]}
           toPresent={['idToShow', 'host', 'rack']}
           data={data}
           actions={[constants.TABLE_DETAILS]}

@@ -10,7 +10,7 @@ class Table extends Component {
   componentDidMount() {}
 
   renderHeader() {
-    const { has2Headers, firstHeader, colNames, actions, data } = this.props;
+    const { has2Headers, firstHeader, columns, actions, data } = this.props;
 
     return (
       <>
@@ -36,10 +36,10 @@ class Table extends Component {
         )}
         <thead className="thead-dark">
           <tr key="secondHeader">
-            {colNames.map((column, index) => {
+            {columns.map((column, index) => {
               return (
                 <th className="header-text" key={`secondHead${column.colName}${index}`}>
-                  {column}
+                  {column.colName}
                 </th>
               );
             })}
@@ -53,13 +53,14 @@ class Table extends Component {
   }
 
   renderRow(row, index) {
-    const { toPresent, actions } = this.props;
+    const { actions, columns } = this.props;
     return (
       <tr key={`tableRow${index}`}>
-        {Object.keys(row).map(key => {
-          if (toPresent.find(elem => elem === key)) {
-            return <td>{row[key]}</td>;
+        {columns.map((column, colIndex) => {
+          if (typeof column.cell === 'function') {
+            return <td id={`row_${column.id}_${colIndex}`}>{column.cell(row, column)}</td>;
           }
+          return <td id={`row_${column.id}_${colIndex}`}>{row[column.accessor]}</td>;
         })}
         {actions && actions.length > 0 && this.renderActions(row)}
       </tr>
@@ -116,7 +117,7 @@ class Table extends Component {
   }
 
   render() {
-    const { data, colNames } = this.props;
+    const { data, columns } = this.props;
 
     return (
       <div className="table-responsive">
@@ -129,7 +130,7 @@ class Table extends Component {
               })
             ) : (
               <tr>
-                <td colSpan={colNames.length}>
+                <td colSpan={columns.length}>
                   <div className="alert alert-info mb-0" role="alert">
                     No topic available
                   </div>
@@ -153,7 +154,15 @@ Table.propTypes = {
     })
   ),
   data: PropTypes.array,
-  colNames: PropTypes.array,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      accessor: PropTypes.string,
+      colName: PropTypes.string,
+      type: PropTypes.string,
+      cell: PropTypes.function
+    })
+  ),
   actions: PropTypes.array,
   onDetails: PropTypes.func,
   onDelete: PropTypes.func,
