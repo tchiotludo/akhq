@@ -145,7 +145,7 @@ file example can be found here :[application.example.yml](application.example.ym
 ### Run with another jvm.options file
 
 By default, the docker container will run with a [jvm.options](docker/app/jvm.options) file, you can override it with
-your own with an Environment Variable. With the `JVM_OPTS_FILE` varenv, you can override the jvm.options file by passing
+your own with an Environment Variable. With the `JVM_OPTS_FILE` environment variable, you can override the jvm.options file by passing
 the path of your file instead.
 
 Override the `JVM_OPTS_FILE` with docker run:
