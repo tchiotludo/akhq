@@ -37,10 +37,10 @@ export function showTime(milliseconds) {
   return `${valueToSHow} ${decimalPartToShow}`;
 }
 
-export function showBytes(bytes) {
+export function showBytes(bytes,dPlaces=2) {
   if (!bytes) return '0B';
   const value = handleConvert(bytes, 'B');
-  return `${value.val.toFixed(2)}${value.unit}`;
+  return `${value.val.toFixed(dPlaces)}${value.unit}`;
 }
 
 export default { showTime, showBytes };

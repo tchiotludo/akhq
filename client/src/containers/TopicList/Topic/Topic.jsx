@@ -13,6 +13,7 @@ import TopicLogs from './TopicLogs';
 class Topic extends Component {
   state = {
     clusterId: '',
+    topicId:'',
     topic: {
       _id: Date.now(),
       name: 'test',
@@ -27,7 +28,7 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
 
-    this.setState({ clusterId });
+    this.setState({ clusterId, topicId });
   }
 
   selectTab = tab => {
@@ -40,13 +41,13 @@ class Topic extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, topic } = this.state;
+    const { selectedTab, topicId,clusterId } = this.state;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData topic={topic} />;
+        return <TopicData topic={topicId} />;
       case 'partitions':
-        return <TopicPartitions />;
+        return <TopicPartitions clusterId={clusterId} topic={topicId} />;
       case 'groups':
         return <TopicGroups />;
       case 'configs':

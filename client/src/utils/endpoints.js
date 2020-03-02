@@ -1,3 +1,5 @@
+import { node } from 'prop-types';
+
 export const apiUrl = 'http://localhost:8080/api';
 export const baseUrl = 'http://localhost:8080';
 
@@ -21,11 +23,24 @@ export const uriTopics = (id, view, search) => {
   } `;
 };
 
+export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+
+export const uriTopicsPartitions = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${nodeId ? '&nodeId=' + nodeId : ''}`
   );
+};
+
+export const uriNodesUpdateConfigs = () => {
+  return `${apiUrl}/cluster/nodes/update-configs`;
 };
 
 export const uriNodesLogs = (clusterId, nodeId) => {

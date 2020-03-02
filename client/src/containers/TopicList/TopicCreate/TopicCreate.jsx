@@ -3,6 +3,8 @@ import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
+import { post } from '../../../utils/api';
+import { uriTopicsCreate } from '../../../utils//endpoints';
 
 class TopicCreate extends Form {
   state = {
@@ -32,8 +34,6 @@ class TopicCreate extends Form {
     retention: Joi.number().label('Retention')
   };
 
-  componentDidMount() {}
-
   onCleanupChange = value => {
     let { formData } = { ...this.state };
     formData.cleanup = value;
@@ -43,15 +43,23 @@ class TopicCreate extends Form {
 
   doSubmit() {
     const { formData } = this.state;
-    const { clusterId } = this.props;
-    const topic = {}; // || topicService.getTopic(clusterId, topicId)
-
-    topic.clusterId = clusterId;
-    topic.name = formData.name;
-    topic.partition = formData.partition;
-    topic.replication = formData.replication;
-    topic.cleanup = formData.cleanup;
-    topic.retention = formData.retention;
+    const { clusterId } = this.props.match.params;
+    const topic = {
+      clusterId,
+      topicId: formData.name,
+      partition: formData.partition,
+      replicatorFactor: formData.replication,
+      cleanupPolicy: formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
+      retention: formData.retention
+    }; // || topicService.getTopic(clusterId, topicId)
+    
+    post(uriTopicsCreate(), topic).then(res => {
+      this.props.history.push({
+        pathname: `/${clusterId}/topic`,
+        showSuccessToast: true,
+        successToastMessage: `Topic '${formData.name}' was created successfully.`
+      });
+    });
 
     /* const response = saveTopic(topic);
       if (response.error) {
@@ -90,7 +98,14 @@ class TopicCreate extends Form {
           )}
           {this.renderInput('retention', 'Retention', 'Retention', 'number')}
 
-          {this.renderButton('Create', undefined, undefined, 'submit')}
+          {this.renderButton(
+            'Create',
+            () => {
+              this.doSubmit();
+            },
+            undefined,
+            'button'
+          )}
           {/*<Modal show={this.state.showConfirmModal} handleClose={this.hideConfirmModal}>*/}
           {/*    <p>Modal</p>*/}
           {/*    <p>Data</p>*/}
