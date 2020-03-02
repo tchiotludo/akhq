@@ -87,11 +87,11 @@ class TopicList extends Component {
       tableTopics.push({
         id: topic.name,
         name: topic.name,
-        size: <span className="text-nowrap">≈ {topic.size}</span>,
+        size: topic.size,
         weight: topic.count,
         partitionsTotal: topic.total,
         replicationFactor: topic.factor,
-        replicationInSync: <span>{topic.inSync}</span>,
+        replicationInSync: topic.inSync,
         groupComponent: topic.logDirSize
       });
     });
@@ -108,16 +108,6 @@ class TopicList extends Component {
       { colName: 'Replications', colSpan: 2 },
       { colName: 'Consumer Groups', colSpan: 1 },
       { colName: '', colSpan: 1 }
-    ];
-    const columnNames = [
-      'Name',
-      'Size',
-      'Weight',
-      'Total',
-      'Factor',
-      'In Sync',
-      'Consumer Groups',
-      ''
     ];
 
     return (
@@ -139,18 +129,58 @@ class TopicList extends Component {
         <Table
           has2Headers
           firstHeader={firstColumns}
-          colNames={columnNames}
+          columns={[
+            {
+              id: 'name',
+              accessor: 'name',
+              colName: 'Name',
+              type: 'text'
+            },
+            {
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
+              }
+            },
+            {
+              id: 'weight',
+              accessor: 'weight',
+              colName: 'Weight',
+              type: 'text'
+            },
+            {
+              id: 'partitionsTotal',
+              accessor: 'partitionsTotal',
+              colName: 'Total',
+              type: 'text'
+            },
+            {
+              id: 'replicationFactor',
+              accessor: 'replicationFactor',
+              colName: 'Factor',
+              type: 'text'
+            },
+            {
+              id: 'replicationInSync',
+              accessor: 'replicationInSync',
+              colName: 'In Sync',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span>{obj[col.accessor]}</span>;
+              }
+            },
+            {
+              id: 'groupComponent',
+              accessor: 'groupComponent',
+              colName: 'Consumer Groups',
+              type: 'text'
+            }
+          ]}
           data={topics}
           onDelete={this.handleOnDelete}
-          toPresent={[
-            'name',
-            'size',
-            'weight',
-            'partitionsTotal',
-            'replicationFactor',
-            'replicationInSync',
-            'groupComponent'
-          ]}
           onDetails={id => {
             history.push(`/${selectedCluster}/topic/${id}`);
           }}

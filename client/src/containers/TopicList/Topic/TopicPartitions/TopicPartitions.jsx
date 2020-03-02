@@ -30,10 +30,10 @@ class TopicPartitions extends Component {
     let tablePartitions = partitions.map(partition => {
       return {
         id: partition.id,
-        leader: this.handleLeader(partition.leader),
-        replicas: this.handleReplicas(partition.replicas),
-        offsets: this.handleOffsets(partition.offsets),
-        size: this.handleSize(partition.size)
+        leader: partition.leader,
+        replicas: partition.replicas,
+        offsets: partition.offsets,
+        size: partition.size
       };
     });
     this.setState({ data: tablePartitions });
@@ -46,7 +46,10 @@ class TopicPartitions extends Component {
   handleReplicas(replicas) {
     return replicas.map(replica => {
       return (
-        <span key={replica.id} className={replica.inSync ? 'badge badge-success' : 'badge badge-danger'}>
+        <span
+          key={replica.id}
+          className={replica.inSync ? 'badge badge-success' : 'badge badge-danger'}
+        >
           {' '}
           {replica.id}
         </span>
@@ -65,7 +68,7 @@ class TopicPartitions extends Component {
   handleSize(size) {
     return (
       <label>
-        {size.minSize} - {converters.showBytes(size.maxSize,0)}
+        {size.minSize} - {converters.showBytes(size.maxSize, 0)}
       </label>
     );
   }
@@ -75,8 +78,50 @@ class TopicPartitions extends Component {
     return (
       <div>
         <Table
-          colNames={['id', 'Leader', 'Replicas', 'Offsets', 'Size']}
-          toPresent={['id', 'leader', 'replicas', 'offsets', 'size']}
+          columns={[
+            {
+              id: 'id',
+              accessor: 'id',
+              colName: 'Id',
+              type: 'text'
+            },
+            {
+              id: 'leader',
+              accessor: 'leader',
+              colName: 'Leader',
+              type: 'text',
+              cell: (obj, col) => {
+                return this.handleLeader(obj[col.accessor]);
+              }
+            },
+            {
+              id: 'replicas',
+              accessor: 'replicas',
+              colName: 'Replicas',
+              type: 'text',
+              cell: (obj, col) => {
+                return this.handleReplicas(obj[col.accessor]);
+              }
+            },
+            {
+              id: 'offsets',
+              accessor: 'offsets',
+              colName: 'Offsets',
+              type: 'text',
+              cell: (obj, col) => {
+                return this.handleOffsets(obj[col.accessor]);
+              }
+            },
+            {
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
+              type: 'text',
+              cell: (obj, col) => {
+                return this.handleSize(obj[col.accessor]);
+              }
+            }
+          ]}
           data={data}
         />
       </div>

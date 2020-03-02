@@ -47,11 +47,6 @@ class Sidebar extends Component {
         () => {
           const { selectedCluster } = this.state;
 
-          // this.props.history.push({
-          //   pathname: `/${selectedCluster}/topic`,
-          //   selectedCluster
-          // });
-
           callback(selectedCluster);
         }
       );
