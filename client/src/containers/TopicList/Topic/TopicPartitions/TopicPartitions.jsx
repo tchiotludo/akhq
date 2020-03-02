@@ -46,7 +46,10 @@ class TopicPartitions extends Component {
   handleReplicas(replicas) {
     return replicas.map(replica => {
       return (
-        <span key={replica.id} className={replica.inSync ? 'badge badge-success' : 'badge badge-danger'}>
+        <span
+          key={replica.id}
+          className={replica.inSync ? 'badge badge-success' : 'badge badge-danger'}
+        >
           {' '}
           {replica.id}
         </span>
@@ -65,7 +68,7 @@ class TopicPartitions extends Component {
   handleSize(size) {
     return (
       <label>
-        {size.minSize} - {converters.showBytes(size.maxSize,0)}
+        {size.minSize} - {converters.showBytes(size.maxSize, 0)}
       </label>
     );
   }
