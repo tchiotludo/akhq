@@ -57,14 +57,13 @@ public class TopicResource {
         topicService.createTopic(createTopicDTO);
     }
 
-    // TODO - Finish endpoint. Strange error while trying to do the route matching.
     @Get("/topic/data")
     public List<RecordDTO> fetchTopicData(String clusterId, String topicId,
-                                          @Null Optional<String> after,
-                                          @Null Optional<Integer> partition,
-                                          @Null Optional<RecordRepository.Options.Sort> sort,
-                                          @Null Optional<String> timestamp,
-                                          @Null Optional<String> search) throws ExecutionException, InterruptedException {
+                                          Optional<String> after,
+                                          Optional<Integer> partition,
+                                          Optional<RecordRepository.Options.Sort> sort,
+                                          Optional<String> timestamp,
+                                          Optional<String> search) throws ExecutionException, InterruptedException {
         log.debug("Fetch data from topic: {}", topicId);
         return topicService.getTopicData(clusterId, topicId, after, partition, sort, timestamp, search);
     }
