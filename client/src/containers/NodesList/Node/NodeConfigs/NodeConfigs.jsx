@@ -204,23 +204,6 @@ class NodeConfigs extends Form {
 
   render() {
     const { data, selectedNode, selectedCluster } = this.state;
-    // const test = {
-    //   id: config.name,
-    //   name: config.name,
-    //   description: config.description,
-    //   readOnly: config.readOnly,
-    //   dataType: config.dataType,
-    //   type: config.type,
-    //   sensitive: config.sensitive,
-    //   nameAndDescription: this.handleNameAndDescription(config.name, config.description),
-    //   value: this.getInput(
-    //     this.state.formData[config.name],
-    //     config.name,
-    //     config.readOnly,
-    //     config.dataType
-    //   ),
-    //   typeAndSensitive: this.handleTypeAndSensitive(config.type, config.sensitive)
-    // };
     return (
       <form
         encType="multipart/form-data"
@@ -263,8 +246,6 @@ class NodeConfigs extends Form {
                 }
               }
             ]}
-            //colNames={['Name', 'Value', 'Type']}
-            //toPresent={['nameAndDescription', 'value', 'typeAndSensitive']}
             data={data}
           />
           {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}

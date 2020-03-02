@@ -109,16 +109,6 @@ class TopicList extends Component {
       { colName: 'Consumer Groups', colSpan: 1 },
       { colName: '', colSpan: 1 }
     ];
-    const columnNames = [
-      'Name',
-      'Size',
-      'Weight',
-      'Total',
-      'Factor',
-      'In Sync',
-      'Consumer Groups',
-      ''
-    ];
 
     return (
       <div id="content">
@@ -139,7 +129,6 @@ class TopicList extends Component {
         <Table
           has2Headers
           firstHeader={firstColumns}
-          //colNames={columnNames}
           columns={[
             {
               id: 'name',
@@ -192,15 +181,6 @@ class TopicList extends Component {
           ]}
           data={topics}
           onDelete={this.handleOnDelete}
-          // toPresent={[
-          //   'name',
-          //   'size',
-          //   'weight',
-          //   'partitionsTotal',
-          //   'replicationFactor',
-          //   'replicationInSync',
-          //   'groupComponent'
-          // ]}
           onDetails={id => {
             history.push(`/${selectedCluster}/topic/${id}`);
           }}

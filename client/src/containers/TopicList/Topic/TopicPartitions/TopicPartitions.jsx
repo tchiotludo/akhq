@@ -122,8 +122,6 @@ class TopicPartitions extends Component {
               }
             }
           ]}
-          //colNames={['id', 'Leader', 'Replicas', 'Offsets', 'Size']}
-          //toPresent={['id', 'leader', 'replicas', 'offsets', 'size']}
           data={data}
         />
       </div>

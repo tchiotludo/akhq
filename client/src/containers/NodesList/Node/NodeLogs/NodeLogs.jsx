@@ -78,8 +78,6 @@ class NodeLogs extends Component {
               type: 'text'
             }
           ]}
-          //colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
-          //toPresent={['broker', 'topic', 'partition', 'size', 'offsetLag']}
           data={data}
         />
       </div>

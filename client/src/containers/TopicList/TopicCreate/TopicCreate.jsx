@@ -51,8 +51,8 @@ class TopicCreate extends Form {
       replicatorFactor: formData.replication,
       cleanupPolicy: formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
       retention: formData.retention
-    }; // || topicService.getTopic(clusterId, topicId)
-    
+    };
+
     post(uriTopicsCreate(), topic).then(res => {
       this.props.history.push({
         pathname: `/${clusterId}/topic`,
@@ -60,23 +60,6 @@ class TopicCreate extends Form {
         successToastMessage: `Topic '${formData.name}' was created successfully.`
       });
     });
-
-    /* const response = saveTopic(topic);
-      if (response.error) {
-        this.props.history.push({
-          pathname: `/${clusterId}/topic`,
-          showErrorToast: true,
-          errorToastTitle: response.error.title,
-          errorToastMessage: response.error.message
-        });
-      } else {
-        this.props.history.push({
-          pathname: `/${clusterId}/topic`,
-          showSuccessToast: true,
-          successToastMessage: `Topic '${topic.name}' is created`
-        });
-      }
-    */
   }
   render() {
     return (
