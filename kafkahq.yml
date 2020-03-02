@@ -22,8 +22,8 @@ kafkahq:
       schema-registry:
         url: "schema-registry:8085"
       connect:
-        name: connect-1
-        url: "connect-1:8083"
+        - name: connect-1
+          url: http://connect-1:8083
 
 
   # Topic list display options (optional)
