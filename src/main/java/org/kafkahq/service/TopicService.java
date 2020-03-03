@@ -44,12 +44,13 @@ public class TopicService {
 
     @Inject
     public TopicService(KafkaModule kafkaModule, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
-                        TopicRepository topicRepository, Environment environment) {
+                        TopicRepository topicRepository, Environment environment, RecordRepository recordRepository) {
         this.kafkaModule = kafkaModule;
         this.topicMapper = topicMapper;
         this.kafkaWrapper = kafkaWrapper;
         this.topicRepository = topicRepository;
         this.environment = environment;
+        this.recordRepository = recordRepository;
     }
 
     public List<TopicDTO> getAllTopicsByName(String clusterId, String view, String search)
