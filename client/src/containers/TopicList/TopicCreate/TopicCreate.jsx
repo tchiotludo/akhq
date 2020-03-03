@@ -63,7 +63,6 @@ class TopicCreate extends Form {
       })
       .catch(err => {
         this.props.history.push({
-          //pathname: `/${clusterId}/topic`,
           showErrorToast: true,
           errorToastTitle: err.response.data.title,
           errorToastMessage: err.response.data.description
@@ -98,13 +97,6 @@ class TopicCreate extends Form {
             undefined,
             'button'
           )}
-          {/*<Modal show={this.state.showConfirmModal} handleClose={this.hideConfirmModal}>*/}
-          {/*    <p>Modal</p>*/}
-          {/*    <p>Data</p>*/}
-          {/*</Modal>*/}
-          {/*<button type="button" onClick={this.showConfirmModal}>*/}
-          {/*    Create*/}
-          {/*</button>*/}
         </form>
       </div>
     );
