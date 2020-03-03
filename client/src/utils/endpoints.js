@@ -18,8 +18,8 @@ export const uriNodes = id => {
 export const uriTopics = (id, view, search) => {
   return `${apiUrl}/${
     search
-      ? 'topicsByName?clusterId=' + id + '&view=' + view + '&search=' + search
-      : 'topicsByType?clusterId=' + id + '&view=' + view
+      ? 'topics?clusterId=' + id + '&view=' + view + '&search=' + search
+      : 'topics?clusterId=' + id + '&view=' + view
   } `;
 };
 

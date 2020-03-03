@@ -17,8 +17,11 @@ class TopicList extends Component {
     selectedCluster: '',
     deleteMessage: '',
     deleteData: {},
-    selectedTopic: constants.TOPICS.ALL,
-    search: '',
+    pageNumber: 1,
+    searchData: {
+      search: '',
+      topicListView: 'ALL'
+    },
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -60,16 +63,15 @@ class TopicList extends Component {
   }
 
   async getTopics() {
-    let { history } = this.props;
+    const { history } = this.props;
+    const { selectedCluster } = this.state;
+    const { search, topicListView } = this.state.searchData;
     let topics = {};
-    let selectedClusterId = this.state.selectedCluster;
-    let selectedTopic = this.state.selectedTopic;
-    let search = this.state.search;
     try {
-      topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
+      topics = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search));
       if (topics.data) {
         this.handleTopics(topics.data);
-        this.setState({ selectedCluster: selectedClusterId });
+        this.setState({ selectedCluster: selectedCluster });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -99,7 +101,7 @@ class TopicList extends Component {
   }
 
   render() {
-    const { topics, selectedCluster, selectedTopic } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -124,16 +126,12 @@ class TopicList extends Component {
       <div id="content">
         <Header title="Topics" />
         <SearchBar
-          pagination={true}
-          topicListView={true}
-          value={this.state.value}
-          onChangeValue={value => {
-            this.setState({ value });
-          }}
-          topic={this.state.selectedTopic}
-          onChangeTopic={topic => {
-            this.setState({ topic });
-          }}
+          showSearch={true}
+          search={searchData.search}
+          showPagination={true}
+          pagination={pageNumber}
+          showTopicListView={true}
+          topicListView={searchData.topicListView}
         />
 
         <Table

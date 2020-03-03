@@ -1,21 +1,66 @@
 import React, { Component } from 'react';
+import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Pagination from '../Pagination';
 import constants from '../../utils/constants';
+import Form from '../Form/Form';
 
-class SearchBar extends Component {
+class SearchBar extends Form {
   static propTypes = {
-    pagination: PropTypes.bool,
-    topicListView: PropTypes.bool,
-    value: PropTypes.string,
-    onChangeValue: PropTypes.func,
-    topic: PropTypes.string,
-    onChangeTopic: PropTypes.func
+    showPagination: PropTypes.bool,
+    showTopicListView: PropTypes.bool,
+    showSearch: PropTypes.bool
   };
   state = {
-    value: '',
-    topic: constants.TOPICS.ALL
+    formData: {},
+    errors: {},
+    topicListViewOptions: [
+      {
+        _id: 'ALL',
+        name: 'ALL'
+      },
+      {
+        _id: 'HIDE_INTERNAL',
+        name: 'HIDE_INTERNAL'
+      },
+      {
+        _id: 'HIDE_INTERNAL_STREAM',
+        name: 'HIDE_INTERNAL_STREAM'
+      },
+      {
+        _id: 'HIDE_STREAM',
+        name: 'HIDE_STREAM'
+      }
+    ]
   };
+
+  schema = {};
+
+  componentDidMount() {
+    const { showSearch, showPagination, showTopicListView } = this.props;
+    const { formData, errors } = this.state;
+    if (showSearch) {
+      const { search } = this.props;
+      formData['search'] = search;
+      this.schema['search'] = Joi.string().allow('');
+    }
+
+    if (showPagination) {
+      const { pagination } = this.props;
+      formData['pagination'] = pagination;
+      this.schema['pagination'] = Joi.number()
+        .min(0)
+        .required();
+    }
+
+    if (showTopicListView) {
+      const { topicListView } = this.props;
+      formData['topicListView'] = topicListView;
+      this.schema['topicListView'] = Joi.string().required();
+    }
+
+    this.setState({ formData, errors });
+  }
 
   setValue(value) {
     this.setState({ value }, () => {
@@ -30,8 +75,8 @@ class SearchBar extends Component {
   }
 
   render() {
-    const { pagination, topicListView, onChangeValue, onChangeTopic } = this.props;
-    const { topic, value } = this.state;
+    const { showSearch, showPagination, showTopicListView } = this.props;
+    const { topicListViewOptions } = this.state;
     return (
       <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
         <button
@@ -46,7 +91,7 @@ class SearchBar extends Component {
           <span className="navbar-toggler-icon" />
         </button>
 
-        {pagination ? (
+        {showPagination ? (
           <nav>
             <Pagination />
           </nav>
@@ -56,46 +101,22 @@ class SearchBar extends Component {
 
         <div className="collapse navbar-collapse" id="navbar-search">
           <form className="form-inline mr-auto khq-form-get" method="get">
-            <input
-              className="form-control"
-              name="search"
-              placeholder="Search"
-              autoComplete="off"
-              type="text"
-            />
-            {/*<#if search.isPresent()>
-            value="${search.get()}"*/}
-            {/*</#if> />
-        <#if topicListView??>
-        <select name="show" className="khq-select" data-style="btn-white">
-        <option ${(topicListView.toString() == "ALL")?then("selected", "")}
-         value="ALL">Show all topics</option>
-        <option ${(topicListView.toString() == "HIDE_INTERNAL")?then("selected", "")} 
-        value="HIDE_INTERNAL">Hide internal topics</option>
-        <option ${(topicListView.toString() == "HIDE_INTERNAL_STREAM")?then("selected", "")}
-         value="HIDE_INTERNAL_STREAM">Hide internal & stream topics</option>
-        <option ${(topicListView.toString() == "HIDE_STREAM")?then("selected", "")} 
-        value="HIDE_STREAM">Hide stream topics</option>
-    </select>
-    </#if>*/}
-            {topicListView && (
-              <select
-                name="show"
-                value={topic}
-                className="khq-select form-control"
-                data-style="btn-white"
-                onChange={topic => this.setTopic(topic.target.value)}
-              >
-                {/*<option ${(topicListView.toString() == "ALL") ? then("selected", "")}*/}
-                <option value="ALL">Show all topics</option>
-                {/*<option ${(topicListView.toString() == "HIDE_INTERNAL") ? then("selected", "")}*/}
-                <option value="HIDE_INTERNAL">Hide internal topics</option>
-                {/*<option ${(topicListView.toString() == "HIDE_INTERNAL_STREAM") ? then("selected", "")}*/}
-                <option value="HIDE_INTERNAL_STREAM">Hide internal & stream topics</option>
-                {/*<option ${(topicListView.toString() == "HIDE_STREAM") ? then("selected", "")}*/}
-                <option value="HIDE_STREAM">Hide stream topics</option>
-              </select>
-            )}
+            {showSearch &&
+              this.renderInput('search', '', 'Search', 'text', { autoComplete: 'off' })}
+            {showTopicListView &&
+              // <select
+              //   name="show"
+              //   value={formData.topicListView}
+              //   className="khq-select form-control"
+              //   data-style="btn-white"
+              //   onChange={topic => this.setTopic(topic.target.formData.topicListView)}
+              // >
+              //   <option value="ALL">Show all topics</option>
+              //   <option value="HIDE_INTERNAL">Hide internal topics</option>
+              //   <option value="HIDE_INTERNAL_STREAM">Hide internal & stream topics</option>
+              //   <option value="HIDE_STREAM">Hide stream topics</option>
+              // </select>´
+              this.renderSelect('topicListView', '', topicListViewOptions)}
 
             <button className="btn btn-primary" type="submit">
               <span className="d-md-none">Search </span>
