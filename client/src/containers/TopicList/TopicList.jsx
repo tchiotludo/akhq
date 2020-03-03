@@ -65,7 +65,6 @@ class TopicList extends Component {
     let selectedClusterId = this.state.selectedCluster;
     let selectedTopic = this.state.selectedTopic;
     let search = this.state.search;
-    console.log('cluster?', endpoints.uriTopics(selectedClusterId, selectedTopic, search));
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
       if (topics.data) {
