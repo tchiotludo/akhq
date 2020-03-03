@@ -39,6 +39,7 @@ class Routes extends Component {
       );
     }
     if (clusterId.length > 0) {
+      console.log('here');
       return (
         <Base>
           <Switch location={location}>

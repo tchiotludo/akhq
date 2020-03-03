@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
-
+import SuccessToast from '../../components/Toast/SuccessToast';
+import ErrorToast from '../../components/Toast/ErrorToast';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -11,7 +12,7 @@ class Base extends Component {
     action: '',
     showSuccessToast: false,
     successToastMessage: '',
-    successToastTimeout: 10000, // in ms
+    successToastTimeout: 6000, // in ms
     showErrorToast: false,
     errorToastTitle: '',
     errorToastMessage: '',
@@ -19,6 +20,7 @@ class Base extends Component {
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    console.log('in test', nextProps);
     const clusterId = nextProps.match.params.clusterId;
     const topicId = nextProps.match.params.topicId;
     const selectedTab = nextProps.match.params.tab;
@@ -58,7 +60,7 @@ class Base extends Component {
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
+          //pathname: `/${clusterId}/topic`,
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -68,7 +70,7 @@ class Base extends Component {
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
+          //pathname: `/${clusterId}/topic`,
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
@@ -79,8 +81,18 @@ class Base extends Component {
 
   render() {
     const { children } = this.props;
+    const {
+      showSuccessToast,
+      showErrorToast,
+      successToastMessage,
+      errorToastTitle,
+      errorToastMessage
+    } = this.state;
+    this.checkToasts();
     return (
       <div>
+        <SuccessToast show={showSuccessToast} message={successToastMessage} />
+        <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         <Sidebar />
         {children}
       </div>

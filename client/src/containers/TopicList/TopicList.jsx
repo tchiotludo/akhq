@@ -8,6 +8,7 @@ import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import history from '../../utils/history';
 // Adaptation of topicList.ftl
 
 class TopicList extends Component {
@@ -43,20 +44,21 @@ class TopicList extends Component {
     this.setState({ showDeleteModal: false, deleteMessage: '', deleteData: {} });
   };
 
-  deleteTopic = () => {
-    const { clusterId, topic } = this.state.deleteData;
-    this.deleteTopic(clusterId, topic.name);
-    this.closeDeleteModal();
+  deleteTopic = topic => {
+    const { selectedCluster } = this.state;
+    //this.deleteTopic(clusterId, topic.name);
+    //this.closeDeleteModal();
 
     this.props.history.push({
-      pathname: `/${clusterId}/topic`,
+      //pathname: `/${selectedCluster}/topic`,
       showSuccessToast: true,
       successToastMessage: `Topic '${topic.name}' is deleted`
     });
   };
 
-  handleOnDelete() {
+  handleOnDelete(topic) {
     console.log('handleOnDelete');
+    this.deleteTopic(topic);
   }
 
   async getTopics() {
@@ -180,12 +182,14 @@ class TopicList extends Component {
             }
           ]}
           data={topics}
-          onDelete={this.handleOnDelete}
+          onDelete={topic => {
+            this.handleOnDelete(topic);
+          }}
           onDetails={id => {
             history.push(`/${selectedCluster}/topic/${id}`);
           }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
-        ></Table>
+        />
 
         <Pagination />
 

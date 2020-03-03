@@ -53,13 +53,22 @@ class TopicCreate extends Form {
       retention: formData.retention
     };
 
-    post(uriTopicsCreate(), topic).then(res => {
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showSuccessToast: true,
-        successToastMessage: `Topic '${formData.name}' was created successfully.`
+    post(uriTopicsCreate(), topic)
+      .then(res => {
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showSuccessToast: true,
+          successToastMessage: `Topic '${formData.name}' was created successfully.`
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          //pathname: `/${clusterId}/topic`,
+          showErrorToast: true,
+          errorToastTitle: err.response.data.title,
+          errorToastMessage: err.response.data.description
+        });
       });
-    });
   }
   render() {
     return (
