@@ -53,13 +53,21 @@ class TopicCreate extends Form {
       retention: formData.retention
     };
 
-    post(uriTopicsCreate(), topic).then(res => {
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showSuccessToast: true,
-        successToastMessage: `Topic '${formData.name}' was created successfully.`
+    post(uriTopicsCreate(), topic)
+      .then(res => {
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showSuccessToast: true,
+          successToastMessage: `Topic '${formData.name}' was created successfully.`
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          showErrorToast: true,
+          errorToastTitle: err.response.data.title,
+          errorToastMessage: err.response.data.description
+        });
       });
-    });
   }
   render() {
     return (
@@ -89,13 +97,6 @@ class TopicCreate extends Form {
             undefined,
             'button'
           )}
-          {/*<Modal show={this.state.showConfirmModal} handleClose={this.hideConfirmModal}>*/}
-          {/*    <p>Modal</p>*/}
-          {/*    <p>Data</p>*/}
-          {/*</Modal>*/}
-          {/*<button type="button" onClick={this.showConfirmModal}>*/}
-          {/*    Create*/}
-          {/*</button>*/}
         </form>
       </div>
     );
