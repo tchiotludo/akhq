@@ -148,7 +148,6 @@ class Sidebar extends Component {
             <ul className="list-unstyled components">
               <li className={selectedTab === constants.CLUSTER ? 'active' : ''}>
                 <a
-                  //to={`/${selectedCluster}/topic`}
                   data-toggle="collapse"
                   aria-expanded={showClusters}
                   className="dropdown-toggle"
