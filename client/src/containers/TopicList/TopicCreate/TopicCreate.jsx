@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { post } from '../../../utils/api';
-import { uriTopicsCreate } from '../../../utils//endpoints';
+import { uriTopicsCreate } from '../../../utils/endpoints';
 
 class TopicCreate extends Form {
   state = {
