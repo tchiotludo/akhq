@@ -18,11 +18,8 @@ import endpoints from '../utils/endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import history from '../utils/history';
-<<<<<<< HEAD
 import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
-=======
 import Loading from '../containers/Loading/loading';
->>>>>>> 7a3cb518f2d19394f387e12e207a41254e66f7ef
 
 class Routes extends Component {
   render() {
