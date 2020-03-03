@@ -9,7 +9,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.http.annotation.Body;
 import org.kafkahq.repositories.TopicRepository;
 
-import org.kafkahq.service.dto.topic.CreateTopicDTO;
+import org.kafkahq.service.dto.topic.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,6 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
-import org.kafkahq.service.dto.topic.PartitionDTO;
-import org.kafkahq.service.dto.topic.RecordDTO;
-import org.kafkahq.service.dto.topic.TopicDTO;
 
 
 import javax.validation.constraints.Null;
@@ -55,6 +52,11 @@ public class TopicResource {
     public void topicCreate(@Body CreateTopicDTO createTopicDTO) throws ExecutionException, InterruptedException {
         log.debug("Create Topic {}", createTopicDTO);
         topicService.createTopic(createTopicDTO);
+    }
+    @Post("/topic/produce")
+    public void topicProduce(@Body ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+        log.debug("ProduceTopic {}", produceTopicDTO);
+        topicService.produceTopic(produceTopicDTO);
     }
 
     @Get("/topic/data")
