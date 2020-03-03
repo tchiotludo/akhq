@@ -24,6 +24,7 @@ export const uriTopics = (id, view, search) => {
 };
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
@@ -50,4 +51,12 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   );
 };
 
-export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
+export default {
+  apiUrl,
+  uriClusters,
+  uriConnects,
+  uriNodes,
+  uriNodesConfigs,
+  uriTopics,
+  uriTopicsProduce
+};

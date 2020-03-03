@@ -89,13 +89,6 @@ class TopicCreate extends Form {
             undefined,
             'button'
           )}
-          {/*<Modal show={this.state.showConfirmModal} handleClose={this.hideConfirmModal}>*/}
-          {/*    <p>Modal</p>*/}
-          {/*    <p>Data</p>*/}
-          {/*</Modal>*/}
-          {/*<button type="button" onClick={this.showConfirmModal}>*/}
-          {/*    Create*/}
-          {/*</button>*/}
         </form>
       </div>
     );
