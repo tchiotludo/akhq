@@ -46,11 +46,8 @@ class TopicList extends Component {
 
   deleteTopic = topic => {
     const { selectedCluster } = this.state;
-    //this.deleteTopic(clusterId, topic.name);
-    //this.closeDeleteModal();
 
     this.props.history.push({
-      //pathname: `/${selectedCluster}/topic`,
       showSuccessToast: true,
       successToastMessage: `Topic '${topic.name}' is deleted`
     });
