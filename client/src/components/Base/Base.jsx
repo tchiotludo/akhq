@@ -60,7 +60,6 @@ class Base extends Component {
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          //pathname: `/${clusterId}/topic`,
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -70,7 +69,6 @@ class Base extends Component {
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          //pathname: `/${clusterId}/topic`,
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
