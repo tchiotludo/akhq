@@ -43,10 +43,11 @@ export const post = (url, body) =>
       });
   });
 
-export const remove = url =>
+export const remove = (url, body) =>
   new Promise((resolve, reject) => {
+    console.log('body', body);
     axios
-      .delete(url)
+      .delete(url, { data: body })
       .then(res => {
         resolve(res);
       })

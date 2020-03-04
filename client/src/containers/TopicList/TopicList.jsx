@@ -5,8 +5,8 @@ import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api from '../../utils/api';
-import endpoints from '../../utils/endpoints';
+import api, { remove } from '../../utils/api';
+import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 // Adaptation of topicList.ftl
@@ -15,6 +15,7 @@ class TopicList extends Component {
   state = {
     topics: [],
     showDeleteModal: false,
+    topicToDelete: {},
     selectedCluster: '',
     deleteMessage: '',
     deleteData: {},
@@ -36,26 +37,43 @@ class TopicList extends Component {
     });
   }
 
-  showDeleteModal = (deleteMessage, deleteData) => {
-    this.setState({ showDeleteModal: true, deleteMessage, deleteData });
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
   };
 
   closeDeleteModal = () => {
-    this.setState({ showDeleteModal: false, deleteMessage: '', deleteData: {} });
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
 
-  deleteTopic = topic => {
-    const { selectedCluster } = this.state;
-
-    this.props.history.push({
-      showSuccessToast: true,
-      successToastMessage: `Topic '${topic.name}' is deleted`
-    });
+  deleteTopic = () => {
+    const { selectedCluster, topicToDelete } = this.state;
+    const deleteData = {
+      clusterId: selectedCluster,
+      topicId: topicToDelete.id
+    };
+    remove(uriDeleteTopics(), deleteData)
+      .then(res => {
+        this.props.history.push({
+          showSuccessToast: true,
+          successToastMessage: `Topic '${topicToDelete.name}' is deleted`
+        });
+        this.setState({ showDeleteModal: false, topicToDelete: {} });
+        this.handleTopics(res.data);
+      })
+      .catch(err => {
+        this.props.history.push({
+          showErrorToast: true,
+          errorToastMessage: `Could not delete '${topicToDelete.name}'`
+        });
+        this.setState({ showDeleteModal: false, topicToDelete: {} });
+      });
   };
 
   handleOnDelete(topic) {
-    console.log('handleOnDelete');
-    this.deleteTopic(topic);
+    this.setState({ topicToDelete: topic }, () => {
+      this.showDeleteModal(`Delete topic ${topic.id}?`);
+    });
+    //this.deleteTopic(topic);
   }
 
   async getTopics() {
