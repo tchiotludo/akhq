@@ -1,9 +1,7 @@
 #!/usr/bin/env sh
 
 # Read user-defined JVM options from jvm.options file
-if [ -z "${JVM_OPTS_FILE}" ]; then
-  JVM_OPTS_FILE=${JVM_OPTS_FILE:-/app/jvm.options}
-fi
+JVM_OPTS_FILE=${JVM_OPTS_FILE:-/app/jvm.options}
 for JVM_OPT in `grep "^-" ${JVM_OPTS_FILE}`
 do
   JAVA_OPTS="${JAVA_OPTS} ${JVM_OPT}"
