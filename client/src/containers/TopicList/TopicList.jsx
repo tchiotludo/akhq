@@ -81,6 +81,9 @@ class TopicList extends Component {
     let selectedClusterId = this.state.selectedCluster;
     let selectedTopic = this.state.selectedTopic;
     let search = this.state.search;
+    history.push({
+      loading: true
+    });
     try {
       topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
       if (topics.data) {
@@ -89,6 +92,10 @@ class TopicList extends Component {
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 
