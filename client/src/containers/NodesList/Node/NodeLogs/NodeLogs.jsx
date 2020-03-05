@@ -19,12 +19,19 @@ class NodeLogs extends Component {
   async getNodesLogs() {
     let logs = [];
     const { selectedCluster, selectedNode } = this.state;
-
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       logs = await get(uriNodesLogs(selectedCluster, selectedNode));
       this.handleData(logs.data);
     } catch (err) {
       console.error('Error:', err);
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 

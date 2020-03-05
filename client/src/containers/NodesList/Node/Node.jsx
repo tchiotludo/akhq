@@ -54,6 +54,7 @@ class Node extends Component {
           <NodeConfigs
             nodeId={this.props.match.params.nodeId}
             clusterId={this.props.match.params.clusterId}
+            history={this.props.history}
           />
         );
     }
