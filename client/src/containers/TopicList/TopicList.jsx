@@ -25,7 +25,7 @@ class TopicList extends Component {
       name: '',
       partition: 1,
       replication: 1,
-      cleanup: 'delete', // TODO: delete default value not working
+      cleanup: 'delete',
       retention: 86400000
     }
   };
@@ -73,7 +73,6 @@ class TopicList extends Component {
     this.setState({ topicToDelete: topic }, () => {
       this.showDeleteModal(`Delete topic ${topic.id}?`);
     });
-    //this.deleteTopic(topic);
   }
 
   async getTopics() {

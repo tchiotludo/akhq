@@ -34,7 +34,6 @@ class NodesList extends Component {
       return {
         id: node.id || '',
         host: node.host || '',
-        //idToShow: ,
         port: node.port || '',
         rack: node.rack || ''
       };
@@ -72,7 +71,6 @@ class NodesList extends Component {
               type: 'text'
             }
           ]}
-          //toPresent={['idToShow', 'host', 'rack']}
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {
