@@ -9,7 +9,6 @@ import api, { remove } from '../../utils/api';
 import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
-import Loading from '../Loading';
 // Adaptation of topicList.ftl
 
 class TopicList extends Component {
@@ -135,107 +134,105 @@ class TopicList extends Component {
     ];
 
     return (
-      <Loading>
-        <div id="content">
-          <Header title="Topics" />
-          <SearchBar
-            pagination={true}
-            topicListView={true}
-            value={this.state.value}
-            onChangeValue={value => {
-              this.setState({ value });
-            }}
-            topic={this.state.selectedTopic}
-            onChangeTopic={topic => {
-              this.setState({ topic });
-            }}
-          />
+      <div id="content">
+        <Header title="Topics" />
+        <SearchBar
+          pagination={true}
+          topicListView={true}
+          value={this.state.value}
+          onChangeValue={value => {
+            this.setState({ value });
+          }}
+          topic={this.state.selectedTopic}
+          onChangeTopic={topic => {
+            this.setState({ topic });
+          }}
+        />
 
-          <Table
-            has2Headers
-            firstHeader={firstColumns}
-            columns={[
-              {
-                id: 'name',
-                accessor: 'name',
-                colName: 'Name',
-                type: 'text'
-              },
-              {
-                id: 'size',
-                accessor: 'size',
-                colName: 'Size',
-                type: 'text',
-                cell: (obj, col) => {
-                  return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
-                }
-              },
-              {
-                id: 'weight',
-                accessor: 'weight',
-                colName: 'Weight',
-                type: 'text'
-              },
-              {
-                id: 'partitionsTotal',
-                accessor: 'partitionsTotal',
-                colName: 'Total',
-                type: 'text'
-              },
-              {
-                id: 'replicationFactor',
-                accessor: 'replicationFactor',
-                colName: 'Factor',
-                type: 'text'
-              },
-              {
-                id: 'replicationInSync',
-                accessor: 'replicationInSync',
-                colName: 'In Sync',
-                type: 'text',
-                cell: (obj, col) => {
-                  return <span>{obj[col.accessor]}</span>;
-                }
-              },
-              {
-                id: 'groupComponent',
-                accessor: 'groupComponent',
-                colName: 'Consumer Groups',
-                type: 'text'
+        <Table
+          has2Headers
+          firstHeader={firstColumns}
+          columns={[
+            {
+              id: 'name',
+              accessor: 'name',
+              colName: 'Name',
+              type: 'text'
+            },
+            {
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
               }
-            ]}
-            data={topics}
-            onDelete={topic => {
-              this.handleOnDelete(topic);
+            },
+            {
+              id: 'weight',
+              accessor: 'weight',
+              colName: 'Weight',
+              type: 'text'
+            },
+            {
+              id: 'partitionsTotal',
+              accessor: 'partitionsTotal',
+              colName: 'Total',
+              type: 'text'
+            },
+            {
+              id: 'replicationFactor',
+              accessor: 'replicationFactor',
+              colName: 'Factor',
+              type: 'text'
+            },
+            {
+              id: 'replicationInSync',
+              accessor: 'replicationInSync',
+              colName: 'In Sync',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span>{obj[col.accessor]}</span>;
+              }
+            },
+            {
+              id: 'groupComponent',
+              accessor: 'groupComponent',
+              colName: 'Consumer Groups',
+              type: 'text'
+            }
+          ]}
+          data={topics}
+          onDelete={topic => {
+            this.handleOnDelete(topic);
+          }}
+          onDetails={id => {
+            history.push(`/${selectedCluster}/topic/${id}`);
+          }}
+          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
+        />
+
+        <Pagination />
+
+        <aside>
+          <Link
+            to={{
+              pathname: `/${clusterId}/topic/create`,
+              state: { formData: this.state.createTopicFormData }
             }}
-            onDetails={id => {
-              history.push(`/${selectedCluster}/topic/${id}`);
-            }}
-            actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
-          />
+            className="btn btn-primary"
+          >
+            Create a topic
+          </Link>
+        </aside>
 
-          <Pagination />
-
-          <aside>
-            <Link
-              to={{
-                pathname: `/${clusterId}/topic/create`,
-                state: { formData: this.state.createTopicFormData }
-              }}
-              className="btn btn-primary"
-            >
-              Create a topic
-            </Link>
-          </aside>
-
-          <ConfirmModal
-            show={this.state.showDeleteModal}
-            handleCancel={this.closeDeleteModal}
-            handleConfirm={this.deleteTopic}
-            message={this.state.deleteMessage}
-          />
-        </div>
-      </Loading>
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteTopic}
+          message={this.state.deleteMessage}
+        />
+      </div>
     );
   }
 }
