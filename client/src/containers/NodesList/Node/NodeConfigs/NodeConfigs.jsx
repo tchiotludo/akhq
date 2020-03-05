@@ -125,9 +125,19 @@ class NodeConfigs extends Form {
         configs: changedConfigs
       });
 
-      this.setState({ state: this.state });
+      this.setState({ state: this.state }, () =>
+        this.props.history.push({
+          showSuccessToast: true,
+          successToastMessage: `Node '${selectedNode}' was updated successfully.`
+        })
+      );
     } catch (err) {
-      console.error('Error:', err);
+      this.props.history.push({
+        showErrorToast: true,
+        errorToastTitle: err.response.data.title,
+        errorToastMessage: err.response.data.description
+      });
+      console.error('Error:', err.response);
     }
   }
 
