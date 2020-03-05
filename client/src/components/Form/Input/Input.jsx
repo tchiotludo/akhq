@@ -1,10 +1,23 @@
 import React from 'react';
 
 const Input = props => {
-  const { name, label, placeholder, error, ...rest } = props;
+  const { name, label, placeholder, error, noStyle, wrapperClass, inputClass, ...rest } = props;
+  let wrapperClassRender = 'form-group';
+  let inputClassRender = 'col-sm-10';
+  console.log(wrapperClass, inputClass);
+  if (noStyle) {
+    wrapperClassRender = '';
+    inputClassRender = '';
+  }
+  if (wrapperClass) {
+    wrapperClassRender = wrapperClass;
+  }
+  if (inputClass) {
+    inputClassRender = inputClass;
+  }
 
   return (
-    <div className="form-group row">
+    <div className={`${wrapperClassRender} row`}>
       {label !== '' ? (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
@@ -12,7 +25,7 @@ const Input = props => {
       ) : (
         <div></div>
       )}
-      <div className="col-sm-10">
+      <div className={`${inputClassRender}`}>
         <input
           {...rest}
           key={name}

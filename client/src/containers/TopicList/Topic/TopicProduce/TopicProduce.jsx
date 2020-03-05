@@ -66,7 +66,7 @@ class TopicProduce extends Form {
       this.props.history.push({
         pathname: `/${clusterId}/topic`,
         showSuccessToast: true,
-        successToastMessage: `Produced to Topic.`
+        successToastMessage: 'Produced to Topic.'
       });
     });
   }
@@ -81,19 +81,52 @@ class TopicProduce extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title={`Produce to ${topicId} `} />
-          {this.renderInput('partition', 'Partition', 'Partition', 'partition')}
-          {this.renderInput('key', 'Key', 'Key', 'Key')}
+          <div>
+            <Header title={`Produce to ${topicId} `} />
+            {this.renderInput('partition', 'Partition', 'Partition', 'partition')}
+            {this.renderInput('key', 'Key', 'Key', 'Key')}
+            <div className="row">
+              <label class="col-sm-2 col-form-label">Headers</label>
+              <div
+                class="row col-sm-10 khq-multiple"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  minWidth: '80%',
+                  marginLeft:'0.05%'
+                }}
+              >
+                {this.renderInput(
+                  '',
+                  '',
+                  'Key',
+                  'headers',
+                  undefined,
+                  true,
+                  'wrapper-class col-sm-6 ',
+                  'input-class'
+                )}
 
-          <div class="col-sm-4">
-            <div>
-              {this.renderInput('', 'Headers', 'Key', 'headers')}
-              {this.renderInput('', '', 'Value', 'headers')}
-              <button class="btn btn-secondary">
-                <i class="fa fa-plus"></i>
-              </button>
+                {this.renderInput(
+                  '',
+                  '',
+                  'Value',
+                  'headers',
+                  undefined,
+                  true,
+                  'wrapper-class col-sm-6',
+                  'input-class'
+                )}
+                <div style={{ paddingBottom: '1.5%' }}>
+                  <button class="btn btn-secondary">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+
           {this.renderInput('value', 'Value', 'Value', 'Value')}
 
           {this.renderButton(

@@ -74,9 +74,19 @@ class Form extends Component {
     );
   };
 
-  renderInput = (name, label, placeholder, type = 'text', onChange = this.handleChange, rest) => {
+  renderInput = (
+    name,
+    label,
+    placeholder,
+    type = 'text',
+    onChange = this.handleChange,
+    noStyle,
+    wrapperClass,
+    inputClass,
+    rest
+  ) => {
     const { formData, errors } = this.state;
-
+    console.log('noStyle', noStyle, wrapperClass, inputClass);
     return (
       <Input
         type={type}
@@ -86,6 +96,9 @@ class Form extends Component {
         placeholder={placeholder}
         onChange={this.handleChange}
         error={errors[name]}
+        noStyle={noStyle}
+        wrapperClass={wrapperClass}
+        inputClass={inputClass}
         {...rest}
       />
     );
