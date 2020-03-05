@@ -18,11 +18,19 @@ class TopicPartitions extends Component {
   async getTopicsPartitions() {
     let partitions = [];
     const { selectedCluster, selectedTopic } = this.state;
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       this.handleData(partitions.data);
     } catch (err) {
       console.error('Error:', err);
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 

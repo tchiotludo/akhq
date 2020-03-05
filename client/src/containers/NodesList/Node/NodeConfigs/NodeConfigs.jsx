@@ -30,12 +30,19 @@ class NodeConfigs extends Form {
   async getNodesConfig() {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
-
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);
     } catch (err) {
       console.error('Error:', err);
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 
@@ -118,6 +125,10 @@ class NodeConfigs extends Form {
 
   async doSubmit() {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       await post(uriNodesUpdateConfigs(), {
         clusterId: selectedCluster,
@@ -138,6 +149,10 @@ class NodeConfigs extends Form {
         errorToastMessage: err.response.data.description
       });
       console.error('Error:', err.response);
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 

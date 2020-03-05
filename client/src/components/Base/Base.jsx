@@ -4,6 +4,7 @@ import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
+import Loading from '../../containers/Loading';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -16,11 +17,11 @@ class Base extends Component {
     showErrorToast: false,
     errorToastTitle: '',
     errorToastMessage: '',
-    errorToastTimeout: 6000 // in ms
+    errorToastTimeout: 6000, // in ms
+    loading: false
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    console.log('in test', nextProps);
     const clusterId = nextProps.match.params.clusterId;
     const topicId = nextProps.match.params.topicId;
     const selectedTab = nextProps.match.params.tab;
@@ -30,7 +31,8 @@ class Base extends Component {
       successToastMessage,
       showErrorToast,
       errorToastTitle,
-      errorToastMessage
+      errorToastMessage,
+      loading
     } = nextProps.location;
 
     return {
@@ -42,7 +44,8 @@ class Base extends Component {
       successToastMessage: successToastMessage,
       showErrorToast: showErrorToast,
       errorToastTitle: errorToastTitle,
-      errorToastMessage: errorToastMessage
+      errorToastMessage: errorToastMessage,
+      loading
     };
   }
 
@@ -84,16 +87,17 @@ class Base extends Component {
       showErrorToast,
       successToastMessage,
       errorToastTitle,
-      errorToastMessage
+      errorToastMessage,
+      loading
     } = this.state;
     this.checkToasts();
     return (
-      <div>
+      <Loading show={loading}>
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         <Sidebar />
         {children}
-      </div>
+      </Loading>
     );
   }
 }
