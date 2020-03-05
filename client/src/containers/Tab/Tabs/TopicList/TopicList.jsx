@@ -76,11 +76,7 @@ class TopicList extends Tab {
           <td>{topic.partition}</td>
           <td>{topic.replication}</td>
           <td>
-            <span
-            // className="${(topic.getReplicaCount() > topic.getInSyncReplicaCount())?then(" text-warning"
-            >
-              {topic.replication}
-            </span>
+            <span>{topic.replication}</span>
           </td>
           <td></td>
           {/*<#if skipConsumerGroups == false>
@@ -118,8 +114,6 @@ class TopicList extends Tab {
                   topic: topic
                 })
               }
-              // href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
-              //data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"
             >
               <i className="fa fa-trash" />
             </Link>

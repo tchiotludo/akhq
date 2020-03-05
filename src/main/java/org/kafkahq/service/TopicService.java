@@ -136,4 +136,8 @@ public class TopicService {
                 createTopicDTO.getReplicatorFactor(),
                 options);
     }
+
+    public void deleteTopic(String clusterId, String name) throws ExecutionException, InterruptedException {
+        topicRepository.delete(clusterId, name);
+    }
 }

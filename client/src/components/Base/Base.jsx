@@ -20,7 +20,6 @@ class Base extends Component {
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    console.log('in test', nextProps);
     const clusterId = nextProps.match.params.clusterId;
     const topicId = nextProps.match.params.topicId;
     const selectedTab = nextProps.match.params.tab;

@@ -13,7 +13,6 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        console.log('got here from', history.location.pathname);
         history.replace('/error', { errorData: err });
         reject(handleError(err));
       });
@@ -43,10 +42,10 @@ export const post = (url, body) =>
       });
   });
 
-export const remove = url =>
+export const remove = (url, body) =>
   new Promise((resolve, reject) => {
     axios
-      .delete(url)
+      .delete(url, { data: body })
       .then(res => {
         resolve(res);
       })
