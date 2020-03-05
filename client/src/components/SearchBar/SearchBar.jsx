@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
-import Pagination from '../Pagination';
-import constants from '../../utils/constants';
 import Form from '../Form/Form';
+import './styles.scss';
 
 class SearchBar extends Form {
   static propTypes = {
@@ -17,19 +16,19 @@ class SearchBar extends Form {
     topicListViewOptions: [
       {
         _id: 'ALL',
-        name: 'ALL'
+        name: 'Show all topics'
       },
       {
         _id: 'HIDE_INTERNAL',
-        name: 'HIDE_INTERNAL'
+        name: 'Hide internal topics'
       },
       {
         _id: 'HIDE_INTERNAL_STREAM',
-        name: 'HIDE_INTERNAL_STREAM'
+        name: 'Hide internal & stream topics'
       },
       {
         _id: 'HIDE_STREAM',
-        name: 'HIDE_STREAM'
+        name: 'Hide stream topics'
       }
     ]
   };
@@ -43,14 +42,6 @@ class SearchBar extends Form {
       const { search } = this.props;
       formData['search'] = search;
       this.schema['search'] = Joi.string().allow('');
-    }
-
-    if (showPagination) {
-      const { pagination } = this.props;
-      formData['pagination'] = pagination;
-      this.schema['pagination'] = Joi.number()
-        .min(0)
-        .required();
     }
 
     if (showTopicListView) {
@@ -74,11 +65,23 @@ class SearchBar extends Form {
     });
   }
 
+  doSubmit = () => {
+    const { pagination, search, topicListView } = this.state.formData;
+    const data = {
+      pagination: pagination,
+      searchData: {
+        search: search,
+        topicListView: topicListView
+      }
+    };
+    this.props.doSubmit(data);
+  };
+
   render() {
     const { showSearch, showPagination, showTopicListView } = this.props;
     const { topicListViewOptions } = this.state;
     return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+      <React.Fragment>
         <button
           className="navbar-toggler"
           type="button"
@@ -91,32 +94,11 @@ class SearchBar extends Form {
           <span className="navbar-toggler-icon" />
         </button>
 
-        {showPagination ? (
-          <nav>
-            <Pagination />
-          </nav>
-        ) : (
-          <div></div>
-        )}
-
         <div className="collapse navbar-collapse" id="navbar-search">
-          <form className="form-inline mr-auto khq-form-get" method="get">
+          <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
             {showSearch &&
               this.renderInput('search', '', 'Search', 'text', { autoComplete: 'off' })}
-            {showTopicListView &&
-              // <select
-              //   name="show"
-              //   value={formData.topicListView}
-              //   className="khq-select form-control"
-              //   data-style="btn-white"
-              //   onChange={topic => this.setTopic(topic.target.formData.topicListView)}
-              // >
-              //   <option value="ALL">Show all topics</option>
-              //   <option value="HIDE_INTERNAL">Hide internal topics</option>
-              //   <option value="HIDE_INTERNAL_STREAM">Hide internal & stream topics</option>
-              //   <option value="HIDE_STREAM">Hide stream topics</option>
-              // </select>´
-              this.renderSelect('topicListView', '', topicListViewOptions)}
+            {showTopicListView && this.renderSelect('topicListView', '', topicListViewOptions)}
 
             <button className="btn btn-primary" type="submit">
               <span className="d-md-none">Search </span>
@@ -124,7 +106,7 @@ class SearchBar extends Form {
             </button>
           </form>
         </div>
-      </nav>
+      </React.Fragment>
     );
   }
 }

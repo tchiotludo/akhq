@@ -18,6 +18,7 @@ class TopicList extends Component {
     deleteMessage: '',
     deleteData: {},
     pageNumber: 1,
+    totalPageNumber: 1,
     searchData: {
       search: '',
       topicListView: 'ALL'
@@ -62,16 +63,46 @@ class TopicList extends Component {
     console.log('handleOnDelete');
   }
 
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ pageNumber: 1, searchData }, () => {
+      this.getTopics();
+    });
+  };
+
+  handlePageChangeSubmission = value => {
+    const { totalPageNumber } = this.state;
+    if (value <= 0) {
+      value = 1;
+    } else if (value > totalPageNumber) {
+      value = totalPageNumber;
+    }
+
+    this.setState({ pageNumber: value }, () => {
+      this.getTopics();
+    });
+  };
+
+  handlePageChange = ({ currentTarget: input }) => {
+    const { value } = input;
+    this.setState({ pageNumber: value });
+  };
+
   async getTopics() {
     const { history } = this.props;
-    const { selectedCluster } = this.state;
+    const { selectedCluster, pageNumber } = this.state;
     const { search, topicListView } = this.state.searchData;
-    let topics = {};
+    let data = {};
     try {
-      topics = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search));
-      if (topics.data) {
-        this.handleTopics(topics.data);
-        this.setState({ selectedCluster: selectedCluster });
+      data = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search, pageNumber));
+      data = data.data;
+      if (data) {
+        if (data.topics) {
+          this.handleTopics(data.topics);
+        } else {
+          this.setState({ topics: [] });
+        }
+        this.setState({ selectedCluster, totalPageNumber: data.totalPageNumber });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -79,9 +110,6 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
-    if (!topics) {
-      console.log('Not getting anything from backend');
-    }
     let tableTopics = [];
     topics.map(topic => {
       topic.size = 0;
@@ -101,7 +129,7 @@ class TopicList extends Component {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -125,14 +153,24 @@ class TopicList extends Component {
     return (
       <div id="content">
         <Header title="Topics" />
-        <SearchBar
-          showSearch={true}
-          search={searchData.search}
-          showPagination={true}
-          pagination={pageNumber}
-          showTopicListView={true}
-          topicListView={searchData.topicListView}
-        />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+          <SearchBar
+            showSearch={true}
+            search={searchData.search}
+            showPagination={true}
+            pagination={pageNumber}
+            showTopicListView={true}
+            topicListView={searchData.topicListView}
+            doSubmit={this.handleSearch}
+          />
+
+          <Pagination
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={this.handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
+          />
+        </nav>
 
         <Table
           has2Headers
@@ -155,7 +193,15 @@ class TopicList extends Component {
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         ></Table>
 
-        <Pagination />
+        <div className="navbar navbar-expand-lg navbar-light mr-auto khq-data-filter khq-sticky khq-nav">
+          <div className="collapse navbar-collapse"></div>
+          <Pagination
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={this.handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
+          />
+        </div>
 
         <aside>
           <Link
