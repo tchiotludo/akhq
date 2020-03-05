@@ -3,18 +3,21 @@ import './styles.scss';
 
 const Pagination = props => {
   const { pageNumber, totalPageNumber, onChange, onSubmit } = props;
+  console.log(+pageNumber === +totalPageNumber);
 
   return (
     <ul className="pagination mb-0">
-      <li
-        className={pageNumber === 1 ? 'page-item before disabled' : 'page-item before'}
-        onClick={() => onSubmit(pageNumber - 1)}
-        disabled={pageNumber === 1}
-      >
-        <a className=" page-link">
-          <span aria-hidden=" true">&laquo;</span>
-          <span className=" sr-only">Previous</span>
-        </a>
+      <li className={'page-item before'}>
+        <button
+          className={'before-button'}
+          onClick={() => onSubmit(pageNumber - 1)}
+          disabled={+pageNumber === 1}
+        >
+          <a className=" page-link">
+            <span aria-hidden=" true">&laquo;</span>
+            <span className=" sr-only">Previous</span>
+          </a>
+        </button>
       </li>
       <li className=" page-item info">
         <a className=" page-link page-number">
@@ -30,17 +33,17 @@ const Pagination = props => {
           of {totalPageNumber}
         </a>
       </li>
-      <li
-        className={
-          pageNumber === totalPageNumber ? 'page-item before disabled' : 'page-item before'
-        }
-        onClick={() => onSubmit(pageNumber + 1)}
-        disabled={pageNumber === totalPageNumber}
-      >
-        <a className=" page-link" aria-label=" Next">
-          <span aria-hidden=" true">&raquo;</span>
-          <span className=" sr-only">Next</span>
-        </a>
+      <li className={'page-item after'}>
+        <button
+          className={'after-button'}
+          onClick={() => onSubmit(pageNumber + 1)}
+          disabled={+pageNumber === +totalPageNumber}
+        >
+          <a className=" page-link" aria-label=" Next">
+            <span aria-hidden=" true">&raquo;</span>
+            <span className=" sr-only">Next</span>
+          </a>
+        </button>
       </li>
     </ul>
   );

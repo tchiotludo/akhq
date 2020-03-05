@@ -6,9 +6,9 @@
 }
 
 .pagination {
-    max-width: 12rem;
+    max-width: 13rem;
     width: 100%;
-    max-height: 3rem;
+    max-height: 5rem;
     position: relative;
     left: 2%;
     display: inline-block;
@@ -35,6 +35,22 @@
     display: inline-block;
     height: 100%;
     vertical-align: middle;
+}
+
+button.before-button, button.after-button {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.page-item.before button:disabled:hover.before-button a span, .page-item.before button:disabled:hover.before-button a, 
+.page-item.after button:disabled:hover.after-button a span, .page-item.after button:disabled:hover.after-button a {
+    cursor: not-allowed;
+    background-color: #299c46;
 }
 
 .page-item.before :hover, .page-item.after :hover {

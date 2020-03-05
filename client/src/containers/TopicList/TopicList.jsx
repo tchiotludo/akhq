@@ -63,7 +63,7 @@ class TopicList extends Component {
                     successToastMessage: `Topic '${topicToDelete.name}' is deleted`
                 });
                 this.setState({showDeleteModal: false, topicToDelete: {}});
-                this.handleTopics(res.data);
+                this.handleTopics(res.data.topics);
             })
             .catch(err => {
                 this.props.history.push({

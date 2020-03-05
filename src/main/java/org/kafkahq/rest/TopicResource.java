@@ -66,10 +66,10 @@ public class TopicResource {
     }
 
     @Delete("/topic/delete")
-    public List<TopicDTO> deleteTopic(@Body DeleteTopicDTO deleteTopicDTO) throws ExecutionException, InterruptedException {
+    public TopicListDTO deleteTopic(@Body DeleteTopicDTO deleteTopicDTO) throws ExecutionException, InterruptedException {
         log.debug("Delete topic: {}", deleteTopicDTO.getTopicId());
         topicService.deleteTopic(deleteTopicDTO.getClusterId(), deleteTopicDTO.getTopicId());
-        return topicService.getAllTopicsByName(deleteTopicDTO.getClusterId(), "ALL", "");
+        return topicService.getTopics(deleteTopicDTO.getClusterId(), "ALL", "", Optional.empty());
     }
 }
 
