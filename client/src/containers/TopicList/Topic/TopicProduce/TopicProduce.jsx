@@ -7,6 +7,7 @@ import { post } from '../../../../utils/api';
 import { uriTopicsProduce } from '../../../../utils/endpoints';
 class TopicProduce extends Form {
   state = {
+    nHeaders: 1,
     formData: {
       partition: '',
       key: '',
@@ -70,63 +71,82 @@ class TopicProduce extends Form {
       });
     });
   }
+  renderHeader() {
+    let header = (
+      <div
+        class="row col-sm-10 khq-multiple"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          minWidth: '80%',
+          marginLeft: '0.05%'
+        }}
+      >
+        {this.renderInput(
+          '',
+          '',
+          'Key',
+          'headers',
+          undefined,
+          true,
+          'wrapper-class col-sm-6 ',
+          'input-class'
+        )}
 
+        {this.renderInput(
+          '',
+          '',
+          'Value',
+          'headers',
+          undefined,
+          true,
+          'wrapper-class col-sm-6',
+          'input-class'
+        )}
+       <div style={{ paddingBottom: '1.5%' }}>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onClick={() => {
+              this.handlePlus();
+            }}
+          >
+            <i class="fa fa-plus"></i>
+          </button>
+       </div>
+      </div>
+    );
+
+    let headers = [];
+    for (let i = 0; i < this.state.nHeaders; i++) {
+      headers.push(header);
+    }
+    return <>{headers.map(head => head)}</>;
+  }
+  handlePlus() {
+    this.setState({ nHeaders: this.state.nHeaders + 1 });
+  }
   render() {
     const { clusterId, topicId } = this.state;
-    console.log('topicId' + topicId);
     return (
       <div id="content">
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"
-          onSubmit={() => this.doSubmit()}
+          //onSubmit={() => this.doSubmit()}
         >
           <div>
             <Header title={`Produce to ${topicId} `} />
             {this.renderInput('partition', 'Partition', 'Partition', 'partition')}
             {this.renderInput('key', 'Key', 'Key', 'Key')}
-            <div className="row">
-              <label class="col-sm-2 col-form-label">Headers</label>
-              <div
-                class="row col-sm-10 khq-multiple"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  minWidth: '80%',
-                  marginLeft:'0.05%'
-                }}
-              >
-                {this.renderInput(
-                  '',
-                  '',
-                  'Key',
-                  'headers',
-                  undefined,
-                  true,
-                  'wrapper-class col-sm-6 ',
-                  'input-class'
-                )}
-
-                {this.renderInput(
-                  '',
-                  '',
-                  'Value',
-                  'headers',
-                  undefined,
-                  true,
-                  'wrapper-class col-sm-6',
-                  'input-class'
-                )}
-                <div style={{ paddingBottom: '1.5%' }}>
-                  <button class="btn btn-secondary">
-                    <i class="fa fa-plus"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div></div>
           </div>
+          <div className="row">
+            <label class="col-sm-2 col-form-label">Headers</label>
 
+            {this.renderHeader()}
+          </div>
           {this.renderInput('value', 'Value', 'Value', 'Value')}
 
           {this.renderButton(
@@ -137,6 +157,15 @@ class TopicProduce extends Form {
             undefined,
             'button'
           )}
+          <button
+            type="button"
+            onClick={() => {
+              console.log('clicked');
+              this.handlePlus();
+            }}
+          >
+            clickme
+          </button>
         </form>
       </div>
     );

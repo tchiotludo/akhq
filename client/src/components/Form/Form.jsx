@@ -86,7 +86,6 @@ class Form extends Component {
     rest
   ) => {
     const { formData, errors } = this.state;
-    console.log('noStyle', noStyle, wrapperClass, inputClass);
     return (
       <Input
         type={type}
