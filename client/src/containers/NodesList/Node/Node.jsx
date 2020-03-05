@@ -38,6 +38,7 @@ class Node extends Component {
           <NodeConfigs
             nodeId={this.props.match.params.nodeId}
             clusterId={this.props.match.params.clusterId}
+            history={this.props.history}
           />
         );
       case 'logs':
@@ -45,6 +46,7 @@ class Node extends Component {
           <NodeLogs
             nodeId={this.props.match.params.nodeId}
             clusterId={this.props.match.params.clusterId}
+            history={this.props.history}
           />
         );
       default:
@@ -52,6 +54,7 @@ class Node extends Component {
           <NodeConfigs
             nodeId={this.props.match.params.nodeId}
             clusterId={this.props.match.params.clusterId}
+            history={this.props.history}
           />
         );
     }
@@ -65,7 +68,7 @@ class Node extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-             <Link
+              <Link
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
                 to="#"

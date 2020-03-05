@@ -47,11 +47,6 @@ class Sidebar extends Component {
         () => {
           const { selectedCluster } = this.state;
 
-          // this.props.history.push({
-          //   pathname: `/${selectedCluster}/topic`,
-          //   selectedCluster
-          // });
-
           callback(selectedCluster);
         }
       );
@@ -92,10 +87,10 @@ class Sidebar extends Component {
         pathname: `/${selectedCluster}/topic`,
         selectedCluster
       });
+
       this.handleGetConnects(selectedCluster);
     });
   }
-  ss;
 
   changeSelectedConnect(connect) {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
@@ -152,8 +147,7 @@ class Sidebar extends Component {
             </div>
             <ul className="list-unstyled components">
               <li className={selectedTab === constants.CLUSTER ? 'active' : ''}>
-                <Link
-                  to={`/${selectedCluster}/topic`}
+                <a
                   data-toggle="collapse"
                   aria-expanded={showClusters}
                   className="dropdown-toggle"
@@ -164,7 +158,7 @@ class Sidebar extends Component {
                   <i className="fa fa-fw fa fa-database" aria-hidden="true" />
                   Clusters
                   <span className="badge badge-success">{selectedCluster}</span>
-                </Link>
+                </a>
                 <ul
                   className={`list-unstyled ${
                     showClusters && selectedTab === constants.CLUSTER ? 'show' : 'collapse'

@@ -19,12 +19,19 @@ class NodeLogs extends Component {
   async getNodesLogs() {
     let logs = [];
     const { selectedCluster, selectedNode } = this.state;
-
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       logs = await get(uriNodesLogs(selectedCluster, selectedNode));
       this.handleData(logs.data);
     } catch (err) {
       console.error('Error:', err);
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 
@@ -46,8 +53,38 @@ class NodeLogs extends Component {
     return (
       <div>
         <Table
-          colNames={['Broker', 'Topic', 'Partition', 'Size', 'OffsetLag']}
-          toPresent={['broker', 'topic', 'partition', 'size', 'offsetLag']}
+          columns={[
+            {
+              id: 'broker',
+              accessor: 'broker',
+              colName: 'Broker',
+              type: 'text'
+            },
+            {
+              id: 'topic',
+              accessor: 'topic',
+              colName: 'Topic',
+              type: 'text'
+            },
+            {
+              id: 'partition',
+              accessor: 'partition',
+              colName: 'Partition',
+              type: 'text'
+            },
+            {
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
+              type: 'text'
+            },
+            {
+              id: 'offsetLag',
+              accessor: 'offsetLag',
+              colName: 'OffsetLag',
+              type: 'text'
+            }
+          ]}
           data={data}
         />
       </div>

@@ -20,12 +20,19 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
       history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 
@@ -34,7 +41,6 @@ class NodesList extends Component {
       return {
         id: node.id || '',
         host: node.host || '',
-        idToShow: <span className="badge badge-info">{node.id || ''}</span>,
         port: node.port || '',
         rack: node.rack || ''
       };
@@ -49,8 +55,29 @@ class NodesList extends Component {
       <div id="content">
         <Header title="Nodes" />
         <Table
-          colNames={['Id', 'Host', 'Racks']}
-          toPresent={['idToShow', 'host', 'rack']}
+          columns={[
+            {
+              id: 'id',
+              accessor: 'id',
+              colName: 'Id',
+              type: 'text',
+              cell: (obj, col) => {
+                return <span className="badge badge-info">{obj[col.accessor] || ''}</span>;
+              }
+            },
+            {
+              id: 'host',
+              accessor: 'host',
+              colName: 'Host',
+              type: 'text'
+            },
+            {
+              id: 'racks',
+              accessor: 'rack',
+              colName: 'Racks',
+              type: 'text'
+            }
+          ]}
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {

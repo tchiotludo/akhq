@@ -44,4 +44,8 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   );
 };
 
+export const uriDeleteTopics = () => {
+  return `${apiUrl}/topic/delete`;
+};
+
 export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
