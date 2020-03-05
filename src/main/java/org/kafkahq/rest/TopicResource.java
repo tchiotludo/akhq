@@ -11,6 +11,7 @@ import org.kafkahq.service.dto.topic.CreateTopicDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.RecordDTO;
 import org.kafkahq.service.dto.topic.TopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -29,9 +30,9 @@ public class TopicResource {
     }
 
     @Get("/topics")
-    public List<TopicDTO> fetchAllTopics(String clusterId, String view, @Nullable String search) throws ExecutionException, InterruptedException {
+    public TopicListDTO fetchAllTopics(String clusterId, String view, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch all topics by name");
-        return topicService.getTopics(clusterId, view, search);
+        return topicService.getTopics(clusterId, view, search, pageNumber);
     }
 
     @Post("/topic/create")

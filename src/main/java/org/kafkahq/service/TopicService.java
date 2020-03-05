@@ -15,6 +15,7 @@ import org.kafkahq.rest.error.ApiError;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.RecordDTO;
 import org.kafkahq.service.dto.topic.TopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -53,10 +54,11 @@ public class TopicService {
         this.recordRepository = recordRepository;
     }
 
-    public List<TopicDTO> getTopics(String clusterId, String view, String search)
+    public TopicListDTO getTopics(String clusterId, String view, String search, Optional<Integer> pageNumber)
             throws ExecutionException, InterruptedException {
         TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
-        Pagination pagination = new Pagination(pageSize, 1);
+
+        Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1));
         PagedList<Topic> pagedList = this.topicRepository.list(
                 clusterId,
                 pagination,
@@ -67,9 +69,9 @@ public class TopicService {
         List<TopicDTO> topicDTOList = new ArrayList<>();
         pagedList
                 .stream()
-                .map(topicDTOItem -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topicDTOItem))).collect(Collectors.toList());
+                .map(topic -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topic))).collect(Collectors.toList());
 
-        return topicDTOList;
+        return new TopicListDTO(topicDTOList, pagedList.pageCount());
     }
 
     public List<RecordDTO> getTopicData(String clusterId, String topicId,
