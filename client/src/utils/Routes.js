@@ -19,7 +19,7 @@ import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import history from '../utils/history';
 import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
-import Loading from '../containers/Loading';
+import Loading from '../containers/Loading/Loading';
 
 class Routes extends Component {
   render() {
