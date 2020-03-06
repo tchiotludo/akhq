@@ -13,7 +13,6 @@ class ErrorPage extends Component {
   };
 
   componentDidMount() {
-    console.log('history', history);
     let errorData = {};
     if (this.props.location && this.props.history.location.state) {
       errorData = this.props.history.location.state.errorData;

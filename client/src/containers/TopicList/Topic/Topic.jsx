@@ -43,22 +43,23 @@ class Topic extends Component {
 
   renderSelectedTab() {
     const { selectedTab, topicId, clusterId } = this.state;
+    const { history } = this.props;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData topic={topicId} />;
+        return <TopicData topic={topicId} history={history} />;
       case 'partitions':
-        return <TopicPartitions clusterId={clusterId} topic={topicId} />;
+        return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
-        return <TopicGroups />;
+        return <TopicGroups history={history} />;
       case 'configs':
-        return <TopicConfigs />;
+        return <TopicConfigs history={history} />;
       case 'acls':
-        return <TopicAcls />;
+        return <TopicAcls history={history} />;
       case 'logs':
-        return <TopicLogs />;
+        return <TopicLogs history={history} />;
       default:
-        return <TopicData />;
+        return <TopicData history={history} />;
     }
   }
 

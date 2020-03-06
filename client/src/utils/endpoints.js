@@ -51,6 +51,10 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   );
 };
 
+export const uriDeleteTopics = () => {
+  return `${apiUrl}/topic/delete`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -58,5 +62,6 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
+  uriDeleteTopics,
   uriTopicsProduce
 };
