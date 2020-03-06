@@ -463,6 +463,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [BMW Group](https://www.bmwgroup.com)
 * [Boulanger](https://www.boulanger.com/)
 * [GetYourGuide](https://www.getyourguide.com)
+* [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [NEXT Technologies](https://www.nextapp.co/)
