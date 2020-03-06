@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { post } from '../../../utils/api';
-import { uriTopicsCreate } from '../../../utils//endpoints';
+import { uriTopicsCreate } from '../../../utils/endpoints';
 
 class TopicCreate extends Form {
   state = {
@@ -41,9 +41,10 @@ class TopicCreate extends Form {
     this.setState({ formData });
   };
 
-  doSubmit() {
+  async doSubmit() {
     const { formData } = this.state;
     const { clusterId } = this.props.match.params;
+    const { history } = this.props;
     const topic = {
       clusterId,
       topicId: formData.name,
@@ -52,14 +53,28 @@ class TopicCreate extends Form {
       cleanupPolicy: formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
       retention: formData.retention
     };
+    history.push({
+      loading: true
+    });
 
-    post(uriTopicsCreate(), topic).then(res => {
+    try {
+      await post(uriTopicsCreate(), topic);
       this.props.history.push({
         pathname: `/${clusterId}/topic`,
         showSuccessToast: true,
         successToastMessage: `Topic '${formData.name}' was created successfully.`
       });
-    });
+    } catch (err) {
+      this.props.history.push({
+        showErrorToast: true,
+        errorToastTitle: err.response.data.title,
+        errorToastMessage: err.response.data.description
+      });
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
   }
   render() {
     return (
@@ -89,13 +104,6 @@ class TopicCreate extends Form {
             undefined,
             'button'
           )}
-          {/*<Modal show={this.state.showConfirmModal} handleClose={this.hideConfirmModal}>*/}
-          {/*    <p>Modal</p>*/}
-          {/*    <p>Data</p>*/}
-          {/*</Modal>*/}
-          {/*<button type="button" onClick={this.showConfirmModal}>*/}
-          {/*    Create*/}
-          {/*</button>*/}
         </form>
       </div>
     );

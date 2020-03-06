@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
-
+import SuccessToast from '../../components/Toast/SuccessToast';
+import ErrorToast from '../../components/Toast/ErrorToast';
+import Loading from '../../containers/Loading';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -11,11 +13,12 @@ class Base extends Component {
     action: '',
     showSuccessToast: false,
     successToastMessage: '',
-    successToastTimeout: 10000, // in ms
+    successToastTimeout: 6000, // in ms
     showErrorToast: false,
     errorToastTitle: '',
     errorToastMessage: '',
-    errorToastTimeout: 6000 // in ms
+    errorToastTimeout: 6000, // in ms
+    loading: false
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -28,7 +31,8 @@ class Base extends Component {
       successToastMessage,
       showErrorToast,
       errorToastTitle,
-      errorToastMessage
+      errorToastMessage,
+      loading
     } = nextProps.location;
 
     return {
@@ -40,7 +44,8 @@ class Base extends Component {
       successToastMessage: successToastMessage,
       showErrorToast: showErrorToast,
       errorToastTitle: errorToastTitle,
-      errorToastMessage: errorToastMessage
+      errorToastMessage: errorToastMessage,
+      loading
     };
   }
 
@@ -58,7 +63,6 @@ class Base extends Component {
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -68,7 +72,6 @@ class Base extends Component {
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
@@ -79,11 +82,22 @@ class Base extends Component {
 
   render() {
     const { children } = this.props;
+    const {
+      showSuccessToast,
+      showErrorToast,
+      successToastMessage,
+      errorToastTitle,
+      errorToastMessage,
+      loading
+    } = this.state;
+    this.checkToasts();
     return (
-      <div>
+      <Loading show={loading}>
+        <SuccessToast show={showSuccessToast} message={successToastMessage} />
+        <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         <Sidebar />
         {children}
-      </div>
+      </Loading>
     );
   }
 }

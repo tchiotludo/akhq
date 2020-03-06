@@ -98,7 +98,7 @@ class Table extends Component {
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
               onClick={() => {
-                onDelete && onDelete();
+                onDelete && onDelete(row);
               }}
             >
               <i className="fa fa-trash" />

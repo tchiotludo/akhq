@@ -20,12 +20,19 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
+    history.push({
+      loading: true
+    });
     try {
       nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
       history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
     }
   }
 
@@ -34,7 +41,6 @@ class NodesList extends Component {
       return {
         id: node.id || '',
         host: node.host || '',
-        //idToShow: ,
         port: node.port || '',
         rack: node.rack || ''
       };
@@ -72,7 +78,6 @@ class NodesList extends Component {
               type: 'text'
             }
           ]}
-          //toPresent={['idToShow', 'host', 'rack']}
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {

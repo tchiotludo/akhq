@@ -13,12 +13,12 @@ import Acls from '../containers/Acls';
 import Schema from '../containers/Schema';
 import Connect from '../containers/Connect';
 import ErrorBoundary from '../containers/ErrorBoundary';
-import api from '../utils/api';
-import endpoints from '../utils/endpoints';
+import api from './api';
+import endpoints from './endpoints';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import history from '../utils/history';
-import Loading from '../containers/Loading/loading';
+import Loading from '../containers/Loading';
 
 class Routes extends Component {
   render() {
@@ -60,7 +60,7 @@ class Routes extends Component {
         </Base>
       );
     }
-    return <Loading />;
+    return <Loading show />;
   }
 }
 export default withRouter(Routes);
