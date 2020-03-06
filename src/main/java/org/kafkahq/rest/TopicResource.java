@@ -53,11 +53,6 @@ public class TopicResource {
         log.debug("Create Topic {}", createTopicDTO);
         topicService.createTopic(createTopicDTO);
     }
-    @Post("/topic/produce")
-    public void topicProduce(@Body ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
-        log.debug("ProduceTopic {}", produceTopicDTO);
-        topicService.produceTopic(produceTopicDTO);
-    }
 
     @Get("/topic/data")
     public List<RecordDTO> fetchTopicData(String clusterId, String topicId,

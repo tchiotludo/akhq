@@ -11,7 +11,9 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProduceTopicDTO {
+    @NotNull
     private String clusterId;
+    @NotNull
     private String topicId;
     private Optional<Integer> partition;
     private String value;
