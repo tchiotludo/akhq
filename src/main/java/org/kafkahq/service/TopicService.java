@@ -11,8 +11,8 @@ import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.service.dto.topic.CreateTopicDTO;
-import org.kafkahq.rest.error.ApiError;
 import org.kafkahq.service.dto.topic.PartitionDTO;
+import org.kafkahq.service.dto.topic.ProduceTopicDTO;
 import org.kafkahq.service.dto.topic.RecordDTO;
 import org.kafkahq.service.dto.topic.TopicDTO;
 import org.kafkahq.service.dto.topic.TopicListDTO;
@@ -23,9 +23,12 @@ import org.kafkahq.utils.Pagination;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Singleton
 public class TopicService {
@@ -116,7 +119,19 @@ public class TopicService {
                 options);
     }
 
-    public void deleteTopic(String clusterId, String name) throws ExecutionException, InterruptedException {
-        topicRepository.delete(clusterId, name);
+    public void deleteTopic(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        topicRepository.delete(clusterId, topicId);
+    }
+
+    public void produceToTopic(ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+        this.recordRepository.produce(
+                produceTopicDTO.getClusterId(),
+                produceTopicDTO.getTopicId(),
+                produceTopicDTO.getValue(),
+                produceTopicDTO.getHeaders(),
+                Optional.of(produceTopicDTO.getKey()).filter(r -> !r.equals("")),
+                Optional.ofNullable(produceTopicDTO.getPartition()),
+                Optional.ofNullable(produceTopicDTO.getTimestamp()).filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
+        );
     }
 }

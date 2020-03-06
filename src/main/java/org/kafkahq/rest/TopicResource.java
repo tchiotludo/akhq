@@ -1,24 +1,19 @@
 package org.kafkahq.rest;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
-
-import io.micronaut.context.annotation.Value;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MutableHttpResponse;
-import io.micronaut.http.annotation.*;
-import org.kafkahq.repositories.TopicRepository;
-
-import org.kafkahq.service.dto.topic.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
-
+import org.kafkahq.service.dto.topic.CreateTopicDTO;
+import org.kafkahq.service.dto.topic.DeleteTopicDTO;
+import org.kafkahq.service.dto.topic.PartitionDTO;
+import org.kafkahq.service.dto.topic.ProduceTopicDTO;
+import org.kafkahq.service.dto.topic.RecordDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -44,8 +39,14 @@ public class TopicResource {
 
     @Post("/topic/create")
     public void topicCreate(@Body CreateTopicDTO createTopicDTO) throws ExecutionException, InterruptedException {
-        log.debug("Create Topic {}", createTopicDTO);
+        log.debug("Create topic {}", createTopicDTO.getTopicId());
         topicService.createTopic(createTopicDTO);
+    }
+
+    @Post("/topic/produce")
+    public void topicProduce(@Body ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+        log.debug("Producing to topic {}, message: {}", produceTopicDTO.getTopicId(), produceTopicDTO.getValue());
+        topicService.produceToTopic(produceTopicDTO);
     }
 
     @Get("/topic/data")
