@@ -20,9 +20,11 @@ import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
 
 
-import javax.validation.constraints.Null;
-
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Controller("${kafkahq.server.base-path:}/api")
@@ -34,16 +36,10 @@ public class TopicResource {
         this.topicService = topicService;
     }
 
-    @Get("/topicsByType")
-    public List<TopicDTO> fetchAllTopicsByType(String clusterId, String view) throws ExecutionException, InterruptedException {
-        log.debug("Fetch all topics by type");
-        return topicService.getAllTopicsByType(clusterId, view);
-    }
-
-    @Get("/topicsByName")
-    public List<TopicDTO> fetchAllTopicsByName(String clusterId, String view, String search) throws ExecutionException, InterruptedException {
+    @Get("/topics")
+    public TopicListDTO fetchAllTopics(String clusterId, String view, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch all topics by name");
-        return topicService.getAllTopicsByName(clusterId, view, search);
+        return topicService.getTopics(clusterId, view, search, pageNumber);
     }
 
     @Post("/topic/create")
@@ -70,10 +66,10 @@ public class TopicResource {
     }
 
     @Delete("/topic/delete")
-    public List<TopicDTO> deleteTopic(@Body DeleteTopicDTO deleteTopicDTO) throws ExecutionException, InterruptedException {
+    public TopicListDTO deleteTopic(@Body DeleteTopicDTO deleteTopicDTO) throws ExecutionException, InterruptedException {
         log.debug("Delete topic: {}", deleteTopicDTO.getTopicId());
         topicService.deleteTopic(deleteTopicDTO.getClusterId(), deleteTopicDTO.getTopicId());
-        return topicService.getAllTopicsByName(deleteTopicDTO.getClusterId(), "ALL", "");
+        return topicService.getTopics(deleteTopicDTO.getClusterId(), "ALL", "", Optional.empty());
     }
 }
 

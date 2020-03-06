@@ -15,6 +15,7 @@ import org.kafkahq.rest.error.ApiError;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.RecordDTO;
 import org.kafkahq.service.dto.topic.TopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -53,13 +54,24 @@ public class TopicService {
         this.recordRepository = recordRepository;
     }
 
-    public List<TopicDTO> getAllTopicsByName(String clusterId, String view, String search)
+    public TopicListDTO getTopics(String clusterId, String view, String search, Optional<Integer> pageNumber)
             throws ExecutionException, InterruptedException {
-        return getAll(clusterId, view, search);
-    }
+        TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
 
-    public List<TopicDTO> getAllTopicsByType(String clusterId, String view) throws ExecutionException, InterruptedException {
-        return getAll(clusterId, view, "");
+        Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1));
+        PagedList<Topic> pagedList = this.topicRepository.list(
+                clusterId,
+                pagination,
+                topicListView,
+                Optional.ofNullable(search)
+        );
+
+        List<TopicDTO> topicDTOList = new ArrayList<>();
+        pagedList
+                .stream()
+                .map(topic -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topic))).collect(Collectors.toList());
+
+        return new TopicListDTO(topicDTOList, pagedList.pageCount());
     }
 
     public List<RecordDTO> getTopicData(String clusterId, String topicId,
@@ -90,39 +102,6 @@ public class TopicService {
 
         return topic.getPartitions().stream().map(partition -> topicMapper.fromPartitionToPartitionDTO(partition))
                 .collect(Collectors.toList());
-    }
-
-    private List<TopicDTO> getAllTopics(String clusterId) throws ExecutionException, InterruptedException {
-        Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
-
-        List<Topic> topicList = listTopics.stream().map(topicListing -> {
-            try {
-                return topicRepository.findByName(clusterId, topicListing.name());
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }).collect(Collectors.toList());
-
-        return topicList.stream().map(topic -> topicMapper.fromTopicToTopicDTO(topic)).collect(Collectors.toList());
-    }
-
-    private List<TopicDTO> getAll(String clusterId, String view, String search) throws ExecutionException, InterruptedException {
-        TopicRepository.TopicListView topicListView = TopicRepository.TopicListView.valueOf(view);
-        Pagination pagination = new Pagination(pageSize, 1);
-        PagedList<Topic> pagedList = this.topicRepository.list(
-                clusterId,
-                pagination,
-                topicListView,
-                Optional.ofNullable(search)
-        );
-
-        List<TopicDTO> topicDTOList = new ArrayList<>();
-        pagedList
-                .stream()
-                .map(topicDTOItem -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topicDTOItem))).collect(Collectors.toList());
-
-        return topicDTOList;
     }
 
     public void createTopic(CreateTopicDTO createTopicDTO) throws ExecutionException, InterruptedException {

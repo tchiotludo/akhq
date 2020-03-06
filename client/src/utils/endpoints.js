@@ -1,5 +1,3 @@
-import { node } from 'prop-types';
-
 export const apiUrl = 'http://localhost:8080/api';
 export const baseUrl = 'http://localhost:8080';
 
@@ -15,12 +13,8 @@ export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };
 
-export const uriTopics = (id, view, search) => {
-  return `${apiUrl}/${
-    search
-      ? 'topicsByName?clusterId=' + id + '&view=' + view + '&search=' + search
-      : 'topicsByType?clusterId=' + id + '&view=' + view
-  } `;
+export const uriTopics = (id, view, search, pageNumber) => {
+  return `${apiUrl}/topics?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
