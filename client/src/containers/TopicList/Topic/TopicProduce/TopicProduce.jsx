@@ -11,13 +11,10 @@ class TopicProduce extends Form {
     formData: {
       partition: '',
       key: '',
-      headers: [
-        {
-          key: '',
-          value: ''
-        }
-      ],
-      timestamp: ''
+      hKey0: '',
+      hValue0: '',
+      timestamp: '',
+      value: ''
     },
     errors: {}
   };
@@ -35,18 +32,14 @@ class TopicProduce extends Form {
       .min(1)
       .label('Key')
       .required(),
-    headers: [
-      {
-        key: Joi.string()
-          .min(1)
-          .label('Key')
-          .required(),
-        value: Joi.string()
-          .min(1)
-          .label('Value')
-          .required()
-      }
-    ],
+    hKey0: Joi.string()
+      .min(1)
+      .label('hKey0')
+      .required(),
+    hValue0: Joi.string()
+      .min(1)
+      .label('hValue0')
+      .required(),
     timestamp: Joi.number().label('Timestamp'),
     value: Joi.number().label('Value')
   };
@@ -62,7 +55,6 @@ class TopicProduce extends Form {
       timestamp: formData.timestamp,
       value: formData.value
     };
-
     post(uriTopicsProduce(), topic).then(res => {
       this.props.history.push({
         pathname: `/${clusterId}/topic`,
@@ -71,118 +63,119 @@ class TopicProduce extends Form {
       });
     });
   }
-  renderHeader() {
-    let header1 = (
-      <div className="row">
-        <label class="col-sm-2 col-form-label">Headers</label>
 
-        <div
-          class="row col-sm-10 khq-multiple"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            minWidth: '80%',
-            marginLeft: '0.05%'
-          }}
-        >
-          {this.renderInput(
-            '',
-            '',
-            'Key',
-            'headers',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 ',
-            'input-class'
-          )}
-
-          {this.renderInput(
-            '',
-            '',
-            'Value',
-            'headers',
-            undefined,
-            true,
-            'wrapper-class col-sm-6',
-            'input-class'
-          )}
-          <div style={{ paddingBottom: '1.5%' }}>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onClick={() => {
-                this.handlePlus();
-              }}
-            >
-              <i class="fa fa-plus"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-    let header = (
-      <div className="row">
-        <label class="col-sm-2 col-form-label"> </label>
-
-        <div
-          class="row col-sm-10 khq-multiple"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            minWidth: '80%',
-            marginLeft: '0.05%'
-          }}
-        >
-          {this.renderInput(
-            '',
-            '',
-            'Key',
-            'headers',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 ',
-            'input-class'
-          )}
-
-          {this.renderInput(
-            '',
-            '',
-            'Value',
-            'headers',
-            undefined,
-            true,
-            'wrapper-class col-sm-6',
-            'input-class'
-          )}
-          <div style={{ paddingBottom: '1.5%' }}>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onClick={() => {
-                this.handlePlus();
-              }}
-            >
-              <i class="fa fa-plus"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  renderHeaders() {
     let headers = [];
-    for (let i = 0; i < this.state.nHeaders; i++) {
-      if (i === 0) {
-        headers.push(header1);
-      } else {
-        headers.push(header);
+
+    Object.keys(this.state.formData).map((key, index) => {
+      if (key.includes('hKey')) {
+        headers.push(this.renderHeader(index));
       }
-    }
+    });
     return <>{headers.map(head => head)}</>;
   }
-  handlePlus() {
-    this.setState({ nHeaders: this.state.nHeaders + 1 });
+
+  onHeaderChange = ({ currentTarget: input }, position) => {
+    const { formData } = this.state;
+
+    console.log(
+      'onHeaderChange im in: --inputname-- ',
+      input.name,
+      ' ---position---',
+      position,
+      ` ----formData.headers[${position}][${input.name}]---- `,
+      formData.headers[position][input.name]
+    );
+
+    const errors = { ...this.state.errors };
+    const errorMessage = this.validateProperty(input);
+    if (errorMessage) {
+      errors[input.name] = errorMessage;
+    } else {
+      delete errors[input.name];
+    }
+
+    formData.headers[position][input.name] = input.value;
+    this.setState({ formData, errors });
+  };
+
+  renderHeader(position) {
+    const { formData } = this.state;
+    return (
+      <div className="row">
+        <label class="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
+
+        <div
+          class="row col-sm-10 khq-multiple"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            minWidth: '80%',
+            marginLeft: '0.05%'
+          }}
+        >
+          {this.renderInput(
+            `hKey${position}`,
+            '',
+            'Key',
+            'text',
+            undefined,
+            true,
+            'wrapper-class col-sm-6 ',
+            'input-class'
+          )}
+
+          {this.renderInput(
+            `hValue${position}`,
+            '',
+            'Value',
+            'text',
+            undefined,
+            true,
+            'wrapper-class col-sm-6',
+            'input-class'
+          )}
+          <div style={{ paddingBottom: '1.5%' }}>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onClick={() => {
+                this.handlePlus();
+              }}
+            >
+              <i class="fa fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  handlePlus() {
+    const { formData, nHeaders } = this.state;
+
+    let newFormData = {
+      ...formData,
+      [`hKey${nHeaders}`]: '',
+      [`hValue${nHeaders}`]: ''
+    };
+    this.schema = {
+      ...this.schema,
+      [`hKey${nHeaders}`]: Joi.string()
+        .min(1)
+        .label(`hKey${nHeaders}`)
+        .required(),
+      [`hValue${nHeaders}`]: Joi.string()
+        .min(1)
+        .label(`hValue${nHeaders}`)
+        .required()
+    };
+    this.setState({ nHeaders: this.state.nHeaders + 1, formData: newFormData }, () => {
+      console.log('schema', this.schema);
+    });
+  }
+
   render() {
     const { clusterId, topicId } = this.state;
     return (
@@ -199,7 +192,7 @@ class TopicProduce extends Form {
             <div></div>
           </div>
 
-          {this.renderHeader()}
+          {this.renderHeaders()}
 
           {this.renderInput('value', 'Value', 'Value', 'Value')}
 
