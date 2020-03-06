@@ -22,6 +22,7 @@
     - [Stand Alone](#stand-alone)
     - [Kubernetes using Helm](#running-in-kubernetes-using-a-helm-chart)
 - [Configuration](#configuration)
+    - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
     - [KafkaHQ](#kafkahq-configuration)
     - [Security](#security)
@@ -140,6 +141,39 @@ helm install --name=kafkahq-release-name  .
 ## Configuration
 Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files. YML Configuration
 file example can be found here :[application.example.yml](application.example.yml)
+
+### Run with another jvm.options file
+
+By default, the docker container will run with a [jvm.options](docker/app/jvm.options) file, you can override it with
+your own with an Environment Variable. With the `JVM_OPTS_FILE` environment variable, you can override the jvm.options file by passing
+the path of your file instead.
+
+Override the `JVM_OPTS_FILE` with docker run:
+
+```sh
+docker run -d \
+    --env JVM_OPTS_FILE={{path-of-your-jvm.options-file}}
+    -p 8080:8080 \
+    -v /tmp/application.yml:/app/application.yml \
+    tchiotludo/kafkahq
+```
+
+Override the `JVM_OPTS_FILE` with docker-compose:
+
+```yaml
+version: '3.7'
+services:
+  kafkahq:
+    image: tchiotludo/kafkahq-jvm:dev
+    environment:
+      JVM_OPTS_FILE: /app/jvm.options
+    ports:
+      - "8080:8080"
+    volumes:
+      - /tmp/application.yml:/app/application.yml
+```
+
+If you do not override the `JVM_OPTS_FILE`, the docker container will take the defaults one instead. 
 
 ### Kafka cluster configuration 
 * `kafkahq.connections` is a key value configuration with :
