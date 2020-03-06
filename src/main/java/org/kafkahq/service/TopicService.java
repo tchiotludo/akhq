@@ -2,20 +2,19 @@ package org.kafkahq.service;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MutableHttpResponse;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.service.dto.topic.*;
-import org.kafkahq.rest.error.ApiError;
+import org.kafkahq.service.dto.topic.CreateTopicDTO;
+import org.kafkahq.service.dto.topic.PartitionDTO;
+import org.kafkahq.service.dto.topic.ProduceTopicDTO;
+import org.kafkahq.service.dto.topic.RecordDTO;
+import org.kafkahq.service.dto.topic.TopicDTO;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -23,9 +22,12 @@ import org.kafkahq.utils.Pagination;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Singleton
 public class TopicService {
@@ -138,31 +140,19 @@ public class TopicService {
                 options);
     }
 
-    public void produceTopic (ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+    public void deleteTopic(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        topicRepository.delete(clusterId, topicId);
+    }
 
-        Map<String, String> finalHeaders = new HashMap<>();
-        int i = 0;
-        for (String headerKey : produceTopicDTO.getHeaders().get("headers[key]")) {
-            if (headerKey != null && !headerKey.equals("") && produceTopicDTO.getHeaders().get("headers[value]").get(i) != null) {
-                finalHeaders.put(
-                        headerKey,
-                        produceTopicDTO.getHeaders().get("headers[value]").get(i).equals("") ? null : produceTopicDTO.getHeaders().get("headers[value]").get(i)
-                );
-            }
-            i++;
-        }
-
+    public void produceToTopic(ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
         this.recordRepository.produce(
                 produceTopicDTO.getClusterId(),
                 produceTopicDTO.getTopicId(),
                 produceTopicDTO.getValue(),
-                finalHeaders,
-                produceTopicDTO.getKey().filter(r -> !r.equals("")),
-                produceTopicDTO.getPartition(),
-                produceTopicDTO.getTimestamp().filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
-
+                produceTopicDTO.getHeaders(),
+                Optional.of(produceTopicDTO.getKey()).filter(r -> !r.equals("")),
+                Optional.ofNullable(produceTopicDTO.getPartition()),
+                Optional.ofNullable(produceTopicDTO.getTimestamp()).filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
         );
-
-
     }
 }

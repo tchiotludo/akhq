@@ -50,8 +50,14 @@ public class TopicResource {
 
     @Post("/topic/create")
     public void topicCreate(@Body CreateTopicDTO createTopicDTO) throws ExecutionException, InterruptedException {
-        log.debug("Create Topic {}", createTopicDTO);
+        log.debug("Create topic {}", createTopicDTO.getTopicId());
         topicService.createTopic(createTopicDTO);
+    }
+
+    @Post("/topic/produce")
+    public void topicProduce(@Body ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+        log.debug("Producing to topic {}, message: {}", produceTopicDTO.getTopicId(), produceTopicDTO.getValue());
+        topicService.produceToTopic(produceTopicDTO);
     }
 
     @Get("/topic/data")

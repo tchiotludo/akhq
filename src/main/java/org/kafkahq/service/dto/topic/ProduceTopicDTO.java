@@ -1,25 +1,30 @@
 package org.kafkahq.service.dto.topic;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
-import java.util.Optional;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class ProduceTopicDTO {
     @NotNull
     private String clusterId;
     @NotNull
     private String topicId;
-    private Optional<Integer> partition;
+    @NotNull
     private String value;
-    private Optional<String> key;
-    private Optional<String> timestamp;
-   private  Map<String, List<String>> headers;
+    @NotNull
+    private Map<String, String> headers;
+    @NotNull
+    private String key;
+    @Nullable
+    private Integer partition;
+    @Nullable
+    private String timestamp;
+
 }
-
-
