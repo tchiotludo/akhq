@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        // kafkahq
+        // akhq
         classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.17.0"
     }
 }
@@ -27,19 +27,20 @@ plugins {
     id "net.ltgt.apt-idea" version "0.21"
     id "com.gorylenko.gradle-git-properties" version "2.2.0"
 
-    // kafkahq
-    id "com.moowork.node" version "1.3.1"
+    // akhq
+    id 'org.siouan.frontend' version '1.3.0'
     id 'io.franzbecker.gradle-lombok' version '3.2.0'
     id 'com.adarshr.test-logger' version '2.0.0'
+    id 'org.gradle.test-retry' version '1.0.0'
     id 'com.github.psxpaul.execfork' version '0.1.13'
     id "com.github.ben-manes.versions" version "0.27.0"
 }
 
 apply plugin: "com.commercehub.gradle.plugin.avro"
 
-group "org.kafkahq"
+group "org.akhq"
 version "0.1"
-mainClassName = "org.kafkahq.App"
+mainClassName = "org.akhq.App"
 sourceCompatibility = 11
 
 repositories {
@@ -94,13 +95,6 @@ run.jvmArgs('-noverify',
 tasks.withType(JavaCompile){
     options.encoding = "UTF-8"
     options.compilerArgs.add('-parameters')
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(run) || graph.hasTask(testClasses)) {
-        webpack.enabled = false
-        npmInstall.enabled = false
-    }
 }
 
 /**********************************************************************************************************************\
@@ -189,6 +183,11 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
+
+    retry {
+        maxRetries = 5
+        maxFailures = 15
+    }
 }
 
 testlogger {
@@ -202,22 +201,15 @@ task testKafkaCluster(type:JavaExec) {
     group = 'verification'
     description = 'Start a standalone test Kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.kafkahq.KafkaTestCluster"
+    main = "org.akhq.KafkaTestCluster"
 }
 
 task testInjectData(type:JavaExec) {
     group = 'verification'
     description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.kafkahq.KafkaTestCluster"
+    main = "org.akhq.KafkaTestCluster"
     args 'inject'
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(test) || graph.hasTask(testKafkaCluster) || graph.hasTask(testInjectData)) {
-        webpack.enabled = false
-        npmInstall.enabled = false
-    }
 }
 
 test.dependsOn "startTestKafkaCluster"
@@ -226,7 +218,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
     group = 'verification'
     description = 'Start a global standalone test Kafka cluster during tests'
     classpath = sourceSets.test.runtimeClasspath
-    main = 'org.kafkahq.KafkaTestCluster'
+    main = 'org.akhq.KafkaTestCluster'
     waitForOutput = 'Test data injected sleep done'
     timeout = 300
 }
@@ -234,24 +226,19 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
 /**********************************************************************************************************************\
  * Node + Webpack
  **********************************************************************************************************************/
-import com.moowork.gradle.node.task.NodeTask
-
-task webpack(type: NodeTask, dependsOn: "npmInstall") {
-    group = 'build'
-    description = 'Build with webpack assets'
-    script = project.file("node_modules/.bin/webpack")
-    outputs.dir("src/main/resources/static")
-    args = ["-p", "--mode production"]
+frontend {
+    nodeVersion = '12.14.0'
+    assembleScript = 'run build'
+    checkScript = 'run test'
 }
-
-jar.dependsOn "webpack"
-processResources.dependsOn 'webpack'
-
-clean.delete << file("src/main/resources/static")
 
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
+shadowJar.dependsOn installFrontend
+shadowJar.dependsOn assembleFrontend
+assembleFrontend.shouldRunAfter installFrontend
+
 shadowJar {
     mergeServiceFiles()
 }

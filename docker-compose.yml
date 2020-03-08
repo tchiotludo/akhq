@@ -9,13 +9,13 @@ volumes:
     driver: local
 
 services:
-  kafkahq:
+  akhq:
     # build:
     #   context: .
-    image: tchiotludo/kafkahq
+    image: tchiotludo/akhq
     environment:
-      KAFKAHQ_CONFIGURATION: |
-        kafkahq:
+      AKHQ_CONFIGURATION: |
+        akhq:
           connections:
             docker-kafka-server:
               properties:

@@ -9,7 +9,7 @@ volumes:
     driver: local
 
 services:
-  kafkahq:
+  akhq:
     image: gradle:6.1.1-jdk11
     command: "gradle run --continuous"
     working_dir: /app
@@ -34,7 +34,7 @@ services:
     ports:
       - 127.11.8.17:8081:8081
     depends_on:
-      - kafkahq
+      - akhq
 
   zookeeper:
     image: confluentinc/cp-zookeeper

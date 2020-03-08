@@ -2,11 +2,11 @@
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
-<#-- @ftlvariable name="plugins" type="java.util.List<org.kafkahq.models.ConnectPlugin>" -->
+<#-- @ftlvariable name="plugins" type="java.util.List<org.akhq.models.ConnectPlugin>" -->
 
 <#macro form pluginDefinition definition>
-    <#-- @ftlvariable name="definition" type="org.kafkahq.models.ConnectDefinition" -->
-    <#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.kafkahq.models.ConnectPlugin>" -->
+    <#-- @ftlvariable name="definition" type="org.akhq.models.ConnectDefinition" -->
+    <#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.akhq.models.ConnectPlugin>" -->
 
     <form method="get">
         <div class="form-group row">

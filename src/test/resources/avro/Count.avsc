@@ -1,6 +1,6 @@
 {
     "name": "Count",
-    "namespace": "org.kafkahq",
+    "namespace": "org.akhq",
     "type": "record",
     "fields" : [
         {"name": "count", "type": "int"},

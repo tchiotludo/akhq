@@ -1,8 +1,8 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
-<#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
-<#-- @ftlvariable name="keySchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
-<#-- @ftlvariable name="valueSchemasList" type="java.util.List<org.kafkahq.models.Schema>" -->
+<#-- @ftlvariable name="topic" type="org.akhq.models.Topic" -->
+<#-- @ftlvariable name="keySchemasList" type="java.util.List<org.akhq.models.Schema>" -->
+<#-- @ftlvariable name="valueSchemasList" type="java.util.List<org.akhq.models.Schema>" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 <#-- @ftlvariable name="registryEnabled" type="java.lang.Boolean" -->
 

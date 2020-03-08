@@ -14,14 +14,14 @@ micronaut:
           enabled: true
           base: "dc=example,dc=com"
 
-kafkahq:
+akhq:
   server:
-    base-path: "" # if behind a reverse proxy, path to kafkahq without trailing slash (optional). Example: kafkahq is
-                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq".
-                  # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
+    base-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
+                  # behind a reverse proxy with url http://my-server/akhq, set base-path: "/akhq".
+                  # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
-      name: org.kafkahq.log.access # Logger name
+      name: org.akhq.log.access # Logger name
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
 
   # default kafka properties for each clients, available for admin / producer / consumer (optional)
@@ -30,7 +30,7 @@ kafkahq:
       properties:
         isolation.level: read_committed
 
-  # list of kafka cluster available for kafkahq
+  # list of kafka cluster available for akhq
   connections:
     my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
       properties: # standard kafka properties (optional)
@@ -166,7 +166,7 @@ kafkahq:
       group:
         group-ldap-1: # just a key, no matter will be override by name below
           name: "group-ldap-1"
-          groups: # KafkaHQ groups list
+          groups: # Akhq groups list
             - topic-reader
         group-ldap-2:
           name: "group-ldap-2"
@@ -174,7 +174,7 @@ kafkahq:
             - admin
       user:
         riemann: # ldap user id
-          groups: # KafkaHQ groups list
+          groups: # Akhq groups list
             - topic-reader
         einstein:
           groups:

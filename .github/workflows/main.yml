@@ -1,0 +1,133 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+    tags:
+      - v*
+
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: ['11']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Caches
+      - name: Gradle cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Gradle wrapper cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-wrapper-
+      - name: Npm cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Node cache
+        uses: actions/cache@v1
+        with:
+          path: node
+          key: ${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # JDK
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+
+      # Gradle check
+      - name: Build with Gradle
+        run: |
+          ./gradlew classes testClasses --parallel --no-daemon
+          ./gradlew check --no-daemon
+
+      # Shadow Jar
+      - name: Build jars
+        if: success() && matrix.java == '11'
+        run: ./gradlew shadowJar --no-daemon
+
+      # Upload artifacts
+      - name: Copy jar to docker
+        run: cp build/libs/* docker/app/akhq.jar
+      - name: Upload jar
+        uses: actions/upload-artifact@v1
+        if: success() && matrix.java == '11'
+        with:
+          name: jar
+          path: build/libs/
+
+      # Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        # if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: true
+          prerelease: true
+
+      # Upload Jar
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        # if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./docker/app/akhq.jar
+          asset_name: akhq.jar
+          asset_content_type: application/java-archive
+
+      # Docker
+      - name: Publish to Docker Hub
+        uses: elgohr/Publish-Docker-Github-Action@master
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
+        with:
+          name: tchiotludo/akhq
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tag_names: true
+
+      # Slack
+      - name: Slack notification
+        uses: 8398a7/action-slack@v2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          username: Github Actions
+          icon_emoji: ':octocat:'
+          channel: '#akhq'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+

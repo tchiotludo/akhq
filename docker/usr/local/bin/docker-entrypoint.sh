@@ -2,8 +2,8 @@
 
 set -e
 
-if [ "${KAFKAHQ_CONFIGURATION}" ]; then
-    echo "${KAFKAHQ_CONFIGURATION}" > /app/application.yml
+if [ "${AKHQ_CONFIGURATION}" ]; then
+    echo "${AKHQ_CONFIGURATION}" > /app/application.yml
 fi
 
 exec "$@"

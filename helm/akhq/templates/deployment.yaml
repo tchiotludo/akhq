@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "akhq.fullname" . }}
+  {{- with .Values.image.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "akhq.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.configuration }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.secrets }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.image.annotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "akhq.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
+          env:
+          {{- if .Values.secrets }}
+          - name: MICRONAUT_ENVIRONMENTS
+            value: secrets
+          - name: MICRONAUT_CONFIG_FILES
+            value: /app/application.yml,/app/application-secrets.yml
+          {{- end }}
+          {{- with .Values.image.extraEnv }}
+{{ toYaml . | trim | indent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 12 }}{{ end }}
+          {{- if .Values.configuration }}
+            - name: config
+              mountPath: /app/application.yml
+              subPath: application.yml
+          {{- end }}
+          {{- if .Values.secrets }}
+            - name: secrets
+              mountPath: /app/application-secrets.yml
+              subPath: application-secrets.yml
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      {{- if .Values.extraVolumes  }}{{ toYaml .Values.extraVolumes | trim | nindent 6 }}{{ end }}
+      {{- if .Values.configuration }}
+      - name: config
+        configMap:
+          name: {{ template "akhq.fullname" . }}
+      {{- end }}
+      {{- if .Values.secrets }}
+      - name: secrets
+        secret:
+          secretName: {{ template "akhq.fullname" . }}-secrets
+      {{- end }}

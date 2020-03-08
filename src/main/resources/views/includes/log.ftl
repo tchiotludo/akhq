@@ -7,7 +7,7 @@
 <#import "functions.ftl" as functions>
 
 <#macro table logs>
-    <#-- @ftlvariable name="logs" type="java.util.List<org.kafkahq.models.LogDir>" -->
+    <#-- @ftlvariable name="logs" type="java.util.List<org.akhq.models.LogDir>" -->
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0">
             <thead class="thead-dark">

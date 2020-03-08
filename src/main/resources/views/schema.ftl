@@ -3,9 +3,9 @@
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
-<#-- @ftlvariable name="schema" type="org.kafkahq.models.Schema" -->
-<#-- @ftlvariable name="config" type="org.kafkahq.models.Schema.Config" -->
-<#-- @ftlvariable name="versions" type="java.util.List<org.kafkahq.models.Schema>" -->
+<#-- @ftlvariable name="schema" type="org.akhq.models.Schema" -->
+<#-- @ftlvariable name="config" type="org.akhq.models.Schema.Config" -->
+<#-- @ftlvariable name="versions" type="java.util.List<org.akhq.models.Schema>" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/schema.ftl" as schemaTemplate>

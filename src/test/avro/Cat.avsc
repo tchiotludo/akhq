@@ -1,6 +1,6 @@
 {
     "name": "Cat",
-    "namespace": "org.kafkahq",
+    "namespace": "org.akhq",
     "type": "record",
     "fields" : [
         {"name": "id", "type": "int"},

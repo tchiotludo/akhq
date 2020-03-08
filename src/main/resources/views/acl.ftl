@@ -1,7 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="acl" type="org.kafkahq.models.AccessControlList" -->
+<#-- @ftlvariable name="acl" type="org.akhq.models.AccessControlList" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
