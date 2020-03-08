@@ -257,25 +257,8 @@ These parameters are the default values used in the topic creation page.
 
     
 ### Security
-* `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
-  * `topic/read`
-  * `topic/insert`
-  * `topic/delete`
-  * `topic/config/update`
-  * `node/read`
-  * `node/config/update`
-  * `topic/data/read`
-  * `topic/data/insert`
-  * `topic/data/delete`
-  * `group/read`
-  * `group/delete`
-  * `group/offsets/update`
-  * `acls/read`
-  * `registry/read`
-  * `registry/insert`
-  * `registry/update`
-  * `registry/delete`
-  * `registry/version/delete`
+* `kafkahq.security.default-group`: Default group for all the user even unlogged user.
+By default, the default group is `admin` and allow you all read / write access on the whole app.
 
 By default, security & roles is enabled by default but anonymous user have full access. You can completely disabled
 security with `micronaut.security.enabled: false`.
@@ -284,13 +267,7 @@ If you need a read-only application, simply add this to your configuration files
 ```yaml
 kafkahq:
   security:
-    default-roles:
-      - topic/read
-      - node/read
-      - topic/data/read
-      - group/read
-      - registry/read
-      - connect/read
+    default-group: reader
 ```
 
 
