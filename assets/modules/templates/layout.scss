@@ -151,6 +151,11 @@ form.khq-form {
     margin-bottom: 25px;
 }
 
+
+form.khq-form .bootstrap-select{
+    width: 100% !important;
+}
+
 form.khq-form div.khq-submit,
 #content aside {
     position: fixed;

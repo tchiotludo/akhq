@@ -31,7 +31,7 @@
                 <select
                         name="keySchema"
                         id="key-schema"
-                        class="khq-select form-control col-sm-4"
+                        class="khq-select form-control"
                         data-style="btn-white"
                         data-live-search="true"
                         title="Key schemas"
@@ -73,7 +73,7 @@
                 <select
                         name="valueSchema"
                         id="value-schema"
-                        class="khq-select form-control col-sm-4"
+                        class="khq-select form-control"
                         data-style="btn-white"
                         data-live-search="true"
                         title="Value schemas"
