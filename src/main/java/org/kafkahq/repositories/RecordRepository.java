@@ -3,31 +3,24 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import io.confluent.kafka.formatter.AvroMessageFormatter;
-import io.confluent.kafka.formatter.AvroMessageReader;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DatumWriter;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.Encoder;
-import org.apache.avro.io.EncoderFactory;
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -42,14 +35,14 @@ import org.kafkahq.utils.Debug;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -66,6 +59,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+
+    @Inject
+    private AvroWireFormatConverter avroWireFormatConverter;
 
     @Value("${kafkahq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
@@ -357,7 +353,8 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
-        return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId));
+        return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId)));
     }
 
 
