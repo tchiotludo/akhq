@@ -3,6 +3,10 @@ package org.kafkahq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.formatter.AvroMessageFormatter;
+import io.confluent.kafka.formatter.AvroMessageReader;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
@@ -10,6 +14,19 @@ import io.reactivex.Flowable;
 import lombok.*;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -19,11 +36,19 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.models.Partition;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
+import org.kafkahq.modules.AvroSerializer;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.utils.Debug;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -335,26 +360,51 @@ public class RecordRepository extends AbstractRepository {
         return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId));
     }
 
-    public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
+
+    private RecordMetadata produce(String clusterId, String topic, byte[] value, Map<String, String> headers, byte[] key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
         return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
-            topic,
-            partition.orElse(null),
-            timestamp.orElse(null),
-            key.orElse(null),
-            value,
-            headers
-                .entrySet()
-                .stream()
-                .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
-                .collect(Collectors.toList())
+                topic,
+                partition.orElse(null),
+                timestamp.orElse(null),
+                key,
+                value,
+                headers
+                    .entrySet()
+                    .stream()
+                    .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
+                    .collect(Collectors.toList())
         )).get();
     }
+
+    public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp, Optional<Integer> keySchemaId, Optional<Integer> valueSchemaId) throws ExecutionException, InterruptedException {
+        AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
+        byte[] keyAsBytes = null;
+        byte[] valueAsBytes;
+        if(key.isPresent() ){
+            if(keySchemaId.isPresent()) {
+                keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
+            } else {
+                keyAsBytes = key.get().getBytes();
+            }
+        }
+        if(value != null && valueSchemaId.isPresent()){
+            valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
+        } else {
+            valueAsBytes = value != null ? value.getBytes() : null;
+        }
+
+       return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
+    }
+
+
+
+
 
     public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
         kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
-            new String(key),
+            key,
             null
         )).get();
     }

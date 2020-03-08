@@ -3,6 +3,7 @@ package org.kafkahq.controllers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
@@ -18,17 +19,21 @@ import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.Role;
+import org.kafkahq.middlewares.SchemaComparator;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
+import org.kafkahq.models.Schema;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.RequestHelper;
 import org.kafkahq.repositories.AccessControlListRepository;
 import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.RecordRepository;
+import org.kafkahq.repositories.SchemaRegistryRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -38,13 +43,22 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller("${kafkahq.server.base-path:}/{cluster}/topic")
 public class TopicController extends AbstractController {
+    public static final String VALUE_SUFFIX = "-value";
+    public static final String KEY_SUFFIX = "-key";
     private AbstractKafkaWrapper kafkaWrapper;
     private TopicRepository topicRepository;
     private ConfigRepository configRepository;
@@ -52,6 +66,7 @@ public class TopicController extends AbstractController {
     private FreemarkerViewsRenderer freemarkerViewsRenderer;
     private Environment environment;
     private AccessControlListRepository aclRepository;
+    private SchemaRegistryRepository schemaRegistryRepository;
 
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
@@ -74,7 +89,8 @@ public class TopicController extends AbstractController {
         RecordRepository recordRepository,
         FreemarkerViewsRenderer freemarkerViewsRenderer,
         Environment environment,
-        AccessControlListRepository aclRepository
+        AccessControlListRepository aclRepository,
+        SchemaRegistryRepository schemaRegistryRepository
     ) {
         this.kafkaWrapper = kafkaWrapper;
         this.topicRepository = topicRepository;
@@ -83,6 +99,7 @@ public class TopicController extends AbstractController {
         this.freemarkerViewsRenderer = freemarkerViewsRenderer;
         this.environment = environment;
         this.aclRepository = aclRepository;
+        this.schemaRegistryRepository = schemaRegistryRepository;
     }
 
     @View("topicList")
@@ -174,13 +191,25 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @View("topicProduce")
     @Get("{topicName}/produce")
-    public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException {
+    public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException, IOException, RestClientException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
+
+        List<Schema> schemas = this.schemaRegistryRepository.listAll(cluster, Optional.empty());
+        List<Schema> keySchemas = schemas.stream()
+                .filter(schema -> !schema.getSubject().endsWith(VALUE_SUFFIX))
+                .sorted(new SchemaComparator(topicName, true))
+                .collect(Collectors.toList());
+        List<Schema> valueSchemas = schemas.stream()
+                .filter(schema -> !schema.getSubject().endsWith(KEY_SUFFIX))
+                .sorted(new SchemaComparator(topicName, false))
+                .collect(Collectors.toList());
 
         return this.template(
             request,
             cluster,
-            "topic", topic
+            "topic", topic,
+                "keySchemasList", keySchemas,
+                "valueSchemasList", valueSchemas
         );
     }
 
@@ -193,7 +222,9 @@ public class TopicController extends AbstractController {
                                       Optional<String> key,
                                       Optional<Integer> partition,
                                       Optional<String> timestamp,
-                                      Map<String, List<String>> headers)
+                                      Map<String, List<String>> headers,
+                                      Optional<Integer> keySchema,
+                                      Optional<Integer> valueSchema)
     {
         Map<String, String> finalHeaders = new HashMap<>();
 
@@ -218,7 +249,9 @@ public class TopicController extends AbstractController {
                     finalHeaders,
                     key.filter(r -> !r.equals("")),
                     partition,
-                    timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
+                    timestamp.filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli()),
+                    keySchema,
+                    valueSchema
                 )
             ,
             "Record created",

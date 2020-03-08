@@ -7,11 +7,13 @@ import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.kafkahq.configs.AbstractProperties;
@@ -120,19 +122,20 @@ public class KafkaModule {
         );
     }
 
-    private Map<String, KafkaProducer<String, String>> producers = new HashMap<>();
+    private Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
 
-    public KafkaProducer<String, String> getProducer(String clusterId) {
+    public KafkaProducer<byte[], byte[]> getProducer(String clusterId) {
         if (!this.producers.containsKey(clusterId)) {
             this.producers.put(clusterId, new KafkaProducer<>(
                 this.getProducerProperties(clusterId),
-                new StringSerializer(),
-                new StringSerializer()
+                new ByteArraySerializer(),
+                new ByteArraySerializer()
             ));
         }
 
         return this.producers.get(clusterId);
     }
+
 
     public RestService getRegistryRestClient(String clusterId) {
         Connection connection = this.getConnection(clusterId);
