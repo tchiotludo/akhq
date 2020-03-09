@@ -57,24 +57,28 @@ class TopicCreate extends Form {
       loading: true
     });
 
-    try {
-      await post(uriTopicsCreate(), topic);
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showSuccessToast: true,
-        successToastMessage: `Topic '${formData.name}' was created successfully.`
+    // try {
+    post(uriTopicsCreate(), topic)
+      .then(res => {
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showSuccessToast: true,
+          successToastMessage: `Topic '${formData.name}' was created successfully.`,
+          loading: false
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          showErrorToast: true,
+          errorToastTitle: err.response.data.title,
+          errorToastMessage: err.response.data.description,
+          loading: false
+        });
       });
-    } catch (err) {
-      this.props.history.push({
-        showErrorToast: true,
-        errorToastTitle: err.response.data.title,
-        errorToastMessage: err.response.data.description
-      });
-    } finally {
-      history.push({
-        loading: false
-      });
-    }
+
+    // } catch (err) {
+
+    // }
   }
   render() {
     return (

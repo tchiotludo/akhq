@@ -47,15 +47,19 @@ class TopicList extends Component {
 
   deleteTopic = () => {
     const { selectedCluster, topicToDelete } = this.state;
+    const { history } = this.props;
     const deleteData = {
       clusterId: selectedCluster,
       topicId: topicToDelete.id
     };
+
+    history.push({ loading: true });
     remove(uriDeleteTopics(), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
-          successToastMessage: `Topic '${topicToDelete.name}' is deleted`
+          successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
+          loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });
         this.handleTopics(res.data);
@@ -63,7 +67,8 @@ class TopicList extends Component {
       .catch(err => {
         this.props.history.push({
           showErrorToast: true,
-          errorToastMessage: `Could not delete '${topicToDelete.name}'`
+          errorToastMessage: `Could not delete '${topicToDelete.name}'`,
+          loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });
       });
