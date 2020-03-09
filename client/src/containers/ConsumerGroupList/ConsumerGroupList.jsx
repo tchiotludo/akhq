@@ -11,7 +11,24 @@ import history from '../../utils/history';
 
 class ConsumerGroupList extends Component {
   state = {
-    consumerGroups: [],
+    consumerGroups: [
+      {
+        id: '1',
+        state: 'Active',
+        coordinator: '10',
+        members: '2',
+        topics: [
+          {
+            _id: Date.now(),
+            name: 'test',
+            partition: 1,
+            replication: 1,
+            cleanup: 'delete',
+            retention: 50
+          }
+        ]
+      }
+    ],
     showDeleteModal: false,
     selectedCluster: '',
     deleteMessage: '',
@@ -24,9 +41,9 @@ class ConsumerGroupList extends Component {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
+    /*  this.setState({ selectedCluster: clusterId }, () => {
       this.getConsumerGroup();
-    });
+    });*/
   }
 
   handleSearch = data => {
@@ -43,7 +60,6 @@ class ConsumerGroupList extends Component {
     } else if (value > totalPageNumber) {
       value = totalPageNumber;
     }
-
     this.setState({ pageNumber: value }, () => {
       this.getConsumerGroup();
     });
@@ -132,35 +148,36 @@ class ConsumerGroupList extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id',
-              type: 'text'
+              colName: 'Id'
             },
             {
               id: 'state',
               accessor: 'state',
-              colName: 'State',
-              type: 'text'
+              colName: 'State'
             },
             {
               id: 'coordinator',
               accessor: 'coordinator',
-              colName: 'Coordinator',
-              type: 'text'
+              colName: 'Coordinator'
             },
             {
               id: 'members',
               accessor: 'members',
-              colName: 'Members',
-              type: 'text'
+              colName: 'Members'
             },
             {
               id: 'topics',
               accessor: 'topics',
               colName: 'Topics',
-              type: 'text'
+              cell: obj => {
+                console.log(obj);
+                return obj.topics.map(topic => {
+                  return <span>{topic.name}</span>;
+                });
+              }
             }
           ]}
-          data={consumerGroup}
+          data={this.state.consumerGroups}
           onDetails={id => {
             history.push(`/${selectedCluster}/consumer-group/${id}`);
           }}
