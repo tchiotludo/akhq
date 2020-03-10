@@ -16,7 +16,7 @@ services:
       - 8090:8080
     volumes:
       - ./kafkahq.yml:/app/application.yml
-   links:
+    links:
       - zookeeper:zookeper
       - kafka:kafka
 
