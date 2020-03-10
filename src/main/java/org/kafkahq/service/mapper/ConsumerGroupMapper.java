@@ -26,14 +26,4 @@ public class ConsumerGroupMapper {
         return new ConsumerGroupDTO(consumerGroup.getId(),  consumerGroup.getState().toString(), consumerGroup.getCoordinator().getId(),consumerGroup.getMembers().size(), (topicLags.size() > 0) ? topicLags : emptyList);
 
     }
-
-
-    public RecordDTO fromRecordToRecordDTO(Record record) {
-        LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(record.getTimestamp()),
-                TimeZone.getDefault().toZoneId());
-        return new RecordDTO(record.getKeyAsString(), record.getValueAsString(), date, record.getPartition(),
-                record.getOffset(), record.getHeaders(), Pair.of(record.getKeySchemaId(), record.getValueSchemaId()));
-    }
-
-
 }
