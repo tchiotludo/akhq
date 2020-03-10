@@ -4,7 +4,6 @@ const Input = props => {
   const { name, label, placeholder, error, noStyle, wrapperClass, inputClass, ...rest } = props;
   let wrapperClassRender = 'form-group';
   let inputClassRender = 'col-sm-10';
-  console.log(wrapperClass, inputClass);
   if (noStyle) {
     wrapperClassRender = '';
     inputClassRender = '';

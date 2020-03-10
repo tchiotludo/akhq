@@ -6,6 +6,7 @@ import _ from 'lodash';
 import Input from './Input';
 import Select from './Select';
 import RadioGroup from './RadioGroup';
+import DatePicker from '../DatePicker';
 
 class Form extends Component {
   state = {
@@ -16,6 +17,7 @@ class Form extends Component {
   validate = () => {
     const options = { abortEarly: false };
     const { error } = Joi.validate(this.state.formData, this.schema);
+
     if (!error) return null;
 
     const errors = {};
@@ -46,7 +48,6 @@ class Form extends Component {
   };
 
   handleChange = ({ currentTarget: input }) => {
-    console.log('Input', input, input.name);
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
     if (errorMessage) {
@@ -62,7 +63,7 @@ class Form extends Component {
 
   renderButton = (label, click, className, type) => {
     return (
-      <div className="khq-submit">
+      <div className="khq-submit" style={{ marginRight: 0, width: 'calc(100vw - 250px)' }}>
         <button
           type={type ? type : 'button'}
           className={className ? className : 'btn btn-primary'}
@@ -104,6 +105,10 @@ class Form extends Component {
     );
   };
 
+  // renderDatePicker = (date) => {
+  //   return <DatePicker value={date} onChange={() => {}} />;
+  // }
+
   renderSelect = (name, label, items) => {
     const { formData, errors } = this.state;
 
@@ -115,6 +120,22 @@ class Form extends Component {
         items={items}
         error={errors[name]}
         onChange={this.handleChange}
+      />
+    );
+  };
+
+  renderDatePicker = (name, label, onChange) => {
+    const { formData, errors } = this.state;
+
+    return (
+      <DatePicker
+        name={name}
+        label={label}
+        error={errors[name]}
+        value={formData[name]}
+        onChange={value => {
+          onChange(value);
+        }}
       />
     );
   };

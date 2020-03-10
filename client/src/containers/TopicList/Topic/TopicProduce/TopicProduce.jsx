@@ -4,7 +4,10 @@ import Header from '../../../Header';
 import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import { post } from '../../../../utils/api';
-import { uriTopicsProduce } from '../../../../utils/endpoints';
+import moment from 'moment';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
+import DatePicker from '../../../../components/DatePicker';
+
 class TopicProduce extends Form {
   state = {
     nHeaders: 1,
@@ -13,9 +16,10 @@ class TopicProduce extends Form {
       key: '',
       hKey0: '',
       hValue0: '',
-      timestamp: '',
+      timestamp: moment(),
       value: ''
     },
+    openDateModal: false,
     errors: {}
   };
   componentDidMount() {
@@ -40,7 +44,7 @@ class TopicProduce extends Form {
       .min(1)
       .label('hValue0')
       .required(),
-    timestamp: Joi.number().label('Timestamp'),
+    //timestamp: Joi.number().label('Timestamp'),
     value: Joi.number().label('Value')
   };
 
@@ -51,17 +55,28 @@ class TopicProduce extends Form {
       clusterId,
       partition: formData.partition,
       key: formData.key,
-      headers: formData.headers,
-      timestamp: formData.timestamp,
+      //timestamp: ,
       value: formData.value
     };
-    post(uriTopicsProduce(), topic).then(res => {
-      this.props.history.push({
-        pathname: `/${clusterId}/topic`,
-        showSuccessToast: true,
-        successToastMessage: 'Produced to Topic.'
-      });
+
+    let headers = {};
+
+    Object.keys(formData).map(key => {
+      if (key.includes('hKey')) {
+        let keyNumbers = key.replace(/\D/g, '');
+        headers[formData[key]] = formData[`hValue${keyNumbers}`];
+      }
     });
+
+    topic.headers = headers;
+
+    // post(uriTopicsProduce(), topic).then(res => {
+    //   this.props.history.push({
+    //     pathname: `/${clusterId}/topic`,
+    //     showSuccessToast: true,
+    //     successToastMessage: 'Produced to Topic.'
+    //   });
+    // });
   }
 
   renderHeaders() {
@@ -69,7 +84,8 @@ class TopicProduce extends Form {
 
     Object.keys(this.state.formData).map((key, index) => {
       if (key.includes('hKey')) {
-        headers.push(this.renderHeader(index));
+        let keyNumbers = key.replace(/\D/g, '');
+        headers.push(this.renderHeader(Number(keyNumbers)));
       }
     });
     return <>{headers.map(head => head)}</>;
@@ -77,15 +93,6 @@ class TopicProduce extends Form {
 
   onHeaderChange = ({ currentTarget: input }, position) => {
     const { formData } = this.state;
-
-    console.log(
-      'onHeaderChange im in: --inputname-- ',
-      input.name,
-      ' ---position---',
-      position,
-      ` ----formData.headers[${position}][${input.name}]---- `,
-      formData.headers[position][input.name]
-    );
 
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
@@ -102,19 +109,10 @@ class TopicProduce extends Form {
   renderHeader(position) {
     const { formData } = this.state;
     return (
-      <div className="row">
+      <div className="row header-wrapper">
         <label class="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div
-          class="row col-sm-10 khq-multiple"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            minWidth: '80%',
-            marginLeft: '0.05%'
-          }}
-        >
+        <div class="row col-sm-10 khq-multiple header-row">
           {this.renderInput(
             `hKey${position}`,
             '',
@@ -136,15 +134,15 @@ class TopicProduce extends Form {
             'wrapper-class col-sm-6',
             'input-class'
           )}
-          <div style={{ paddingBottom: '1.5%' }}>
+          <div className="add-button">
             <button
               type="button"
               class="btn btn-secondary"
               onClick={() => {
-                this.handlePlus();
+                position === 0 ? this.handlePlus() : this.handleRemove(position);
               }}
             >
-              <i class="fa fa-plus"></i>
+              <i class={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
             </button>
           </div>
         </div>
@@ -164,22 +162,28 @@ class TopicProduce extends Form {
       ...this.schema,
       [`hKey${nHeaders}`]: Joi.string()
         .min(1)
-        .label(`hKey${nHeaders}`)
-        .required(),
+        .label(`hKey${nHeaders}`),
       [`hValue${nHeaders}`]: Joi.string()
         .min(1)
         .label(`hValue${nHeaders}`)
-        .required()
     };
-    this.setState({ nHeaders: this.state.nHeaders + 1, formData: newFormData }, () => {
-      console.log('schema', this.schema);
-    });
+    this.setState({ nHeaders: this.state.nHeaders + 1, formData: newFormData });
+  }
+
+  handleRemove(position) {
+    const state = {
+      ...this.state
+    };
+    delete state.formData[`hKey${position}`];
+    delete state.formData[`hValue${position}`];
+    this.setState(state);
   }
 
   render() {
-    const { clusterId, topicId } = this.state;
+    const { clusterId, topicId, timestamp, openDateModal } = this.state;
+
     return (
-      <div id="content">
+      <div id="content" style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"
@@ -195,7 +199,10 @@ class TopicProduce extends Form {
           {this.renderHeaders()}
 
           {this.renderInput('value', 'Value', 'Value', 'Value')}
-
+          {this.renderDatePicker('timestamp', 'Timestamp', value => {
+            console.log('value', value);
+            this.setState({ formData: { ...this.state, timestamp: value } });
+          })}
           {this.renderButton(
             'Produce',
             () => {

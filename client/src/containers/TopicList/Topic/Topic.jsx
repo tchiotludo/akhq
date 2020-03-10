@@ -65,7 +65,6 @@ class Topic extends Component {
 
   render() {
     const { topic, topicId, clusterId } = this.state;
-    console.log('topicId' + topicId);
     return (
       <div id="content">
         <Header title={`Topic ${topic.name}`} />
