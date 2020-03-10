@@ -17,8 +17,14 @@ import java.util.TimeZone;
 @Singleton
 public class ConsumerGroupMapper {
     public ConsumerGroupDTO fromConsumerGroupToConsumerGroupDTO(ConsumerGroup consumerGroup) {
-        List<String> emptyList = new ArrayList<>();
-        return new ConsumerGroupDTO(consumerGroup.getId(),  consumerGroup.getState().toString(), consumerGroup.getCoordinator().getId(),consumerGroup.getMembers().size(), (consumerGroup.getTopics().size() > 0) ? consumerGroup.getTopics() : emptyList);
+        List<ConsumerGroupDTO.TopicLagDTO> emptyList = new ArrayList<>();
+        List<ConsumerGroupDTO.TopicLagDTO> topicLags= new ArrayList<>();
+        for(int i=0; i<consumerGroup.getTopics().size();i++){
+            ConsumerGroupDTO.TopicLagDTO topicLag= new ConsumerGroupDTO.TopicLagDTO(consumerGroup.getTopics().get(i),consumerGroup.getOffsetLag(consumerGroup.getTopics().get(i)));
+            topicLags.add(topicLag);
+        }
+        return new ConsumerGroupDTO(consumerGroup.getId(),  consumerGroup.getState().toString(), consumerGroup.getCoordinator().getId(),consumerGroup.getMembers().size(), (topicLags.size() > 0) ? topicLags : emptyList);
+
     }
 
 

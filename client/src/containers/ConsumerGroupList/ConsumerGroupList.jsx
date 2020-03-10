@@ -11,24 +11,7 @@ import history from '../../utils/history';
 
 class ConsumerGroupList extends Component {
   state = {
-    consumerGroups: [
-      {
-        id: '1',
-        state: 'Active',
-        coordinator: '10',
-        members: '2',
-        topics: [
-          {
-            _id: Date.now(),
-            name: 'test',
-            partition: 1,
-            replication: 1,
-            cleanup: 'delete',
-            retention: 50
-          }
-        ]
-      }
-    ],
+    consumerGroups: [],
     showDeleteModal: false,
     selectedCluster: '',
     deleteMessage: '',
@@ -41,9 +24,9 @@ class ConsumerGroupList extends Component {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    /*  this.setState({ selectedCluster: clusterId }, () => {
+    this.setState({ selectedCluster: clusterId }, () => {
       this.getConsumerGroup();
-    });*/
+    });
   }
 
   handleSearch = data => {
@@ -84,8 +67,8 @@ class ConsumerGroupList extends Component {
       );
       data = data.data;
       if (data) {
-        if (data.consumerGroup) {
-          this.handleConsumerGroup(data.consumerGroup);
+        if (data.consumerGroups) {
+          this.handleConsumerGroup(data.consumerGroups);
         } else {
           this.setState({ consumerGroup: [] });
         }
@@ -111,10 +94,35 @@ class ConsumerGroupList extends Component {
         size: consumerGroup.size,
         coordinator: consumerGroup.coordinator,
         members: consumerGroup.members,
-        topics: consumerGroup.topics
+        topicLag: consumerGroup.topicLag
       });
     });
     this.setState({ consumerGroups: tableConsumerGroup });
+  }
+
+  handleState(state) {
+    return (
+      <span className={state.state === 'Stable' ? 'badge badge-success' : 'badge badge-warning'}>
+        {state}
+      </span>
+    );
+  }
+
+  handleCoordinator(coordinator) {
+    return <span className="badge badge-primary"> {coordinator}</span>;
+  }
+
+  handleTopics(topicLag) {
+    return topicLag.map(lagTopic => {
+      return (
+        <button key="lagTopic.topicId" className="btn btn-dark btn-sm mb-1">
+          {lagTopic.topicId}
+          <a href="#" class="badge badge-secondary">
+            Lag:{lagTopic.lag}
+          </a>
+        </button>
+      );
+    });
   }
 
   render() {
@@ -153,12 +161,18 @@ class ConsumerGroupList extends Component {
             {
               id: 'state',
               accessor: 'state',
-              colName: 'State'
+              colName: 'State',
+              cell: obj => {
+                return this.handleState(obj.state);
+              }
             },
             {
               id: 'coordinator',
               accessor: 'coordinator',
-              colName: 'Coordinator'
+              colName: 'Coordinator',
+              cell: obj => {
+                return this.handleCoordinator(obj.coordinator);
+              }
             },
             {
               id: 'members',
@@ -170,10 +184,9 @@ class ConsumerGroupList extends Component {
               accessor: 'topics',
               colName: 'Topics',
               cell: obj => {
-                console.log(obj);
-                return obj.topics.map(topic => {
-                  return <span>{topic.name}</span>;
-                });
+                if (obj.topicLag) {
+                  return this.handleTopics(obj.topicLag);
+                }
               }
             }
           ]}

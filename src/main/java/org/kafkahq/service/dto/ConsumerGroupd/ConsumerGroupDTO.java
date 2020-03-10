@@ -14,5 +14,13 @@ public class ConsumerGroupDTO {
     private String state;
     private int coordinator;
     private int members;
-    private List<String> topics;
+    private List<TopicLagDTO> topicLag;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TopicLagDTO{
+        private String topicId;
+        private Long lag;
+    }
 }

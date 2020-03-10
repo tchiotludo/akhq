@@ -7,18 +7,18 @@ volumes:
   kafka-data:
     driver: local
 services:
-  kafkahq:
-    image: tchiotludo/kafkahq
-    depends_on:
-      - zookeeper
-      - kafka
-    ports:
-      - 8090:8080
-    volumes:
-      - ./kafkahq.yml:/app/application.yml
-    links:
-      - zookeeper:zookeper
-      - kafka:kafka
+#  kafkahq:
+#    image: tchiotludo/kafkahq
+#    depends_on:
+#      - zookeeper
+#      - kafka
+#    ports:
+#      - 8090:8080
+#    volumes:
+#      - ./kafkahq.yml:/app/application.yml
+#    links:
+#      - zookeeper:zookeper
+#      - kafka:kafka
 
   zookeeper:
     image: confluentinc/cp-zookeeper
