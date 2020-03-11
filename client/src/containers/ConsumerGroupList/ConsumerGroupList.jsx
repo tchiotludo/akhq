@@ -8,6 +8,7 @@ import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
+import { Link } from 'react-router-dom';
 
 class ConsumerGroupList extends Component {
   state = {
@@ -115,15 +116,23 @@ class ConsumerGroupList extends Component {
   handleTopics(topicLag) {
     return topicLag.map(lagTopic => {
       return (
-        <button key="lagTopic.topicId" className="btn btn-dark btn-sm mb-1">
+        <Link
+          to={{
+            pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+          }}
+          key="lagTopic.topicId"
+          className="btn btn-dark btn-sm mb-1"
+        >
           {lagTopic.topicId}
           <a href="#" class="badge badge-secondary">
             Lag:{lagTopic.lag}
           </a>
-        </button>
+        </Link>
       );
     });
   }
+
+  han;
 
   render() {
     const { consumerGroup, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
