@@ -7,6 +7,10 @@ import Input from './Input';
 import Select from './Select';
 import RadioGroup from './RadioGroup';
 import DatePicker from '../DatePicker';
+import AceEditor from 'react-ace';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-dracula';
 
 class Form extends Component {
   state = {
@@ -102,6 +106,37 @@ class Form extends Component {
         inputClass={inputClass}
         {...rest}
       />
+    );
+  };
+
+  renderJSONInput = (name, label, onChange) => {
+    const { formData, errors } = this.state;
+    return (
+      <div className="form-group row">
+        {label !== '' ? (
+          <label htmlFor={name} className="col-sm-2 col-form-label">
+            {label}
+          </label>
+        ) : (
+          <div></div>
+        )}
+        <div className="col-sm-10">
+          <AceEditor
+            mode="json"
+            theme="dracula"
+            value={formData[name]}
+            onChange={value => {
+              console.log('ace-change', value);
+              onChange(value);
+            }}
+            name="UNIQUE_ID_OF_DIV"
+            editorProps={{ $blockScrolling: true }}
+            style={{ width: '100%', height: '30vh' }}
+          />
+
+          {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
+        </div>
+      </div>
     );
   };
 

@@ -4,6 +4,7 @@ import Header from '../../../Header';
 import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import { post } from '../../../../utils/api';
+import { uriTopicsProduce } from '../../../../utils/endpoints';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import DatePicker from '../../../../components/DatePicker';
@@ -44,19 +45,20 @@ class TopicProduce extends Form {
       .min(1)
       .label('hValue0')
       .required(),
-    //timestamp: Joi.number().label('Timestamp'),
-    value: Joi.number().label('Value')
+    timestamp: Joi.object().label('Timestamp'),
+    value: Joi.object().label('Value')
   };
 
   doSubmit() {
     const { formData } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.match.params;
     const topic = {
       clusterId,
+      topicId,
       partition: formData.partition,
       key: formData.key,
-      //timestamp: ,
-      value: formData.value
+      timestamp: formData.timestamp.format(),
+      value: JSON.parse(formData.value)
     };
 
     let headers = {};
@@ -70,13 +72,23 @@ class TopicProduce extends Form {
 
     topic.headers = headers;
 
-    // post(uriTopicsProduce(), topic).then(res => {
-    //   this.props.history.push({
-    //     pathname: `/${clusterId}/topic`,
-    //     showSuccessToast: true,
-    //     successToastMessage: 'Produced to Topic.'
-    //   });
-    // });
+    console.log('here', topic);
+
+    post(uriTopicsProduce(), topic)
+      .then(res => {
+        console.log('res', res);
+        this.props.history.push({
+          pathname: `/${clusterId}/topic`,
+          showSuccessToast: true,
+          successToastMessage: 'Produced to Topic.'
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          showErrorToast: true,
+          errorToastMessage: 'There was an error while producing to topic.'
+        });
+      });
   }
 
   renderHeaders() {
@@ -180,7 +192,7 @@ class TopicProduce extends Form {
   }
 
   render() {
-    const { clusterId, topicId, timestamp, openDateModal } = this.state;
+    const { clusterId, topicId, timestamp, openDateModal, formData } = this.state;
 
     return (
       <div id="content" style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
@@ -198,10 +210,19 @@ class TopicProduce extends Form {
 
           {this.renderHeaders()}
 
-          {this.renderInput('value', 'Value', 'Value', 'Value')}
+          {/*this.renderInput('value', 'Value', 'Value', 'Value')*/}
+          {this.renderJSONInput('value', 'Value', value => {
+            this.setState({
+              formData: {
+                ...formData,
+                value: value
+              }
+            });
+          })}
+
           {this.renderDatePicker('timestamp', 'Timestamp', value => {
             console.log('value', value);
-            this.setState({ formData: { ...this.state, timestamp: value } });
+            this.setState({ formData: { ...this.state.formData, timestamp: value } });
           })}
           {this.renderButton(
             'Produce',
