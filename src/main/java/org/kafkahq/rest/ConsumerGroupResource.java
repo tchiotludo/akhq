@@ -23,7 +23,7 @@ public class ConsumerGroupResource {
 
     @Get("/group")
     public ConsumerGroupListDTO fetchAllConsumerGroup(String clusterId, String view, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
-        log.debug("Fetch all Consumer Groups by name");
+        log.debug("Fetch all Consumer Groups");
         return consumerGroupService.getConsumerGroup(clusterId, view, Optional.ofNullable(search), pageNumber);
     }
 
