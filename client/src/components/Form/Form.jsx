@@ -133,7 +133,6 @@ class Form extends Component {
             editorProps={{ $blockScrolling: true }}
             style={{ width: '100%', height: '30vh' }}
           />
-
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
         </div>
       </div>
