@@ -48,4 +48,16 @@ export const uriDeleteTopics = () => {
   return `${apiUrl}/topic/delete`;
 };
 
-export default { apiUrl, uriClusters, uriConnects, uriNodes, uriNodesConfigs, uriTopics };
+export const uriConsumerGroups = (id, view, search, pageNumber) => {
+  return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
+};
+
+export default {
+  apiUrl,
+  uriClusters,
+  uriConnects,
+  uriNodes,
+  uriNodesConfigs,
+  uriTopics,
+  uriConsumerGroups
+};
