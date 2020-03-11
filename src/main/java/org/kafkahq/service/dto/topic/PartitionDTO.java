@@ -3,7 +3,6 @@ package org.kafkahq.service.dto.topic;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
