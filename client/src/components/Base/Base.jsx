@@ -92,12 +92,13 @@ class Base extends Component {
     } = this.state;
     this.checkToasts();
     return (
-      <Loading show={loading}>
+      <>
+        <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         <Sidebar />
         {children}
-      </Loading>
+      </>
     );
   }
 }

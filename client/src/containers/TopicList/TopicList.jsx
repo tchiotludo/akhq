@@ -116,6 +116,7 @@ class TopicList extends Component {
     const { search, topicListView } = this.state.searchData;
     let data = {};
     history.push({
+      ...this.props.location,
       loading: true
     });
     try {
@@ -133,6 +134,7 @@ class TopicList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
+        ...this.props.location,
         loading: false
       });
     }
