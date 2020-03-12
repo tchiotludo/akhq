@@ -14,20 +14,11 @@ class Topic extends Component {
   state = {
     clusterId: '',
     topicId: '',
-    topic: {
-      _id: Date.now(),
-      name: 'test',
-      partition: 1,
-      replication: 1,
-      cleanup: 'delete',
-      retention: 50
-    },
     selectedTab: 'data'
   };
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-
     this.setState({ clusterId, topicId });
   }
 
@@ -42,11 +33,11 @@ class Topic extends Component {
 
   renderSelectedTab() {
     const { selectedTab, topicId, clusterId } = this.state;
-    const { history } = this.props;
+    const { history, match } = this.props;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData topic={topicId} history={history} />;
+        return <TopicData history={history} match={match} />;
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
@@ -63,10 +54,10 @@ class Topic extends Component {
   }
 
   render() {
-    const { topic } = this.state;
+    const { topicId } = this.state;
     return (
       <div id="content">
-        <Header title={`Topic ${topic.name}`} />
+        <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {/*#if roles?seq_contains("topic/data/read")*/}

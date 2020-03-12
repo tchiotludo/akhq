@@ -19,6 +19,10 @@ export const uriTopics = (id, view, search, pageNumber) => {
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
 
+export const uriTopicData = (clusterId, topicId) => {
+  return `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
+};
+
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
