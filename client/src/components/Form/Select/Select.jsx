@@ -12,7 +12,6 @@ const Select = ({ name, label, items, error, ...rest }) => {
       )}
       <div className="col-sm-10">
         <select className="form-control" id={name} name={name} {...rest}>
-          {/* <option value="" /> */}
           {items.map(item => (
             <option key={item._id} value={item._id}>
               {item.name}
