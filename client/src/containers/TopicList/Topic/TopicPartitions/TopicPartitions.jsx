@@ -10,7 +10,6 @@ class TopicPartitions extends Component {
     selectedCluster: this.props.clusterId,
     selectedTopic: this.props.topic
   };
-
   componentDidMount() {
     this.getTopicsPartitions();
   }

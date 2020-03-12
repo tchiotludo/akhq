@@ -1,18 +1,13 @@
 package org.kafkahq.service.mapper;
 
-import org.apache.commons.lang3.tuple.Pair;
+
 import org.kafkahq.models.ConsumerGroup;
-import org.kafkahq.models.Record;
-import org.kafkahq.models.Topic;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupDTO;
-import org.kafkahq.service.dto.topic.RecordDTO;
+import org.kafkahq.models.TopicPartition;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
 
 import javax.inject.Singleton;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 @Singleton
 public class ConsumerGroupMapper {
@@ -26,4 +21,18 @@ public class ConsumerGroupMapper {
         return new ConsumerGroupDTO(consumerGroup.getId(),  consumerGroup.getState().toString(), consumerGroup.getCoordinator().getId(),consumerGroup.getMembers().size(), (topicLags.size() > 0) ? topicLags : emptyList);
 
     }
+
+    //ConsumerGroup Offset to offsetdto
+    public  ConsumerGroupOffsetDTO fromConsumerGroupToConsumerGroupOffsetDTO(TopicPartition.ConsumerGroupOffset offset) {
+
+            ConsumerGroupOffsetDTO consumerGroupOffsetDTO=new ConsumerGroupOffsetDTO(offset.getTopic(),offset.getPartition(),offset.getMember(),offset.getOffset(), offset.getOffsetLag());
+
+
+
+        return  consumerGroupOffsetDTO;
+    }
+
+
+
+
 }

@@ -1,9 +1,8 @@
-package org.kafkahq.service.dto.ConsumerGroupd;
+package org.kafkahq.service.dto.ConsumerGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.kafkahq.service.dto.topic.TopicDTO;
 
 import java.util.List;
 @Data

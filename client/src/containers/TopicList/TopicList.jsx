@@ -167,7 +167,10 @@ class TopicList extends Component {
     return (
       <div id="content">
         <Header title="Topics" />
-        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav
+          className="navbar navbar-expand-lg navbar-light 
+        bg-light mr-auto khq-data-filter khq-sticky khq-nav"
+        >
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -249,7 +252,10 @@ class TopicList extends Component {
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />
 
-        <div className="navbar navbar-expand-lg navbar-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <div
+          className="navbar navbar-expand-lg navbar-light mr-auto 
+        khq-data-filter khq-sticky khq-nav"
+        >
           <div className="collapse navbar-collapse" />
           <Pagination
             pageNumber={pageNumber}

@@ -19,8 +19,8 @@ import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import history from '../utils/history';
 import Loading from '../containers/Loading';
-import ConsumerGroupList from '../containers/ConsumerGroupList'
-
+import ConsumerGroupList from '../containers/ConsumerGroupList';
+import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
 
 class Routes extends Component {
   render() {
@@ -52,6 +52,8 @@ class Routes extends Component {
             <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
 
             <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
+            <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
+
             <Route exact path="/:clusterId/tail" component={Tail} />
             <Route exact path="/:clusterId/group" component={Group} />
             <Route exact path="/:clusterId/acls" component={Acls} />

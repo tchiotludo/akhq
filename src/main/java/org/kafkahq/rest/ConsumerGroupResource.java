@@ -3,11 +3,16 @@ package org.kafkahq.rest;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import lombok.extern.slf4j.Slf4j;
+import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.ConsumerGroupService;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
+import org.kafkahq.service.dto.topic.RecordDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -25,6 +30,12 @@ public class ConsumerGroupResource {
     public ConsumerGroupListDTO fetchAllConsumerGroup(String clusterId, String view, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch all Consumer Groups");
         return consumerGroupService.getConsumerGroup(clusterId, view, Optional.ofNullable(search), pageNumber);
+    }
+
+    @Get("/group/offsets")
+    public List<ConsumerGroupOffsetDTO> fetchConsumerGroupOffsets(String clusterId, String groupId ) throws ExecutionException, InterruptedException {
+        log.debug("Fetch data from topic: {}", groupId);
+        return consumerGroupService.getConsumerGroupOffsets(clusterId,groupId);
     }
 
 }

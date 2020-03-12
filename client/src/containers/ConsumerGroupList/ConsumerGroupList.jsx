@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-
 import Table from '../../components/Table';
-import Header from '../Header';
-import SearchBar from '../../components/SearchBar';
-import Pagination from '../../components/Pagination';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
+import ConsumerGroup from './ConsumerGroup/ConsumerGroup';
+import Header from '../Header';
+import SearchBar from '../../components/SearchBar';
+import Pagination from '../../components/Pagination';
+import ConfirmModal from '../../components/Modal/ConfirmModal';
 
 class ConsumerGroupList extends Component {
   state = {
@@ -124,7 +125,7 @@ class ConsumerGroupList extends Component {
           className="btn btn-dark btn-sm mb-1"
         >
           {lagTopic.topicId}
-          <a href="#" class="badge badge-secondary">
+          <a href="#" className="badge badge-secondary">
             Lag:{lagTopic.lag}
           </a>
         </Link>
@@ -142,7 +143,10 @@ class ConsumerGroupList extends Component {
     return (
       <div id="content">
         <Header title="Consumer Groups" />
-        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -201,12 +205,16 @@ class ConsumerGroupList extends Component {
           ]}
           data={this.state.consumerGroups}
           onDetails={id => {
-            history.push(`/${selectedCluster}/consumer-group/${id}`);
+            console.log(id);
+            history.push(`/${selectedCluster}/group/${id}`);
           }}
           actions={[constants.TABLE_DETAILS]}
         />
 
-        <div className="navbar navbar-expand-lg navbar-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <div
+          className="navbar navbar-expand-lg navbar-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
           <div className="collapse navbar-collapse" />
           <Pagination
             pageNumber={pageNumber}

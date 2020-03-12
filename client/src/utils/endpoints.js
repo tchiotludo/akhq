@@ -52,6 +52,11 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
   return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
+//Verificar o url apos fazer o backend
+export const uriConsumerGroup = (id, groupId) => {
+  return `${apiUrl}/group/offsets?clusterId=${id}&groupId=${groupId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -59,5 +64,6 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
-  uriConsumerGroups
+  uriConsumerGroups,
+  uriConsumerGroup
 };

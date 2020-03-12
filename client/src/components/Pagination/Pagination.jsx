@@ -3,7 +3,6 @@ import './styles.scss';
 
 const Pagination = props => {
   const { pageNumber, totalPageNumber, onChange, onSubmit } = props;
-  console.log(+pageNumber === +totalPageNumber);
 
   return (
     <ul className="pagination mb-0">
