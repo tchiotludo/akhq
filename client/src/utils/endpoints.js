@@ -18,6 +18,7 @@ export const uriTopics = (id, view, search, pageNumber) => {
 };
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
@@ -59,5 +60,7 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
+  uriDeleteTopics,
+  uriTopicsProduce,
   uriConsumerGroups
 };

@@ -26,6 +26,8 @@
 @import "assets/modules/templates/sidebar.scss";
 
 @import "containers/NodesList/Node/styles.scss";
+@import "containers/TopicList/Topic/TopicProduce/styles.scss";
+@import "~react-datepicker/dist/react-datepicker.css";
 
 .App {
   text-align: center;
@@ -42,6 +44,7 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+
 
 .App-header {
   background-color: #282c34;
