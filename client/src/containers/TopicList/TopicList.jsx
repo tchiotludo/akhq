@@ -9,6 +9,7 @@ import api, { remove } from '../../utils/api';
 import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
+
 // Adaptation of topicList.ftl
 
 class TopicList extends Component {
@@ -19,8 +20,12 @@ class TopicList extends Component {
     selectedCluster: '',
     deleteMessage: '',
     deleteData: {},
-    selectedTopic: constants.TOPICS.ALL,
-    search: '',
+    pageNumber: 1,
+    totalPageNumber: 1,
+    searchData: {
+      search: '',
+      topicListView: 'ALL'
+    },
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -62,7 +67,7 @@ class TopicList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });
-        this.handleTopics(res.data);
+        this.handleTopics(res.data.topics);
       })
       .catch(err => {
         this.props.history.push({
@@ -80,20 +85,49 @@ class TopicList extends Component {
     });
   }
 
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ pageNumber: 1, searchData }, () => {
+      this.getTopics();
+    });
+  };
+
+  handlePageChangeSubmission = value => {
+    const { totalPageNumber } = this.state;
+    if (value <= 0) {
+      value = 1;
+    } else if (value > totalPageNumber) {
+      value = totalPageNumber;
+    }
+
+    this.setState({ pageNumber: value }, () => {
+      this.getTopics();
+    });
+  };
+
+  handlePageChange = ({ currentTarget: input }) => {
+    const { value } = input;
+    this.setState({ pageNumber: value });
+  };
+
   async getTopics() {
-    let { history } = this.props;
-    let topics = {};
-    let selectedClusterId = this.state.selectedCluster;
-    let selectedTopic = this.state.selectedTopic;
-    let search = this.state.search;
+    const { history } = this.props;
+    const { selectedCluster, pageNumber } = this.state;
+    const { search, topicListView } = this.state.searchData;
+    let data = {};
     history.push({
       loading: true
     });
     try {
-      topics = await api.get(endpoints.uriTopics(selectedClusterId, selectedTopic, search));
-      if (topics.data) {
-        this.handleTopics(topics.data);
-        this.setState({ selectedCluster: selectedClusterId });
+      data = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search, pageNumber));
+      data = data.data;
+      if (data) {
+        if (data.topics) {
+          this.handleTopics(data.topics);
+        } else {
+          this.setState({ topics: [] });
+        }
+        this.setState({ selectedCluster, totalPageNumber: data.totalPageNumber });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -105,9 +139,6 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
-    if (!topics) {
-      console.log('Not getting anything from backend');
-    }
     let tableTopics = [];
     topics.map(topic => {
       topic.size = 0;
@@ -127,7 +158,7 @@ class TopicList extends Component {
   }
 
   render() {
-    const { topics, selectedCluster, selectedTopic } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -141,18 +172,24 @@ class TopicList extends Component {
     return (
       <div id="content">
         <Header title="Topics" />
-        <SearchBar
-          pagination={true}
-          topicListView={true}
-          value={this.state.value}
-          onChangeValue={value => {
-            this.setState({ value });
-          }}
-          topic={this.state.selectedTopic}
-          onChangeTopic={topic => {
-            this.setState({ topic });
-          }}
-        />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+          <SearchBar
+            showSearch={true}
+            search={searchData.search}
+            showPagination={true}
+            pagination={pageNumber}
+            showTopicListView={true}
+            topicListView={searchData.topicListView}
+            doSubmit={this.handleSearch}
+          />
+
+          <Pagination
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={this.handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
+          />
+        </nav>
 
         <Table
           has2Headers
@@ -217,7 +254,15 @@ class TopicList extends Component {
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />
 
-        <Pagination />
+        <div className="navbar navbar-expand-lg navbar-light mr-auto khq-data-filter khq-sticky khq-nav">
+          <div className="collapse navbar-collapse" />
+          <Pagination
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={this.handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
+          />
+        </div>
 
         <aside>
           <Link

@@ -1,35 +1,52 @@
-import React from 'react';
+import React, { Component } from 'react';
+import './styles.scss';
 
-function Pagination(props) {
-    return (
-        <ul className="pagination mb-0 ml-sm-2 pull-right pr-0" style={{padding: 1 + 'rem'}}>
-            {/*<#if pagination["before"]??>
-        <#assign before = pagination[" before"] >*/}
-            {/*<li className=" page-item before ${(before == "") ? then('disabled', '')}">*/}
-            <li className=" page-item before disabled">
-                {/*<a className=" page-link" aria-label=" Previous" ${(before != "") ? then(' href="' ? no_esc + before + '"' ? no_esc, '')}>*/}
-                <a className=" page-link">
-                    <span aria-hidden=" true">&laquo;</span>
-                    <span className=" sr-only">Previous</span>
-                </a>
-            </li>
-            {/*</#if>*/}
-            <li className=" page-item info">
-                <a className=" page-link">
-                    {/*${size}*/}
-                    0
-                </a>
-            </li>
-            {/*<li className=" page-item after ${(after == "") ? then('disabled', '')}">*/}
-            <li className=" page-item after disabled">
-                {/*<a className=" page-link" aria-label=" Next" ${(after != "")?then(' href="'?no_esc + after + '"'?no_esc, '')}>*/}
-                <a className=" page-link" aria-label=" Next">
-                    <span aria-hidden=" true">&raquo;</span>
-                    <span className=" sr-only">Next</span>
-                </a>
-            </li>
-        </ul>
-    );
-}
+const Pagination = props => {
+  const { pageNumber, totalPageNumber, onChange, onSubmit } = props;
+  console.log(+pageNumber === +totalPageNumber);
+
+  return (
+    <ul className="pagination mb-0">
+      <li className={'page-item before'}>
+        <button
+          className={'before-button'}
+          onClick={() => onSubmit(pageNumber - 1)}
+          disabled={+pageNumber === 1}
+        >
+          <a className=" page-link">
+            <span aria-hidden=" true">&laquo;</span>
+            <span className=" sr-only">Previous</span>
+          </a>
+        </button>
+      </li>
+      <li className=" page-item info">
+        <a className=" page-link page-number">
+          <input
+            className="page-input"
+            type="number"
+            value={pageNumber}
+            onChange={onChange}
+            onKeyDown={e => {
+              if (e.key === 'Enter') onSubmit(pageNumber);
+            }}
+          />
+          of {totalPageNumber}
+        </a>
+      </li>
+      <li className={'page-item after'}>
+        <button
+          className={'after-button'}
+          onClick={() => onSubmit(pageNumber + 1)}
+          disabled={+pageNumber === +totalPageNumber}
+        >
+          <a className=" page-link" aria-label=" Next">
+            <span aria-hidden=" true">&raquo;</span>
+            <span className=" sr-only">Next</span>
+          </a>
+        </button>
+      </li>
+    </ul>
+  );
+};
 
 export default Pagination;

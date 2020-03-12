@@ -6,7 +6,7 @@ import Routes from './utils/Routes';
 import history from './utils/history';
 import api from './utils/api';
 import ErrorBoundary from './containers/ErrorBoundary';
-
+import Loading from './containers/Loading';
 class App extends React.Component {
   state = {
     clusterId: ''

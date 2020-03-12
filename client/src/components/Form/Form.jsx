@@ -74,7 +74,7 @@ class Form extends Component {
     );
   };
 
-  renderInput = (name, label, placeholder, type = 'text', onChange = this.handleChange, rest) => {
+  renderInput = (name, label, placeholder, type = 'text', rest) => {
     const { formData, errors } = this.state;
 
     return (
