@@ -12,14 +12,14 @@ class ConsumerGroup extends Component {
   state = {
     clusterId: '',
     consumerGroupId: '',
-    consumerGroup:{},
+    consumerGroup: {},
     selectedTab: 'topics'
   };
 
   componentDidMount() {
     const { clusterId, consumerGroupId } = this.props.match.params;
 
-    this.setState({ clusterId, consumerGroupId});
+    this.setState({ clusterId, consumerGroupId });
   }
 
   selectTab = tab => {
@@ -32,23 +32,23 @@ class ConsumerGroup extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, consumerGroupId,clusterId } = this.state;
+    const { selectedTab, consumerGroupId, clusterId } = this.state;
     const { history } = this.props;
 
     switch (selectedTab) {
       case 'topics':
         return (
           <ConsumerGroupTopics
-          clusterId={clusterId}
-          consumerGroupId={consumerGroupId}
+            clusterId={clusterId}
+            consumerGroupId={consumerGroupId}
             history={history}
           />
         );
       case 'members':
         return (
           <ConsumerGroupMembers
-          clusterId={clusterId}
-          consumerGroupId={consumerGroupId}
+            clusterId={clusterId}
+            consumerGroupId={consumerGroupId}
             history={history}
           />
         );
@@ -56,8 +56,8 @@ class ConsumerGroup extends Component {
       default:
         return (
           <ConsumerGroupTopics
-          clusterId={clusterId}
-          consumerGroupId={consumerGroupId}
+            clusterId={clusterId}
+            consumerGroupId={consumerGroupId}
             history={history}
           />
         );
@@ -65,10 +65,10 @@ class ConsumerGroup extends Component {
   }
 
   render() {
-    const { consumerGroup } = this.state;
+    const { consumerGroupId } = this.state;
     return (
       <div id="content">
-        <Header title={`Topic ${consumerGroup.consumerGroupId}`} />
+        <Header title={`Topic ${consumerGroupId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import Table from '../../../../components/Table/Table';
+import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
 import endpoints from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
+
 class ConsumerGroupTopics extends Component {
   state = {
     data: [],
@@ -24,7 +25,7 @@ class ConsumerGroupTopics extends Component {
     try {
       console.log('ClusterId: ', selectedCluster, ' + ConsumerGroup:  ', selectedConsumerGroup);
       topics = await get(endpoints.uriConsumerGroup(selectedCluster, selectedConsumerGroup));
-      console.log('topicos:        ', topics);
+      console.log('topicsData:        ', topics.data);
       this.handleData(topics.data);
     } catch (err) {
       console.error('Error:', err);
@@ -36,9 +37,11 @@ class ConsumerGroupTopics extends Component {
   }
   //Verificar o que estqa a vir dop backend
   handleData(topics) {
+    console.log(topics)
     let tableTopics = topics.map(topic => {
+      console.log(topic)
       return {
-        name: topic.consumerGroupId,
+        name: topic.name,
         partition: topic.partition,
         member: topic.member,
         offset: topic.offset,
@@ -46,6 +49,28 @@ class ConsumerGroupTopics extends Component {
       };
     });
     this.setState({ data: tableTopics });
+  }
+
+  handleMember(member) {
+    if (member.empty === 'true') {
+      return <label>-</label>;
+    } else {
+      return <label>{member}</label>;
+    }
+  }
+  handleOffset(offset) {
+    if (offset.empty === 'true') {
+      return <label>-</label>;
+    } else {
+      return <label>{offset}</label>;
+    }
+  }
+  handleLag(lag) {
+    if (lag.empty === 'true') {
+      return <label>-</label>;
+    } else {
+      return <label>{lag}</label>;
+    }
   }
 
   render() {
@@ -70,19 +95,28 @@ class ConsumerGroupTopics extends Component {
               id: 'member',
               accessor: 'member',
               colName: 'Member',
-              type: 'text'
+              type: 'text',
+              cell: obj => {
+                return this.handleMember(obj);
+              }
             },
             {
               id: 'offset',
               accessor: 'offset',
               colName: 'Offset',
-              type: 'text'
+              type: 'text',
+              cell: obj => {
+                return this.handleOffset(obj);
+              }
             },
             {
               id: 'lag',
               accessor: 'lag',
               colName: 'Lag',
-              type: 'text'
+              type: 'text',
+              cell: obj => {
+                return this.handleLag(obj);
+              }
             }
           ]}
           data={data}
