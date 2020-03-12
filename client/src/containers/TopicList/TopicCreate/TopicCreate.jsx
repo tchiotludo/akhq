@@ -57,7 +57,6 @@ class TopicCreate extends Form {
       loading: true
     });
 
-    // try {
     post(uriTopicsCreate(), topic)
       .then(res => {
         this.props.history.push({
@@ -75,10 +74,6 @@ class TopicCreate extends Form {
           loading: false
         });
       });
-
-    // } catch (err) {
-
-    // }
   }
   render() {
     return (

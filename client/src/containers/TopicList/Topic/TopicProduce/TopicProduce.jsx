@@ -48,7 +48,6 @@ class TopicProduce extends Form {
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-    console.log('here?');
     this.props.history.push({
       ...this.props.location,
       loading: true
@@ -68,7 +67,6 @@ class TopicProduce extends Form {
     } catch (err) {
       console.error('err', err);
     } finally {
-      console.log('here?2');
       this.props.history.push({
         ...this.props.location,
         loading: false

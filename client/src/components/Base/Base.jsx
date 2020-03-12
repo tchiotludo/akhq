@@ -34,7 +34,7 @@ class Base extends Component {
       errorToastMessage,
       loading
     } = nextProps.location;
-    console.log('rerender', loading, successToastMessage, errorToastMessage);
+
     return {
       topicId: topicId,
       clusterId: clusterId,
