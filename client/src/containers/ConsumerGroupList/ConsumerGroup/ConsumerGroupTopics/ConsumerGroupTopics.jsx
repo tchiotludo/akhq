@@ -37,9 +37,9 @@ class ConsumerGroupTopics extends Component {
   }
   //Verificar o que estqa a vir dop backend
   handleData(topics) {
-    console.log(topics)
-    let tableTopics = topics.map(topic => {
-      console.log(topic)
+    console.log(topics);
+    let data = topics.map(topic => {
+      console.log(topic);
       return {
         name: topic.name,
         partition: topic.partition,
@@ -48,28 +48,28 @@ class ConsumerGroupTopics extends Component {
         lag: topic.lag
       };
     });
-    this.setState({ data: tableTopics });
+    this.setState({ data });
   }
 
   handleMember(member) {
     if (member.empty === 'true') {
-      return <label>-</label>;
+      return <div>-</div>;
     } else {
-      return <label>{member}</label>;
+      return <div>{member.present}</div>;
     }
   }
   handleOffset(offset) {
     if (offset.empty === 'true') {
-      return <label>-</label>;
+      return <div>-</div>;
     } else {
-      return <label>{offset}</label>;
+      return <div>{offset.present}</div>;
     }
   }
   handleLag(lag) {
     if (lag.empty === 'true') {
-      return <label>-</label>;
+      return <div>-</div>;
     } else {
-      return <label>{lag}</label>;
+      return <div>{lag.present}</div>;
     }
   }
 
