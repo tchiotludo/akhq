@@ -137,10 +137,6 @@ class Form extends Component {
     );
   };
 
-  // renderDatePicker = (date) => {
-  //   return <DatePicker value={date} onChange={() => {}} />;
-  // }
-
   renderSelect = (name, label, items, onChange) => {
     const { formData, errors } = this.state;
 
