@@ -33,9 +33,7 @@ class TopicProduce extends Form {
         return { name: item.id, _id: Number(item.id) };
       });
       this.setState({
-        partitions /*: response.data.map(item => {
-            return { name: item.id, _id: Number(item.id) };
-          })*/,
+        partitions,
         formData: {
           ...this.state.formData,
           partition: partitions[0]._id
@@ -209,24 +207,18 @@ class TopicProduce extends Form {
     const { clusterId, topicId, timestamp, openDateModal, formData, partitions } = this.state;
     return (
       <div id="content" style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
-        <form
-          encType="multipart/form-data"
-          className="khq-form khq-form-config"
-          //onSubmit={() => this.doSubmit()}
-        >
+        <form encType="multipart/form-data" className="khq-form khq-form-config">
           <div>
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value._id } });
             })}
-            {/*this.renderInput('partition', 'Partition', 'Partition', 'partition')*/}
             {this.renderInput('key', 'Key', 'Key', 'Key')}
             <div></div>
           </div>
 
           {this.renderHeaders()}
 
-          {/*this.renderInput('value', 'Value', 'Value', 'Value')*/}
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
               formData: {
