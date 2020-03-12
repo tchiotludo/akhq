@@ -23,7 +23,6 @@ class Form extends Component {
     const { error } = Joi.validate(this.state.formData, this.schema);
 
     if (!error) return null;
-
     const errors = {};
     for (let item of error.details) {
       errors[item.path[0]] = item.message;
@@ -126,7 +125,6 @@ class Form extends Component {
             theme="dracula"
             value={formData[name]}
             onChange={value => {
-              console.log('ace-change', value);
               onChange(value);
             }}
             name="UNIQUE_ID_OF_DIV"
@@ -143,7 +141,7 @@ class Form extends Component {
   //   return <DatePicker value={date} onChange={() => {}} />;
   // }
 
-  renderSelect = (name, label, items) => {
+  renderSelect = (name, label, items, onChange) => {
     const { formData, errors } = this.state;
 
     return (
@@ -153,7 +151,9 @@ class Form extends Component {
         label={label}
         items={items}
         error={errors[name]}
-        onChange={this.handleChange}
+        onChange={value => {
+          onChange(value);
+        }}
       />
     );
   };

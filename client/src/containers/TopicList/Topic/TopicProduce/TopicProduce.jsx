@@ -3,14 +3,15 @@ import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
-import { post } from '../../../../utils/api';
-import { uriTopicsProduce } from '../../../../utils/endpoints';
+import { post, get } from '../../../../utils/api';
+import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import DatePicker from '../../../../components/DatePicker';
 
 class TopicProduce extends Form {
   state = {
+    partitions: [],
     nHeaders: 1,
     formData: {
       partition: '',
@@ -23,14 +24,31 @@ class TopicProduce extends Form {
     openDateModal: false,
     errors: {}
   };
-  componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
 
+  async componentDidMount() {
+    const { clusterId, topicId } = this.props.match.params;
+    try {
+      let response = await get(uriTopicsPartitions(clusterId, topicId));
+      let partitions = response.data.map(item => {
+        return { name: item.id, _id: Number(item.id) };
+      });
+      this.setState({
+        partitions /*: response.data.map(item => {
+            return { name: item.id, _id: Number(item.id) };
+          })*/,
+        formData: {
+          ...this.state.formData,
+          partition: partitions[0]._id
+        }
+      });
+    } catch (err) {
+      console.error('err', err);
+    }
     this.setState({ clusterId, topicId });
   }
   schema = {
     partition: Joi.number()
-      .min(1)
+      .min(0)
       .label('Partition')
       .required(),
     key: Joi.string()
@@ -57,12 +75,11 @@ class TopicProduce extends Form {
       topicId,
       partition: formData.partition,
       key: formData.key,
-      timestamp: formData.timestamp.format(),
-      value: JSON.parse(formData.value)
+      timestamp: formData.timestamp.toDate().toISOString(),
+      value: JSON.parse(JSON.stringify(formData.value))
     };
 
     let headers = {};
-
     Object.keys(formData).map(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
@@ -72,11 +89,8 @@ class TopicProduce extends Form {
 
     topic.headers = headers;
 
-    console.log('here', topic);
-
     post(uriTopicsProduce(), topic)
       .then(res => {
-        console.log('res', res);
         this.props.history.push({
           pathname: `/${clusterId}/topic`,
           showSuccessToast: true,
@@ -192,8 +206,7 @@ class TopicProduce extends Form {
   }
 
   render() {
-    const { clusterId, topicId, timestamp, openDateModal, formData } = this.state;
-
+    const { clusterId, topicId, timestamp, openDateModal, formData, partitions } = this.state;
     return (
       <div id="content" style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
         <form
@@ -203,7 +216,10 @@ class TopicProduce extends Form {
         >
           <div>
             <Header title={`Produce to ${topicId} `} />
-            {this.renderInput('partition', 'Partition', 'Partition', 'partition')}
+            {this.renderSelect('partition', 'Partition', partitions, value => {
+              this.setState({ formData: { ...formData, partition: value._id } });
+            })}
+            {/*this.renderInput('partition', 'Partition', 'Partition', 'partition')*/}
             {this.renderInput('key', 'Key', 'Key', 'Key')}
             <div></div>
           </div>
@@ -221,7 +237,6 @@ class TopicProduce extends Form {
           })}
 
           {this.renderDatePicker('timestamp', 'Timestamp', value => {
-            console.log('value', value);
             this.setState({ formData: { ...this.state.formData, timestamp: value } });
           })}
           {this.renderButton(
