@@ -1,0 +1,45 @@
+.headers {
+    border-radius: 1rem;
+    font-size: 0.8rem;
+}
+
+.btn.headers:active:focus {
+    outline: none;
+  }
+
+.value {
+    overflow: hidden;
+}
+
+.headers-modal {
+    background-color: #171819;
+    padding-bottom: 1rem;
+    position: relative;
+    top: 30%;
+    bottom: 30%;
+    left: 35%;
+    right: 35%;
+    width: 30%;
+    .close {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+        margin-top: 0.5rem;
+        margin-right: 50%;
+    }
+}
+
+.headers-modal table {
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 80%;
+}
+
+.pagination-data .before-button {
+    display: none;
+}
+
+.dropdown-toggle, .dropdown-toggle:hover, .dropdown-toggle:focus {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
