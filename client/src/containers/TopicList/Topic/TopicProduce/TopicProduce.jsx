@@ -7,7 +7,7 @@ import { post, get } from '../../../../utils/api';
 import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
-import DatePicker from '../../../../components/DatePicker';
+import history from '../../../../utils/history';
 
 class TopicProduce extends Form {
   state = {
@@ -25,25 +25,6 @@ class TopicProduce extends Form {
     errors: {}
   };
 
-  async componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
-    try {
-      let response = await get(uriTopicsPartitions(clusterId, topicId));
-      let partitions = response.data.map(item => {
-        return { name: item.id, _id: Number(item.id) };
-      });
-      this.setState({
-        partitions,
-        formData: {
-          ...this.state.formData,
-          partition: partitions[0]._id
-        }
-      });
-    } catch (err) {
-      console.error('err', err);
-    }
-    this.setState({ clusterId, topicId });
-  }
   schema = {
     partition: Joi.number()
       .min(0)
@@ -64,6 +45,35 @@ class TopicProduce extends Form {
     timestamp: Joi.object().label('Timestamp'),
     value: Joi.object().label('Value')
   };
+
+  async componentDidMount() {
+    const { clusterId, topicId } = this.props.match.params;
+    this.props.history.push({
+      ...this.props.location,
+      loading: true
+    });
+    try {
+      let response = await get(uriTopicsPartitions(clusterId, topicId));
+      let partitions = response.data.map(item => {
+        return { name: item.id, _id: Number(item.id) };
+      });
+      this.setState({
+        partitions,
+        formData: {
+          ...this.state.formData,
+          partition: partitions[0]._id
+        }
+      });
+    } catch (err) {
+      console.error('err', err);
+    } finally {
+      this.props.history.push({
+        ...this.props.location,
+        loading: false
+      });
+    }
+    this.setState({ clusterId, topicId });
+  }
 
   doSubmit() {
     const { formData } = this.state;
@@ -86,19 +96,26 @@ class TopicProduce extends Form {
     });
 
     topic.headers = headers;
-
+    this.props.history.push({
+      ...this.props.location,
+      loading: true
+    });
     post(uriTopicsProduce(), topic)
       .then(res => {
         this.props.history.push({
+          ...this.props.location,
           pathname: `/${clusterId}/topic`,
           showSuccessToast: true,
-          successToastMessage: 'Produced to Topic.'
+          successToastMessage: `Produced to ${topicId}.`,
+          loading: false
         });
       })
       .catch(err => {
         this.props.history.push({
+          ...this.props.location,
           showErrorToast: true,
-          errorToastMessage: 'There was an error while producing to topic.'
+          errorToastMessage: 'There was an error while producing to topic.',
+          loading: false
         });
       });
   }
