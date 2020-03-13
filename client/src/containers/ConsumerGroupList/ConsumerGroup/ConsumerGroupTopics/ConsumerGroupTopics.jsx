@@ -52,24 +52,24 @@ class ConsumerGroupTopics extends Component {
   }
 
   handleMember(member) {
-    if (member.empty === 'true') {
-      return <div>-</div>;
+    if (member.empty === 'false') {
+      return <label>---</label>;
     } else {
-      return <div>{member.present}</div>;
+      return <div>-</div>;
     }
   }
   handleOffset(offset) {
-    if (offset.empty === 'true') {
+    if (offset.empty === 'false') {
       return <div>-</div>;
     } else {
-      return <div>{offset.present}</div>;
+      return <div>-</div>;
     }
   }
   handleLag(lag) {
-    if (lag.empty === 'true') {
+    if (lag.empty === 'false') {
       return <div>-</div>;
     } else {
-      return <div>{lag.present}</div>;
+      return <div>-</div>;
     }
   }
 
