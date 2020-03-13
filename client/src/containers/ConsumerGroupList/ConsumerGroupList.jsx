@@ -67,6 +67,7 @@ class ConsumerGroupList extends Component {
       data = await api.get(
         endpoints.uriConsumerGroups(selectedCluster, consumerGroupListView, search, pageNumber)
       );
+
       data = data.data;
       if (data) {
         if (data.consumerGroups) {
@@ -90,14 +91,15 @@ class ConsumerGroupList extends Component {
     consumerGroup.map(consumerGroup => {
       consumerGroup.size = 0;
       consumerGroup.logDirSize = 0;
-      tableConsumerGroup.push({
-        id: consumerGroup.id,
-        state: consumerGroup.state,
-        size: consumerGroup.size,
-        coordinator: consumerGroup.coordinator,
-        members: consumerGroup.members,
-        topicLag: consumerGroup.topicLag
-      });
+        tableConsumerGroup.push({
+          id: consumerGroup.id,
+          state: consumerGroup.state,
+          size: consumerGroup.size,
+          coordinator: consumerGroup.coordinator,
+          members: consumerGroup.members,
+          topicLag: consumerGroup.topicLag
+        });
+      
     });
     this.setState({ consumerGroups: tableConsumerGroup });
   }

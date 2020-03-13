@@ -51,25 +51,11 @@ class ConsumerGroupTopics extends Component {
     this.setState({ data });
   }
 
-  handleMember(member) {
-    if (member.empty === 'false') {
-      return <label>---</label>;
+  handleOptional(optional) {
+    if (optional) {
+      return <label>{optional}</label>;
     } else {
-      return <div>-</div>;
-    }
-  }
-  handleOffset(offset) {
-    if (offset.empty === 'false') {
-      return <div>-</div>;
-    } else {
-      return <div>-</div>;
-    }
-  }
-  handleLag(lag) {
-    if (lag.empty === 'false') {
-      return <div>-</div>;
-    } else {
-      return <div>-</div>;
+      return <label>-</label>;
     }
   }
 
@@ -97,7 +83,7 @@ class ConsumerGroupTopics extends Component {
               colName: 'Member',
               type: 'text',
               cell: obj => {
-                return this.handleMember(obj);
+                return this.handleOptional(obj.member);
               }
             },
             {
@@ -106,7 +92,7 @@ class ConsumerGroupTopics extends Component {
               colName: 'Offset',
               type: 'text',
               cell: obj => {
-                return this.handleOffset(obj);
+                return this.handleOptional(obj.offset);
               }
             },
             {
@@ -115,7 +101,7 @@ class ConsumerGroupTopics extends Component {
               colName: 'Lag',
               type: 'text',
               cell: obj => {
-                return this.handleLag(obj);
+                return this.handleOptional(obj.lag);
               }
             }
           ]}

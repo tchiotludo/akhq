@@ -32,9 +32,10 @@ class ConsumerGroup extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, consumerGroupId, clusterId } = this.state;
+    const { selectedTab } = this.state;
     const { history } = this.props;
-
+    const { clusterId, consumerGroupId } = this.props.match.params;
+    console.log('antes do switch', clusterId, consumerGroupId);
     switch (selectedTab) {
       case 'topics':
         return (
