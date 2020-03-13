@@ -25,7 +25,6 @@ class NodesList extends Component {
     });
     try {
       nodes = await get(uriNodes(clusterId));
-      console.log('nodes', nodes.data);
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
