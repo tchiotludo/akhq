@@ -23,9 +23,8 @@ class ConsumerGroupTopics extends Component {
       loading: true
     });
     try {
-      console.log('ClusterId: ', selectedCluster, ' + ConsumerGroup:  ', selectedConsumerGroup);
       topics = await get(endpoints.uriConsumerGroup(selectedCluster, selectedConsumerGroup));
-      console.log('topicsData:        ', topics.data);
+
       this.handleData(topics.data);
     } catch (err) {
       console.error('Error:', err);
@@ -37,9 +36,7 @@ class ConsumerGroupTopics extends Component {
   }
   //Verificar o que estqa a vir dop backend
   handleData(topics) {
-    console.log(topics);
     let data = topics.map(topic => {
-      console.log(topic);
       return {
         name: topic.name,
         partition: topic.partition,
