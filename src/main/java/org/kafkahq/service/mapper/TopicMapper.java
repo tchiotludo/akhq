@@ -1,10 +1,8 @@
 package org.kafkahq.service.mapper;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.kafkahq.models.ConsumerGroup;
-import org.kafkahq.models.Partition;
-import org.kafkahq.models.Record;
-import org.kafkahq.models.Topic;
+import org.kafkahq.models.*;
+import org.kafkahq.service.dto.topic.LogDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO.OffsetsDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO.ReplicaDTO;
@@ -47,4 +45,11 @@ public class TopicMapper {
 
         return new PartitionDTO(partition.getId(), partition.getLeader().getId(), replicas, offsetsDTO, sizesDTO);
     }
+
+    public LogDTO fromLogToLogDTO(LogDir log) {
+
+        return new LogDTO(log.getBrokerId(),log.getTopic(),log.getPartition(),log.getSize(),log.getOffsetLag());
+    }
+
+
 }

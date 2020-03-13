@@ -8,12 +8,7 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
-import org.kafkahq.service.dto.topic.CreateTopicDTO;
-import org.kafkahq.service.dto.topic.DeleteTopicDTO;
-import org.kafkahq.service.dto.topic.PartitionDTO;
-import org.kafkahq.service.dto.topic.ProduceTopicDTO;
-import org.kafkahq.service.dto.topic.RecordDTO;
-import org.kafkahq.service.dto.topic.TopicListDTO;
+import org.kafkahq.service.dto.topic.*;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -64,6 +59,12 @@ public class TopicResource {
     public List<PartitionDTO> fetchTopicPartitions(String clusterId, String topicId) throws ExecutionException, InterruptedException {
         log.debug("Fetch partitions from topic: {}", topicId);
         return topicService.getTopicPartitions(clusterId, topicId);
+    }
+
+    @Get("/topic/logs")
+    public List<LogDTO> fetchTopicLogs(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        log.debug("Fetch logs from topic: {}", topicId);
+        return topicService.getTopicLogs(clusterId, topicId);
     }
 
     @Delete("/topic/delete")

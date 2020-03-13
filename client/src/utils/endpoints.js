@@ -27,6 +27,13 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
   );
 };
 
+export const uriTopicsLogs = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -60,6 +67,7 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
+  uriTopicsLogs,
   uriDeleteTopics,
   uriTopicsProduce,
   uriConsumerGroups
