@@ -125,7 +125,7 @@ class NodeConfigs extends Form {
 
   async doSubmit() {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
-    const { history } = this.props;
+    const { history, location } = this.props;
     history.push({
       loading: true
     });
@@ -139,20 +139,18 @@ class NodeConfigs extends Form {
       this.setState({ state: this.state }, () =>
         this.props.history.push({
           showSuccessToast: true,
-          successToastMessage: `Node '${selectedNode}' was updated successfully.`
+          successToastMessage: `Node '${selectedNode}' was updated successfully.`,
+          loading: false
         })
       );
     } catch (err) {
       this.props.history.push({
         showErrorToast: true,
         errorToastTitle: err.response.data.title,
-        errorToastMessage: err.response.data.description
-      });
-      console.error('Error:', err.response);
-    } finally {
-      history.push({
+        errorToastMessage: err.response.data.description,
         loading: false
       });
+      console.error('Error:', err.response);
     }
   }
 

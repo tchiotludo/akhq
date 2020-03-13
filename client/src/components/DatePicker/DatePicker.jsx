@@ -149,7 +149,7 @@ class DatePicker extends React.Component {
     return (
       <MuiThemeProvider theme={customTheme}>
         <DateTimePicker
-          value={this.state.timestamp}
+          value={this.state.value}
           onChange={date => {
             this.onChange(date);
           }}
