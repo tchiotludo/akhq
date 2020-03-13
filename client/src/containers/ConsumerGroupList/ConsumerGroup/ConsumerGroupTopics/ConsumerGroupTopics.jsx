@@ -34,7 +34,8 @@ class ConsumerGroupTopics extends Component {
       });
     }
   }
-  //Verificar o que estqa a vir dop backend
+  
+  
   handleData(topics) {
     let data = topics.map(topic => {
       return {

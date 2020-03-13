@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import Header from '../../Header';
-import SearchBar from '../../../components/SearchBar';
-import Pagination from '../../../components/Pagination';
-import Table from '../../../components/Table/Table';
 import ConsumerGroupTopics from './ConsumerGroupTopics/ConsumerGroupTopics';
 import ConsumerGroupMembers from './ConsumerGroupMembers/ConsumerGroupMembers';
-import history from '../../../utils/history';
 import { Link } from 'react-router-dom';
 
 class ConsumerGroup extends Component {
@@ -35,7 +31,6 @@ class ConsumerGroup extends Component {
     const { selectedTab } = this.state;
     const { history } = this.props;
     const { clusterId, consumerGroupId } = this.props.match.params;
-    console.log('antes do switch', clusterId, consumerGroupId);
     switch (selectedTab) {
       case 'topics':
         return (
