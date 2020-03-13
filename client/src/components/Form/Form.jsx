@@ -6,6 +6,11 @@ import _ from 'lodash';
 import Input from './Input';
 import Select from './Select';
 import RadioGroup from './RadioGroup';
+import DatePicker from '../DatePicker';
+import AceEditor from 'react-ace';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-dracula';
 
 class Form extends Component {
   state = {
@@ -16,8 +21,8 @@ class Form extends Component {
   validate = () => {
     const options = { abortEarly: false };
     const { error } = Joi.validate(this.state.formData, this.schema);
-    if (!error) return null;
 
+    if (!error) return null;
     const errors = {};
     for (let item of error.details) {
       errors[item.path[0]] = item.message;
@@ -61,7 +66,7 @@ class Form extends Component {
 
   renderButton = (label, click, className, type) => {
     return (
-      <div className="khq-submit">
+      <div className="khq-submit" style={{ marginRight: 0, width: 'calc(100vw - 250px)' }}>
         <button
           type={type ? type : 'button'}
           className={className ? className : 'btn btn-primary'}
@@ -74,9 +79,18 @@ class Form extends Component {
     );
   };
 
-  renderInput = (name, label, placeholder, type = 'text', rest) => {
+  renderInput = (
+    name,
+    label,
+    placeholder,
+    type = 'text',
+    onChange = this.handleChange,
+    noStyle,
+    wrapperClass,
+    inputClass,
+    rest
+  ) => {
     const { formData, errors } = this.state;
-
     return (
       <Input
         type={type}
@@ -86,12 +100,44 @@ class Form extends Component {
         placeholder={placeholder}
         onChange={this.handleChange}
         error={errors[name]}
+        noStyle={noStyle}
+        wrapperClass={wrapperClass}
+        inputClass={inputClass}
         {...rest}
       />
     );
   };
 
-  renderSelect = (name, label, items) => {
+  renderJSONInput = (name, label, onChange) => {
+    const { formData, errors } = this.state;
+    return (
+      <div className="form-group row">
+        {label !== '' ? (
+          <label htmlFor={name} className="col-sm-2 col-form-label">
+            {label}
+          </label>
+        ) : (
+          <div></div>
+        )}
+        <div className="col-sm-10">
+          <AceEditor
+            mode="json"
+            theme="dracula"
+            value={formData[name]}
+            onChange={value => {
+              onChange(value);
+            }}
+            name="UNIQUE_ID_OF_DIV"
+            editorProps={{ $blockScrolling: true }}
+            style={{ width: '100%', height: '30vh' }}
+          />
+          {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
+        </div>
+      </div>
+    );
+  };
+
+  renderSelect = (name, label, items, onChange) => {
     const { formData, errors } = this.state;
 
     return (
@@ -101,7 +147,25 @@ class Form extends Component {
         label={label}
         items={items}
         error={errors[name]}
-        onChange={this.handleChange}
+        onChange={value => {
+          onChange(value);
+        }}
+      />
+    );
+  };
+
+  renderDatePicker = (name, label, onChange) => {
+    const { formData, errors } = this.state;
+
+    return (
+      <DatePicker
+        name={name}
+        label={label}
+        error={errors[name]}
+        value={formData[name]}
+        onChange={value => {
+          onChange(value);
+        }}
       />
     );
   };

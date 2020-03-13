@@ -18,6 +18,7 @@ export const uriTopics = (id, view, search, pageNumber) => {
 };
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
@@ -52,7 +53,6 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
   return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
-//Verificar o url apos fazer o backend
 export const uriConsumerGroup = (id, groupId) => {
   return `${apiUrl}/group/offsets?clusterId=${id}&groupId=${groupId}`;
 };
@@ -65,5 +65,7 @@ export default {
   uriNodesConfigs,
   uriTopics,
   uriConsumerGroups,
-  uriConsumerGroup
+  uriConsumerGroup,
+  uriDeleteTopics,
+  uriTopicsProduce
 };
