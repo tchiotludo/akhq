@@ -22,7 +22,7 @@ public class ConsumerGroupMapper {
 
     }
 
-    //ConsumerGroup Offset to offsetdto
+
     public  ConsumerGroupOffsetDTO fromConsumerGroupToConsumerGroupOffsetDTO(TopicPartition.ConsumerGroupOffset offset) {
 
             ConsumerGroupOffsetDTO consumerGroupOffsetDTO=new ConsumerGroupOffsetDTO(offset.getTopic(),offset.getPartition(),offset.getMember().orElse(null),offset.getOffset().orElse(null), offset.getOffsetLag().orElse(null));

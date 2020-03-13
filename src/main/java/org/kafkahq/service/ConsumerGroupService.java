@@ -63,7 +63,7 @@ public class ConsumerGroupService {
         return new ConsumerGroupListDTO(consumerGroupList, list.total());
     }
 
-//Precorrer a lista de offsets e aplicar o mapper e depois retorna a lista
+
     public List<ConsumerGroupOffsetDTO> getConsumerGroupOffsets(String clusterId, String groupId) throws ExecutionException, InterruptedException {
 
         ConsumerGroup group = this.consumerGroupRepository.findByName(clusterId, groupId);
