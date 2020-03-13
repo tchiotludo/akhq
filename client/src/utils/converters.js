@@ -2,13 +2,21 @@ import _ from 'lodash';
 import moment from 'moment';
 
 export function formatDateTime(value, format) {
+  let milli = value.milli !== undefined ? value.milli : 0;
   const date = new Date(
     value.year,
-    value.monthValue - 1,
+    +value.monthValue - 1,
     value.dayOfMonth,
     value.hour,
     value.minute,
-    value.second
+    value.second,
+    milli
+  );
+
+  console.log(
+    moment(date.toString())
+      .format(format)
+      .toString()
   );
 
   return moment(date.toString())

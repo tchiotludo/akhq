@@ -69,10 +69,9 @@ public class TopicService {
                 Optional.ofNullable(search)
         );
 
-        List<TopicDTO> topicDTOList = new ArrayList<>();
-        pagedList
+        List<TopicDTO> topicDTOList = pagedList
                 .stream()
-                .map(topic -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topic))).collect(Collectors.toList());
+                .map(topic -> topicMapper.fromTopicToTopicDTO(topic)).collect(Collectors.toList());
 
         return new TopicListDTO(topicDTOList, pagedList.pageCount());
     }

@@ -5,10 +5,14 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
-import { uriTopicData } from '../../../../utils/endpoints';
+import { uriTopicData, uriTopicsPartitions } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
+import moment from 'moment';
+import DatePicker from '../../../../components/DatePicker/DatePicker';
+import Input from '../../../../components/Form/Input';
+import _ from 'lodash';
 
 // Adaptation of data.ftl
 
@@ -20,14 +24,22 @@ class TopicData extends Component {
     headersModalBody: '',
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
+    partitionCount: 0,
     partition: 'All',
     partitionOptions: [],
-    timestamp: '',
+    offsetsOptions: [],
+    timestamp: moment('Jan 01, 1970, 1:00 AM', 'MMM DD, YYYY, hh:mm A'),
+    currentSearch: '',
+    search: '',
+    offsets: {},
+    offsetsSearch: '',
+    openDateModal: false,
     messages: []
   };
 
   componentDidMount() {
     let { clusterId, topicId } = this.props.match.params;
+
     this.setState({ selectedCluster: clusterId, selectedTopic: topicId }, () => {
       this.getMessages();
     });
@@ -60,19 +72,54 @@ class TopicData extends Component {
 
   async getMessages() {
     const { history } = this.props;
-    const { selectedCluster, selectedTopic } = this.state;
+    const {
+      selectedCluster,
+      selectedTopic,
+      sortBy,
+      partition,
+      timestamp,
+      currentSearch,
+      offsetsSearch
+    } = this.state;
 
-    let data = {};
+    let data,
+      partitionData = {};
     history.push({
       loading: true
     });
     try {
-      data = await get(uriTopicData(selectedCluster, selectedTopic));
+      data = await get(
+        uriTopicData(
+          selectedCluster,
+          selectedTopic,
+          sortBy,
+          partition,
+          formatDateTime(
+            {
+              year: timestamp.year(),
+              monthValue: timestamp.month() + 1,
+              dayOfMonth: timestamp.date(),
+              hour: timestamp.hour(),
+              minute: timestamp.minute(),
+              second: timestamp.second(),
+              milli: timestamp.millisecond()
+            },
+            'YYYY-MM-DDThh:mm:ss.SSS'
+          ) + 'Z',
+          currentSearch !== '' ? currentSearch : undefined,
+          offsetsSearch !== '' ? offsetsSearch : undefined
+        )
+      );
       data = data.data;
+      partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
+      partitionData = partitionData.data;
       if (data) {
         this.handleMessages(data);
       } else {
         this.setState({ messages: [] });
+      }
+      if (partitionData) {
+        this.setState({ partitionCount: partitionData.length });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -97,16 +144,22 @@ class TopicData extends Component {
     this.setState({ messages: tableMessages });
   };
 
-  createPartitionOptions = partitions => {
+  createPartitionOptions = () => {
+    const { partitionCount } = this.state;
     let partitionOptions = ['All'];
-    for (let i = 0; i < partitions; i++) {
+    for (let i = 0; i < partitionCount; i++) {
       partitionOptions.push(`${i}`);
     }
     return partitionOptions;
   };
 
-  onTimestampChange = timestamp => {
-    this.setState({ timestamp });
+  createOffsetsOptions = () => {
+    const { partitionCount } = this.state;
+    let offsetsOptions = [];
+    for (let i = 0; i < partitionCount; i++) {
+      offsetsOptions.push(`Partition ${i}`);
+    }
+    return offsetsOptions;
   };
 
   renderSortOptions() {
@@ -115,7 +168,10 @@ class TopicData extends Component {
     let renderedOptions = [];
     for (let option of sortOptions) {
       renderedOptions.push(
-        <Dropdown.Item key={option}>
+        <Dropdown.Item
+          key={option}
+          onClick={() => this.setState({ sortBy: option }, () => this.getMessages())}
+        >
           <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
         </Dropdown.Item>
       );
@@ -123,15 +179,54 @@ class TopicData extends Component {
     return renderedOptions;
   }
 
-  renderPartitionOptions = partitions => {
-    const partitionOptions = this.createPartitionOptions(partitions);
+  renderPartitionOptions = () => {
+    const partitionOptions = this.createPartitionOptions();
 
     let renderedOptions = [];
     for (let option of partitionOptions) {
       renderedOptions.push(
-        <Dropdown.Item key={option}>
+        <Dropdown.Item
+          key={option}
+          onClick={() => this.setState({ partition: option }, () => this.getMessages())}
+        >
           <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
         </Dropdown.Item>
+      );
+    }
+    return renderedOptions;
+  };
+
+  renderOffsetsOptions = () => {
+    const offsetsOptions = this.createOffsetsOptions();
+
+    let renderedOptions = [];
+    let i;
+    for (i = 0; i < offsetsOptions.length; i++) {
+      const option = offsetsOptions[i];
+      const camelcaseOption = _.camelCase(option);
+      let { offsets } = this.state;
+      if (offsets[camelcaseOption] === undefined) {
+        offsets[camelcaseOption] = '';
+        this.setState({ offsets });
+      }
+      renderedOptions.push(
+        <tr key={option}>
+          <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
+          <td className="offset-navbar-partition-td">
+            <input
+              className="form-control"
+              type="number"
+              min="0"
+              name={`${i}`}
+              value={offsets[camelcaseOption]}
+              onChange={({ currentTarget: input }) => {
+                let { offsets } = this.state;
+                offsets[camelcaseOption] = input.value;
+                this.setState(offsets);
+              }}
+            />
+          </td>
+        </tr>
       );
     }
     return renderedOptions;
@@ -142,12 +237,16 @@ class TopicData extends Component {
       sortBy,
       partition,
       timestamp,
+      currentSearch,
+      search,
+      offsets,
       messages,
       showHeadersModal,
       showValueModal,
       valueModalBody,
       headersModalBody
     } = this.state;
+    const { loading } = this.props.history.location;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -157,8 +256,6 @@ class TopicData extends Component {
       { colName: 'Headers', colSpan: 1 },
       { colname: 'Schema', colSpan: 1 }
     ];
-
-    console.log(messages);
 
     return (
       <React.Fragment>
@@ -186,7 +283,7 @@ class TopicData extends Component {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Sort:</strong> ({sortBy})
                   </Dropdown.Toggle>
-                  <Dropdown.Menu>{this.renderSortOptions()}</Dropdown.Menu>
+                  {!loading && <Dropdown.Menu>{this.renderSortOptions()}</Dropdown.Menu>}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -194,77 +291,112 @@ class TopicData extends Component {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Partition:</strong> ({partition})
                   </Dropdown.Toggle>
-                  <Dropdown.Menu>{this.renderPartitionOptions(1)}</Dropdown.Menu>
+                  {!loading && <Dropdown.Menu>{this.renderPartitionOptions()}</Dropdown.Menu>}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp:</strong> {timestamp !== '' ? { timestamp } : ''}
+                    <strong>Timestamp:</strong>{' '}
+                    {timestamp.year() !== 1970 &&
+                      formatDateTime(
+                        {
+                          year: timestamp.year(),
+                          monthValue: timestamp.month() + 1,
+                          dayOfMonth: timestamp.date(),
+                          hour: timestamp.hour(),
+                          minute: timestamp.minute(),
+                          second: timestamp.second(),
+                          milli: timestamp.millisecond()
+                        },
+                        'MMM DD, YYYY, hh:mm A'
+                      )}
                   </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div class="khq-data-datetime">
-                      <div class="input-group mb-2">
-                        <input
-                          class="form-control"
-                          name="timestamp"
-                          type="text"
+                  {!loading && (
+                    <Dropdown.Menu>
+                      <div className="input-group mb-2 datetime-picker-div">
+                        <DatePicker
+                          name={'datetime-picker'}
                           value={timestamp}
+                          onChange={value => {
+                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
+                          }}
                         />
-                        <div class="input-group-append">
-                          <button class="btn btn-primary" type="button">
+                      </div>
+                    </Dropdown.Menu>
+                  )}
+                </Dropdown>
+              </li>
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
+                  </Dropdown.Toggle>
+                  {!loading && (
+                    <Dropdown.Menu>
+                      <div className="input-group">
+                        <input
+                          className="form-control"
+                          name="search"
+                          type="text"
+                          value={search}
+                          onChange={({ currentTarget: input }) => {
+                            this.setState({ search: input.value });
+                          }}
+                        />
+                        <div className="input-group-append">
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={() =>
+                              this.setState({ currentSearch: search, search: '' }, () =>
+                                this.getMessages()
+                              )
+                            }
+                          >
                             OK
                           </button>
                         </div>
                       </div>
-                      <div class="datetime-container"></div>
-                    </div>
-                  </Dropdown.Menu>
+                    </Dropdown.Menu>
+                  )}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Link
-                  className="nav-link dropdown-toggle"
-                  to="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <strong>Search:</strong>
-                </Link>
-                <div className="dropdown-menu khq-search-navbar">
-                  <div className="input-group">
-                    <input className="form-control" name="search" type="text" />
-                    <div className="input-group-append">
-                      <button className="btn btn-primary" type="button">
-                        OK
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <li className="nav-item dropdown">
-                <Link
-                  className="nav-link dropdown-toggle"
-                  to="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <strong>Offsets:</strong>
-                </Link>
-                <div className="dropdown-menu khq-offset-navbar">
-                  <div className="input-group">
-                    <table></table>
-                    <div className="input-group-append">
-                      <button className="btn btn-primary" type="button">
-                        OK
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Offsets:</strong>
+                  </Dropdown.Toggle>
+                  {!loading && (
+                    <Dropdown.Menu>
+                      <div className="khq-offset-navbar">
+                        <div className="input-group">
+                          <table>{this.renderOffsetsOptions()}</table>
+                          <div className="input-group-append">
+                            <button
+                              className="btn btn-primary offsets-ok"
+                              type="button"
+                              onClick={() => {
+                                let offsetsSearch = '';
+                                for (let i = 0; i < Object.keys(offsets).length; i++) {
+                                  if (offsetsSearch !== '') {
+                                    offsetsSearch += '_';
+                                  }
+                                  if (Object.values(offsets)[i] !== '') {
+                                    offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
+                                  }
+                                }
+                                this.setState({ offsetsSearch }, () => this.getMessages());
+                              }}
+                            >
+                              OK
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Dropdown.Menu>
+                  )}
+                </Dropdown>
               </li>
             </ul>
           </div>

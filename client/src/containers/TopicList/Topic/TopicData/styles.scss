@@ -43,3 +43,24 @@
     background-color: transparent !important;
     border-color: transparent !important;
 }
+
+.datetime-picker-div {
+    position: relative;
+    left: 3%;
+    right: 0;
+}
+
+Datepicker div.form-group.row {
+    width: 100%;
+    margin-bottom: 0;
+    margin-right: 0;
+}
+
+#datetime-picker {
+    height: 2.3rem;
+}
+
+.offsets-ok {
+    border-top-left-radius: 0.25rem !important;
+    border-bottom-left-radius: 0.25rem !important;
+}
