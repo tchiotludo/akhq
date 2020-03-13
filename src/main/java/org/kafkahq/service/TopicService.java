@@ -74,7 +74,7 @@ public class TopicService {
                 .stream()
                 .map(topic -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topic))).collect(Collectors.toList());
 
-        return new TopicListDTO(topicDTOList, pagedList.pageCount());
+        return new TopicListDTO(topicDTOList);
     }
 
     public List<RecordDTO> getTopicData(String clusterId, String topicId,
