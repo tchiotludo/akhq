@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  akhq:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-15T13:35:17.61284265Z"
+    description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
+      group, schema registry, connect and more...
+    digest: 86ab81c42106b3d27182f2d8de43f16840111a494892760567c1ff920f155bc2
+    name: akhq
+    urls:
+    - akhq-0.1.0.tgz
+    version: 0.1.0
+generated: "2020-03-15T13:35:17.61247635Z"
