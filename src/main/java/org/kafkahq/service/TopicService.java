@@ -4,18 +4,14 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.kafkahq.models.Config;
+import org.kafkahq.models.LogDir;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.service.dto.topic.CreateTopicDTO;
-import org.kafkahq.service.dto.topic.PartitionDTO;
-import org.kafkahq.service.dto.topic.ProduceTopicDTO;
-import org.kafkahq.service.dto.topic.RecordDTO;
-import org.kafkahq.service.dto.topic.TopicDTO;
-import org.kafkahq.service.dto.topic.TopicListDTO;
+import org.kafkahq.service.dto.topic.*;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -104,6 +100,13 @@ public class TopicService {
         Topic topic = this.topicRepository.findByName(clusterId, topicId);
 
         return topic.getPartitions().stream().map(partition -> topicMapper.fromPartitionToPartitionDTO(partition))
+                .collect(Collectors.toList());
+    }
+
+    public List<LogDTO> getTopicLogs(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(clusterId, topicId);
+
+        return topic.getLogDir().stream().map(log -> topicMapper.fromLogToLogDTO(log))
                 .collect(Collectors.toList());
     }
 
