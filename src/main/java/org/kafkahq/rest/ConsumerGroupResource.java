@@ -5,9 +5,11 @@ import io.micronaut.http.annotation.Get;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.service.ConsumerGroupService;
 import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -26,5 +28,14 @@ public class ConsumerGroupResource {
         log.debug("Fetch all Consumer Groups");
         return consumerGroupService.getConsumerGroup(clusterId, view, Optional.ofNullable(search), pageNumber);
     }
+
+
+    @Get("/group/members")
+    public ArrayList<ConsumerGroupMemberDTO> fetchAllConsumerGroupMembers(String clusterId , String groupId ,@Nullable String search) throws ExecutionException, InterruptedException {
+        log.debug("Fetch all Consumer Groups");
+        return consumerGroupService.getConsumerGroupMembers(clusterId, groupId, Optional.ofNullable(search));
+    }
+
+
 
 }

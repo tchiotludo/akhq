@@ -3,6 +3,7 @@ package org.kafkahq.service;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.kafkahq.models.Consumer;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
@@ -10,6 +11,7 @@ import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupDTO;
 import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
 import org.kafkahq.service.mapper.ConsumerGroupMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -59,6 +61,19 @@ public class ConsumerGroupService {
 
         return new ConsumerGroupListDTO(consumerGroupList, list.total());
     }
+
+    public ArrayList<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId,String consumerGroupId, Optional<String>  search)
+            throws ExecutionException, InterruptedException {
+
+
+        ArrayList<ConsumerGroupMemberDTO> consumerGroupMembers =new ArrayList<>();
+        ArrayList<Consumer> members =this.consumerGroupRepository.findByName(clusterId,consumerGroupId).getMembers();
+
+        members.stream().map(member -> consumerGroupMembers.add(consumerGroupMapper.fromConsumerGroupMemberToConsumerGroupMemberDTO(member))).collect(Collectors.toList());
+
+        return consumerGroupMembers;
+    }
+
 
 
 }
