@@ -117,7 +117,7 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(topicLag) {
-    return topicLag.map(lagTopic => {
+   return topicLag.map(lagTopic => { 
       return (
         <Link
           to={{

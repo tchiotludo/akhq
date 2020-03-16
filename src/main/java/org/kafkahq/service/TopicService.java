@@ -1,10 +1,7 @@
 package org.kafkahq.service;
-
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
-import org.apache.kafka.clients.admin.TopicListing;
 import org.kafkahq.models.Config;
-import org.kafkahq.models.LogDir;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
@@ -15,12 +12,10 @@ import org.kafkahq.service.dto.topic.*;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;

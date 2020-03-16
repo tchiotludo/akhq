@@ -14,7 +14,7 @@ public class ConsumerGroupMemberDTO {
     private String clientId;
     private String id;
     private String host;
-    private  List<AssignmentDTO> assigments;
+    private  List<AssignmentDTO> assignments;
 
 
     @Data

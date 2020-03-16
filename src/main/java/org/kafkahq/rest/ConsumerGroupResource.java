@@ -4,7 +4,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.service.ConsumerGroupService;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -42,9 +42,9 @@ public class ConsumerGroupResource {
 
 
     @Get("/group/members")
-    public ArrayList<ConsumerGroupMemberDTO> fetchAllConsumerGroupMembers(String clusterId , String groupId ,@Nullable String search) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroupMemberDTO> fetchAllConsumerGroupMembers(String clusterId , String groupId ) throws ExecutionException, InterruptedException {
         log.debug("Fetch all Consumer Groups");
-        return consumerGroupService.getConsumerGroupMembers(clusterId, groupId, Optional.ofNullable(search));
+        return consumerGroupService.getConsumerGroupMembers(clusterId, groupId);
     }
 
 

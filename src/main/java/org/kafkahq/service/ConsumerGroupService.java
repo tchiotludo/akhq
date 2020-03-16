@@ -1,5 +1,4 @@
 package org.kafkahq.service;
-
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.kafkahq.models.Consumer;
@@ -9,7 +8,7 @@ import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
@@ -83,7 +82,7 @@ public class ConsumerGroupService {
 
     }
 
-    public List<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId,String consumerGroupId, Optional<String>  search)
+    public List<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId,String consumerGroupId)
             throws ExecutionException, InterruptedException {
 
 

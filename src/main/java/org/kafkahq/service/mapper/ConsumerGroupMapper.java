@@ -1,7 +1,7 @@
 package org.kafkahq.service.mapper;
 import org.kafkahq.models.Consumer;
 import org.kafkahq.models.ConsumerGroup;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,6 @@ public class ConsumerGroupMapper {
             topicLags.add(topicLag);
         }
         return new ConsumerGroupDTO(consumerGroup.getId(),  consumerGroup.getState().toString(), consumerGroup.getCoordinator().getId(),consumerGroup.getMembers().size(), (topicLags.size() > 0) ? topicLags : emptyList);
-
     }
 
     public ConsumerGroupMemberDTO fromConsumerGroupMemberToConsumerGroupMemberDTO(Consumer member ){
@@ -29,7 +28,6 @@ public class ConsumerGroupMapper {
  ConsumerGroupMemberDTO.AssignmentDTO assignment= new  ConsumerGroupMemberDTO.AssignmentDTO(member.getAssignments().get(i).getTopic(),member.getAssignments().get(i).getPartition());
        assignments.add(assignment);
         }
-
        return new ConsumerGroupMemberDTO(member.getClientId(),member.getId(),member.getHost(),assignments);
     }
 
@@ -37,9 +35,6 @@ public class ConsumerGroupMapper {
     public  ConsumerGroupOffsetDTO fromConsumerGroupToConsumerGroupOffsetDTO(TopicPartition.ConsumerGroupOffset offset) {
 
             ConsumerGroupOffsetDTO consumerGroupOffsetDTO=new ConsumerGroupOffsetDTO(offset.getTopic(),offset.getPartition(),offset.getMember().orElse(null),offset.getOffset().orElse(null), offset.getOffsetLag().orElse(null));
-
-
-
         return  consumerGroupOffsetDTO;
     }
 

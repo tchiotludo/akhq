@@ -23,7 +23,7 @@ class ConsumerGroupTopics extends Component {
       loading: true
     });
     try {
-      topics = await get(endpoints.uriConsumerGroup(selectedCluster, selectedConsumerGroup));
+      topics = await get(endpoints.uriConsumerGroupTopics(selectedCluster, selectedConsumerGroup));
 
       this.handleData(topics.data);
     } catch (err) {
