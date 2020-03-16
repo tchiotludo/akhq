@@ -46,6 +46,7 @@ class NodesList extends Component {
       };
     });
     this.setState({ data: tableNodes });
+    return tableNodes;
   }
 
   render() {
