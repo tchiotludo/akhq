@@ -12,11 +12,10 @@ class ConsumerGroupMembers extends Component {
   };
 
   componentDidMount() {
-    this.getConsumerGroupTopics();
+    this.getConsumerGroupMembers();
   }
 
-  async getConsumerGroupTopics() {
-    let topics = [];
+  async getConsumerGroupMembers() {
     const { selectedCluster, selectedConsumerGroup } = this.state;
     const { history } = this.props;
     history.push({
