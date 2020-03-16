@@ -1,4 +1,4 @@
-package org.kafkahq.service.dto.ConsumerGroupd;
+package org.kafkahq.service.dto.ConsumerGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +15,6 @@ public class ConsumerGroupMemberDTO {
     private String id;
     private String host;
     private  List<AssignmentDTO> assigments;
-
 
 
     @Data

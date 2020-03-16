@@ -1,14 +1,13 @@
 package org.kafkahq.service.mapper;
-
 import org.kafkahq.models.Consumer;
 import org.kafkahq.models.ConsumerGroup;
-import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupDTO;
 import org.kafkahq.service.dto.ConsumerGroupd.ConsumerGroupMemberDTO;
-
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.kafkahq.models.TopicPartition;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
 
 
 @Singleton
@@ -33,4 +32,18 @@ public class ConsumerGroupMapper {
 
        return new ConsumerGroupMemberDTO(member.getClientId(),member.getId(),member.getHost(),assignments);
     }
+
+
+    public  ConsumerGroupOffsetDTO fromConsumerGroupToConsumerGroupOffsetDTO(TopicPartition.ConsumerGroupOffset offset) {
+
+            ConsumerGroupOffsetDTO consumerGroupOffsetDTO=new ConsumerGroupOffsetDTO(offset.getTopic(),offset.getPartition(),offset.getMember().orElse(null),offset.getOffset().orElse(null), offset.getOffsetLag().orElse(null));
+
+
+
+        return  consumerGroupOffsetDTO;
+    }
+
+
+
+
 }
