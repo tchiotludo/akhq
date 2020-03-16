@@ -49,9 +49,6 @@ public class Record {
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
     }
 
-
-
-
     public String getKeyAsString() {
         return convertToString(key, keySchemaId);
     }
