@@ -9,9 +9,12 @@ import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
+import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
+import org.kafkahq.service.dto.topic.TopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 import org.kafkahq.service.mapper.ConsumerGroupMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
@@ -52,16 +55,21 @@ public class ConsumerGroupService {
         this.recordRepository = recordRepository;
     }
 
-    public ConsumerGroupListDTO getConsumerGroup(String clusterId, String view, Optional<String> search, Optional<Integer> pageNumber)
+    public ConsumerGroupListDTO getConsumerGroup(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
             throws ExecutionException, InterruptedException {
-        Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1));
+        Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1
+        ));
 
         PagedList<ConsumerGroup> list = this.consumerGroupRepository.list(clusterId, pagination, search);
+
+
         ArrayList<ConsumerGroupDTO> consumerGroupList = new ArrayList<>();
         list.stream().map(consumerGroup -> consumerGroupList.add(consumerGroupMapper.fromConsumerGroupToConsumerGroupDTO(consumerGroup))).collect(Collectors.toList());
 
-        return new ConsumerGroupListDTO(consumerGroupList, list.total());
+        return new ConsumerGroupListDTO(consumerGroupList, list.pageCount());
     }
+
+
 
 
     public List<ConsumerGroupOffsetDTO> getConsumerGroupOffsets(String clusterId, String groupId) throws ExecutionException, InterruptedException {
@@ -69,10 +77,11 @@ public class ConsumerGroupService {
         ConsumerGroup group = this.consumerGroupRepository.findByName(clusterId, groupId);
         List<TopicPartition.ConsumerGroupOffset> offsets= group.getOffsets();
         List<ConsumerGroupOffsetDTO> offsetsDTO= new ArrayList<>();
-        for(int i=0; i<offsets.size();i++){
-           ConsumerGroupOffsetDTO offsetDTO = consumerGroupMapper.fromConsumerGroupToConsumerGroupOffsetDTO(offsets.get(i));
-            offsetsDTO.add(offsetDTO);
-        }
+
+           for (int i = 0; i < offsets.size(); i++) {
+               ConsumerGroupOffsetDTO offsetDTO = consumerGroupMapper.fromConsumerGroupToConsumerGroupOffsetDTO(offsets.get(i));
+               offsetsDTO.add(offsetDTO);
+           }
 
         return offsetsDTO;
 

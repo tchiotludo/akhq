@@ -27,9 +27,9 @@ public class ConsumerGroupResource {
     }
 
     @Get("/group")
-    public ConsumerGroupListDTO fetchAllConsumerGroup(String clusterId, String view, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
+    public ConsumerGroupListDTO fetchAllConsumerGroup(String clusterId,  @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch all Consumer Groups");
-        return consumerGroupService.getConsumerGroup(clusterId, view, Optional.ofNullable(search), pageNumber);
+        return consumerGroupService.getConsumerGroup(clusterId,  Optional.ofNullable(search), pageNumber);
     }
 
     @Get("/group/offsets")

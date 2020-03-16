@@ -86,6 +86,8 @@ public class ConsumerGroup {
         );
     }
 
+
+
     public List<String> getActiveTopics() {
         return this.getMembers()
             .stream()
