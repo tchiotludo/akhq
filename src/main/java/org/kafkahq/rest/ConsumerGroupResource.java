@@ -32,7 +32,7 @@ public class ConsumerGroupResource {
         return consumerGroupService.getConsumerGroup(clusterId,  Optional.ofNullable(search), pageNumber);
     }
 
-    @Get("/group/offsets")
+    @Get("/group/topics")
     public List<ConsumerGroupOffsetDTO> fetchConsumerGroupOffsets(String clusterId, String groupId ) throws ExecutionException, InterruptedException {
         log.debug("Fetch data from topic: {}", groupId);
         return consumerGroupService.getConsumerGroupOffsets(clusterId,groupId);
