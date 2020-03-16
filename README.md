@@ -1,17 +1,18 @@
-# AkHQ (previously known as KafkaHQ)
+# AKHQ (previously known as KafkaHQ)
 
 ![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/akhq.svg)
 ![License](https://img.shields.io/github/license/tchiotludo/akhq)
 ![Docker Pull](https://img.shields.io/docker/pulls/tchiotludo/akhq.svg)
 ![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/akhq/total)
 ![Github Start](https://img.shields.io/github/stars/tchiotludo/akhq.svg)
-[![Build Status](https://travis-ci.org/tchiotludo/akhq.svg?branch=master)](https://travis-ci.org/tchiotludo/akhq)
+![Main](https://github.com/tchiotludo/akhq/workflows/Main/badge.svg)
 
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
-
-![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
-
+<p align="center">
+  <img width="460" src="assets/img/logo.svg"  alt="AKHQ for Kafka logo" /><br /><br />
+  <img width="720" src="docs/assets/images/video.gif"  alt="AKHQ for Kafka preview" />
+</p>
 
 ## Contents
 
@@ -24,13 +25,13 @@
 - [Configuration](#configuration)
     - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
-    - [AkHQ](#akhq-configuration)
+    - [AKHQ](#akhq-configuration)
     - [Security](#security)
     - [Server](#server)
     - [Micronaut](#micronaut-configuration)
 - [Monitoring Endpoint](#monitoring-endpoint)
 - [Development Environment](#development-environment)
-- [Who's using AkHQ](#whos-using-akhq)
+- [Who's using AKHQ](#whos-using-akhq)
 
 
 ## Features
@@ -88,20 +89,20 @@
   - BasicHttp with roles per user
   - User groups configuration  
   - Filter topics with regexp for current groups
-  - Ldap configuration to match AkHQ groups/roles
+  - Ldap configuration to match AKHQ groups/roles
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/akhq/master/docker-compose.yml) file
-* run `docker-compose pull` to be sure to have the last version of AkHQ
+* run `docker-compose pull` to be sure to have the last version of AKHQ
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
 It will start a Kafka node, a Zookeeper node, a Schema Registry, a Connect, fill with some sample data, start a consumer
-group and a kafka stream & start AkHQ.
+group and a kafka stream & start AKHQ.
 
 ## Installation
 
-First you need a [configuration files](#configuration) in order to configure AkHQ connections to Kafka Brokers.
+First you need a [configuration files](#configuration) in order to configure AKHQ connections to Kafka Brokers.
 
 ### Docker
 
@@ -230,7 +231,7 @@ akhq:
           basic-auth-password: {{password}}
 ```
 
-### AkHQ configuration 
+### AKHQ configuration 
 
 #### Pagination
 * `akhq.pagination.page-size` number of topics per page (default : 25)
@@ -289,7 +290,7 @@ Define groups with specific roles for your users
 
 3 defaults group are available :
 - `admin` with all right
-- `reader` with only read acces on all AkHQ
+- `reader` with only read acces on all AKHQ
 - `no-roles` without any roles, that force user to login 
 
 ##### Basic Auth
@@ -305,10 +306,10 @@ Define groups with specific roles for your users
 
 
 ##### LDAP
-Configure how the ldap groups will be matched in AkHQ groups 
+Configure how the ldap groups will be matched in AKHQ groups 
 * `akhq.security.ldap.group`: Ldap groups list
   * `ldap-group-name`: Ldap group name (same name as in ldap)
-    * `groups`: AkHQ group list to be used for current ldap group
+    * `groups`: AKHQ group list to be used for current ldap group
 
 Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
 
@@ -344,7 +345,7 @@ curl -i -X POST -H "Content-Type: application/json" \
 ```
 
 
-Configure AkHQ groups and Ldap groups and users
+Configure AKHQ groups and Ldap groups and users
 ```yaml
 akhq:
   security:
@@ -392,11 +393,11 @@ akhq:
   consumer. All properties from [Kafka documentation](https://kafka.apache.org/documentation/) is available.
 
 ### Micronaut configuration 
-> Since AkHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
+> Since AKHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ### Docker
-AkHQ docker image support 3 environment variables to handle configuraiton :
+AKHQ docker image support 3 environment variables to handle configuraiton :
 * `AKHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
   /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
@@ -406,7 +407,7 @@ AkHQ docker image support 3 environment variables to handle configuraiton :
 
 Take care when you mount configuration files to not remove akhq files located on /app.
 You need to explicitely mount the `/app/application.yml` and not mount the `/app` directory.
-This will remove the AkHQ binnaries and give you this error: `
+This will remove the AKHQ binnaries and give you this error: `
 /usr/local/bin/docker-entrypoint.sh: 9: exec: ./akhq: not found`
 
 ```yaml
@@ -430,9 +431,9 @@ following micronaut configuration below.
 * `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
-## Debugging AkHQ performance issues 
+## Debugging AKHQ performance issues 
 
-You can debug all query duration from AkHQ with this commands
+You can debug all query duration from AKHQ with this commands
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
@@ -467,7 +468,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 
 
 
-## Who's using AkHQ 
+## Who's using AKHQ 
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
 * [Bell](https://www.bell.ca)
@@ -486,10 +487,10 @@ Dev server is a java server & webpack-dev-server with live reload.
 
 Many thanks to:
 
-* Logo & favicon used is from [Apache Kafka](http://kafka.apache.org/).
-* [JetBrains](https://www.jetbrains.com/?from=AkHQ) for their free OpenSource license.
+* [JetBrains](https://www.jetbrains.com/?from=AKHQ) for their free OpenSource license.
+* Apache, Apache Kafka, Kafka, and associated open source project names are trademarks of the Apache Software Foundation. AKHQ is not affiliated with, endorsed by, or otherwise associated with the Apache Software.
 
-[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=AkHQ)
+[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=AKHQ)
 
 
 ## License
