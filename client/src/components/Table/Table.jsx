@@ -58,9 +58,17 @@ class Table extends Component {
       <tr key={`tableRow${index}`}>
         {columns.map((column, colIndex) => {
           if (typeof column.cell === 'function') {
-            return <td id={`row_${column.id}_${colIndex}`}>{column.cell(row, column)}</td>;
+            return (
+              <td id={`row_${column.id}_${colIndex}`}>
+                <div className={'align-cell'}>{column.cell(row, column)}</div>
+              </td>
+            );
           }
-          return <td id={`row_${column.id}_${colIndex}`}>{row[column.accessor]}</td>;
+          return (
+            <td id={`row_${column.id}_${colIndex}`}>
+              <div className={'align-cell'}>{row[column.accessor]}</div>
+            </td>
+          );
         })}
         {actions && actions.length > 0 && this.renderActions(row)}
       </tr>

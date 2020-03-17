@@ -1,5 +1,3 @@
-import { node } from 'prop-types';
-
 export const apiUrl = 'http://localhost:8080/api';
 export const baseUrl = 'http://localhost:8080';
 
@@ -22,22 +20,20 @@ export const uriTopics = (id, view, search, pageNumber) => {
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
 export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
-export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, after) => {
-  let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
-  if (sort !== undefined) {
-    uri += `&sort=${sort}`;
-  }
-  if (partition !== undefined) uri += `&partition=${partition}`;
-  if (timestamp !== undefined) uri += `&timestamp=${timestamp}`;
-  if (search !== undefined) uri += `&search=${search}`;
-  if (after !== undefined) uri += `&after=${after}`;
-
-  return uri;
+export const uriTopicData = (clusterId, topicId) => {
+  return `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
 };
 
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
+export const uriTopicsLogs = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${topicId ? '&topicId=' + topicId : ''}`
   );
 };
@@ -68,6 +64,13 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
   return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
+export const uriConsumerGroupTopics = (id, groupId) => {
+  return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
+};
+export const uriConsumerGroupMembers = (id, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -75,7 +78,10 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
+  uriTopicsLogs,
+  uriConsumerGroups,
+  uriConsumerGroupTopics,
+  uriConsumerGroupMembers,
   uriDeleteTopics,
-  uriTopicsProduce,
-  uriConsumerGroups
+  uriTopicsProduce
 };

@@ -12,7 +12,7 @@ import org.kafkahq.service.dto.topic.CreateTopicDTO;
 import org.kafkahq.service.dto.topic.DeleteTopicDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.ProduceTopicDTO;
-import org.kafkahq.service.dto.topic.TopicDTO.*;
+import org.kafkahq.service.dto.topic.LogDTO;
 import org.kafkahq.service.dto.topic.TopicDataDTO;
 import org.kafkahq.service.dto.topic.TopicListDTO;
 

@@ -123,7 +123,7 @@ class TopicData extends Component {
         console.log(data);
         this.handleMessages(data.records);
       } else {
-        this.setState({ messages: [] });
+        this.setState({ messages: [], pageNumber: 1 });
       }
       if (partitionData) {
         this.setState({
@@ -252,6 +252,7 @@ class TopicData extends Component {
       currentSearch,
       search,
       offsets,
+      offsetsSearch,
       messages,
       showHeadersModal,
       showValueModal,
@@ -300,8 +301,14 @@ class TopicData extends Component {
                   this.setState({ pageNumber: input.value });
                 }}
                 onSubmit={() => {
-                  this.setState({ pageNumber: pageNumber + 1, offsetsSearch: nextPage }, () =>
-                    this.getMessages()
+                  this.setState(
+                    {
+                      pageNumber: offsetsSearch === nextPage ? pageNumber : pageNumber + 1,
+                      offsetsSearch: nextPage
+                    },
+                    () => {
+                      this.getMessages();
+                    }
                   );
                 }}
                 editPageNumber={false}
@@ -444,7 +451,15 @@ class TopicData extends Component {
                 colName: 'Key',
                 type: 'text',
                 cell: (obj, col) => {
-                  return <code className="key">{obj[col.accessor]}</code>;
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">
+                        <span>
+                          <code className="key">{obj[col.accessor]}</code>
+                        </span>
+                      </div>
+                    </div>
+                  );
                 }
               },
               {
@@ -454,15 +469,19 @@ class TopicData extends Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div className="value">
-                      {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
-                      {obj[col.accessor] && obj[col.accessor].length > 150 && '(...)'}{' '}
-                      <button
-                        className="btn btn-secondary headers pull-right"
-                        onClick={() => this.showValueModal(obj[col.accessor])}
-                      >
-                        Details
-                      </button>
+                    <div className="value cell-div">
+                      <span className="align-cell value-span">
+                        {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
+                        {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
+                      </span>
+                      <div className="value-button">
+                        <button
+                          className="btn btn-secondary headers pull-right"
+                          onClick={() => this.showValueModal(obj[col.accessor])}
+                        >
+                          Details
+                        </button>
+                      </div>
                     </div>
                   );
                 }
@@ -471,7 +490,14 @@ class TopicData extends Component {
                 id: 'date',
                 accessor: 'date',
                 colName: 'Date',
-                type: 'text'
+                type: 'text',
+                cell: (obj, col) => {
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">{obj[col.accessor]}</div>
+                    </div>
+                  );
+                }
               },
               {
                 id: 'partition',
@@ -479,7 +505,11 @@ class TopicData extends Component {
                 colName: 'Partition',
                 type: 'text',
                 cell: (obj, col) => {
-                  return <div className="text-right">{obj[col.accessor]}</div>;
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">{obj[col.accessor]}</div>
+                    </div>
+                  );
                 }
               },
               {
@@ -489,20 +519,24 @@ class TopicData extends Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div className="text-right">
-                      {Object.keys(obj[col.accessor]).length}
-                      {Object.keys(obj[col.accessor]).length > 0 && (
-                        <React.Fragment>
-                          {' '}
-                          ⤑{' '}
-                          <button
-                            className="btn btn-secondary headers"
-                            onClick={() => this.showHeadersModal(obj[col.accessor])}
-                          >
-                            Details
-                          </button>
-                        </React.Fragment>
-                      )}
+                    <div className="value cell-div">
+                      <div style={{ float: 'right' }}>
+                        <span className="align-cell headers-span">
+                          {Object.keys(obj[col.accessor]).length}
+                        </span>
+                        {Object.keys(obj[col.accessor]).length > 0 && (
+                          <div className="headers-button">
+                            {' '}
+                            ⤑{' '}
+                            <button
+                              className="btn btn-secondary headers"
+                              onClick={() => this.showHeadersModal(obj[col.accessor])}
+                            >
+                              Details
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 }
@@ -513,7 +547,11 @@ class TopicData extends Component {
                 colName: 'Schema',
                 type: 'text',
                 cell: (obj, col) => {
-                  return <div className="text-right">{obj[col.accessor]}</div>;
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">{obj[col.accessor]}</div>
+                    </div>
+                  );
                 }
               }
             ]}
@@ -540,7 +578,10 @@ class TopicData extends Component {
                   id: 'headerKey',
                   accessor: 'key',
                   colName: 'Key',
-                  type: 'text'
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return <div className="align-cell">{obj[col.accessor]}</div>;
+                  }
                 },
                 {
                   id: 'headerValue',
@@ -550,16 +591,18 @@ class TopicData extends Component {
                   cell: (obj, col) => {
                     return (
                       <div className="value">
-                        <div className="value-text">
+                        <div className="align-cell value-text headers-detail-value">
                           {obj[col.accessor] ? obj[col.accessor].substring(0, 50) : 'N/A'}
                           {obj[col.accessor] && obj[col.accessor].length > 50 && '(...)'}{' '}
                         </div>
-                        <button
-                          className="btn btn-secondary headers pull-right"
-                          onClick={() => this.showValueModal(obj[col.accessor])}
-                        >
-                          Details
-                        </button>
+                        <div className="headers-detail-button">
+                          <button
+                            className="btn btn-secondary headers pull-right"
+                            onClick={() => this.showValueModal(obj[col.accessor])}
+                          >
+                            Details
+                          </button>
+                        </div>
                       </div>
                     );
                   }

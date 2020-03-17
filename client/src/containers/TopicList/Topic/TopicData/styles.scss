@@ -7,8 +7,59 @@
     outline: none;
   }
 
+.cell-div {
+    display: block;
+    height: 2rem;
+}
+
+.align-cell {
+    display: inline-block;
+    padding: 0.3rem;
+    height: 100%;
+    width: 100%;
+}
+
 .value {
     overflow: hidden;
+}
+
+.value-span {
+    height: 100%;
+    width: 60%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.value-button {
+    float: right;
+    display: block;
+    width: 40%;
+}
+
+.headers-span {
+    height: 100%;
+    width: 15%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-button {
+    float: right;
+    display: block;
+    width: 85%;
+}
+
+.headers-detail-value {
+    height: 100%;
+    width: 80%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-detail-button {
+    float: right;
+    display: block;
+    width: 20%;
 }
 
 .headers-modal {
