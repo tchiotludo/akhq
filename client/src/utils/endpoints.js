@@ -33,6 +33,12 @@ export const uriTopicsLogs = (clusterId, topicId) => {
     `${topicId ? '&topicId=' + topicId : ''}`
   );
 };
+export const uriTopicsGroups = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/topic/groups${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
 
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
@@ -75,6 +81,7 @@ export default {
   uriNodesConfigs,
   uriTopics,
   uriTopicsLogs,
+  uriTopicsGroups,
   uriConsumerGroups,
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,

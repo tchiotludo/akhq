@@ -17,7 +17,10 @@ class Sidebar extends Component {
     showClusters: false,
     showConnects: false
   };
-
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let selectedTab = nextProps.selectedTab || prevState.selectedTab;
+    return { selectedTab };
+  }
   componentDidMount() {
     let tabs = [
       constants.CLUSTER,

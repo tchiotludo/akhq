@@ -1,17 +1,23 @@
 package org.kafkahq.service;
+
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.kafkahq.models.Config;
+import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
 import org.kafkahq.service.dto.topic.*;
+import org.kafkahq.service.mapper.ConsumerGroupMapper;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
@@ -21,12 +27,13 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+
 @Singleton
 public class TopicService {
     private KafkaModule kafkaModule;
     private AbstractKafkaWrapper kafkaWrapper;
     private Environment environment;
-
+ private ConsumerGroupMapper consumerGroupMapper;
     private TopicRepository topicRepository;
     private RecordRepository recordRepository;
 
@@ -38,9 +45,10 @@ public class TopicService {
     private Integer pageSize;
 
     @Inject
-    public TopicService(KafkaModule kafkaModule, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
+    public TopicService(KafkaModule kafkaModule,ConsumerGroupMapper consumerGroupMapper, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
                         TopicRepository topicRepository, Environment environment, RecordRepository recordRepository) {
         this.kafkaModule = kafkaModule;
+        this.consumerGroupMapper=consumerGroupMapper;
         this.topicMapper = topicMapper;
         this.kafkaWrapper = kafkaWrapper;
         this.topicRepository = topicRepository;
@@ -132,4 +140,18 @@ public class TopicService {
                 Optional.ofNullable(produceTopicDTO.getTimestamp()).filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
         );
     }
+
+    public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId,String topicName)
+            throws ExecutionException, InterruptedException {
+
+
+        List<ConsumerGroup> list =  this.topicRepository.findByName(clusterId,topicName).getConsumerGroups();
+
+
+        List<ConsumerGroupDTO> consumerGroupList = new ArrayList<>();
+        list.stream().map(consumerGroup -> consumerGroupList.add(consumerGroupMapper.fromConsumerGroupToConsumerGroupDTO(consumerGroup))).collect(Collectors.toList());
+
+        return  consumerGroupList;
+    }
+
 }
