@@ -1,14 +1,9 @@
 package org.kafkahq.service;
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
-import io.micronaut.http.sse.Event;
-import io.reactivex.Flowable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.admin.TopicListing;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.kafkahq.controllers.TopicController;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
@@ -16,6 +11,7 @@ import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
+import org.kafkahq.service.dto.node.LogDTO;
 import org.kafkahq.service.dto.topic.CreateTopicDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.ProduceTopicDTO;
@@ -33,7 +29,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -77,11 +72,12 @@ public class TopicService {
                 Optional.ofNullable(search)
         );
 
-        List<TopicDTO> topicDTOList = pagedList
+        List<TopicDTO> topicDTOList = new ArrayList<>();
+        pagedList
                 .stream()
-                .map(topic -> topicMapper.fromTopicToTopicDTO(topic)).collect(Collectors.toList());
+                .map(topic -> topicDTOList.add(topicMapper.fromTopicToTopicDTO(topic))).collect(Collectors.toList());
 
-        return new TopicListDTO(topicDTOList, pagedList.pageCount());
+        return new TopicListDTO(topicDTOList,pagedList.pageCount());
     }
 
     public TopicDataDTO getTopicData(String clusterId, String topicId,
@@ -137,6 +133,13 @@ public class TopicService {
         Topic topic = this.topicRepository.findByName(clusterId, topicId);
 
         return topic.getPartitions().stream().map(partition -> topicMapper.fromPartitionToPartitionDTO(partition))
+                .collect(Collectors.toList());
+    }
+
+    public List<LogDTO> getTopicLogs(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(clusterId, topicId);
+
+        return topic.getLogDir().stream().map(log -> topicMapper.fromLogToLogDTO(log))
                 .collect(Collectors.toList());
     }
 

@@ -31,6 +31,13 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
   );
 };
 
+export const uriTopicsLogs = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return (
     `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -57,6 +64,13 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
   return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
+export const uriConsumerGroupTopics = (id, groupId) => {
+  return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
+};
+export const uriConsumerGroupMembers = (id, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -64,7 +78,10 @@ export default {
   uriNodes,
   uriNodesConfigs,
   uriTopics,
+  uriTopicsLogs,
+  uriConsumerGroups,
+  uriConsumerGroupTopics,
+  uriConsumerGroupMembers,
   uriDeleteTopics,
-  uriTopicsProduce,
-  uriConsumerGroups
+  uriTopicsProduce
 };

@@ -15,11 +15,13 @@ class Topic extends Component {
   state = {
     clusterId: '',
     topicId: '',
+    topic: {},
     selectedTab: 'data'
   };
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
+
     this.setState({ clusterId, topicId });
   }
 
@@ -48,7 +50,7 @@ class Topic extends Component {
       case 'acls':
         return <TopicAcls history={history} />;
       case 'logs':
-        return <TopicLogs history={history} />;
+        return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
         return <TopicData history={history} />;
     }
