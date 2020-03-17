@@ -11,4 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 public class TopicListDTO {
     private List<TopicDTO> topics;
+    private int totalPageNumber;
 }
