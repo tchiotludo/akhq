@@ -43,7 +43,7 @@ class TopicProduce extends Form {
       .label('hValue0')
       .required(),
     timestamp: Joi.object().label('Timestamp'),
-    value: Joi.object().label('Value')
+    value: Joi.string().label('Value')
   };
 
   async componentDidMount() {
