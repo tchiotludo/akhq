@@ -15,14 +15,7 @@ class Topic extends Component {
   state = {
     clusterId: '',
     topicId: '',
-    topic: {
-      _id: Date.now(),
-      name: 'test',
-      partition: 1,
-      replication: 1,
-      cleanup: 'delete',
-      retention: 50
-    },
+    topic: {},
     selectedTab: 'data'
   };
 
