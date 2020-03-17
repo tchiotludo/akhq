@@ -48,18 +48,15 @@ class Routes extends Component {
             <Route exact path="/:clusterId/topic" component={TopicList} />
             <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
             <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
+            <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
 
             <Route exact path="/:clusterId/node" component={NodesList} />
             <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
 
-            <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
-            <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
-            <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
             <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
             <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
 
             <Route exact path="/:clusterId/tail" component={Tail} />
-            <Route exact path="/:clusterId/group" component={Group} />
             <Route exact path="/:clusterId/acls" component={Acls} />
             <Route exact path="/:clusterId/schema" component={Schema} />
             <Route exact path="/:clusterId/connect" component={Connect} />

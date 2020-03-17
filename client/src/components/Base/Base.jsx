@@ -32,13 +32,15 @@ class Base extends Component {
       showErrorToast,
       errorToastTitle,
       errorToastMessage,
-      loading
+      loading,
+      tab
     } = nextProps.location;
+
 
     return {
       topicId: topicId,
       clusterId: clusterId,
-      selectedTab: selectedTab,
+      selectedTab: tab,
       action: action,
       showSuccessToast: showSuccessToast,
       successToastMessage: successToastMessage,
@@ -88,7 +90,8 @@ class Base extends Component {
       successToastMessage,
       errorToastTitle,
       errorToastMessage,
-      loading
+      loading,
+      selectedTab
     } = this.state;
     this.checkToasts();
     return (
@@ -96,7 +99,7 @@ class Base extends Component {
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        <Sidebar />
+        <Sidebar selectedTab={selectedTab} />
         {children}
       </>
     );
