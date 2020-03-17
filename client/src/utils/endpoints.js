@@ -60,6 +60,13 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
   return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
+export const uriConsumerGroupTopics = (id, groupId) => {
+  return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
+};
+export const uriConsumerGroupMembers = (id, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -68,7 +75,9 @@ export default {
   uriNodesConfigs,
   uriTopics,
   uriTopicsLogs,
+  uriConsumerGroups,
+  uriConsumerGroupTopics,
+  uriConsumerGroupMembers,
   uriDeleteTopics,
-  uriTopicsProduce,
-  uriConsumerGroups
+  uriTopicsProduce
 };
