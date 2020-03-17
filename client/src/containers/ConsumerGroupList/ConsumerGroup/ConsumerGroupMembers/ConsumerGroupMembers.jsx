@@ -22,7 +22,7 @@ class ConsumerGroupMembers extends Component {
       loading: true
     });
     try {
-      let members = await get(
+      const members = await get(
         endpoints.uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup)
       );
 
@@ -38,7 +38,7 @@ class ConsumerGroupMembers extends Component {
 
   handleData(members) {
    
-    let data = members.map(member => {
+    const data = members.map(member => {
       return {
         clientId: member.clientId,
         id: member.id,
