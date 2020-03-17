@@ -39,6 +39,15 @@
     display: none;
 }
 
+.page-input {
+    width: 100% !important;
+}
+
+a.page-link.page-number {
+    display: inline-block;
+    margin-left: 2.5rem;
+}
+
 .dropdown-toggle, .dropdown-toggle:hover, .dropdown-toggle:focus {
     background-color: transparent !important;
     border-color: transparent !important;

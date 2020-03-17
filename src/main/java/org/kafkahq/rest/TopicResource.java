@@ -13,6 +13,7 @@ import org.kafkahq.service.dto.topic.DeleteTopicDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.ProduceTopicDTO;
 import org.kafkahq.service.dto.topic.RecordDTO;
+import org.kafkahq.service.dto.topic.TopicDataDTO;
 import org.kafkahq.service.dto.topic.TopicListDTO;
 
 import javax.annotation.Nullable;
@@ -50,12 +51,13 @@ public class TopicResource {
     }
 
     @Get("/topic/data")
-    public List<RecordDTO> fetchTopicData(String clusterId, String topicId,
-                                          Optional<RecordRepository.Options.Sort> sort,
-                                          Optional<Integer> partition,
-                                          Optional<String> timestamp,
-                                          Optional<String> search,
-                                          Optional<String> after) throws ExecutionException, InterruptedException {
+    public TopicDataDTO fetchTopicData(String clusterId, String topicId,
+                                       Optional<RecordRepository.Options.Sort> sort,
+                                       Optional<Integer> partition,
+                                       Optional<String> timestamp,
+                                       Optional<String> search,
+                                       Optional<String> after,
+                                       Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch data from topic: {}", topicId);
         return topicService.getTopicData(clusterId, topicId, after, partition, sort, timestamp, search);
     }

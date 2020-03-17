@@ -34,7 +34,11 @@ class TopicData extends Component {
     offsets: {},
     offsetsSearch: '',
     openDateModal: false,
-    messages: []
+    messages: [],
+    pageNumber: 1,
+    totalPageNumber: 1,
+    nextPage: '',
+    recordCount: 0
   };
 
   componentDidMount() {
@@ -82,6 +86,8 @@ class TopicData extends Component {
       offsetsSearch
     } = this.state;
 
+    console.log(offsetsSearch);
+
     let data,
       partitionData = {};
     history.push({
@@ -113,13 +119,19 @@ class TopicData extends Component {
       data = data.data;
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
-      if (data) {
-        this.handleMessages(data);
+      if (data.records) {
+        console.log(data);
+        this.handleMessages(data.records);
       } else {
         this.setState({ messages: [] });
       }
       if (partitionData) {
-        this.setState({ partitionCount: partitionData.length });
+        this.setState({
+          partitionCount: partitionData.length,
+          totalPageNumber: data.pageCount,
+          nextPage: data.after,
+          recordCount: data.recordCount
+        });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -244,7 +256,11 @@ class TopicData extends Component {
       showHeadersModal,
       showValueModal,
       valueModalBody,
-      headersModalBody
+      headersModalBody,
+      pageNumber,
+      totalPageNumber,
+      nextPage,
+      recordCount
     } = this.state;
     const { loading } = this.props.history.location;
     const firstColumns = [
@@ -273,7 +289,24 @@ class TopicData extends Component {
           </button>
 
           <nav className={'pagination-data'}>
-            <Pagination />
+            <div style={{ paddingTop: '1rem' }}>
+              <label>Total records: ≈{recordCount}</label>
+            </div>
+            <div>
+              <Pagination
+                pageNumber={pageNumber}
+                totalPageNumber={totalPageNumber}
+                onChange={({ currentTarget: input }) => {
+                  this.setState({ pageNumber: input.value });
+                }}
+                onSubmit={() => {
+                  this.setState({ pageNumber: pageNumber + 1, offsetsSearch: nextPage }, () =>
+                    this.getMessages()
+                  );
+                }}
+                editPageNumber={false}
+              />
+            </div>
           </nav>
 
           <div className="collapse navbar-collapse" id="topic-data">
@@ -379,10 +412,10 @@ class TopicData extends Component {
                               onClick={() => {
                                 let offsetsSearch = '';
                                 for (let i = 0; i < Object.keys(offsets).length; i++) {
-                                  if (offsetsSearch !== '') {
-                                    offsetsSearch += '_';
-                                  }
                                   if (Object.values(offsets)[i] !== '') {
+                                    if (offsetsSearch !== '') {
+                                      offsetsSearch += '_';
+                                    }
                                     offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
                                   }
                                 }
@@ -456,7 +489,7 @@ class TopicData extends Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div class="text-right">
+                    <div className="text-right">
                       {Object.keys(obj[col.accessor]).length}
                       {Object.keys(obj[col.accessor]).length > 0 && (
                         <React.Fragment>
