@@ -8,7 +8,8 @@ class SearchBar extends Form {
   static propTypes = {
     showPagination: PropTypes.bool,
     showTopicListView: PropTypes.bool,
-    showSearch: PropTypes.bool
+    showSearch: PropTypes.bool,
+    showConsumerGroup: PropTypes.bool
   };
   state = {
     formData: {},
@@ -36,7 +37,7 @@ class SearchBar extends Form {
   schema = {};
 
   componentDidMount() {
-    const { showSearch, showPagination, showTopicListView } = this.props;
+    const { showSearch, showPagination, showTopicListView, showConsumerGroup } = this.props;
     const { formData, errors } = this.state;
     if (showSearch) {
       const { search } = this.props;
@@ -48,6 +49,10 @@ class SearchBar extends Form {
       const { topicListView } = this.props;
       formData['topicListView'] = topicListView;
       this.schema['topicListView'] = Joi.string().required();
+    } else if (showConsumerGroup) {
+      const { groupListView } = this.props;
+      formData['groupListView'] = groupListView;
+      this.schema['groupListView'] = Joi.string().required();
     }
 
     this.setState({ formData, errors });
