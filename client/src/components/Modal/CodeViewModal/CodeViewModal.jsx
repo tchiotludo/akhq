@@ -9,14 +9,11 @@ function CodeViewModal({ show, body, handleClose }) {
 
   return (
     <div className={showHideClassname}>
-      <div
-        className="swal2-container swal2-center swal2-fade swal2-shown"
-        style={{ overflowY: 'auto' }}
-      >
+      <div className="swal2-container swal2-center swal2-fade" style={{ overflowY: 'auto' }}>
         <div
           aria-labelledby="swal2-title"
           aria-describedby="swal2-content"
-          className="swal2-popup swal2-modal swal2-show"
+          className="swal2-popup swal2-modal swal2-show code-view-modal"
           tabIndex="-1"
           role="dialog"
           aria-live="assertive"
@@ -33,8 +30,8 @@ function CodeViewModal({ show, body, handleClose }) {
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div className="swal2-content">
-            <div id="swal2-content" style={{ display: 'block' }}>
+          <div className="swal2-content code-view-content">
+            <div id="swal2-content" className="code-view-content" style={{ display: 'block' }}>
               <AceEditor
                 mode="json"
                 name="aceEditor"
