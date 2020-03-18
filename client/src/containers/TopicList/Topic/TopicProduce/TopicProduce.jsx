@@ -43,7 +43,7 @@ class TopicProduce extends Form {
       .label('hValue0')
       .required(),
     timestamp: Joi.object().label('Timestamp'),
-    value: Joi.object().label('Value')
+    value: Joi.string().label('Value')
   };
 
   async componentDidMount() {
@@ -129,7 +129,7 @@ class TopicProduce extends Form {
         headers.push(this.renderHeader(Number(keyNumbers)));
       }
     });
-    return <>{headers.map(head => head)}</>;
+    return <div data-testId="headers">{headers.map(head => head)}</div>;
   }
 
   onHeaderChange = ({ currentTarget: input }, position) => {
@@ -179,6 +179,7 @@ class TopicProduce extends Form {
             <button
               type="button"
               class="btn btn-secondary"
+              data-testId={`button_${position}`}
               onClick={() => {
                 position === 0 ? this.handlePlus() : this.handleRemove(position);
               }}
@@ -262,4 +263,4 @@ class TopicProduce extends Form {
   }
 }
 
-export default withRouter(TopicProduce);
+export default TopicProduce;

@@ -44,7 +44,16 @@ class Topic extends Component {
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
-        return <TopicGroups history={history} />;
+        return (
+          <TopicGroups
+            changeTab={(tab) => {
+              this.selectTab(tab);
+            }}
+            clusterId={clusterId}
+            topicId={topicId}
+            history={history}
+          />
+        );
       case 'configs':
         return <TopicConfigs history={history} />;
       case 'acls':
