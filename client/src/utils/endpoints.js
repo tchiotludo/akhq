@@ -49,6 +49,10 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
   );
 };
 
+export const uriTopicsGroups = (clusterId, topicId) => {
+  return `${apiUrl}/topic/groups?clusterId=${clusterId}&topicId=${topicId}`;
+};
+
 export const uriTopicsLogs = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
