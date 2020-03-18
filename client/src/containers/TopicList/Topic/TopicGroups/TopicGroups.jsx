@@ -65,7 +65,7 @@ class TopicGroups extends Component {
         topicLag: consumerGroup.topicLag
       });
     });
-    this.setState({ consumerGroups: tableConsumerGroups }, () => console.log(tableConsumerGroups));
+    this.setState({ consumerGroups: tableConsumerGroups });
   }
 
   handleState(state) {
