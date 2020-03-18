@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
 import api from '../../../../utils/api';
-import endpoints from '../../../../utils/endpoints';
+import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import history from '../../../../utils/history';
 import { Link } from 'react-router-dom';
@@ -20,7 +20,6 @@ class TopicGroups extends Component {
   };
 
   componentDidMount() {
-   
     this.getConsumerGroup();
   }
 
@@ -32,7 +31,7 @@ class TopicGroups extends Component {
       loading: true
     });
     try {
-      data = await api.get(endpoints.uriTopicsGroups(selectedCluster, topicId));
+      data = await api.get(uriTopicsGroups(selectedCluster, topicId));
 
       data = data.data;
       if (data) {
@@ -53,7 +52,6 @@ class TopicGroups extends Component {
   }
 
   handleGroups(consumerGroups) {
-    
     let tableConsumerGroups = [];
     consumerGroups.map(consumerGroup => {
       consumerGroup.size = 0;
@@ -67,7 +65,7 @@ class TopicGroups extends Component {
         topicLag: consumerGroup.topicLag
       });
     });
-    this.setState({ consumerGroups: tableConsumerGroups });
+    this.setState({ consumerGroups: tableConsumerGroups }, () => console.log(tableConsumerGroups));
   }
 
   handleState(state) {
@@ -83,22 +81,26 @@ class TopicGroups extends Component {
   }
 
   handleTopics(topicLag) {
-      
     return topicLag.map(lagTopic => {
       return (
-          <div onClick={()=>{this.props.changeTab('data')}}>
-        <Link
-          to={{
-            pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+        <div
+          onClick={() => {
+            this.props.changeTab('data');
           }}
-          key="lagTopic.topicId"
-          className="btn btn-dark btn-sm mb-1"
         >
-          {lagTopic.topicId}
-          <a href="#" className="badge badge-secondary">
-            Lag:{lagTopic.lag}
-          </a>
-        </Link></div>
+          <Link
+            to={{
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+            }}
+            key="lagTopic.topicId"
+            className="btn btn-dark btn-sm mb-1"
+          >
+            {lagTopic.topicId}
+            <a href="#" className="badge badge-secondary">
+              Lag:{lagTopic.lag}
+            </a>
+          </Link>
+        </div>
       );
     });
   }
@@ -108,8 +110,7 @@ class TopicGroups extends Component {
     const { history } = this.props;
 
     return (
-      <div >
-        
+      <div>
         <Table
           columns={[
             {
@@ -151,8 +152,7 @@ class TopicGroups extends Component {
           ]}
           data={this.state.consumerGroups}
           onDetails={id => {
-            history.push({pathname:`/${selectedCluster}/group/${id}`,tab:constants.GROUP});
-            
+            history.push({ pathname: `/${selectedCluster}/group/${id}`, tab: constants.GROUP });
           }}
           actions={[constants.TABLE_DETAILS]}
         />
