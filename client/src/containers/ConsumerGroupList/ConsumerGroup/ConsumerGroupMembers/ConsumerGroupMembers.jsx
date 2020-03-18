@@ -61,7 +61,6 @@ class ConsumerGroupMembers extends Component {
   }
 
   handleAssignments(assignments) {
-    console.log('assignments:', assignments);
     let topics = [];
 
     assignments.map(assignment => {
@@ -76,8 +75,7 @@ class ConsumerGroupMembers extends Component {
           partitions.push(assignment.partition);
         }
       });
-      console.log('TopicName', topic);
-      console.log('Partitions', partitions);
+
       return (
         <Link
           to={{
