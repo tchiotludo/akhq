@@ -9,6 +9,7 @@ import api, { remove } from '../../utils/api';
 import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
+import './styles.scss';
 
 // Adaptation of topicList.ftl
 
