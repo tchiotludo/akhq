@@ -4,6 +4,7 @@ import { get } from '../../../../utils/api';
 import endpoints from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
+import './styles.scss'
 class ConsumerGroupMembers extends Component {
   state = {
     data: [],
@@ -37,7 +38,6 @@ class ConsumerGroupMembers extends Component {
   }
 
   handleData(members) {
-   
     const data = members.map(member => {
       return {
         clientId: member.clientId,
@@ -49,20 +49,45 @@ class ConsumerGroupMembers extends Component {
     this.setState({ data });
   }
 
+  handlePartitions(partitions) {
+    return partitions.map(partition => {
+      return (
+          <a href="#" className="badge badge-secondary partition" >
+            {partition}
+          </a>
+      
+      );
+    });
+  }
+
   handleAssignments(assignments) {
-    return assignments.map(assignment => {
+    console.log('assignments:', assignments);
+    let topics = [];
+
+    assignments.map(assignment => {
+      if (!topics.find(topic => topic === assignment.topic)) {
+        topics.push(assignment.topic);
+      }
+    });
+    return topics.map(topic => {
+      let partitions = [];
+      assignments.map(assignment => {
+        if (assignment.topic === topic) {
+          partitions.push(assignment.partition);
+        }
+      });
+      console.log('TopicName', topic);
+      console.log('Partitions', partitions);
       return (
         <Link
           to={{
-            pathname: `/${this.state.selectedCluster}/topic/${assignment.topic}`
+            pathname: `/${this.state.selectedCluster}/topic/${topic}`
           }}
-          key="assignment"
+          key="topic"
           className="btn btn-primary btn-sm mb-1"
         >
-          {assignment.topic}
-          <a href="#" className="badge badge-secondary">
-            {assignment.partition}
-          </a>
+          {topic}
+          {this.handlePartitions(partitions)}
         </Link>
       );
     });
