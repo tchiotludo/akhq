@@ -46,12 +46,13 @@ public class TopicResource {
     }
 
     @Get("/topic/data")
-    public List<RecordDTO> fetchTopicData(String clusterId, String topicId,
-                                          Optional<String> after,
-                                          Optional<Integer> partition,
-                                          Optional<RecordRepository.Options.Sort> sort,
-                                          Optional<String> timestamp,
-                                          Optional<String> search) throws ExecutionException, InterruptedException {
+    public TopicDataDTO fetchTopicData(String clusterId, String topicId,
+                                       Optional<RecordRepository.Options.Sort> sort,
+                                       Optional<Integer> partition,
+                                       Optional<String> timestamp,
+                                       Optional<String> search,
+                                       Optional<String> after,
+                                       Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch data from topic: {}", topicId);
         return topicService.getTopicData(clusterId, topicId, after, partition, sort, timestamp, search);
     }

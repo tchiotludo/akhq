@@ -1,0 +1,126 @@
+.headers {
+    border-radius: 1rem;
+    font-size: 0.8rem;
+}
+
+.btn.headers:active:focus {
+    outline: none;
+  }
+
+.cell-div {
+    display: block;
+    height: 2rem;
+}
+
+.align-cell {
+    display: inline-block;
+    padding: 0.3rem;
+    height: 100%;
+    width: 100%;
+}
+
+.value {
+    overflow: hidden;
+}
+
+.value-span {
+    height: 100%;
+    width: 60%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.value-button {
+    float: right;
+    display: block;
+    width: 40%;
+}
+
+.headers-span {
+    height: 100%;
+    width: 15%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-button {
+    float: right;
+    display: block;
+    width: 85%;
+}
+
+.headers-detail-value {
+    height: 100%;
+    width: 80%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-detail-button {
+    float: right;
+    display: block;
+    width: 20%;
+}
+
+.headers-modal {
+    background-color: #171819;
+    padding-bottom: 1rem;
+    position: relative;
+    top: 30%;
+    bottom: 30%;
+    left: 35%;
+    right: 35%;
+    width: 30%;
+    .close {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+        margin-top: 0.5rem;
+        margin-right: 50%;
+    }
+}
+
+.headers-modal table {
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 80%;
+}
+
+.pagination-data .before-button {
+    display: none;
+}
+
+.page-input {
+    width: 100% !important;
+}
+
+a.page-link.page-number {
+    display: inline-block;
+    margin-left: 2.5rem;
+}
+
+.dropdown-toggle, .dropdown-toggle:hover, .dropdown-toggle:focus {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.datetime-picker-div {
+    position: relative;
+    left: 3%;
+    right: 0;
+}
+
+Datepicker div.form-group.row {
+    width: 100%;
+    margin-bottom: 0;
+    margin-right: 0;
+}
+
+#datetime-picker {
+    height: 2.3rem;
+}
+
+.offsets-ok {
+    border-top-left-radius: 0.25rem !important;
+    border-bottom-left-radius: 0.25rem !important;
+}

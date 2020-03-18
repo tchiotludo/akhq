@@ -24,7 +24,7 @@ class TopicList extends Component {
     totalPageNumber: 1,
     searchData: {
       search: '',
-      topicListView: 'ALL'
+      topicListView: 'HIDE_INTERNAL'
     },
     createTopicFormData: {
       name: '',

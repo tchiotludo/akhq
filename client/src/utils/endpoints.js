@@ -20,6 +20,28 @@ export const uriTopics = (id, view, search, pageNumber) => {
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
 export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
+export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
+  let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
+
+  if (sort !== undefined) {
+    uri += `&sort=${sort}`;
+  }
+  if (partition !== undefined) {
+    uri += `&partition=${partition}`;
+  }
+  if (timestamp !== undefined) {
+    uri += `&timestamp=${timestamp}`;
+  }
+  if (search !== undefined) {
+    uri += `&search=${search}`;
+  }
+  if (offsets !== undefined) {
+    uri += `&offsets=${offsets}`;
+  }
+
+  return uri;
+};
+
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/partitions${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -30,12 +52,6 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
 export const uriTopicsLogs = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
-    `${topicId ? '&topicId=' + topicId : ''}`
-  );
-};
-export const uriTopicsGroups = (clusterId, topicId) => {
-  return (
-    `${apiUrl}/topic/groups${clusterId ? '?clusterId=' + clusterId : ''}` +
     `${topicId ? '&topicId=' + topicId : ''}`
   );
 };
@@ -81,7 +97,6 @@ export default {
   uriNodesConfigs,
   uriTopics,
   uriTopicsLogs,
-  uriTopicsGroups,
   uriConsumerGroups,
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,

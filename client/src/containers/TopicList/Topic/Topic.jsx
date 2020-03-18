@@ -36,11 +36,11 @@ class Topic extends Component {
 
   renderSelectedTab() {
     const { selectedTab, topicId, clusterId } = this.state;
-    const { history } = this.props;
+    const { history, match } = this.props;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData topic={topicId} history={history} />;
+        return <TopicData history={history} match={match} />;
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
@@ -66,10 +66,10 @@ class Topic extends Component {
   }
 
   render() {
-    const { topic, topicId, clusterId } = this.state;
+    const { topicId, clusterId } = this.state;
     return (
       <div id="content">
-        <Header title={`Topic ${topic.name}`} />
+        <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

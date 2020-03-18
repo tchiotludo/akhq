@@ -2,6 +2,7 @@ package org.kafkahq.service;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
+import org.apache.commons.lang3.tuple.Pair;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.ConsumerGroup;
 import org.kafkahq.models.Record;
@@ -11,8 +12,14 @@ import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
-import org.kafkahq.service.dto.topic.*;
+import org.kafkahq.service.dto.topic.CreateTopicDTO;
+import org.kafkahq.service.dto.topic.LogDTO;
+import org.kafkahq.service.dto.topic.PartitionDTO;
+import org.kafkahq.service.dto.topic.ProduceTopicDTO;
+import org.kafkahq.service.dto.topic.RecordDTO;
+import org.kafkahq.service.dto.topic.TopicDTO;
+import org.kafkahq.service.dto.topic.TopicDataDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 import org.kafkahq.service.mapper.ConsumerGroupMapper;
 import org.kafkahq.service.mapper.TopicMapper;
 import org.kafkahq.utils.PagedList;
@@ -26,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
 
 @Singleton
 public class TopicService {
@@ -76,12 +82,12 @@ public class TopicService {
         return new TopicListDTO(topicDTOList,pagedList.pageCount());
     }
 
-    public List<RecordDTO> getTopicData(String clusterId, String topicId,
-                                        Optional<String> after,
-                                        Optional<Integer> partition,
-                                        Optional<RecordRepository.Options.Sort> sort,
-                                        Optional<String> timestamp,
-                                        Optional<String> search) throws ExecutionException, InterruptedException {
+    public TopicDataDTO getTopicData(String clusterId, String topicId,
+                                     Optional<String> after,
+                                     Optional<Integer> partition,
+                                     Optional<RecordRepository.Options.Sort> sort,
+                                     Optional<String> timestamp,
+                                     Optional<String> search) throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, clusterId, topicId);
         after.ifPresent(options::setAfter);
         partition.ifPresent(options::setPartition);
@@ -90,13 +96,39 @@ public class TopicService {
         after.ifPresent(options::setAfter);
         search.ifPresent(options::setSearch);
 
-        List<Record> data = new ArrayList<>();
+        List<Record> data;
 
         if (options.getSearch() == null) {
             data = this.recordRepository.consume(clusterId, options);
+        } else {
+            data = recordRepository
+                    .search(clusterId, options)
+                    .map(event -> {
+                                if (event.getData().getRecords().size() > 0) {
+                                    return event.getData().getRecords();
+                                }
+                                return new ArrayList<Record>();
+                            }
+                    ).blockingFirst();
         }
 
-        return data.stream().map(record -> topicMapper.fromRecordToRecordDTO(record)).collect(Collectors.toList());
+        Pair<Long, Integer> dataAndPageCount = getTopicDataAndPageCount(clusterId, topicId, options);
+        String afterString = options.pagination(data);
+
+        Optional<List<RecordDTO>> messageList = Optional.of(data.stream().map(record -> topicMapper.fromRecordToRecordDTO(record)).collect(Collectors.toList()));
+
+        return new TopicDataDTO(
+                messageList.orElse(new ArrayList<>()),
+                afterString,
+                dataAndPageCount.getLeft()
+//                dataAndPageCount.getRight() //To be added when a way to correctly paginate topic data is found
+        );
+    }
+
+    private Pair<Long, Integer> getTopicDataAndPageCount(String clusterId, String topicId, RecordRepository.Options options) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(clusterId, topicId);
+        long recordCount = (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()));
+        return Pair.of(recordCount, recordCount > 0 ? (int) Math.ceil((double) (recordCount / pageSize)) : 1);
     }
 
     public List<PartitionDTO> getTopicPartitions(String clusterId, String topicId) throws ExecutionException, InterruptedException {
