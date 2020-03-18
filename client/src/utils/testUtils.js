@@ -10,7 +10,6 @@ export function renderWithRouter(
   ui,
   { route = '/', history = createMemoryHistory({ initialEntries: [route] }) } = {}
 ) {
-  console.log('history', history);
   return {
     ...render(
       //<MuiPickersUtilsProvider utils={MomentUtils}>
