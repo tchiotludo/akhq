@@ -36,7 +36,6 @@ class TopicData extends Component {
     openDateModal: false,
     messages: [],
     pageNumber: 1,
-    totalPageNumber: 1,
     nextPage: '',
     recordCount: 0
   };
@@ -128,7 +127,6 @@ class TopicData extends Component {
       if (partitionData) {
         this.setState({
           partitionCount: partitionData.length,
-          totalPageNumber: data.pageCount,
           nextPage: data.after,
           recordCount: data.recordCount
         });
@@ -259,7 +257,6 @@ class TopicData extends Component {
       valueModalBody,
       headersModalBody,
       pageNumber,
-      totalPageNumber,
       nextPage,
       recordCount
     } = this.state;
@@ -289,14 +286,13 @@ class TopicData extends Component {
             <span className="navbar-toggler-icon" />
           </button>
 
-          <nav className={'pagination-data'}>
+          <nav className="pagination-data">
             <div style={{ paddingTop: '1rem' }}>
               <label>Total records: ≈{recordCount}</label>
             </div>
             <div>
               <Pagination
                 pageNumber={pageNumber}
-                totalPageNumber={totalPageNumber}
                 onChange={({ currentTarget: input }) => {
                   this.setState({ pageNumber: input.value });
                 }}
