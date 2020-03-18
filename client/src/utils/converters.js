@@ -13,12 +13,6 @@ export function formatDateTime(value, format) {
     milli
   );
 
-  console.log(
-    moment(date.toString())
-      .format(format)
-      .toString()
-  );
-
   return moment(date.toString())
     .format(format)
     .toString();
