@@ -1,4 +1,22 @@
 import _ from 'lodash';
+import moment from 'moment';
+
+export function formatDateTime(value, format) {
+  let milli = value.milli || 0;
+  const date = new Date(
+    value.year,
+    +value.monthValue - 1,
+    value.dayOfMonth,
+    value.hour,
+    value.minute,
+    value.second,
+    milli
+  );
+
+  return moment(date.toString())
+    .format(format)
+    .toString();
+}
 
 export function handleConvert(value, unit, exclude) {
   exclude = exclude || '';
@@ -37,7 +55,7 @@ export function showTime(milliseconds) {
   return `${valueToSHow} ${decimalPartToShow}`;
 }
 
-export function showBytes(bytes,dPlaces=2) {
+export function showBytes(bytes, dPlaces = 2) {
   if (!bytes) return '0B';
   const value = handleConvert(bytes, 'B');
   return `${value.val.toFixed(dPlaces)}${value.unit}`;

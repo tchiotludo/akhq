@@ -1,0 +1,23 @@
+.code-view-modal {
+    width: 40rem;
+    height: 35rem;
+    background-color: #2F3129;
+}
+
+.ace_editor, .code-view-content, #aceEditor {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.close {
+    position: relative;
+    left: 48%;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    margin-top: -0.5rem;
+}
+
+#aceEditor {
+    border-color: rgb(1, 5, 44);
+    border-width: 0.2rem;
+}

@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import './styles.scss';
 
-const Pagination = props => {
-  const { pageNumber, totalPageNumber, onChange, onSubmit } = props;
+const Pagination = ({ pageNumber, totalPageNumber, onChange, onSubmit, editPageNumber }) => {
+  if (editPageNumber === undefined) {
+    editPageNumber = true;
+  }
 
   return (
     <ul className="pagination mb-0">
@@ -21,6 +23,8 @@ const Pagination = props => {
       <li className=" page-item info">
         <a className=" page-link page-number">
           <input
+            className="pagination-input"
+            disabled={!editPageNumber}
             className="page-input"
             type="number"
             value={pageNumber}
@@ -29,7 +33,7 @@ const Pagination = props => {
               if (e.key === 'Enter') onSubmit(pageNumber);
             }}
           />
-          of {totalPageNumber}
+          {totalPageNumber !== undefined && `of ${totalPageNumber}`}
         </a>
       </li>
       <li className={'page-item after'}>

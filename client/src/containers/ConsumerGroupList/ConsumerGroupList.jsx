@@ -59,23 +59,20 @@ class ConsumerGroupList extends Component {
     const { history } = this.props;
     const { selectedCluster, pageNumber } = this.state;
     const { search, consumerGroupListView } = this.state.searchData;
-    let data = {};
+
     history.push({
       loading: true
     });
-    try {
-      data = await api.get(
-        endpoints.uriConsumerGroups(selectedCluster, consumerGroupListView, search, pageNumber)
-      );
 
-      data = data.data;
-      if (data) {
-        if (data.consumerGroups) {
-          this.handleConsumerGroup(data.consumerGroups);
-        } else {
-          this.setState({ consumerGroup: [] });
-        }
-        this.setState({ selectedCluster, totalPageNumber: data.totalPageNumber });
+    try {
+      let response = await api.get(
+        endpoints.uriConsumerGroups(selectedCluster, 'ALL', search, pageNumber)
+      );
+      response = response.data;
+      if (response) {
+        let consumerGroups = response.consumerGroups || [];
+        this.handleConsumerGroup(consumerGroups);
+        this.setState({ selectedCluster, totalPageNumber: response.totalPageNumber });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -91,15 +88,14 @@ class ConsumerGroupList extends Component {
     consumerGroup.map(consumerGroup => {
       consumerGroup.size = 0;
       consumerGroup.logDirSize = 0;
-        tableConsumerGroup.push({
-          id: consumerGroup.id,
-          state: consumerGroup.state,
-          size: consumerGroup.size,
-          coordinator: consumerGroup.coordinator,
-          members: consumerGroup.members,
-          topicLag: consumerGroup.topicLag
-        });
-      
+      tableConsumerGroup.push({
+        id: consumerGroup.id,
+        state: consumerGroup.state,
+        size: consumerGroup.size,
+        coordinator: consumerGroup.coordinator,
+        members: consumerGroup.members,
+        topicLag: consumerGroup.topicLag
+      });
     });
     this.setState({ consumerGroups: tableConsumerGroup });
   }
@@ -117,7 +113,7 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(topicLag) {
-   return topicLag.map(lagTopic => { 
+    return topicLag.map(lagTopic => {
       return (
         <Link
           to={{
@@ -155,6 +151,8 @@ class ConsumerGroupList extends Component {
             showPagination={true}
             pagination={pageNumber}
             showTopicListView={false}
+            showConsumerGroup
+            groupListView={'ALL'}
             doSubmit={this.handleSearch}
           />
 
@@ -207,7 +205,6 @@ class ConsumerGroupList extends Component {
           ]}
           data={this.state.consumerGroups}
           onDetails={id => {
-            console.log(id);
             history.push(`/${selectedCluster}/group/${id}`);
           }}
           actions={[constants.TABLE_DETAILS]}

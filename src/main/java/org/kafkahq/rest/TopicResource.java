@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.topic.*;
 
 import javax.annotation.Nullable;
@@ -45,12 +46,13 @@ public class TopicResource {
     }
 
     @Get("/topic/data")
-    public List<RecordDTO> fetchTopicData(String clusterId, String topicId,
-                                          Optional<String> after,
-                                          Optional<Integer> partition,
-                                          Optional<RecordRepository.Options.Sort> sort,
-                                          Optional<String> timestamp,
-                                          Optional<String> search) throws ExecutionException, InterruptedException {
+    public TopicDataDTO fetchTopicData(String clusterId, String topicId,
+                                       Optional<RecordRepository.Options.Sort> sort,
+                                       Optional<Integer> partition,
+                                       Optional<String> timestamp,
+                                       Optional<String> search,
+                                       Optional<String> after,
+                                       Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
         log.debug("Fetch data from topic: {}", topicId);
         return topicService.getTopicData(clusterId, topicId, after, partition, sort, timestamp, search);
     }
@@ -72,6 +74,12 @@ public class TopicResource {
         log.debug("Delete topic: {}", deleteTopicDTO.getTopicId());
         topicService.deleteTopic(deleteTopicDTO.getClusterId(), deleteTopicDTO.getTopicId());
         return topicService.getTopics(deleteTopicDTO.getClusterId(), "ALL", "", Optional.empty());
+    }
+
+    @Get("/topic/groups")
+    public List<ConsumerGroupDTO> fetchTopicGroups(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        log.debug("Fetch topic groups ");
+        return topicService.getConsumerGroups(clusterId, topicId);
     }
 }
 

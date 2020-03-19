@@ -8,7 +8,6 @@
     "@material-ui/pickers": "^3.2.10",
     "@popperjs/core": "^2.0.0",
     "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
     "ace-builds": "^1.4.8",
     "axios": "^0.18.1",
@@ -24,7 +23,6 @@
     "react-ace": "^8.0.0",
     "react-bootstrap": "^1.0.0-beta.17",
     "react-datepicker": "^2.14.0",
-    "react-datetime-bootstrap": "^1.4.7",
     "react-dom": "^16.12.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.3.0",
@@ -56,13 +54,16 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/react": "^9.5.0",
     "babel-eslint": "^10.0.3",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "jest-dom": "^4.0.0",
     "joi-browser": "^13.4.0",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "react-test-render": "^1.1.2"
   }
 }
