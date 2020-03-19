@@ -40,7 +40,7 @@ public class TopicService {
     private AbstractKafkaWrapper kafkaWrapper;
     private Environment environment;
  private ConsumerGroupMapper consumerGroupMapper;
-    private TopicRepository topicRepository;
+    private TopicRepository  topicRepository;
     private RecordRepository recordRepository;
 
     private TopicMapper topicMapper;
