@@ -258,7 +258,6 @@ class TopicProduce extends Form {
             }
           })}
           {this.renderJSONInput('value', 'Value', value => {
-            console.log('value', value);
             this.setState({
               formData: {
                 ...formData,

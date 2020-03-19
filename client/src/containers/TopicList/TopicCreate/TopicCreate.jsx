@@ -59,7 +59,6 @@ class TopicCreate extends Form {
 
     post(uriTopicsCreate(), topic)
       .then(res => {
-        console.log('is is showing here?');
         this.props.history.push({
           pathname: `/${clusterId}/topic`,
           showSuccessToast: true,
