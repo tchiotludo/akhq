@@ -115,18 +115,27 @@ class ConsumerGroupList extends Component {
   handleTopics(topicLag) {
     return topicLag.map(lagTopic => {
       return (
-        <Link
-          to={{
-            pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
-          }}
-          key="lagTopic.topicId"
-          className="btn btn-dark btn-sm mb-1"
-        >
-          {lagTopic.topicId}
-          <a href="#" className="badge badge-secondary">
-            Lag:{lagTopic.lag}
-          </a>
-        </Link>
+      
+          <Link
+            to={{
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+            }}
+            onclick={() => {
+              history.push({
+                pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`,
+                tab: constants.TOPICS
+              });
+            }}
+
+            key="lagTopic.topicId"
+            className="btn btn-dark btn-sm mb-1"
+          >
+            {lagTopic.topicId}
+            <a href="#" className="badge badge-secondary">
+              Lag:{lagTopic.lag}
+            </a>
+          </Link>
+      
       );
     });
   }
