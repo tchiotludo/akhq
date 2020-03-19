@@ -1,3 +1,5 @@
+#imagePullSecrets:
+#  - name: my-repository-secret
 image:
   repository: tchiotludo/akhq
   tag: latest
