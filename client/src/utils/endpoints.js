@@ -22,6 +22,10 @@ export const uriTopics = (id, view, search, pageNumber) => {
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
 export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
+export const uriDeleteTopics = () => {
+  return `${apiUrl}/topic/delete`;
+};
+
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
 
@@ -54,7 +58,6 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
 export const uriTopicsGroups = (clusterId, topicId) => {
   return `${apiUrl}/topic/groups?clusterId=${clusterId}&topicId=${topicId}`;
 };
-
 export const uriTopicsLogs = (clusterId, topicId) => {
   return (
     `${apiUrl}/topic/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
@@ -69,6 +72,28 @@ export const uriNodesConfigs = (clusterId, nodeId) => {
   );
 };
 
+export const uriNodesUpdateConfigs = () => {
+  return `${apiUrl}/cluster/nodes/update-configs`;
+};
+
+export const uriNodesLogs = (clusterId, nodeId) => {
+  return (
+    `${apiUrl}/cluster/nodes/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${nodeId ? '&nodeId=' + nodeId : ''}`
+  );
+};
+
+export const uriConsumerGroups = (id, view, search, pageNumber) => {
+  return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
+};
+
+export const uriConsumerGroupTopics = (id, groupId) => {
+  return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
+};
+export const uriConsumerGroupMembers = (id, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -81,5 +106,10 @@ export default {
   uriTopicData,
   uriTopicsProduce,
   uriTopicsCreate,
-  uriTopics
+  uriTopics,
+  uriDeleteTopics,
+  uriNodesLogs,
+  uriConsumerGroups,
+  uriConsumerGroupTopics,
+  uriConsumerGroupMembers
 };
