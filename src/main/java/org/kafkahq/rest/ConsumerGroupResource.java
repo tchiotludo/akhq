@@ -13,6 +13,9 @@ import javax.inject.Inject;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
 import org.kafkahq.service.dto.ConsumerGroup.DeleteConsumerGroupDTO;
+import org.kafkahq.service.dto.topic.DeleteTopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
