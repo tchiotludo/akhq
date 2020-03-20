@@ -36,8 +36,6 @@ describe('TopicProduce', () => {
     );
     const headers = getByTestId('headers');
     const button = getByTestId('button_0');
-    const input = getByTestId('input_key');
-    input.insertAdjacentText('Test');
     button.click();
 
     expect(headers.children.length).toBe(2);
