@@ -169,7 +169,6 @@ class ConsumerGroupList extends Component {
     };
 
     history.push({ loading: true });
-    console.log('deleteData',deleteData)
     remove(uriDeleteGroups(), deleteData)
       .then(res => {
         this.props.history.push({
@@ -178,7 +177,6 @@ class ConsumerGroupList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, groupToDelete: {} });
-        console.log(res.data)
         this.handleConsumerGroup(res.data.group);
       })
       .catch(err => {
