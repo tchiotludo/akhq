@@ -91,7 +91,7 @@ public class TopicResource {
     }
     @Post("cluster/topic/update-configs")
     public List<org.kafkahq.service.dto.topic.ConfigDTO> updateNodeConfigs(@Body ConfigOperationDTO configOperation) throws Throwable {
-        log.debug("update node {} configs from cluster: {}", configOperation.getTopicId(), configOperation.getClusterId());
+        log.debug("Update node {} configs from cluster: {}", configOperation.getTopicId(), configOperation.getClusterId());
         return topicService.updateConfigs(configOperation);
     }
 }
