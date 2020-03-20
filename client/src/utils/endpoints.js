@@ -95,8 +95,20 @@ export const uriConsumerGroups = (id, view, search, pageNumber) => {
 export const uriConsumerGroupTopics = (id, groupId) => {
   return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
 };
+
 export const uriConsumerGroupMembers = (id, groupId) => {
   return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+};
+
+export const uriTopicsConfigs = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/cluster/topic/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
+export const uriTopicsUpdateConfigs = () => {
+  return `${apiUrl}/cluster/topic/update-configs`;
 };
 
 export default {
@@ -116,5 +128,6 @@ export default {
   uriNodesLogs,
   uriConsumerGroups,
   uriConsumerGroupTopics,
-  uriConsumerGroupMembers
+  uriConsumerGroupMembers,
+  uriTopicsConfigs
 };
