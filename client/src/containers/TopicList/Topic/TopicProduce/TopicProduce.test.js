@@ -5,8 +5,6 @@ import { createMemoryHistory } from 'history';
 import TopicProduce from './TopicProduce';
 import App from '../../../../App';
 import { render } from '@testing-library/react';
-import { renderWithRouter } from '../../../../utils/testUtils';
-import Router from 'react-dom';
 
 import { MemoryRouter } from 'react-router-dom';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -38,6 +36,8 @@ describe('TopicProduce', () => {
     );
     const headers = getByTestId('headers');
     const button = getByTestId('button_0');
+    const input = getByTestId('input_key');
+    input.insertAdjacentText('Test');
     button.click();
 
     expect(headers.children.length).toBe(2);

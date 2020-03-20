@@ -10,6 +10,7 @@ describe('NodesList', () => {
   it('should return processed nodes list', () => {
     const wrapper = shallow(<NodesList />);
     const instance = wrapper.instance();
+
     const data = [{ id: 1001, host: 'kafka', port: 9092 }];
     const expectedResult = {
       id: data[0].id || '',
