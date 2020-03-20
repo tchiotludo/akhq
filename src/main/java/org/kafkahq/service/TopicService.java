@@ -3,15 +3,16 @@ package org.kafkahq.service;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.apache.commons.lang3.tuple.Pair;
-import org.kafkahq.models.Config;
-import org.kafkahq.models.ConsumerGroup;
-import org.kafkahq.models.Record;
-import org.kafkahq.models.Topic;
+import org.kafkahq.models.*;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
+import org.kafkahq.repositories.ConfigRepository;
+import org.kafkahq.repositories.LogDirRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.topic.ConfigOperationDTO;
+import org.kafkahq.service.dto.topic.ConfigDTO;
 import org.kafkahq.service.dto.topic.CreateTopicDTO;
 import org.kafkahq.service.dto.topic.LogDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
@@ -30,6 +31,7 @@ import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -39,9 +41,11 @@ public class TopicService {
     private KafkaModule kafkaModule;
     private AbstractKafkaWrapper kafkaWrapper;
     private Environment environment;
- private ConsumerGroupMapper consumerGroupMapper;
+    private ConsumerGroupMapper consumerGroupMapper;
     private TopicRepository topicRepository;
     private RecordRepository recordRepository;
+    private LogDirRepository logDirRepository;
+    private ConfigRepository configRepository;
 
     private TopicMapper topicMapper;
 
@@ -52,7 +56,7 @@ public class TopicService {
 
     @Inject
     public TopicService(KafkaModule kafkaModule,ConsumerGroupMapper consumerGroupMapper, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
-                        TopicRepository topicRepository, Environment environment, RecordRepository recordRepository) {
+                        TopicRepository topicRepository, Environment environment, RecordRepository recordRepository, ConfigRepository configRepository) {
         this.kafkaModule = kafkaModule;
         this.consumerGroupMapper=consumerGroupMapper;
         this.topicMapper = topicMapper;
@@ -60,6 +64,7 @@ public class TopicService {
         this.topicRepository = topicRepository;
         this.environment = environment;
         this.recordRepository = recordRepository;
+        this.configRepository = configRepository;
     }
 
     public TopicListDTO getTopics(String clusterId, String view, String search, Optional<Integer> pageNumber)
@@ -184,6 +189,42 @@ public class TopicService {
         list.stream().map(consumerGroup -> consumerGroupList.add(consumerGroupMapper.fromConsumerGroupToConsumerGroupDTO(consumerGroup))).collect(Collectors.toList());
 
         return  consumerGroupList;
+    }
+
+    public List<LogDTO> getLogDTOList(String clusterId, Integer nodeId) throws ExecutionException, InterruptedException {
+        List<LogDir> logList = logDirRepository.findByBroker(clusterId, nodeId);
+
+        return logList.stream().map(logDir -> topicMapper.fromLogToLogDTO(logDir)).collect(Collectors.toList());
+    }
+
+    public List<ConfigDTO> getConfigDTOList(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+
+        List<Config> configList = this.configRepository.findByTopic(clusterId, topicId);
+
+        configList.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
+                (o1.isReadOnly() ? 1 : -1)
+        );
+
+        return configList.stream().map(config -> topicMapper.fromConfigToConfigDTO(config)).collect(Collectors.toList());
+    }
+
+    public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws Throwable {
+        Map<String, String> configs = topicMapper.convertConfigsMap(configOperation.getConfigs());
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(configOperation.getClusterId(), configOperation.getTopicId()));
+
+        if (updated.size() == 0) {
+            throw new IllegalArgumentException("No config to update");
+        }
+
+        this.configRepository.updateTopic(
+                configOperation.getClusterId(),
+                configOperation.getTopicId(),
+                updated
+        );
+
+        return updated.stream()
+                .map(config -> topicMapper.fromConfigToConfigDTO(config))
+                .collect(Collectors.toList());
     }
 
 }

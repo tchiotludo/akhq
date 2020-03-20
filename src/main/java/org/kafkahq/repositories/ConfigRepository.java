@@ -41,7 +41,6 @@ public class ConfigRepository extends AbstractRepository {
 
     private Map<String, List<org.kafkahq.models.Config>> find(String clusterId, ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
         Map<String, List<org.kafkahq.models.Config>> map = new HashMap<>();
-
         kafkaWrapper.describeConfigs(clusterId, type, names).forEach((key, value) -> {
             List<org.kafkahq.models.Config> collect = value.entries()
                 .stream()
@@ -51,7 +50,7 @@ public class ConfigRepository extends AbstractRepository {
 
             map.put(key.name(), collect);
         });
-
+        System.out.println("config " + map);
         return map;
     }
 

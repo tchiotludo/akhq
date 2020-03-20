@@ -10,7 +10,6 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfigOperationDTO {
-
     private String clusterId;
     private Integer nodeId;
     private Map<String, String> configs;
