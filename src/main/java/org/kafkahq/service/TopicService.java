@@ -39,8 +39,8 @@ public class TopicService {
     private KafkaModule kafkaModule;
     private AbstractKafkaWrapper kafkaWrapper;
     private Environment environment;
- private ConsumerGroupMapper consumerGroupMapper;
-    private TopicRepository  topicRepository;
+    private ConsumerGroupMapper consumerGroupMapper;
+    private TopicRepository topicRepository;
     private RecordRepository recordRepository;
 
     private TopicMapper topicMapper;
