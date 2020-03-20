@@ -19,6 +19,7 @@ class ConsumerGroupList extends Component {
     deleteMessage: '',
     pageNumber: 1,
     totalPageNumber: 1,
+    history: this.props,
     searchData: {
       search: ''
     }
@@ -113,8 +114,15 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(topicLag) {
+    const { history } = this.props;
     return topicLag.map(lagTopic => {
       return (
+        <div onClick={() => {
+            history.push({
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`,
+              tab: constants.TOPIC
+            });
+          }}>
         <Link
           to={{
             pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
@@ -123,10 +131,11 @@ class ConsumerGroupList extends Component {
           className="btn btn-dark btn-sm mb-1"
         >
           {lagTopic.topicId}
+          
           <a href="#" className="badge badge-secondary">
             Lag:{lagTopic.lag}
           </a>
-        </Link>
+        </Link></div>
       );
     });
   }
