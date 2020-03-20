@@ -1,6 +1,7 @@
 package org.kafkahq.rest;
 
 
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micrometer.core.lang.Nullable;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -11,6 +12,7 @@ import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
 import org.kafkahq.service.dto.SchemaRegistry.SchemaRegistryListDTO;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -26,8 +28,9 @@ public class SchemaRegistryResource {
     }
 
     @Get("/schema")
-    public SchemaRegistryListDTO fetchAllSchemaRegistry(String clusterId, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException {
+    public SchemaRegistryListDTO fetchAllSchemaRegistry(String clusterId, @Nullable String search, Optional<Integer> pageNumber) throws ExecutionException, InterruptedException, IOException, RestClientException {
         log.debug("Fetch all Schema Registry");
+
         return schemaRegistryService.getSchemaRegistry(clusterId,  Optional.ofNullable(search), pageNumber);
     }
 }

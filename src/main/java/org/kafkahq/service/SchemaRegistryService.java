@@ -44,24 +44,14 @@ import java.util.stream.Collectors;
             this.environment = environment;
             this.schemaRegistryRepository=schemaRegistryRepository;
         }
+
         public SchemaRegistryListDTO getSchemaRegistry(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
-                throws ExecutionException, InterruptedException {
+                throws ExecutionException, InterruptedException, IOException, RestClientException {
             Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1
             ));
-
-            PagedList<Schema> list = null;
-            try {
-                list = this.schemaRegistryRepository.list(clusterId, pagination, search);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (RestClientException e) {
-                e.printStackTrace();
-            }
-
-
+            PagedList<Schema> list =this.schemaRegistryRepository.list(clusterId, pagination, search);
             ArrayList<SchemaRegistryDTO> schemaRegistryList = new ArrayList<>();
             list.stream().map(schemaRegistry -> schemaRegistryList.add(schemaRegistryMapper.fromSchemaRegistryToSchemaRegistryDTO(schemaRegistry))).collect(Collectors.toList());
-
             return new SchemaRegistryListDTO(schemaRegistryList, list.pageCount());
         }
 

@@ -12,6 +12,5 @@ public class SchemaRegistryDTO {
     private int id;
     private String subject;
     private int version;
-    private org.apache.avro.Schema schema;
-    private Exception exception;
+    private String schema;
 }
