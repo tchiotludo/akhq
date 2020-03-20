@@ -50,7 +50,7 @@ public class ConfigRepository extends AbstractRepository {
 
             map.put(key.name(), collect);
         });
-        System.out.println("config " + map);
+ 
         return map;
     }
 
