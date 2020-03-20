@@ -26,6 +26,11 @@ export const uriDeleteTopics = () => {
   return `${apiUrl}/topic/delete`;
 };
 
+export const uriDeleteGroups = () => {
+  return `${apiUrl}/group/delete`;
+};
+
+
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
 

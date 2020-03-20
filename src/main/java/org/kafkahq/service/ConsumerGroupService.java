@@ -33,7 +33,6 @@ public class ConsumerGroupService {
     private RecordRepository recordRepository;
 
     private ConsumerGroupMapper consumerGroupMapper;
-
     @Value("${kafkahq.topic.default-view}")
     private String defaultView;
     @Value("${kafkahq.pagination.page-size}")
@@ -80,6 +79,9 @@ public class ConsumerGroupService {
 
         return offsetsDTO;
 
+    }
+    public void deleteConsumerGroup(String clusterId, String consumerGroupId) throws ExecutionException, InterruptedException {
+        kafkaWrapper.deleteConsumerGroups(clusterId,consumerGroupId);
     }
 
     public List<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId,String consumerGroupId)
