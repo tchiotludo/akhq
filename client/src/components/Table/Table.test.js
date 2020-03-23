@@ -7,6 +7,7 @@ import Table from './Table';
 Enzyme.configure({ adapter: new Adapter() });
 
 describe('Table', () => {
+  let text = '';
   const columns = [
     {
       id: 'test_1',
@@ -20,7 +21,20 @@ describe('Table', () => {
       colName: 'test_2',
       type: 'text',
       cell: obj => {
-        return <span>{obj.test_2}</span>;
+        return (
+          <input
+            value={text}
+            onChange={e => {
+              text = e.target.value;
+            }}
+            data-testId={'test-name'}
+            key={'test'}
+            name={'name'}
+            id={'name'}
+            className="form-control"
+            placeholder={'insert a name'}
+          />
+        );
       }
     },
     {
@@ -47,7 +61,6 @@ describe('Table', () => {
   it('renders successfully', () => {
     const wrapper = shallow(<Table columns={columns} data={data} />);
     const rows = wrapper.find('tbody tr');
-    console.log(rows.length);
     expect(rows).toHaveLength(2);
   });
 
@@ -55,7 +68,14 @@ describe('Table', () => {
     const wrapper = shallow(<Table columns={columns} data={[]} />);
     const rows = wrapper.find('tbody tr');
     const empty = rows.find('td div');
-    console.log();
     expect(empty.text()).toBe('No topic available');
+  });
+
+  it('changes custom cell value', () => {
+    const wrapper = shallow(<Table columns={columns} data={data} />);
+    const rows = wrapper.find('tbody tr');
+    let input = rows.first().find('td #name');
+    input.simulate('change', { target: { value: 'test' } });
+    expect(text).toEqual('test');
   });
 });
