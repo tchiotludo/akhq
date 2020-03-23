@@ -5,6 +5,7 @@ import io.micronaut.context.env.Environment;
 import org.apache.commons.lang3.tuple.Pair;
 import org.kafkahq.models.Config;
 import org.kafkahq.models.ConsumerGroup;
+import org.kafkahq.models.LogDir;
 import org.kafkahq.models.Record;
 import org.kafkahq.models.Topic;
 import org.kafkahq.modules.AbstractKafkaWrapper;
@@ -13,7 +14,7 @@ import org.kafkahq.repositories.ConfigRepository;
 import org.kafkahq.repositories.LogDirRepository;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.topic.ConfigOperationDTO;
 import org.kafkahq.service.dto.topic.ConfigDTO;
 import org.kafkahq.service.dto.topic.CreateTopicDTO;
@@ -181,7 +182,7 @@ public class TopicService {
         );
     }
 
-    public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId,String topicName)
+    public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId, String topicName)
             throws ExecutionException, InterruptedException {
 
 

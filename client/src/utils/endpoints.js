@@ -109,9 +109,6 @@ export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp
   return uri;
 };
 
-export const uriConsumerGroupMembers = (id, groupId) => {
-  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
-
 export const uriConsumerGroupUpdate = () => {
   return `${apiUrl}/group/update`;
 };
@@ -146,6 +143,6 @@ export default {
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,
   uriConsumerGroupGroupedTopicOffset,
-  uriConsumerGroupUpdate
+  uriConsumerGroupUpdate,
   uriTopicsConfigs
 };

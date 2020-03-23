@@ -7,27 +7,16 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.service.ConsumerGroupService;
-import org.kafkahq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
 import org.kafkahq.service.dto.ConsumerGroup.DeleteConsumerGroupDTO;
-import org.kafkahq.service.dto.topic.DeleteTopicDTO;
-import org.kafkahq.service.dto.topic.TopicListDTO;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
 import org.kafkahq.service.dto.consumerGroup.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
 import org.kafkahq.service.dto.consumerGroup.ConsumerGroupOffsetDTO;
 import org.kafkahq.service.dto.consumerGroup.ConsumerGroupUpdateDTO;
 import org.kafkahq.service.dto.consumerGroup.GroupedTopicOffsetDTO;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
