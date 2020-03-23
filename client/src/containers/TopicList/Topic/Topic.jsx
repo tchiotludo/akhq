@@ -46,7 +46,7 @@ class Topic extends Component {
       case 'groups':
         return (
           <TopicGroups
-            changeTab={(tab) => {
+            changeTab={tab => {
               this.selectTab(tab);
             }}
             clusterId={clusterId}
@@ -55,7 +55,7 @@ class Topic extends Component {
           />
         );
       case 'configs':
-        return <TopicConfigs history={history} />;
+        return <TopicConfigs history={history} topicId={topicId} clusterId={clusterId} />;
       case 'acls':
         return <TopicAcls history={history} />;
       case 'logs':
@@ -66,7 +66,7 @@ class Topic extends Component {
   }
 
   render() {
-    const { topicId, clusterId } = this.state;
+    const { topicId, clusterId, selectedTab } = this.state;
     return (
       <div id="content">
         <Header title={`Topic: ${topicId}`} />
@@ -140,26 +140,28 @@ class Topic extends Component {
             </div>
           </div>
         </div>
+        {selectedTab !== 'configs' && (
+          <aside>
+            <Link to="#" className="btn btn-secondary mr-2">
+              <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+            </Link>
 
-        <aside>
-          <Link to="#" className="btn btn-secondary mr-2">
-            <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-          </Link>
-          <Link
-            to="#"
-            className="btn btn-primary"
-            to={{
-              pathname: `/${clusterId}/topic/${topicId}/produce`
-            }}
-          >
-            <i
-              className="fa fa-plus"
-              aria-hidden={true}
-              onClick={() => <TopicProduce clusterId={clusterId} topic={topicId} />}
-            />{' '}
-            Produce to topic
-          </Link>
-        </aside>
+            <Link
+              to="#"
+              className="btn btn-primary"
+              to={{
+                pathname: `/${clusterId}/topic/${topicId}/produce`
+              }}
+            >
+              <i
+                className="fa fa-plus"
+                aria-hidden={true}
+                onClick={() => <TopicProduce clusterId={clusterId} topic={topicId} />}
+              />{' '}
+              Produce to topic
+            </Link>
+          </aside>
+        )}
       </div>
     );
   }

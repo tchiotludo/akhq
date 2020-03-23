@@ -1,3 +1,5 @@
+import { node } from 'prop-types';
+
 export const apiUrl = 'http://localhost:8080/api';
 export const baseUrl = 'http://localhost:8080';
 
@@ -23,6 +25,10 @@ export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
 export const uriDeleteTopics = () => {
   return `${apiUrl}/topic/delete`;
+};
+
+export const uriDeleteGroups = () => {
+  return `${apiUrl}/group/delete`;
 };
 
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
@@ -103,8 +109,22 @@ export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp
   return uri;
 };
 
+export const uriConsumerGroupMembers = (id, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+
 export const uriConsumerGroupUpdate = () => {
   return `${apiUrl}/group/update`;
+};
+
+export const uriTopicsConfigs = (clusterId, topicId) => {
+  return (
+    `${apiUrl}/cluster/topic/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
+    `${topicId ? '&topicId=' + topicId : ''}`
+  );
+};
+
+export const uriTopicsUpdateConfigs = () => {
+  return `${apiUrl}/cluster/topic/update-configs`;
 };
 
 export default {
@@ -127,4 +147,5 @@ export default {
   uriConsumerGroupMembers,
   uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate
+  uriTopicsConfigs
 };

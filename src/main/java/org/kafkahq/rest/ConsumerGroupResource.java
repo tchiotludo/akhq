@@ -2,11 +2,21 @@ package org.kafkahq.rest;
 
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.service.ConsumerGroupService;
 import org.kafkahq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
+import org.kafkahq.service.dto.ConsumerGroup.DeleteConsumerGroupDTO;
+import org.kafkahq.service.dto.topic.DeleteTopicDTO;
+import org.kafkahq.service.dto.topic.TopicListDTO;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -47,6 +57,12 @@ public class ConsumerGroupResource {
     public List<ConsumerGroupMemberDTO> fetchAllConsumerGroupMembers(String clusterId, String groupId) throws ExecutionException, InterruptedException {
         log.debug("Fetch consumer group members from: {}", groupId);
         return consumerGroupService.getConsumerGroupMembers(clusterId, groupId);
+    }
+    @Delete("/group/delete")
+    public ConsumerGroupListDTO deleteConsumerGroup(@Body DeleteConsumerGroupDTO deleteConsumerGroupDTO) throws ExecutionException, InterruptedException {
+        log.debug("Delete Consumer Group: {}", deleteConsumerGroupDTO.getGroupId());
+        consumerGroupService.deleteConsumerGroup(deleteConsumerGroupDTO.getClusterId(), deleteConsumerGroupDTO.getGroupId());
+        return consumerGroupService.getConsumerGroup(deleteConsumerGroupDTO.getClusterId(), Optional.empty(), Optional.empty());
     }
 
     @Get("/group/grouped-topic-offset")

@@ -56,7 +56,6 @@ class TopicData extends Component {
   };
 
   closeValueModal = () => {
-    console.log('close');
     this.setState({ showValueModal: false, valueModalBody: '' });
   };
 
@@ -84,8 +83,6 @@ class TopicData extends Component {
       currentSearch,
       offsetsSearch
     } = this.state;
-
-    console.log(offsetsSearch);
 
     let data,
       partitionData = {};

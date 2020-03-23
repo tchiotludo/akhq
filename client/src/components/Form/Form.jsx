@@ -122,7 +122,7 @@ class Form extends Component {
         ) : (
           <div></div>
         )}
-        <div className="col-sm-10">
+        <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
             mode="json"
             theme="dracula"
@@ -132,7 +132,7 @@ class Form extends Component {
             }}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
-            style={{ width: '100%', height: '30vh' }}
+            style={{ width: '100%', minHeight: '25vh' }}
           />
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
         </div>

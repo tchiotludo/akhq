@@ -1,4 +1,4 @@
-package org.kafkahq.service.dto.node;
+package org.kafkahq.service.dto.topic;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +11,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class ConfigOperationDTO {
     private String clusterId;
-    private Integer nodeId;
+    private String topicId;
     private Map<String, String> configs;
 }

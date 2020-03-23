@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Table from '../../components/Table';
-import api from '../../utils/api';
-import endpoints from '../../utils/endpoints';
+import endpoints,{ uriDeleteGroups }  from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
@@ -10,6 +9,8 @@ import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
+import api, { remove } from '../../utils/api';
+
 
 class ConsumerGroupList extends Component {
   state = {
@@ -17,8 +18,11 @@ class ConsumerGroupList extends Component {
     showDeleteModal: false,
     selectedCluster: '',
     deleteMessage: '',
+    groupToDelete: {},
+    deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
+    history: this.props,
     searchData: {
       search: ''
     }
@@ -58,7 +62,7 @@ class ConsumerGroupList extends Component {
   async getConsumerGroup() {
     const { history } = this.props;
     const { selectedCluster, pageNumber } = this.state;
-    const { search, consumerGroupListView } = this.state.searchData;
+    const { search } = this.state.searchData;
 
     history.push({
       loading: true
@@ -113,26 +117,77 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(topicLag) {
+    const { history } = this.props;
     return topicLag.map(lagTopic => {
       return (
-        <Link
-          to={{
-            pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+        <div
+          onClick={() => {
+            history.push({
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`,
+              tab: constants.TOPIC
+            });
           }}
-          key="lagTopic.topicId"
-          className="btn btn-dark btn-sm mb-1"
         >
-          {lagTopic.topicId}
-          <a href="#" className="badge badge-secondary">
-            Lag:{lagTopic.lag}
-          </a>
-        </Link>
+          <Link
+            to={{
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+            }}
+            key="lagTopic.topicId"
+            className="btn btn-dark btn-sm mb-1"
+          >
+            {lagTopic.topicId}
+
+            <a href="#" className="badge badge-secondary">
+              Lag:{lagTopic.lag}
+            </a>
+          </Link>
+        </div>
       );
     });
   }
 
-  han;
+  handleOnDelete(group) {
+    this.setState({ groupToDelete: group }, () => {
+      this.showDeleteModal(`Delete ConsumerGroup ${group.id}?`);
+    });
+  }
 
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
+  };
+
+  closeDeleteModal = () => {
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
+  };
+
+  deleteConsumerGroup = () => {
+    const { selectedCluster, groupToDelete } = this.state;
+    const { history } = this.props;
+    const deleteData = {
+      clusterId: selectedCluster,
+      groupId: groupToDelete.id
+    };
+
+    history.push({ loading: true });
+    remove(uriDeleteGroups(), deleteData)
+      .then(res => {
+        this.props.history.push({
+          showSuccessToast: true,
+          successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, groupToDelete: {} });
+        this.handleConsumerGroup(res.data.group);
+      })
+      .catch(err => {
+        this.props.history.push({
+          showErrorToast: true,
+          errorToastMessage: `Could not delete '${groupToDelete.id}'`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, groupToDelete: {} });
+      });
+  };
   render() {
     const { consumerGroup, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
@@ -204,10 +259,13 @@ class ConsumerGroupList extends Component {
             }
           ]}
           data={this.state.consumerGroups}
+          onDelete={group => {
+            this.handleOnDelete(group);
+          }}
           onDetails={id => {
             history.push(`/${selectedCluster}/group/${id}`);
           }}
-          actions={[constants.TABLE_DETAILS]}
+          actions={[constants.TABLE_DELETE,constants.TABLE_DETAILS]}
         />
 
         <div
@@ -222,6 +280,12 @@ class ConsumerGroupList extends Component {
             onSubmit={this.handlePageChangeSubmission}
           />
         </div>
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteConsumerGroup}
+          message={this.state.deleteMessage}
+        />
       </div>
     );
   }

@@ -4,7 +4,7 @@ import { get } from '../../../../utils/api';
 import endpoints from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
-import './styles.scss'
+import './styles.scss';
 class ConsumerGroupMembers extends Component {
   state = {
     data: [],
@@ -52,15 +52,15 @@ class ConsumerGroupMembers extends Component {
   handlePartitions(partitions) {
     return partitions.map(partition => {
       return (
-          <a href="#" className="badge badge-secondary partition" >
-            {partition}
-          </a>
-      
+        <a href="#" className="badge badge-secondary partition">
+          {partition}
+        </a>
       );
     });
   }
 
   handleAssignments(assignments) {
+    const { history } = this.props;
     let topics = [];
 
     assignments.map(assignment => {
@@ -77,16 +77,25 @@ class ConsumerGroupMembers extends Component {
       });
 
       return (
-        <Link
-          to={{
-            pathname: `/${this.state.selectedCluster}/topic/${topic}`
+        <div
+          onClick={() => {
+            history.push({
+              pathname: `/${this.state.selectedCluster}/topic/${topic}`,
+              tab: constants.TOPIC
+            });
           }}
-          key="topic"
-          className="btn btn-primary btn-sm mb-1"
         >
-          {topic}
-          {this.handlePartitions(partitions)}
-        </Link>
+          <Link
+            to={{
+              pathname: `/${this.state.selectedCluster}/topic/${topic}`
+            }}
+            key="topic"
+            className="btn btn-primary btn-sm mb-1"
+          >
+            {topic}
+            {this.handlePartitions(partitions)}
+          </Link>
+        </div>
       );
     });
   }

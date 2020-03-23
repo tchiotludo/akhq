@@ -58,7 +58,6 @@ class TopicList extends Component {
       clusterId: selectedCluster,
       topicId: topicToDelete.id
     };
-
     history.push({ loading: true });
     remove(uriDeleteTopics(), deleteData)
       .then(res => {
