@@ -11,7 +11,7 @@ import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.repositories.TopicRepository;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.topic.CreateTopicDTO;
 import org.kafkahq.service.dto.topic.LogDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;

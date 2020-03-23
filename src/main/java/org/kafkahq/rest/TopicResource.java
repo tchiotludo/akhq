@@ -8,7 +8,7 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.kafkahq.service.dto.topic.*;
 
 import javax.annotation.Nullable;

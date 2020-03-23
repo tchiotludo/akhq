@@ -162,7 +162,13 @@ class DatePicker extends React.Component {
               name={name}
               label={label}
               error={error}
-              value={value.format('DD-MM-YYYY HH:mm')}
+              value={() => {
+                try {
+                  return value.format('DD-MM-YYYY HH:mm');
+                } catch (e) {
+                  return '';
+                }
+              }}
               onClick={() => {
                 this.setState({ openDateModal: true });
               }}
