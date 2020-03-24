@@ -10,7 +10,8 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-
+import './styles.scss';
+import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 class SchemaRegistryList extends Component {
   state = {
     schemasRegistry: [],
@@ -29,7 +30,9 @@ class SchemaRegistryList extends Component {
       subject: '',
       compatibilityLevel: '',
       schema: ''
-    }
+    },
+    showSchemaModal: false,
+    schemaModalBody: ''
   };
 
   componentDidMount() {
@@ -39,6 +42,17 @@ class SchemaRegistryList extends Component {
       this.getSchemaRegistry();
     });
   }
+
+  showSchemaModal = body => {
+    this.setState({
+      showSchemaModal: true,
+      schemaModalBody: body
+    });
+  };
+
+  closeSchemaModal = () => {
+    this.setState({ showSchemaModal: false, schemaModalBody: '' });
+  };
 
   handleSearch = data => {
     const { searchData } = data;
@@ -157,7 +171,15 @@ class SchemaRegistryList extends Component {
       });
   };
   render() {
-    const { SchemaRegistry, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const {
+      SchemaRegistry,
+      selectedCluster,
+      searchData,
+      pageNumber,
+      totalPageNumber,
+      showSchemaModal,
+      schemaModalBody
+    } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 
@@ -212,7 +234,25 @@ class SchemaRegistryList extends Component {
             {
               id: 'schema',
               accessor: 'schema',
-              colName: 'Schema'
+              colName: 'Schema',
+              cell: (obj, col) => {
+                return (
+                  <div className="value cell-div">
+                    <span className="align-cell value-span">
+                      {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
+                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
+                    </span>
+                    <div className="value-button">
+                      <button
+                        className="btn btn-secondary headers pull-right"
+                        onClick={() => this.showSchemaModal(obj[col.accessor])}
+                      >
+                        ...
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
             }
           ]}
           data={this.state.schemasRegistry}
@@ -254,6 +294,12 @@ class SchemaRegistryList extends Component {
           handleCancel={this.closeDeleteModal}
           handleConfirm={this.deleteSchemaRegistry}
           message={this.state.deleteMessage}
+        />
+
+        <CodeViewModal
+          show={showSchemaModal}
+          body={schemaModalBody}
+          handleClose={this.closeSchemaModal}
         />
       </div>
     );

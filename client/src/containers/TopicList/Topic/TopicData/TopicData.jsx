@@ -116,7 +116,6 @@ class TopicData extends Component {
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
       if (data.records) {
-        console.log(data);
         this.handleMessages(data.records);
       } else {
         this.setState({ messages: [], pageNumber: 1 });
@@ -472,7 +471,7 @@ class TopicData extends Component {
                           className="btn btn-secondary headers pull-right"
                           onClick={() => this.showValueModal(obj[col.accessor])}
                         >
-                          Details
+                          ...
                         </button>
                       </div>
                     </div>
