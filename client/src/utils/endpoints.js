@@ -15,6 +15,14 @@ export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };
 
+export const uriSchemaRegistry = (id, search, pageNumber) => {
+  return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
+};
+
+export const uriDeleteSchema = () => {
+  return `${apiUrl}/schema/delete`;
+};
+
 export const uriTopics = (id, view, search, pageNumber) => {
   return `${apiUrl}/topics?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
@@ -29,7 +37,6 @@ export const uriDeleteTopics = () => {
 export const uriDeleteGroups = () => {
   return `${apiUrl}/group/delete`;
 };
-
 
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
@@ -116,5 +123,7 @@ export default {
   uriNodesLogs,
   uriConsumerGroups,
   uriConsumerGroupTopics,
-  uriConsumerGroupMembers
+  uriConsumerGroupMembers,
+  uriSchemaRegistry,
+  uriDeleteSchema
 };
