@@ -138,7 +138,6 @@ class TopicData extends Component {
 
   handleMessages = messages => {
     let tableMessages = [];
-    console.log(messages);
     messages.map(message => {
       message.key = message.key ? message.key : 'null';
       message.date = formatDateTime(message.date, 'MMM DD, YYYY, hh:mm A');
@@ -269,7 +268,10 @@ class TopicData extends Component {
 
     return (
       <React.Fragment>
-        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light
+         mr-auto khq-data-filter khq-sticky khq-nav"
+        >
           <button
             className="navbar-toggler"
             type="button"

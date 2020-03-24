@@ -86,13 +86,11 @@ class SchemaRegistryList extends Component {
     history.push({
       loading: true
     });
-    console.log(selectedCluster, search, pageNumber);
     try {
       let response = await api.get(
         endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
       );
       response = response.data;
-      console.log(response);
       if (response) {
         let schemasRegistry = response.list || [];
         this.handleSchemaRegistry(schemasRegistry);
@@ -108,8 +106,6 @@ class SchemaRegistryList extends Component {
   }
 
   handleSchemaRegistry(SchemaRegistry) {
-    console.log('Im here');
-    console.log(SchemaRegistry);
     let tableSchemaRegistry = [];
     SchemaRegistry.map(SchemaRegistry => {
       SchemaRegistry.size = 0;
@@ -118,7 +114,7 @@ class SchemaRegistryList extends Component {
         id: SchemaRegistry.id,
         subject: SchemaRegistry.subject,
         version: SchemaRegistry.version,
-        schema: SchemaRegistry.schema
+        schema:  JSON.stringify(JSON.parse(SchemaRegistry.schema), null, 2)
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry });
@@ -226,7 +222,6 @@ class SchemaRegistryList extends Component {
               accessor: 'version',
               colName: 'Version',
               cell: obj => {
-                console.log(obj.version);
                 return this.handleVersion(obj.version);
               }
             },
