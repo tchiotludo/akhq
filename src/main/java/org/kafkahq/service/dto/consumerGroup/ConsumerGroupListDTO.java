@@ -1,4 +1,4 @@
-package org.kafkahq.service.dto.ConsumerGroup;
+package org.kafkahq.service.dto.consumerGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

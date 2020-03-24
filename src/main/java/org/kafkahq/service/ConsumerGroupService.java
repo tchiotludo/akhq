@@ -1,4 +1,5 @@
 package org.kafkahq.service;
+
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import org.kafkahq.models.Consumer;
@@ -8,17 +9,23 @@ import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.ConsumerGroupRepository;
 import org.kafkahq.repositories.RecordRepository;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupMemberDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupOffsetDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupListDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupOffsetDTO;
+import org.kafkahq.service.dto.consumerGroup.ConsumerGroupUpdateDTO;
+import org.kafkahq.service.dto.consumerGroup.GroupedTopicOffsetDTO;
 import org.kafkahq.service.mapper.ConsumerGroupMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.time.Instant;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -64,18 +71,16 @@ public class ConsumerGroupService {
     }
 
 
-
-
     public List<ConsumerGroupOffsetDTO> getConsumerGroupOffsets(String clusterId, String groupId) throws ExecutionException, InterruptedException {
 
         ConsumerGroup group = this.consumerGroupRepository.findByName(clusterId, groupId);
-        List<TopicPartition.ConsumerGroupOffset> offsets= group.getOffsets();
-        List<ConsumerGroupOffsetDTO> offsetsDTO= new ArrayList<>();
+        List<TopicPartition.ConsumerGroupOffset> offsets = group.getOffsets();
+        List<ConsumerGroupOffsetDTO> offsetsDTO = new ArrayList<>();
 
-           for (int i = 0; i < offsets.size(); i++) {
-               ConsumerGroupOffsetDTO offsetDTO = consumerGroupMapper.fromConsumerGroupToConsumerGroupOffsetDTO(offsets.get(i));
-               offsetsDTO.add(offsetDTO);
-           }
+        for (int i = 0; i < offsets.size(); i++) {
+            ConsumerGroupOffsetDTO offsetDTO = consumerGroupMapper.fromConsumerGroupToConsumerGroupOffsetDTO(offsets.get(i));
+            offsetsDTO.add(offsetDTO);
+        }
 
         return offsetsDTO;
 
@@ -84,12 +89,37 @@ public class ConsumerGroupService {
         kafkaWrapper.deleteConsumerGroups(clusterId,consumerGroupId);
     }
 
-    public List<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId,String consumerGroupId)
+    public GroupedTopicOffsetDTO getConsumerGroupGroupedTopicOffsets(
+            String clusterId,
+            String groupId,
+            Optional<String> timestamp)
+            throws ExecutionException, InterruptedException {
+
+        ConsumerGroup group = this.consumerGroupRepository.findByName(clusterId, groupId);
+
+        List<RecordRepository.TimeOffset> offsetForTime;
+        if (timestamp.isPresent() && (offsetForTime = recordRepository.getOffsetForTime(
+                clusterId,
+                group.getOffsets()
+                        .stream()
+                        .map(r -> new TopicPartition(r.getTopic(), r.getPartition()))
+                        .collect(Collectors.toList()),
+                Instant.parse(timestamp.get()).toEpochMilli()
+        )).size() > 0) {
+            return consumerGroupMapper.fromOffsetForTimeToGroupedTopicOffsetDTO(offsetForTime);
+        } else {
+            Map<String, List<TopicPartition.ConsumerGroupOffset>> groupedTopicOffset = group.getGroupedTopicOffset();
+            return consumerGroupMapper.fromGroupedTopicOffsetToGroupedTopicOffsetDTO(groupedTopicOffset);
+        }
+
+    }
+
+    public List<ConsumerGroupMemberDTO> getConsumerGroupMembers(String clusterId, String consumerGroupId)
             throws ExecutionException, InterruptedException {
 
 
-       List<ConsumerGroupMemberDTO> consumerGroupMembers =new ArrayList<>();
-        List<Consumer> members =this.consumerGroupRepository.findByName(clusterId,consumerGroupId).getMembers();
+        List<ConsumerGroupMemberDTO> consumerGroupMembers = new ArrayList<>();
+        List<Consumer> members = this.consumerGroupRepository.findByName(clusterId, consumerGroupId).getMembers();
 
         members.stream().map(member -> consumerGroupMembers.add(consumerGroupMapper.fromConsumerGroupMemberToConsumerGroupMemberDTO(member))).collect(Collectors.toList());
 
@@ -97,5 +127,21 @@ public class ConsumerGroupService {
     }
 
 
+    public void updateConsumerGroupOffsets(ConsumerGroupUpdateDTO consumerGroupUpdateDTO) throws ExecutionException, InterruptedException {
+        String clusterId = consumerGroupUpdateDTO.getClusterId();
+        String groupId = consumerGroupUpdateDTO.getGroupId();
 
+
+        ConsumerGroup group = this.consumerGroupRepository.findByName(clusterId, groupId);
+
+        Map<TopicPartition, Long> offsets = group.getOffsets()
+                .stream()
+                .map(r -> new AbstractMap.SimpleEntry<>(
+                        new TopicPartition(r.getTopic(), r.getPartition()),
+                        consumerGroupUpdateDTO.getOffsets().get("offset[" + r.getTopic() + "][" + r.getPartition() + "]")
+                ))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        this.consumerGroupRepository.updateOffsets(clusterId, groupId, offsets);
+    }
 }

@@ -31,6 +31,28 @@ public class SchemaService {
         return schemaMapper.fromSchemaToSchemaVersionDTO(Pair.of(schemaLatestVersion, schemaLatestConfig));
     }
 
+    public Schema createSchema(SchemaDTO schemaDTO) throws Exception {
+
+
+        if (this.schemaRepository.exist(schemaDTO.getCluster(), schemaDTO.getSubject())) {
+            throw new Exception("Subject '" + schemaDTO.getSubject() + "' already exits");
+        }
+
+        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schemaDTO.getSchema());
+
+        Schema register = this.schemaRepository.register(schemaDTO.getCluster(), schemaDTO.getSubject(), avroSchema);
+
+        Schema.Config config = Schema.Config.builder()
+                .compatibilityLevel(Schema.Config.CompatibilityLevelConfig.valueOf(
+                        schemaDTO.getCompatibilityLevel()
+                ))
+                .build();
+
+        this.schemaRepository.updateConfig(schemaDTO.getCluster(), schemaDTO.getSubject(), config);
+
+        return register;
+    }
+
     public void updateSchema(UpdateSchemaDTO updateSchemaDTO) throws IOException, RestClientException {
         registerSchema(updateSchemaDTO.getClusterId(), updateSchemaDTO.getSubject(), updateSchemaDTO.getSchema(), updateSchemaDTO.getCompatibilityLevel());
     }
