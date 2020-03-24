@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaRegistryListDTO {
-    private List<SchemaRegistryDTO> list;
-    private int totalPageNumber;
+public class DeleteSchemaDTO {
+    private String clusterId;
+    private String subject;
 }

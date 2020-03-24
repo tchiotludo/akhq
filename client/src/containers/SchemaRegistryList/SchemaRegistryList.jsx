@@ -114,7 +114,7 @@ class SchemaRegistryList extends Component {
         id: SchemaRegistry.id,
         subject: SchemaRegistry.subject,
         version: SchemaRegistry.version,
-        schema:  JSON.stringify(JSON.parse(SchemaRegistry.schema), null, 2)
+        schema: JSON.stringify(JSON.parse(SchemaRegistry.schema), null, 2)
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry });
@@ -126,7 +126,7 @@ class SchemaRegistryList extends Component {
 
   handleOnDelete(schema) {
     this.setState({ schemaToDelete: schema }, () => {
-      this.showDeleteModal(`Delete SchemaRegistry ${schema.id}?`);
+      this.showDeleteModal(`Delete SchemaRegistry ${schema.subject}?`);
     });
   }
 
@@ -143,15 +143,15 @@ class SchemaRegistryList extends Component {
     const { history } = this.props;
     const deleteData = {
       clusterId: selectedCluster,
-      schemaId: schemaToDelete.id
+      subject: schemaToDelete.subject
     };
-
     history.push({ loading: true });
+    console.log(deleteData)
     remove(uriDeleteSchema(), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
-          successToastMessage: `Schema '${schemaToDelete.id}' is deleted`,
+          successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
@@ -160,7 +160,7 @@ class SchemaRegistryList extends Component {
       .catch(err => {
         this.props.history.push({
           showErrorToast: true,
-          errorToastMessage: `Could not delete '${schemaToDelete.id}'`,
+          errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });

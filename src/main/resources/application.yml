@@ -83,12 +83,12 @@ kafkahq:
       properties:
         bootstrap.servers: localhost:9092
       schema-registry:
-        url: "localhost:8086"
+        url: "localhost:8085"
       connect:
         - name: connect-3
-          url: "http://localhost:8081"
+          url: "http://localhost:8083"
         - name: connect-4
-          url: "http://localhost:8085"
+          url: "http://localhost:8082"
   server:
     base-path: ""
     access-log:

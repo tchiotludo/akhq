@@ -3,16 +3,13 @@ package org.kafkahq.service;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
-import org.kafkahq.configs.Connection;
 import org.kafkahq.models.Schema;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.SchemaRegistryRepository;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
-import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupListDTO;
-import org.kafkahq.service.dto.SchemaRegistry.SchemaRegistryDTO;
-import org.kafkahq.service.dto.SchemaRegistry.SchemaRegistryListDTO;
-import org.kafkahq.service.mapper.SchemaRegistryMapper;
+import org.kafkahq.service.dto.SchemaRegistry.SchemaDTO;
+import org.kafkahq.service.dto.SchemaRegistry.SchemaListDTO;
+import org.kafkahq.service.mapper.SchemaMapper;
 import org.kafkahq.utils.PagedList;
 import org.kafkahq.utils.Pagination;
 
@@ -26,33 +23,34 @@ import java.util.stream.Collectors;
 
 
 @Singleton
-    public class SchemaRegistryService {
+    public class SchemaService {
         private KafkaModule kafkaModule;
         private AbstractKafkaWrapper kafkaWrapper;
         private Environment environment;
         private SchemaRegistryRepository schemaRegistryRepository;
-        private SchemaRegistryMapper schemaRegistryMapper;
+        private SchemaMapper schemaMapper;
 
         @Value("${kafkahq.pagination.page-size}")
         private Integer pageSize;
 
         @Inject
-        public SchemaRegistryService(KafkaModule kafkaModule,SchemaRegistryMapper schemaRegistryMapper, SchemaRegistryRepository schemaRegistryRepository, AbstractKafkaWrapper kafkaWrapper, Environment environment) {
+        public SchemaService(KafkaModule kafkaModule, SchemaMapper schemaMapper, SchemaRegistryRepository schemaRegistryRepository, AbstractKafkaWrapper kafkaWrapper, Environment environment) {
             this.kafkaModule = kafkaModule;
-            this.schemaRegistryMapper=schemaRegistryMapper;
+            this.schemaMapper = schemaMapper;
             this.kafkaWrapper = kafkaWrapper;
             this.environment = environment;
             this.schemaRegistryRepository=schemaRegistryRepository;
         }
 
-        public SchemaRegistryListDTO getSchemaRegistry(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
+        public SchemaListDTO getSchema(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
                 throws ExecutionException, InterruptedException, IOException, RestClientException {
-            Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1
-            ));
+            Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1));
             PagedList<Schema> list =this.schemaRegistryRepository.list(clusterId, pagination, search);
-            ArrayList<SchemaRegistryDTO> schemaRegistryList = new ArrayList<>();
-            list.stream().map(schemaRegistry -> schemaRegistryList.add(schemaRegistryMapper.fromSchemaRegistryToSchemaRegistryDTO(schemaRegistry))).collect(Collectors.toList());
-            return new SchemaRegistryListDTO(schemaRegistryList, list.pageCount());
+            ArrayList<SchemaDTO> schemaRegistryList = new ArrayList<>();
+            list.stream().map(schemaRegistry -> schemaRegistryList.add(schemaMapper.fromSchemaRegistryToSchemaRegistryDTO(schemaRegistry))).collect(Collectors.toList());
+            return new SchemaListDTO(schemaRegistryList, list.pageCount());
         }
-
+    public int deleteSchema(String clusterId, String schema) throws ExecutionException, InterruptedException, IOException, RestClientException {
+       return schemaRegistryRepository.delete(clusterId, schema);
+    }
 }

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaRegistryDTO {
+public class SchemaDTO {
 
     private int id;
     private String subject;
