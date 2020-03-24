@@ -64,17 +64,20 @@ class Form extends Component {
     this.setState({ formData, errors });
   };
 
-  renderButton = (label, click, className, type) => {
+  renderButton = (label, click, className, type, children) => {
     return (
-      <div className="khq-submit" style={{ marginRight: 0, width: 'calc(100vw - 250px)' }}>
-        <button
-          type={type ? type : 'button'}
-          className={className ? className : 'btn btn-primary'}
-          disabled={this.validate()}
-          onClick={click}
-        >
-          {label}
-        </button>
+      <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+        <aside>
+          {children}
+          <button
+            type={type ? type : 'button'}
+            className={className ? className : 'btn btn-primary'}
+            disabled={this.validate()}
+            onClick={click}
+          >
+            {label}
+          </button>
+        </aside>
       </div>
     );
   };

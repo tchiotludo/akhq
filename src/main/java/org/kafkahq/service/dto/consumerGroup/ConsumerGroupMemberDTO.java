@@ -1,9 +1,8 @@
-package org.kafkahq.service.dto.ConsumerGroup;
+package org.kafkahq.service.dto.consumerGroup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.kafka.clients.consumer.internals.PartitionAssignor;
 
 import java.util.List;
 
