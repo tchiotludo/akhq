@@ -5,8 +5,6 @@ import { createMemoryHistory } from 'history';
 import TopicProduce from './TopicProduce';
 import App from '../../../../App';
 import { render } from '@testing-library/react';
-import { renderWithRouter } from '../../../../utils/testUtils';
-import Router from 'react-dom';
 
 import { MemoryRouter } from 'react-router-dom';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';

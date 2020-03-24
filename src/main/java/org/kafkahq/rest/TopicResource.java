@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.repositories.RecordRepository;
 import org.kafkahq.service.TopicService;
 import org.kafkahq.service.dto.ConsumerGroup.ConsumerGroupDTO;
+import org.kafkahq.service.dto.topic.ConfigOperationDTO;
+import org.kafkahq.service.dto.topic.ConfigDTO;
 import org.kafkahq.service.dto.topic.*;
 
 import javax.annotation.Nullable;
@@ -80,6 +82,17 @@ public class TopicResource {
     public List<ConsumerGroupDTO> fetchTopicGroups(String clusterId, String topicId) throws ExecutionException, InterruptedException {
         log.debug("Fetch topic groups ");
         return topicService.getConsumerGroups(clusterId, topicId);
+    }
+
+    @Get("/cluster/topic/configs")
+    public List<ConfigDTO> fetchTopicConfigs(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        log.debug("Fetch node {} configs from cluster: {}", topicId, clusterId);
+        return topicService.getConfigDTOList(clusterId, topicId);
+    }
+    @Post("cluster/topic/update-configs")
+    public List<org.kafkahq.service.dto.topic.ConfigDTO> updateNodeConfigs(@Body ConfigOperationDTO configOperation) throws Throwable {
+        log.debug("Update node {} configs from cluster: {}", configOperation.getTopicId(), configOperation.getClusterId());
+        return topicService.updateConfigs(configOperation);
     }
 }
 

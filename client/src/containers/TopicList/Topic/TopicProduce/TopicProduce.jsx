@@ -22,7 +22,11 @@ class TopicProduce extends Form {
       value: ''
     },
     openDateModal: false,
-    errors: {}
+    errors: {},
+    selectableValueFormats: [
+      { _id: 'string', name: 'string' },
+      { _id: 'json', name: 'json' }
+    ]
   };
 
   schema = {
@@ -222,21 +226,37 @@ class TopicProduce extends Form {
   }
 
   render() {
-    const { clusterId, topicId, timestamp, openDateModal, formData, partitions } = this.state;
+    const {
+      clusterId,
+      topicId,
+      timestamp,
+      openDateModal,
+      formData,
+      partitions,
+      selectableValueFormats
+    } = this.state;
     return (
       <div id="content" style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
           <div>
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
-              this.setState({ formData: { ...formData, partition: value._id } });
+              this.setState({ formData: { ...formData, partition: value.target.value } });
             })}
             {this.renderInput('key', 'Key', 'Key', 'Key')}
             <div></div>
           </div>
 
           {this.renderHeaders()}
-
+          {this.renderSelect('valueFormat', 'Value Format', selectableValueFormats, value => {
+            if (value.target.value === 'string') {
+              this.schema.value = Joi.string().label('Value');
+              this.forceUpdate();
+            } else if (value.target.value === 'json') {
+              this.schema.value = Joi.any().label('Value');
+              this.forceUpdate();
+            }
+          })}
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
               formData: {

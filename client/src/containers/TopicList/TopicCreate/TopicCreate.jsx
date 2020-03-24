@@ -67,6 +67,7 @@ class TopicCreate extends Form {
         });
       })
       .catch(err => {
+        console.log('err', err);
         this.props.history.push({
           showErrorToast: true,
           errorToastTitle: err.response.data.title,

@@ -2,6 +2,7 @@ package org.kafkahq.service.mapper;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.kafkahq.models.*;
+import org.kafkahq.service.dto.topic.ConfigDTO;
 import org.kafkahq.service.dto.topic.LogDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO;
 import org.kafkahq.service.dto.topic.PartitionDTO.OffsetsDTO;
@@ -15,11 +16,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 @Singleton
 public class TopicMapper {
+    private static final String CONFIG_FORMAT = "configs[%s]";
 
     public TopicDTO fromTopicToTopicDTO(Topic topic) {
         List<ConsumerGroup> emptyList = new ArrayList<>();
@@ -51,5 +54,33 @@ public class TopicMapper {
         return new LogDTO(log.getBrokerId(),log.getTopic(),log.getPartition(),log.getSize(),log.getOffsetLag());
     }
 
+    public ConfigDTO fromConfigToConfigDTO(Config config) {
+        ConfigDTO.DataType dataType;
+        try {
+            switch (config.getName().substring(config.getName().lastIndexOf("."))) {
+                case ".ms":
+                    dataType = ConfigDTO.DataType.MILLI;
+                    break;
+                case ".size":
+                    dataType = ConfigDTO.DataType.BYTES;
+                    break;
+                default:
+                    dataType = ConfigDTO.DataType.TEXT;
+                    break;
+            }
+        } catch (StringIndexOutOfBoundsException ex) {
+            dataType = ConfigDTO.DataType.TEXT;
+        }
 
+        return new ConfigDTO(config.getName(), config.getValue(), config.getDescription(),
+                ConfigDTO.Source.valueOf(config.getSource().name()), dataType, config.isReadOnly(),
+                config.isSensitive());
+    }
+
+    public Map<String, String> convertConfigsMap(Map<String, String> configs) {
+        return configs.entrySet().stream().collect(Collectors.toMap(
+                e -> String.format(CONFIG_FORMAT, e.getKey()),
+                Map.Entry::getValue
+        ));
+    }
 }
