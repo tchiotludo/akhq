@@ -22,6 +22,7 @@ import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
+import SchemaCreate from '../containers/SchemaCreate';
 
 class Routes extends Component {
   render() {
@@ -58,7 +59,9 @@ class Routes extends Component {
 
             <Route exact path="/:clusterId/tail" component={Tail} />
             <Route exact path="/:clusterId/acls" component={Acls} />
+
             <Route exact path="/:clusterId/schema" component={Schema} />
+            <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
             <Route exact path="/:clusterId/connect" component={Connect} />
             <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
             {/* <Route exact path="/error" component={ErrorPage} /> */}

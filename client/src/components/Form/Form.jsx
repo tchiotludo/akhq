@@ -95,6 +95,7 @@ class Form extends Component {
       <Input
         type={type}
         name={name}
+        id={name}
         value={formData[name]}
         label={label}
         placeholder={placeholder}
@@ -122,6 +123,7 @@ class Form extends Component {
         <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
             mode="json"
+            id={name}
             theme="dracula"
             value={formData[name]}
             onChange={value => {

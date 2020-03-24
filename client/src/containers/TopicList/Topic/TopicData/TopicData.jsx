@@ -116,7 +116,6 @@ class TopicData extends Component {
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
       if (data.records) {
-        console.log(data);
         this.handleMessages(data.records);
       } else {
         this.setState({ messages: [], pageNumber: 1 });
@@ -139,7 +138,6 @@ class TopicData extends Component {
 
   handleMessages = messages => {
     let tableMessages = [];
-    console.log(messages);
     messages.map(message => {
       message.key = message.key ? message.key : 'null';
       message.date = formatDateTime(message.date, 'MMM DD, YYYY, hh:mm A');
