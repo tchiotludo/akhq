@@ -7,7 +7,7 @@ import NodesList from '../NodesList';
 import Group from '../Group';
 import Acls from '../Acls';
 import Connect from '../Connect';
-import Schema from '../Schema';
+import SchemaList from '../SchemaList/SchemaList';
 import TopicList from '../TopicList';
 import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';
@@ -107,7 +107,7 @@ class Dashboard extends Component {
       case 'acls':
         return <Acls data={data} history={this.props.history} />;
       case 'schema':
-        return <Schema data={data} history={this.props.history} />;
+        return <SchemaList data={data} history={this.props.history} />;
       case 'connect':
         return <Connect data={data} history={this.props.history} />;
       default:

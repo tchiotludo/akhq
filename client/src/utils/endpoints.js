@@ -30,7 +30,6 @@ export const uriDeleteGroups = () => {
   return `${apiUrl}/group/delete`;
 };
 
-
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
 
@@ -111,6 +110,14 @@ export const uriTopicsUpdateConfigs = () => {
   return `${apiUrl}/cluster/topic/update-configs`;
 };
 
+export const uriLatestSchemaVersion = (clusterId, subject) => {
+  return `${apiUrl}/schema/version?clusterId=${clusterId}&subject=${subject}`;
+};
+
+export const uriUpdateSchema = () => {
+  return `${apiUrl}/schema/update`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -129,5 +136,6 @@ export default {
   uriConsumerGroups,
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,
-  uriTopicsConfigs
+  uriTopicsConfigs,
+  uriLatestSchemaVersion
 };
