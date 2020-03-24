@@ -20,6 +20,7 @@ export const uriTopics = (id, view, search, pageNumber) => {
 };
 
 export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+
 export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
 
 export const uriDeleteTopics = () => {
@@ -29,7 +30,6 @@ export const uriDeleteTopics = () => {
 export const uriDeleteGroups = () => {
   return `${apiUrl}/group/delete`;
 };
-
 
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
@@ -88,16 +88,29 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   );
 };
 
-export const uriConsumerGroups = (id, view, search, pageNumber) => {
-  return `${apiUrl}/group?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
+export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
+  return `${apiUrl}/group?clusterId=${clusterId}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
-export const uriConsumerGroupTopics = (id, groupId) => {
-  return `${apiUrl}/group/topics?clusterId=${id}&groupId=${groupId}`;
+export const uriConsumerGroupTopics = (clusterId, groupId) => {
+  return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${groupId}`;
+};
+export const uriConsumerGroupMembers = (clusterId, groupId) => {
+  return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
 };
 
-export const uriConsumerGroupMembers = (id, groupId) => {
-  return `${apiUrl}/group/members?clusterId=${id}&groupId=${groupId}`;
+export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
+  let uri = `${apiUrl}/group/grouped-topic-offset?clusterId=${clusterId}&groupId=${groupId}`;
+
+  if (timestamp !== '') {
+    uri += `&timestamp=${timestamp}`;
+  }
+
+  return uri;
+};
+
+export const uriConsumerGroupUpdate = () => {
+  return `${apiUrl}/group/update`;
 };
 
 export const uriTopicsConfigs = (clusterId, topicId) => {
@@ -129,5 +142,7 @@ export default {
   uriConsumerGroups,
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,
+  uriConsumerGroupGroupedTopicOffset,
+  uriConsumerGroupUpdate,
   uriTopicsConfigs
 };

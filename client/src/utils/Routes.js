@@ -8,7 +8,6 @@ import NodesList from '../containers/NodesList/NodesList';
 import NodeDetails from '../containers/NodesList/Node';
 import Base from '../components/Base/Base.jsx';
 import Tail from '../containers/Tail';
-import Group from '../containers/Group';
 import Acls from '../containers/Acls';
 import Schema from '../containers/Schema';
 import Connect from '../containers/Connect';
@@ -22,6 +21,7 @@ import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
+import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 
 class Routes extends Component {
   render() {
@@ -55,6 +55,11 @@ class Routes extends Component {
 
             <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
             <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
+            <Route
+              exact
+              path="/:clusterId/group/:consumerGroupId/offsets"
+              component={ConsumerGroupUpdate}
+            />
 
             <Route exact path="/:clusterId/tail" component={Tail} />
             <Route exact path="/:clusterId/acls" component={Acls} />

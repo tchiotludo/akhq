@@ -61,7 +61,7 @@ class ConsumerGroup extends Component {
   }
 
   render() {
-    const { consumerGroupId } = this.state;
+    const { clusterId, consumerGroupId } = this.state;
     return (
       <div id="content">
         <Header title={`Topic ${consumerGroupId}`} />
@@ -97,8 +97,8 @@ class ConsumerGroup extends Component {
         </div>
 
         <aside>
-          <Link to="#" className="btn btn-primary">
-            <i className="fa fa-plus" aria-hidden={true} /> Update Offsets
+          <Link to={`/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
+            Update Offsets
           </Link>
         </aside>
       </div>
