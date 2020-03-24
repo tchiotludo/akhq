@@ -124,6 +124,10 @@ export const uriTopicsUpdateConfigs = () => {
   return `${apiUrl}/cluster/topic/update-configs`;
 };
 
+export const uriSchemaCreate = () => {
+  return `${apiUrl}/schema/create`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -142,6 +146,7 @@ export default {
   uriConsumerGroups,
   uriConsumerGroupTopics,
   uriConsumerGroupMembers,
+  uriSchemaCreate,
   uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,
   uriTopicsConfigs
