@@ -16,7 +16,7 @@ import ConsumerGroupList from '../containers/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
 import SchemaList from '../containers/SchemaList/SchemaList';
 import Schema from '../containers/SchemaList/Schema/Schema';
-import SchemaCreate from '../containers/SchemaCreate';
+import SchemaCreate from '../containers/SchemaList/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 
 class Routes extends Component {
@@ -61,8 +61,8 @@ class Routes extends Component {
             <Route exact path="/:clusterId/acls" component={Acls} />
 
             <Route exact path="/:clusterId/schema" component={SchemaList} />
-            <Route exact path="/:clusterId/schema/:schemaId" component={Schema} />
             <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
+            <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
 
             <Route exact path="/:clusterId/connect" component={Connect} />
             <Route exact path="/:clusterId/connect/:connectId" component={Connect} />

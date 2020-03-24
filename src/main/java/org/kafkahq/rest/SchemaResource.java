@@ -11,6 +11,7 @@ import org.kafkahq.service.dto.schema.UpdateSchemaDTO;
 
 import javax.inject.Inject;
 import java.io.IOException;
+
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -40,6 +41,7 @@ public class SchemaResource {
     public void updateSchema(UpdateSchemaDTO updateSchemaDTO) throws IOException, RestClientException {
         log.debug("Updating schema from subject: {}", updateSchemaDTO.getSubject());
         schemaService.updateSchema(updateSchemaDTO);
+    }
 
     @Post("/schema/create")
     public void schemaCreate(@Body SchemaDTO schemaDTO) throws Exception {

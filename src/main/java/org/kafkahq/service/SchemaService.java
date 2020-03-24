@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.common.errors.ApiException;
 import org.kafkahq.models.Schema;
 import org.kafkahq.repositories.SchemaRegistryRepository;
+import org.kafkahq.service.dto.schema.SchemaDTO;
 import org.kafkahq.service.dto.schema.SchemaVersionDTO;
 import org.kafkahq.service.dto.schema.UpdateSchemaDTO;
 import org.kafkahq.service.mapper.SchemaMapper;
@@ -32,23 +33,11 @@ public class SchemaService {
     }
 
     public Schema createSchema(SchemaDTO schemaDTO) throws Exception {
-
-
         if (this.schemaRepository.exist(schemaDTO.getCluster(), schemaDTO.getSubject())) {
             throw new Exception("Subject '" + schemaDTO.getSubject() + "' already exits");
         }
 
-        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schemaDTO.getSchema());
-
-        Schema register = this.schemaRepository.register(schemaDTO.getCluster(), schemaDTO.getSubject(), avroSchema);
-
-        Schema.Config config = Schema.Config.builder()
-                .compatibilityLevel(Schema.Config.CompatibilityLevelConfig.valueOf(
-                        schemaDTO.getCompatibilityLevel()
-                ))
-                .build();
-
-        this.schemaRepository.updateConfig(schemaDTO.getCluster(), schemaDTO.getSubject(), config);
+        Schema register = this.registerSchema(schemaDTO.getCluster(), schemaDTO.getSubject(), schemaDTO.getSchema(), schemaDTO.getCompatibilityLevel());
 
         return register;
     }
