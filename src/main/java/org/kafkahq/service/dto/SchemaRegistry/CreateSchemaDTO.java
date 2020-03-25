@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class CreateSchemaDTO {
     private String cluster;
     private String subject;
-private String compatibilityLevel;
+    private String compatibilityLevel;
     private String schema;
 }
