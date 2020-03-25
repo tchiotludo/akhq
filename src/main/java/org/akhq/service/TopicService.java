@@ -53,9 +53,9 @@ public class TopicService {
 
     private TopicMapper topicMapper;
 
-    @Value("${kafkahq.topic.default-view}")
+    @Value("${akhq.topic.default-view}")
     private String defaultView;
-    @Value("${kafkahq.pagination.page-size}")
+    @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Inject

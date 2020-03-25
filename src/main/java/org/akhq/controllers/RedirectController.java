@@ -19,19 +19,19 @@ public class RedirectController extends AbstractController {
     public RedirectController(KafkaModule kafkaModule) {
         this.kafkaModule = kafkaModule;
     }
-
-    @Get
-    public HttpResponse slash() throws URISyntaxException {
-        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
-    }
-
-    @Get("${akhq.server.base-path:}")
-    public HttpResponse home() throws URISyntaxException {
-        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
-    }
-
-    @Get("${akhq.server.base-path:}/{cluster:(?!login)[^/]+}")
-    public HttpResponse topic(String cluster) throws URISyntaxException {
-        return HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
-    }
+//
+//    @Get
+//    public HttpResponse slash() throws URISyntaxException {
+//        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
+//    }
+//
+//    @Get("${akhq.server.base-path:}")
+//    public HttpResponse home() throws URISyntaxException {
+//        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
+//    }
+//
+//    @Get("${akhq.server.base-path:}/{cluster:(?!login)[^/]+}")
+//    public HttpResponse topic(String cluster) throws URISyntaxException {
+//        return HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
+//    }
 }

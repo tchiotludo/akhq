@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.List;
 
-@Controller("${kafkahq.server.base-path:}/api")
+@Controller("${akhq.server.base-path:}/api")
 public class ConnectResource {
 
     private final Logger log = LoggerFactory.getLogger(ConnectResource.class);

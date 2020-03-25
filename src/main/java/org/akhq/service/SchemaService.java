@@ -33,7 +33,7 @@ public class SchemaService {
     private SchemaRegistryRepository schemaRepository;
     private SchemaMapper schemaMapper;
 
-    @Value("${kafkahq.pagination.page-size}")
+    @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Inject

@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-@Controller("${kafkahq.server.base-path:}/api")
+@Controller("${akhq.server.base-path:}/api")
 public class ConsumerGroupResource {
     private ConsumerGroupService consumerGroupService;
 

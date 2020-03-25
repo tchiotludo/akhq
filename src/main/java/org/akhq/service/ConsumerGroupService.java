@@ -40,9 +40,9 @@ public class ConsumerGroupService {
     private RecordRepository recordRepository;
 
     private ConsumerGroupMapper consumerGroupMapper;
-    @Value("${kafkahq.topic.default-view}")
+    @Value("${akhq.topic.default-view}")
     private String defaultView;
-    @Value("${kafkahq.pagination.page-size}")
+    @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Inject
