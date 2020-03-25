@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-@EachProperty("kafkahq.security.basic-auth")
+@EachProperty("akhq.security.basic-auth")
 @Getter
 public class BasicAuth {
     String username;

@@ -28,15 +28,15 @@ import java.util.concurrent.TimeUnit;
  */
 @Sharable
 @Singleton
-@Requires(property = "kafkahq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.TRUE)
+@Requires(property = "akhq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.TRUE)
 public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
     private final Logger accessLogger;
     private static String logFormat;
     private static final AttributeKey<AccessLog> LOG_HANDLER_CONTEXT = AttributeKey.valueOf("logHandlerContext");
     private static final String MISSING = "-";
 
-    public HttpServerAccessLogHandler(@Value("${kafkahq.server.access-log.name}") String name,
-                                      @Value("${kafkahq.server.access-log.format}") String format) {
+    public HttpServerAccessLogHandler(@Value("${akhq.server.access-log.name}") String name,
+                                      @Value("${akhq.server.access-log.format}") String format) {
         this(LoggerFactory.getLogger(name), format);
     }
 

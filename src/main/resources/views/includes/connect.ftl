@@ -5,8 +5,8 @@
 <#-- @ftlvariable name="plugins" type="java.util.List<org.akhq.models.ConnectPlugin>" -->
 
 <#macro form pluginDefinition definition>
-<#-- @ftlvariable name="definition" type="org.akhq.models.ConnectDefinition" -->
-<#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.akhq.models.ConnectPlugin>" -->
+    <#-- @ftlvariable name="definition" type="org.akhq.models.ConnectDefinition" -->
+    <#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.akhq.models.ConnectPlugin>" -->
 
     <form method="get">
         <div class="form-group row">

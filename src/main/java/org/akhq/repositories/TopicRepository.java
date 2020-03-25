@@ -39,16 +39,16 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     private UserGroupUtils userGroupUtils;
 
-    @Value("${kafkahq.topic.internal-regexps}")
+    @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
-    @Value("${kafkahq.topic.stream-regexps}")
+    @Value("${akhq.topic.stream-regexps}")
     protected List<String> streamRegexps;
 
-    @Value("${kafkahq.security.default-groups}")
-    private List<String> defaultGroups;
+    @Value("${akhq.security.default-group}")
+    private String defaultGroups;
 
-    @Value("${kafkahq.topic.skip-consumer-groups}")
+    @Value("${akhq.topic.skip-consumer-groups}")
     protected Boolean skipConsumerGroups;
 
     public enum TopicListView {
@@ -166,7 +166,9 @@ public class TopicRepository extends AbstractRepository {
             }
         }
         // get topic filter regex for default groups
-        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(userGroupUtils.getUserAttributes(this.defaultGroups)));
+        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
+            userGroupUtils.getUserAttributes(Collections.singletonList(this.defaultGroups))
+        ));
 
         return Optional.of(topicFilterRegex);
     }

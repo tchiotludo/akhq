@@ -6,7 +6,7 @@ import lombok.Getter;
 
 import java.util.List;
 
-@EachProperty("kafkahq.security.ldap.group")
+@EachProperty("akhq.security.ldap.group")
 @Getter
 public class LdapGroup {
     String name;

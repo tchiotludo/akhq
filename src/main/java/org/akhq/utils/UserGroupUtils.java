@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class UserGroupUtils {
 
     @Inject
-    private List<Group> kafkaHqGroups;
+    private List<Group> akhqGroups;
 
     /**
      * Get all distinct roles for the list of groups
@@ -20,11 +20,11 @@ public class UserGroupUtils {
      * @return list of roles
      */
     public List<String> getUserRoles(List<String> groups) {
-        if (this.kafkaHqGroups == null || groups == null) {
+        if (this.akhqGroups == null || groups == null) {
             return new ArrayList<>();
         }
 
-        return this.kafkaHqGroups.stream()
+        return this.akhqGroups.stream()
             .filter(group -> groups.contains(group.getName()))
             .flatMap(group -> group.getRoles().stream())
             .distinct()
@@ -39,11 +39,11 @@ public class UserGroupUtils {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getUserAttributes(List<String> groups) {
-        if (this.kafkaHqGroups == null || groups == null) {
+        if (this.akhqGroups == null || groups == null) {
             return null;
         }
 
-        return this.kafkaHqGroups.stream()
+        return this.akhqGroups.stream()
             .filter(group -> groups.contains(group.getName()))
             .flatMap(group -> (group.getAttributes() != null) ? group.getAttributes().entrySet().stream() : null)
             .collect(Collectors.toMap(

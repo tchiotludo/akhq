@@ -1,5 +1,5 @@
 profile: service
-defaultPackage: org.kafkahq
+defaultPackage: org.akhq
 ---
 testFramework: junit
 sourceLanguage: java

@@ -26,7 +26,7 @@ public class ErrorController extends AbstractController {
     private final ViewsRenderer viewsRenderer;
     private final RequestHelper requestHelper;
 
-    @Value("${kafkahq.server.base-path}")
+    @Value("${akhq.server.base-path}")
     protected String basePath;
 
     @Inject

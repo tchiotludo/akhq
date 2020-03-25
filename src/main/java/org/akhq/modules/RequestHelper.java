@@ -15,7 +15,7 @@ import java.util.Optional;
 @Singleton
 @Slf4j
 public class RequestHelper {
-    @Value("${kafkahq.server.base-path}")
+    @Value("${akhq.server.base-path}")
     protected String basePath;
 
     @Inject

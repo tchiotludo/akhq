@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-@EachProperty("kafkahq.connections")
+@EachProperty("akhq.connections")
 @Getter
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;

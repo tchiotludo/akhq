@@ -28,17 +28,17 @@ abstract public class AbstractTest implements TestPropertyProvider {
         }
 
         return ImmutableMap.<String, String>builder()
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".properties.bootstrap.servers",
                     connectionString.getKafka())
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry.url",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".schema-registry.url",
                     connectionString.getSchemaRegistry())
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].name",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].name",
                     "connect-1")
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].url",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[0].url",
                     connectionString.getConnect1())
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].name",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].name",
                     "connect-2")
-                .put("kafkahq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].url",
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].url",
                     connectionString.getConnect2())
                 .build();
     }

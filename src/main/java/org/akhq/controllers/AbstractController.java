@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.experimental.Wither;
 import org.akhq.configs.BasicAuth;
 import org.akhq.configs.LdapGroup;
+import org.akhq.configs.LdapUser;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.UserGroupUtils;
 import org.akhq.utils.VersionProvider;
@@ -32,7 +33,7 @@ abstract public class AbstractController {
         .enableComplexMapKeySerialization()
         .create();
 
-    @Value("${kafkahq.server.base-path}")
+    @Value("${akhq.server.base-path}")
     protected String basePath;
 
     @Inject
@@ -47,14 +48,17 @@ abstract public class AbstractController {
     @Inject
     private UserGroupUtils userGroupUtils;
 
-    @Value("${kafkahq.security.default-groups}")
-    private List<String> defaultGroups;
+    @Value("${akhq.security.default-group}")
+    private String defaultGroups;
 
     @Inject
     private List<BasicAuth> basicAuths;
 
     @Inject
     private List<LdapGroup> ldapAuths;
+
+    @Inject
+    private List<LdapUser> ldapUsers;
 
     @SuppressWarnings("unchecked")
     protected Map templateData(Optional<String> cluster, Object... values) {
@@ -77,7 +81,7 @@ abstract public class AbstractController {
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0);
+            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0);
 
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             securityService
@@ -156,7 +160,7 @@ abstract public class AbstractController {
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.userGroupUtils.getUserRoles(this.defaultGroups));
+            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)));
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -165,7 +169,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(this.defaultGroups))
+                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)))
         );
     }
 

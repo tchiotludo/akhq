@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.Map;
 
-@EachProperty("kafkahq.security.groups")
+@EachProperty("akhq.security.groups")
 @Getter
 public class Group {
 

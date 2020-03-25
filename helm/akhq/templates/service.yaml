@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "kafkahq.fullname" . }}
+  name: {{ include "akhq.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "kafkahq.name" . }}
-    helm.sh/chart: {{ include "kafkahq.chart" . }}
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
@@ -20,6 +20,6 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "kafkahq.name" . }}
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

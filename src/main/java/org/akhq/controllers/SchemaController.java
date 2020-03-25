@@ -25,11 +25,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Secured(Role.ROLE_REGISTRY_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/schema")
+@Controller("${akhq.server.base-path:}/{cluster}/schema")
 public class SchemaController extends AbstractController {
     private SchemaRegistryRepository schemaRepository;
 
-    @Value("${kafkahq.pagination.page-size}")
+    @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Inject

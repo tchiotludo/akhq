@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_TOPIC_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/tail")
+@Controller("${akhq.server.base-path:}/{cluster}/tail")
 public class TailController extends AbstractController {
     private RecordRepository recordRepository;
     private TopicRepository topicRepository;

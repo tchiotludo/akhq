@@ -34,14 +34,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_GROUP_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/group")
+@Controller("${akhq.server.base-path:}/{cluster}/group")
 public class GroupController extends AbstractController {
     private AbstractKafkaWrapper kafkaWrapper;
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;
     private AccessControlListRepository aclRepository;
 
-    @Value("${kafkahq.pagination.page-size}")
+    @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Inject

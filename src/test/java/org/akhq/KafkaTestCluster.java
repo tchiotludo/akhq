@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class KafkaTestCluster implements Runnable, Stoppable {
-    private static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/kafkahq-cs.json");
+    private static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/akhq-cs.json");
 
     public static final String CLUSTER_ID = "test";
 
