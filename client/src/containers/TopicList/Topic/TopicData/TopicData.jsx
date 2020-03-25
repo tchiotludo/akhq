@@ -463,7 +463,7 @@ class TopicData extends Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div className="value cell-div">
+                    <div className="value cell-div" style={{ maxHeight: '100%' }}>
                       <span className="align-cell value-span">
                         {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
                         {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
@@ -513,7 +513,10 @@ class TopicData extends Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div className="value cell-div">
+                    <div
+                      className="value cell-div"
+                      style={{ marginLeft: '-10px', marginRight: '-10px' }}
+                    >
                       <div style={{ float: 'right' }}>
                         <span className="align-cell headers-span">
                           {Object.keys(obj[col.accessor]).length}
@@ -526,7 +529,7 @@ class TopicData extends Component {
                               className="btn btn-secondary headers"
                               onClick={() => this.showHeadersModal(obj[col.accessor])}
                             >
-                              Details
+                              ...
                             </button>
                           </div>
                         )}

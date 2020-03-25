@@ -146,7 +146,6 @@ class SchemaRegistryList extends Component {
       subject: schemaToDelete.subject
     };
     history.push({ loading: true });
-    console.log(deleteData)
     remove(uriDeleteSchema(), deleteData)
       .then(res => {
         this.props.history.push({
@@ -155,7 +154,7 @@ class SchemaRegistryList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        this.handleSchemaRegistry(res.data.schema);
+        this.handleSchemaRegistry(res.data.list);
       })
       .catch(err => {
         this.props.history.push({

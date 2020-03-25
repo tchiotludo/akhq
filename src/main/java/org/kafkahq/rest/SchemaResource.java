@@ -39,6 +39,6 @@ public class SchemaResource {
     public SchemaListDTO deleteSchema(@Body DeleteSchemaDTO deleteSchemaDTO) throws ExecutionException, InterruptedException, IOException, RestClientException {
         log.debug("Delete schema: {}", deleteSchemaDTO.getSubject());
         schemaService.deleteSchema(deleteSchemaDTO.getClusterId(), deleteSchemaDTO.getSubject());
-        return schemaService.getSchema(deleteSchemaDTO.getClusterId(), null, Optional.empty());
+        return schemaService.getSchema(deleteSchemaDTO.getClusterId(),Optional.empty(),Optional.empty());
     }
 }
