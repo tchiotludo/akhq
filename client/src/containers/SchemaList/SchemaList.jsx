@@ -180,7 +180,7 @@ class SchemaList extends Component {
 
     return (
       <div id="content">
-        <Header title="Consumer schemas" />
+        <Header title="Schemas Registry" />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"

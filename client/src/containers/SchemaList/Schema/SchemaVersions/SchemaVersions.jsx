@@ -109,6 +109,11 @@ class SchemaVersions extends Component {
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
       });
   };
+
+
+  handleVersion(version){
+    return <label className="badge primary-badge">{version}</label>
+  }
   render() {
     const { data, selectedCluster, showSchemaModal, schemaModalBody } = this.state;
     return (
@@ -125,7 +130,10 @@ class SchemaVersions extends Component {
               id: 'version',
               accessor: 'version',
               colName: 'Version',
-              type: 'text'
+              type: 'text',
+              cell:(obj,col)=>{
+                this.handleVersion(obj[col.accessor])
+              }
             },
             {
               id: 'schema',
