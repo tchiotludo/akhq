@@ -3,12 +3,11 @@ package org.kafkahq.rest;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micrometer.core.lang.Nullable;
-import io.micronaut.http.annotation.Body;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Delete;
-import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 import org.kafkahq.service.SchemaService;
+import org.kafkahq.service.dto.SchemaRegistry.CreateSchemaDTO;
+import org.kafkahq.service.dto.SchemaRegistry.SchemaDTO;
 import org.kafkahq.service.dto.SchemaRegistry.SchemaListDTO;
 import org.kafkahq.service.dto.SchemaRegistry.DeleteSchemaDTO;
 
@@ -42,10 +41,10 @@ public class SchemaResource {
     public SchemaListDTO deleteSchema(@Body DeleteSchemaDTO deleteSchemaDTO) throws ExecutionException, InterruptedException, IOException, RestClientException {
         log.debug("Delete schema: {}", deleteSchemaDTO.getSubject());
         schemaService.deleteSchema(deleteSchemaDTO.getClusterId(), deleteSchemaDTO.getSubject());
-        return schemaService.getSchema(deleteSchemaDTO.getClusterId(),Optional.empty(),Optional.empty());
-
+        return schemaService.getSchema(deleteSchemaDTO.getClusterId(), Optional.empty(), Optional.empty());
+    }
     @Post("/schema/create")
-    public void schemaCreate(@Body SchemaDTO schemaDTO) throws Exception {
+    public void schemaCreate(@Body CreateSchemaDTO schemaDTO) throws Exception {
         log.debug("Create topic {}", schemaDTO.getSubject());
         schemaService.createSchema(schemaDTO);
 

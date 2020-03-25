@@ -7,6 +7,7 @@ import org.kafkahq.models.Schema;
 import org.kafkahq.modules.AbstractKafkaWrapper;
 import org.kafkahq.modules.KafkaModule;
 import org.kafkahq.repositories.SchemaRegistryRepository;
+import org.kafkahq.service.dto.SchemaRegistry.CreateSchemaDTO;
 import org.kafkahq.service.dto.SchemaRegistry.SchemaDTO;
 import org.kafkahq.service.dto.SchemaRegistry.SchemaListDTO;
 import org.kafkahq.service.mapper.SchemaMapper;
@@ -27,37 +28,37 @@ import java.util.stream.Collectors;
         private KafkaModule kafkaModule;
         private AbstractKafkaWrapper kafkaWrapper;
         private Environment environment;
-        private SchemaRegistryRepository schemaRegistryRepository;
+        private SchemaRegistryRepository schemaRepository;
         private SchemaMapper schemaMapper;
 
         @Value("${kafkahq.pagination.page-size}")
         private Integer pageSize;
 
         @Inject
-        public SchemaService(KafkaModule kafkaModule, SchemaMapper schemaMapper, SchemaRegistryRepository schemaRegistryRepository, AbstractKafkaWrapper kafkaWrapper, Environment environment) {
+        public SchemaService(KafkaModule kafkaModule, SchemaMapper schemaMapper, SchemaRegistryRepository schemaRepository, AbstractKafkaWrapper kafkaWrapper, Environment environment) {
             this.kafkaModule = kafkaModule;
             this.schemaMapper = schemaMapper;
             this.kafkaWrapper = kafkaWrapper;
             this.environment = environment;
-            this.schemaRegistryRepository=schemaRegistryRepository;
+            this.schemaRepository=schemaRepository;
         }
 
         public SchemaListDTO getSchema(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
                 throws ExecutionException, InterruptedException, IOException, RestClientException {
             Pagination pagination = new Pagination(pageSize, pageNumber.orElse(1));
-            PagedList<Schema> list =this.schemaRegistryRepository.list(clusterId, pagination, search);
+            PagedList<Schema> list =this.schemaRepository.list(clusterId, pagination, search);
             ArrayList<SchemaDTO> schemaRegistryList = new ArrayList<>();
             list.stream().map(schemaRegistry -> schemaRegistryList.add(schemaMapper.fromSchemaRegistryToSchemaRegistryDTO(schemaRegistry))).collect(Collectors.toList());
             return new SchemaListDTO(schemaRegistryList, list.pageCount());
         }
     public int deleteSchema(String clusterId, String schema) throws ExecutionException, InterruptedException, IOException, RestClientException {
-       return schemaRegistryRepository.delete(clusterId, schema);
+       return schemaRepository.delete(clusterId, schema);
 
     
     }
 
 
-    public Schema createSchema(SchemaDTO schemaDTO) throws Exception {
+    public Schema createSchema(CreateSchemaDTO schemaDTO) throws Exception {
 
 
         if (this.schemaRepository.exist(schemaDTO.getCluster(), schemaDTO.getSubject())) {
