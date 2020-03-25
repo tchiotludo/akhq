@@ -17,11 +17,14 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+
 @Slf4j
 @Controller("${kafkahq.server.base-path:}/api")
 public class SchemaResource {
 
     private SchemaService schemaService;
+
+
 
     @Inject
     public SchemaResource(SchemaService schemaService) {
@@ -40,5 +43,11 @@ public class SchemaResource {
         log.debug("Delete schema: {}", deleteSchemaDTO.getSubject());
         schemaService.deleteSchema(deleteSchemaDTO.getClusterId(), deleteSchemaDTO.getSubject());
         return schemaService.getSchema(deleteSchemaDTO.getClusterId(),Optional.empty(),Optional.empty());
+
+    @Post("/schema/create")
+    public void schemaCreate(@Body SchemaDTO schemaDTO) throws Exception {
+        log.debug("Create topic {}", schemaDTO.getSubject());
+        schemaService.createSchema(schemaDTO);
+
     }
 }

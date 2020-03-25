@@ -10,4 +10,5 @@ public class SchemaMapper {
 
         return new SchemaDTO(schemaRegistry.getId(),schemaRegistry.getSubject(),schemaRegistry.getVersion(),schemaRegistry.getSchema().toString());
     }
-}
+
+
