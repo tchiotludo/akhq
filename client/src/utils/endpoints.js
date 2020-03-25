@@ -23,6 +23,9 @@ export const uriDeleteSchema = () => {
   return `${apiUrl}/schema/delete`;
 };
 
+export const uriDeleteSchemaVersion = () => {
+  return `${apiUrl}/schema/deleteversion`;
+};
 export const uriTopics = (id, view, search, pageNumber) => {
   return `${apiUrl}/topics?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
