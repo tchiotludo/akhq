@@ -1,7 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="schemas" type="java.util.List<org.kafkahq.models.Schema>" -->
+<#-- @ftlvariable name="schemas" type="java.util.List<org.akhq.models.Schema>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 

@@ -4,7 +4,7 @@
 <#-- @ftlvariable name="connectId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
-<#-- @ftlvariable name="connects" type="java.util.List<org.kafkahq.models.ConnectDefinition>" -->
+<#-- @ftlvariable name="connects" type="java.util.List<org.akhq.models.ConnectDefinition>" -->
 
 <#import "includes/template.ftl" as template>
 

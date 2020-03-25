@@ -2,7 +2,7 @@
 
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="resourceType" type="java.lang.String" -->
-<#-- @ftlvariable name="acls" type="java.util.List<org.kafkahq.models.AccessControlList>" -->
+<#-- @ftlvariable name="acls" type="java.util.List<org.akhq.models.AccessControlList>" -->
 
 
 <div class="table-responsive">

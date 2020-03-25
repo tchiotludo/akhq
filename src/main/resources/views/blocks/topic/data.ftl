@@ -1,10 +1,10 @@
 <#ftl output_format="HTML">
 
-<#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.String>>" -->
+<#-- @ftlvariable name="datas" type="java.util.List<org.akhq.models.Record<java.lang.Byte[], java.lang.String>>" -->
 <#-- @ftlvariable name="navbar" type="java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>>" -->
 <#-- @ftlvariable name="partitions" type="int" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
-<#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="topic" type="org.akhq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
