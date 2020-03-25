@@ -4,11 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Optional;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SchemaVersionDTO {
     private String subject;
     private String compatibilityLevel;
+    private int id;
     private String schema;
 }
