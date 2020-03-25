@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
 
 import Sidebar from '../SideBar';
+import Cluster from '../Cluster';
+import Tail from '../Tail';
+import NodesList from '../NodesList';
+import Group from '../Group';
+import Acls from '../Acls';
+import Connect from '../Connect';
+import SchemaList from '../SchemaList/SchemaList';
+import TopicList from '../TopicList';
+import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 class Dashboard extends Component {
@@ -65,6 +74,60 @@ class Dashboard extends Component {
           errorToastMessage: ''
         });
       }, this.state.errorToastTimeout);
+    }
+  };
+
+  renderSelectedTab = data => {
+    const { selectedTab } = this.state;
+
+    this.checkToasts();
+
+    switch (selectedTab) {
+      case 'cluster':
+        return <Cluster data={data} history={this.props.history} />;
+      case 'node':
+        return <NodesList data={data} history={this.props.history} />;
+      case 'topic':
+        return <TopicList data={data} history={this.props.history} />;
+      case 'tail':
+        return <Tail data={data} history={this.props.history} />;
+      case 'group':
+        return <Group data={data} history={this.props.history} />;
+      case 'acls':
+        return <Acls data={data} history={this.props.history} />;
+      case 'schema':
+        return <SchemaList data={data} history={this.props.history} />;
+      case 'connect':
+        return <Connect data={data} history={this.props.history} />;
+      default:
+        return <Cluster data={data} history={this.props.history} />;
+    }
+  };
+
+  renderActionTab = () => {
+    const { clusterId, selectedTab, action } = this.state;
+
+    // eslint-disable-next-line default-case
+    switch (selectedTab) {
+      case 'topic':
+        switch (action) {
+          case 'create':
+            return <TopicCreate clusterId={clusterId} />;
+          default:
+            return <Topic clusterId={clusterId} topicId={action} />;
+        }
+      case 'node':
+        return <tails clusterId={clusterId} nodeId={action} />;
+      case 'tail':
+        break;
+      case 'group':
+        break;
+      case 'acls':
+        break;
+      case 'schema':
+        break;
+      case 'connect':
+        break;
     }
   };
 

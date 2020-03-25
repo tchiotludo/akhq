@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import Header from '../Header/Header';
 import { Link } from 'react-router-dom';
-import Header from '../Header';
+import './styles.scss';
 
-class Schema extends Component {
+class SchemaList extends Component {
+  state = {};
   render() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
+
     return (
       <div id="content">
         <Header title="Schema Registry" />
@@ -24,4 +27,4 @@ class Schema extends Component {
   }
 }
 
-export default Schema;
+export default SchemaList;

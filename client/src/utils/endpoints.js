@@ -132,6 +132,14 @@ export const uriTopicsUpdateConfigs = () => {
   return `${apiUrl}/cluster/topic/update-configs`;
 };
 
+export const uriLatestSchemaVersion = (clusterId, subject) => {
+  return `${apiUrl}/schema/version?clusterId=${clusterId}&subject=${subject}`;
+};
+
+export const uriUpdateSchema = () => {
+  return `${apiUrl}/schema/update`;
+};
+
 export const uriSchemaCreate = () => {
   return `${apiUrl}/schema/create`;
 };
@@ -159,5 +167,6 @@ export default {
   uriSchemaCreate,
   uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,
-  uriTopicsConfigs
+  uriTopicsConfigs,
+  uriLatestSchemaVersion
 };

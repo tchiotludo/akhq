@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import Header from '../Header';
+import Header from '../../Header';
 import Joi from 'joi-browser';
-import Form from '../../components/Form/Form';
-import { post } from '../../utils/api';
-import { uriSchemaCreate } from '../../utils/endpoints';
+import Form from '../../../components/Form/Form';
+import { post } from '../../../utils/api';
+import { uriSchemaCreate } from '../../../utils/endpoints';
 
 class SchemaCreate extends Form {
   state = {
@@ -87,7 +86,7 @@ class SchemaCreate extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Create a topic" />
+          <Header title="Create a schema" />
           {this.renderInput('subject', 'Subject', 'Subject')}
 
           {this.renderSelect(

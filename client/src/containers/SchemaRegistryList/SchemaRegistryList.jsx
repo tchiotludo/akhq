@@ -253,8 +253,8 @@ class SchemaRegistryList extends Component {
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}
-          onDetails={id => {
-            history.push(`/${selectedCluster}/schema/${id}`);
+          onDetails={schema => {
+            history.push(`/${selectedCluster}/schema/details/${schema}`);
           }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />
