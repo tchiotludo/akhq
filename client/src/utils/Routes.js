@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { withRouter, Switch, Route, Redirect } from 'react-router-dom';
+import React, {Component} from 'react';
+import {withRouter, Switch, Route, Redirect} from 'react-router-dom';
 import TopicList from '../containers/TopicList';
 import Topic from '../containers/TopicList/Topic';
 import NodesList from '../containers/NodesList/NodesList';
@@ -14,65 +14,66 @@ import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
-import SchemaList from '../containers/SchemaList/SchemaList';
 import Schema from '../containers/SchemaList/Schema/Schema';
-import SchemaCreate from '../containers/SchemaList/SchemaCreate';
+import SchemaRegistryList from '../containers/SchemaRegistryList/SchemaRegistryList'
+import SchemaCreate from '../containers/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 
 class Routes extends Component {
-  render() {
-    const { location } = this.props;
-    let path = window.location.pathname.split('/');
+    render() {
+        const {location} = this.props;
+        let path = window.location.pathname.split('/');
 
-    let clusterId = '';
-    clusterId = path[1];
-    if (clusterId.length <= 0) {
-      clusterId = this.props.clusterId;
+        let clusterId = '';
+        clusterId = path[1];
+        if (clusterId.length <= 0) {
+            clusterId = this.props.clusterId;
+        }
+
+        if (path[1] === 'error') {
+            return (
+                <Switch>
+                    <Route exact path="/error" component={ErrorPage}/>
+                </Switch>
+            );
+        }
+        if (clusterId.length > 0) {
+            return (
+                <Base>
+                    <Switch location={location}>
+                        <Route exact path="/:clusterId/topic" component={TopicList}/>
+                        <Route exact path="/:clusterId/topic/create" component={TopicCreate}/>
+                        <Route exact path="/:clusterId/topic/:topicId" component={Topic}/>
+                        <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce}/>
+
+                        <Route exact path="/:clusterId/node" component={NodesList}/>
+                        <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails}/>
+
+                        <Route exact path="/:clusterId/group" component={ConsumerGroupList}/>
+                        <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup}/>
+                        <Route
+                            exact
+                            path="/:clusterId/group/:consumerGroupId/offsets"
+                            component={ConsumerGroupUpdate}
+                        />
+
+                        <Route exact path="/:clusterId/tail" component={Tail}/>
+                        <Route exact path="/:clusterId/acls" component={Acls}/>
+
+                        <Route exact path="/:clusterId/schema" component={SchemaRegistryList}/>
+                        <Route exact path="/:clusterId/schema/create" component={SchemaCreate}/>
+                        <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
+
+                        <Route exact path="/:clusterId/connect" component={Connect}/>
+                        <Route exact path="/:clusterId/connect/:connectId" component={Connect}/>
+                        {/* <Route exact path="/error" component={ErrorPage} /> */}
+                        <Redirect from="/" to={`/${clusterId}/topic`}/>
+                    </Switch>
+                </Base>
+            );
+        }
+        return <Loading show/>;
     }
-
-    if (path[1] === 'error') {
-      return (
-        <Switch>
-          <Route exact path="/error" component={ErrorPage} />
-        </Switch>
-      );
-    }
-    if (clusterId.length > 0) {
-      return (
-        <Base>
-          <Switch location={location}>
-            <Route exact path="/:clusterId/topic" component={TopicList} />
-            <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
-            <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
-            <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
-
-            <Route exact path="/:clusterId/node" component={NodesList} />
-            <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
-
-            <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
-            <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
-            <Route
-              exact
-              path="/:clusterId/group/:consumerGroupId/offsets"
-              component={ConsumerGroupUpdate}
-            />
-
-            <Route exact path="/:clusterId/tail" component={Tail} />
-            <Route exact path="/:clusterId/acls" component={Acls} />
-
-            <Route exact path="/:clusterId/schema" component={SchemaList} />
-            <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
-            <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
-
-            <Route exact path="/:clusterId/connect" component={Connect} />
-            <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
-            {/* <Route exact path="/error" component={ErrorPage} /> */}
-            <Redirect from="/" to={`/${clusterId}/topic`} />
-          </Switch>
-        </Base>
-      );
-    }
-    return <Loading show />;
-  }
 }
+
 export default withRouter(Routes);

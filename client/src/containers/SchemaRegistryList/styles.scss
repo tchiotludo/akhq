@@ -1,0 +1,16 @@
+.value {
+  overflow: hidden;
+}
+
+.value-span {
+  height: 100%;
+  width: 60%;
+  display: inline-block;
+  padding: 0.3rem;
+}
+
+.value-button {
+  float: right;
+  display: block;
+  width: 40%;
+}
