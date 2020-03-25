@@ -15,11 +15,12 @@ class Table extends Component {
     return (
       <>
         {has2Headers && (
-          <thead className="thead-dark">
+          <thead id="firstHeader" className="thead-dark">
             <tr key="firstHeader">
               {firstHeader.map((column, index) => {
                 return (
                   <th
+                    id="headerColumn"
                     className="header-text"
                     key={`firstHead${column.colName}${index}`}
                     colSpan={column.colSpan}
@@ -34,7 +35,7 @@ class Table extends Component {
             </tr>
           </thead>
         )}
-        <thead className="thead-dark">
+        <thead id="secondHeader" className="thead-dark">
           <tr key="secondHeader">
             {columns.map((column, index) => {
               return (
@@ -76,13 +77,14 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onDelete } = this.props;
+    const { actions, onAdd, onDetails, onDelete, onEdit } = this.props;
 
     return (
       <>
         {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
+              id="add"
               onClick={() => {
                 onAdd && onAdd();
               }}
@@ -94,6 +96,7 @@ class Table extends Component {
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
+              id="details"
               onClick={() => {
                 onDetails && onDetails(row.id);
               }}
@@ -105,6 +108,7 @@ class Table extends Component {
         {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
+              id="delete"
               onClick={() => {
                 onDelete && onDelete(row);
               }}
@@ -115,9 +119,14 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link to={row.url || '/'}>
+            <span
+              id="edit"
+              onClick={() => {
+                onEdit && onEdit();
+              }}
+            >
               <i className="fa fa-search" />
-            </Link>
+            </span>
           </td>
         )}
       </>

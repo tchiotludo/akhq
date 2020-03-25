@@ -3,6 +3,7 @@ import React from 'react';
 import Enzyme, { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Table from './Table';
+import { TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_EDIT } from '../../utils/constants';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -44,7 +45,6 @@ describe('Table', () => {
       type: 'text'
     }
   ];
-
   const data = [
     {
       test_1: 'test',
@@ -57,10 +57,42 @@ describe('Table', () => {
       test_3: 'test3'
     }
   ];
+  const actions = [TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_EDIT];
+  const header = [
+    { colName: 'MockHead1', colSpan: 1 },
+    { colName: 'MockHead2', colSpan: 2 }
+  ];
+
+  let value = '';
+  const mockFunction = newValue => {
+    value = newValue;
+  };
+
+  const wrapper = shallow(
+    <Table
+      has2Headers
+      firstHeader={header}
+      columns={columns}
+      data={data}
+      actions={actions}
+      onAdd={() => {
+        mockFunction(TABLE_ADD);
+      }}
+      onDetails={() => {
+        mockFunction(TABLE_DETAILS);
+      }}
+      onEdit={() => {
+        mockFunction(TABLE_EDIT);
+      }}
+      onDelete={() => {
+        mockFunction(TABLE_DELETE);
+      }}
+    />
+  );
+
+  const rows = wrapper.find('tbody tr');
 
   it('renders successfully', () => {
-    const wrapper = shallow(<Table columns={columns} data={data} />);
-    const rows = wrapper.find('tbody tr');
     expect(rows).toHaveLength(2);
   });
 
@@ -72,10 +104,44 @@ describe('Table', () => {
   });
 
   it('changes custom cell value', () => {
-    const wrapper = shallow(<Table columns={columns} data={data} />);
-    const rows = wrapper.find('tbody tr');
     let input = rows.first().find('td #name');
     input.simulate('change', { target: { value: 'test' } });
     expect(text).toEqual('test');
+  });
+
+  it('does add logic', () => {
+    let add = rows.first().find('#add');
+    add.simulate('click');
+    expect(value).toEqual(TABLE_ADD);
+  });
+
+  it('does edit logic', () => {
+    let edit = rows.first().find(`#${TABLE_EDIT}`);
+    edit.simulate('click');
+    expect(value).toEqual(TABLE_EDIT);
+  });
+
+  it('does details logic', () => {
+    let details = rows.first().find(`#${TABLE_DETAILS}`);
+    details.simulate('click');
+    expect(value).toEqual(TABLE_DETAILS);
+  });
+
+  it('does delete logic', () => {
+    let remove = rows.first().find(`#${TABLE_DELETE}`);
+    remove.simulate('click');
+    expect(value).toEqual(TABLE_DELETE);
+  });
+
+  it('renders two headers', () => {
+    let headers = wrapper.find('thead');
+    expect(headers).toHaveLength(2);
+  });
+
+  it('renders only two columns on first header', () => {
+    let headers = wrapper.find('thead');
+    let firstHeader = headers.find('#firstHeader');
+    let columns = firstHeader.find('#headerColumn');
+    expect(columns).toHaveLength(2);
   });
 });
