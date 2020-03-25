@@ -21,6 +21,7 @@ import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroupList/ConsumerGroup';
+import SchemaRegistryList from '../containers/SchemaRegistryList/SchemaRegistryList'
 import SchemaCreate from '../containers/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 
@@ -64,6 +65,7 @@ class Routes extends Component {
 
             <Route exact path="/:clusterId/tail" component={Tail} />
             <Route exact path="/:clusterId/acls" component={Acls} />
+            <Route exact path="/:clusterId/schema" component={SchemaRegistryList} />
 
             <Route exact path="/:clusterId/schema" component={Schema} />
             <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
