@@ -253,8 +253,15 @@ class SchemaList extends Component {
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}
-          onDetails={schema => {
-            history.push(`/${selectedCluster}/schema/details/${schema}`);
+          onDetails={schemaId => {
+            let schema = this.state.schemasRegistry.find(schema => {
+              return schema.id === schemaId;
+            });
+            console.log(schema);
+            history.push({
+              pathname: `/${selectedCluster}/schema/details/${schema.subject}`,
+              schemaId: schema.subject
+            });
           }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />

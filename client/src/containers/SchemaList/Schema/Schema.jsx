@@ -10,12 +10,12 @@ class Schema extends Component {
   state = {
     clusterId: '',
     schemaId: '',
-    schemaName:'',
     selectedTab: 'update'
   };
 
   componentDidMount() {
-    const { clusterId, schemaId } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
+    const { schemaId } = this.props.history.state || this.props.match.params;
 
     this.setState({ clusterId, schemaId });
   }
@@ -30,16 +30,25 @@ class Schema extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, clusterId, schemaId , schemaName} = this.state;
+    const { selectedTab } = this.state;
     const { history, match } = this.props;
+    const { clusterId } = this.props.match.params;
+    const { schemaId } = this.props.history.state || this.props.match.params;
 
     switch (selectedTab) {
       case 'update':
-        return <SchemaUpdate history={history} match={match} />;
+        return <SchemaUpdate schemaId={schemaId} history={history} match={match} />;
       case 'versions':
-        return <SchemaVersions schemaName={schemaName} history={history} match={match} />;
+        return (
+          <SchemaVersions
+            schemaName={schemaId}
+            clusterId={clusterId}
+            history={history}
+            match={match}
+          />
+        );
       default:
-        return <SchemaUpdate history={history} match={match} />;
+        return <SchemaUpdate schemaId={schemaId} history={history} match={match} />;
     }
   }
 

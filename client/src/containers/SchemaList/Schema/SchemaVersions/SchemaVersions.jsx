@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import constants from '../../../../utils/constants';
 import './styles.scss';
-import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
-import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, { remove } from '../../utils/api';
-import endpoints, { uriDeleteSchemaVersion } from '../../utils/endpoints';
+import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
+import ConfirmModal from '../../../../components/Modal/ConfirmModal';
+import api, { remove, get } from '../../../../utils/api';
+import endpoints, { uriDeleteSchemaVersion, uriSchemaVersions } from '../../../../utils/endpoints';
 
 class SchemaVersions extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedSchema: this.props.schemaId,
+    selectedSchema: this.props.schemaName,
     showSchemaModal: false,
     schemaModalBody: '',
     deleteMessage: '',
     schemaToDelete: {},
-    deleteData: {}
+    deleteData: { clusterId: '', subject: '', versionId: 1 }
   };
 
   componentDidMount() {
@@ -32,8 +31,9 @@ class SchemaVersions extends Component {
       loading: true
     });
     try {
-      schemas = await get(endpoints.uriConsumerGroupTopics(selectedCluster, selectedSchema));
-
+      schemas = await get(endpoints.uriSchemaVersions(selectedCluster, selectedSchema));
+      console.log('aqui');
+      console.log(schemas);
       this.handleData(schemas.data);
     } catch (err) {
       console.error('Error:', err);
@@ -45,6 +45,7 @@ class SchemaVersions extends Component {
   }
 
   handleData(schemas) {
+    console.log(schemas);
     let data = schemas.map(schema => {
       return {
         id: schema.id,
@@ -67,8 +68,9 @@ class SchemaVersions extends Component {
   };
 
   handleOnDelete(schema) {
+    console.log(schema);
     this.setState({ schemaToDelete: schema }, () => {
-      this.showDeleteModal(`Delete SchemaRegistry ${schema.subject}?`);
+      this.showDeleteModal(`Delete Version ${schema.id}?`);
     });
   }
 

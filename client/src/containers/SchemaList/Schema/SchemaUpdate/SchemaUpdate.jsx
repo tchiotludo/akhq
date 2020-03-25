@@ -8,7 +8,6 @@ class SchemaUpdate extends Form {
   state = {
     clusterId: '',
     schemaId: '',
-    schemaName: '',
     compatibilityOptions: [
       {
         _id: 'NONE',
@@ -60,9 +59,9 @@ class SchemaUpdate extends Form {
   };
 
   componentDidMount() {
-    const { clusterId, schemaId, schemaName } = this.props.match.params;
-
-    this.setState({ clusterId, schemaId ,schemaName}, () => this.getLatestSchemaVersion());
+    const { clusterId } = this.props.match.params;
+    const {schemaId}=this.props || this.props.match.params;
+    this.setState({ clusterId, schemaId }, () => this.getLatestSchemaVersion());
   }
 
   async getLatestSchemaVersion() {
@@ -101,7 +100,6 @@ class SchemaUpdate extends Form {
 
   doSubmit() {
     const { clusterId, formData } = this.state;
-    console.log(formData);
     const { history } = this.props;
     const body = {
       clusterId,
