@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: kafkahq
+    name: akhq
   server:
     cors:
       enabled: true
@@ -67,7 +67,7 @@ endpoints:
 jackson:
   module-scan: false
 
-kafkahq:
+akhq:
   connections:
     my-cluster:
       properties:
