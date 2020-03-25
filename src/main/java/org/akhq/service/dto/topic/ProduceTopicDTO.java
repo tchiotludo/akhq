@@ -26,5 +26,9 @@ public class ProduceTopicDTO {
     private Integer partition;
     @Nullable
     private String timestamp;
+    @Nullable
+    private Integer keySchemaId;
+    @Nullable
+    private Integer valueSchemaId;
 
 }
