@@ -10,6 +10,7 @@ class Schema extends Component {
   state = {
     clusterId: '',
     schemaId: '',
+    schemaName:'',
     selectedTab: 'update'
   };
 
@@ -29,14 +30,14 @@ class Schema extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, clusterId, schemaId } = this.state;
+    const { selectedTab, clusterId, schemaId , schemaName} = this.state;
     const { history, match } = this.props;
 
     switch (selectedTab) {
       case 'update':
         return <SchemaUpdate history={history} match={match} />;
       case 'versions':
-        return <SchemaVersions history={history} match={match} />;
+        return <SchemaVersions schemaName={schemaName} history={history} match={match} />;
       default:
         return <SchemaUpdate history={history} match={match} />;
     }
