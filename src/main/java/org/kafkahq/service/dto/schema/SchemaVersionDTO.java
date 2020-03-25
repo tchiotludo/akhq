@@ -13,5 +13,6 @@ public class SchemaVersionDTO {
     private String subject;
     private String compatibilityLevel;
     private int id;
+    private int version;
     private String schema;
 }

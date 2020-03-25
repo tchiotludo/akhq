@@ -25,6 +25,7 @@ public class SchemaMapper {
                 schema.getLeft().getSubject(),
                 schema.getRight().orElse(""),
                 schema.getLeft().getId(),
+                schema.getLeft().getVersion(),
                 schema.getLeft().getSchema().toString()
         );
     }
