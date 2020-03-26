@@ -7,22 +7,39 @@ class ErrorPage extends Component {
   static propTypes = {
     children: PropTypes.element
   };
+
   state = {
     title: null,
     description: null
   };
 
-  componentDidMount() {
-    let errorData = {};
-    if (this.props.location && this.props.history.location.state) {
-      errorData = this.props.history.location.state.errorData;
-    } else if (history.location && history.location.state) {
-      errorData = history.location.state.errorData;
-    }
+  onUnload(event) {
+    localStorage.setItem('reload', true);
+  }
 
-    if (errorData.response) {
-      let { title, description } = errorData.response.data;
-      this.setState({ title, description });
+  // componentWillUnmount() {
+  //   console.log('unmounted?');
+  //   window.removeEventListener('beforeunload', this.onUnload);
+  // }
+
+  componentDidMount() {
+    //console.log('mounted?', this.props.location, this.props.history.location.state.errorData);
+    window.addEventListener('beforeunload', this.onUnload);
+    let errorData = {};
+    if (localStorage.getItem('reload') === 'true') {
+      this.props.history.push(JSON.parse(localStorage.getItem('lastRoute')));
+      localStorage.setItem('reload', false);
+    } else {
+      if (this.props.location && this.props.history.location.state) {
+        errorData = this.props.history.location.state.errorData;
+      } else if (history.location && history.location.state) {
+        errorData = history.location.state.errorData;
+      }
+
+      if (errorData.response) {
+        let { title, description } = errorData.response.data;
+        this.setState({ title, description });
+      }
     }
   }
 

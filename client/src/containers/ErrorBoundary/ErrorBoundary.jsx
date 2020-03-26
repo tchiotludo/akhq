@@ -40,7 +40,7 @@ class ErrorBoundary extends Component {
     const { error, info, hasError } = this.state;
     const { children } = this.props;
     if (hasError) {
-      return <ErrorPage history={history} />;
+      return <ErrorPage history={this.props.history} />;
     }
     return children;
   }
