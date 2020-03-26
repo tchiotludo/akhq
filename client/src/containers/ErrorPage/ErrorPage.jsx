@@ -17,13 +17,7 @@ class ErrorPage extends Component {
     localStorage.setItem('reload', true);
   }
 
-  // componentWillUnmount() {
-  //   console.log('unmounted?');
-  //   window.removeEventListener('beforeunload', this.onUnload);
-  // }
-
   componentDidMount() {
-    //console.log('mounted?', this.props.location, this.props.history.location.state.errorData);
     window.addEventListener('beforeunload', this.onUnload);
     let errorData = {};
     if (localStorage.getItem('reload') === 'true') {
