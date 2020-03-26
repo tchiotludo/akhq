@@ -50,11 +50,15 @@ public class SchemaResource {
         return schemaService.getAllSchemaVersions(clusterId, subject);
     }
 
+
+
     @Get("/schema/version")
     public SchemaVersionDTO fetchLatestSchemaVersion(String clusterId, String subject) throws IOException, RestClientException {
         log.debug("Fetching latest schema version from subject: {}", subject);
         return schemaService.getLatestSchemaVersion(clusterId, subject);
     }
+
+
 
     @Delete("/schema/version")
     public void deleteSchemaVersion(DeleteSchemaVersionDTO deleteSchemaDTO) throws IOException, RestClientException {

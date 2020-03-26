@@ -13,6 +13,7 @@ class SchemaVersions extends Component {
     selectedCluster: this.props.clusterId,
     selectedSchema: this.props.schemaName,
     showSchemaModal: false,
+    schemaVersions: this.props.schemas,
     schemaModalBody: '',
     deleteMessage: '',
     schemaToDelete: {},
@@ -20,40 +21,22 @@ class SchemaVersions extends Component {
   };
 
   componentDidMount() {
-    this.getSchemaVersions();
-  }
-
-  async getSchemaVersions() {
-    let schemas = [];
-    const { selectedCluster, selectedSchema } = this.state;
-    const { history } = this.props;
-    history.push({
-      loading: true
-    });
-    try {
-      schemas = await get(endpoints.uriSchemaVersions(selectedCluster, selectedSchema));
-      console.log('aqui');
-      console.log(schemas);
-      this.handleData(schemas.data);
-    } catch (err) {
-      console.error('Error:', err);
-    } finally {
-      history.push({
-        loading: false
-      });
-    }
+    this.handleData(this.state.schemaVersions);
   }
 
   handleData(schemas) {
-    console.log(schemas);
-    let data = schemas.map(schema => {
-      return {
-        id: schema.id,
-        version: schema.version,
-        schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
-      };
-    });
-    this.setState({ data });
+    if (schemas) {
+      let data = schemas.map(schema => {
+        return {
+          id: schema.id,
+          version: schema.version,
+          schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
+        };
+      });
+      this.setState({ data });
+    } else {
+      this.setState({ data: [] });
+    }
   }
 
   showSchemaModal = body => {
@@ -68,7 +51,6 @@ class SchemaVersions extends Component {
   };
 
   handleOnDelete(schema) {
-    console.log(schema);
     this.setState({ schemaToDelete: schema }, () => {
       this.showDeleteModal(`Delete Version ${schema.id}?`);
     });
@@ -83,22 +65,24 @@ class SchemaVersions extends Component {
   };
 
   deleteSchemaRegistry = () => {
-    const { selectedCluster, schemaToDelete } = this.state;
+    const { selectedCluster, schemaToDelete, selectedSchema } = this.state;
     const { history } = this.props;
     const deleteData = {
       clusterId: selectedCluster,
-      subject: schemaToDelete.subject
+      subject: selectedSchema,
+      versionId: schemaToDelete.version
     };
     history.push({ loading: true });
     remove(uriDeleteSchemaVersion(), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
-          successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
+          successToastMessage: `Version'${schemaToDelete.version}' is deleted`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        this.handleSchemaRegistry(res.data.list);
+        this.setState({ showDeleteModal: false, schemaToDelete: {} }, () => {
+          this.handleData(res.data);
+        });
       })
       .catch(err => {
         this.props.history.push({
@@ -110,10 +94,6 @@ class SchemaVersions extends Component {
       });
   };
 
-
-  handleVersion(version){
-    return <label className="badge primary-badge">{version}</label>
-  }
   render() {
     const { data, selectedCluster, showSchemaModal, schemaModalBody } = this.state;
     return (
@@ -131,8 +111,8 @@ class SchemaVersions extends Component {
               accessor: 'version',
               colName: 'Version',
               type: 'text',
-              cell:(obj,col)=>{
-                this.handleVersion(obj[col.accessor])
+              cell: (obj, col) => {
+                return <span className="badge badge-primary">{obj[col.accessor] || ''}</span>;
               }
             },
             {

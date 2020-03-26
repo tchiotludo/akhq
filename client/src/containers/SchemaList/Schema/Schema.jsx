@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
-
 import { Link } from 'react-router-dom';
-
 import Header from '../../Header';
 import SchemaVersions from './SchemaVersions';
 import SchemaUpdate from './SchemaUpdate';
+import api, { get } from '../../../utils/api';
+import endpoints, { uriSchemaVersions } from '../../../utils/endpoints';
 
 class Schema extends Component {
   state = {
-    clusterId: '',
-    schemaId: '',
-    selectedTab: 'update'
+    clusterId: this.props.match.params.clusterId,
+    schemaId: this.props.history.schemaId || this.props.match.params.schemaId,
+    selectedTab: 'update',
+    totalVersions: 0,
+    schemaVersions: []
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
-    const { schemaId } = this.props.history.state || this.props.match.params;
-
-    this.setState({ clusterId, schemaId });
+    this.getSchemaVersions();
   }
 
   selectTab = tab => {
@@ -29,8 +28,27 @@ class Schema extends Component {
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
   };
 
+  async getSchemaVersions() {
+    let schemas = [];
+    const { clusterId, schemaId } = this.state;
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
+    try {
+      schemas = await get(endpoints.uriSchemaVersions(clusterId, schemaId));
+      this.setState({ schemaVersions: schemas.data , totalVersions:schemas.data.length});  
+    } catch (err) {
+      console.error('Error:', err);
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
+  }
+
   renderSelectedTab() {
-    const { selectedTab } = this.state;
+    const { selectedTab, schemaVersions } = this.state;
     const { history, match } = this.props;
     const { clusterId } = this.props.match.params;
     const { schemaId } = this.props.history.state || this.props.match.params;
@@ -43,6 +61,7 @@ class Schema extends Component {
           <SchemaVersions
             schemaName={schemaId}
             clusterId={clusterId}
+            schemas={schemaVersions}
             history={history}
             match={match}
           />
@@ -53,7 +72,7 @@ class Schema extends Component {
   }
 
   render() {
-    const { schemaId } = this.state;
+    const { schemaId, totalVersions } = this.state;
 
     return (
       <div id="content">
@@ -77,7 +96,7 @@ class Schema extends Component {
                 to="#"
                 role="tab"
               >
-                Versions
+                Versions <span className="badge badge-secondary">{totalVersions}</span>
               </Link>
             </li>
           </ul>
