@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Table from '../../components/Table';
-import endpoints,{ uriDeleteGroups }  from '../../utils/endpoints';
+import endpoints, { uriDeleteGroups } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
@@ -10,7 +10,6 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-
 
 class ConsumerGroupList extends Component {
   state = {
@@ -265,7 +264,7 @@ class ConsumerGroupList extends Component {
           onDetails={id => {
             history.push(`/${selectedCluster}/group/${id}`);
           }}
-          actions={[constants.TABLE_DELETE,constants.TABLE_DETAILS]}
+          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />
 
         <div

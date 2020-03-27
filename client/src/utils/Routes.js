@@ -20,6 +20,16 @@ import SchemaCreate from '../containers/SchemaList/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 
 class Routes extends Component {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.location.pathname !== '/error') {
+      let routeObject = {
+        pathname: nextProps.location.pathname,
+        ...nextProps.history.location.state
+      };
+      localStorage.setItem('lastRoute', JSON.stringify(routeObject));
+    }
+  }
+
   render() {
     const { location } = this.props;
     let path = window.location.pathname.split('/');

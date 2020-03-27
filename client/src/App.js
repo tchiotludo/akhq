@@ -29,7 +29,7 @@ class App extends React.Component {
     return (
       <MuiPickersUtilsProvider utils={MomentUtils}>
         <Router history={history}>
-          <ErrorBoundary>
+          <ErrorBoundary history={history}>
             <Routes clusterId={clusterId} location={baseUrl} />
           </ErrorBoundary>
         </Router>
