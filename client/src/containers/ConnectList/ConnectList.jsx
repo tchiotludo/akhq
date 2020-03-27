@@ -238,7 +238,12 @@ class ConnectList extends Component {
           data={tableData}
           actions={[constants.TABLE_DETAILS, constants.TABLE_DELETE]}
           onDetails={name => {
-            history.push(`/${clusterId}/connect/${connectId}/definition/${name}`);
+            history.push({
+              pathname: `/${clusterId}/connect/${connectId}/definition/${name}`,
+              clusterId,
+              connectId,
+              definitionId: name
+            });
           }}
           onDelete={row => {
             this.handleOnDelete(row.id);

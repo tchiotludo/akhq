@@ -77,7 +77,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onDelete, onEdit } = this.props;
+    const { actions, onAdd, onDetails, onDelete, onEdit, onRestart } = this.props;
 
     return (
       <>
@@ -126,6 +126,18 @@ class Table extends Component {
               }}
             >
               <i className="fa fa-search" />
+            </span>
+          </td>
+        )}
+        {actions.find(el => el === constants.TABLE_RESTART) && (
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              id="restart"
+              onClick={() => {
+                onRestart && onRestart(row);
+              }}
+            >
+              <i className="fa fa-refresh" />
             </span>
           </td>
         )}

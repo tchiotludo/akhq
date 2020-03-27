@@ -13,6 +13,7 @@ public class ConnectDefinitionDTO {
     private String name;
     private String config;
     private String type;
+    private boolean paused;
     private String shortClassName;
     private List<TaskDefinitionDTO> tasks;
 

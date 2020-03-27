@@ -15,6 +15,27 @@ export const uriConnectDefinitions = (clusterId, connectId) => {
   return `${apiUrl}/connect/definitions?clusterId=${clusterId}&connectId=${connectId}`;
 };
 
+export const uriGetDefinition = (clusterId, connectId, definitionId) => {
+  // eslint-disable-next-line max-len
+  return `${apiUrl}/connect/definition?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+};
+
+export const uriPauseDefinition = () => {
+  return `${apiUrl}/connect/definition/pause`;
+};
+
+export const uriResumeDefinition = () => {
+  return `${apiUrl}/connect/definition/resume`;
+};
+
+export const uriRestartDefinition = () => {
+  return `${apiUrl}/connect/definition/restart`;
+};
+
+export const uriRestartTask = () => {
+  return `${apiUrl}/connect/definition/task/restart`;
+};
+
 export const uriDeleteDefinition = () => {
   return `${apiUrl}/connect/delete`;
 };
@@ -111,6 +132,7 @@ export const uriNodesLogs = (clusterId, nodeId) => {
 };
 
 export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
+  // eslint-disable-next-line max-len
   return `${apiUrl}/group?clusterId=${clusterId}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
@@ -162,6 +184,12 @@ export default {
   apiUrl,
   uriClusters,
   uriConnects,
+  uriGetDefinition,
+  uriPauseDefinition,
+  uriResumeDefinition,
+  uriRestartDefinition,
+  uriRestartTask,
+  uriConnectDefinitions,
   uriNodes,
   uriNodesConfigs,
   uriTopicsLogs,

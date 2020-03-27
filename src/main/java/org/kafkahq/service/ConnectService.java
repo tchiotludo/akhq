@@ -39,6 +39,26 @@ public class ConnectService {
                 .collect(Collectors.toList());
     }
 
+    public ConnectDefinitionDTO getConnectDefinition(String clusterId, String connectId, String definitionId) {
+        return this.connectMapper.fromConnectDefinitionToConnectDefinitionDTO(this.connectRepository.getDefinition(clusterId, connectId, definitionId));
+    }
+
+    public void pauseConnectDefinition(String clusterId, String connectId, String definitionId) {
+        this.connectRepository.pause(clusterId, connectId, definitionId);
+    }
+
+    public void restartConnectDefinition(String clusterId, String connectId, String definitionId) {
+        this.connectRepository.restart(clusterId, connectId, definitionId);
+    }
+
+    public void restartTask(String clusterId, String connectId, String definitionId, int taskId) {
+        this.connectRepository.restartTask(clusterId, connectId, definitionId, taskId);
+    }
+
+    public void resumeConnectDefinition(String clusterId, String connectId, String definitionId) {
+        this.connectRepository.resume(clusterId, connectId, definitionId);
+    }
+
     public List<ConnectDefinitionDTO> deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
         this.connectRepository.delete(
                 deleteConnectDefinitionDTO.getClusterId(),

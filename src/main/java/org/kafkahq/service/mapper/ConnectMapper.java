@@ -15,6 +15,7 @@ public class ConnectMapper {
                 connect.getName(),
                 connect.getConfigsAsJson(),
                 connect.getType(),
+                connect.isPaused(),
                 connect.getShortClassName(),
                 connect.getTasks()
                         .stream()
