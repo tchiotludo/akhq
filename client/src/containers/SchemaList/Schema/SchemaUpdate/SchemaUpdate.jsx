@@ -59,8 +59,8 @@ class SchemaUpdate extends Form {
   };
 
   componentDidMount() {
-    const { clusterId, schemaId } = this.props.match.params;
-
+    const { clusterId } = this.props.match.params;
+    const {schemaId}=this.props || this.props.match.params;
     this.setState({ clusterId, schemaId }, () => this.getLatestSchemaVersion());
   }
 
