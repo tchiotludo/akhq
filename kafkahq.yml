@@ -24,6 +24,8 @@ kafkahq:
       connect:
         - name: connect-1
           url: http://connect-1:8083
+#        - name: connect-2
+#          url: http://connect-2:8084
 
 
   # Topic list display options (optional)
