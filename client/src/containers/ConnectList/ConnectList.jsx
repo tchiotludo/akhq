@@ -72,7 +72,10 @@ class ConnectList extends Component {
           successToastMessage: `Definition '${definition}' is deleted`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, definitionToDelete: '' });
+        this.setState(
+          { showDeleteModal: false, definitionToDelete: '' },
+          this.handleData(res.data)
+        );
       })
       .catch(err => {
         this.props.history.push({

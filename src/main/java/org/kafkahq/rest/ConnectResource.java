@@ -37,12 +37,12 @@ public class ConnectResource {
     }
 
     @Delete("/connect/delete")
-    public void deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
+    public List<ConnectDefinitionDTO> deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
         log.debug(
                 "Deleting definition {} from connect {}",
                 deleteConnectDefinitionDTO.getDefinitionId(),
                 deleteConnectDefinitionDTO.getConnectId()
         );
-        this.connectService.deleteConnectDefinition(deleteConnectDefinitionDTO);
+        return this.connectService.deleteConnectDefinition(deleteConnectDefinitionDTO);
     }
 }
