@@ -78,7 +78,7 @@ kafkahq:
         - name: connect-1
           url: "http://localhost:8083"
         - name: connect-2
-          url: "http://localhost:8082"
+          url: "http://localhost:8084"
     my-cluster2:
       properties:
         bootstrap.servers: localhost:9092

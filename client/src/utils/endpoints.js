@@ -11,6 +11,14 @@ export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
+export const uriConnectDefinitions = (clusterId, connectId) => {
+  return `${apiUrl}/connect/definitions?clusterId=${clusterId}&connectId=${connectId}`;
+};
+
+export const uriDeleteDefinition = () => {
+  return `${apiUrl}/connect/delete`;
+};
+
 export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };

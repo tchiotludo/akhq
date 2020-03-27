@@ -1,10 +1,11 @@
 package org.kafkahq.rest;
 
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
-import org.kafkahq.configs.Connect;
 import org.kafkahq.service.ConnectService;
-import org.kafkahq.service.dto.ConnectDTO;
+import org.kafkahq.service.dto.connect.ConnectDefinitionDTO;
+import org.kafkahq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +25,24 @@ public class ConnectResource {
     }
 
     @Get("/connects")
-    public List<ConnectDTO> fetchAllConnectsFromCluster(String clusterId) {
+    public List<String> fetchAllConnectNames(String clusterId) {
         log.debug("Fetch all connects from cluster {}", clusterId);
-        return connectService.getAllConnectsFromCLuster(clusterId);
+        return connectService.getAllConnectNames(clusterId);
+    }
+
+    @Get("/connect/definitions")
+    public List<ConnectDefinitionDTO> fetchConnectDefinitions(String clusterId, String connectId) {
+        log.debug("Fetching definitions for connect: {}", connectId);
+        return connectService.getConnectDefinitions(clusterId, connectId);
+    }
+
+    @Delete("/connect/delete")
+    public void deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
+        log.debug(
+                "Deleting definition {} from connect {}",
+                deleteConnectDefinitionDTO.getDefinitionId(),
+                deleteConnectDefinitionDTO.getConnectId()
+        );
+        this.connectService.deleteConnectDefinition(deleteConnectDefinitionDTO);
     }
 }

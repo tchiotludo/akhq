@@ -100,7 +100,6 @@ class SchemaUpdate extends Form {
 
   doSubmit() {
     const { clusterId, formData } = this.state;
-    console.log(formData);
     const { history } = this.props;
     const body = {
       clusterId,

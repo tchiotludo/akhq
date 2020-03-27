@@ -1,16 +1,15 @@
 package org.kafkahq.service;
 
-import org.kafkahq.configs.Connect;
-import org.kafkahq.models.Cluster;
 import org.kafkahq.modules.KafkaModule;
-import org.kafkahq.service.dto.ConnectDTO;
+import org.kafkahq.repositories.ConnectRepository;
+import org.kafkahq.service.dto.connect.ConnectDefinitionDTO;
+import org.kafkahq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.kafkahq.service.mapper.ConnectMapper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.swing.text.html.Option;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -20,22 +19,31 @@ public class ConnectService {
 
     private ConnectMapper connectMapper;
 
+    private ConnectRepository connectRepository;
+
     @Inject
-    public ConnectService(KafkaModule kafkaModule, ConnectMapper connectMapper) {
+    public ConnectService(KafkaModule kafkaModule, ConnectMapper connectMapper, ConnectRepository connectRepository) {
         this.kafkaModule = kafkaModule;
         this.connectMapper = connectMapper;
+        this.connectRepository = connectRepository;
     }
 
-    public List<ConnectDTO> getAllConnectsFromCLuster(String clusterId) {
-        return Optional.ofNullable(kafkaModule.getConnection(clusterId))
-                .map(c -> convertToConnectDTO(c.getConnect()))
-                .orElse(null);
+    public List<String> getAllConnectNames(String clusterId) {
+        return new ArrayList<>(this.kafkaModule.getConnectRestClient(clusterId).keySet());
     }
 
-    private List<ConnectDTO> convertToConnectDTO(List<Connect> connects) {
-        return connects
+    public List<ConnectDefinitionDTO> getConnectDefinitions(String clusterId, String connectId) {
+        return this.connectRepository.getDefinitions(clusterId, connectId)
                 .stream()
-                .map(c -> connectMapper.fromConnectToConnectDTO(c))
+                .map(connectDefinition -> connectMapper.fromConnectDefinitionToConnectDefinitionDTO(connectDefinition))
                 .collect(Collectors.toList());
+    }
+
+    public void deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
+        this.connectRepository.delete(
+                deleteConnectDefinitionDTO.getClusterId(),
+                deleteConnectDefinitionDTO.getConnectId(),
+                deleteConnectDefinitionDTO.getDefinitionId()
+        );
     }
 }

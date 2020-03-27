@@ -7,7 +7,9 @@ import NodeDetails from '../containers/NodesList/Node';
 import Base from '../components/Base/Base.jsx';
 import Tail from '../containers/Tail';
 import Acls from '../containers/Acls';
-import Connect from '../containers/Connect';
+import ConnectList from '../containers/ConnectList/ConnectList';
+import ConnectCreate from '../containers/ConnectList/ConnectCreate/ConnectCreate';
+import Connect from '../containers/ConnectList/Connect/Connect';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
 import ErrorPage from '../containers/ErrorPage';
 import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
@@ -64,8 +66,13 @@ class Routes extends Component {
             <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
             <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
 
-            <Route exact path="/:clusterId/connect" component={Connect} />
-            <Route exact path="/:clusterId/connect/:connectId" component={Connect} />
+            <Route exact path="/:clusterId/connect/create" component={ConnectCreate} />
+            <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
+            <Route
+              exact
+              path="/:clusterId/connect/:connectId/definition/:definitionId"
+              component={Connect}
+            />
             {/* <Route exact path="/error" component={ErrorPage} /> */}
             <Redirect from="/" to={`/${clusterId}/topic`} />
           </Switch>

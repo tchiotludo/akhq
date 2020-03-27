@@ -6,7 +6,7 @@ import Tail from '../Tail';
 import NodesList from '../NodesList';
 import Group from '../Group';
 import Acls from '../Acls';
-import Connect from '../Connect';
+import Connect from '../ConnectList';
 import SchemaList from '../SchemaList/SchemaList';
 import TopicList from '../TopicList';
 import TopicCreate from '../TopicList/TopicCreate/TopicCreate';
