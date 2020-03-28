@@ -193,8 +193,12 @@ test {
 testlogger {
     theme 'mocha'
     showExceptions true
+    showFullStackTraces true
+    showCauses true
     slowThreshold 2000
     showStandardStreams true
+    showPassedStandardStreams false
+    showSkippedStandardStreams true
 }
 
 task testKafkaCluster(type:JavaExec) {

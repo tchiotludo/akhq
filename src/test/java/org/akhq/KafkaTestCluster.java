@@ -49,6 +49,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_IN = "stream-in";
     public static final String TOPIC_STREAM_MAP = "stream-map";
     public static final String TOPIC_STREAM_COUNT = "stream-count";
+    public static final String TOPIC_CONNECT = "connect-sink";
 
     private EmbeddedSingleNodeKafkaCluster kafkaCluster;
     private KafkaTestUtils testUtils;
@@ -253,6 +254,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.createTopic(TOPIC_EMPTY, 12, (short) 1);
         log.debug("Empty topic created");
 
+        // empty topic
+        testUtils.createTopic(TOPIC_CONNECT, 12, (short) 1);
+        log.debug("Connect topic created");
+
         // random data
         testUtils.createTopic(TOPIC_RANDOM, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
@@ -317,7 +322,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     }
 
     private static class Provider implements KafkaProvider {
-        private ConnectionString connectionString;
+        private final ConnectionString connectionString;
 
         public Provider(ConnectionString connection) {
             connectionString = connection;
@@ -351,10 +356,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     @Builder
     @Getter
     public static class ConnectionString {
-        private String kafka;
-        private String zookeeper;
-        private String schemaRegistry;
-        private String connect1;
-        private String connect2;
+        private final String kafka;
+        private final String zookeeper;
+        private final String schemaRegistry;
+        private final String connect1;
+        private final String connect2;
     }
 }

@@ -94,7 +94,7 @@ services:
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
 
   test-data:
-    image: gradle:6.1.1-jdk
+    image: gradle:6.3-jdk11
     command: "gradle --no-daemon testInjectData"
     working_dir: /app
     volumes:
