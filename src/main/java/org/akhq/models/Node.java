@@ -2,16 +2,18 @@ package org.akhq.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Node {
-    private final int id;
-    private final String host;
-    private final int port;
-    private final String rack;
+    private int id;
+    private String host;
+    private int port;
+    private String rack;
 
     public Node(org.apache.kafka.common.Node node) {
         this.id = node.id();

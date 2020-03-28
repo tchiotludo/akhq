@@ -1,13 +1,24 @@
 package org.akhq;
 
 import com.google.common.collect.ImmutableMap;
+import io.micronaut.core.type.Argument;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.MutableHttpRequest;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.RxHttpClient;
+import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
+import org.akhq.models.Node;
+import org.akhq.utils.PagedList;
+import org.akhq.utils.ResultPagedList;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -18,6 +29,44 @@ import static java.util.Map.entry;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(KafkaClusterExtension.class)
 abstract public class AbstractTest implements TestPropertyProvider {
+    @Inject
+    @Client("/")
+    protected RxHttpClient client;
+
+    protected <I, O> List<O> retrieveList(MutableHttpRequest<I> request, Class<O> bodyType) {
+        return client.toBlocking().retrieve(
+            request.basicAuth("admin", "pass"),
+            Argument.listOf(bodyType)
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <I, O> ResultPagedList<O> retrievePagedList(MutableHttpRequest<I> request, Class<O> bodyType) {
+        return client.toBlocking().retrieve(
+            request.basicAuth("admin", "pass"),
+            Argument.of(ResultPagedList.class, bodyType)
+        );
+    }
+
+    protected <I> String retrieve(MutableHttpRequest<I> request) {
+        return client.toBlocking().retrieve(
+            request.basicAuth("admin", "pass")
+        );
+    }
+
+    protected <I, O> O retrieve(MutableHttpRequest<I> request, Class<O> bodyType) {
+        return client.toBlocking().retrieve(
+            request.basicAuth("admin", "pass"),
+            bodyType
+        );
+    }
+
+    protected <I> void exchange(MutableHttpRequest<I> request) {
+        client.toBlocking().exchange(
+            request.basicAuth("admin", "pass")
+        );
+    }
+
     @Nonnull
     @Override
     public Map<String, String> getProperties() {

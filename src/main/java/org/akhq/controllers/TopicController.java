@@ -59,14 +59,14 @@ import java.util.stream.Collectors;
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
     public static final String KEY_SUFFIX = "-key";
-    private AbstractKafkaWrapper kafkaWrapper;
-    private TopicRepository topicRepository;
-    private ConfigRepository configRepository;
-    private RecordRepository recordRepository;
-    private FreemarkerViewsRenderer freemarkerViewsRenderer;
-    private Environment environment;
-    private AccessControlListRepository aclRepository;
-    private SchemaRegistryRepository schemaRegistryRepository;
+    private final AbstractKafkaWrapper kafkaWrapper;
+    private final TopicRepository topicRepository;
+    private final ConfigRepository configRepository;
+    private final RecordRepository recordRepository;
+    private final FreemarkerViewsRenderer freemarkerViewsRenderer;
+    private final Environment environment;
+    private final AccessControlListRepository aclRepository;
+    private final SchemaRegistryRepository schemaRegistryRepository;
 
     @Value("${akhq.topic.default-view}")
     private String defaultView;
@@ -376,7 +376,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
     @Post(value = "{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse updateConfig(HttpRequest request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
-        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName));
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), true);
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
         this.toast(response, RequestHelper.runnableToToast(() -> {
@@ -490,12 +490,12 @@ public class TopicController extends AbstractController {
         }
 
         @JsonProperty("percent")
-        private Double percent;
+        private final Double percent;
 
         @JsonProperty("body")
         private String body;
 
         @JsonProperty("after")
-        private String after;
+        private final String after;
     }
 }

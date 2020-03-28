@@ -1,7 +1,9 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.MemberDescription;
 
@@ -14,10 +16,11 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Consumer {
-    private final String id;
-    private final String clientId;
-    private final String host;
+    private String id;
+    private String clientId;
+    private String host;
     private final ArrayList<TopicPartition> assignments = new ArrayList<>();
 
     public Consumer(MemberDescription description) {
@@ -35,6 +38,7 @@ public class Consumer {
         );
     }
 
+    @JsonIgnore
     public ArrayList<GroupedAssignement> getGroupedAssignments() {
         Map<String, List<TopicPartition>> collect = this.assignments
             .stream()

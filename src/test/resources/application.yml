@@ -20,12 +20,21 @@ micronaut:
     kafka-wrapper:
       maximum-size: 0
 
+  server:
+    netty:
+      logLevel: TRACE
 
 akhq:
   server:
     base-path: ""
     access-log:
       enabled: false
+
+  clients-defaults:
+    consumer:
+      properties:
+        group.id: Akhq
+        enable.auto.commit: "false"
 
   topic:
     default-view: HIDE_INTERNAL
@@ -40,13 +49,42 @@ akhq:
       - "^.*-repartition$"
       - "^.*-rekey$"
     skip-consumer-groups: false
+
   topic-data:
     poll-timeout: 5000
+
+  pagination:
+    page-size: 5
 
   security:
     default-group: no-filter
     groups:
       admin:
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
+      limited:
         roles:
           - topic/read
           - topic/insert
@@ -72,12 +110,16 @@ akhq:
       user:
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
         groups:
+          - limited
+      admin:
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
           - admin
     ldap:
       group:
         ldap-admin:
           groups:
-            - admin
+            - limited
         ldap-operator:
           groups:
             - operator
