@@ -44,6 +44,8 @@
     <logger name="org.akhq" level="INFO" />
     <logger name="io.micronaut" level="INFO" />
 
+<!--    <logger name="io.netty.handler.logging" level="TRACE"/>-->
+
     <logger name="org.apache.kafka.common.utils.AppInfoParser" level="ERROR" />
     <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR" />

@@ -16,9 +16,9 @@ import io.micronaut.views.ViewsRenderer;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.RequestHelper;
 
-import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.inject.Inject;
 
 @Secured(SecurityRule.IS_ANONYMOUS)
 @Slf4j
@@ -37,7 +37,7 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(global = true)
-    public HttpResponse error(HttpRequest request, Throwable e) {
+    public HttpResponse error(HttpRequest<?> request, Throwable e) {
         log.error(e.getMessage(), e);
 
         if (isHtml(request)) {

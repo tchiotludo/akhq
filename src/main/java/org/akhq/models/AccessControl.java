@@ -10,36 +10,35 @@ import java.util.Map;
 @ToString
 @EqualsAndHashCode
 @Getter
-public class AccessControlList {
-
+@NoArgsConstructor
+public class AccessControl {
     private String principal;
     private String encodedPrincipal;
+    private final Map<String, Map<HostResource, List<String>>> permissions = new HashMap<>();
 
-    private final Map<String, Map<HostResource,List<String>>> permissions = new HashMap<>();
-
-    public static String encodePrincipal(String principal){
+    public static String encodePrincipal(String principal) {
         return Base64.getEncoder().encodeToString(principal.getBytes());
     }
 
-    public static String decodePrincipal(String encodedPrincipal){
+    public static String decodePrincipal(String encodedPrincipal) {
         return new String(Base64.getDecoder().decode(encodedPrincipal));
     }
 
-    public AccessControlList(String principal){
+    public AccessControl(String principal) {
         this.principal = principal;
         this.encodedPrincipal = encodePrincipal(principal);
     }
 
-    public AccessControlList(String principal, HashMap<String, Map<HostResource,List<String>>> permissions){
+    public AccessControl(String principal, HashMap<String, Map<HostResource, List<String>>> permissions) {
         this(principal);
         this.permissions.putAll(permissions);
     }
 
     @Data
     @AllArgsConstructor
-    public static class HostResource{
+    @NoArgsConstructor
+    public static class HostResource {
         private String host;
         private String resource;
     }
-
 }

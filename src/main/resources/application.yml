@@ -60,9 +60,6 @@ endpoints:
     enabled: true
     sensitive: false
 
-jackson:
-  module-scan: false
-
 akhq:
   server:
     base-path: ""

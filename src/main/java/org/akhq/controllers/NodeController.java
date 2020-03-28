@@ -10,25 +10,27 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
 import org.akhq.configs.Role;
+import org.akhq.models.Cluster;
 import org.akhq.models.Config;
+import org.akhq.models.LogDir;
 import org.akhq.models.Node;
 import org.akhq.modules.RequestHelper;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
+import javax.inject.Inject;
 
 @Secured(Role.ROLE_NODE_READ)
-@Controller("${akhq.server.base-path:}/{cluster}/node")
+@Controller("${akhq.server.base-path:}/")
 public class NodeController extends AbstractController {
-    private ClusterRepository clusterRepository;
-    private ConfigRepository configRepository;
-    private LogDirRepository logDirRepository;
+    private final ClusterRepository clusterRepository;
+    private final ConfigRepository configRepository;
+    private final LogDirRepository logDirRepository;
 
     @Inject
     public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository) {
@@ -38,8 +40,8 @@ public class NodeController extends AbstractController {
     }
 
     @View("nodeList")
-    @Get
-    public HttpResponse list(HttpRequest request, String cluster) throws ExecutionException, InterruptedException {
+    @Get("{cluster}/node")
+    public HttpResponse<?> list(HttpRequest<?> request, String cluster) throws ExecutionException, InterruptedException {
         return this.template(
             request,
             cluster,
@@ -47,22 +49,42 @@ public class NodeController extends AbstractController {
         );
     }
 
+    @Get("api/{cluster}/node")
+    public Cluster listApi(String cluster) throws ExecutionException, InterruptedException {
+        return this.clusterRepository.get(cluster);
+    }
+
     @View("node")
-    @Get("{nodeId}")
-    public HttpResponse home(HttpRequest request, String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+    @Get("{cluster}/node/{nodeId}")
+    public HttpResponse<?> home(HttpRequest<?> request, String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, nodeId, "configs");
     }
 
+    @Get("api/{cluster}/node/{nodeId}")
+    public Node nodeApi(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        return findNode(cluster, nodeId);
+    }
+
     @View("node")
-    @Get("{nodeId}/{tab:(logs)}")
-    public HttpResponse tab(HttpRequest request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
+    @Get("{cluster}/node/{nodeId}/{tab:(logs)}")
+    public HttpResponse<?> tab(HttpRequest<?> request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, nodeId, tab);
     }
 
+    @Get("api/{cluster}/node/{nodeId}/logs")
+    public List<LogDir> nodeLogApi(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        return logDirRepository.findByBroker(cluster, nodeId);
+    }
+
+    @Get("api/{cluster}/node/{nodeId}/configs")
+    public List<Config> nodeConfigApi(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        return nodeConfig(cluster, nodeId);
+    }
+
     @Secured(Role.ROLE_NODE_CONFIG_UPDATE)
-    @Post(value = "{nodeId}", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse updateConfig(HttpRequest request, String cluster, Integer nodeId, Map<String, String> configs) throws Throwable {
-        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId));
+    @Post(value = "{cluster}/node/{nodeId}", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> updateConfig(HttpRequest<?> request, String cluster, Integer nodeId, Map<String, String> configs) throws Throwable {
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId), true);
 
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
@@ -84,18 +106,27 @@ public class NodeController extends AbstractController {
         return response;
     }
 
-    private HttpResponse render(HttpRequest request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
-        Node node = this.clusterRepository.get(cluster)
-            .getNodes()
-            .stream()
-            .filter(e -> e.getId() == nodeId)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Node '" + nodeId + "' doesn't exist"));
+    @Post("api/{cluster}/node/{nodeId}/configs")
+    public List<Config> nodeConfigUpdateApi(String cluster, Integer nodeId, Map<String, String> configs) throws ExecutionException, InterruptedException {
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId), false);
 
-        List<Config> configs = this.configRepository.findByBroker(cluster, nodeId);
-        configs.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
-            (o1.isReadOnly() ? 1 : -1 )
+        if (updated.size() == 0) {
+            throw new IllegalArgumentException("No config to update");
+        }
+
+        this.configRepository.updateBroker(
+            cluster,
+            nodeId,
+            updated
         );
+
+        return updated;
+    }
+
+    private HttpResponse<?> render(HttpRequest<?> request, String cluster, Integer nodeId, String tab) throws ExecutionException, InterruptedException {
+        Node node = findNode(cluster, nodeId);
+
+        List<Config> configs = nodeConfig(cluster, nodeId);
 
         return this.template(
             request,
@@ -105,5 +136,24 @@ public class NodeController extends AbstractController {
             "logs", logDirRepository.findByBroker(cluster, node.getId()),
             "configs", configs
         );
+    }
+
+    private Node findNode(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        return this.clusterRepository.get(cluster)
+                .getNodes()
+                .stream()
+                .filter(e -> e.getId() == nodeId)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Node '" + nodeId + "' doesn't exist"));
+    }
+
+    private List<Config> nodeConfig(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        List<Config> configs = this.configRepository.findByBroker(cluster, nodeId);
+
+        configs.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
+            (o1.isReadOnly() ? 1 : -1 )
+        );
+
+        return configs;
     }
 }

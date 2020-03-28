@@ -118,5 +118,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         consumer.commitSync(offsets);
         consumer.close();
+
+        kafkaWrapper.clearConsumerGroupsOffsets();
     }
 }

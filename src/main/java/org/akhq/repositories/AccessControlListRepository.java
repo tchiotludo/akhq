@@ -6,7 +6,7 @@ import org.apache.kafka.common.acl.*;
 import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.akhq.models.AccessControlList;
+import org.akhq.models.AccessControl;
 import org.akhq.modules.AbstractKafkaWrapper;
 
 import javax.inject.Inject;
@@ -22,21 +22,21 @@ public class AccessControlListRepository extends AbstractRepository {
     @Inject
     private AbstractKafkaWrapper kafkaWrapper;
 
-    public List<AccessControlList> findAll(String clusterId, Optional<String> search) {
+    public List<AccessControl> findAll(String clusterId, Optional<String> search) {
         try {
             return kafkaWrapper.describeAcls(clusterId, AclBindingFilter.ANY).stream()
                     .map(acl -> acl.entry().principal())
                     .distinct()
                     .filter(principal -> isSearchMatch(search, principal))
-                    .map(AccessControlList::new)
+                    .map(AccessControl::new)
                     .collect(Collectors.toList());
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);
         }
     }
 
-    public AccessControlList findByPrincipal(String clusterId, String encodedPrincipal, Optional<String> resourceType) {
-        String principal = AccessControlList.decodePrincipal(encodedPrincipal);
+    public AccessControl findByPrincipal(String clusterId, String encodedPrincipal, Optional<String> resourceType) {
+        String principal = AccessControl.decodePrincipal(encodedPrincipal);
         try {
             var aclBindings = kafkaWrapper.describeAcls(clusterId, filterForPrincipal(principal, resourceType))
                     .stream().collect(Collectors.toList());
@@ -46,7 +46,7 @@ public class AccessControlListRepository extends AbstractRepository {
         }
     }
 
-    public List<AccessControlList> findByResourceType(String clusterId, ResourceType resourceType, String resourceName) {
+    public List<AccessControl> findByResourceType(String clusterId, ResourceType resourceType, String resourceName) {
         try {
             return kafkaWrapper.describeAcls(clusterId, filterForResource(resourceType, resourceName))
                     .stream()
@@ -73,13 +73,13 @@ public class AccessControlListRepository extends AbstractRepository {
         return new AclBindingFilter(resourcePatternFilter, accessControlEntryFilter);
     }
 
-    private AccessControlList toAcl(String principal, List<AclBinding> aclBindings) {
-        var permissions = new HashMap<String, Map<AccessControlList.HostResource,List<String>>>();
+    private AccessControl toAcl(String principal, List<AclBinding> aclBindings) {
+        var permissions = new HashMap<String, Map<AccessControl.HostResource,List<String>>>();
 
         aclBindings.stream()
                 .collect(Collectors.groupingBy(
                         acl -> new HostResourceType(
-                                new AccessControlList.HostResource(
+                                new AccessControl.HostResource(
                                         acl.entry().host(),
                                         acl.pattern().patternType().name().toLowerCase() + ":" + acl.pattern().name()),
                                 acl.pattern().resourceType()),
@@ -90,13 +90,14 @@ public class AccessControlListRepository extends AbstractRepository {
                     permissions.putIfAbsent(entry.getKey().resourceType.name().toLowerCase(), new HashMap<>());
                     permissions.get(entry.getKey().resourceType.name().toLowerCase()).put(entry.getKey().hostResource, entry.getValue());
                 });
-        return new AccessControlList(principal, permissions);
+
+        return new AccessControl(principal, permissions);
     }
 
     @Data
     @AllArgsConstructor
     class HostResourceType {
-        private AccessControlList.HostResource hostResource;
+        private AccessControl.HostResource hostResource;
         private ResourceType resourceType;
     }
 }
