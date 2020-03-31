@@ -3,6 +3,7 @@ export const TABLE_ADD = 'add';
 export const TABLE_EDIT = 'edit';
 export const TABLE_DELETE = 'delete';
 export const TABLE_DETAILS = 'details';
+export const TABLE_RESTART = 'restart';
 
 // Tab names/route names
 export const CLUSTER = 'cluster';
@@ -25,6 +26,7 @@ export default {
   TABLE_EDIT,
   TABLE_DELETE,
   TABLE_DETAILS,
+  TABLE_RESTART,
   CLUSTER,
   NODE,
   TOPIC,
