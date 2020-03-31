@@ -34,7 +34,11 @@ const Input = props => {
           placeholder={placeholder}
         />
 
-        {error && <div className="alert alert-danger mt-1 p-1">{error}</div>}
+        {error && (
+          <div id="input-error" className="alert alert-danger mt-1 p-1">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
