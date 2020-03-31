@@ -18,7 +18,6 @@ describe('Select', () => {
       { _id: 'test2', name: 'Test2' }
     ],
     onChange: value => {
-      console.log('change', value);
       testOption = value;
     }
   };
@@ -35,7 +34,6 @@ describe('Select', () => {
     const opt1 = options.at(0);
     const opt2 = options.at(1);
     select.simulate('change', { _id: 'test2', name: 'Test2' });
-    console.log(select.getElement(), opt1.getElement());
     expect(opt2.getElement().props.value).toBe(testOption._id);
     select.simulate('change', { _id: 'test', name: 'Test' });
     expect(opt1.getElement().props.value).toBe(testOption._id);
