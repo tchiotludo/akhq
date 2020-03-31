@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<!--suppress JSUnresolvedLibraryURL -->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AKHQ - Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect
+        and more...</title>
+    <meta name="description"
+          content="Get all the insight of your Apache Kafka clusters, see topics, browse data inside topics, see consumer groups and their lag, manage your schema registry, see and manage your Kafka Connect cluster status, and more...">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/icon" href="assets/images/logo/favicon.png"/>
+    <!-- Css -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Lato|Open+Sans:300,400,400i,600,700,800&display=swap"/>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css"
+          integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA="
+          crossorigin="anonymous"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css"
+          integrity="sha256-AIodEDkC8V/bHBkfyxzolUMw57jeQ9CauwhVW6YJ9CA="
+          crossorigin="anonymous"/>
+    <link href="assets/css/akhq-theme.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/slick.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"
+            integrity="sha256-3Jy/GbSLrg0o9y5Z5n1uw0qxZECH7C6OQpVBgNFYa0g="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"
+            integrity="sha256-g6iAfvZp+nDQ2TdTR/VVKJf3bGro4ub5fvWSWVRi2NE="
+            crossorigin="anonymous"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+
+    <!-- Start Header -->
+    <header id="mu-header" class="" role="banner">
+        <div class="container">
+            <nav class="navbar navbar-default mu-navbar">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button"
+                                class="navbar-toggle collapsed"
+                                data-toggle="collapse"
+                                data-target="#bs-example-navbar-collapse-1"
+                                aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+
+                        <!-- Image Logo -->
+                        <div style="display: flex; align-items: center">
+                            <a class="navbar-brand logo-header" href="index.html">
+                                <img src="assets/images/logo/akhqio_logo_yellow_white.svg" alt="Logo">
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav mu-menu navbar-right">
+                            <li><a href="#">HOME</a></li>
+                            <li><a href="#mu-book-overview">OVERVIEW</a></li>
+                            <li><a href="#mu-testimonials">TESTIMONIALS</a></li>
+                            <li><a href="#mu-about">ABOUT</a></li>
+                            <li>
+                                <a href="https://github.com/tchiotludo/akhq" target="_blank">
+                                    <i class="fa fa-github" aria-hidden="true"></i>
+                                    GITHUB
+                                </a>
+                            </li>
+                        </ul>
+                    </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+        </div>
+    </header>
+    <!-- End Header -->
+
+    <!-- Start Featured Slider -->
+
+    <section id="mu-hero">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-6 col-sm-6 col-sm-push-6">
+                    <div class="mu-hero-right">
+                        <a rel="noopener noreferrer" href="assets/images/preview.jpg" data-fancybox="gallery">
+                            <img src="assets/images/preview.jpg" alt="AKHQ preview">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6 col-sm-pull-6">
+                    <div class="mu-hero-left">
+                        <h1>Manage & view data inside your Apache Kafka<sup>&nbsp;&#174;</sup> cluster</h1>
+                        <p>Kafka GUI for Apache Kafka<sup>&nbsp;&#174;</sup> to manage topics, topics data, consumers
+                            group, schema registry,
+                            connect and more...</p>
+                        <a href="https://github.com/tchiotludo/akhq#quick-preview"
+                           target="_blank"
+                           class="mu-primary-btn">Quick Start</a>
+                        <a href="https://github.com/tchiotludo/akhq/releases"
+                           target="_blank"
+                           class="mu-primary-btn mu-primary-outline-btn">Download</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Start Featured Slider -->
+
+    <!-- Start main content -->
+
+    <main role="main">
+
+        <!-- Start Who's Using -->
+        <section id="mu-using">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mu-using-area">
+                            <div class="mu-using-block">
+                                <div class="row">
+                                    <h3 class="mu-using-title">Who's using AKHQ</h3>
+                                    <span class="mu-using-dot"></span>
+                                    <div class="mu-using-row">
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/adeo.png" alt="Adeo">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/auchan-retail.jpg" alt="Auchan Retail">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/boulanger.jpg" alt="Boulanger">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/bmw.png" alt="Bmw">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/decathlon.svg" alt="Decathlon">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/get-your-guide.png" alt="Get Your Guide">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/la-redoute.jpg" alt="La Redoute">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/leroy-merlin.svg" alt="Leroy Merlin">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/nuxeo-platform.png" alt="Nuxeo">
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="mu-single-using">
+                                                <img src="assets/images/using/pipedrive.png" alt="Pipedrive">
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End Who's Using -->
+
+        <!-- Start Kafka Overview -->
+        <section id="mu-book-overview">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mu-book-overview-area">
+
+                            <div class="mu-heading-area">
+                                <h2 class="mu-heading-title">AKHQ Overview</h2>
+                                <span class="mu-header-dot"></span>
+                                <p>Enabling your teams to search and explore data in a unified console, while supporting
+                                    its administration and integration within your ecosystem.</p>
+                            </div>
+
+                            <!-- Start Book Overview Content -->
+                            <div class="mu-book-overview-content">
+                                <div class="row">
+
+                                    <!-- Book Overview Single Content -->
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="mu-book-overview-single">
+											<span class="mu-book-overview-icon-box">
+												<i class="fa fa-sitemap" aria-hidden="true"></i>
+											</span>
+                                            <h4>Central</h4>
+                                            <p>Multi-Cluster vision into a central console, available in Multi-Cloud
+                                                environments.</p>
+                                        </div>
+                                    </div>
+                                    <!-- / Book Overview Single Content -->
+
+                                    <!-- About Us Single Content -->
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="mu-book-overview-single">
+											<span class="mu-book-overview-icon-box">
+												<i class="fa fa-users" aria-hidden="true"></i>
+											</span>
+                                            <h4>Explore</h4>
+                                            <p>Enabling users to access, search and get insights from your topics,
+                                                including Live Tail.</p>
+                                        </div>
+                                    </div>
+                                    <!-- / Book Overview Single Content -->
+
+                                    <!-- About Us Single Content -->
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="mu-book-overview-single">
+											<span class="mu-book-overview-icon-box">
+												<i class="fa fa-cubes" aria-hidden="true"></i>
+											</span>
+                                            <h4>Manage</h4>
+                                            <p>Allowing to manage your topics, consumer groups, cluster
+                                                configurations, users and ACLs.</p>
+                                        </div>
+                                    </div>
+                                    <!-- / Book Overview Single Content -->
+
+                                    <!-- About Us Single Content -->
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="mu-book-overview-single">
+											<span class="mu-book-overview-icon-box">
+												<i class="fa fa-thumbs-up" aria-hidden="true"></i>
+											</span>
+                                            <h4>Integration</h4>
+                                            <p>Compatibility with LDAP, RBAC, Schema Registry, Kafka Connect and
+                                                more.</p>
+                                        </div>
+                                    </div>
+                                    <!-- / Book Overview Single Content -->
+
+
+                                </div>
+                            </div>
+                            <!-- End Book Overview Content -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End Kafka Overview -->
+
+        <!-- Start Video Review -->
+        <section id="mu-video-review">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mu-video-review-area">
+
+                            <div class="mu-heading-area">
+                                <h2 class="mu-heading-title">Check Out In Video</h2>
+                                <span class="mu-header-dot"></span>
+                            </div>
+
+                            <!-- Start Video Review Content -->
+                            <div class="mu-video-review-content text-center">
+                                <video autoplay controls muted="" poster="assets/images/preview.jpg">
+                                    <source src="assets/images/video.webm" type="video/webm">
+                                    <source src="assets/images/video.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <!-- End Video Review Content -->
+
+                        </div>
+                        </d
+                    </div>
+                </div>
+        </section>
+        <!-- End Video Review -->
+
+        <!-- Start Testimonials -->
+        <section id="mu-testimonials">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mu-testimonials-area">
+                            <div class="mu-heading-area">
+                                <h2 class="mu-heading-title">What Our Users Says</h2>
+                                <span class="mu-header-dot"></span>
+                            </div>
+
+                            <div class="mu-testimonials-block">
+                                <ul class="mu-testimonial-slide">
+
+                                    <li>
+                                        <p>"AKHQ is an awesome toolbox for both developers and devops to observe and
+                                            troubleshoot daily our Kafka architecture."</p>
+                                        <h5 class="mu-rt-name"> - Sébastien Nahelou</h5>
+                                        <span class="mu-rt-title">Adeo</span>
+                                    </li>
+
+                                    <li>
+                                        <p>"We used AKHQ on three different production clusters.
+                                            It helped us a lot to monitor our consumer groups and facilitated the
+                                            clients migration."</p>
+                                        <h5 class="mu-rt-name"> - François Blarel</h5>
+                                        <span class="mu-rt-title">Decathlon</span>
+                                    </li>
+
+                                    <li>
+                                        <p>"AKHQ is facilitating the adoption and usage of Apache Kafka internally, for
+                                            the diverse people accessing it. We believe and actively support the product
+                                            for this reason."</p>
+                                        <h5 class="mu-rt-name"> - Antoine Craske</h5>
+                                        <span class="mu-rt-title">La Redoute</span>
+                                    </li>
+
+                                </ul>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End Testimonials -->
+
+        <!-- Start About Us -->
+        <section id="mu-about">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mu-about-area">
+
+                            <div class="mu-heading-area">
+                                <h2 class="mu-heading-title">About Us</h2>
+                                <span class="mu-header-dot"></span>
+                            </div>
+
+                            <!-- Start About Content -->
+                            <div class="mu-about-content">
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="mu-about-info">
+
+                                                <h3>Project Leader</h3>
+
+                                                <img class="mu-rt-img" src="assets/images/ludovic.jpg" alt="img">
+                                                <h6>Ludovic DEHON</h6>
+
+                                                <div class="mu-about-social">
+                                                    <a href="https://twitter.com/tchiotludo"
+                                                       target="_blank"><i class="fa fa-twitter"></i></a>
+                                                    <a href="https://www.linkedin.com/in/ludovic-dehon-60886530/"
+                                                       target="_blank"><i class="fa fa-linkedin"></i></a>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="mu-about-info">
+                                                <h3>Top Contributors</h3>
+                                                <div class="mu-contributors-list">
+
+                                                </div>
+
+                                                <p>See the list on
+                                                    <a href="https://github.com/tchiotludo/akhq/graphs/contributors"
+                                                       target="_blank"
+                                                       class="mu-about-info-contributors">GitHub insights</a>.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row">
+                                        <div class="mu-about-info">
+                                            <h3>Companies Supporting AKHQ</h3>
+                                            <p>These support consists in providing time for contribution to core
+                                                contributors.</p>
+                                            <div class="mu-about-info-companies d-flex">
+                                                <span class="mu-about-image">
+                                                    <img aria-hidden="true"
+                                                         style="width:210px"
+                                                         src="assets/images/using/la-redoute.jpg" alt="La Redoute">
+                                                </span>
+                                                <span class="mu-about-image">
+                                                    <a href="https://www.linkedin.com/company/polarising/"
+                                                       target="_blank">
+                                                        <img aria-hidden="true"
+                                                             style="width:220px"
+                                                             src="assets/images/polarising.png" alt="Polarising">
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- End About Content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End About Us -->
+
+    </main>
+
+    <!-- End main content -->
+
+
+    <!-- Start footer -->
+    <footer id="mu-footer" role="contentinfo">
+        <div class="container">
+            <div class="mu-footer-area">
+                <div class="mu-social-media">
+                    <a href="https://www.facebook.com/PolarisingITServices/"
+                       target="_blank"><i class="fa fa-facebook"></i></a>
+                    <a href="https://www.linkedin.com/company/polarising/"
+                       target="_blank"><i class="fa fa-linkedin"></i></a>
+                </div>
+                <p class="mu-copyright">Designed by <a rel="nofollow" href="http://polarising.com" target="_blank">Polarising
+                    Labs</a> &#174;.</p>
+                <p class="mu-copyright">Apache, <a href="https://kafka.apache.org/" target="_blank">Apache Kafka</a>, <a
+                        href="https://kafka.apache.org/"
+                        target="_blank">Kafka</a>, and associated open source project names are trademarks of the <a
+                        href="https://www.apache.org/"
+                        target="_blank">Apache Software Foundation</a>. AKHQ is not affiliated with, endorsed by, or
+                    otherwise associated with the Apache Software.</p>
+            </div>
+        </div>
+
+    </footer>
+    <!-- End footer -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"
+            integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"
+            integrity="sha256-NXRS8qVcmZ3dOv3LziwznUHPegFhPZ1F/4inU7uC8h0="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"
+            integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8="
+            crossorigin="anonymous"></script>
+    <!-- Custom js -->
+    <script type="text/javascript" src="assets/js/using.js"></script>
+    <script type="text/javascript" src="assets/js/custom.js"></script>
+    <!-- Contributors -->
+    <script type="text/javascript">
+        $(function () {
+            $(".mu-contributors-list").load("contributors.html");
+        });
+    </script>
+</body>
+</html>

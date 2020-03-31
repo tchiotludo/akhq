@@ -8,7 +8,7 @@
 <#macro table schemas isVersion>
     <#assign canDelete=roles?seq_contains("registry/" + (isVersion?then("version/", "")) + "delete")>
 
-    <#-- @ftlvariable name="schemas" type="java.util.List<org.kafkahq.models.Schema>" -->
+    <#-- @ftlvariable name="schemas" type="java.util.List<org.akhq.models.Schema>" -->
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0">
             <thead class="thead-dark">
@@ -90,8 +90,8 @@
 </#macro>
 
 <#macro form config schema>
-    <#-- @ftlvariable name="schema" type="org.kafkahq.models.Schema" -->
-    <#-- @ftlvariable name="config" type="org.kafkahq.models.Schema.Config" -->
+    <#-- @ftlvariable name="schema" type="org.akhq.models.Schema" -->
+    <#-- @ftlvariable name="config" type="org.akhq.models.Schema.Config" -->
     <#assign canUpdate=(schema?has_content && roles?seq_contains("registry/update") == true) || roles?seq_contains("registry/insert") == true>
     <form enctype="multipart/form-data" method="post" class="khq-form khq-form-config">
         <fieldset ${(!canUpdate)?then("disabled=\"disabled\"", "")}>

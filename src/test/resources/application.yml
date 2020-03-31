@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: kafkahq
+    name: akhq
 
   security:
     enabled: true
@@ -21,7 +21,7 @@ micronaut:
       maximum-size: 0
 
 
-kafkahq:
+akhq:
   server:
     base-path: ""
     access-log:
@@ -40,6 +40,8 @@ kafkahq:
       - "^.*-repartition$"
       - "^.*-rekey$"
     skip-consumer-groups: false
+  topic-data:
+    poll-timeout: 5000
 
   security:
     default-group: no-filter

@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: kafkahq
+    name: akhq
   io:
     watch:
       paths: src/main
@@ -9,26 +9,26 @@ micronaut:
     static-resources:
       static:
         paths: classpath:static
-        mapping: "${kafkahq.server.base-path:}/static/**"
+        mapping: "${akhq.server.base-path:}/static/**"
   security:
     enabled: true
     endpoints:
       login:
         enabled: true
-        path: "${kafkahq.server.base-path:}/login"
+        path: "${akhq.server.base-path:}/login"
       logout:
         enabled: true
-        path: "${kafkahq.server.base-path:}/logout"
+        path: "${akhq.server.base-path:}/logout"
         get-allowed: true
     session:
       enabled: true
-      login-success-target-url: "${kafkahq.server.base-path:}/"
-      logout-target-url: "${kafkahq.server.base-path:}/"
-      forbidden-target-url: "${kafkahq.server.base-path:}/login/forbidden"
-      unauthorized-target-url: "${kafkahq.server.base-path:}/login/unauthorized"
-      login-failure-target-url: "${kafkahq.server.base-path:}/login/failed"
+      login-success-target-url: "${akhq.server.base-path:}/"
+      logout-target-url: "${akhq.server.base-path:}/"
+      forbidden-target-url: "${akhq.server.base-path:}/login/forbidden"
+      unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
+      login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
-      - pattern: "${kafkahq.server.base-path:}/static/**"
+      - pattern: "${akhq.server.base-path:}/static/**"
         access: "isAnonymous()"
   caches:
     kafka-wrapper:
@@ -37,7 +37,7 @@ micronaut:
 
 endpoints:
   all:
-    path: "${kafkahq.server.base-path:}"
+    path: "${akhq.server.base-path:}"
   health:
     enabled: true
     sensitive: false
@@ -63,12 +63,12 @@ endpoints:
 jackson:
   module-scan: false
 
-kafkahq:
+akhq:
   server:
     base-path: ""
     access-log:
       enabled: true
-      name: org.kafkahq.log.access
+      name: org.akhq.log.access
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
 
   clients-defaults:
@@ -76,7 +76,7 @@ kafkahq:
       properties:
         max.poll.records: 50
         isolation.level: read_committed
-        group.id: KafkaHQ
+        group.id: Akhq
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 

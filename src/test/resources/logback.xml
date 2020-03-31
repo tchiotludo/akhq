@@ -41,7 +41,7 @@
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.kafkahq" level="INFO" />
+    <logger name="org.akhq" level="INFO" />
     <logger name="io.micronaut" level="INFO" />
 
     <logger name="org.apache.kafka.common.utils.AppInfoParser" level="ERROR" />

@@ -1,7 +1,7 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
+<#-- @ftlvariable name="group" type="org.akhq.models.ConsumerGroup" -->
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover mb-0">

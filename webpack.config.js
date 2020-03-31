@@ -165,10 +165,10 @@ module.exports = (env, argv) => {
                 proxy: {
                     context: () => true,
                     '/':  {
-                        target: 'http://kafkahq:8080',
+                        target: 'http://akhq:8080',
                     },
                     '/livereload': {
-                        target: 'http://kafkahq:8080',
+                        target: 'http://akhq:8080',
                         ws: true,
                     }
                 }
