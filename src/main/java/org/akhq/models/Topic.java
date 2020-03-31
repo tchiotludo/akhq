@@ -1,7 +1,9 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -18,10 +20,13 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Topic {
     private String name;
     private boolean internal;
+    @JsonIgnore
     private boolean configInternal;
+    @JsonIgnore
     private boolean configStream;
     private final List<Partition> partitions = new ArrayList<>();
     private List<ConsumerGroup> consumerGroups;
