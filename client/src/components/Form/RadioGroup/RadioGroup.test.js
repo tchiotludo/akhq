@@ -39,22 +39,24 @@ describe('RadioGroup', () => {
         checked: testOption === 'test4'
       }
     ],
-    onChange: value => {
+    handleChange: value => {
       testOption = value;
     }
   };
   const wrapper = shallow(<RadioGroup {...props} />);
 
   it('should render radio group successfully', () => {
-    const radio = wrapper.find(`#radio-${props.name}`);
-    const options = radio.find(`#radio-option-${props.name}`);
-    expect(options).toHaveLength(4);
+    const options = wrapper.find('input');
+    expect(options.length).toBe(4);
   });
 
   it('should change options successfully', () => {
-    const radio = wrapper.find(`#radio-${props.name}`);
-    const options = radio.find(`#radio-option-${props.name}`);
-    console.log('option', options[0]);
-    //expect(options).toHaveLength(4);
+    const radio = wrapper.find('input');
+    const opt1 = radio.at(1);
+    const opt2 = radio.at(2);
+    opt1.simulate('change', opt1.getElement().props.value);
+    expect(opt1.getElement().props.value).toBe(testOption);
+    opt2.simulate('change', opt2.getElement().props.value);
+    expect(opt2.getElement().props.value).toBe(testOption);
   });
 });
