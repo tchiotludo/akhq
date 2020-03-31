@@ -54,6 +54,11 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_COUNT = "stream-count";
     public static final String TOPIC_CONNECT = "connect-sink";
 
+    public static final int TOPIC_ALL_COUNT = 18;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 10;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 8;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 16;
+
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
 
     private EmbeddedSingleNodeKafkaCluster kafkaCluster;

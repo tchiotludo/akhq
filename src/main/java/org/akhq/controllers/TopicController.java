@@ -10,9 +10,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.*;
 import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
@@ -20,14 +18,14 @@ import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.models.*;
+import org.akhq.utils.ResultNextList;
+import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.resource.ResourceType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.configs.Role;
 import org.akhq.middlewares.SchemaComparator;
-import org.akhq.models.Config;
-import org.akhq.models.Record;
-import org.akhq.models.Schema;
-import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.RequestHelper;
 import org.akhq.repositories.AccessControlListRepository;
@@ -55,7 +53,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
-@Controller("${akhq.server.base-path:}/{cluster}/topic")
+@Controller("${akhq.server.base-path:}/")
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
     public static final String KEY_SUFFIX = "-key";
@@ -71,7 +69,7 @@ public class TopicController extends AbstractController {
     @Value("${akhq.topic.default-view}")
     private String defaultView;
     @Value("${akhq.topic.replication}")
-    private Integer replicationFactor;
+    private Short replicationFactor;
     @Value("${akhq.topic.retention}")
     private Integer retentionPeriod;
     @Value("${akhq.topic.partition}")
@@ -103,9 +101,10 @@ public class TopicController extends AbstractController {
     }
 
     @View("topicList")
-    @Get
-    public HttpResponse list(
-        HttpRequest request, String cluster,
+    @Get("{cluster}/topic")
+    public HttpResponse<?> list(
+        HttpRequest<?> request,
+        String cluster,
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
         Optional<Integer> page
@@ -137,10 +136,29 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Get("api/{cluster}/topic")
+    public ResultPagedList<Topic> listApi(
+        HttpRequest<?> request,
+        String cluster,
+        Optional<String> search,
+        Optional<TopicRepository.TopicListView> show,
+        Optional<Integer> page
+    ) throws ExecutionException, InterruptedException {
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+
+        return ResultPagedList.of(this.topicRepository.list(
+            cluster,
+            pagination,
+            show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
+            search
+        ));
+    }
+    
     @Secured(Role.ROLE_TOPIC_INSERT)
     @View("topicCreate")
-    @Get("create")
-    public HttpResponse create(HttpRequest request, String cluster) {
+    @Get("{cluster}/topic/create")
+    public HttpResponse<?> create(HttpRequest<?> request, String cluster) {
         return this.template(
             request,
             cluster,
@@ -151,15 +169,15 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_INSERT)
-    @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse createSubmit(HttpRequest request,
-                                     String cluster,
-                                     String name,
-                                     Integer partition,
-                                     Short replication,
-                                     Map<String, String> configs)
-        throws Throwable
-    {
+    @Post(value = "{cluster}/topic/create", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> createSubmit(
+        HttpRequest<?> request,
+        String cluster,
+        String name,
+        Integer partition,
+        Short replication,
+        Map<String, String> configs
+    ) throws Throwable {
         List<Config> options = configs
             .entrySet()
             .stream()
@@ -173,7 +191,8 @@ public class TopicController extends AbstractController {
 
         MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/topic"));
 
-        this.toast(response, RequestHelper.runnableToToast(() ->
+        this.toast(response, RequestHelper.runnableToToast(
+            () ->
                 this.topicRepository.create(
                     cluster,
                     name,
@@ -188,10 +207,34 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_INSERT)
+    @Post(value = "api/{cluster}/topic")
+    public Topic createApi(
+        String cluster,
+        String name,
+        Optional<Integer> partition,
+        Optional<Short> replication,
+        Map<String, String> configs
+    ) throws Throwable {
+        this.topicRepository.create(
+            cluster,
+            name,
+            partition.orElse(this.partitionCount) ,
+            replication.orElse(this.replicationFactor),
+            (configs != null ? configs : ImmutableMap.<String, String>of())
+                .entrySet()
+                .stream()
+                .map(r -> new Config(r.getKey(), r.getValue()))
+                .collect(Collectors.toList())
+        );
+
+        return this.topicRepository.findByName(cluster, name);
+    }
+
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @View("topicProduce")
-    @Get("{topicName}/produce")
-    public HttpResponse produce(HttpRequest request, String cluster, String topicName) throws ExecutionException, InterruptedException, IOException, RestClientException {
+    @Get("{cluster}/topic/{topicName}/produce")
+    public HttpResponse<?> produce(HttpRequest<?> request, String cluster, String topicName) throws ExecutionException, InterruptedException, IOException, RestClientException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         List<Schema> schemas = this.schemaRegistryRepository.listAll(cluster, Optional.empty());
@@ -214,18 +257,19 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
-    @Post(value = "{topicName}/produce", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse produceSubmit(HttpRequest request,
-                                      String cluster,
-                                      String topicName,
-                                      String value,
-                                      Optional<String> key,
-                                      Optional<Integer> partition,
-                                      Optional<String> timestamp,
-                                      Map<String, List<String>> headers,
-                                      Optional<Integer> keySchema,
-                                      Optional<Integer> valueSchema)
-    {
+    @Post(value = "{cluster}/topic/{topicName}/produce", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> produceSubmit(
+        HttpRequest<?> request,
+        String cluster,
+        String topicName,
+        String value,
+        Optional<String> key,
+        Optional<Integer> partition,
+        Optional<String> timestamp,
+        Map<String, List<String>> headers,
+        Optional<Integer> keySchema,
+        Optional<Integer> valueSchema
+    ) {
         Map<String, String> finalHeaders = new HashMap<>();
 
         int i = 0;
@@ -261,28 +305,54 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @Post(value = "api/{cluster}/topic/{topicName}/data")
+    public Record produceApi(
+        HttpRequest<?> request,
+        String cluster,
+        String topicName,
+        String value,
+        Optional<String> key,
+        Optional<Integer> partition,
+        Optional<String> timestamp,
+        Map<String, String> headers,
+        Optional<Integer> keySchema,
+        Optional<Integer> valueSchema
+    ) throws ExecutionException, InterruptedException {
+        return new Record(
+            this.recordRepository.produce(
+                cluster,
+                topicName,
+                value,
+                headers,
+                key,
+                partition,
+                timestamp.map(r -> Instant.parse(r).toEpochMilli()),
+                keySchema,
+                valueSchema
+            ),
+            key.map(String::getBytes).orElse(null),
+            value.getBytes(),
+            headers
+        );
+    }
+
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @View("topic")
-    @Get("{topicName}")
-    public HttpResponse home(HttpRequest request,
-                             String cluster,
-                             String topicName,
-                             Optional<String> after,
-                             Optional<Integer> partition,
-                             Optional<RecordRepository.Options.Sort> sort,
-                             Optional<String> timestamp,
-                             Optional<String> search)
-        throws ExecutionException, InterruptedException
-    {
+    @Get("{cluster}/topic/{topicName}")
+    public HttpResponse<?> data(
+        HttpRequest<?> request,
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> search
+    ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
-        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
-        after.ifPresent(options::setAfter);
-        partition.ifPresent(options::setPartition);
-        sort.ifPresent(options::setSort);
-        timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
-        after.ifPresent(options::setAfter);
-        search.ifPresent(options::setSearch);
+        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
 
         List<Record> data = new ArrayList<>();
 
@@ -308,6 +378,30 @@ public class TopicController extends AbstractController {
             "partitions", topic.getPartitions().size(),
             "navbar", dataNavbar(options, uri, partitionUrls),
             "pagination", dataPagination(topic, options, data, uri)
+        );
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/data")
+    public ResultNextList<Record> dataApi(
+        HttpRequest<?> request,
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> search
+    ) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        List<Record> data = this.recordRepository.consume(cluster, options);
+
+        return ResultNextList.of(
+            data,
+            options.after(data, uri),
+            (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
         );
     }
 
@@ -354,12 +448,12 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_READ)
     @View("topic")
-    @Get("{topicName}/{tab:(partitions|groups|configs|logs|acls)}")
-    public HttpResponse tab(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+    @Get("{cluster}/topic/{topicName}/{tab:(partitions|groups|configs|logs|acls)}")
+    public HttpResponse<?> tab(HttpRequest<?> request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, topicName,  tab);
     }
 
-    private HttpResponse render(HttpRequest request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
+    private HttpResponse<?> render(HttpRequest<?> request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
         List<Config> configs = this.configRepository.findByTopic(cluster, topicName);
 
@@ -373,9 +467,39 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Get("api/{cluster}/topic/{topicName}")
+    public Topic homeApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.topicRepository.findByName(cluster, topicName);
+    }
+
+    @Get("api/{cluster}/topic/{topicName}/partitions")
+    public List<Partition> partitionsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.topicRepository.findByName(cluster, topicName).getPartitions();
+    }
+
+    @Get("api/{cluster}/topic/{topicName}/groups")
+    public List<ConsumerGroup> groupsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.topicRepository.findByName(cluster, topicName).getConsumerGroups();
+    }
+
+    @Get("api/{cluster}/topic/{topicName}/configs")
+    public List<Config> configApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.configRepository.findByTopic(cluster, topicName);
+    }
+
+    @Get("api/{cluster}/topic/{topicName}/logs")
+    public List<LogDir> logsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.topicRepository.findByName(cluster, topicName).getLogDir();
+    }
+
+    @Get("api/{cluster}/topic/{topicName}/acls")
+    public List<AccessControl> aclsApi(String cluster, String topicName) {
+        return aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topicName);
+    }
+
     @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
-    @Post(value = "{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse updateConfig(HttpRequest request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
+    @Post(value = "{cluster}/topic/{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> updateConfig(HttpRequest<?> request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), true);
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
 
@@ -397,9 +521,27 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
+    @Post(value = "api/{cluster}/topic/{topicName}/configs")
+    public List<Config> updateConfigApi(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
+
+        if (updated.size() == 0) {
+            throw new IllegalArgumentException("No config to update");
+        }
+
+        this.configRepository.updateTopic(
+            cluster,
+            topicName,
+            updated
+        );
+
+        return updated;
+    }
+
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
-    @Get("{topicName}/deleteRecord")
-    public HttpResponse deleteRecord(String cluster, String topicName, Integer partition, String key) {
+    @Get("{cluster}/topic/{topicName}/deleteRecord")
+    public HttpResponse<?> deleteRecord(String cluster, String topicName, Integer partition, String key) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() -> this.recordRepository.delete(
@@ -415,9 +557,25 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @Delete("api/{cluster}/topic/{topicName}/data")
+    public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+        return new Record(
+            this.recordRepository.delete(
+                cluster,
+                topicName,
+                partition,
+                Base64.getDecoder().decode(key)
+            ),
+            Base64.getDecoder().decode(key),
+            null,
+            new HashMap<>()
+        );
+    }
+
     @Secured(Role.ROLE_TOPIC_DELETE)
-    @Get("{topicName}/delete")
-    public HttpResponse delete(String cluster, String topicName) {
+    @Get("{cluster}/topic/{topicName}/delete")
+    public HttpResponse<?> delete(String cluster, String topicName) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -429,8 +587,16 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DELETE)
+    @Delete("api/{cluster}/topic/{topicName}")
+    public HttpResponse<?> deleteApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        this.kafkaWrapper.deleteTopics(cluster, topicName);
+
+        return HttpResponse.noContent();
+    }
+
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @Get("{topicName}/search/{search}")
+    @Get("{cluster}/topic/{topicName}/search/{search}")
     public Publisher<Event<?>> sse(String cluster,
                                           String topicName,
                                           Optional<String> after,
@@ -442,13 +608,7 @@ public class TopicController extends AbstractController {
     {
         Topic topic = topicRepository.findByName(cluster, topicName);
 
-        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
-        after.ifPresent(options::setAfter);
-        partition.ifPresent(options::setPartition);
-        sort.ifPresent(options::setSort);
-        timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
-        after.ifPresent(options::setAfter);
-        search.ifPresent(options::setSearch);
+        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
 
         Map<String, Object> datas = new HashMap<>();
         datas.put("topic", topic);
@@ -479,6 +639,27 @@ public class TopicController extends AbstractController {
                     .of(searchBody)
                     .name(event.getName());
             });
+    }
+
+    private RecordRepository.Options dataSearchOptions(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> search
+    ) {
+        RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
+
+        after.ifPresent(options::setAfter);
+        partition.ifPresent(options::setPartition);
+        sort.ifPresent(options::setSort);
+        timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
+        after.ifPresent(options::setAfter);
+        search.ifPresent(options::setSearch);
+
+        return options;
     }
 
     @ToString

@@ -1,11 +1,11 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
 
@@ -17,29 +17,52 @@ import java.util.Map;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Record {
-    private final String topic;
-    private final int partition;
-    private final long offset;
-    private final long timestamp;
-    private final TimestampType timestampType;
-    private final byte[] key;
-    private final Integer keySchemaId;
-    private final byte[] value;
-    private final Integer valueSchemaId;
-    private final Map<String, String> headers = new HashMap<>();
-    private final KafkaAvroDeserializer kafkaAvroDeserializer;
+    private String topic;
+    private int partition;
+    private long offset;
+    private long timestamp;
+    private TimestampType timestampType;
+    private Integer keySchemaId;
+    private Integer valueSchemaId;
+    private Map<String, String> headers = new HashMap<>();
+    private KafkaAvroDeserializer kafkaAvroDeserializer;
 
-    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer, byte[] value) {
+    @Getter(AccessLevel.NONE)
+    private byte[] bytesKey;
+
+    @Getter(AccessLevel.NONE)
+    private String key;
+
+    @Getter(AccessLevel.NONE)
+    private byte[] bytesValue;
+
+    @Getter(AccessLevel.NONE)
+    private String value;
+
+    public Record(RecordMetadata record, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+        this.topic = record.topic();
+        this.partition = record.partition();
+        this.offset = record.offset();
+        this.timestamp = record.timestamp();
+        this.bytesKey = bytesKey;
+        this.keySchemaId = getAvroSchemaId(this.bytesKey);
+        this.bytesValue = bytesValue;
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
+        this.headers = headers;
+    }
+
+    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer, byte[] bytesValue) {
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
         this.timestamp = record.timestamp();
         this.timestampType = record.timestampType();
-        this.key = record.key();
-        this.keySchemaId = getAvroSchemaId(this.key);
-        this.value = value;
-        this.valueSchemaId = getAvroSchemaId(this.value);
+        this.bytesKey = record.key();
+        this.keySchemaId = getAvroSchemaId(this.bytesKey);
+        this.bytesValue = bytesValue;
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         for (Header header: record.headers()) {
             this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
         }
@@ -47,20 +70,29 @@ public class Record {
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
     }
 
-    public String getKeyAsString() {
-        return convertToString(key, keySchemaId);
+    public String getKey() {
+        if (this.key == null) {
+            this.key = convertToString(bytesKey, keySchemaId);
+        }
+
+        return this.key;
     }
 
+    @JsonIgnore
     public String getKeyAsBase64() {
-        if (key == null) {
+        if (bytesKey == null) {
             return null;
         } else {
-            return new String(Base64.getEncoder().encode(key));
+            return new String(Base64.getEncoder().encode(bytesKey));
         }
     }
 
-    public String getValueAsString() {
-        return convertToString(value, valueSchemaId);
+    public String getValue() {
+        if (this.value == null) {
+            this.value = convertToString(bytesValue, valueSchemaId);
+        }
+
+        return this.value;
     }
 
     private String convertToString(byte[] payload, Integer keySchemaId) {

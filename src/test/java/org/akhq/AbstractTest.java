@@ -2,26 +2,21 @@ package org.akhq;
 
 import com.google.common.collect.ImmutableMap;
 import io.micronaut.core.type.Argument;
-import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MutableHttpRequest;
-import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.RxHttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
-import org.akhq.models.Node;
-import org.akhq.utils.PagedList;
+import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Map.entry;
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 // https://github.com/micronaut-projects/micronaut-test/commit/0f32d13876decfc33f3f94238e280552422bf170#diff-985f52f80183621fbb0bc4f031044158R16
 // https://github.com/micronaut-projects/micronaut-test/issues/32
@@ -45,6 +40,14 @@ abstract public class AbstractTest implements TestPropertyProvider {
         return client.toBlocking().retrieve(
             request.basicAuth("admin", "pass"),
             Argument.of(ResultPagedList.class, bodyType)
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <I, O> ResultNextList<O> retrieveNextList(MutableHttpRequest<I> request, Class<O> bodyType) {
+        return client.toBlocking().retrieve(
+            request.basicAuth("admin", "pass"),
+            Argument.of(ResultNextList.class, bodyType)
         );
     }
 

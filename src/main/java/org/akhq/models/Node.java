@@ -25,9 +25,10 @@ public class Node {
     @ToString
     @EqualsAndHashCode(callSuper=true)
     @Getter
+    @NoArgsConstructor
     public static class Partition extends Node {
-        private final boolean isLeader;
-        private final boolean isInSyncReplicas;
+        private boolean isLeader;
+        private boolean isInSyncReplicas;
 
         public Partition(org.apache.kafka.common.Node node, boolean isLeader, boolean isInSyncReplicas) {
             super(node);

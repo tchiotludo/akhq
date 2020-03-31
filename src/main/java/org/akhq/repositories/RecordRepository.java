@@ -335,52 +335,75 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
-        return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId)));
+        return new Record(
+            record,
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+        );
     }
 
-
-    private RecordMetadata produce(String clusterId, String topic, byte[] value, Map<String, String> headers, byte[] key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
-        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+    private RecordMetadata produce(
+        String clusterId,
+        String topic, byte[] value,
+        Map<String, String> headers,
+        byte[] key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp
+    ) throws ExecutionException, InterruptedException {
+        return kafkaModule
+            .getProducer(clusterId)
+            .send(new ProducerRecord<>(
                 topic,
                 partition.orElse(null),
                 timestamp.orElse(null),
                 key,
                 value,
-                headers
+                (headers == null ? ImmutableMap.<String, String>of() : headers)
                     .entrySet()
                     .stream()
-                    .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
+                    .map(entry -> new RecordHeader(
+                        entry.getKey(),
+                        entry.getValue() == null ? null : entry.getValue().getBytes()
+                    ))
                     .collect(Collectors.toList())
-        )).get();
+            ))
+            .get();
     }
 
-    public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp, Optional<Integer> keySchemaId, Optional<Integer> valueSchemaId) throws ExecutionException, InterruptedException {
+    public RecordMetadata produce(
+        String clusterId,
+        String topic,
+        String value,
+        Map<String, String> headers,
+        Optional<String> key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp,
+        Optional<Integer> keySchemaId,
+        Optional<Integer> valueSchemaId
+    ) throws ExecutionException, InterruptedException {
         AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
-        if(key.isPresent() ){
-            if(keySchemaId.isPresent()) {
+
+        if (key.isPresent()) {
+            if (keySchemaId.isPresent()) {
                 keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
             } else {
                 keyAsBytes = key.get().getBytes();
             }
         }
-        if(value != null && valueSchemaId.isPresent()){
+
+        if (value != null && valueSchemaId.isPresent()) {
             valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
         } else {
             valueAsBytes = value != null ? value.getBytes() : null;
         }
 
-       return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
+        return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
     }
 
-
-
-
-
-    public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
-        kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+    public RecordMetadata delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
+        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
             key,
@@ -471,11 +494,11 @@ public class RecordRepository extends AbstractRepository {
             return true;
         }
 
-        if (record.getKeyAsString() != null && containsAll(options.getSearch(), record.getKeyAsString())) {
+        if (record.getKey() != null && containsAll(options.getSearch(), record.getKey())) {
             return true;
         }
 
-        return record.getValueAsString() != null && containsAll(options.getSearch(), record.getValueAsString());
+        return record.getValue() != null && containsAll(options.getSearch(), record.getValue());
     }
 
     private static boolean containsAll(String search, String in) {

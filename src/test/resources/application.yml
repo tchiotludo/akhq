@@ -38,6 +38,9 @@ akhq:
 
   topic:
     default-view: HIDE_INTERNAL
+    replication: 1
+    retention: 86400000
+    partition: 1
     internal-regexps:
       - "^_.*$"
       - "^.*_schemas$"
