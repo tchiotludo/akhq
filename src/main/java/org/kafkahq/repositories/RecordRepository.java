@@ -10,6 +10,7 @@ import io.reactivex.Flowable;
 import lombok.*;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -348,6 +349,16 @@ public class RecordRepository extends AbstractRepository {
                 .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
                 .collect(Collectors.toList())
         )).get();
+    }
+
+    public void emptyTopic(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, RecordsToDelete> recordsToDelete = new HashMap<>();
+        var topic = topicRepository.findByName(clusterId, topicName);
+        topic.getPartitions().forEach(partition -> {
+            recordsToDelete.put(new TopicPartition(partition.getTopic(), partition.getId()),
+                    RecordsToDelete.beforeOffset(partition.getLastOffset()+1));
+        });
+        var deleted = kafkaModule.getAdminClient(clusterId).deleteRecords(recordsToDelete).lowWatermarks();
     }
 
     public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {

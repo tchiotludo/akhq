@@ -10,6 +10,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
@@ -365,6 +366,22 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @Delete("{topicName}/emptyTopic")
+    public HttpResponse emptyTopic(String cluster, String topicName){
+        MutableHttpResponse<Void> response = HttpResponse.ok();
+
+        this.toast(response, RequestHelper.runnableToToast(() -> this.recordRepository.emptyTopic(
+                cluster,
+                topicName
+        ),
+                String.format("Topic %s will be clean", topicName),
+                String.format("Faile to clean topic %s", topicName)
+        ));
+
+        return response;
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Get("{topicName}/deleteRecord")
     public HttpResponse deleteRecord(String cluster, String topicName, Integer partition, String key) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
@@ -375,8 +392,8 @@ public class TopicController extends AbstractController {
                 partition,
                 Base64.getDecoder().decode(key)
             ),
-            "Record '" + key + "' will be deleted on compaction",
-            "Failed to delete record '" + key + "'"
+            String.format("Record %s will be deleted on compaction", key),
+            String.format("Failed to delete record %s ", key)
         ));
 
         return response;
