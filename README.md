@@ -127,7 +127,7 @@ docker run -d \
 ### Running in Kubernetes (using a Helm Chart)
 * Clone the repository:
 ```sh
-git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm
+git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm/akhq
 ```
 * Update helm values located in [deploy/helm/values.yaml](helm/akhq/values.yaml)
   * `configuration` values will contains all related configuration that you can find in [application.example.yml](application.example.yml) and will be store in a `ConfigMap`
