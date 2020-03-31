@@ -37,20 +37,24 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(global = true)
-    public HttpResponse error(HttpRequest<?> request, Throwable e) {
+    public HttpResponse<?> error(HttpRequest<?> request, IllegalArgumentException e) {
+        if (isHtml(request)) {
+            return htmlError(request, e);
+        }
+
+        JsonError error = new JsonError("Illegal argument: " + e.getMessage())
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.<JsonError>unprocessableEntity()
+            .body(error);
+    }
+
+    @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, Throwable e) {
         log.error(e.getMessage(), e);
 
         if (isHtml(request)) {
-            StringWriter stringWriter = new StringWriter();
-            e.printStackTrace(new PrintWriter(stringWriter));
-
-            return HttpResponse
-                .ok(viewsRenderer.render("errors/internal", templateData(
-                    requestHelper.getClusterId(request),
-                    "message", e.getMessage(),
-                    "stacktrace", stringWriter.toString()
-                )))
-                .contentType(MediaType.TEXT_HTML);
+            return htmlError(request, e);
         }
 
         JsonError error = new JsonError("Internal Server Error: " + e.getMessage())
@@ -60,8 +64,21 @@ public class ErrorController extends AbstractController {
             .body(error);
     }
 
+    private HttpResponse<?> htmlError(HttpRequest<?> request, Throwable e) {
+        StringWriter stringWriter = new StringWriter();
+        e.printStackTrace(new PrintWriter(stringWriter));
+
+        return HttpResponse
+            .ok(viewsRenderer.render("errors/internal", templateData(
+                requestHelper.getClusterId(request),
+                "message", e.getMessage(),
+                "stacktrace", stringWriter.toString()
+            )))
+            .contentType(MediaType.TEXT_HTML);
+    }
+
     @Error(status = HttpStatus.NOT_FOUND, global = true)
-    public HttpResponse notFound(HttpRequest request) {
+    public HttpResponse<?> notFound(HttpRequest<?> request) {
         if (isHtml(request)) {
             return HttpResponse
                 .ok(viewsRenderer.render("errors/notFound", templateData(requestHelper.getClusterId(request))))
@@ -75,7 +92,7 @@ public class ErrorController extends AbstractController {
             .body(error);
     }
 
-    private boolean isHtml(HttpRequest request) {
+    private boolean isHtml(HttpRequest<?> request) {
         return request.getHeaders()
                 .accept()
                 .stream()

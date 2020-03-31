@@ -27,7 +27,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     @Inject
     private KafkaModule kafkaModule;
-    private Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
+    private final Map<String, KafkaAvroDeserializer> kafkaAvroDeserializers = new HashMap<>();
     private AvroSerializer avroSerializer;
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
@@ -96,10 +96,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .getLatestVersion(subject);
 
-        return new Schema(latestVersion);
+        return new Schema(latestVersion, this.getConfig(clusterId, subject));
     }
 
     public List<Schema> getAllVersions(String clusterId, String subject) throws IOException, RestClientException {
+        Schema.Config config = this.getConfig(clusterId, subject);
+
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .getAllVersions(subject)
@@ -111,7 +113,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
                     throw new RuntimeException(e);
                 }
             })
-            .map(Schema::new)
+            .map(schema -> new Schema(schema, config))
             .collect(Collectors.toList());
     }
 
@@ -120,7 +122,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .lookUpSubjectVersion(schema.toString(), subject, deleted);
 
-        return new Schema(find);
+        return new Schema(find, this.getConfig(clusterId, subject));
     }
 
     public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {

@@ -26,8 +26,8 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     @Inject
     private SchemaRegistryRepository repository;
 
-    private final String SUBJECT_1 = "SCHEMA_1";
-    private final org.apache.avro.Schema SCHEMA_1_V1 = SchemaBuilder
+    public final static String SUBJECT_1 = "SCHEMA_1";
+    public final static org.apache.avro.Schema SCHEMA_1_V1 = SchemaBuilder
         .record("schema1_v1").namespace("org.akhq")
         .fields()
         .name("clientHash").type().fixed("MD5").size(16).noDefault()
@@ -36,7 +36,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         .name("meta").type().nullable().map().values().bytesType().noDefault()
         .endRecord();
 
-    private final org.apache.avro.Schema SCHEMA_1_V2 = SchemaBuilder
+    public final static org.apache.avro.Schema SCHEMA_1_V2 = SchemaBuilder
         .record("schema1_v2").namespace("org.akhq")
         .fields()
         .name("clientHash").type().fixed("MD5").size(16).noDefault()
@@ -46,8 +46,8 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         .name("serverIp").type().nullable().stringType().noDefault()
         .endRecord();
 
-    private final String SUBJECT_2 = "SCHEMA_2";
-    private final org.apache.avro.Schema SCHEMA_2 = SchemaBuilder
+    public final static String SUBJECT_2 = "SCHEMA_2";
+    public final static org.apache.avro.Schema SCHEMA_2 = SchemaBuilder
         .record("schema2").namespace("org.akhq")
         .fields()
         .name("hash").type().fixed("MD5").size(16).noDefault()
