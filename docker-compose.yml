@@ -7,11 +7,21 @@ volumes:
   kafka-data:
     driver: local
 services:
-  kafkahq:
+  akhq:
+    # build:
+    #   context: .
     image: tchiotludo/akhq
-    depends_on:
-      - zookeeper
-      - kafka
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+              schema-registry:
+                url: "http://schema-registry:8085"
+              connect:
+                url: "http://connect:8083"
     ports:
       - 8090:8080
     volumes:

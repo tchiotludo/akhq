@@ -37,7 +37,7 @@ out/*
 logs/*
 
 ### Kafka HQ ###
-src/**/*-dev.yml
+src/**/*-*.yml
 connects-plugins/
 
 ## Docker

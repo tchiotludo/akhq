@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Secured(Role.ROLE_CONNECT_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/connect/{connectId}")
+@Controller("${akhq.server.base-path:}/{cluster}/connect/{connectId}")
 public class ConnectController extends AbstractController {
     private ConnectRepository connectRepository;
 

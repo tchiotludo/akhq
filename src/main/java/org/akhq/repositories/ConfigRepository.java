@@ -41,6 +41,7 @@ public class ConfigRepository extends AbstractRepository {
 
     private Map<String, List<org.akhq.models.Config>> find(String clusterId, ConfigResource.Type type, List<String> names) throws ExecutionException, InterruptedException {
         Map<String, List<org.akhq.models.Config>> map = new HashMap<>();
+
         kafkaWrapper.describeConfigs(clusterId, type, names).forEach((key, value) -> {
             List<org.akhq.models.Config> collect = value.entries()
                 .stream()

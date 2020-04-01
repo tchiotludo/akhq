@@ -138,15 +138,12 @@ class Sidebar extends Component {
         <TabContainer id="khq-sidebar-tabs" defaultActiveKey="first">
           <nav id="khq-sidebar">
             <div className="sidebar-header">
+              <div className="version">{tag}</div>
               <a href="#">
                 <h3 className="logo">
                   <img src={logo} alt="" />
-                  <sup>
-                    <strong>HQ</strong>
-                  </sup>
                 </h3>
               </a>
-              <div className="version">{tag}</div>
             </div>
             <ul className="list-unstyled components">
               <li className={selectedTab === constants.CLUSTER ? 'active' : ''}>

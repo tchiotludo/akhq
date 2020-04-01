@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-@Controller("${kafkahq.server.base-path:}/api")
+@Controller("${akhq.server.base-path:}/api")
 public class NodeResource {
 
     private NodeService nodeService;

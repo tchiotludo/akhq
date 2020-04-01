@@ -14,11 +14,11 @@ micronaut:
           enabled: true
           base: "dc=example,dc=com"
 
-kafkahq:
+akhq:
   server:
     base-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
-                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/akhq".
-                  # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
+                  # behind a reverse proxy with url http://my-server/akhq, set base-path: "/akhq".
+                  # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.akhq.log.access # Logger name
@@ -116,9 +116,7 @@ kafkahq:
 
   # Auth & Roles (optional)
   security:
-    default-groups: # Default groups for all the user even unlogged user
-      - admin
-
+    default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
       admin: # Group name
@@ -166,9 +164,18 @@ kafkahq:
     # Ldap Groups configuration (when using ldap)
     ldap:
       group:
-        group-ldap-1: # ldap group name
-          groups: # KafkaHQ groups list
+        group-ldap-1: # just a key, no matter will be override by name below
+          name: "group-ldap-1"
+          groups: # Akhq groups list
             - topic-reader
         group-ldap-2:
+          name: "group-ldap-2"
+          groups:
+            - admin
+      user:
+        riemann: # ldap user id
+          groups: # Akhq groups list
+            - topic-reader
+        einstein:
           groups:
             - admin

@@ -171,6 +171,7 @@ public class TopicService {
     }
 
     public void produceToTopic(ProduceTopicDTO produceTopicDTO) throws ExecutionException, InterruptedException {
+
         this.recordRepository.produce(
                 produceTopicDTO.getClusterId(),
                 produceTopicDTO.getTopicId(),
@@ -178,7 +179,9 @@ public class TopicService {
                 produceTopicDTO.getHeaders(),
                 Optional.of(produceTopicDTO.getKey()).filter(r -> !r.equals("")),
                 Optional.ofNullable(produceTopicDTO.getPartition()),
-                Optional.ofNullable(produceTopicDTO.getTimestamp()).filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli())
+                Optional.ofNullable(produceTopicDTO.getTimestamp()).filter(r -> !r.equals("")).map(r -> Instant.parse(r).toEpochMilli()),
+                Optional.ofNullable(produceTopicDTO.getKeySchemaId()),
+                Optional.ofNullable(produceTopicDTO.getValueSchemaId())
         );
     }
 

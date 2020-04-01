@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 @Secured(Role.ROLE_NODE_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/node")
+@Controller("${akhq.server.base-path:}/{cluster}/node")
 public class NodeController extends AbstractController {
     private ClusterRepository clusterRepository;
     private ConfigRepository configRepository;

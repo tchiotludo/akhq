@@ -67,7 +67,7 @@ endpoints:
 jackson:
   module-scan: false
 
-kafkahq:
+akhq:
   connections:
     my-cluster:
       properties:
@@ -101,7 +101,7 @@ kafkahq:
       properties:
         max.poll.records: 50
         isolation.level: read_committed
-        group.id: KafkaHQ
+        group.id: Akhq
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
@@ -132,8 +132,7 @@ kafkahq:
     poll-timeout: 1000
 
   security:
-    default-groups:
-      - admin
+    default-group: admin
     groups:
       admin:
         roles:
@@ -169,3 +168,5 @@ kafkahq:
           - registry/read
           - acls/read
           - connect/read
+      no-roles:
+        roles: []

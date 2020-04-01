@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 class RadioGroup extends Component {
-  renderOptions = (items, handleChange) => {
+  renderOptions = (name, items, handleChange) => {
     let renderedItems = [];
     for (let item of items) {
       renderedItems.push(
@@ -33,7 +33,7 @@ class RadioGroup extends Component {
         <div id={`radio-${name}`} className="row">
           <legend className="col-form-label col-sm-2 pt-0">{label}</legend>
           <div id={`radio-options-${name}`} className="col-sm-10">
-            {this.renderOptions(items, handleChange)}
+            {this.renderOptions(name, items, handleChange)}
           </div>
         </div>
       </fieldset>

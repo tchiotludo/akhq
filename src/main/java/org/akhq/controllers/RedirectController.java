@@ -16,7 +16,7 @@ public class RedirectController extends AbstractController {
     public RedirectController(KafkaModule kafkaModule) {
         this.kafkaModule = kafkaModule;
     }
-
+//
 //    @Get
 //    public HttpResponse slash() throws URISyntaxException {
 //        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));

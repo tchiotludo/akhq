@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 @Secured(Role.ROLE_ACLS_READ)
-@Controller("${kafkahq.server.base-path:}/{cluster}/acls")
+@Controller("${akhq.server.base-path:}/{cluster}/acls")
 public class AclsController extends AbstractController {
 
     private AccessControlListRepository aclRepository;

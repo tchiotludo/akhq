@@ -1,3 +1,5 @@
+#imagePullSecrets:
+#  - name: my-repository-secret
 image:
   repository: tchiotludo/akhq
   tag: latest
@@ -7,7 +9,7 @@ image:
     #prometheus.io/path: '/metrics'
   extraEnv: []
   ## You can put directly your configuration here...
-  # - name: KAFKAHQ_CONFIGURATION
+  # - name: AKHQ_CONFIGURATION
   #   value: |
   #       akhq:
   #         secrets:
@@ -18,15 +20,15 @@ image:
 
 ## Or you can also use configmap for the configuration...
 configuration: |
-  kafkahq:
+  akhq:
     server:
       access-log: 
         enabled: false 
-        name: org.kafkahq.log.access
+        name: org.akhq.log.access
 
 ##... and secret for connection information
 secrets: |
-  kafkahq:
+  akhq:
     connections:
       my-cluster-plain-text:
         properties:
@@ -42,7 +44,7 @@ secrets: |
 
 # Any extra volumes to define for the pod (like keystore/truststore)
 extraVolumes: []
-# Any extra volume mounts to define for the kafkaHQ container
+# Any extra volume mounts to define for the akhq container
 extraVolumeMounts: []
 
 service:
