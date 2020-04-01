@@ -1,7 +1,7 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
-<#-- @ftlvariable name="topicListView" type="org.kafkahq.repositories.TopicRepository.TopicListView" -->
+<#-- @ftlvariable name="topicListView" type="org.akhq.repositories.TopicRepository.TopicListView" -->
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
     <button class="navbar-toggler"

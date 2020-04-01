@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: kafkahq
+    name: akhq
 
   security:
     enabled: true

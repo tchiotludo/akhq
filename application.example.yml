@@ -16,12 +16,12 @@ micronaut:
 
 kafkahq:
   server:
-    base-path: "" # if behind a reverse proxy, path to kafkahq without trailing slash (optional). Example: kafkahq is
-                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/kafkahq".
+    base-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
+                  # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/akhq".
                   # Not needed if you're behind a reverse proxy with subdomain http://kafkahq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
-      name: org.kafkahq.log.access # Logger name
+      name: org.akhq.log.access # Logger name
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
 
   # default kafka properties for each clients, available for admin / producer / consumer (optional)
@@ -30,7 +30,7 @@ kafkahq:
       properties:
         isolation.level: read_committed
 
-  # list of kafka cluster available for kafkahq
+  # list of kafka cluster available for akhq
   connections:
     my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
       properties: # standard kafka properties (optional)

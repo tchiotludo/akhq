@@ -1,6 +1,6 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
-<#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="topic" type="org.akhq.models.Topic" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/functions.ftl" as functions>

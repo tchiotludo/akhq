@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "kafkahq.fullname" . }}
+  name: {{ template "akhq.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "kafkahq.name" . }} 
-    helm.sh/chart: {{ include "kafkahq.chart" . }}
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:

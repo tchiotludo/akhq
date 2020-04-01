@@ -1,6 +1,6 @@
 {
     "name": "Breed",
-    "namespace": "org.kafkahq",
+    "namespace": "org.akhq",
     "type": "enum",
     "symbols" : ["ABYSSINIAN", "AMERICAN_SHORTHAIR", "BIRMAN", "MAINE_COON", "ORIENTAL", "PERSIAN", "RAGDOLL", "SIAMESE", "SPHYNX"]
 }

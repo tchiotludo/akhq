@@ -1,7 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="group" type="org.kafkahq.models.ConsumerGroup" -->
+<#-- @ftlvariable name="group" type="org.akhq.models.ConsumerGroup" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 
 <#import "includes/template.ftl" as template>

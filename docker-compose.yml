@@ -8,14 +8,14 @@ volumes:
     driver: local
 services:
   kafkahq:
-    image: tchiotludo/kafkahq
+    image: tchiotludo/akhq
     depends_on:
       - zookeeper
       - kafka
     ports:
       - 8090:8080
     volumes:
-      - ./kafkahq.yml:/app/application.yml
+      - ./akhq.yml:/app/application.yml
     links:
       - zookeeper:zookeper
       - kafka:kafka

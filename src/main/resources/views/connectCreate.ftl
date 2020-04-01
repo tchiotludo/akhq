@@ -2,8 +2,8 @@
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
-<#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.kafkahq.models.ConnectPlugin>" -->
-<#-- @ftlvariable name="definition" type="org.kafkahq.models.ConnectDefinition" -->
+<#-- @ftlvariable name="pluginDefinition" type="java.util.Optional<org.akhq.models.ConnectPlugin>" -->
+<#-- @ftlvariable name="definition" type="org.akhq.models.ConnectDefinition" -->
 
 <#import "includes/template.ftl" as template>
 <#import "includes/connect.ftl" as connectTemplate>

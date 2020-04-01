@@ -2,8 +2,8 @@
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
-<#-- @ftlvariable name="datas" type="java.util.List<org.kafkahq.models.Record<java.lang.Byte[], java.lang.Byte[]>>" -->
-<#-- @ftlvariable name="topic" type="org.kafkahq.models.Topic" -->
+<#-- @ftlvariable name="datas" type="java.util.List<org.akhq.models.Record<java.lang.Byte[], java.lang.Byte[]>>" -->
+<#-- @ftlvariable name="topic" type="org.akhq.models.Topic" -->
 <#-- @ftlvariable name="canDeleteRecords" type="java.lang.Boolean" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 <#-- @ftlvariable name="displayTopic" type="java.lang.Boolean" -->

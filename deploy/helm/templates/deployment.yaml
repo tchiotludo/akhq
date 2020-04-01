@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kafkahq.fullname" . }}
+  name: {{ include "akhq.fullname" . }}
   {{- with .Values.image.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
-    app.kubernetes.io/name: {{ include "kafkahq.name" . }}
-    helm.sh/chart: {{ include "kafkahq.chart" . }}
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kafkahq.name" . }}
+      app.kubernetes.io/name: {{ include "akhq.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
@@ -30,7 +30,7 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "kafkahq.name" . }}
+        app.kubernetes.io/name: {{ include "akhq.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
@@ -89,10 +89,10 @@ spec:
       {{- if .Values.configuration }}
       - name: config
         configMap:
-          name: {{ template "kafkahq.fullname" . }}
+          name: {{ template "akhq.fullname" . }}
       {{- end }}
       {{- if .Values.secrets }}
       - name: secrets
         secret:
-          secretName: {{ template "kafkahq.fullname" . }}-secrets
+          secretName: {{ template "akhq.fullname" . }}-secrets
       {{- end }}

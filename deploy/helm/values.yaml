@@ -1,5 +1,5 @@
 image:
-  repository: tchiotludo/kafkahq
+  repository: tchiotludo/akhq
   tag: latest
   annotations: {}
     #prometheus.io/scrape: 'true'
@@ -9,7 +9,7 @@ image:
   ## You can put directly your configuration here...
   # - name: KAFKAHQ_CONFIGURATION
   #   value: |
-  #       kafkahq:
+  #       akhq:
   #         secrets:
   #           docker-kafka-server:
   #             properties:
@@ -59,11 +59,11 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   paths: []
   hosts:
-    - kafkahq.demo.com
+    - akhq.demo.com
   tls: []
-  #  - secretName: kafkahq-tls
+  #  - secretName: akhq-tls
   #    hosts:
-  #      - kafkahq.demo.com
+  #      - akhq.demo.com
 
 resources: {}
   # limits:

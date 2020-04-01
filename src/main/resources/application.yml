@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: kafkahq
+    name: akhq
   server:
     cors:
       enabled: true
@@ -19,20 +19,20 @@ micronaut:
     endpoints:
       login:
         enabled: true
-        path: "${kafkahq.server.base-path:}/login"
+        path: "${akhq.server.base-path:}/login"
       logout:
         enabled: true
-        path: "${kafkahq.server.base-path:}/logout"
+        path: "${akhq.server.base-path:}/logout"
         get-allowed: true
     session:
       enabled: true
-      login-success-target-url: "${kafkahq.server.base-path:}/"
-      logout-target-url: "${kafkahq.server.base-path:}/"
-      forbidden-target-url: "${kafkahq.server.base-path:}/login/forbidden"
-      unauthorized-target-url: "${kafkahq.server.base-path:}/login/unauthorized"
-      login-failure-target-url: "${kafkahq.server.base-path:}/login/failed"
+      login-success-target-url: "${akhq.server.base-path:}/"
+      logout-target-url: "${akhq.server.base-path:}/"
+      forbidden-target-url: "${akhq.server.base-path:}/login/forbidden"
+      unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
+      login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
-      - pattern: "${kafkahq.server.base-path:}/static/**"
+      - pattern: "${akhq.server.base-path:}/static/**"
         access: "isAnonymous()"
   caches:
     kafka-wrapper:
@@ -41,7 +41,7 @@ micronaut:
 
 endpoints:
   all:
-    path: "${kafkahq.server.base-path:}"
+    path: "${akhq.server.base-path:}"
   health:
     enabled: true
     sensitive: false
@@ -93,7 +93,7 @@ kafkahq:
     base-path: ""
     access-log:
       enabled: true
-      name: org.kafkahq.log.access
+      name: org.akhq.log.access
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
 
   clients-defaults:

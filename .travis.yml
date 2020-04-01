@@ -26,23 +26,23 @@ script:
   - ./gradlew --console=plain test
   - ./gradlew --console=plain shadowJar
   # Docker Build
-  - cp build/libs/kafkahq-*.jar docker/app/kafkahq.jar
+  - cp build/libs/akhq-*.jar docker/app/akhq.jar
   - docker build . -t $TRAVIS_COMMIT
   # Docker Tag
   - if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ ! -z "$TRAVIS_TAG" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
-      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_TAG;
-      docker push tchiotludo/kafkahq:$TRAVIS_TAG;
+      docker tag $TRAVIS_COMMIT tchiotludo/akhq:$TRAVIS_TAG;
+      docker push tchiotludo/akhq:$TRAVIS_TAG;
     fi
   # Docker Branch
   - if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ "$TRAVIS_BRANCH" == "master" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
-      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:latest;
-      docker push tchiotludo/kafkahq:latest;
+      docker tag $TRAVIS_COMMIT tchiotludo/akhq:latest;
+      docker push tchiotludo/akhq:latest;
     elif [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ "$TRAVIS_BRANCH" == "dev" ]]; then
       echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
-      docker tag $TRAVIS_COMMIT tchiotludo/kafkahq:$TRAVIS_BRANCH;
-      docker push tchiotludo/kafkahq:$TRAVIS_BRANCH;
+      docker tag $TRAVIS_COMMIT tchiotludo/akhq:$TRAVIS_BRANCH;
+      docker push tchiotludo/akhq:$TRAVIS_BRANCH;
     fi
   - set +e
 
@@ -52,7 +52,7 @@ deploy:
       secure: Zb/iCIzv0qe+Ka/A6U7wSKUZ8AlQFY8jm0Mla1hcFZTTLs95NmIudxozuJr+D9rO3hqnkkeh23nfaNzGYLD6elLpDaFn3UpI2caA/6mc4QqZQ3fiw+49LDDjaGNLm0pnKVnaPdbusc6giz2GMQYpXcngLNbGtXN4KGEghmnQKSP+oIreBllUJNbvIpBjTJnBT8/PJAmzO6WnJl6U7J4lP06GVyM8Rq7UvlQuYGXZMvks3hRxQAUsSMWhNlK95XHEJkpOqxDUJXM9i8bKKqyy9RYl+/BkupQPPpShTXVPXtz1TTmo5cE+K6TLNBJkpw7QtYHqpbAZpwaYiwyf9XaZiZF4CSK4ue64NfvAtXSrDnUPZq7F2hzkZ01xADxnx3Q306QD1AJ1pHTyubmIN9rc6P5IQHezh6pgvTCA9T5mDjmPxgul4ERi3z3u6IIEanEi8lvkY6ZiVDx+/xMitEFkExhJQN+i0DUCEBNe/GJYYNKt6o/tcp2ptFLVADXQs6i9jNklaVbA9fFh48L1jEDH4KxNT5LnmVtxRHfs8+edQAI4eA3ZONKXrIhAD3wG+xnvjfOtX1YBoCkLIq30G+kY+No0yGKuOMiLbq0vbiDilh1slytRaMr+PhhceFUr/wzWZLb0iZlnDatcKq9gjuMY7oMfMk3DNTgoY/gDqXWl66k=
     draft: true
     skip_cleanup: true
-    file: docker/app/kafkahq.jar
+    file: docker/app/akhq.jar
     on:
       tags: true
 
