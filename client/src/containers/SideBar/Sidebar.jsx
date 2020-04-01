@@ -11,7 +11,7 @@ class Sidebar extends Component {
   state = {
     selectedTab: constants.TOPIC,
     selectedCluster: '',
-    selectedConnect: {},
+    selectedConnect: '',
     allClusters: [],
     allConnects: [],
     showClusters: false,
@@ -59,7 +59,7 @@ class Sidebar extends Component {
   }
 
   async handleGetConnects(selectedCluster) {
-    let allConnects = {};
+    let allConnects = [];
     try {
       allConnects = await api.get(endpoints.uriConnects(selectedCluster));
       this.setState({ allConnects: allConnects.data, selectedConnect: allConnects.data[0] });
@@ -76,8 +76,8 @@ class Sidebar extends Component {
       </li>
     ));
     const listConnects = allConnects.map(connect => (
-      <li key={connect.name} onClick={() => this.changeSelectedConnect(connect)}>
-        <a className={selectedConnect.name === connect.name ? ' active' : ''}>{connect.name}</a>
+      <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
+        <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
       </li>
     ));
     return { listClusters, listConnects };
@@ -99,7 +99,7 @@ class Sidebar extends Component {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
       this.props.history.push({
-        pathname: `/${selectedCluster}/connect/${selectedConnect.name}`,
+        pathname: `/${selectedCluster}/connect/${selectedConnect}`,
         selectedCluster
       });
     });
@@ -176,7 +176,7 @@ class Sidebar extends Component {
               {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
               <li className={selectedTab === constants.CONNECT ? 'active' : ''}>
                 <Link
-                  to={`/${selectedCluster}/connect`}
+                  to={`/${selectedCluster}/connect/${selectedConnect}`}
                   data-toggle="collapse"
                   aria-expanded={showConnects}
                   className="dropdown-toggle"
@@ -185,7 +185,7 @@ class Sidebar extends Component {
                   }}
                 >
                   <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
-                  <span className="badge badge-success">{selectedConnect.name}</span>
+                  <span className="badge badge-success">{selectedConnect}</span>
                 </Link>
                 <ul className={`list-unstyled ${showConnects ? 'show' : 'collapse'}`} id="connects">
                   {listConnects}

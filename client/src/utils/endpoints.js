@@ -11,6 +11,35 @@ export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
+export const uriConnectDefinitions = (clusterId, connectId) => {
+  return `${apiUrl}/connect/definitions?clusterId=${clusterId}&connectId=${connectId}`;
+};
+
+export const uriGetDefinition = (clusterId, connectId, definitionId) => {
+  // eslint-disable-next-line max-len
+  return `${apiUrl}/connect/definition?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+};
+
+export const uriPauseDefinition = () => {
+  return `${apiUrl}/connect/definition/pause`;
+};
+
+export const uriResumeDefinition = () => {
+  return `${apiUrl}/connect/definition/resume`;
+};
+
+export const uriRestartDefinition = () => {
+  return `${apiUrl}/connect/definition/restart`;
+};
+
+export const uriRestartTask = () => {
+  return `${apiUrl}/connect/definition/task/restart`;
+};
+
+export const uriDeleteDefinition = () => {
+  return `${apiUrl}/connect/delete`;
+};
+
 export const uriNodes = id => {
   return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
 };
@@ -18,11 +47,17 @@ export const uriNodes = id => {
 export const uriSchemaRegistry = (id, search, pageNumber) => {
   return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
 };
+export const uriSchemaVersions = (clusterId, subject) => {
+  return `${apiUrl}/schema/versions?clusterId=${clusterId}&subject=${subject}`;
+};
 
 export const uriDeleteSchema = () => {
   return `${apiUrl}/schema/delete`;
 };
 
+export const uriDeleteSchemaVersion = () => {
+  return `${apiUrl}/schema/version`;
+};
 export const uriTopics = (id, view, search, pageNumber) => {
   return `${apiUrl}/topics?clusterId=${id}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
@@ -97,6 +132,7 @@ export const uriNodesLogs = (clusterId, nodeId) => {
 };
 
 export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
+  // eslint-disable-next-line max-len
   return `${apiUrl}/group?clusterId=${clusterId}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
 };
 
@@ -148,6 +184,12 @@ export default {
   apiUrl,
   uriClusters,
   uriConnects,
+  uriGetDefinition,
+  uriPauseDefinition,
+  uriResumeDefinition,
+  uriRestartDefinition,
+  uriRestartTask,
+  uriConnectDefinitions,
   uriNodes,
   uriNodesConfigs,
   uriTopicsLogs,
@@ -168,5 +210,6 @@ export default {
   uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,
   uriTopicsConfigs,
-  uriLatestSchemaVersion
+  uriLatestSchemaVersion,
+  uriSchemaVersions
 };

@@ -8,6 +8,7 @@ import org.akhq.models.Schema;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.SchemaRegistryRepository;
+import org.akhq.service.dto.SchemaRegistry.DeleteSchemaVersionDTO;
 import org.akhq.service.dto.SchemaRegistry.SchemaDTO;
 import org.akhq.service.dto.schema.SchemaVersionDTO;
 import org.akhq.service.dto.schema.UpdateSchemaDTO;
@@ -21,6 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -54,11 +56,26 @@ public class SchemaService {
         return new SchemaListDTO(schemaRegistryList, list.pageCount());
     }
 
+    public List<SchemaVersionDTO> getAllSchemaVersions(String clusterId, String subject) throws IOException, RestClientException {
+        return schemaRepository.getAllVersions(clusterId, subject)
+                .stream()
+                .map(schema -> schemaMapper.fromSchemaToSchemaVersionDTO(Pair.of(schema, Optional.empty())))
+                .collect(Collectors.toList());
+    }
+
+    public void deleteSchemaVersion(DeleteSchemaVersionDTO deleteSchemaVersionDTO) throws IOException, RestClientException {
+        this.schemaRepository.deleteVersion(
+                deleteSchemaVersionDTO.getClusterId(),
+                deleteSchemaVersionDTO.getSubject(),
+                deleteSchemaVersionDTO.getVersionId()
+        );
+    }
+
     public SchemaVersionDTO getLatestSchemaVersion(String clusterId, String subject) throws IOException, RestClientException {
         Schema schemaLatestVersion = schemaRepository.getLatestVersion(clusterId, subject);
         Schema.Config schemaLatestConfig = schemaRepository.getConfig(clusterId, subject);
 
-        return schemaMapper.fromSchemaToSchemaVersionDTO(Pair.of(schemaLatestVersion, schemaLatestConfig));
+        return schemaMapper.fromSchemaToSchemaVersionDTO(Pair.of(schemaLatestVersion, Optional.of(schemaLatestConfig.toString())));
     }
 
     public Schema createSchema(CreateSchemaDTO schemaDTO) throws Exception {
