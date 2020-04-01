@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './styles.scss';
-import image from '../../images/logo.svg';
+import image from '../../images/icon.svg';
 class Loading extends Component {
   render() {
     const { show } = this.props;

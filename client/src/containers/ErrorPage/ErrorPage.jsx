@@ -36,10 +36,7 @@ class ErrorPage extends Component {
       <div id="content" className="no-side-bar">
         <div className="mb-5">
           <h3 className="logo">
-            <img src={image} />
-            <sup>
-              <strong>HQ</strong>
-            </sup>
+            <img src={image} width={'195.53px'} height={'63px'} />
           </h3>
         </div>
         <code>{title || 'Error'}</code>
