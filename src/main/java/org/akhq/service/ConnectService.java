@@ -1,8 +1,10 @@
 package org.akhq.service;
 
+import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConnectRepository;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
+import org.akhq.service.dto.connect.ConnectPluginDTO;
 import org.akhq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.akhq.service.mapper.ConnectMapper;
 
@@ -74,4 +76,22 @@ public class ConnectService {
                 .map(connectDefinition -> connectMapper.fromConnectDefinitionToConnectDefinitionDTO(connectDefinition))
                 .collect(Collectors.toList());
     }
+
+    public List<ConnectPluginDTO> getConnectPlugins(String clusterId, String connectId){
+        List<ConnectPlugin> plugins= connectRepository.getPlugins(clusterId,connectId);
+        List<ConnectPluginDTO> pluginsDTO=new ArrayList<>();
+        for (int i=0; i< plugins.size();i++){
+            ConnectPluginDTO plugin= connectMapper.fromConnectPluginToConnectPluginDTO(plugins.get(i));
+            pluginsDTO.add(plugin);
+        }
+        return pluginsDTO;
+
+    }
+/*
+   public ConnectPluginDTO getConnectPlugin (String clusterId, String connectId, String className) {
+           return connectMapper.fromConnectPluginToConnectPluginDTO(connectRepository.getPlugin(clusterId, connectId, className));
+
+   }
+
+ */
 }

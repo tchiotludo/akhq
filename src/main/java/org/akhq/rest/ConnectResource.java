@@ -6,6 +6,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Put;
 import org.akhq.service.ConnectService;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
+import org.akhq.service.dto.connect.ConnectPluginDTO;
 import org.akhq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ModifyConnectDefinitionStateDTO;
 import org.akhq.service.dto.connect.RestartConnectDefinitionTaskDTO;
@@ -111,5 +112,11 @@ public class ConnectResource {
                 deleteConnectDefinitionDTO.getConnectId()
         );
         return this.connectService.deleteConnectDefinition(deleteConnectDefinitionDTO);
+    }
+
+    @Get("/connect/plugins")
+    public List<ConnectPluginDTO> fetchConnectPlugins(String clusterId, String connectId) {
+        log.debug("Fetching plugins for connect: {}", connectId);
+        return connectService.getConnectPlugins(clusterId, connectId);
     }
 }
