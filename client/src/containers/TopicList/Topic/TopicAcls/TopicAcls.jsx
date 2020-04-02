@@ -23,7 +23,6 @@ class TopicAcls extends Component {
     });
     try {
       //acls = await get(uriTopicsAcls(clusterId, topicId));
-      console.log('acls', acls);
       //this.handleData(acls.data);
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -37,7 +36,6 @@ class TopicAcls extends Component {
   handleData(acls) {
     let tableAcls = acls.map((acl, index) => {
       let hostProp = Object.keys(acl.permissions.topic)[0];
-      console.log('hostProp?', hostProp);
       return {
         id: index,
         topic: acl.principal || ''

@@ -215,7 +215,8 @@ Table.propTypes = {
   actions: PropTypes.array,
   onDetails: PropTypes.func,
   onDelete: PropTypes.func,
-  toPresent: PropTypes.array
+  toPresent: PropTypes.array,
+  noContent: PropTypes.any
 };
 
 export default Table;
