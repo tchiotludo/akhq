@@ -9,9 +9,11 @@ import io.micronaut.retry.annotation.Retryable;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
+import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDefinition;
 import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
+import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,7 +25,7 @@ public class ConnectRepository extends AbstractRepository {
     @Inject
     private KafkaModule kafkaModule;
 
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
@@ -80,56 +82,84 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     public ConnectDefinition create(String clusterId, String connectId, String name, Map<String, String> configs) {
-        this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .addConnector(new NewConnectorDefinition(name, configs));
+        try {
+            this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .addConnector(new NewConnectorDefinition(name, configs));
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
 
         return getDefinition(clusterId, connectId, name);
     }
 
     public ConnectDefinition update(String clusterId, String connectId, String name, Map<String, String> configs) {
-        this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .updateConnectorConfig(name, configs);
+        try {
+            this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .updateConnectorConfig(name, configs);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
 
         return getDefinition(clusterId, connectId, name);
     }
 
     public boolean delete(String clusterId, String connectId, String name) {
-        return this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .deleteConnector(name);
+        try {
+            return this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .deleteConnector(name);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public boolean pause(String clusterId, String connectId, String name) {
-        return this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .pauseConnector(name);
+        try {
+            return this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .pauseConnector(name);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public boolean resume(String clusterId, String connectId, String name) {
-        return this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .resumeConnector(name);
+        try {
+            return this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .resumeConnector(name);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public boolean restart(String clusterId, String connectId, String name) {
-        return this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .restartConnector(name);
+        try {
+            return this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .restartConnector(name);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public boolean restartTask(String clusterId, String connectId, String name, int task) {
-        return this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .restartConnectorTask(name, task);
+        try {
+            return this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .restartConnectorTask(name, task);
+        } catch (InvalidRequestException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public static Map<String, String> validConfigs(Map<String, String> configs, String transformsValue) {
