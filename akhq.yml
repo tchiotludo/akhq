@@ -1,4 +1,4 @@
-kafkahq:
+akhq:
   server:
     base-path: "" # if behind a reverse proxy, path to akhq with trailing slash (optional). Example: akhq is
       # behind a reverse proxy with url http://my-server/kafkahq, set base-path: "/akhq/".
