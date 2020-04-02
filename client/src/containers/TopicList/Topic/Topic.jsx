@@ -57,7 +57,7 @@ class Topic extends Component {
       case 'configs':
         return <TopicConfigs history={history} topicId={topicId} clusterId={clusterId} />;
       case 'acls':
-        return <TopicAcls history={history} />;
+        return <TopicAcls history={history} topicId={topicId} clusterId={clusterId} />;
       case 'logs':
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:

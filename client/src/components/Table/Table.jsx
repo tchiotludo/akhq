@@ -145,6 +145,34 @@ class Table extends Component {
     );
   }
 
+  renderNoContent() {
+    const { noContent, columns } = this.props;
+    if (noContent) {
+      if (typeof noContent === 'string') {
+        return (
+          <tr>
+            <td colSpan={columns.length}>
+              <div className="alert alert-info mb-0" role="alert">
+                {noContent}
+              </div>
+            </td>
+          </tr>
+        );
+      } else {
+        return noContent;
+      }
+    }
+    return (
+      <tr>
+        <td colSpan={columns.length}>
+          <div className="alert alert-info mb-0" role="alert">
+            No data available
+          </div>
+        </td>
+      </tr>
+    );
+  }
+
   render() {
     const { data, columns } = this.props;
 
@@ -153,19 +181,11 @@ class Table extends Component {
         <table className="table table-bordered table-striped table-hover mb-0">
           {this.renderHeader()}
           <tbody>
-            {data && data.length > 0 ? (
-              data.map((row, index) => {
-                return this.renderRow(row, index);
-              })
-            ) : (
-              <tr>
-                <td colSpan={columns.length}>
-                  <div className="alert alert-info mb-0" role="alert">
-                    No topic available
-                  </div>
-                </td>
-              </tr>
-            )}
+            {data && data.length > 0
+              ? data.map((row, index) => {
+                  return this.renderRow(row, index);
+                })
+              : this.renderNoContent()}
           </tbody>
         </table>
       </div>
