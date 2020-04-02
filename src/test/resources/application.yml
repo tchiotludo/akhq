@@ -24,6 +24,10 @@ micronaut:
     netty:
       logLevel: TRACE
 
+  http:
+    client:
+      read-timeout: 30s
+
 akhq:
   server:
     base-path: ""
@@ -130,3 +134,4 @@ akhq:
         user2:
           groups:
             - operator
+

@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
@@ -19,9 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 
 @Secured(Role.ROLE_CONNECT_READ)
-@Controller("${akhq.server.base-path:}/{cluster}/connect/{connectId}")
+@Controller("${akhq.server.base-path:}/")
 public class ConnectController extends AbstractController {
-    private ConnectRepository connectRepository;
+    private final ConnectRepository connectRepository;
 
     @Inject
     public ConnectController(ConnectRepository connectRepository) {
@@ -29,8 +30,8 @@ public class ConnectController extends AbstractController {
     }
 
     @View("connectList")
-    @Get
-    public HttpResponse list(HttpRequest request, String cluster, String connectId) {
+    @Get("{cluster}/connect/{connectId}")
+    public HttpResponse<?> list(HttpRequest<?> request, String cluster, String connectId) {
         return this.template(
             request,
             cluster,
@@ -39,10 +40,32 @@ public class ConnectController extends AbstractController {
         );
     }
 
+    @Get("api/{cluster}/connect/{connectId}")
+    public List<ConnectDefinition> listApi(String cluster, String connectId) {
+        return this.connectRepository.getDefinitions(cluster, connectId);
+    }
+
+    @Get("api/{cluster}/connect/{connectId}/plugins")
+    public List<ConnectPlugin> pluginsListApi(String cluster, String connectId) {
+        return this.connectRepository.getPlugins(cluster, connectId);
+    }
+
+    @Get("api/{cluster}/connect/{connectId}/plugins/{type}")
+    public ConnectPlugin pluginsApi(String cluster, String connectId, String type) {
+        List<ConnectPlugin> plugins = this.connectRepository.getPlugins(cluster, connectId);
+
+        return plugins
+            .stream()
+            .filter(connectPlugin -> connectPlugin.getClassName().equals(type))
+            .findAny()
+            .orElseThrow();
+    }
+
+
     @Secured(Role.ROLE_CONNECT_INSERT)
     @View("connectCreate")
-    @Get("create")
-    public HttpResponse create(HttpRequest request, String cluster, Optional<String> type, String connectId) {
+    @Get("{cluster}/connect/{connectId}/create")
+    public HttpResponse<?> create(HttpRequest<?> request, String cluster, Optional<String> type, String connectId) {
         List<ConnectPlugin> plugins = this.connectRepository.getPlugins(cluster, connectId);
 
         return this.template(
@@ -59,14 +82,14 @@ public class ConnectController extends AbstractController {
     }
 
     @Secured(Role.ROLE_CONNECT_INSERT)
-    @Post(value = "create", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse createSubmit(String cluster,
-                                     String connectId,
-                                     String name,
-                                     String transformsValue,
-                                     Map<String, String> configs)
-        throws Throwable
-    {
+    @Post(value = "{cluster}/connect/{connectId}/create", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> createSubmit(
+        String cluster,
+        String connectId,
+        String name,
+        String transformsValue,
+        Map<String, String> configs
+    ) throws Throwable {
         Map<String, String> validConfigs = ConnectRepository.validConfigs(configs, transformsValue);
 
         MutableHttpResponse<Void> response = HttpResponse.ok();
@@ -91,9 +114,20 @@ public class ConnectController extends AbstractController {
             );
     }
 
+    @Secured(Role.ROLE_CONNECT_INSERT)
+    @Post(value = "api/{cluster}/connect/{connectId}")
+    public ConnectDefinition createApi(
+        String cluster,
+        String connectId,
+        String name,
+        Map<String, String> configs
+    ) {
+        return this.connectRepository.create(cluster, connectId, name, configs);
+    }
+
     @Secured(Role.ROLE_CONNECT_DELETE)
-    @Get("{name}/delete")
-    public HttpResponse delete(String cluster, String connectId, String name) {
+    @Get("{cluster}/connect/{connectId}/{name}/delete")
+    public HttpResponse<?> delete(String cluster, String connectId, String name) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -105,27 +139,52 @@ public class ConnectController extends AbstractController {
         return response;
     }
 
-    @Secured(Role.ROLE_CONNECT_UPDATE)
-    @View("connect")
-    @Get("{name}")
-    public HttpResponse home(HttpRequest request, String cluster, String connectId, String name) {
-        return this.render(request, cluster, connectId, name, "tasks");
+    @Secured(Role.ROLE_CONNECT_DELETE)
+    @Delete("api/{cluster}/connect/{connectId}/{name}")
+    public HttpResponse<?> deleteApi(String cluster, String connectId, String name) {
+        this.connectRepository.delete(cluster, connectId, name);
+
+        return HttpResponse.noContent();
     }
 
     @Secured(Role.ROLE_CONNECT_UPDATE)
     @View("connect")
-    @Get("{name}/{tab:(tasks|configs)}")
-    public HttpResponse tabs(HttpRequest request, String cluster, String connectId, String name, String tab) {
+    @Get("{cluster}/connect/{connectId}/{name}")
+    public HttpResponse<?> home(HttpRequest<?> request, String cluster, String connectId, String name) {
+        return this.render(request, cluster, connectId, name, "tasks");
+    }
+
+    @Get("api/{cluster}/connect/{connectId}/{name}")
+    public ConnectDefinition homeApi(HttpRequest<?> request, String cluster, String connectId, String name) {
+        return this.connectRepository.getDefinition(cluster, connectId, name);
+    }
+
+    @Get("api/{cluster}/connect/{connectId}/{name}/tasks")
+    public List<ConnectDefinition.TaskDefinition> tasksApi(HttpRequest<?> request, String cluster, String connectId, String name) {
+        return this.connectRepository.getDefinition(cluster, connectId, name).getTasks();
+    }
+
+    @Get("api/{cluster}/connect/{connectId}/{name}/configs")
+    public Map<String, String> configsApi(HttpRequest<?> request, String cluster, String connectId, String name) {
+        return this.connectRepository.getDefinition(cluster, connectId, name).getConfigs();
+    }
+
+    @Secured(Role.ROLE_CONNECT_UPDATE)
+    @View("connect")
+    @Get("{cluster}/connect/{connectId}/{name}/{tab:(tasks|configs)}")
+    public HttpResponse<?> tabs(HttpRequest<?> request, String cluster, String connectId, String name, String tab) {
         return this.render(request, cluster, connectId, name, tab);
     }
 
     @Secured(Role.ROLE_CONNECT_UPDATE)
-    @Post(value = "{name}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse updateDefinition(String cluster,
-                                         String connectId,
-                                         String name,
-                                         String transformsValue,
-                                         Map<String, String> configs) throws Throwable {
+    @Post(value = "{cluster}/connect/{connectId}/{name}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> updateDefinition(
+        String cluster,
+        String connectId,
+        String name,
+        String transformsValue,
+        Map<String, String> configs
+    ) throws Throwable {
         MutableHttpResponse<Void> response = HttpResponse.redirect(this.uri("/" + cluster + "/connect/" + connectId));
         Map<String, String> validConfigs = ConnectRepository.validConfigs(configs, transformsValue);
 
@@ -138,9 +197,20 @@ public class ConnectController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_CONNECT_UPDATE)
+    @Post(value = "api/{cluster}/connect/{connectId}/{name}/configs")
+    public ConnectDefinition updateApi(
+        String cluster,
+        String connectId,
+        String name,
+        Map<String, String> configs
+    ) {
+        return this.connectRepository.update(cluster, connectId, name, configs);
+    }
+
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
-    @Get("{name}/restart")
-    public HttpResponse definitionRestart(HttpRequest request, String cluster, String connectId, String name) {
+    @Get("{cluster}/connect/{connectId}/{name}/restart")
+    public HttpResponse<?> definitionRestart(HttpRequest<?> request, String cluster, String connectId, String name) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -153,8 +223,16 @@ public class ConnectController extends AbstractController {
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
-    @Get("{name}/pause")
-    public HttpResponse definitionPause(HttpRequest request, String cluster, String connectId, String name) {
+    @Get("api/{cluster}/connect/{connectId}/{name}/restart")
+    public HttpResponse<?> definitionRestartApi(String cluster, String connectId, String name) {
+        this.connectRepository.restart(cluster, connectId, name);
+
+        return HttpResponse.noContent();
+    }
+
+    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @Get("{cluster}/connect/{connectId}/{name}/pause")
+    public HttpResponse<?> definitionPause(HttpRequest<?> request, String cluster, String connectId, String name) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -167,8 +245,16 @@ public class ConnectController extends AbstractController {
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
-    @Get("{name}/resume")
-    public HttpResponse definitionResume(HttpRequest request, String cluster, String connectId, String name) {
+    @Get("api/{cluster}/connect/{connectId}/{name}/pause")
+    public HttpResponse<?> definitionPauseApi(String cluster, String connectId, String name) {
+        this.connectRepository.pause(cluster, connectId, name);
+
+        return HttpResponse.noContent();
+    }
+
+    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @Get("{cluster}/connect/{connectId}/{name}/resume")
+    public HttpResponse<?> definitionResume(HttpRequest<?> request, String cluster, String connectId, String name) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -181,8 +267,16 @@ public class ConnectController extends AbstractController {
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
-    @Get("{name}/tasks/{taskId}/restart")
-    public HttpResponse taskRestart(HttpRequest request, String cluster, String connectId, String name, int taskId) {
+    @Get("api/{cluster}/connect/{connectId}/{name}/resume")
+    public HttpResponse<?> definitionResumeApi(String cluster, String connectId, String name) {
+        this.connectRepository.resume(cluster, connectId, name);
+
+        return HttpResponse.noContent();
+    }
+
+    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @Get("{cluster}/connect/{connectId}/{name}/tasks/{taskId}/restart")
+    public HttpResponse<?> taskRestart(HttpRequest<?> request, String cluster, String connectId, String name, int taskId) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
         this.toast(response, RequestHelper.runnableToToast(() ->
@@ -194,7 +288,15 @@ public class ConnectController extends AbstractController {
         return response;
     }
 
-    private HttpResponse render(HttpRequest request, String cluster, String connectId, String subject, String tab) {
+    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @Get("api/{cluster}/connect/{connectId}/{name}/tasks/{taskId}/restart")
+    public HttpResponse<?> taskRestartApi(HttpRequest<?> request, String cluster, String connectId, String name, int taskId) {
+        this.connectRepository.restartTask(cluster, connectId, name, taskId);
+
+        return HttpResponse.noContent();
+    }
+
+    private HttpResponse<?> render(HttpRequest<?> request, String cluster, String connectId, String subject, String tab) {
         ConnectDefinition definition = this.connectRepository.getDefinition(cluster, connectId, subject);
 
         return this.template(

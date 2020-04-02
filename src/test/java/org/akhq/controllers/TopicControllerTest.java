@@ -8,8 +8,7 @@ import org.akhq.models.*;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.config.TopicConfig;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Base64;
 import java.util.List;
@@ -18,11 +17,15 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TopicControllerTest extends AbstractTest {
     public static final String BASE_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/topic";
     public static final String TOPIC_URL = BASE_URL + "/" + KafkaTestCluster.TOPIC_COMPACTED;
+    public static final String CREATE_TOPIC_NAME = UUID.randomUUID().toString();
+    public static final String CREATE_TOPIC_URL = BASE_URL + "/" + CREATE_TOPIC_NAME;
 
     @Test
+    @Order(1)
     void listApi() {
         ResultPagedList<Topic> result;
 
@@ -35,36 +38,42 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     void homeApi() {
         Topic result = this.retrieve(HttpRequest.GET(TOPIC_URL), Topic.class);
         assertEquals(KafkaTestCluster.TOPIC_COMPACTED, result.getName());
     }
 
     @Test
+    @Order(1)
     void partitionsApi() {
         List<Partition> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/partitions"), Partition.class);
         assertEquals(3, result.size());
     }
 
     @Test
+    @Order(1)
     void groupsApi() {
         List<ConsumerGroup> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/groups"), ConsumerGroup.class);
         assertEquals(5, result.size());
     }
 
     @Test
+    @Order(1)
     void configApi() {
         List<Config> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/configs"), Config.class);
         assertEquals("0.0", result.stream().filter(config -> config.getName().equals(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG)).findFirst().orElseThrow().getValue());
     }
 
     @Test
+    @Order(1)
     void logsApi() {
         List<LogDir> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/logs"), LogDir.class);
         assertEquals(3, result.size());
     }
 
     @Test
+    @Order(1)
     @Disabled("TODO: rewamp ACL to be api friendly")
     void aclsApi() {
         List<AccessControl> result = this.retrieveList(HttpRequest.GET(BASE_URL + "/testAclTopic/acls"), AccessControl.class);
@@ -74,6 +83,7 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     void updateConfigApi() {
         String s = String.valueOf(new Random().nextInt((Integer.MAX_VALUE - Integer.MAX_VALUE/2) + 1) + Integer.MAX_VALUE/2);
 
@@ -89,6 +99,7 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     void dataApi() {
         ResultNextList<Record> result;
         String after = TOPIC_URL + "/data";
@@ -107,37 +118,48 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
-    void createProduceDeleteApi() {
-        String name = UUID.randomUUID().toString();
-        ResultNextList<Record> records;
-
+    @Order(2)
+    void create() {
         // create
         Topic result = this.retrieve(HttpRequest.POST(
             BASE_URL,
             ImmutableMap.of(
-                "name", name,
+                "name", CREATE_TOPIC_NAME,
                 "partition", 3,
-                "configs",  ImmutableMap.of(
+                "configs", ImmutableMap.of(
                     TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT
                 )
             )
         ), Topic.class);
 
-        assertEquals(name, result.getName());
+        assertEquals(CREATE_TOPIC_NAME, result.getName());
         assertEquals(3, result.getPartitions().size());
+    }
 
-        // check configs
-        List<Config> configs = this.retrieveList(HttpRequest.GET(BASE_URL + "/" + name + "/configs"), Config.class);
-        assertEquals(TopicConfig.CLEANUP_POLICY_COMPACT, configs.stream().filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG)).findFirst().orElseThrow().getValue());
+    @Test
+    @Order(3)
+    void checkConfigs() {
+        List<Config> configs = this.retrieveList(HttpRequest.GET(CREATE_TOPIC_URL + "/configs"), Config.class);
+        assertEquals(
+            TopicConfig.CLEANUP_POLICY_COMPACT,
+            configs.stream()
+                .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
+                .findFirst()
+                .orElseThrow()
+                .getValue()
+        );
+    }
 
-        // produce
+    @Test
+    @Order(3)
+    void produce() {
         Record record = this.retrieve(HttpRequest.POST(
-            BASE_URL + "/" + name + "/data",
+            CREATE_TOPIC_URL + "/data",
             ImmutableMap.of(
                 "value", "my-value",
                 "key", "my-key",
                 "partition", 1,
-                "headers",  ImmutableMap.of(
+                "headers", ImmutableMap.of(
                     "my-header-1", "1",
                     "my-header-2", "2"
                 )
@@ -149,16 +171,22 @@ class TopicControllerTest extends AbstractTest {
         assertEquals(1, record.getPartition());
         assertEquals(2, record.getHeaders().size());
         assertEquals("1", record.getHeaders().get("my-header-1"));
+    }
 
-        // get data
-        records = this.retrieveNextList(HttpRequest.GET(BASE_URL + "/" + name + "/data"), Record.class);
+    @Test
+    @Order(3)
+    void dataGet() {
+        ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
         assertEquals(1, records.getResults().size());
         assertEquals("my-value", records.getResults().get(0).getValue());
+    }
 
-        // delete data
+    @Test
+    @Order(4)
+    void dataDelete() {
         Record retrieve = this.retrieve(
             HttpRequest.DELETE(
-                BASE_URL + "/" + name + "/data",
+                CREATE_TOPIC_URL + "/data",
                 ImmutableMap.of(
                     "key", new String(Base64.getEncoder().encode("my-key".getBytes())),
                     "partition", 1
@@ -170,14 +198,17 @@ class TopicControllerTest extends AbstractTest {
 
         // get data
         // @TODO: Failed to see the message
-        // records = this.retrieveNextList(HttpRequest.GET(BASE_URL + "/" + name + "/data"), Record.class);
+        // records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
         // assertEquals(2, records.getResults().size());
         // assertEquals("my-value", records.getResults().get(0).getValue());
         // assertNull(records.getResults().get(1).getValue());
+    }
 
-        // delete topic
+    @Test
+    @Order(5)
+    void delete() {
         this.exchange(
-            HttpRequest.DELETE(BASE_URL + "/" + name)
+            HttpRequest.DELETE(CREATE_TOPIC_URL)
         );
     }
 }
