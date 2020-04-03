@@ -62,7 +62,7 @@ public class ConsumerGroupResource {
     }
 
     @Get("/group/acls")
-    public List<List<AclsDTO>> fetchConsumerGroupAcls(String clusterId, String groupId) {
+    public List<AclsDTO> fetchConsumerGroupAcls(String clusterId, String groupId) {
         return consumerGroupService.getConsumerGroupAcls(clusterId, groupId);
     }
 
