@@ -23,7 +23,7 @@ public class AclResource {
 
 
     @Get("/aclsList")
-    public List<AccessControlList> getAclsList(String clusterId, Optional<String> search) {
+    public List<String> getAclsList(String clusterId, Optional<String> search) {
         return aclService.findAll(clusterId, search);
     }
 
