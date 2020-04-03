@@ -50,7 +50,7 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void list() throws ExecutionException, InterruptedException {
-        assertEquals(18, topicRepository.list(
+        assertEquals(19, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
@@ -60,7 +60,7 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void listNoInternal() throws ExecutionException, InterruptedException {
-        assertEquals(10, topicRepository.list(
+        assertEquals(11, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL,
@@ -70,7 +70,7 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void listNoInternalStream() throws ExecutionException, InterruptedException {
-        assertEquals(8, topicRepository.list(
+        assertEquals(9, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
@@ -80,7 +80,7 @@ public class TopicRepositoryTest extends AbstractTest {
 
     @Test
     public void listNoStream() throws ExecutionException, InterruptedException {
-        assertEquals(16, topicRepository.list(
+        assertEquals(17, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_STREAM,

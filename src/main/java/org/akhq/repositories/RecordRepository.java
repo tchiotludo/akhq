@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,6 +25,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -379,9 +381,12 @@ public class RecordRepository extends AbstractRepository {
         var topic = topicRepository.findByName(clusterId, topicName);
         topic.getPartitions().forEach(partition -> {
             recordsToDelete.put(new TopicPartition(partition.getTopic(), partition.getId()),
-                    RecordsToDelete.beforeOffset(partition.getLastOffset()+1));
+                    RecordsToDelete.beforeOffset(partition.getLastOffset()));
         });
         var deleted = kafkaModule.getAdminClient(clusterId).deleteRecords(recordsToDelete).lowWatermarks();
+        for (Map.Entry<TopicPartition, KafkaFuture<DeletedRecords>> entry : deleted.entrySet()){
+            log.debug(entry.getKey().topic() + " " + entry.getKey().partition() + " " + entry.getValue().get().lowWatermark());
+        }
     }
 
     public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp, Optional<Integer> keySchemaId, Optional<Integer> valueSchemaId) throws ExecutionException, InterruptedException {

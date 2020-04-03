@@ -408,7 +408,7 @@ public class TopicController extends AbstractController {
                 topicName
         ),
                 String.format("Topic %s will be clean", topicName),
-                String.format("Faile to clean topic %s", topicName)
+                String.format("Failed to clean topic %s", topicName)
         ));
 
         return response;

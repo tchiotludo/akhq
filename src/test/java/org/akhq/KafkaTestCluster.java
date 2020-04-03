@@ -43,6 +43,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String CLUSTER_ID = "test";
 
     public static final String TOPIC_RANDOM = "random";
+    public static final String TOPIC_TOBE_EMPTIED = "emptied";
     public static final String TOPIC_COMPACTED = "compacted";
     public static final String TOPIC_EMPTY = "empty";
     public static final String TOPIC_HUGE = "huge";
@@ -262,6 +263,13 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.createTopic(TOPIC_RANDOM, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
+        }
+        log.debug("Random topic created");
+
+        // random data to be emptied
+        testUtils.createTopic(TOPIC_TOBE_EMPTIED, 3, (short) 1);
+        for (int partition = 0; partition < 3; partition++) {
+            testUtils.produceRecords(randomDatas(100, 0), TOPIC_TOBE_EMPTIED, partition);
         }
         log.debug("Random topic created");
 
