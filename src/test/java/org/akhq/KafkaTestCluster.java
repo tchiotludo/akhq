@@ -302,12 +302,12 @@ public class KafkaTestCluster implements Runnable, Stoppable {
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.ALLOW))
+                new ResourcePattern(ResourceType.TOPIC, "testAcl", PatternType.PREFIXED),
+                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.DENY))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:tata", "*", AclOperation.WRITE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:tata", "my-host", AclOperation.WRITE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),

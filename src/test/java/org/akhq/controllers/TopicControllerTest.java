@@ -74,12 +74,12 @@ class TopicControllerTest extends AbstractTest {
 
     @Test
     @Order(1)
-    @Disabled("TODO: rewamp ACL to be api friendly")
     void aclsApi() {
         List<AccessControl> result = this.retrieveList(HttpRequest.GET(BASE_URL + "/testAclTopic/acls"), AccessControl.class);
 
         assertEquals(2, result.size());
-        assertEquals("user:tata", result.get(0).getPrincipal());
+        assertEquals("user:toto", result.get(0).getPrincipal());
+        assertEquals("user:tata", result.get(1).getPrincipal());
     }
 
     @Test
@@ -174,7 +174,7 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void dataGet() {
         ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
         assertEquals(1, records.getResults().size());
@@ -182,7 +182,7 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void dataDelete() {
         Record retrieve = this.retrieve(
             HttpRequest.DELETE(
@@ -205,7 +205,7 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void delete() {
         this.exchange(
             HttpRequest.DELETE(CREATE_TOPIC_URL)

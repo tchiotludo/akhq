@@ -75,9 +75,7 @@ class GroupControllerTest extends AbstractTest {
         assertEquals(0, result.get(0).getOffset());
     }
 
-    // TODO
     @Test
-    @Disabled("TODO: rewamp ACL to be api friendly")
     void aclsApi() {
         List<AccessControl> result = this.retrieveList(
             HttpRequest.GET(BASE_URL + "/groupConsumer/acls"),
@@ -85,7 +83,8 @@ class GroupControllerTest extends AbstractTest {
         );
 
         assertEquals(2, result.size());
-        assertEquals("user:tata", result.get(0).getPrincipal());
+        assertEquals("user:toto", result.get(0).getPrincipal());
+        assertEquals("user:tata", result.get(1).getPrincipal());
     }
 
     @Test

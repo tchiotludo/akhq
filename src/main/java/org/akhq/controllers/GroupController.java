@@ -130,7 +130,7 @@ public class GroupController extends AbstractController {
     }
 
     @Get("api/{cluster}/group/{groupName}/acls")
-    public List<AccessControl> aclsApi(String cluster, String groupName) {
+    public List<AccessControl> aclsApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
     }
 

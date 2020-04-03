@@ -9,7 +9,7 @@
 <#import "includes/group.ftl" as groupTemplate>
 <#import "includes/log.ftl" as logTemplate>
 
-<@template.header "Principal : " + acl.getPrincipal(), "acls" />
+<@template.header "Acl: " + acl.getPrincipal(), "acls" />
 
 <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
@@ -32,30 +32,23 @@
         <tr>
             <th>${tab?cap_first}</th>
             <th>Host</th>
-            <th>Permissions</th>
+            <th>Permission</th>
         </tr>
         </thead>
         <tbody>
         <#assign aclCounter=0>
-        <#if acl.getPermissions()[tab]?? >
-            <#assign topicAcls=acl.getPermissions()[tab]>
+        <#if acl.findByRessourceType(tab)?? >
+            <#assign currents=acl.findByRessourceType(tab)>
 
-
-            <#assign key_list = topicAcls?keys/>
-            <#assign value_list = topicAcls?values/>
-            <#list key_list as key>
+            <#list currents as current>
                 <#assign aclCounter++>
-                <#assign seq_index = key_list?seq_index_of(key) />
-                <#assign key_value = value_list[seq_index]/>
+
                 <tr>
-                    <td>${key.getResource()}</td>
-                    <td>${key.getHost()}</td>
+                    <td>${current.getResource().getName()}</td>
+                    <td>${current.getHost()}</td>
                     <td>
-                        <h5>
-                            <#list key_value as acl >
-                                <span class="badge badge-secondary">${acl}</span>
-                            </#list>
-                        </h5>
+                        <span class="badge badge-secondary">${current.getOperation().getPermissionType()}</span>
+                        ${current.getOperation().getOperation()}
                     </td>
                 </tr>
             </#list>
