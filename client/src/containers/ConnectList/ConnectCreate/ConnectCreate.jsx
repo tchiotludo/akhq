@@ -1,17 +1,12 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
-import Table from '../../../components/Table/Table';
 import './styles.scss';
 import { get } from '../../../utils/api';
 import { uriConnectPlugins } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
-import Dropdown from 'react-bootstrap/Dropdown';
 import constants from '../../../utils/constants';
-import Form from '../../../components/Form/Form';
-import { red } from '@material-ui/core/colors';
-import { Simulate } from 'react-dom/test-utils';
-
-class ConnectCreate extends Form {
+import Select from '../../../components/Form/Select';
+class ConnectCreate extends Component {
   state = {
     clusterId: this.props.match.params.clusterId,
     connectId: this.props.match.params.connectId,
@@ -36,7 +31,6 @@ class ConnectCreate extends Form {
     });
     try {
       plugins = await get(uriConnectPlugins(clusterId, connectId));
-      console.log(plugins.data);
       this.setState({ clusterId, connectId, plugins: plugins.data });
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -47,8 +41,7 @@ class ConnectCreate extends Form {
     }
   }
 
-  onTypeChange = ({ currentTarget: input }) => {
-    let value = input.value;
+  onTypeChange = value=> {
     this.setState({ selectedType: value }, () => {
       this.renderForm();
     });
@@ -58,6 +51,7 @@ class ConnectCreate extends Form {
     this.schema = {};
     definitions.map(definition => {
       let config = this.handleDefinition(definition);
+      this.formData[definition.name]='';
       this.schema[definition.name] = config;
     });
   }
@@ -108,7 +102,7 @@ class ConnectCreate extends Form {
     switch (plugin.importance) {
       case 'HIGH':
         title = (
-          <React.Fragment>
+          <span>
             {plugin.displayName}
             {''}
             <i
@@ -116,29 +110,37 @@ class ConnectCreate extends Form {
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             ></i>
-          </React.Fragment>
+          </span>
         );
         break;
       case 'MEDIUM':
         title = (
-          <React.Fragment>
+          <span>
             {plugin.displayName}
             <i class="fa fa-info text-warning" style={{ marginleft: '2%' }} aria-hidden="true"></i>
-          </React.Fragment>
+          </span>
         );
         break;
       default:
-        title = <React.Fragment>{plugin.displayName}</React.Fragment>;
+        title = <span>{plugin.displayName}</span>;
         break;
     }
     let name = <code>{plugin.name}</code>;
     let documentation = <small class="form-text text-muted">{plugin.documentation}</small>;
     label = (
-      <span>
-        {title}
-        {name}
-        {documentation}
-      </span>
+      <React.Fragment>
+        <td>
+          {title}
+          <br></br>
+          {name}
+          <br></br>
+          {documentation}
+        </td>
+        <td>
+          <input type="text" className="form-control" value={plugin.name} placeholder={plugin.defaultValue>0 ? plugin.defaultValue : ''}></input>
+          <small className="humanize form-text text-muted"></small>
+        </td>
+      </React.Fragment>
     );
     return label;
   }
@@ -149,8 +151,9 @@ class ConnectCreate extends Form {
     let allOfIt = [];
     plugin.definitions.map(definition => {
       if (definition.group !== actualGroup) {
-        if (sameGroup.length === 0) {
+        if (actualGroup ==='') {
           actualGroup = definition.group;
+          sameGroup = [definition];
         } else {
           allOfIt.push(this.handleGroup(sameGroup));
           sameGroup = [definition];
@@ -160,59 +163,61 @@ class ConnectCreate extends Form {
         sameGroup.push(definition);
       }
     });
+
     this.setState({ display: allOfIt });
+    return allOfIt;
   }
 
   handleGroup(group) {
     let groupDisplay = [
-      <span style={{ backgroundColor: 'Blue', width: '100%' }}>{group[0].group}</span>
+      <tr class="bg-primary">
+        <td colspan="3">{group[0].group}</td>
+      </tr>
     ];
     group.map(element => {
       const label = this.renderLabel(element);
       const name = element.name;
-      //No style false, wrapper class false,
-      groupDisplay.push(
-        this.renderInput(
-          name,
-          label,
-          undefined,
-          'text',
-          undefined,
-          false,
-          'connectFormWraper',
-          'connectInputWrapper'
-        )
-      );
+      groupDisplay.push(<tr>{label}</tr>);
     });
     return groupDisplay;
   }
 
   renderForm() {
     let plugin = this.getPlugin();
-    console.log(plugin);
     this.handleShema(plugin.definitions);
     this.handleData(plugin);
   }
 
   getPlugin() {
     return this.state.plugins.find(plugin => {
-      console.log(this.state.selectedType);
-      console.log(plugin.className);
       if (this.state.selectedType === plugin.className) {
-        console.log(plugin);
         return plugin;
       }
     });
   }
 
   renderDropdown() {
-    let names = [{ _id: '', name: '' }];
+    const label = 'Types';
+    let items = [{ _id: '', name: '' }];
     this.state.plugins.map(plugin => {
-      names.push({ _id: plugin.className, name: plugin.className });
+      let name=[plugin.className, ' [',plugin.version,']']
+      items.push({ _id: plugin.className, name: name });
     });
-    return this.renderSelect('type', 'Type', names, this.onTypeChange);
+    return (
+      <Select
+        name={'selectedType'}
+        value={this.state.selectedType}
+        label={label}
+        items={items}
+        onChange={value => {
+          this.onTypeChange(value.target.value);
+        }}
+      />
+    );
   }
-
+doSubmit(){
+  console.log(this.state.formData);
+}
   render() {
     const { clusterId, connectId, formData, selectedType } = this.state;
     const { history } = this.props;
@@ -226,8 +231,28 @@ class ConnectCreate extends Form {
         >
           <Header title={'Create a definition'} />
           {this.renderDropdown()}
-          {this.renderInput('name', 'Name', 'Name')}
-          {selectedType.length > 0 && this.state.display}
+          {selectedType.length > 0 && (
+            <React.Fragment>
+              <div className="form-group row">
+                <label className="col-sm-2 col-form-label">{'Name'}</label>
+
+                <div className="col-sm-10">
+                  <input className="form-control" name="name" id="name" placeholder="Subject" />
+                </div>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-bordered table-striped mb-0 khq-form-config">
+                  <thead className="thead-dark">
+                    <tr>
+                      <th style={{ width: '50%' }}>Name</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>{this.state.display}</tbody>
+                </table>
+              </div>
+            </React.Fragment>
+          )}
         </form>
       </div>
     );

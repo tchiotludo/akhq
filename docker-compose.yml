@@ -99,33 +99,3 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
-  connect-2:
-    image: confluentinc/cp-kafka-connect
-    ports:
-      - 8084:8084
-    depends_on:
-      - kafka
-      - schema-registry
-    environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
-      CONNECT_REST_PORT: 8084
-      CONNECT_HOST_NAME: connect-2
-      CONNECT_REST_LISTENERS: http://connect-2:8084
-      CONNECT_LISTENERS: http://connect-2:8084
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect-2
-      CONNECT_CONFIG_STORAGE_TOPIC: __connect-2-config
-      CONNECT_OFFSET_STORAGE_TOPIC: __connect-2-offsets
-      CONNECT_STATUS_STORAGE_TOPIC: __connect-2-status
-      CONNECT_GROUP_ID: "kafka-connect-1"
-      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
-      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
-      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
-      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_PLUGIN_PATH: ' /usr/share/java/'
