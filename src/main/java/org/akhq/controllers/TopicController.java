@@ -493,7 +493,7 @@ public class TopicController extends AbstractController {
     }
 
     @Get("api/{cluster}/topic/{topicName}/acls")
-    public List<AccessControl> aclsApi(String cluster, String topicName) {
+    public List<AccessControl> aclsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topicName);
     }
 
