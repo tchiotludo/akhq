@@ -20,13 +20,10 @@ public class AclService extends AbstractRepository {
         this.kafkaWrapper = kafkaWrapper;
     }
 
-    public List<AccessControlList> findAll(String clusterId, Optional<String> search) {
+    public List<String> findAll(String clusterId, Optional<String> search) {
         try {
             return kafkaWrapper.describeAcls(clusterId, AclBindingFilter.ANY).stream()
                     .map(acl -> acl.entry().principal())
-                    .distinct()
-                    .filter(principal -> isSearchMatch(search, principal))
-                    .map(AccessControlList::new)
                     .collect(Collectors.toList());
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);

@@ -180,6 +180,10 @@ export const uriSchemaCreate = () => {
   return `${apiUrl}/schema/create`;
 };
 
+export const uriAclsList = (clusterId, search) => {
+  return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 && `&search=${search}`}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -211,5 +215,6 @@ export default {
   uriConsumerGroupUpdate,
   uriTopicsConfigs,
   uriLatestSchemaVersion,
-  uriSchemaVersions
+  uriSchemaVersions,
+  uriAclsList
 };
