@@ -9,6 +9,7 @@ import { uriAclsList } from '../../utils/endpoints';
 
 class Acls extends Component {
   state = {
+    search: '',
     data: [],
     selectedCluster: ''
   };
@@ -56,6 +57,7 @@ class Acls extends Component {
     return (
       <div>
         <Header title="Acls" />
+
         <Table
           columns={[
             {

@@ -9,6 +9,7 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
+import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupListDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
@@ -18,6 +19,7 @@ import org.akhq.service.dto.consumerGroup.GroupedTopicOffsetDTO;
 import org.akhq.service.mapper.ConsumerGroupMapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
+import org.apache.kafka.common.resource.ResourceType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +40,7 @@ public class ConsumerGroupService {
 
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;
+    private AclsService aclsService;
 
     private ConsumerGroupMapper consumerGroupMapper;
     @Value("${akhq.topic.default-view}")
@@ -47,13 +50,15 @@ public class ConsumerGroupService {
 
     @Inject
     public ConsumerGroupService(KafkaModule kafkaModule, ConsumerGroupMapper consumerGroupMapper, AbstractKafkaWrapper kafkaWrapper,
-                                ConsumerGroupRepository consumerGroupRepository, Environment environment, RecordRepository recordRepository) {
+                                ConsumerGroupRepository consumerGroupRepository, Environment environment,
+                                RecordRepository recordRepository, AclsService aclsService) {
         this.kafkaModule = kafkaModule;
         this.consumerGroupMapper = consumerGroupMapper;
         this.kafkaWrapper = kafkaWrapper;
         this.consumerGroupRepository = consumerGroupRepository;
         this.environment = environment;
         this.recordRepository = recordRepository;
+        this.aclsService = aclsService;
     }
 
     public ConsumerGroupListDTO getConsumerGroup(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
@@ -85,8 +90,9 @@ public class ConsumerGroupService {
         return offsetsDTO;
 
     }
+
     public void deleteConsumerGroup(String clusterId, String consumerGroupId) throws ExecutionException, InterruptedException {
-        kafkaWrapper.deleteConsumerGroups(clusterId,consumerGroupId);
+        kafkaWrapper.deleteConsumerGroups(clusterId, consumerGroupId);
     }
 
     public GroupedTopicOffsetDTO getConsumerGroupGroupedTopicOffsets(
@@ -126,6 +132,9 @@ public class ConsumerGroupService {
         return consumerGroupMembers;
     }
 
+    public List<List<AclsDTO>> getConsumerGroupAcls(String clusterId, String consumerGroupId) {
+        return aclsService.getAcls(clusterId, ResourceType.GROUP, consumerGroupId);
+    }
 
     public void updateConsumerGroupOffsets(ConsumerGroupUpdateDTO consumerGroupUpdateDTO) throws ExecutionException, InterruptedException {
         String clusterId = consumerGroupUpdateDTO.getClusterId();

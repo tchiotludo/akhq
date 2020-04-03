@@ -24,6 +24,7 @@ public class AclService extends AbstractRepository {
         try {
             return kafkaWrapper.describeAcls(clusterId, AclBindingFilter.ANY).stream()
                     .map(acl -> acl.entry().principal())
+                    .distinct()
                     .collect(Collectors.toList());
         } catch (ExecutionException | InterruptedException ex) {
             throw new CompletionException(ex);

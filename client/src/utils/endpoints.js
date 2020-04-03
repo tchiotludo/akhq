@@ -184,6 +184,10 @@ export const uriAclsList = (clusterId, search) => {
   return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 && `&search=${search}`}`;
 };
 
+export const uriTopicsAcls = (clusterId, topicId) => {
+  return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -216,5 +220,6 @@ export default {
   uriTopicsConfigs,
   uriLatestSchemaVersion,
   uriSchemaVersions,
-  uriAclsList
+  uriAclsList,
+  uriTopicsAcls
 };
