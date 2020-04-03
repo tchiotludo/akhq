@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.service.ConsumerGroupService;
 import org.akhq.service.dto.ConsumerGroup.DeleteConsumerGroupDTO;
+import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupListDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupOffsetDTO;
@@ -58,6 +59,11 @@ public class ConsumerGroupResource {
     public GroupedTopicOffsetDTO fetchGroupedTopicOffset(String clusterId, String groupId, Optional<String> timestamp) throws ExecutionException, InterruptedException {
         log.debug("Fetch grouped topic offset from: {}", groupId);
         return consumerGroupService.getConsumerGroupGroupedTopicOffsets(clusterId, groupId, timestamp);
+    }
+
+    @Get("/group/acls")
+    public List<List<AclsDTO>> fetchConsumerGroupAcls(String clusterId, String groupId) {
+        return consumerGroupService.getConsumerGroupAcls(clusterId, groupId);
     }
 
     @Post("/group/update")
