@@ -25,11 +25,11 @@ public class AclsService {
     }
 
     public List<List<AclsDTO>> getAcls(String clusterId, ResourceType resourceType, String id) {
-        return aclRepository.findByResourceType(clusterId, ResourceType.GROUP, id).stream().map(acl -> {
+        return aclRepository.findByResourceType(clusterId, resourceType, id).stream().map(acl -> {
             Map<AccessControlList.HostResource, List<String>> permissions =
                     acl
                             .getPermissions()
-                            .get(ResourceType.GROUP.toString().toLowerCase());
+                            .get(resourceType.toString().toLowerCase());
             Set<AccessControlList.HostResource> keys = permissions.keySet();
             List<List<String>> values = new ArrayList<>(permissions.values());
 

@@ -22,8 +22,8 @@ class TopicAcls extends Component {
       loading: true
     });
     try {
-      //acls = await get(uriTopicsAcls(clusterId, topicId));
-      //this.handleData(acls.data);
+      acls = await get(uriTopicsAcls(clusterId, topicId));
+      this.handleData(acls.data[0]);
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
@@ -35,15 +35,14 @@ class TopicAcls extends Component {
 
   handleData(acls) {
     let tableAcls = acls.map((acl, index) => {
-      let hostProp = Object.keys(acl.permissions.topic)[0];
       return {
         id: index,
-        topic: acl.principal || ''
-        //port: node.port || '',
-        //rack: node.rack || ''
+        user: acl.user || '',
+        host: acl.host || '',
+        permissions: acl.permissions || ''
       };
     });
-    //this.setState({ data: tableAcls });
+    this.setState({ data: tableAcls });
     return tableAcls;
   }
 
@@ -55,13 +54,10 @@ class TopicAcls extends Component {
         <Table
           columns={[
             {
-              id: 'id',
-              accessor: 'id',
-              colName: 'Id',
-              type: 'text',
-              cell: (obj, col) => {
-                return <span className="badge badge-info">{obj[col.accessor] || ''}</span>;
-              }
+              id: 'user',
+              accessor: 'user',
+              colName: 'User',
+              type: 'text'
             },
             {
               id: 'host',
@@ -70,14 +66,22 @@ class TopicAcls extends Component {
               type: 'text'
             },
             {
-              id: 'racks',
-              accessor: 'rack',
-              colName: 'Racks',
-              type: 'text'
+              id: 'permissions',
+              accessor: 'permissions',
+              colName: 'Permissions',
+              type: 'text',
+              cell: obj => {
+                return (
+                  <div>
+                    {obj.permissions.map(el => {
+                      return <span class="badge badge-secondary">{el}</span>;
+                    })}
+                  </div>
+                );
+              }
             }
           ]}
           data={data}
-          actions={[constants.TABLE_DETAILS]}
           noContent={
             <tr>
               <td colSpan={3}>
