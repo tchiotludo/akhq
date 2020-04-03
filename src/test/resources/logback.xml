@@ -48,9 +48,18 @@
     <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR" />
     <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="ERROR" />
+
     <logger name="kafka.server.BrokerMetadataCheckpoint" level="ERROR" />
+
+    <!-- Registry -->
     <logger name="io.confluent.rest" level="ERROR" />
     <logger name="io.confluent.kafka.schemaregistry" level="ERROR" />
     <logger name="org.glassfish.jersey.internal.inject.Providers" level="ERROR" />
+    <logger name="org.glassfish.jersey.internal.Errors" level="ERROR" />
+    <logger name="io.confluent.rest.exceptions.DebuggableExceptionMapper" level="OFF" />
+
+    <!-- Connect -->
     <logger name="org.reflections" level="ERROR" />
+    <logger name="org.apache.kafka.connect.runtime.Worker" level="ERROR" />
+    <logger name="org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader" level="OFF" />
 </configuration>
