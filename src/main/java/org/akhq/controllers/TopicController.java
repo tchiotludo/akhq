@@ -399,7 +399,7 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
-    @Delete("{topicName}/emptyTopic")
+    @Get("{topicName}/emptyTopic")
     public HttpResponse emptyTopic(String cluster, String topicName){
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
