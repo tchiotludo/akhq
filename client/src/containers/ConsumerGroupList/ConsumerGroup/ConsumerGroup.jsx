@@ -3,6 +3,7 @@ import Header from '../../Header';
 import ConsumerGroupTopics from './ConsumerGroupTopics/ConsumerGroupTopics';
 import ConsumerGroupMembers from './ConsumerGroupMembers/ConsumerGroupMembers';
 import { Link } from 'react-router-dom';
+import ConsumerGroupAcls from './ConsumerGroupAcls/ConsumerGroupAcls';
 
 class ConsumerGroup extends Component {
   state = {
@@ -48,6 +49,14 @@ class ConsumerGroup extends Component {
             history={history}
           />
         );
+      case 'acls':
+        return (
+          <ConsumerGroupAcls
+            clusterId={clusterId}
+            consumerGroupId={consumerGroupId}
+            history={history}
+          />
+        );
 
       default:
         return (
@@ -85,6 +94,16 @@ class ConsumerGroup extends Component {
                 role="tab"
               >
                 Members
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                className={this.tabClassName('acls')}
+                onClick={() => this.selectTab('acls')}
+                to="#"
+                role="tab"
+              >
+                ACLS
               </Link>
             </li>
           </ul>
