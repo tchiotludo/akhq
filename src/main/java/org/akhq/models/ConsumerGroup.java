@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ConsumerGroup {
     private String id;
-    private boolean isSimpleConsumerGroup;
+    private boolean simpleConsumerGroup;
     private String partitionAssignor;
     private ConsumerGroupState state;
     private Node coordinator;
@@ -31,7 +31,7 @@ public class ConsumerGroup {
         Map<String, List<Partition.Offsets>> topicsOffsets
     ) {
         this.id = groupDescription.groupId();
-        this.isSimpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
+        this.simpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
         this.partitionAssignor = groupDescription.partitionAssignor();
         this.state = groupDescription.state();
         this.coordinator = new Node(groupDescription.coordinator());

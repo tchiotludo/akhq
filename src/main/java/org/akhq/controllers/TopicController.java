@@ -15,6 +15,8 @@ import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -102,6 +104,7 @@ public class TopicController extends AbstractController {
 
     @View("topicList")
     @Get("{cluster}/topic")
+    @Hidden
     public HttpResponse<?> list(
         HttpRequest<?> request,
         String cluster,
@@ -137,6 +140,7 @@ public class TopicController extends AbstractController {
     }
 
     @Get("api/{cluster}/topic")
+    @Operation(tags = {"topic"}, summary = "List all topics")
     public ResultPagedList<Topic> listApi(
         HttpRequest<?> request,
         String cluster,
@@ -158,6 +162,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_INSERT)
     @View("topicCreate")
     @Get("{cluster}/topic/create")
+    @Hidden
     public HttpResponse<?> create(HttpRequest<?> request, String cluster) {
         return this.template(
             request,
@@ -170,6 +175,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_INSERT)
     @Post(value = "{cluster}/topic/create", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> createSubmit(
         HttpRequest<?> request,
         String cluster,
@@ -209,6 +215,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_INSERT)
     @Post(value = "api/{cluster}/topic")
+    @Operation(tags = {"topic"}, summary = "Create a topic")
     public Topic createApi(
         String cluster,
         String name,
@@ -234,6 +241,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @View("topicProduce")
     @Get("{cluster}/topic/{topicName}/produce")
+    @Hidden
     public HttpResponse<?> produce(HttpRequest<?> request, String cluster, String topicName) throws ExecutionException, InterruptedException, IOException, RestClientException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
@@ -258,6 +266,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post(value = "{cluster}/topic/{topicName}/produce", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> produceSubmit(
         HttpRequest<?> request,
         String cluster,
@@ -307,6 +316,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post(value = "api/{cluster}/topic/{topicName}/data")
+    @Operation(tags = {"topic data"}, summary = "Produce data to a topic")
     public Record produceApi(
         HttpRequest<?> request,
         String cluster,
@@ -340,6 +350,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @View("topic")
     @Get("{cluster}/topic/{topicName}")
+    @Hidden
     public HttpResponse<?> data(
         HttpRequest<?> request,
         String cluster,
@@ -383,6 +394,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get("api/{cluster}/topic/{topicName}/data")
+    @Operation(tags = {"topic data"}, summary = "Read datas from a topic")
     public ResultNextList<Record> dataApi(
         HttpRequest<?> request,
         String cluster,
@@ -449,6 +461,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_READ)
     @View("topic")
     @Get("{cluster}/topic/{topicName}/{tab:(partitions|groups|configs|logs|acls)}")
+    @Hidden
     public HttpResponse<?> tab(HttpRequest<?> request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, topicName,  tab);
     }
@@ -468,37 +481,44 @@ public class TopicController extends AbstractController {
     }
 
     @Get("api/{cluster}/topic/{topicName}")
+    @Operation(tags = {"topic"}, summary = "Retrieve a topic")
     public Topic homeApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.topicRepository.findByName(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/{topicName}/partitions")
+    @Operation(tags = {"topic"}, summary = "List all partition from a topic")
     public List<Partition> partitionsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.topicRepository.findByName(cluster, topicName).getPartitions();
     }
 
     @Get("api/{cluster}/topic/{topicName}/groups")
+    @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groupsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.topicRepository.findByName(cluster, topicName).getConsumerGroups();
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")
+    @Operation(tags = {"topic"}, summary = "List all configs from a topic")
     public List<Config> configApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.configRepository.findByTopic(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/{topicName}/logs")
+    @Operation(tags = {"topic"}, summary = "List all logs from a topic")
     public List<LogDir> logsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.topicRepository.findByName(cluster, topicName).getLogDir();
     }
 
     @Get("api/{cluster}/topic/{topicName}/acls")
+    @Operation(tags = {"topic"}, summary = "List all acls from a topic")
     public List<AccessControl> aclsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topicName);
     }
 
     @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
     @Post(value = "{cluster}/topic/{topicName}/configs", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> updateConfig(HttpRequest<?> request, String cluster, String topicName, Map<String, String> configs) throws Throwable {
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), true);
         MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
@@ -523,6 +543,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
+    @Operation(tags = {"topic"}, summary = "Update configs from a topic")
     public List<Config> updateConfigApi(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
 
@@ -541,6 +562,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Get("{cluster}/topic/{topicName}/deleteRecord")
+    @Hidden
     public HttpResponse<?> deleteRecord(String cluster, String topicName, Integer partition, String key) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -559,6 +581,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data")
+    @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
     public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
         return new Record(
             this.recordRepository.delete(
@@ -575,6 +598,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DELETE)
     @Get("{cluster}/topic/{topicName}/delete")
+    @Hidden
     public HttpResponse<?> delete(String cluster, String topicName) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -589,6 +613,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DELETE)
     @Delete("api/{cluster}/topic/{topicName}")
+    @Operation(tags = {"topic"}, summary = "Delete a topic")
     public HttpResponse<?> deleteApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
         this.kafkaWrapper.deleteTopics(cluster, topicName);
 
@@ -597,6 +622,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get("{cluster}/topic/{topicName}/search/{search}")
+    @Hidden
     public Publisher<Event<?>> sse(String cluster,
                                           String topicName,
                                           Optional<String> after,

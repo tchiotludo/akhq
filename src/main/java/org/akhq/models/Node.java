@@ -27,13 +27,13 @@ public class Node {
     @Getter
     @NoArgsConstructor
     public static class Partition extends Node {
-        private boolean isLeader;
-        private boolean isInSyncReplicas;
+        private boolean leader;
+        private boolean inSyncReplicas;
 
-        public Partition(org.apache.kafka.common.Node node, boolean isLeader, boolean isInSyncReplicas) {
+        public Partition(org.apache.kafka.common.Node node, boolean leader, boolean inSyncReplicas) {
             super(node);
-            this.isLeader = isLeader;
-            this.isInSyncReplicas = isInSyncReplicas;
+            this.leader = leader;
+            this.inSyncReplicas = inSyncReplicas;
         }
     }
 }

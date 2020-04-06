@@ -7,6 +7,8 @@ import io.micronaut.http.*;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.configs.Role;
@@ -39,6 +41,7 @@ public class SchemaController extends AbstractController {
 
     @View("schemaList")
     @Get("{cluster}/schema")
+    @Hidden
     public HttpResponse<?> list(
         HttpRequest<?> request,
         String cluster,
@@ -65,6 +68,7 @@ public class SchemaController extends AbstractController {
     }
 
     @Get("api/{cluster}/schema")
+    @Operation(tags = {"schema registry"}, summary = "List all schemas")
     public ResultPagedList<Schema> listApi(
         HttpRequest<?> request,
         String cluster,
@@ -79,6 +83,7 @@ public class SchemaController extends AbstractController {
     }
 
     @Get("{cluster}/schema/id/{id}")
+    @Hidden
     public HttpResponse<?> redirectId(
         HttpRequest<?> request,
         String cluster,
@@ -104,6 +109,7 @@ public class SchemaController extends AbstractController {
     @Secured(Role.ROLE_REGISTRY_INSERT)
     @View("schemaCreate")
     @Get("{cluster}/schema/create")
+    @Hidden
     public HttpResponse<?> create(HttpRequest<?> request, String cluster) throws IOException, RestClientException {
         return this.template(
             request,
@@ -115,6 +121,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_INSERT)
     @Post(value = "{cluster}/schema/create", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> createSubmit(
         String cluster,
         String subject,
@@ -157,6 +164,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_INSERT)
     @Post(value = "api/{cluster}/schema")
+    @Operation(tags = {"schema registry"}, summary = "Create a new schema")
     public Schema createApi(
         String cluster,
         @Body Schema schema
@@ -170,17 +178,20 @@ public class SchemaController extends AbstractController {
 
     @View("schema")
     @Get("{cluster}/schema/{subject}")
+    @Hidden
     public HttpResponse<?> home(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
         return this.render(request, cluster, subject, "update");
     }
 
     @Get("api/{cluster}/schema/{subject}")
+    @Operation(tags = {"schema registry"}, summary = "Retrieve a schema")
     public Schema homeApi(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
         return this.schemaRepository.getLatestVersion(cluster, subject);
     }
 
     @Secured(Role.ROLE_REGISTRY_UPDATE)
     @Post(value = "{cluster}/schema/{subject}", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> updateSchema(
         String cluster,
         String subject,
@@ -200,6 +211,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_UPDATE)
     @Post(value = "api/{cluster}/schema/{subject}")
+    @Operation(tags = {"schema registry"}, summary = "Update a schema")
     public Schema updateSchemaApi(String cluster, String subject, @Body Schema schema) throws Throwable {
         if (!this.schemaRepository.exist(cluster, subject)) {
             throw new IllegalArgumentException("Subject '" + subject + "' doesn't exits");
@@ -230,17 +242,20 @@ public class SchemaController extends AbstractController {
 
     @View("schema")
     @Get("{cluster}/schema/{subject}/{tab:(version)}")
+    @Hidden
     public HttpResponse<?> tab(HttpRequest<?> request, String cluster, String subject, String tab) throws IOException, RestClientException {
         return this.render(request, cluster, subject, tab);
     }
 
     @Get("api/{cluster}/schema/{subject}/version")
+    @Operation(tags = {"schema registry"}, summary = "List all version for a schema")
     public List<Schema> versionsApi(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
         return this.schemaRepository.getAllVersions(cluster, subject);
     }
 
     @Secured(Role.ROLE_REGISTRY_DELETE)
     @Get("{cluster}/schema/{subject}/delete")
+    @Hidden
     public HttpResponse<?> delete(String cluster, String subject) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -255,6 +270,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_DELETE)
     @Delete("api/{cluster}/schema/{subject}")
+    @Operation(tags = {"schema registry"}, summary = "Delete a schema")
     public HttpResponse<?> deleteApi(String cluster, String subject) throws IOException, RestClientException {
         if (!this.schemaRepository.exist(cluster, subject)) {
             throw new IllegalArgumentException("Subject '" + subject + "' doesn't exits");
@@ -267,6 +283,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_VERSION_DELETE)
     @Get("{cluster}/schema/{subject}/version/{version}/delete")
+    @Hidden
     public HttpResponse<?> deleteVersion(HttpRequest<?> request, String cluster, String subject, Integer version) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -281,6 +298,7 @@ public class SchemaController extends AbstractController {
 
     @Secured(Role.ROLE_REGISTRY_VERSION_DELETE)
     @Delete("api/{cluster}/schema/{subject}/version/{version}")
+    @Operation(tags = {"schema registry"}, summary = "Delete a version for a schema")
     public HttpResponse<?> deleteVersionApi(
         String cluster,
         String subject,

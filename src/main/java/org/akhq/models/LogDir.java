@@ -18,7 +18,7 @@ public class LogDir {
     private int partition;
     private long size;
     private long offsetLag;
-    private boolean isFuture;
+    private boolean future;
 
     public LogDir(Integer brokerId, String path, TopicPartition topicPartition, DescribeLogDirsResponse.ReplicaInfo replicaInfo) {
         this.brokerId = brokerId;
@@ -27,6 +27,6 @@ public class LogDir {
         this.partition = topicPartition.partition();
         this.size = replicaInfo.size;
         this.offsetLag = replicaInfo.offsetLag;
-        this.isFuture = replicaInfo.isFuture;
+        this.future = replicaInfo.isFuture;
     }
 }

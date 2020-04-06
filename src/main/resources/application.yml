@@ -10,6 +10,9 @@ micronaut:
       static:
         paths: classpath:static
         mapping: "${akhq.server.base-path:}/static/**"
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: "${akhq.server.base-path:}/swagger/**"
   security:
     enabled: true
     endpoints:
@@ -29,6 +32,8 @@ micronaut:
       login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
       - pattern: "${akhq.server.base-path:}/static/**"
+        access: "isAnonymous()"
+      - pattern: "${akhq.server.base-path:}/swagger/**"
         access: "isAnonymous()"
   caches:
     kafka-wrapper:

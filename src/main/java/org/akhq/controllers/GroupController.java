@@ -9,6 +9,8 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,6 +65,7 @@ public class GroupController extends AbstractController {
 
     @View("groupList")
     @Get("{cluster}/group")
+    @Hidden
     public HttpResponse<?> list(HttpRequest<?> request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
@@ -83,6 +86,7 @@ public class GroupController extends AbstractController {
     }
 
     @Get("api/{cluster}/group")
+    @Operation(tags = {"consumer group"}, summary = "List all consumer groups")
     public ResultPagedList<ConsumerGroup> listApi(HttpRequest<?> request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
@@ -92,17 +96,20 @@ public class GroupController extends AbstractController {
 
     @View("group")
     @Get("{cluster}/group/{groupName}")
+    @Hidden
     public HttpResponse<?> home(HttpRequest<?> request, String cluster, String groupName) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, groupName, "topics");
     }
 
     @Get("api/{cluster}/group/{groupName}")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group")
     public ConsumerGroup homeApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return this.consumerGroupRepository.findByName(cluster, groupName);
     }
 
     @View("group")
     @Get("{cluster}/group/{groupName}/{tab:(topics|members|acls)}")
+    @Hidden
     public HttpResponse<?> tab(HttpRequest<?> request, String cluster, String tab, String groupName) throws ExecutionException, InterruptedException {
         return this.render(request, cluster, groupName, tab);
     }
@@ -120,16 +127,19 @@ public class GroupController extends AbstractController {
     }
 
     @Get("api/{cluster}/group/{groupName}/offsets")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsetsApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return this.consumerGroupRepository.findByName(cluster, groupName).getOffsets();
     }
 
     @Get("api/{cluster}/group/{groupName}/members")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
     public List<Consumer> membersApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return this.consumerGroupRepository.findByName(cluster, groupName).getMembers();
     }
 
     @Get("api/{cluster}/group/{groupName}/acls")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group acls")
     public List<AccessControl> aclsApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
     }
@@ -137,6 +147,7 @@ public class GroupController extends AbstractController {
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @View("groupUpdate")
     @Get("{cluster}/group/{groupName}/offsets")
+    @Hidden
     public HttpResponse<?> offsets(HttpRequest<?> request, String cluster, String groupName) throws ExecutionException, InterruptedException {
         ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
@@ -149,6 +160,7 @@ public class GroupController extends AbstractController {
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Post(value = "{cluster}/group/{groupName}/offsets", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Hidden
     public HttpResponse<?> offsetsSubmit(HttpRequest<?> request, String cluster, String groupName, Map<String, Long> offset) throws Throwable {
         ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
@@ -176,6 +188,7 @@ public class GroupController extends AbstractController {
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Post(value = "api/{cluster}/group/{groupName}/offsets", consumes = MediaType.APPLICATION_JSON)
+    @Operation(tags = {"consumer group"}, summary = "Update consumer group offsets")
     public HttpResponse<?> offsetsApi(
         String cluster,
         String groupName,
@@ -199,12 +212,14 @@ public class GroupController extends AbstractController {
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Get("{cluster}/group/{groupName}/offsets/start")
+    @Hidden
     public HttpResponse<?> offsetsStart(HttpRequest<?> request, String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
         return HttpResponse.ok(this.offsetsStartApi(cluster, groupName, timestamp));
     }
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Get("api/{cluster}/group/{groupName}/offsets/start")
+    @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStartApi(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
         ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
@@ -220,6 +235,7 @@ public class GroupController extends AbstractController {
 
     @Secured(Role.ROLE_GROUP_DELETE)
     @Get("{cluster}/group/{groupName}/delete")
+    @Hidden
     public HttpResponse<?> delete(HttpRequest<?> request, String cluster, String groupName) {
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -234,6 +250,7 @@ public class GroupController extends AbstractController {
 
     @Secured(Role.ROLE_GROUP_DELETE)
     @Delete("api/{cluster}/group/{groupName}")
+    @Operation(tags = {"consumer group"}, summary = "Delete a consumer group")
     public HttpResponse<?> deleteApi(String cluster, String groupName) throws ExecutionException, InterruptedException {
         this.kafkaWrapper.deleteConsumerGroups(cluster, groupName);
 

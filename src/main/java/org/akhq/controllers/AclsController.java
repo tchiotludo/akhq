@@ -6,6 +6,8 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
 import org.akhq.models.AccessControl;
 import org.akhq.repositories.AccessControlListRepository;
@@ -28,6 +30,7 @@ public class AclsController extends AbstractController {
 
     @Get("{cluster}/acls")
     @View("aclsList")
+    @Hidden
     public HttpResponse<?> list(
         HttpRequest<?> request,
         String cluster,
@@ -41,6 +44,7 @@ public class AclsController extends AbstractController {
         );
     }
 
+    @Operation(tags = {"acls"}, summary = "List all acls")
     @Get("api/{cluster}/acls")
     public List<AccessControl> listApi(HttpRequest<?> request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
         return aclRepository.findAll(cluster, search);
@@ -48,6 +52,7 @@ public class AclsController extends AbstractController {
 
     @View("acl")
     @Get("{cluster}/acls/{principal}")
+    @Hidden
     public HttpResponse<?> principal(HttpRequest<?> request, String cluster, String principal) throws ExecutionException, InterruptedException {
         return this.template(
             request,
@@ -57,6 +62,7 @@ public class AclsController extends AbstractController {
         );
     }
 
+    @Operation(tags = {"acls"}, summary = "Get acls for a principal")
     @Get("api/{cluster}/acls/{principal}")
     public AccessControl principalApi(
         String cluster,
@@ -68,6 +74,7 @@ public class AclsController extends AbstractController {
 
     @View("acl")
     @Get("{cluster}/acls/{principal}/group")
+    @Hidden
     public HttpResponse<?> tab(HttpRequest<?> request, String cluster, String principal) throws ExecutionException, InterruptedException {
         return this.template(
             request,
