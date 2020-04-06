@@ -11,10 +11,10 @@ class TopicAcls extends Component {
   };
 
   componentDidMount() {
-    this.getNodes();
+    this.getAcls();
   }
 
-  async getNodes() {
+  async getAcls() {
     let acls = [];
     const { clusterId, topicId } = this.props;
     const { history } = this.props;
