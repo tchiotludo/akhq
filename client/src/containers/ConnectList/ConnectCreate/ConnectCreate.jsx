@@ -6,7 +6,9 @@ import { uriConnectPlugins } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
-class ConnectCreate extends Component {
+import Form from '../../../components/Form/Form';
+import { red } from '@material-ui/core/colors';
+class ConnectCreate extends Form {
   state = {
     clusterId: this.props.match.params.clusterId,
     connectId: this.props.match.params.connectId,
@@ -14,7 +16,8 @@ class ConnectCreate extends Component {
     errors: {},
     plugins: [],
     selectedType: '',
-    display: ''
+    display: '',
+    plugin: {}
   };
 
   schema = {};
@@ -41,7 +44,7 @@ class ConnectCreate extends Component {
     }
   }
 
-  onTypeChange = value=> {
+  onTypeChange = value => {
     this.setState({ selectedType: value }, () => {
       this.renderForm();
     });
@@ -49,16 +52,25 @@ class ConnectCreate extends Component {
 
   handleShema(definitions) {
     this.schema = {};
+    let { formData } = { ...this.state };
+    formData.type = this.state.selectedType;
+    this.schema['type'] = Joi.string().required();
+    formData.subject = '';
+    this.schema['subject'] = Joi.string().required();
     definitions.map(definition => {
       let config = this.handleDefinition(definition);
-      this.formData[definition.name]='';
+      formData[definition.name] = '';
       this.schema[definition.name] = config;
     });
+    this.setState({ formData });
   }
 
   handleDefinition(definition) {
     let def = '';
-    if (definition.required === true) {
+    console.log(definition.required);
+    console.log(definition);
+    if (definition.required) {
+      console.log('Required', definition);
       switch (definition.type) {
         case constants.TYPES.LONG:
         case constants.TYPES.INT:
@@ -77,6 +89,7 @@ class ConnectCreate extends Component {
           break;
       }
     } else {
+      console.log('NOT Required', definition);
       switch (definition.type) {
         case constants.TYPES.LONG:
         case constants.TYPES.INT:
@@ -92,13 +105,14 @@ class ConnectCreate extends Component {
           def = Joi.string();
           break;
       }
-      return def;
     }
+    return def;
   }
 
-  renderLabel(plugin) {
-    let label = '';
+  renderTableRows(plugin) {
+    let rows = '';
     let title = '';
+    let { formData, errors } = { ...this.state };
     switch (plugin.importance) {
       case 'HIGH':
         title = (
@@ -126,32 +140,62 @@ class ConnectCreate extends Component {
         break;
     }
     let name = <code>{plugin.name}</code>;
+    let required = {};
+    if (plugin.required) {
+      required = <code style={{ color: 'red' }}>Required</code>;
+    } else {
+      required = <React.Fragment></React.Fragment>;
+    }
+
     let documentation = <small class="form-text text-muted">{plugin.documentation}</small>;
-    label = (
-      <React.Fragment>
+    rows = (
+      <React.Fragment key={plugin.name}>
         <td>
           {title}
           <br></br>
           {name}
           <br></br>
+          {required}
+          <br></br>
           {documentation}
         </td>
         <td>
-          <input type="text" className="form-control" value={plugin.name} placeholder={plugin.defaultValue>0 ? plugin.defaultValue : ''}></input>
+          <input
+            type="text"
+            className="form-control"
+            value={formData[plugin.name]}
+            placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
+            onChange={({ currentTarget: input }) => {
+              let { formData } = this.state;
+              console.log(formData[plugin.name]);
+              formData[plugin.name] = input.value;
+              this.handleData();
+              this.setState({ formData });
+            }}
+          >
+            {formData[plugin.required]}
+          </input>
+
+          {errors[name] && (
+            <div id="input-error" className="alert alert-danger mt-1 p-1">
+              {errors[name]}
+            </div>
+          )}
           <small className="humanize form-text text-muted"></small>
         </td>
       </React.Fragment>
     );
-    return label;
+    return rows;
   }
 
-  handleData(plugin) {
+  handleData() {
+    let { plugin } = this.state;
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
     plugin.definitions.map(definition => {
       if (definition.group !== actualGroup) {
-        if (actualGroup ==='') {
+        if (actualGroup === '') {
           actualGroup = definition.group;
           sameGroup = [definition];
         } else {
@@ -175,17 +219,20 @@ class ConnectCreate extends Component {
       </tr>
     ];
     group.map(element => {
-      const label = this.renderLabel(element);
+      const rows = this.renderTableRows(element);
       const name = element.name;
-      groupDisplay.push(<tr>{label}</tr>);
+      groupDisplay.push(<tr>{rows}</tr>);
     });
     return groupDisplay;
   }
 
   renderForm() {
-    let plugin = this.getPlugin();
-    this.handleShema(plugin.definitions);
-    this.handleData(plugin);
+    let { plugin } = this.state;
+    plugin = this.getPlugin();
+    this.setState({ plugin }, () => {
+      this.handleShema(plugin.definitions);
+      this.handleData();
+    });
   }
 
   getPlugin() {
@@ -200,7 +247,7 @@ class ConnectCreate extends Component {
     const label = 'Types';
     let items = [{ _id: '', name: '' }];
     this.state.plugins.map(plugin => {
-      let name=[plugin.className, ' [',plugin.version,']']
+      let name = [plugin.className, ' [', plugin.version, ']'];
       items.push({ _id: plugin.className, name: name });
     });
     return (
@@ -215,9 +262,10 @@ class ConnectCreate extends Component {
       />
     );
   }
-doSubmit(){
-  console.log(this.state.formData);
-}
+  doSubmit() {
+    console.log(this.state.formData);
+  }
+
   render() {
     const { clusterId, connectId, formData, selectedType } = this.state;
     const { history } = this.props;
@@ -251,6 +299,14 @@ doSubmit(){
                   <tbody>{this.state.display}</tbody>
                 </table>
               </div>
+              {this.renderButton(
+                'Create',
+                () => {
+                  this.doSubmit();
+                },
+                undefined,
+                'button'
+              )}
             </React.Fragment>
           )}
         </form>
