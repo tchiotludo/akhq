@@ -101,15 +101,14 @@
         <a href="${basePath}/${clusterId}/topic/${topic.getName()}/produce" class="btn btn-primary">
             <i class="fa fa-plus" aria-hidden="true"></i> Produce to topic
         </a>
+        <#if tab != "configs" && roles?seq_contains("topic/data/delete")>
+            <a href="${basePath}/${clusterId}/topic/${topic.getName()}/emptyTopic" class="btn btn-secondary mr-2">
+                <i class="fa fa-eraser" aria-hidden="true"></i> Empty Topic
+            </a>
+        </#if>
     </@template.bottom>
 </#if>
-<#if tab != "configs" && roles?seq_contains("topic/data/delete")>
-    <@template.bottom>
-        <a href="${basePath}/${clusterId}/topic/${topic.getName()}/emptyTopic" class="btn btn-secondary mr-2">
-            <i class="fa fa-eraser" aria-hidden="true"></i> Empty Topic
-        </a>
-    </@template.bottom>
-</#if>
+
 
 <@template.footer/>
 
