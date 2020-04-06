@@ -1,7 +1,6 @@
 import { node } from 'prop-types';
 
-export const baseUrl = 'http://localhost:8080';
-// `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
 export const uriClusters = id => {
@@ -185,12 +184,12 @@ export const uriSchemaCreate = () => {
   return `${apiUrl}/schema/create`;
 };
 
-export const uriTopicsAcls = (clusterId, topicId) => {
-  return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
+export const uriAclsList = (clusterId, search) => {
+  return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 ? `&search=${search}` : ''}`;
 };
 
-export const uriAclsList = (clusterId, search) => {
-  return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 && `&search=${search}`}`;
+export const uriTopicsAcls = (clusterId, topicId) => {
+  return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
 };
 
 export default {
@@ -225,5 +224,6 @@ export default {
   uriTopicsConfigs,
   uriLatestSchemaVersion,
   uriSchemaVersions,
-  uriAclsList
+  uriAclsList,
+  uriTopicsAcls
 };
