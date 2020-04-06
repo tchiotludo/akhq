@@ -23,7 +23,7 @@ class TopicAcls extends Component {
     });
     try {
       acls = await get(uriTopicsAcls(clusterId, topicId));
-      this.handleData(acls.data[0]);
+      this.handleData(acls.data);
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {

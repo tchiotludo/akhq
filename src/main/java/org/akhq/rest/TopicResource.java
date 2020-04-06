@@ -6,9 +6,8 @@ import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
-import org.akhq.models.AccessControlList;
 import org.akhq.repositories.RecordRepository;
-import org.akhq.service.AclsService;
+import org.akhq.service.AclService;
 import org.akhq.service.TopicService;
 import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
@@ -27,12 +26,12 @@ import java.util.concurrent.ExecutionException;
 @Controller("${akhq.server.base-path:}/api")
 public class TopicResource {
     private TopicService topicService;
-    private AclsService aclsService;
+    private AclService aclService;
 
     @Inject
-    public TopicResource(TopicService topicService, AclsService aclsService) {
+    public TopicResource(TopicService topicService, AclService aclService) {
         this.topicService = topicService;
-        this.aclsService = aclsService;
+        this.aclService = aclService;
     }
 
     @Get("/topics")
@@ -91,9 +90,9 @@ public class TopicResource {
     }
 
     @Get("/topic/acls")
-    public List<List<AclsDTO>> fetchTopicAcl(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+    public List<AclsDTO> fetchTopicAcl(String clusterId, String topicId) throws ExecutionException, InterruptedException {
         log.debug("Fetch topic acls ");
-        return aclsService.getAcls(clusterId, ResourceType.TOPIC, topicId);
+        return aclService.getAcls(clusterId, ResourceType.TOPIC, topicId);
     }
 
     @Get("/cluster/topic/configs")

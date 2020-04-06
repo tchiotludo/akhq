@@ -143,6 +143,10 @@ export const uriConsumerGroupMembers = (clusterId, groupId) => {
   return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
 };
 
+export const uriConsumerGroupAcls = (clusterId, groupId) => {
+  return `${apiUrl}/group/acls?clusterId=${clusterId}&groupId=${groupId}`;
+};
+
 export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
   let uri = `${apiUrl}/group/grouped-topic-offset?clusterId=${clusterId}&groupId=${groupId}`;
 
