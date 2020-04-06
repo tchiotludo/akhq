@@ -85,6 +85,7 @@ class SearchBar extends Form {
   render() {
     const { showSearch, showPagination, showTopicListView } = this.props;
     const { topicListViewOptions } = this.state;
+
     return (
       <React.Fragment>
         <button
