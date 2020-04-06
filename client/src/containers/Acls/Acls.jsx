@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
-
 import Header from '../Header';
-
 import Table from '../../components/Table';
 import * as constants from '../../utils/constants';
 import { get } from '../../utils/api';
 import { uriAclsList } from '../../utils/endpoints';
+import SearchBar from '../../components/SearchBar';
 
 class Acls extends Component {
   state = {
-    search: '',
     data: [],
-    selectedCluster: ''
+    selectedCluster: '',
+    searchData: {
+      search: ''
+    }
   };
 
   componentDidMount() {
@@ -20,74 +21,72 @@ class Acls extends Component {
 
   async getAcls() {
     let acls = [];
-    console.log('props', this.props);
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
     const { history } = this.props;
     history.push({
       loading: true
     });
-    // try {
-    //   acls = await get(uriAclsList(clusterId, topicId));
-    //   this.handleData(acls.data[0]);
-    // } catch (err) {
-    //   history.replace('/error', { errorData: err });
-    // } finally {
-    //   history.push({
-    //     loading: false
-    //   });
-    // }
+    try {
+      acls = await get(uriAclsList(clusterId, this.state.searchData.search));
+      this.handleData(acls.data);
+    } catch (err) {
+      history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
   }
 
   handleData(acls) {
-    let tableAcls = acls.map((acl, index) => {
+    let tableAcls = acls.map(acl => {
       return {
-        id: index,
-        user: acl.user || '',
-        host: acl.host || '',
-        permissions: acl.permissions || ''
+        id: acl,
+        user: acl || ''
       };
     });
     this.setState({ data: tableAcls });
     return tableAcls;
   }
 
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ searchData }, () => {
+      this.getAcls();
+    });
+  };
+
   render() {
     const { history } = this.props;
-    const { data, selectedCluster } = this.state;
+    const { data, searchData } = this.state;
+    const { clusterId } = this.props.match.params;
     return (
-      <div>
+      <div id="content">
         <Header title="Acls" />
-
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
+          <SearchBar
+            showSearch={true}
+            search={searchData.search}
+            showPagination={false}
+            showTopicListView={false}
+            showConsumerGroup
+            groupListView={'ALL'}
+            doSubmit={this.handleSearch}
+          />
+        </nav>
         <Table
           columns={[
             {
               id: 'user',
               accessor: 'user',
-              colName: 'User',
+              colName: 'Principals',
               type: 'text'
-            },
-            {
-              id: 'host',
-              accessor: 'host',
-              colName: 'Host',
-              type: 'text'
-            },
-            {
-              id: 'permissions',
-              accessor: 'permissions',
-              colName: 'Permissions',
-              type: 'text',
-              cell: obj => {
-                return (
-                  <div>
-                    {obj.permissions.map(el => {
-                      return <span class="badge badge-secondary">{el}</span>;
-                    })}
-                  </div>
-                );
-              }
             }
           ]}
+          actions={[constants.TABLE_DETAILS]}
           data={data}
           noContent={
             <tr>
@@ -100,7 +99,7 @@ class Acls extends Component {
             </tr>
           }
           onDetails={id => {
-            history.push(`/${selectedCluster}/node/${id}`);
+            this.props.history.push(`/${clusterId}/acls/${id}`);
           }}
         />
       </div>

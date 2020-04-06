@@ -20,6 +20,7 @@ import Schema from '../containers/SchemaList/Schema/Schema';
 import SchemaList from '../containers/SchemaList/SchemaList';
 import SchemaCreate from '../containers/SchemaList/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
+import AclDetails from '../containers/Acls/AclDetails';
 
 class Routes extends Component {
   componentWillReceiveProps(nextProps) {
@@ -78,6 +79,7 @@ class Routes extends Component {
 
             <Route exact path="/:clusterId/connect/create" component={ConnectCreate} />
             <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
+            <Route exact path="/:clusterId/acls/:aclUser" component={AclDetails} />
             <Route
               exact
               path="/:clusterId/connect/:connectId/definition/:definitionId"
