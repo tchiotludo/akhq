@@ -24,8 +24,8 @@ public class Config {
     private  String value;
     private String description;
     private Source source;
-    private boolean isSensitive;
-    private boolean isReadOnly;
+    private boolean sensitive;
+    private boolean readOnly;
     private final List<Synonym> synonyms = new ArrayList<>();
 
     public Config(String name, String value) {
@@ -38,8 +38,8 @@ public class Config {
         this.value = entry.value();
         this.description = findDescription(this.name);
         this.source = Source.valueOf(entry.source().name());
-        this.isSensitive = entry.isSensitive();
-        this.isReadOnly = entry.isReadOnly();
+        this.sensitive = entry.isSensitive();
+        this.readOnly = entry.isReadOnly();
 
         for (ConfigEntry.ConfigSynonym item: entry.synonyms()) {
             this.synonyms.add(new Synonym(item));

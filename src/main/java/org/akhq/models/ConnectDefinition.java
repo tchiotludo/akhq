@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.EqualsAndHashCode;
@@ -58,10 +59,12 @@ public class ConnectDefinition {
         return split[split.length - 1];
     }
 
+    @JsonIgnore
     public String getConfigsAsJson() {
         return GSON.toJson(this.getConfigs());
     }
 
+    @JsonIgnore
     public String getTransformConfigsAsJson() {
         return GSON.toJson(this.getConfigs()
             .entrySet()

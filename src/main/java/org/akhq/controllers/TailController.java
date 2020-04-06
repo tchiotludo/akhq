@@ -9,6 +9,7 @@ import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
 import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.akhq.configs.Role;
@@ -25,10 +26,11 @@ import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller("${akhq.server.base-path:}/{cluster}/tail")
+@Hidden
 public class TailController extends AbstractController {
-    private RecordRepository recordRepository;
-    private TopicRepository topicRepository;
-    private FreemarkerViewsRenderer freemarkerViewsRenderer;
+    private final RecordRepository recordRepository;
+    private final TopicRepository topicRepository;
+    private final FreemarkerViewsRenderer freemarkerViewsRenderer;
 
     @Inject
     public TailController(
@@ -43,6 +45,7 @@ public class TailController extends AbstractController {
 
     @View("tail")
     @Get
+    @Hidden
     public HttpResponse list(
         HttpRequest request,
         String cluster,
@@ -62,6 +65,7 @@ public class TailController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get("sse")
+    @Hidden
     public Publisher<Event<?>> sse(
         String cluster,
         List<String> topics,

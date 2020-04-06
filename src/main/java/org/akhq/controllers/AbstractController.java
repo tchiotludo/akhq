@@ -61,8 +61,8 @@ abstract public class AbstractController {
     private List<LdapUser> ldapUsers;
 
     @SuppressWarnings("unchecked")
-    protected Map templateData(Optional<String> cluster, Object... values) {
-        Map datas = CollectionUtils.mapOf(values);
+    protected Map<String, Object> templateData(Optional<String> cluster, Object... values) {
+        Map<String, Object> datas = CollectionUtils.mapOf(values);
 
         datas.put("tag", versionProvider.getTag());
         datas.put("clusters", this.kafkaModule.getClustersList());

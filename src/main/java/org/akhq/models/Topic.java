@@ -63,11 +63,11 @@ public class Topic {
         }
     }
 
-    public boolean isInternal() {
+    public boolean isInternalTopic() {
         return this.internal || this.configInternal;
     }
 
-    public boolean isStream() {
+    public boolean isStreamTopic() {
         return this.configStream;
     }
 
@@ -126,7 +126,7 @@ public class Topic {
     }
 
     public Boolean canDeleteRecords(String clusterId, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
-        if (this.isInternal()) {
+        if (this.isInternalTopic()) {
             return false;
         }
 

@@ -32,7 +32,7 @@ public class Schema {
     @JsonDeserialize(using = AvroDeserializer.class)
     private org.apache.avro.Schema schema;
 
-    private Exception exception;
+    private String exception;
 
     public Schema(Schema schema, Schema.Config config) {
         this.id = schema.id;
@@ -53,7 +53,7 @@ public class Schema {
             this.schema = parser.parse(schema.getSchema());
         } catch (AvroTypeException e) {
             this.schema = null;
-            this.exception = e;
+            this.exception = e.getMessage();
         }
     }
 

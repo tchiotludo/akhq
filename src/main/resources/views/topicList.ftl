@@ -95,7 +95,7 @@
                         </td>
                         <#if canDelete == true>
                             <td class="khq-row-action">
-                                <#if topic.isInternal() == false>
+                                <#if topic.isInternalTopic() == false>
                                     <a
                                         href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
                                         data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"
