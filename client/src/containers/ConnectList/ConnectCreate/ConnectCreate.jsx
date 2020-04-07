@@ -8,7 +8,12 @@ import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import Form from '../../../components/Form/Form';
 import { red } from '@material-ui/core/colors';
-class ConnectCreate extends Form {
+import AceEditor from 'react-ace';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-dracula';
+
+class ConnectCreate extends Component {
   state = {
     clusterId: this.props.match.params.clusterId,
     connectId: this.props.match.params.connectId,
@@ -61,16 +66,17 @@ class ConnectCreate extends Form {
       let config = this.handleDefinition(definition);
       formData[definition.name] = '';
       this.schema[definition.name] = config;
+      if (definition.name === 'transforms') {
+        formData['transformsprops'] = '';
+        this.schema['transformsprops'] = Joi.object().required();
+      }
     });
     this.setState({ formData });
   }
 
   handleDefinition(definition) {
     let def = '';
-    console.log(definition.required);
-    console.log(definition);
     if (definition.required) {
-      console.log('Required', definition);
       switch (definition.type) {
         case constants.TYPES.LONG:
         case constants.TYPES.INT:
@@ -89,7 +95,6 @@ class ConnectCreate extends Form {
           break;
       }
     } else {
-      console.log('NOT Required', definition);
       switch (definition.type) {
         case constants.TYPES.LONG:
         case constants.TYPES.INT:
@@ -148,6 +153,7 @@ class ConnectCreate extends Form {
     }
 
     let documentation = <small class="form-text text-muted">{plugin.documentation}</small>;
+
     rows = (
       <React.Fragment key={plugin.name}>
         <td>
@@ -167,7 +173,6 @@ class ConnectCreate extends Form {
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
-              console.log(formData[plugin.name]);
               formData[plugin.name] = input.value;
               this.handleData();
               this.setState({ formData });
@@ -207,21 +212,60 @@ class ConnectCreate extends Form {
         sameGroup.push(definition);
       }
     });
-
+    allOfIt.push(this.handleGroup(sameGroup));
     this.setState({ display: allOfIt });
     return allOfIt;
   }
 
   handleGroup(group) {
+    let { formData } = this.state;
     let groupDisplay = [
       <tr class="bg-primary">
         <td colspan="3">{group[0].group}</td>
       </tr>
     ];
+
     group.map(element => {
       const rows = this.renderTableRows(element);
       const name = element.name;
       groupDisplay.push(<tr>{rows}</tr>);
+      if (element.name === 'transforms') {
+        let transform = (
+          <React.Fragment>
+            <td>
+              <code>Transforms additional properties</code>
+              <small class="form-text text-muted">
+                {`
+                                            Json object to be added to configurations. example:
+                                            {
+                                                "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
+                                                "transforms.createKey.fields":"c1",
+                                                "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
+                                                "transforms.extractInt.field":"c1"
+                                            }`}
+              </small>
+            </td>
+            <td>
+              <AceEditor
+                mode="json"
+                id={'transformsprops'}
+                theme="dracula"
+                value={formData['transformsprops']}
+                onChange={value => {
+                  let { formData } = this.state;
+                  formData['transformsprops'] = value;
+                  this.handleData();
+                  this.setState({ formData });
+                }}
+                name="UNIQUE_ID_OF_DIV"
+                editorProps={{ $blockScrolling: true }}
+                style={{ width: '100%', minHeight: '25vh' }}
+              />
+            </td>
+          </React.Fragment>
+        );
+        groupDisplay.push(transform);
+      }
     });
     return groupDisplay;
   }
@@ -243,6 +287,19 @@ class ConnectCreate extends Form {
     });
   }
 
+  validate = () => {
+    const options = { abortEarly: false };
+    const { error } = Joi.validate(this.state.formData, this.schema);
+
+    if (!error) return null;
+    const errors = {};
+    for (let item of error.details) {
+      errors[item.path[0]] = item.message;
+    }
+    console.log('Erros', errors);
+    return errors;
+  };
+
   renderDropdown() {
     const label = 'Types';
     let items = [{ _id: '', name: '' }];
@@ -262,6 +319,7 @@ class ConnectCreate extends Form {
       />
     );
   }
+
   doSubmit() {
     console.log(this.state.formData);
   }
@@ -285,7 +343,18 @@ class ConnectCreate extends Form {
                 <label className="col-sm-2 col-form-label">{'Name'}</label>
 
                 <div className="col-sm-10">
-                  <input className="form-control" name="name" id="name" placeholder="Subject" />
+                  <input
+                    className="form-control"
+                    name="name"
+                    id="name"
+                    value={formData['subject']}
+                    onChange={({ currentTarget: input }) => {
+                      let { formData } = this.state;
+                      formData['subject'] = input.value;
+                      this.setState({ formData });
+                    }}
+                    placeholder="Subject"
+                  />
                 </div>
               </div>
               <div className="table-responsive">
@@ -299,14 +368,11 @@ class ConnectCreate extends Form {
                   <tbody>{this.state.display}</tbody>
                 </table>
               </div>
-              {this.renderButton(
-                'Create',
-                () => {
-                  this.doSubmit();
-                },
-                undefined,
-                'button'
-              )}
+              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+                <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
+                  Create
+                </button>
+              </div>
             </React.Fragment>
           )}
         </form>
