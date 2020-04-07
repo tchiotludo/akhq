@@ -1,13 +1,107 @@
 import React, { Component } from 'react';
-
 import Header from '../Header';
+import Table from '../../components/Table';
+import * as constants from '../../utils/constants';
+import { get } from '../../utils/api';
+import { uriAclsList } from '../../utils/endpoints';
+import SearchBar from '../../components/SearchBar';
 
 class Acls extends Component {
+  state = {
+    data: [],
+    selectedCluster: '',
+    searchData: {
+      search: ''
+    }
+  };
+
+  componentDidMount() {
+    this.getAcls();
+  }
+
+  async getAcls() {
+    let acls = [];
+    const { clusterId } = this.props.match.params;
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
+    try {
+      acls = await get(uriAclsList(clusterId, this.state.searchData.search));
+      this.handleData(acls.data);
+    } catch (err) {
+      history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
+  }
+
+  handleData(acls) {
+    let tableAcls = acls.map(acl => {
+      return {
+        id: acl,
+        user: acl || ''
+      };
+    });
+    this.setState({ data: tableAcls });
+    return tableAcls;
+  }
+
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ searchData }, () => {
+      this.getAcls();
+    });
+  };
+
   render() {
+    const { history } = this.props;
+    const { data, searchData } = this.state;
+    const { clusterId } = this.props.match.params;
     return (
       <div id="content">
         <Header title="Acls" />
-        Acls
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
+          <SearchBar
+            showSearch={true}
+            search={searchData.search}
+            showPagination={false}
+            showTopicListView={false}
+            showConsumerGroup
+            groupListView={'ALL'}
+            doSubmit={this.handleSearch}
+          />
+        </nav>
+        <Table
+          columns={[
+            {
+              id: 'user',
+              accessor: 'user',
+              colName: 'Principals',
+              type: 'text'
+            }
+          ]}
+          actions={[constants.TABLE_DETAILS]}
+          data={data}
+          noContent={
+            <tr>
+              <td colSpan={3}>
+                <div className="alert alert-warning mb-0" role="alert">
+                  No ACLS found, or the "authorizer.class.name" parameter is not configured on the
+                  cluster.
+                </div>
+              </td>
+            </tr>
+          }
+          onDetails={id => {
+            this.props.history.push(`/${clusterId}/acls/${id}`);
+          }}
+        />
       </div>
     );
   }

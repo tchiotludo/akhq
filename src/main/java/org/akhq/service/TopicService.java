@@ -2,18 +2,11 @@ package org.akhq.service;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
+import org.akhq.models.*;
+import org.akhq.repositories.*;
 import org.apache.commons.lang3.tuple.Pair;
-import org.akhq.models.Config;
-import org.akhq.models.ConsumerGroup;
-import org.akhq.models.LogDir;
-import org.akhq.models.Record;
-import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
-import org.akhq.repositories.ConfigRepository;
-import org.akhq.repositories.LogDirRepository;
-import org.akhq.repositories.RecordRepository;
-import org.akhq.repositories.TopicRepository;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.topic.ConfigOperationDTO;
 import org.akhq.service.dto.topic.ConfigDTO;
@@ -29,6 +22,7 @@ import org.akhq.service.mapper.ConsumerGroupMapper;
 import org.akhq.service.mapper.TopicMapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
+import org.apache.kafka.common.resource.ResourceType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -50,6 +44,7 @@ public class TopicService {
     private RecordRepository recordRepository;
     private LogDirRepository logDirRepository;
     private ConfigRepository configRepository;
+    private AccessControlListRepository aclRepository;
 
     private TopicMapper topicMapper;
 
@@ -60,7 +55,7 @@ public class TopicService {
 
     @Inject
     public TopicService(KafkaModule kafkaModule,ConsumerGroupMapper consumerGroupMapper, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
-                        TopicRepository topicRepository, Environment environment, RecordRepository recordRepository, ConfigRepository configRepository) {
+                        TopicRepository topicRepository, Environment environment, RecordRepository recordRepository, ConfigRepository configRepository, AccessControlListRepository aclRepository) {
         this.kafkaModule = kafkaModule;
         this.consumerGroupMapper=consumerGroupMapper;
         this.topicMapper = topicMapper;
@@ -69,6 +64,7 @@ public class TopicService {
         this.environment = environment;
         this.recordRepository = recordRepository;
         this.configRepository = configRepository;
+        this.aclRepository = aclRepository;
     }
 
     public TopicListDTO getTopics(String clusterId, String view, String search, Optional<Integer> pageNumber)
@@ -183,6 +179,11 @@ public class TopicService {
                 Optional.ofNullable(produceTopicDTO.getKeySchemaId()),
                 Optional.ofNullable(produceTopicDTO.getValueSchemaId())
         );
+    }
+
+    public List<AccessControlList> getTopicAcls(String clusterId, String topicName) {
+
+       return this.aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, topicName);
     }
 
     public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId, String topicName)

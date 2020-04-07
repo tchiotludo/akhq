@@ -7,11 +7,14 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.repositories.RecordRepository;
+import org.akhq.service.AclService;
 import org.akhq.service.TopicService;
+import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.topic.ConfigOperationDTO;
 import org.akhq.service.dto.topic.ConfigDTO;
 import org.akhq.service.dto.topic.*;
+import org.apache.kafka.common.resource.ResourceType;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -23,10 +26,12 @@ import java.util.concurrent.ExecutionException;
 @Controller("${akhq.server.base-path:}/api")
 public class TopicResource {
     private TopicService topicService;
+    private AclService aclService;
 
     @Inject
-    public TopicResource(TopicService topicService) {
+    public TopicResource(TopicService topicService, AclService aclService) {
         this.topicService = topicService;
+        this.aclService = aclService;
     }
 
     @Get("/topics")
@@ -82,6 +87,12 @@ public class TopicResource {
     public List<ConsumerGroupDTO> fetchTopicGroups(String clusterId, String topicId) throws ExecutionException, InterruptedException {
         log.debug("Fetch topic groups ");
         return topicService.getConsumerGroups(clusterId, topicId);
+    }
+
+    @Get("/topic/acls")
+    public List<AclsDTO> fetchTopicAcl(String clusterId, String topicId) throws ExecutionException, InterruptedException {
+        log.debug("Fetch topic acls ");
+        return aclService.getAcls(clusterId, ResourceType.TOPIC, topicId);
     }
 
     @Get("/cluster/topic/configs")
