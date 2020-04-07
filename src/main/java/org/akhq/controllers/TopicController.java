@@ -18,6 +18,7 @@ import io.micronaut.views.freemarker.FreemarkerViewsRenderer;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.models.*;
@@ -623,18 +624,26 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get("{cluster}/topic/{topicName}/search/{search}")
     @Hidden
-    public Publisher<Event<?>> sse(String cluster,
-                                          String topicName,
-                                          Optional<String> after,
-                                          Optional<Integer> partition,
-                                          Optional<RecordRepository.Options.Sort> sort,
-                                          Optional<String> timestamp,
-                                          Optional<String> search)
-        throws ExecutionException, InterruptedException
-    {
+    public Publisher<Event<?>> sse(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> search
+    ) throws ExecutionException, InterruptedException {
         Topic topic = topicRepository.findByName(cluster, topicName);
 
-        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            search
+        );
 
         Map<String, Object> datas = new HashMap<>();
         datas.put("topic", topic);
@@ -656,13 +665,56 @@ public class TopicController extends AbstractController {
                     StringWriter stringWriter = new StringWriter();
                     try {
                         freemarkerViewsRenderer.render("topicSearch", datas).writeTo(stringWriter);
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+                    }
 
                     searchBody.body = stringWriter.toString();
                 }
 
                 return Event
                     .of(searchBody)
+                    .name(event.getName());
+            });
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/data/search/{search}")
+    @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
+    public Publisher<Event<SearchRecord>> sseApi(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> search
+    ) throws ExecutionException, InterruptedException {
+        Topic topic = topicRepository.findByName(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            search
+        );
+
+        return recordRepository
+            .search(cluster, options)
+            .map(event -> {
+                SearchRecord searchRecord = new SearchRecord(
+                    event.getData().getPercent(),
+                    event.getData().getAfter()
+                );
+
+                if (event.getData().getRecords().size() > 0) {
+                    searchRecord.records = event.getData().getRecords();
+                }
+
+                return Event
+                    .of(searchRecord)
                     .name(event.getName());
             });
     }
@@ -701,6 +753,25 @@ public class TopicController extends AbstractController {
 
         @JsonProperty("body")
         private String body;
+
+        @JsonProperty("after")
+        private final String after;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class SearchRecord {
+        public SearchRecord(double percent, String after) {
+            this.percent = percent;
+            this.after = after;
+        }
+
+        @JsonProperty("percent")
+        private final Double percent;
+
+        @JsonProperty("records")
+        private List<Record> records;
 
         @JsonProperty("after")
         private final String after;
