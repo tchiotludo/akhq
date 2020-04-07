@@ -126,6 +126,19 @@ docker run -d \
 
 
 ### Running in Kubernetes (using a Helm Chart)
+
+### Using Helm repository
+
+* Add the AKHQ helm charts repository:
+```sh
+helm repo add akhq https://akhq.io/
+```
+* Install it:
+```sh
+helm install --name akhq akhq/akhq
+```
+
+### Using git
 * Clone the repository:
 ```sh
 git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm/akhq
