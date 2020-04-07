@@ -7,6 +7,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import org.akhq.service.ConnectService;
+import org.akhq.service.dto.connect.ConnectDefinitionConfigsDTO;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ConnectPluginDTO;
 import org.akhq.service.dto.connect.CreateConnectDefinitionDTO;
@@ -41,6 +42,12 @@ public class ConnectResource {
     public ConnectDefinitionDTO fetchConnectDefinition(String clusterId, String connectId, String definitionId) {
         log.debug("Fetching definition: {}", definitionId);
         return connectService.getConnectDefinition(clusterId, connectId, definitionId);
+    }
+
+    @Get("/connect/definition/configs")
+    public ConnectDefinitionConfigsDTO fetchConnectDefinitionConfigs(String clusterId, String connectId, String definitionId) {
+        log.debug("Fetching connect {} definiton {} configs", connectId, definitionId);
+        return connectService.getConnectDefinitionConfigs(clusterId, connectId, definitionId);
     }
 
     @Get("/connect/definitions")

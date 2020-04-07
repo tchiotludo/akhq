@@ -142,7 +142,7 @@ class Form extends Component {
     );
   };
 
-  renderSelect = (name, label, items, onChange) => {
+  renderSelect = (name, label, items, onChange, rest) => {
     const { formData, errors } = this.state;
 
     return (
@@ -155,6 +155,7 @@ class Form extends Component {
         onChange={value => {
           onChange(value);
         }}
+        {...rest}
       />
     );
   };
