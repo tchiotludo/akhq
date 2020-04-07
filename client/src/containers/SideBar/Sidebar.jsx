@@ -5,6 +5,7 @@ import { Link, withRouter } from 'react-router-dom';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import _ from 'lodash';
 
 // Adaptation of template.ftl
 class Sidebar extends Component {
@@ -62,7 +63,10 @@ class Sidebar extends Component {
     let allConnects = [];
     try {
       allConnects = await api.get(endpoints.uriConnects(selectedCluster));
-      this.setState({ allConnects: allConnects.data, selectedConnect: allConnects.data[0] });
+      allConnects = _(allConnects.data)
+        .sortBy()
+        .value();
+      this.setState({ allConnects: allConnects, selectedConnect: allConnects[0] });
     } catch (err) {
       console.log('Erro allConnects:' + err);
     }
@@ -70,16 +74,23 @@ class Sidebar extends Component {
 
   setClustersAndConnects = () => {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
-    const listClusters = allClusters.map(cluster => (
-      <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
-        <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
-      </li>
-    ));
-    const listConnects = allConnects.map(connect => (
-      <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
-        <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
-      </li>
-    ));
+    const listClusters = _(allClusters)
+      .sortBy()
+      .value()
+      .map(cluster => (
+        <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
+          <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
+        </li>
+      ));
+    const listConnects = _(allConnects)
+      .sortBy()
+      .value()
+      .map(connect => (
+        <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
+          <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
+        </li>
+      ));
+
     return { listClusters, listConnects };
   };
 
