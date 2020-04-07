@@ -121,11 +121,11 @@ public class RecordRepositoryTest extends AbstractTest {
 
         Optional<Record> avroRecord = records
             .stream()
-            .filter(record -> record.getKeyAsString().equals("1"))
+            .filter(record -> record.getKey().equals("1"))
             .findFirst();
 
         avroRecord.orElseThrow(() -> new NoSuchElementException("Unable to find key 1"));
-        avroRecord.ifPresent(record -> assertEquals("{\"id\": 1, \"name\": \"WaWa\", \"breed\": \"ABYSSINIAN\"}", record.getValueAsString()));
+        avroRecord.ifPresent(record -> assertEquals("{\"id\": 1, \"name\": \"WaWa\", \"breed\": \"ABYSSINIAN\"}", record.getValue()));
     }
 
     @Test

@@ -12,7 +12,7 @@ import io.micronaut.http.cookie.Cookie;
 import io.micronaut.security.utils.SecurityService;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.experimental.Wither;
+import lombok.With;
 import org.akhq.configs.BasicAuth;
 import org.akhq.configs.LdapGroup;
 import org.akhq.configs.LdapUser;
@@ -21,15 +21,15 @@ import org.akhq.utils.UserGroupUtils;
 import org.akhq.utils.VersionProvider;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 
 abstract public class AbstractController {
     private static final String SESSION_TOAST = "TOAST";
-    private static Gson gson = new GsonBuilder()
+    private static final Gson gson = new GsonBuilder()
         .enableComplexMapKeySerialization()
         .create();
 
@@ -61,8 +61,8 @@ abstract public class AbstractController {
     private List<LdapUser> ldapUsers;
 
     @SuppressWarnings("unchecked")
-    protected Map templateData(Optional<String> cluster, Object... values) {
-        Map datas = CollectionUtils.mapOf(values);
+    protected Map<String, Object> templateData(Optional<String> cluster, Object... values) {
+        Map<String, Object> datas = CollectionUtils.mapOf(values);
 
         datas.put("tag", versionProvider.getTag());
         datas.put("clusters", this.kafkaModule.getClustersList());
@@ -184,13 +184,13 @@ abstract public class AbstractController {
             question
         }
 
-        @Wither
-        private String title;
+        @With
+        private final String title;
 
-        @Wither
-        private String message;
+        @With
+        private final String message;
 
         @Builder.Default
-        private Type type = Type.info;
+        private final Type type = Type.info;
     }
 }
