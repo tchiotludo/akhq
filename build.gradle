@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        micronautVersion = "1.3.3"
+        micronautVersion = "1.3.4"
         confluentVersion = "5.4.+"
-        kafkaVersion = "2.4.0"
+        kafkaVersion = "2.4.1"
         lombokVersion = "1.18.12"
     }
 
@@ -14,26 +14,26 @@ buildscript {
 
     dependencies {
         // akhq
-        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.17.0"
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.19.1"
     }
 }
 
 plugins {
     // micronaut
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+    id "io.spring.dependency-management" version "1.0.9.RELEASE"
     id "com.github.johnrengelman.shadow" version "5.2.0"
     id "application"
     id "java"
     id "net.ltgt.apt-eclipse" version "0.21"
     id "net.ltgt.apt-idea" version "0.21"
-    id "com.gorylenko.gradle-git-properties" version "2.2.0"
+    id "com.gorylenko.gradle-git-properties" version "2.2.2"
 
     // akhq
-    id 'org.siouan.frontend' version '1.3.0'
+    id 'org.siouan.frontend' version '1.4.1'
     id 'com.adarshr.test-logger' version '2.0.0'
-    id 'org.gradle.test-retry' version '1.0.0'
+    id 'org.gradle.test-retry' version '1.1.4'
     id 'com.github.psxpaul.execfork' version '0.1.13'
-    id "com.github.ben-manes.versions" version "0.27.0"
+    id "com.github.ben-manes.versions" version "0.28.0"
 }
 
 apply plugin: "com.commercehub.gradle.plugin.avro"
@@ -118,7 +118,7 @@ dependencies {
     compile "io.micronaut:micronaut-http-server-netty"
     compile "io.swagger.core.v3:swagger-annotations"
     runtime "ch.qos.logback:logback-classic:1.2.3"
-    runtime 'org.freemarker:freemarker:2.3.29'
+    runtime 'org.freemarker:freemarker:2.3.30'
     compile "io.micronaut:micronaut-security"
     compile "io.micronaut:micronaut-security-session"
     compile "io.micronaut:micronaut-management"
@@ -129,8 +129,8 @@ dependencies {
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     compile group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
-    compile group: 'org.apache.avro', name: 'avro', version: '1.9.1'
-    compile group: 'org.sourcelab', name: 'kafka-connect-client', version: '2.1.0'
+    compile group: 'org.apache.avro', name: 'avro', version: '1.9.2'
+    compile group: 'org.sourcelab', name: 'kafka-connect-client', version: '3.0.0'
 
     // log
     compile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
@@ -152,7 +152,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-api"
     testCompile "io.micronaut.test:micronaut-test-junit5"
     testRuntime "org.junit.jupiter:junit-jupiter-engine"
-    testCompile "org.mockito:mockito-junit-jupiter:3.2.4"
+    testCompile "org.mockito:mockito-junit-jupiter:3.3.3"
 
     // test
     testCompile "com.salesforce.kafka.test:kafka-junit5:3.2.1"

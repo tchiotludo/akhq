@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 /**********************************************************************************************************************\
@@ -120,9 +120,11 @@ module.exports = (env, argv) => {
                             {
                                 loader: 'sass-loader',
                                 options: {
-                                    outputStyle: 'expanded',
                                     sourceMap: true,
-                                    includePaths: [path.join(srcDirectory, 'css')]
+                                    sassOptions: {
+                                        includePaths: [path.join(srcDirectory, 'css')],
+                                        outputStyle: 'expanded',
+                                    }
                                 }
                             }
                         ]
