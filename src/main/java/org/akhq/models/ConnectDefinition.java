@@ -1,9 +1,11 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus;
@@ -17,12 +19,14 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class ConnectDefinition {
-    private final String name;
-    private final String type;
-    private final Map<String, String> configs;
-    private final List<TaskDefinition> tasks;
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    private String name;
+    private String type;
+    private Map<String, String> configs;
+    private List<TaskDefinition> tasks;
 
     public ConnectDefinition(ConnectorDefinition connectorDefinition, ConnectorStatus connectorStatus) {
         this.name = connectorDefinition.getName();
@@ -55,12 +59,14 @@ public class ConnectDefinition {
         return split[split.length - 1];
     }
 
+    @JsonIgnore
     public String getConfigsAsJson() {
-        return gson.toJson(this.getConfigs());
+        return GSON.toJson(this.getConfigs());
     }
 
+    @JsonIgnore
     public String getTransformConfigsAsJson() {
-        return gson.toJson(this.getConfigs()
+        return GSON.toJson(this.getConfigs()
             .entrySet()
             .stream()
             .filter(entry -> entry.getKey().startsWith("transforms."))
@@ -79,12 +85,13 @@ public class ConnectDefinition {
     @ToString
     @EqualsAndHashCode
     @Getter
+    @NoArgsConstructor
     public static final class TaskDefinition {
-        private final String connector;
-        private final int id;
-        private final String state;
-        private final String workerId;
-        private final String trace;
+        private String connector;
+        private int id;
+        private String state;
+        private String workerId;
+        private String trace;
 
         public TaskDefinition(ConnectorDefinition.TaskDefinition taskDefinition, ConnectorStatus.TaskStatus status) {
             this.connector = taskDefinition.getConnector();

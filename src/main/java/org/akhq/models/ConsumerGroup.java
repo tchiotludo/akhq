@@ -2,6 +2,7 @@ package org.akhq.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -14,12 +15,13 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class ConsumerGroup {
-    private final String id;
-    private final boolean isSimpleConsumerGroup;
-    private final String partitionAssignor;
-    private final ConsumerGroupState state;
-    private final Node coordinator;
+    private String id;
+    private boolean simpleConsumerGroup;
+    private String partitionAssignor;
+    private ConsumerGroupState state;
+    private Node coordinator;
     private final ArrayList<Consumer> members = new ArrayList<>();
     private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 
@@ -29,7 +31,7 @@ public class ConsumerGroup {
         Map<String, List<Partition.Offsets>> topicsOffsets
     ) {
         this.id = groupDescription.groupId();
-        this.isSimpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
+        this.simpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
         this.partitionAssignor = groupDescription.partitionAssignor();
         this.state = groupDescription.state();
         this.coordinator = new Node(groupDescription.coordinator());

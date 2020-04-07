@@ -2,16 +2,18 @@ package org.akhq.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Node {
-    private final int id;
-    private final String host;
-    private final int port;
-    private final String rack;
+    private int id;
+    private String host;
+    private int port;
+    private String rack;
 
     public Node(org.apache.kafka.common.Node node) {
         this.id = node.id();
@@ -23,14 +25,15 @@ public class Node {
     @ToString
     @EqualsAndHashCode(callSuper=true)
     @Getter
+    @NoArgsConstructor
     public static class Partition extends Node {
-        private final boolean isLeader;
-        private final boolean isInSyncReplicas;
+        private boolean leader;
+        private boolean inSyncReplicas;
 
-        public Partition(org.apache.kafka.common.Node node, boolean isLeader, boolean isInSyncReplicas) {
+        public Partition(org.apache.kafka.common.Node node, boolean leader, boolean inSyncReplicas) {
             super(node);
-            this.isLeader = isLeader;
-            this.isInSyncReplicas = isInSyncReplicas;
+            this.leader = leader;
+            this.inSyncReplicas = inSyncReplicas;
         }
     }
 }

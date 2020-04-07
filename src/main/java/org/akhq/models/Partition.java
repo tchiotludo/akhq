@@ -2,6 +2,7 @@ package org.akhq.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.common.TopicPartitionInfo;
 
@@ -10,13 +11,14 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class Partition {
-    private final int id;
-    private final String topic;
-    private final List<Node.Partition> nodes;
-    private final List<LogDir> logDir;
-    private final long firstOffset;
-    private final long lastOffset;
+    private int id;
+    private String topic;
+    private List<Node.Partition> nodes;
+    private List<LogDir> logDir;
+    private long firstOffset;
+    private long lastOffset;
 
     public Partition(String topic, TopicPartitionInfo partitionInfo, List<LogDir> logDir, Offsets offsets) {
         this.id = partitionInfo.partition();
@@ -53,8 +55,9 @@ public class Partition {
     @ToString
     @EqualsAndHashCode
     @Getter
+    @NoArgsConstructor
     public static class Offsets {
-        private final int partition;
+        private int partition;
         private long firstOffset;
         private long lastOffset;
 

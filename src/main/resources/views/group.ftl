@@ -5,7 +5,7 @@
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
-<#-- @ftlvariable name="acls" type="java.util.ArrayList<org.akhq.models.AccessControlList>" -->
+<#-- @ftlvariable name="acls" type="java.util.ArrayList<org.akhq.models.AccessControl>" -->
 
 <#import "includes/template.ftl" as template>
 
