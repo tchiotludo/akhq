@@ -124,7 +124,6 @@ dependencies {
     compile "io.micronaut:micronaut-management"
     compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
     compile "io.micronaut.configuration:micronaut-security-ldap"
-    compile 'io.github.mweirauch:micrometer-jvm-extras:0.2.0'
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
@@ -144,9 +143,6 @@ dependencies {
 
     // api
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.10.0'
-
-    // FIXME:  https://github.com/micrometer-metrics/micrometer/issues/1743
-    compile group: 'io.micrometer', name: 'micrometer-core', version: '1.3.3'
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
