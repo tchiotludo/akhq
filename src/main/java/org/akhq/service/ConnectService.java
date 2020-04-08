@@ -96,6 +96,21 @@ public class ConnectService {
         );
     }
 
+    public void updateConnectDefinition(CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        Map<String, String> validConfigs =
+                ConnectRepository.validConfigs(
+                        createConnectDefinitionDTO.getConfigs(),
+                        createConnectDefinitionDTO.getTransformsValue()
+                );
+
+        this.connectRepository.update(
+                createConnectDefinitionDTO.getClusterId(),
+                createConnectDefinitionDTO.getConnectId(),
+                createConnectDefinitionDTO.getName(),
+                validConfigs
+        );
+    }
+
     public List<ConnectDefinitionDTO> deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
         this.connectRepository.delete(
                 deleteConnectDefinitionDTO.getClusterId(),

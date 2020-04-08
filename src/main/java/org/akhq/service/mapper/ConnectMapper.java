@@ -49,19 +49,21 @@ public class ConnectMapper {
         List<ConnectPlugin.Definition> definitions = plugin.getDefinitions();
         List<ConnectPluginDTO.DefinitionDTO> definitionsDTO = new ArrayList<>();
         for (ConnectPlugin.Definition definition : definitions) {
-            definitionsDTO.add(
-                    new ConnectPluginDTO.DefinitionDTO(
-                            definition.getName(),
-                            definition.getType(),
-                            definition.isRequired(),
-                            definition.getDefaultValue(),
-                            definition.getImportance(),
-                            definition.getDocumentation(),
-                            definition.getGroup(),
-                            definition.getWidth(),
-                            definition.getDisplayName(),
-                            definition.getDependents(),
-                            definition.getOrder()));
+            if (!definition.getName().equals("name") && !definition.getName().equals("connector.class")) {
+                definitionsDTO.add(
+                        new ConnectPluginDTO.DefinitionDTO(
+                                definition.getName(),
+                                definition.getType(),
+                                definition.isRequired(),
+                                definition.getDefaultValue(),
+                                definition.getImportance(),
+                                definition.getDocumentation(),
+                                definition.getGroup(),
+                                definition.getWidth(),
+                                definition.getDisplayName(),
+                                definition.getDependents(),
+                                definition.getOrder()));
+            }
         }
 
         return new ConnectPluginDTO(plugin.getClassName(), plugin.getShortClassName(), plugin.getType(), plugin.getVersion(), definitionsDTO);

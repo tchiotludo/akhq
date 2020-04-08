@@ -218,15 +218,15 @@ class ConnectTasks extends Component {
         className += 'warning';
         break;
     }
-    return <span class={`btn btn-sm mb-1 ${className}`}>{task}</span>;
+    return <span className={`btn btn-sm mb-1 ${className}`}>{task}</span>;
   };
 
   render() {
     const { tableData, definition } = this.state;
 
     return (
-      <div class="tab-pane active" role="tabpanel">
-        <div class="table-responsive">
+      <div className="tab-pane active" role="tabpanel">
+        <div className="table-responsive">
           <Table
             columns={[
               {
@@ -268,7 +268,7 @@ class ConnectTasks extends Component {
               className="btn btn-primary mr-2"
               onClick={() => this.handleAction(this.definitionState.RESUME)}
             >
-              <i class="fa fa-play" aria-hidden="true"></i> Resume Definition
+              <i className="fa fa-play" aria-hidden="true"></i> Resume Definition
             </a>
           ) : (
             <React.Fragment>
@@ -278,12 +278,12 @@ class ConnectTasks extends Component {
                 className="btn btn-primary mr-2"
                 onClick={() => this.handleAction(this.definitionState.PAUSE)}
               >
-                <i class="fa fa-pause" aria-hidden="true"></i> Pause Definition
+                <i className="fa fa-pause" aria-hidden="true"></i> Pause Definition
               </a>
 
               <a
                 href="#"
-                class="btn btn-primary mr-2"
+                className="btn btn-primary mr-2"
                 onClick={() => this.handleAction(this.definitionState.RESTART)}
               >
                 <i className="fa fa-refresh" aria-hidden="true"></i> Restart Definition

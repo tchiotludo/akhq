@@ -66,6 +66,16 @@ public class ConnectResource {
         connectService.addConnectDefinition(createConnectDefinitionDTO);
     }
 
+    @Put("/connect/definition/update")
+    public void updateConnectDefinition(@Body CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        log.debug(
+                "Updating definition {} on connect: {}",
+                createConnectDefinitionDTO.getName(),
+                createConnectDefinitionDTO.getConnectId()
+        );
+        connectService.updateConnectDefinition(createConnectDefinitionDTO);
+    }
+
     @Put("/connect/definition/pause")
     public void pauseConnectDefinition(ModifyConnectDefinitionStateDTO modifyConnectDefinitionStateDTO) {
         log.debug(
