@@ -11,6 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 public class AclsDTO {
     private String user;
+    private String principalEncoded;
+    private String resource;
     private String host;
     private List<String> permissions;
 }

@@ -6,6 +6,7 @@ import io.micronaut.http.annotation.Get;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.models.AccessControlList;
 import org.akhq.service.AclService;
+import org.akhq.service.dto.acls.AclsDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +22,15 @@ public class AclResource {
         this.aclService = aclService;
     }
 
-
     @Get("/aclsList")
-    public List<String> getAclsList(String clusterId, Optional<String> search) {
+    public List<AclsDTO> getAclsList(String clusterId, Optional<String> search) {
+        log.debug("Fetching ACLs for cluster {}", clusterId);
         return aclService.findAll(clusterId, search);
     }
 
+    @Get("/aclsByPrincipal")
+    public List<AclsDTO> getAclsByPrincipal(String clusterId, String principalEncoded, String resourceType) {
+        log.debug("Fetching ACLs by principal for cluster: {} {}", clusterId, resourceType);
+        return aclService.findByPrincipal(clusterId, principalEncoded, resourceType);
+    }
 }

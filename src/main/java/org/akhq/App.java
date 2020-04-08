@@ -7,3 +7,4 @@ public class App {
         Micronaut.run(App.class);
     }
 }
+

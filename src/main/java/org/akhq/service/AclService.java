@@ -5,61 +5,51 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.AbstractRepository;
 import org.akhq.repositories.AccessControlListRepository;
 import org.akhq.service.dto.acls.AclsDTO;
-import org.apache.kafka.common.acl.AclBindingFilter;
+import org.akhq.service.mapper.AclMapper;
 import org.apache.kafka.common.resource.ResourceType;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Singleton
 public class AclService extends AbstractRepository {
     private AbstractKafkaWrapper kafkaWrapper;
     private AccessControlListRepository aclRepository;
+    private AclMapper aclMapper;
 
-    public AclService(AbstractKafkaWrapper kafkaWrapper, AccessControlListRepository aclRepository) {
+    public AclService(AbstractKafkaWrapper kafkaWrapper, AccessControlListRepository aclRepository, AclMapper aclMapper) {
         this.kafkaWrapper = kafkaWrapper;
         this.aclRepository = aclRepository;
+        this.aclMapper = aclMapper;
     }
 
-    public List<String> findAll(String clusterId, Optional<String> search) {
-        try {
-            return kafkaWrapper.describeAcls(clusterId, AclBindingFilter.ANY).stream()
-                    .map(acl -> acl.entry().principal())
-                    .filter(principal -> isSearchMatch(search, principal))
-                    .distinct()
-                    .collect(Collectors.toList());
-        } catch (ExecutionException | InterruptedException ex) {
-            throw new CompletionException(ex);
-        }
+    public List<AclsDTO> findAll(String clusterId, Optional<String> search) {
+        return aclRepository.findAll(clusterId, search)
+                .stream()
+                .map(
+                        acl -> new AclsDTO(
+                                acl.getPrincipal(),
+                                acl.getEncodedPrincipal(),
+                                "",
+                                "",
+                                new ArrayList<>())).collect(Collectors.toList()
+                );
+    }
+
+    public List<AclsDTO> findByPrincipal(String clusterId, String encodedPrincipal, String resourceType) {
+        AccessControlList acl = aclRepository.findByPrincipal(clusterId, encodedPrincipal, Optional.of(resourceType));
+
+        return aclMapper.fromAclListToAclDTOList(Collections.singletonList(acl), resourceType);
     }
 
     public List<AclsDTO> getAcls(String clusterId, ResourceType resourceType, String id) {
-        List<AclsDTO> aclsList = new ArrayList<>();
-
-        aclRepository.findByResourceType(clusterId, resourceType, id).forEach(acl -> {
-            Map<AccessControlList.HostResource, List<String>> permissions =
-                    acl
-                            .getPermissions()
-                            .get(resourceType.toString().toLowerCase());
-            Set<AccessControlList.HostResource> keys = permissions.keySet();
-            List<List<String>> values = new ArrayList<>(permissions.values());
-
-            keys.forEach(key -> {
-                int index = Arrays.asList(keys.toArray()).indexOf(key);
-                List<String> value = values.get(index);
-
-                aclsList.add(new AclsDTO(acl.getPrincipal(), key.getHost(), value));
-            });
-        });
-
-        return aclsList;
+        return aclMapper.fromAclListToAclDTOList(aclRepository.findByResourceType(clusterId, resourceType, id), resourceType.toString());
     }
 }
