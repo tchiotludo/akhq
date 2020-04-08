@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get } from '../../../utils/api';
-import { uriConnectPlugins } from '../../../utils/endpoints';
+import { get, post } from '../../../utils/api';
+import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
@@ -62,6 +62,7 @@ class ConnectCreate extends Component {
     this.schema['type'] = Joi.string().required();
     formData.subject = '';
     this.schema['subject'] = Joi.string().required();
+    console.log('definitions', definitions);
     definitions.map(definition => {
       let config = this.handleDefinition(definition);
       formData[definition.name] = '';
@@ -71,7 +72,9 @@ class ConnectCreate extends Component {
         this.schema['transformsprops'] = Joi.object().required();
       }
     });
-    this.setState({ formData });
+    this.setState({ formData }, () => {
+      console.log('formData', this.state.formData);
+    });
   }
 
   handleDefinition(definition) {
@@ -111,6 +114,7 @@ class ConnectCreate extends Component {
           break;
       }
     }
+
     return def;
   }
 
@@ -235,14 +239,13 @@ class ConnectCreate extends Component {
             <td>
               <code>Transforms additional properties</code>
               <small class="form-text text-muted">
-                {`
-                                            Json object to be added to configurations. example:
-                                            {
-                                                "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
-                                                "transforms.createKey.fields":"c1",
-                                                "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
-                                                "transforms.extractInt.field":"c1"
-                                            }`}
+                {`Json object to be added to configurations. example:
+                  {
+                      "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
+                      "transforms.createKey.fields":"c1",
+                      "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
+                      "transforms.extractInt.field":"c1"
+                  }`}
               </small>
             </td>
             <td>
@@ -290,7 +293,7 @@ class ConnectCreate extends Component {
   validate = () => {
     const options = { abortEarly: false };
     const { error } = Joi.validate(this.state.formData, this.schema);
-
+    console.log('error', error);
     if (!error) return null;
     const errors = {};
     for (let item of error.details) {
@@ -298,6 +301,14 @@ class ConnectCreate extends Component {
     }
     console.log('Erros', errors);
     return errors;
+  };
+
+  validateProperty = ({ name, value }) => {
+    const obj = { [name]: value };
+    const schema = { [name]: this.schema[name] };
+    const { error } = Joi.validate(obj, schema);
+
+    return error ? error.details[0].message : null;
   };
 
   renderDropdown() {
@@ -320,8 +331,52 @@ class ConnectCreate extends Component {
     );
   }
 
-  doSubmit() {
-    console.log(this.state.formData);
+  async doSubmit() {
+    const { clusterId, connectId, formData, selectedType } = this.state;
+    let body = {
+      clusterId,
+      connectId,
+      name: formData.subject,
+      transformsValue: formData.transformsprops
+    };
+    let configs = {};
+    Object.keys(formData).map(key => {
+      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type') {
+        configs[`configs[${key}]`] = formData[key];
+      } else if (key === 'type') {
+        configs['configs[connector.class]'] = formData[key];
+      }
+    });
+    body.configs = configs;
+
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
+    console.log('test', body);
+    try {
+      let response = await post(uriCreateConnect(), body);
+      if (response) {
+        console.log('success', response);
+        history.goBack();
+        this.props.history.push({
+          showSuccessToast: true,
+          successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
+          loading: false
+        });
+      }
+    } catch (err) {
+      console.log('error on connect definitions: ', err);
+      this.props.history.push({
+        showErrorToast: true,
+        errorToastMessage: `${`Connection '${formData.subject}' was not created`}`,
+        loading: false
+      });
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
   }
 
   render() {
@@ -333,7 +388,10 @@ class ConnectCreate extends Component {
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"
-          onSubmit={() => this.doSubmit()}
+          onSubmit={e => {
+            e.preventDefault();
+            this.doSubmit();
+          }}
         >
           <Header title={'Create a definition'} />
           {this.renderDropdown()}
