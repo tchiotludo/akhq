@@ -3,6 +3,7 @@ import Joi from 'joi-browser';
 import './styles.scss';
 import { get, post } from '../../../utils/api';
 import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
+import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
@@ -79,40 +80,44 @@ class ConnectCreate extends Component {
 
   handleDefinition(definition) {
     let def = '';
-    if (definition.required) {
-      switch (definition.type) {
-        case constants.TYPES.LONG:
-        case constants.TYPES.INT:
-        case constants.TYPES.DOUBLE:
-        case constants.TYPES.SHORT:
-          def = Joi.number().required();
-          break;
-        case constants.TYPES.PASSWORD:
-          def = Joi.password().required();
-          break;
-        case constants.TYPES.BOOLEAN:
-          def = Joi.boolean().required();
-          break;
-        default:
-          def = Joi.string().required();
-          break;
+    if (definition.name !== 'name' && definition.name !== 'connect.class') {
+      if (definition.required) {
+        switch (definition.type) {
+          case constants.TYPES.LONG:
+          case constants.TYPES.INT:
+          case constants.TYPES.DOUBLE:
+          case constants.TYPES.SHORT:
+            def = Joi.number().required();
+            break;
+          case constants.TYPES.PASSWORD:
+            def = Joi.password().required();
+            break;
+          case constants.TYPES.BOOLEAN:
+            def = Joi.boolean().required();
+            break;
+          default:
+            def = Joi.string().required();
+            break;
+        }
+      } else {
+        switch (definition.type) {
+          case constants.TYPES.LONG:
+          case constants.TYPES.INT:
+          case constants.TYPES.DOUBLE:
+          case constants.TYPES.SHORT:
+            def = Joi.number().allow('');
+            break;
+
+          case constants.TYPES.BOOLEAN:
+            def = Joi.boolean().allow('');
+            break;
+          default:
+            def = Joi.string().allow('');
+            break;
+        }
       }
     } else {
-      switch (definition.type) {
-        case constants.TYPES.LONG:
-        case constants.TYPES.INT:
-        case constants.TYPES.DOUBLE:
-        case constants.TYPES.SHORT:
-          def = Joi.number().allow('');
-          break;
-
-        case constants.TYPES.BOOLEAN:
-          def = Joi.boolean().allow('');
-          break;
-        default:
-          def = Joi.string().allow('');
-          break;
-      }
+      def = Joi.string().allow('');
     }
 
     return def;
@@ -175,6 +180,7 @@ class ConnectCreate extends Component {
             className="form-control"
             value={formData[plugin.name]}
             name={plugin.name}
+            disabled={plugin.name === 'name' || plugin.name === 'connector.class'}
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
@@ -265,7 +271,7 @@ class ConnectCreate extends Component {
                 onChange={value => {
                   let { formData } = this.state;
                   const errors = { ...this.state.errors };
-                  const errorMessage = this.validateProperty({name:'transformsprops', value});
+                  const errorMessage = this.validateProperty({ name: 'transformsprops', value });
                   if (errorMessage) {
                     errors['transformsprops'] = errorMessage;
                   } else {
@@ -356,7 +362,7 @@ class ConnectCreate extends Component {
     };
     let configs = {};
     Object.keys(formData).map(key => {
-      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type') {
+      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type' && key !== 'name') {
         configs[`configs[${key}]`] = formData[key];
       } else if (key === 'type') {
         configs['configs[connector.class]'] = formData[key];
@@ -368,18 +374,15 @@ class ConnectCreate extends Component {
     history.push({
       loading: true
     });
-    console.log('test', body);
     try {
       let response = await post(uriCreateConnect(), body);
-      if (response) {
-        console.log('success', response);
-        history.goBack();
-        this.props.history.push({
-          showSuccessToast: true,
-          successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
-          loading: false
-        });
-      }
+      console.log('success', response);
+      this.props.history.push({
+        pathname: `/${clusterId}/connect/${connectId}`,
+        showSuccessToast: true,
+        successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
+        loading: false
+      });
     } catch (err) {
       console.log('error on connect definitions: ', err);
       this.props.history.push({
@@ -461,4 +464,4 @@ class ConnectCreate extends Component {
   }
 }
 
-export default ConnectCreate;
+export default withRouter(ConnectCreate);

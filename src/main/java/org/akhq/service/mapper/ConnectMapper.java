@@ -35,24 +35,26 @@ public class ConnectMapper {
         );
     }
 
-    public ConnectPluginDTO fromConnectPluginToConnectPluginDTO(ConnectPlugin plugin){
-        List<ConnectPlugin.Definition> definitions=plugin.getDefinitions();
-        List<ConnectPluginDTO.DefinitionDTO>definitionsDTO= new ArrayList<>();
-        for(int i=0; i<definitions.size();i++){
-            definitionsDTO.add(
-                    new ConnectPluginDTO.DefinitionDTO(
-                            definitions.get(i).getName(),
-                            definitions.get(i).getType(),
-                            definitions.get(i).isRequired(),
-                            definitions.get(i).getDefaultValue(),
-                            definitions.get(i).getImportance(),
-                            definitions.get(i).getDocumentation(),
-                            definitions.get(i).getGroup(),
-                            definitions.get(i).getWidth(),
-                            definitions.get(i).getDisplayName(),
-                            definitions.get(i).getDependents(),
-                            definitions.get(i).getOrder()));
+    public ConnectPluginDTO fromConnectPluginToConnectPluginDTO(ConnectPlugin plugin) {
+        List<ConnectPlugin.Definition> definitions = plugin.getDefinitions();
+        List<ConnectPluginDTO.DefinitionDTO> definitionsDTO = new ArrayList<>();
+        for (ConnectPlugin.Definition definition : definitions) {
+            if (!definition.getName().equals("name") && !definition.getName().equals("connector.class")) {
+                definitionsDTO.add(
+                        new ConnectPluginDTO.DefinitionDTO(
+                                definition.getName(),
+                                definition.getType(),
+                                definition.isRequired(),
+                                definition.getDefaultValue(),
+                                definition.getImportance(),
+                                definition.getDocumentation(),
+                                definition.getGroup(),
+                                definition.getWidth(),
+                                definition.getDisplayName(),
+                                definition.getDependents(),
+                                definition.getOrder()));
+            }
         }
-        return new ConnectPluginDTO(plugin.getClassName(),plugin.getType(),plugin.getVersion(),definitionsDTO);
+        return new ConnectPluginDTO(plugin.getClassName(), plugin.getType(), plugin.getVersion(), definitionsDTO);
     }
 }
