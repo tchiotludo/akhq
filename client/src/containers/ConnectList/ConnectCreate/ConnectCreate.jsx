@@ -100,14 +100,14 @@ class ConnectCreate extends Component {
         case constants.TYPES.INT:
         case constants.TYPES.DOUBLE:
         case constants.TYPES.SHORT:
-          def = Joi.number();
+          def = Joi.number().allow('');
           break;
 
         case constants.TYPES.BOOLEAN:
-          def = Joi.boolean();
+          def = Joi.boolean().allow('');
           break;
         default:
-          def = Joi.string();
+          def = Joi.string().allow('');
           break;
       }
     }
@@ -170,9 +170,17 @@ class ConnectCreate extends Component {
             type="text"
             className="form-control"
             value={formData[plugin.name]}
+            name={plugin.name}
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
+              const errors = { ...this.state.errors };
+              const errorMessage = this.validateProperty(input);
+              if (errorMessage) {
+                errors[input.name] = errorMessage;
+              } else {
+                delete errors[input.name];
+              }
               formData[plugin.name] = input.value;
               this.handleData();
               this.setState({ formData });
@@ -253,6 +261,13 @@ class ConnectCreate extends Component {
                 value={formData['transformsprops']}
                 onChange={value => {
                   let { formData } = this.state;
+                  const errors = { ...this.state.errors };
+                  const errorMessage = this.validateProperty({name:'transformsprops', value});
+                  if (errorMessage) {
+                    errors['transformsprops'] = errorMessage;
+                  } else {
+                    delete errors['transformsprops'];
+                  }
                   formData['transformsprops'] = value;
                   this.handleData();
                   this.setState({ formData });
@@ -300,6 +315,14 @@ class ConnectCreate extends Component {
     return errors;
   };
 
+  validateProperty = ({ name, value }) => {
+    const obj = { [name]: value };
+    const schema = { [name]: this.schema[name] };
+    const { error } = Joi.validate(obj, schema);
+
+    return error ? error.details[0].message : null;
+  };
+
   renderDropdown() {
     const label = 'Types';
     let items = [{ _id: '', name: '' }];
@@ -345,11 +368,18 @@ class ConnectCreate extends Component {
                 <div className="col-sm-10">
                   <input
                     className="form-control"
-                    name="name"
+                    name="subject"
                     id="name"
                     value={formData['subject']}
                     onChange={({ currentTarget: input }) => {
                       let { formData } = this.state;
+                      const errors = { ...this.state.errors };
+                      const errorMessage = this.validateProperty(input);
+                      if (errorMessage) {
+                        errors[input.name] = errorMessage;
+                      } else {
+                        delete errors[input.name];
+                      }
                       formData['subject'] = input.value;
                       this.setState({ formData });
                     }}
