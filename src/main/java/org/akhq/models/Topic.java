@@ -130,8 +130,9 @@ public class Topic {
             return false;
         }
 
-        return configRepository
-            .findByTopic(clusterId, this.getName())
+        List<Config> configs = configRepository.findByTopic(clusterId, this.getName());
+
+        return configs != null && configs
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
             .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
