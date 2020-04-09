@@ -111,7 +111,7 @@ jobs:
       # Docker
       - name: Publish to Docker Hub
         uses: elgohr/Publish-Docker-Github-Action@master
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           name: tchiotludo/akhq
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -121,7 +121,7 @@ jobs:
       # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v2
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         with:
           status: ${{ job.status }}
           username: Github Actions

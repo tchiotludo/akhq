@@ -10,12 +10,14 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
-      default:
-        enabled: true
-        mapping: "/**"
-        paths: "classpath:static"
-    security:
-      enabled: false
+      static:
+        paths: classpath:static
+        mapping: "${akhq.server.base-path:}/static/**"
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: "${akhq.server.base-path:}/swagger/**"
+  security:
+    enabled: true
     endpoints:
       login:
         enabled: true
@@ -33,6 +35,8 @@ micronaut:
       login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
       - pattern: "${akhq.server.base-path:}/static/**"
+        access: "isAnonymous()"
+      - pattern: "${akhq.server.base-path:}/swagger/**"
         access: "isAnonymous()"
   caches:
     kafka-wrapper:
@@ -63,9 +67,6 @@ endpoints:
   caches:
     enabled: true
     sensitive: false
-
-jackson:
-  module-scan: false
 
 akhq:
   connections:

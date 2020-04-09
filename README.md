@@ -29,6 +29,7 @@
     - [Security](#security)
     - [Server](#server)
     - [Micronaut](#micronaut-configuration)
+- [Api](#api)
 - [Monitoring Endpoint](#monitoring-endpoint)
 - [Development Environment](#development-environment)
 - [Who's using AKHQ](#whos-using-akhq)
@@ -125,9 +126,22 @@ docker run -d \
 
 
 ### Running in Kubernetes (using a Helm Chart)
+
+### Using Helm repository
+
+* Add the AKHQ helm charts repository:
+```sh
+helm repo add akhq https://akhq.io/
+```
+* Install it:
+```sh
+helm install --name akhq akhq/akhq
+```
+
+### Using git
 * Clone the repository:
 ```sh
-git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm
+git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm/akhq
 ```
 * Update helm values located in [deploy/helm/values.yaml](helm/akhq/values.yaml)
   * `configuration` values will contains all related configuration that you can find in [application.example.yml](application.example.yml) and will be store in a `ConfigMap`
@@ -419,6 +433,19 @@ volumeMounts:
 
 ``` 
 
+## Api
+An **experimental** api is available that allow you to fetch all the exposed on AKHQ through api.
+
+Take care that this api is **experimental** and **will** change in a future release. 
+Some endpoint expose too many datas and is slow to fetch, and we will remove 
+some properties in a future in order to be fast.
+
+Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all of theses 
+is slow for now and we will remove these in a future.
+
+You can discover the api endpoint here : 
+* `/api`: a [RapiDoc](https://mrin9.github.io/RapiDoc/) webpage that document all the endpoints.
+* `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files 
 
 ## Monitoring endpoint 
 Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users

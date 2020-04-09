@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.acl.AccessControlEntry;
@@ -25,6 +26,7 @@ import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourceType;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.akhq.clusters.EmbeddedSingleNodeKafkaCluster;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -33,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -49,6 +52,14 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_IN = "stream-in";
     public static final String TOPIC_STREAM_MAP = "stream-map";
     public static final String TOPIC_STREAM_COUNT = "stream-count";
+    public static final String TOPIC_CONNECT = "connect-sink";
+
+    public static final int TOPIC_ALL_COUNT = 18;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 10;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 8;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 16;
+
+    public static final String CONSUMER_STREAM_TEST = "stream-test-example";
 
     private EmbeddedSingleNodeKafkaCluster kafkaCluster;
     private KafkaTestUtils testUtils;
@@ -253,6 +264,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         testUtils.createTopic(TOPIC_EMPTY, 12, (short) 1);
         log.debug("Empty topic created");
 
+        // empty topic
+        testUtils.createTopic(TOPIC_CONNECT, 12, (short) 1);
+        log.debug("Connect topic created");
+
         // random data
         testUtils.createTopic(TOPIC_RANDOM, 3, (short) 1);
         for (int partition = 0; partition < 3; partition++) {
@@ -267,19 +282,32 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         }
         log.debug("Huge topic created");
 
+        // consumer groups
+        for (int c = 0; c < 5; c++) {
+            Properties properties = new Properties();
+            properties.put("group.id", "consumer-" + c);
 
+            KafkaConsumer<String, String> consumer = testUtils.getKafkaConsumer(StringDeserializer.class, StringDeserializer.class, properties);
+            consumer.subscribe(Collections.singletonList(KafkaTestCluster.TOPIC_COMPACTED));
+            consumer.poll(Duration.ofMillis(1000));
+            consumer.commitSync();
+            consumer.close();
+        }
+        log.debug("Consumers created");
+
+        // acls
         List<AclBinding> bindings = new ArrayList<>();
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.ALLOW))
+                new ResourcePattern(ResourceType.TOPIC, "testAcl", PatternType.PREFIXED),
+                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.DENY))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:tata", "*", AclOperation.WRITE, AclPermissionType.ALLOW))
+                new AccessControlEntry("user:tata", "my-host", AclOperation.WRITE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
@@ -297,9 +325,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
-
         testUtils.getAdminClient().createAcls(bindings).all().get();
-
         log.debug("bindings acls added");
     }
 
@@ -317,7 +343,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     }
 
     private static class Provider implements KafkaProvider {
-        private ConnectionString connectionString;
+        private final ConnectionString connectionString;
 
         public Provider(ConnectionString connection) {
             connectionString = connection;
@@ -351,10 +377,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     @Builder
     @Getter
     public static class ConnectionString {
-        private String kafka;
-        private String zookeeper;
-        private String schemaRegistry;
-        private String connect1;
-        private String connect2;
+        private final String kafka;
+        private final String zookeeper;
+        private final String schemaRegistry;
+        private final String connect1;
+        private final String connect2;
     }
 }

@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class PagedList<T> extends ArrayList<T> {
-    private Integer pageSize;
-    private Integer total;
-    private URIBuilder uri;
-    private Integer currentPage;
+    private final Integer pageSize;
+    private final Integer total;
+    private final URIBuilder uri;
+    private final Integer currentPage;
 
     private PagedList(Collection<? extends T> c, Integer pageSize, Integer total, URIBuilder uri, Integer currentPage) {
         super(c);

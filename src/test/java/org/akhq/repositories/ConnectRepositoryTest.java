@@ -2,16 +2,16 @@ package org.akhq.repositories;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,7 +41,7 @@ public class ConnectRepositoryTest extends AbstractTest {
         assertTrue(plugin.get().getDefinitions().stream().anyMatch(definition -> definition.getName().equals("file")));
     }
 
-    @BeforeEach
+    @AfterEach
     public void cleanup() {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "ConnectRepositoryTest1");
@@ -62,7 +62,7 @@ public class ConnectRepositoryTest extends AbstractTest {
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path1,
-                "topics", "test-topics1"
+                "topics", KafkaTestCluster.TOPIC_CONNECT
             )
         );
 
@@ -73,7 +73,7 @@ public class ConnectRepositoryTest extends AbstractTest {
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path1,
-                "topics", "test-topics1"
+                "topics", KafkaTestCluster.TOPIC_CONNECT
             )
         );
 
@@ -103,7 +103,7 @@ public class ConnectRepositoryTest extends AbstractTest {
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path2,
-                "topics", "test-topics1"
+                "topics", KafkaTestCluster.TOPIC_CONNECT
             )
         );
 
@@ -114,7 +114,7 @@ public class ConnectRepositoryTest extends AbstractTest {
             ImmutableMap.of(
                 "connector.class", "FileStreamSinkConnector",
                 "file", path2,
-                "topics", "test-topics1"
+                "topics", KafkaTestCluster.TOPIC_CONNECT
             )
         );
 

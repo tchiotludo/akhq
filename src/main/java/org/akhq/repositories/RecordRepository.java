@@ -7,46 +7,28 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Wither;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @Slf4j
@@ -145,9 +127,9 @@ public class RecordRepository extends AbstractRepository {
     @Getter
     @AllArgsConstructor
     public static class TimeOffset {
-        private String topic;
-        private int partition;
-        private long offset;
+        private final String topic;
+        private final int partition;
+        private final long offset;
     }
 
 
@@ -353,52 +335,75 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
-        return new Record(record, this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId)));
+        return new Record(
+            record,
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+        );
     }
 
-
-    private RecordMetadata produce(String clusterId, String topic, byte[] value, Map<String, String> headers, byte[] key, Optional<Integer> partition, Optional<Long> timestamp) throws ExecutionException, InterruptedException {
-        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+    private RecordMetadata produce(
+        String clusterId,
+        String topic, byte[] value,
+        Map<String, String> headers,
+        byte[] key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp
+    ) throws ExecutionException, InterruptedException {
+        return kafkaModule
+            .getProducer(clusterId)
+            .send(new ProducerRecord<>(
                 topic,
                 partition.orElse(null),
                 timestamp.orElse(null),
                 key,
                 value,
-                headers
+                (headers == null ? ImmutableMap.<String, String>of() : headers)
                     .entrySet()
                     .stream()
-                    .map(entry -> new RecordHeader(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getBytes()))
+                    .map(entry -> new RecordHeader(
+                        entry.getKey(),
+                        entry.getValue() == null ? null : entry.getValue().getBytes()
+                    ))
                     .collect(Collectors.toList())
-        )).get();
+            ))
+            .get();
     }
 
-    public RecordMetadata produce(String clusterId, String topic, String value, Map<String, String> headers, Optional<String> key, Optional<Integer> partition, Optional<Long> timestamp, Optional<Integer> keySchemaId, Optional<Integer> valueSchemaId) throws ExecutionException, InterruptedException {
+    public RecordMetadata produce(
+        String clusterId,
+        String topic,
+        String value,
+        Map<String, String> headers,
+        Optional<String> key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp,
+        Optional<Integer> keySchemaId,
+        Optional<Integer> valueSchemaId
+    ) throws ExecutionException, InterruptedException {
         AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
-        if(key.isPresent() ){
-            if(keySchemaId.isPresent()) {
+
+        if (key.isPresent()) {
+            if (keySchemaId.isPresent()) {
                 keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
             } else {
                 keyAsBytes = key.get().getBytes();
             }
         }
-        if(value != null && valueSchemaId.isPresent()){
+
+        if (value != null && valueSchemaId.isPresent()) {
             valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
         } else {
             valueAsBytes = value != null ? value.getBytes() : null;
         }
 
-       return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
+        return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
     }
 
-
-
-
-
-    public void delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
-        kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+    public RecordMetadata delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
+        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
             key,
@@ -489,11 +494,11 @@ public class RecordRepository extends AbstractRepository {
             return true;
         }
 
-        if (record.getKeyAsString() != null && containsAll(options.getSearch(), record.getKeyAsString())) {
+        if (record.getKey() != null && containsAll(options.getSearch(), record.getKey())) {
             return true;
         }
 
-        return record.getValueAsString() != null && containsAll(options.getSearch(), record.getValueAsString());
+        return record.getValue() != null && containsAll(options.getSearch(), record.getValue());
     }
 
     private static boolean containsAll(String search, String in) {
@@ -638,7 +643,7 @@ public class RecordRepository extends AbstractRepository {
     @Getter
     public static class TailEvent {
         private List<Record> records = new ArrayList<>();
-        private Map<Map<String, Integer>, Long> offsets = new HashMap<>();
+        private final Map<Map<String, Integer>, Long> offsets = new HashMap<>();
     }
 
     @ToString
@@ -760,7 +765,7 @@ public class RecordRepository extends AbstractRepository {
     @Data
     @Builder
     private static class OffsetBound {
-        @Wither
+        @With
         private final TopicPartition topicPartition;
         private final long begin;
     }
@@ -768,7 +773,7 @@ public class RecordRepository extends AbstractRepository {
     @Data
     @Builder
     private static class EndOffsetBound {
-        @Wither
+        @With
         private final TopicPartition topicPartition;
         private final long begin;
         private final long end;
