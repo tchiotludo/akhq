@@ -14,10 +14,28 @@ class App extends React.Component {
   state = {
     clusterId: ''
   };
-  componentDidMount() {}
+  componentDidMount() {
+    api
+      .get(uriClusters())
+      .then(res => {
+        this.setState({ clusterId: res.data ? res.data[0].id : '' });
+      })
+      .catch(err => {
+        history.replace('/error', { errorData: err });
+        this.setState({ clusterId: '' });
+      });
+  }
   render() {
     const { clusterId } = this.state;
-    return <Login></Login>;
+    return (
+      <MuiPickersUtilsProvider utils={MomentUtils}>
+        <Router history={history}>
+          <ErrorBoundary history={history}>
+            <Routes clusterId={clusterId} location={baseUrl} />
+          </ErrorBoundary>
+        </Router>
+      </MuiPickersUtilsProvider>
+    );
   }
 }
 
