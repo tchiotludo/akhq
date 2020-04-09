@@ -41,6 +41,7 @@ class ConnectList extends Component {
     const { clusterId, connectId } = this.state;
     const { history } = this.props;
     history.push({
+      ...this.props.location,
       loading: true
     });
     try {
@@ -51,6 +52,7 @@ class ConnectList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
+        ...this.props.location,
         loading: false
       });
     }
@@ -68,6 +70,7 @@ class ConnectList extends Component {
     remove(uriDeleteDefinition(), deleteData)
       .then(res => {
         this.props.history.push({
+          ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Definition '${definition}' is deleted`,
           loading: false
@@ -79,6 +82,7 @@ class ConnectList extends Component {
       })
       .catch(err => {
         this.props.history.push({
+          ...this.props.location,
           showErrorToast: true,
           errorToastMessage: `Failed to delete definition from '${definition}'`,
           loading: false
@@ -250,7 +254,7 @@ class ConnectList extends Component {
           }}
         />
         <aside>
-          <Link to={`/${clusterId}/connect/${connectId}/create`} class="btn btn-primary">
+          <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
             Create a definition
           </Link>
         </aside>

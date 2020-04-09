@@ -1,7 +1,6 @@
 import { node } from 'prop-types';
 
-// export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-export const baseUrl = 'http://localhost:8080';
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
 export const uriClusters = id => {
@@ -28,6 +27,10 @@ export const uriGetDefinition = (clusterId, connectId, definitionId) => {
 export const uriConnectDefinitionConfigs = (clusterId, connectId, definitionId) => {
   // eslint-disable-next-line max-len
   return `${apiUrl}/connect/definition/configs?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+};
+
+export const uriUpdateDefinition = () => {
+  return `${apiUrl}/connect/definition/update`;
 };
 
 export const uriPauseDefinition = () => {
@@ -212,6 +215,7 @@ export default {
   uriConnects,
   uriConnectPlugins,
   uriGetDefinition,
+  uriUpdateDefinition,
   uriPauseDefinition,
   uriResumeDefinition,
   uriRestartDefinition,

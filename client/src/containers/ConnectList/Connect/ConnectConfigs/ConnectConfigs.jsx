@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
-import Table from '../../../../components/Table/Table';
 import './styles.scss';
-import { get } from '../../../../utils/api';
-import { uriConnectDefinitionConfigs } from '../../../../utils/endpoints';
-import Dropdown from 'react-bootstrap/Dropdown';
+import { get, put } from '../../../../utils/api';
+import { uriConnectDefinitionConfigs, uriUpdateDefinition } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import { red } from '@material-ui/core/colors';
-import { Simulate } from 'react-dom/test-utils';
 import AceEditor from 'react-ace';
 
 class ConnectConfigs extends Form {
@@ -50,29 +47,24 @@ class ConnectConfigs extends Form {
     }
   }
 
-  handleShema = definitions => {
+  handleSchema = definitions => {
     this.schema = {};
     let { formData } = { ...this.state };
-    formData['connector.class'] = this.state.configs.configs['connector.class'];
-    this.schema['connector.class'] = Joi.string().required();
-    formData.name = this.state.configs.configs.name;
+    formData.type = this.getConfigValue('connector.class');
+    this.schema['type'] = Joi.string().required();
+    formData.name = this.getConfigValue('name');
     this.schema['name'] = Joi.string().required();
 
     definitions.map(definition => {
       formData[definition.name] = this.getConfigValue(definition.name);
+      let config = this.handleDefinition(definition);
+      this.schema[definition.name] = config;
+      if (definition.name === 'transforms') {
+        formData['transformsprops'] = '{}';
+        this.schema['transformsprops'] = Joi.object().required();
+      }
     });
-
-    this.setState({ formData }, () => {
-      definitions.map(definition => {
-        let config = this.handleDefinition(definition);
-        formData[definition.name] = '';
-        this.schema[definition.name] = config;
-        if (definition.name === 'transforms') {
-          formData['transformsprops'] = {};
-          this.schema['transformsprops'] = Joi.object().required();
-        }
-      });
-    });
+    this.setState({ formData }, () => console.log(this.state.configs));
   };
 
   getConfigValue = name => {
@@ -84,7 +76,7 @@ class ConnectConfigs extends Form {
 
   handleDefinition = definition => {
     let def = '';
-    if (definition.required === 'true') {
+    if (definition.required) {
       switch (definition.type) {
         case constants.TYPES.LONG:
         case constants.TYPES.INT:
@@ -122,40 +114,36 @@ class ConnectConfigs extends Form {
     return def;
   };
 
-  renderTableRows = plugin => {
+  renderTableRows(plugin) {
     let rows = '';
     let title = '';
-    let { formData, errors } = { ...this.state };
+    let { formData } = this.state;
+    const errors = [];
+    const errorMessage = this.validateProperty({ name: plugin.name, value: formData[plugin.name] });
+    if (errorMessage) {
+      errors[plugin.name] = errorMessage;
+    }
+
     switch (plugin.importance) {
       case 'HIGH':
-        title =
-          plugin.displayName !== '' ? (
-            <span>
-              {plugin.displayName}{' '}
-              <i
-                class="fa fa-exclamation text-danger"
-                style={{ marginleft: '2%' }}
-                aria-hidden="true"
-              ></i>
-            </span>
-          ) : (
-            ''
-          );
+        title = (
+          <span>
+            {plugin.displayName}{' '}
+            <i
+              class="fa fa-exclamation text-danger"
+              style={{ marginleft: '2%' }}
+              aria-hidden="true"
+            ></i>
+          </span>
+        );
         break;
       case 'MEDIUM':
-        title =
-          plugin.displayName !== '' ? (
-            <span>
-              {plugin.displayName}{' '}
-              <i
-                class="fa fa-info text-warning"
-                style={{ marginleft: '2%' }}
-                aria-hidden="true"
-              ></i>
-            </span>
-          ) : (
-            ''
-          );
+        title = (
+          <span>
+            {plugin.displayName}{' '}
+            <i class="fa fa-info text-warning" style={{ marginleft: '2%' }} aria-hidden="true"></i>
+          </span>
+        );
         break;
       default:
         title = <span>{plugin.displayName}</span>;
@@ -186,18 +174,12 @@ class ConnectConfigs extends Form {
           <input
             type="text"
             className="form-control"
-            name={plugin.name}
             value={formData[plugin.name]}
+            name={plugin.name}
+            disabled={plugin.name === 'name' || plugin.name === 'connector.class'}
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
-              const errors = { ...this.state.errors };
-              const errorMessage = this.validateProperty(input);
-              if (errorMessage) {
-                errors[input.name] = errorMessage;
-              } else {
-                delete errors[input.name];
-              }
               formData[plugin.name] = input.value;
               this.handleData();
               this.setState({ formData });
@@ -206,9 +188,9 @@ class ConnectConfigs extends Form {
             {formData[plugin.required]}
           </input>
 
-          {errors[name] && (
+          {errors[plugin.name] && (
             <div id="input-error" className="alert alert-danger mt-1 p-1">
-              {errors[name]}
+              {errors[plugin.name]}
             </div>
           )}
           <small className="humanize form-text text-muted"></small>
@@ -216,7 +198,7 @@ class ConnectConfigs extends Form {
       </React.Fragment>
     );
     return rows;
-  };
+  }
 
   handleData = () => {
     let { plugin } = this.state.configs;
@@ -241,32 +223,40 @@ class ConnectConfigs extends Form {
     this.setState({ display: allOfIt });
   };
 
-  handleGroup = group => {
+  handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr className="bg-primary">
-        <td colSpan="3">{group[0].group}</td>
+      <tr class="bg-primary">
+        <td colspan="3">{group[0].group}</td>
       </tr>
     ];
 
     group.map(element => {
       const rows = this.renderTableRows(element);
       const name = element.name;
+      const errors = [];
+
       groupDisplay.push(<tr>{rows}</tr>);
       if (element.name === 'transforms') {
+        const errorMessage = this.validateProperty({
+          name: 'transformsprops',
+          value: formData['transformsprops']
+        });
+        if (errorMessage) {
+          errors['transformsprops'] = errorMessage;
+        }
         let transform = (
-          <tr>
+          <React.Fragment>
             <td>
               <code>Transforms additional properties</code>
               <small class="form-text text-muted">
-                {`
-                                            Json object to be added to configurations. example:
-                                            {
-                                                "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
-                                                "transforms.createKey.fields":"c1",
-                                                "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
-                                                "transforms.extractInt.field":"c1"
-                                            }`}
+                {`Json object to be added to configurations. example:
+                  {
+                      "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
+                      "transforms.createKey.fields":"c1",
+                      "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
+                      "transforms.extractInt.field":"c1"
+                  }`}
               </small>
             </td>
             <td>
@@ -274,9 +264,16 @@ class ConnectConfigs extends Form {
                 mode="json"
                 id={'transformsprops'}
                 theme="dracula"
-                value={JSON.stringify(formData['transformsprops'])}
+                value={formData['transformsprops']}
                 onChange={value => {
                   let { formData } = this.state;
+                  const errors = { ...this.state.errors };
+                  const errorMessage = this.validateProperty({ name: 'transformsprops', value });
+                  if (errorMessage) {
+                    errors['transformsprops'] = errorMessage;
+                  } else {
+                    delete errors['transformsprops'];
+                  }
                   formData['transformsprops'] = value;
                   this.handleData();
                   this.setState({ formData });
@@ -285,18 +282,23 @@ class ConnectConfigs extends Form {
                 editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', minHeight: '25vh' }}
               />
+              {errors['transformsprops'] && (
+                <div id="input-error" className="alert alert-danger mt-1 p-1">
+                  {errors['transformsprops']}
+                </div>
+              )}
             </td>
-          </tr>
+          </React.Fragment>
         );
         groupDisplay.push(transform);
       }
     });
     return groupDisplay;
-  };
+  }
 
   renderForm = () => {
     const { plugin } = this.state.configs;
-    this.handleShema(plugin.definitions);
+    this.handleSchema(plugin.definitions);
     this.handleData();
   };
 
@@ -306,9 +308,48 @@ class ConnectConfigs extends Form {
     return this.renderSelect('type', 'Type', names, undefined, { disabled: true });
   };
 
-  doSubmit = () => {
-    console.log(this.state.formData);
-  };
+  async doSubmit() {
+    const { clusterId, connectId, formData, selectedType } = this.state;
+    let body = {
+      clusterId,
+      connectId,
+      name: formData.name,
+      transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
+    };
+    let configs = {};
+    Object.keys(formData).map(key => {
+      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type' && key !== 'name') {
+        configs[`configs[${key}]`] = formData[key];
+      } else if (key === 'type') {
+        configs['configs[connector.class]'] = formData[key];
+      }
+    });
+    body.configs = configs;
+
+    const { history } = this.props;
+    history.push({
+      ...this.props.location,
+      loading: true
+    });
+    try {
+      await put(uriUpdateDefinition(), body);
+      history.push({
+        ...this.props.location,
+        pathname: `/${clusterId}/connect/${connectId}`,
+        showSuccessToast: true,
+        successToastMessage: `${`Definition '${formData.name}' is updated`}`,
+        loading: false
+      });
+    } catch (err) {
+      history.push({
+        ...this.props.location,
+        showErrorToast: true,
+        errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
+        errorToastMessage: err.response.data.tle,
+        loading: false
+      });
+    }
+  }
 
   render() {
     const { configs, display } = this.state;
