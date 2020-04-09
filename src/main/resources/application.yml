@@ -15,6 +15,7 @@ micronaut:
         mapping: "${akhq.server.base-path:}/swagger/**"
   security:
     enabled: true
+    reject-not-found: false
     endpoints:
       login:
         enabled: true
