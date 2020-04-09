@@ -36,7 +36,6 @@ class Base extends Component {
       tab
     } = nextProps.location;
 
-
     return {
       topicId: topicId,
       clusterId: clusterId,
@@ -94,6 +93,7 @@ class Base extends Component {
       selectedTab
     } = this.state;
     this.checkToasts();
+    console.log('error', showErrorToast, errorToastMessage);
     return (
       <>
         <Loading show={loading} />
