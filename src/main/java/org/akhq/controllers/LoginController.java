@@ -18,9 +18,17 @@ import java.util.Optional;
 @Controller
 @Hidden
 public class LoginController extends AbstractController {
+    @Get("${akhq.server.base-path:}/login")
+    @View("login")
+    public HttpResponse<?> login() {
+        return HttpResponse
+            .ok()
+            .body(templateData(Optional.empty()));
+    }
+
     @Get("${akhq.server.base-path:}/login/{failed:[a-zA-Z]+}")
     @View("login")
-    public HttpResponse login(Optional<String> failed) {
+    public HttpResponse<?> loginFailed(Optional<String> failed) {
         return HttpResponse
             .ok()
             .body(templateData(Optional.empty(), "failed", failed));
