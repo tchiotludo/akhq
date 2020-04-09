@@ -205,6 +205,10 @@ export const uriTopicsAcls = (clusterId, topicId) => {
   return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
 };
 
+export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
+  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
+};
+
 export const uriCreateConnect = () => {
   return `${apiUrl}/connect/definition/create`;
 };
@@ -213,6 +217,7 @@ export default {
   apiUrl,
   uriClusters,
   uriConnects,
+  uriCreateConnect,
   uriConnectPlugins,
   uriGetDefinition,
   uriUpdateDefinition,
@@ -246,5 +251,5 @@ export default {
   uriSchemaVersions,
   uriAclsList,
   uriTopicsAcls,
-  uriCreateConnect
+  uriAclsByPrincipal
 };

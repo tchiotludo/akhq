@@ -3,6 +3,7 @@ buildscript {
         micronautVersion = "1.3.0"
         confluentVersion = "5.4.+"
         kafkaVersion = "2.4.0"
+        nodeVersion = "6.13.7"
     }
 
     repositories {
@@ -29,7 +30,6 @@ plugins {
 
     // akhq
     id "com.github.node-gradle.node" version "1.3.0"
-    // akhq
     id 'org.siouan.frontend' version '1.3.0'
     id 'io.franzbecker.gradle-lombok' version '3.2.0'
     id 'com.adarshr.test-logger' version '2.0.0'
@@ -97,6 +97,13 @@ run.jvmArgs('-noverify',
 tasks.withType(JavaCompile){
     options.encoding = "UTF-8"
     options.compilerArgs.add('-parameters')
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(run) || graph.hasTask(testClasses)) {
+        webpack.enabled = false
+        npmInstall.enabled = false
+    }
 }
 
 /**********************************************************************************************************************\

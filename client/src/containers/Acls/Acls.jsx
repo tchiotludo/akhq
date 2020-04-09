@@ -42,7 +42,7 @@ class Acls extends Component {
     let tableAcls = acls.map(acl => {
       return {
         id: acl,
-        user: acl || ''
+        user: acl.user || ''
       };
     });
     this.setState({ data: tableAcls });
@@ -98,8 +98,11 @@ class Acls extends Component {
               </td>
             </tr>
           }
-          onDetails={id => {
-            this.props.history.push(`/${clusterId}/acls/${id}`);
+          onDetails={acl => {
+            this.props.history.push({
+              pathname: `/${clusterId}/acls/${acl.principalEncoded}`,
+              principal: acl.user
+            });
           }}
         />
       </div>
