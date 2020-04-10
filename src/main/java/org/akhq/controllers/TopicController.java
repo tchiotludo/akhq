@@ -562,7 +562,7 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
-    @Get("{topicName}/emptyTopic")
+    @Get("{cluster}/topic/{topicName}/emptyTopic")
     public HttpResponse emptyTopic(String cluster, String topicName){
         MutableHttpResponse<Void> response = HttpResponse.ok();
 
@@ -577,6 +577,17 @@ public class TopicController extends AbstractController {
         return response;
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @Delete("api/{cluster}/topic/{topicName}/data/empty")
+    @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
+    public void emptyTopicApi(String cluster, String topicName) throws ExecutionException, InterruptedException{
+        this.recordRepository.emptyTopic(
+                cluster,
+                topicName
+        );
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Get("{cluster}/topic/{topicName}/deleteRecord")
     @Hidden
     public HttpResponse<?> deleteRecord(String cluster, String topicName, Integer partition, String key) {
