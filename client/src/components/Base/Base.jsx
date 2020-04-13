@@ -93,7 +93,6 @@ class Base extends Component {
       selectedTab
     } = this.state;
     this.checkToasts();
-    console.log('error', showErrorToast, errorToastMessage);
     return (
       <>
         <Loading show={loading} />
