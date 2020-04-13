@@ -46,6 +46,7 @@ export default {
   TABLE_EDIT,
   TABLE_DELETE,
   TABLE_DETAILS,
+  TABLE_RESTART,
   CLUSTER,
   NODE,
   TOPIC,

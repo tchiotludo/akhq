@@ -7,6 +7,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import org.akhq.service.ConnectService;
+import org.akhq.service.dto.connect.ConnectDefinitionConfigsDTO;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ConnectPluginDTO;
 import org.akhq.service.dto.connect.CreateConnectDefinitionDTO;
@@ -43,6 +44,12 @@ public class ConnectResource {
         return connectService.getConnectDefinition(clusterId, connectId, definitionId);
     }
 
+    @Get("/connect/definition/configs")
+    public ConnectDefinitionConfigsDTO fetchConnectDefinitionConfigs(String clusterId, String connectId, String definitionId) {
+        log.debug("Fetching connect {} definiton {} configs", connectId, definitionId);
+        return connectService.getConnectDefinitionConfigs(clusterId, connectId, definitionId);
+    }
+
     @Get("/connect/definitions")
     public List<ConnectDefinitionDTO> fetchConnectDefinitions(String clusterId, String connectId) {
         log.debug("Fetching definitions for connect: {}", connectId);
@@ -57,6 +64,16 @@ public class ConnectResource {
                 createConnectDefinitionDTO.getConnectId()
         );
         connectService.addConnectDefinition(createConnectDefinitionDTO);
+    }
+
+    @Put("/connect/definition/update")
+    public void updateConnectDefinition(@Body CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        log.debug(
+                "Updating definition {} on connect: {}",
+                createConnectDefinitionDTO.getName(),
+                createConnectDefinitionDTO.getConnectId()
+        );
+        connectService.updateConnectDefinition(createConnectDefinitionDTO);
     }
 
     @Put("/connect/definition/pause")

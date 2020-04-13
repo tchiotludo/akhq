@@ -24,6 +24,15 @@ export const uriGetDefinition = (clusterId, connectId, definitionId) => {
     return `${apiUrl}/connect/definition?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
 };
 
+export const uriConnectDefinitionConfigs = (clusterId, connectId, definitionId) => {
+  // eslint-disable-next-line max-len
+  return `${apiUrl}/connect/definition/configs?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+};
+
+export const uriUpdateDefinition = () => {
+  return `${apiUrl}/connect/definition/update`;
+};
+
 export const uriPauseDefinition = () => {
     return `${apiUrl}/connect/definition/pause`;
 };

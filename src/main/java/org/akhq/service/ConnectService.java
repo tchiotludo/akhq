@@ -1,8 +1,10 @@
 package org.akhq.service;
 
+import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConnectRepository;
+import org.akhq.service.dto.connect.ConnectDefinitionConfigsDTO;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ConnectPluginDTO;
 import org.akhq.service.dto.connect.CreateConnectDefinitionDTO;
@@ -14,6 +16,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -44,7 +47,22 @@ public class ConnectService {
     }
 
     public ConnectDefinitionDTO getConnectDefinition(String clusterId, String connectId, String definitionId) {
-        return this.connectMapper.fromConnectDefinitionToConnectDefinitionDTO(this.connectRepository.getDefinition(clusterId, connectId, definitionId));
+        return this.connectMapper.fromConnectDefinitionToConnectDefinitionDTO(
+                this.connectRepository.getDefinition(clusterId, connectId, definitionId)
+        );
+    }
+
+    public ConnectDefinitionConfigsDTO getConnectDefinitionConfigs(String clusterId, String connectId, String definitionId) {
+        ConnectDefinition connectDefinition =
+                this.connectRepository.getDefinition(clusterId, connectId, definitionId);
+
+        String className = connectDefinition.getShortClassName();
+
+        ConnectPlugin pluginDefinition = this.connectRepository.getPlugin(
+                clusterId, connectId, className
+        ).orElse(null);
+
+        return this.connectMapper.fromConnectDefinitionToConnectDefinitionConfigsDTO(connectDefinition, pluginDefinition);
     }
 
     public void pauseConnectDefinition(String clusterId, String connectId, String definitionId) {
@@ -78,6 +96,21 @@ public class ConnectService {
         );
     }
 
+    public void updateConnectDefinition(CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        Map<String, String> validConfigs =
+                ConnectRepository.validConfigs(
+                        createConnectDefinitionDTO.getConfigs(),
+                        createConnectDefinitionDTO.getTransformsValue()
+                );
+
+        this.connectRepository.update(
+                createConnectDefinitionDTO.getClusterId(),
+                createConnectDefinitionDTO.getConnectId(),
+                createConnectDefinitionDTO.getName(),
+                validConfigs
+        );
+    }
+
     public List<ConnectDefinitionDTO> deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
         this.connectRepository.delete(
                 deleteConnectDefinitionDTO.getClusterId(),
@@ -102,7 +135,6 @@ public class ConnectService {
             pluginsDTO.add(plugin);
         }
         return pluginsDTO;
-
     }
 /*
    public ConnectPluginDTO getConnectPlugin (String clusterId, String connectId, String className) {

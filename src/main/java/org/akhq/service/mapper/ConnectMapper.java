@@ -2,6 +2,7 @@ package org.akhq.service.mapper;
 
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
+import org.akhq.service.dto.connect.ConnectDefinitionConfigsDTO;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ConnectPluginDTO;
 
@@ -13,17 +14,26 @@ import java.util.stream.Collectors;
 @Singleton
 public class ConnectMapper {
 
-    public ConnectDefinitionDTO fromConnectDefinitionToConnectDefinitionDTO(ConnectDefinition connect) {
+    public ConnectDefinitionDTO fromConnectDefinitionToConnectDefinitionDTO(ConnectDefinition definition) {
         return new ConnectDefinitionDTO(
-                connect.getName(),
-                connect.getConfigsAsJson(),
-                connect.getType(),
-                connect.isPaused(),
-                connect.getShortClassName(),
-                connect.getTasks()
+                definition.getName(),
+                definition.getConfigsAsJson(),
+                definition.getType(),
+                definition.isPaused(),
+                definition.getShortClassName(),
+                definition.getTasks()
                         .stream()
                         .map(this::fromTaskDefinitionToTaskDefinitionDTO)
                         .collect(Collectors.toList())
+        );
+    }
+
+    public ConnectDefinitionConfigsDTO fromConnectDefinitionToConnectDefinitionConfigsDTO(
+            ConnectDefinition definition, ConnectPlugin pluginDefinition) {
+
+        return new ConnectDefinitionConfigsDTO(
+                fromConnectPluginToConnectPluginDTO(pluginDefinition),
+                definition.getConfigs()
         );
     }
 
@@ -55,6 +65,7 @@ public class ConnectMapper {
                                 definition.getOrder()));
             }
         }
-        return new ConnectPluginDTO(plugin.getClassName(), plugin.getType(), plugin.getVersion(), definitionsDTO);
+
+        return new ConnectPluginDTO(plugin.getClassName(), plugin.getShortClassName(), plugin.getType(), plugin.getVersion(), definitionsDTO);
     }
 }
