@@ -4,8 +4,9 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
+import _ from 'lodash';
 
-class AclGroups extends Component {
+class AclTopics extends Component {
   state = {
     selectedCluster: this.props.clusterId,
     principalEncoded: this.props.principalEncoded,
@@ -18,15 +19,15 @@ class AclGroups extends Component {
 
   async getAcls() {
     const { history } = this.props;
-    const { selectedCluster, selectedConsumerGroup, principalEncoded } = this.state;
+    const { selectedCluster, principalEncoded } = this.state;
 
     history.push({
       loading: true
     });
 
     try {
-      let response = await get(uriAclsByPrincipal(selectedCluster, principalEncoded, 'group'));
-      if (response) {
+      const response = await get(uriAclsByPrincipal(selectedCluster, principalEncoded, 'GROUP'));
+      if (response.data.acls) {
         const acls = response.data || [];
         this.handleAcls(acls);
       }
@@ -39,28 +40,24 @@ class AclGroups extends Component {
     }
   }
 
-  handleAcls = acls => {
-    const tableData = acls.map(acl => {
+  handleAcls = data => {
+    const tableData = data.acls.map(acl => {
       return {
-        group: acl.resource,
+        group: `${_.toLower(acl.resource.patternType)}:${acl.resource.name}`,
         host: acl.host,
-        permissions: acl.permissions
+        permission: acl.operation.operation
       };
     });
-
-    this.props.history.principal = acls[0].user;
 
     this.setState({ tableData });
   };
 
-  handlePermissions = permissions => {
-    return permissions.map(permission => {
-      return (
-        <h5 key={permission}>
-          <span className="badge badge-secondary">{permission}</span>
-        </h5>
-      );
-    });
+  handlePermission = permission => {
+    return (
+      <h5 key={permission}>
+        <span className="badge badge-secondary">{permission}</span>
+      </h5>
+    );
   };
 
   render() {
@@ -85,8 +82,8 @@ class AclGroups extends Component {
             colName: 'Permissions',
             type: 'text',
             cell: obj => {
-              if (obj.permissions) {
-                return <div>{this.handlePermissions(obj.permissions)}</div>;
+              if (obj.permission) {
+                return <div>{this.handlePermission(obj.permission)}</div>;
               }
             }
           }
@@ -100,4 +97,4 @@ class AclGroups extends Component {
   }
 }
 
-export default AclGroups;
+export default AclTopics;

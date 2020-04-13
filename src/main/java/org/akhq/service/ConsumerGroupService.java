@@ -9,7 +9,6 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
-import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupListDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
@@ -19,7 +18,6 @@ import org.akhq.service.dto.consumerGroup.GroupedTopicOffsetDTO;
 import org.akhq.service.mapper.ConsumerGroupMapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.apache.kafka.common.resource.ResourceType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

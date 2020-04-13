@@ -33,13 +33,14 @@ class TopicAcls extends Component {
     }
   }
 
-  handleData(acls) {
-    let tableAcls = acls.map((acl, index) => {
+  handleData(data) {
+    let tableAcls = data.map((acl, index) => {
+      console.log(acl);
       return {
         id: index,
-        user: acl.user || '',
-        host: acl.host || '',
-        permissions: acl.permissions || ''
+        user: acl.principal || '',
+        host: acl.acls[0].host || '',
+        permission: acl.acls[0].operation.operation || ''
       };
     });
     this.setState({ data: tableAcls });
@@ -66,16 +67,14 @@ class TopicAcls extends Component {
               type: 'text'
             },
             {
-              id: 'permissions',
-              accessor: 'permissions',
+              id: 'permission',
+              accessor: 'permission',
               colName: 'Permissions',
               type: 'text',
-              cell: obj => {
+              cell: (obj, col) => {
                 return (
                   <div>
-                    {obj.permissions.map(el => {
-                      return <span class="badge badge-secondary">{el}</span>;
-                    })}
+                    <span class="badge badge-secondary">{obj[col.accessor]}</span>
                   </div>
                 );
               }
@@ -92,9 +91,6 @@ class TopicAcls extends Component {
               </td>
             </tr>
           }
-          onDetails={id => {
-            history.push(`/${selectedCluster}/node/${id}`);
-          }}
         />
       </div>
     );

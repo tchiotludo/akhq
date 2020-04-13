@@ -40,9 +40,10 @@ class Acls extends Component {
 
   handleData(acls) {
     let tableAcls = acls.map(acl => {
+      acl.principalEncoded = btoa(acl.principal);
       return {
         id: acl,
-        user: acl.user || ''
+        user: acl.principal || ''
       };
     });
     this.setState({ data: tableAcls });

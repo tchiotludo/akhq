@@ -8,7 +8,6 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.service.ConsumerGroupService;
 import org.akhq.service.dto.ConsumerGroup.DeleteConsumerGroupDTO;
-import org.akhq.service.dto.acls.AclsDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupListDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupMemberDTO;
 import org.akhq.service.dto.consumerGroup.ConsumerGroupOffsetDTO;

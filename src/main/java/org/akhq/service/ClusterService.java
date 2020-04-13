@@ -3,7 +3,6 @@ package org.akhq.service;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.service.dto.ClusterDTO;
-import org.akhq.service.dto.node.NodeDTO;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

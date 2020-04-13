@@ -1,6 +1,7 @@
 import { node } from 'prop-types';
 
-export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+export const baseUrl = 'http://localhost:8080';
+//`${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
 export const uriClusters = id => {
@@ -137,10 +138,6 @@ export const uriConsumerGroupMembers = (clusterId, groupId) => {
   return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
 };
 
-export const uriConsumerGroupAcls = (clusterId, groupId) => {
-  return `${apiUrl}/group/acls?clusterId=${clusterId}&groupId=${groupId}`;
-};
-
 export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
   let uri = `${apiUrl}/group/grouped-topic-offset?clusterId=${clusterId}&groupId=${groupId}`;
 
@@ -179,15 +176,20 @@ export const uriSchemaCreate = () => {
 };
 
 export const uriAclsList = (clusterId, search) => {
-  return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 ? `&search=${search}` : ''}`;
+  let url = `${apiUrl}/${clusterId}/acls`;
+  return search ? `${url}?search=${search}` : url;
 };
 
 export const uriTopicsAcls = (clusterId, topicId) => {
-  return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
+  return `${apiUrl}/${clusterId}/topic/${topicId}/acls`;
 };
 
-export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
-  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
+export const uriConsumerGroupAcls = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
+};
+
+export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
+  return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };
 
 export default {

@@ -7,7 +7,6 @@ import io.micronaut.security.rules.SecurityRule;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.service.ClusterService;
 import org.akhq.service.dto.ClusterDTO;
-import org.akhq.service.dto.node.NodeDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.inject.Inject;

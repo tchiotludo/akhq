@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
-import './styles.scss';
-
-import Table from '../../../../components/Table/Table';
+import Table from '../../../../components/Table';
+import * as constants from '../../../../utils/constants';
 import { get } from '../../../../utils/api';
 import { uriConsumerGroupAcls } from '../../../../utils/endpoints';
 
-class ConsumerGroupAcls extends Component {
+class TopicAcls extends Component {
   state = {
-    selectedCluster: this.props.clusterId,
-    selectedConsumerGroup: this.props.consumerGroupId,
-    tableData: []
+    data: [],
+    selectedCluster: ''
   };
 
   componentDidMount() {
@@ -17,19 +15,15 @@ class ConsumerGroupAcls extends Component {
   }
 
   async getAcls() {
+    let acls = [];
+    const { clusterId, consumerGroupId } = this.props;
     const { history } = this.props;
-    const { selectedCluster, selectedConsumerGroup } = this.state;
-
     history.push({
       loading: true
     });
-
     try {
-      let response = await get(uriConsumerGroupAcls(selectedCluster, selectedConsumerGroup));
-      if (response) {
-        const acls = response.data || [];
-        this.handleAcls(acls);
-      }
+      acls = await get(uriConsumerGroupAcls(clusterId, consumerGroupId));
+      this.handleData(acls.data);
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
@@ -39,38 +33,31 @@ class ConsumerGroupAcls extends Component {
     }
   }
 
-  handleAcls = acls => {
-    const tableData = acls.map(acl => {
+  handleData(data) {
+    let tableAcls = data.map((acl, index) => {
+      console.log(acl);
       return {
-        group: acl.user,
-        host: acl.host,
-        permissions: acl.permissions
+        id: index,
+        user: acl.principal || '',
+        host: acl.acls[0].host || '',
+        permission: acl.acls[0].operation.operation || ''
       };
     });
-
-    this.setState({ tableData });
-  };
-
-  handlePermissions = permissions => {
-    return permissions.map(permission => {
-      console.log(permission);
-      return (
-        <h5 key={permission}>
-          <span className="badge badge-secondary">{permission}</span>
-        </h5>
-      );
-    });
-  };
+    this.setState({ data: tableAcls });
+    return tableAcls;
+  }
 
   render() {
+    const { history } = this.props;
+    const { data, selectedCluster } = this.state;
     return (
       <div>
         <Table
           columns={[
             {
-              id: 'group',
-              accessor: 'group',
-              colName: 'Group',
+              id: 'user',
+              accessor: 'user',
+              colName: 'User',
               type: 'text'
             },
             {
@@ -80,20 +67,29 @@ class ConsumerGroupAcls extends Component {
               type: 'text'
             },
             {
-              id: 'permissions',
-              accessor: 'permissions',
+              id: 'permission',
+              accessor: 'permission',
               colName: 'Permissions',
               type: 'text',
-              cell: obj => {
-                if (obj.permissions) {
-                  return <div>{this.handlePermissions(obj.permissions)}</div>;
-                }
+              cell: (obj, col) => {
+                return (
+                  <div>
+                    <span class="badge badge-secondary">{obj[col.accessor]}</span>
+                  </div>
+                );
               }
             }
           ]}
-          data={this.state.tableData}
+          data={data}
           noContent={
-            'No ACLS found, or the "authorizer.class.name" parameter is not configured on the cluster.'
+            <tr>
+              <td colSpan={3}>
+                <div className="alert alert-warning mb-0" role="alert">
+                  No ACLS found, or the "authorizer.class.name" parameter is not configured on the
+                  cluster.
+                </div>
+              </td>
+            </tr>
           }
         />
       </div>
@@ -101,4 +97,4 @@ class ConsumerGroupAcls extends Component {
   }
 }
 
-export default ConsumerGroupAcls;
+export default TopicAcls;
