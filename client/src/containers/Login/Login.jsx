@@ -1,16 +1,48 @@
 import React, { Component } from 'react';
 
 import logo from '../../images/logo.svg';
-
+import { BrowserRouter as Router } from 'react-router-dom';
+import { baseUrl, uriClusters } from '../../utils/endpoints';
+import Routes from '../../utils/Routes';
+import history from '../../utils/history';
+import api from '../../utils/api';
+import ErrorBoundary from '../../containers/ErrorBoundary';
+import Loading from '../../containers/Loading';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
+import lkl from '../../';
 // Adaptation of login.ftl
 
 class Login extends Component {
+  state = {
+    clusterId: ''
+  };
+  onLogin() {
+    let { clusterId } = this.state;
+    api
+      .get(uriClusters())
+      .then(res => {
+        //this.setState({ clusterId: res.data ? res.data[0].id : '' });
+        localStorage.setItem('login', 'true');
+        this.props.history.push({ pathname: `/${res.data && res.data[0].id}/topic` });
+      })
+      .catch(err => {
+        history.replace('/error', { errorData: err });
+        this.setState({ clusterId: '' });
+      });
+  }
   render() {
     return (
       <div className="wrapper">
         <div id="content" className="no-side-bar">
           <main>
-            <form className="khq-login" method="POST" action="/login">
+            <form
+              className="khq-login"
+              onSubmit={e => {
+                e.preventDefault();
+                this.onLogin();
+              }}
+            >
               <div>
                 <h3 className="logo">
                   <img src={logo} alt="" />

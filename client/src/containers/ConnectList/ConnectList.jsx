@@ -41,6 +41,7 @@ class ConnectList extends Component {
     const { clusterId, connectId } = this.state;
     const { history } = this.props;
     history.push({
+      ...this.props.location,
       loading: true
     });
     try {
@@ -51,6 +52,7 @@ class ConnectList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
+        ...this.props.location,
         loading: false
       });
     }
@@ -250,7 +252,7 @@ class ConnectList extends Component {
           }}
         />
         <aside>
-          <Link to={`/${clusterId}/connect/create`} class="btn btn-primary">
+          <Link to={`/${clusterId}/connect/${connectId}/create`} class="btn btn-primary">
             Create a definition
           </Link>
         </aside>

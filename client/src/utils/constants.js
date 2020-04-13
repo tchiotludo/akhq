@@ -26,6 +26,18 @@ export const TOPICS = {
   HIDE_STREAM: 'HIDE_STREAM'
 };
 
+export const TYPES = {
+  STRING: 'STRING',
+  LONG: 'LONG',
+  CLASS: 'CLASS',
+  PASSWORD: 'PASSWORD',
+  INT: 'INT',
+  LIST: 'LIST',
+  BOOLEAN: 'BOOLEAN',
+  DOUBLE: 'DOUBLE',
+  SHORT: 'SHORT'
+};
+
 export default {
   MILLI,
   BYTES,
@@ -34,7 +46,6 @@ export default {
   TABLE_EDIT,
   TABLE_DELETE,
   TABLE_DETAILS,
-  TABLE_RESTART,
   CLUSTER,
   NODE,
   TOPIC,
@@ -43,5 +54,6 @@ export default {
   GROUP,
   ACLS,
   SCHEMA,
-  CONNECT
+  CONNECT,
+  TYPES
 };
