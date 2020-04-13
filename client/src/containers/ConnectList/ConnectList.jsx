@@ -41,6 +41,7 @@ class ConnectList extends Component {
     const { clusterId, connectId } = this.state;
     const { history } = this.props;
     history.push({
+      ...this.props.location,
       loading: true
     });
     try {
@@ -51,6 +52,7 @@ class ConnectList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
+        ...this.props.location,
         loading: false
       });
     }

@@ -53,7 +53,6 @@ class ConsumerGroupAcls extends Component {
 
   handlePermissions = permissions => {
     return permissions.map(permission => {
-      console.log(permission);
       return (
         <h5 key={permission}>
           <span className="badge badge-secondary">{permission}</span>

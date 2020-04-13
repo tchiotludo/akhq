@@ -51,19 +51,19 @@ class ConnectCreate extends Component {
   }
 
   onTypeChange = value => {
-    this.setState({ selectedType: value }, () => {
+    let formData = {};
+    this.setState({ selectedType: value, formData }, () => {
       this.renderForm();
     });
   };
 
   handleShema(definitions) {
     this.schema = {};
-    let { formData } = { ...this.state };
+    let formData = {};
     formData.type = this.state.selectedType;
     this.schema['type'] = Joi.string().required();
     formData.subject = '';
     this.schema['subject'] = Joi.string().required();
-    console.log('definitions', definitions);
     definitions.map(definition => {
       let config = this.handleDefinition(definition);
       formData[definition.name] = '';
@@ -73,9 +73,7 @@ class ConnectCreate extends Component {
         this.schema['transformsprops'] = Joi.object().required();
       }
     });
-    this.setState({ formData }, () => {
-      console.log('formData', this.state.formData);
-    });
+    this.setState({ formData });
   }
 
   handleDefinition(definition) {
@@ -126,7 +124,13 @@ class ConnectCreate extends Component {
   renderTableRows(plugin) {
     let rows = '';
     let title = '';
-    let { formData, errors } = { ...this.state };
+    let { formData } = this.state;
+    const errors = [];
+    const errorMessage = this.validateProperty({ name: plugin.name, value: formData[plugin.name] });
+    if (errorMessage) {
+      errors[plugin.name] = errorMessage;
+    }
+
     switch (plugin.importance) {
       case 'HIGH':
         title = (
@@ -184,13 +188,6 @@ class ConnectCreate extends Component {
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
-              const errors = { ...this.state.errors };
-              const errorMessage = this.validateProperty(input);
-              if (errorMessage) {
-                errors[input.name] = errorMessage;
-              } else {
-                delete errors[input.name];
-              }
               formData[plugin.name] = input.value;
               this.handleData();
               this.setState({ formData });
@@ -199,9 +196,9 @@ class ConnectCreate extends Component {
             {formData[plugin.required]}
           </input>
 
-          {errors[name] && (
+          {errors[plugin.name] && (
             <div id="input-error" className="alert alert-danger mt-1 p-1">
-              {errors[name]}
+              {errors[plugin.name]}
             </div>
           )}
           <small className="humanize form-text text-muted"></small>
@@ -245,9 +242,17 @@ class ConnectCreate extends Component {
 
     group.map(element => {
       const rows = this.renderTableRows(element);
-      const name = element.name;
+      const errors = [];
+
       groupDisplay.push(<tr>{rows}</tr>);
       if (element.name === 'transforms') {
+        const errorMessage = this.validateProperty({
+          name: 'transformsprops',
+          value: formData['transformsprops']
+        });
+        if (errorMessage) {
+          errors['transformsprops'] = errorMessage;
+        }
         let transform = (
           <React.Fragment>
             <td>
@@ -285,6 +290,11 @@ class ConnectCreate extends Component {
                 editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', minHeight: '25vh' }}
               />
+              {errors['transformsprops'] && (
+                <div id="input-error" className="alert alert-danger mt-1 p-1">
+                  {errors['transformsprops']}
+                </div>
+              )}
             </td>
           </React.Fragment>
         );
@@ -314,13 +324,13 @@ class ConnectCreate extends Component {
   validate = () => {
     const options = { abortEarly: false };
     const { error } = Joi.validate(this.state.formData, this.schema);
-    console.log('error', error);
     if (!error) return null;
     const errors = {};
     for (let item of error.details) {
-      errors[item.path[0]] = item.message;
+      if (Object.keys(this.schema).find(el => el === item.path[0])) {
+        errors[item.path[0]] = item.message;
+      }
     }
-    console.log('Erros', errors);
     return errors;
   };
 
@@ -372,29 +382,29 @@ class ConnectCreate extends Component {
 
     const { history } = this.props;
     history.push({
+      ...this.props.location,
       loading: true
     });
-    try {
-      let response = await post(uriCreateConnect(), body);
-      console.log('success', response);
-      this.props.history.push({
-        pathname: `/${clusterId}/connect/${connectId}`,
-        showSuccessToast: true,
-        successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
-        loading: false
+
+    post(uriCreateConnect(), body)
+      .then(res => {
+        this.props.history.push({
+          ...this.props.location,
+          pathname: `/${clusterId}/connect/${connectId}`,
+          showSuccessToast: true,
+          successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
+          loading: false
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          ...this.props.location,
+          showErrorToast: true,
+          errorToastTitle: 'Error',
+          errorToastMessage: err.response.data.title,
+          loading: false
+        });
       });
-    } catch (err) {
-      console.log('error on connect definitions: ', err);
-      this.props.history.push({
-        showErrorToast: true,
-        errorToastMessage: `${`Connection '${formData.subject}' was not created`}`,
-        loading: false
-      });
-    } finally {
-      history.push({
-        loading: false
-      });
-    }
   }
 
   render() {
