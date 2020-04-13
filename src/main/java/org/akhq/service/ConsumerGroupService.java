@@ -40,7 +40,7 @@ public class ConsumerGroupService {
 
     private ConsumerGroupRepository consumerGroupRepository;
     private RecordRepository recordRepository;
-    private AclService aclService;
+//    private AclService aclService;
 
     private ConsumerGroupMapper consumerGroupMapper;
     @Value("${akhq.topic.default-view}")
@@ -51,14 +51,17 @@ public class ConsumerGroupService {
     @Inject
     public ConsumerGroupService(KafkaModule kafkaModule, ConsumerGroupMapper consumerGroupMapper, AbstractKafkaWrapper kafkaWrapper,
                                 ConsumerGroupRepository consumerGroupRepository, Environment environment,
-                                RecordRepository recordRepository, AclService aclService) {
+                                RecordRepository recordRepository
+//            ,
+//                                AclService aclService
+    ) {
         this.kafkaModule = kafkaModule;
         this.consumerGroupMapper = consumerGroupMapper;
         this.kafkaWrapper = kafkaWrapper;
         this.consumerGroupRepository = consumerGroupRepository;
         this.environment = environment;
         this.recordRepository = recordRepository;
-        this.aclService = aclService;
+//        this.aclService = aclService;
     }
 
     public ConsumerGroupListDTO getConsumerGroup(String clusterId, Optional<String> search, Optional<Integer> pageNumber)
@@ -132,9 +135,9 @@ public class ConsumerGroupService {
         return consumerGroupMembers;
     }
 
-    public List<AclsDTO> getConsumerGroupAcls(String clusterId, String consumerGroupId) {
-        return aclService.getAcls(clusterId, ResourceType.GROUP, consumerGroupId);
-    }
+//    public List<AclsDTO> getConsumerGroupAcls(String clusterId, String consumerGroupId) {
+//        return aclService.getAcls(clusterId, ResourceType.GROUP, consumerGroupId);
+//    }
 
     public void updateConsumerGroupOffsets(ConsumerGroupUpdateDTO consumerGroupUpdateDTO) throws ExecutionException, InterruptedException {
         String clusterId = consumerGroupUpdateDTO.getClusterId();

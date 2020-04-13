@@ -61,10 +61,10 @@ public class ConsumerGroupResource {
         return consumerGroupService.getConsumerGroupGroupedTopicOffsets(clusterId, groupId, timestamp);
     }
 
-    @Get("/group/acls")
-    public List<AclsDTO> fetchConsumerGroupAcls(String clusterId, String groupId) {
-        return consumerGroupService.getConsumerGroupAcls(clusterId, groupId);
-    }
+//    @Get("/group/acls")
+//    public List<AclsDTO> fetchConsumerGroupAcls(String clusterId, String groupId) {
+//        return consumerGroupService.getConsumerGroupAcls(clusterId, groupId);
+//    }
 
     @Post("/group/update")
     public void updateConsumerGroupOffsets(@Body ConsumerGroupUpdateDTO consumerGroupUpdateDTO) throws ExecutionException, InterruptedException {

@@ -40,10 +40,6 @@ export const uriDeleteDefinition = () => {
   return `${apiUrl}/connect/delete`;
 };
 
-export const uriNodes = id => {
-  return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
-};
-
 export const uriSchemaRegistry = (id, search, pageNumber) => {
   return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
 };
@@ -113,22 +109,20 @@ export const uriTopicsLogs = (clusterId, topicId) => {
   );
 };
 
-export const uriNodesConfigs = (clusterId, nodeId) => {
-  return (
-    `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
-    `${nodeId ? '&nodeId=' + nodeId : ''}`
-  );
+export const uriNodes = id => {
+  return `${apiUrl}/${id}/node`;
 };
 
-export const uriNodesUpdateConfigs = () => {
-  return `${apiUrl}/cluster/nodes/update-configs`;
+export const uriNodesConfigs = (clusterId, nodeId) => {
+  return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
+};
+
+export const uriNodesUpdateConfigs = (clusterId, nodeId) => {
+  return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
 };
 
 export const uriNodesLogs = (clusterId, nodeId) => {
-  return (
-    `${apiUrl}/cluster/nodes/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
-    `${nodeId ? '&nodeId=' + nodeId : ''}`
-  );
+  return `${apiUrl}/${clusterId}/node/${nodeId}/logs`;
 };
 
 export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {

@@ -17,7 +17,7 @@ micronaut:
         paths: classpath:META-INF/swagger
         mapping: "${akhq.server.base-path:}/swagger/**"
   security:
-    enabled: true
+    enabled: false
     endpoints:
       login:
         enabled: true

@@ -1,3 +1,8 @@
+// Config data types
+export const MILLI = 'MILLI';
+export const BYTES = 'BYTES';
+export const TEXT = 'TEXT';
+
 // Table actions
 export const TABLE_ADD = 'add';
 export const TABLE_EDIT = 'edit';
@@ -22,6 +27,9 @@ export const TOPICS = {
 };
 
 export default {
+  MILLI,
+  BYTES,
+  TEXT,
   TABLE_ADD,
   TABLE_EDIT,
   TABLE_DELETE,

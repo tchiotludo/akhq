@@ -4,7 +4,7 @@ import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.service.dto.ClusterDTO;
 import org.akhq.service.dto.node.NodeDTO;
-import org.akhq.service.mapper.NodeMapper;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
@@ -18,13 +18,10 @@ public class ClusterService {
 
     private ClusterRepository clusterRepository;
 
-    private NodeMapper nodeMapper;
-
     @Inject
-    public ClusterService(KafkaModule kafkaModule, ClusterRepository clusterRepository, NodeMapper nodeMapper) {
+    public ClusterService(KafkaModule kafkaModule, ClusterRepository clusterRepository) {
         this.kafkaModule = kafkaModule;
         this.clusterRepository = clusterRepository;
-        this.nodeMapper = nodeMapper;
     }
 
     public List<ClusterDTO> getAllClusters() {
@@ -35,12 +32,12 @@ public class ClusterService {
                 .collect(Collectors.toList());
     }
 
-    public List<NodeDTO> getAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
-        return clusterRepository
-                .get(clusterId)
-                .getNodes()
-                .stream()
-                .map(n -> nodeMapper.fromNodeToNodeDTO(n))
-                .collect(Collectors.toList());
-    }
+//    public List<NodeDTO> getAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
+//        return clusterRepository
+//                .get(clusterId)
+//                .getNodes()
+//                .stream()
+//                .map(n -> nodeMapper.fromNodeToNodeDTO(n))
+//                .collect(Collectors.toList());
+//    }
 }

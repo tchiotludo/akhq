@@ -181,10 +181,10 @@ public class TopicService {
         );
     }
 
-    public List<AccessControlList> getTopicAcls(String clusterId, String topicName) {
-
-       return this.aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, topicName);
-    }
+//    public List<AccessControlList> getTopicAcls(String clusterId, String topicName) {
+//
+//       return this.aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, topicName);
+//    }
 
     public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId, String topicName)
             throws ExecutionException, InterruptedException {
@@ -218,7 +218,7 @@ public class TopicService {
 
     public List<ConfigDTO> updateConfigs(ConfigOperationDTO configOperation) throws Throwable {
         Map<String, String> configs = topicMapper.convertConfigsMap(configOperation.getConfigs());
-        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(configOperation.getClusterId(), configOperation.getTopicId()));
+        List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(configOperation.getClusterId(), configOperation.getTopicId()), false);
 
         if (updated.size() == 0) {
             throw new IllegalArgumentException("No config to update");

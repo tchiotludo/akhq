@@ -32,7 +32,7 @@ public class TopicMapper {
     public RecordDTO fromRecordToRecordDTO(Record record) {
         LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(record.getTimestamp()),
                 TimeZone.getDefault().toZoneId());
-        return new RecordDTO(record.getKeyAsString(), record.getValueAsString(), date, record.getPartition(),
+        return new RecordDTO(record.getKey(), record.getKey(), date, record.getPartition(),
                 record.getOffset(), record.getHeaders(), Pair.of(record.getKeySchemaId(), record.getValueSchemaId()));
     }
 
