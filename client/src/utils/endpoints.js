@@ -1,6 +1,7 @@
 import { node } from 'prop-types';
 
-export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+// export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+export const baseUrl = 'http://localhost:8080';
 export const apiUrl = `${baseUrl}/api`;
 
 export const uriClusters = id => {
@@ -13,6 +14,10 @@ export const uriConnects = id => {
 
 export const uriConnectDefinitions = (clusterId, connectId) => {
   return `${apiUrl}/connect/definitions?clusterId=${clusterId}&connectId=${connectId}`;
+};
+
+export const uriConnectPlugins = (clusterId, connectId) => {
+  return `${apiUrl}/connect/plugins?clusterId=${clusterId}&connectId=${connectId}`;
 };
 
 export const uriGetDefinition = (clusterId, connectId, definitionId) => {
@@ -192,6 +197,9 @@ export const uriTopicsAcls = (clusterId, topicId) => {
   return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
 };
 
+export const uriCreateConnect = () => {
+  return `${apiUrl}/connect/definition/create`;
+
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
   return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
 };
@@ -200,6 +208,7 @@ export default {
   apiUrl,
   uriClusters,
   uriConnects,
+  uriConnectPlugins,
   uriGetDefinition,
   uriPauseDefinition,
   uriResumeDefinition,
@@ -229,6 +238,8 @@ export default {
   uriLatestSchemaVersion,
   uriSchemaVersions,
   uriAclsList,
+  uriTopicsAcls,
+  uriCreateConnect,
   uriAclsByPrincipal,
   uriTopicsAcls
 };

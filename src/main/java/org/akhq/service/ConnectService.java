@@ -1,8 +1,11 @@
 package org.akhq.service;
 
+import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConnectRepository;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
+import org.akhq.service.dto.connect.ConnectPluginDTO;
+import org.akhq.service.dto.connect.CreateConnectDefinitionDTO;
 import org.akhq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.akhq.service.mapper.ConnectMapper;
 
@@ -10,6 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -59,6 +63,21 @@ public class ConnectService {
         this.connectRepository.resume(clusterId, connectId, definitionId);
     }
 
+    public void addConnectDefinition(CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        Map<String, String> validConfigs =
+                ConnectRepository.validConfigs(
+                        createConnectDefinitionDTO.getConfigs(),
+                        createConnectDefinitionDTO.getTransformsValue()
+                );
+
+        this.connectRepository.create(
+                createConnectDefinitionDTO.getClusterId(),
+                createConnectDefinitionDTO.getConnectId(),
+                createConnectDefinitionDTO.getName(),
+                validConfigs
+        );
+    }
+
     public List<ConnectDefinitionDTO> deleteConnectDefinition(DeleteConnectDefinitionDTO deleteConnectDefinitionDTO) {
         this.connectRepository.delete(
                 deleteConnectDefinitionDTO.getClusterId(),
@@ -74,4 +93,22 @@ public class ConnectService {
                 .map(connectDefinition -> connectMapper.fromConnectDefinitionToConnectDefinitionDTO(connectDefinition))
                 .collect(Collectors.toList());
     }
+
+    public List<ConnectPluginDTO> getConnectPlugins(String clusterId, String connectId) {
+        List<ConnectPlugin> plugins = connectRepository.getPlugins(clusterId, connectId);
+        List<ConnectPluginDTO> pluginsDTO = new ArrayList<>();
+        for (int i = 0; i < plugins.size(); i++) {
+            ConnectPluginDTO plugin = connectMapper.fromConnectPluginToConnectPluginDTO(plugins.get(i));
+            pluginsDTO.add(plugin);
+        }
+        return pluginsDTO;
+
+    }
+/*
+   public ConnectPluginDTO getConnectPlugin (String clusterId, String connectId, String className) {
+           return connectMapper.fromConnectPluginToConnectPluginDTO(connectRepository.getPlugin(clusterId, connectId, className));
+
+   }
+
+ */
 }

@@ -36,7 +36,6 @@ class Base extends Component {
       tab
     } = nextProps.location;
 
-
     return {
       topicId: topicId,
       clusterId: clusterId,
@@ -94,12 +93,13 @@ class Base extends Component {
       selectedTab
     } = this.state;
     this.checkToasts();
+    console.log('props', this.props);
     return (
       <>
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        <Sidebar selectedTab={selectedTab} />
+        {this.props.location.pathname !== '/login' && <Sidebar selectedTab={selectedTab} />}
         {children}
       </>
     );

@@ -1,11 +1,15 @@
 package org.akhq.rest;
 
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import org.akhq.service.ConnectService;
 import org.akhq.service.dto.connect.ConnectDefinitionDTO;
+import org.akhq.service.dto.connect.ConnectPluginDTO;
+import org.akhq.service.dto.connect.CreateConnectDefinitionDTO;
 import org.akhq.service.dto.connect.DeleteConnectDefinitionDTO;
 import org.akhq.service.dto.connect.ModifyConnectDefinitionStateDTO;
 import org.akhq.service.dto.connect.RestartConnectDefinitionTaskDTO;
@@ -43,6 +47,16 @@ public class ConnectResource {
     public List<ConnectDefinitionDTO> fetchConnectDefinitions(String clusterId, String connectId) {
         log.debug("Fetching definitions for connect: {}", connectId);
         return connectService.getConnectDefinitions(clusterId, connectId);
+    }
+
+    @Post("/connect/definition/create")
+    public void createConnectDefinition(@Body CreateConnectDefinitionDTO createConnectDefinitionDTO) {
+        log.debug(
+                "Creating definition {} on connect: {}",
+                createConnectDefinitionDTO.getName(),
+                createConnectDefinitionDTO.getConnectId()
+        );
+        connectService.addConnectDefinition(createConnectDefinitionDTO);
     }
 
     @Put("/connect/definition/pause")
@@ -111,5 +125,11 @@ public class ConnectResource {
                 deleteConnectDefinitionDTO.getConnectId()
         );
         return this.connectService.deleteConnectDefinition(deleteConnectDefinitionDTO);
+    }
+
+    @Get("/connect/plugins")
+    public List<ConnectPluginDTO> fetchConnectPlugins(String clusterId, String connectId) {
+        log.debug("Fetching plugins for connect: {}", connectId);
+        return connectService.getConnectPlugins(clusterId, connectId);
     }
 }
