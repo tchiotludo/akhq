@@ -75,7 +75,7 @@ class Routes extends Component {
             <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
             <Route exact path="/:clusterId/connect/:connectId/create" component={ConnectCreate} />
             <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
-            <Route exact path="/:clusterId/acls/:aclUser" component={AclDetails} />
+            <Route exact path="/:clusterId/acls/:principalEncoded" component={AclDetails} />
             <Route
               exact
               path="/:clusterId/connect/:connectId/definition/:definitionId"

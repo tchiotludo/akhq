@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../Header';
+import AclGroups from './AclGroups/AclGroups';
+import AclTopics from './AclTopics/AclTopics';
 
 // Adaptation of topic.ftl
 
 class AclDetails extends Component {
   state = {
-    clusterId: '',
+    clusterId: this.props.match.params.clusterId,
+    principal: this.props.history.principal,
+    principalEncoded: this.props.match.params.principalEncoded,
     selectedTab: 'topics'
   };
 
@@ -22,24 +26,31 @@ class AclDetails extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab } = this.state;
+    const { selectedTab, clusterId, principalEncoded } = this.state;
+    const { history } = this.props;
 
     switch (selectedTab) {
       case 'groups':
-        return <div>Groups</div>;
+        return (
+          <AclGroups clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+        );
       case 'topics':
-        return <div>Topics</div>;
+        return (
+          <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+        );
       default:
-        return <div>Topics</div>;
+        return (
+          <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+        );
     }
   }
 
   render() {
     const { history, match } = this.props;
-    const { aclUser } = match.params;
+    const { principal } = this.props.history || '';
     return (
       <div id="content">
-        <Header title={`Acl: ${aclUser}`} />
+        <Header title={`Acl: ${principal}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
