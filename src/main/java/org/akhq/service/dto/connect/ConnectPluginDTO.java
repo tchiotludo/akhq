@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ConnectPluginDTO {
     private String className;
+    private String shortClassName;
     private String type;
     private String version;
     private List<DefinitionDTO> definitions;
