@@ -114,7 +114,6 @@ class NodeConfigs extends Form {
         config = configs.find(config => config.name === input.name);
         let { formData, changedConfigs } = this.state;
         formData[input.name] = input.value;
-        console.log(config.value);
         if (input.value === config.value) {
           delete changedConfigs[input.name];
         } else {
