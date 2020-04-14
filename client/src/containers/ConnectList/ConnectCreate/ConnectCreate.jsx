@@ -51,14 +51,15 @@ class ConnectCreate extends Component {
   }
 
   onTypeChange = value => {
-    this.setState({ selectedType: value }, () => {
+    let formData = {};
+    this.setState({ selectedType: value, formData }, () => {
       this.renderForm();
     });
   };
 
   handleShema(definitions) {
     this.schema = {};
-    let { formData } = { ...this.state };
+    let formData = {};
     formData.type = this.state.selectedType;
     this.schema['type'] = Joi.string().required();
     formData.subject = '';
@@ -241,7 +242,6 @@ class ConnectCreate extends Component {
 
     group.map(element => {
       const rows = this.renderTableRows(element);
-      const name = element.name;
       const errors = [];
 
       groupDisplay.push(<tr>{rows}</tr>);
@@ -327,7 +327,9 @@ class ConnectCreate extends Component {
     if (!error) return null;
     const errors = {};
     for (let item of error.details) {
-      errors[item.path[0]] = item.message;
+      if (Object.keys(this.schema).find(el => el === item.path[0])) {
+        errors[item.path[0]] = item.message;
+      }
     }
     return errors;
   };
@@ -380,28 +382,29 @@ class ConnectCreate extends Component {
 
     const { history } = this.props;
     history.push({
+      ...this.props.location,
       loading: true
     });
-    try {
-      let response = await post(uriCreateConnect(), body);
-      this.props.history.push({
-        pathname: `/${clusterId}/connect/${connectId}`,
-        showSuccessToast: true,
-        successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
-        loading: false
+
+    post(uriCreateConnect(), body)
+      .then(res => {
+        this.props.history.push({
+          ...this.props.location,
+          pathname: `/${clusterId}/connect/${connectId}`,
+          showSuccessToast: true,
+          successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
+          loading: false
+        });
+      })
+      .catch(err => {
+        this.props.history.push({
+          ...this.props.location,
+          showErrorToast: true,
+          errorToastTitle: 'Error',
+          errorToastMessage: err.response.data.title,
+          loading: false
+        });
       });
-    } catch (err) {
-      console.log('error on connect definitions: ', err);
-      this.props.history.push({
-        showErrorToast: true,
-        errorToastMessage: `${`Connection '${formData.subject}' was not created`}`,
-        loading: false
-      });
-    } finally {
-      history.push({
-        loading: false
-      });
-    }
   }
 
   render() {

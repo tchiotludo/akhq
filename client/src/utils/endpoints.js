@@ -211,6 +211,9 @@ export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) =>
 
 export const uriCreateConnect = () => {
   return `${apiUrl}/connect/definition/create`;
+
+export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
+  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
 };
 
 export default {
@@ -251,5 +254,6 @@ export default {
   uriSchemaVersions,
   uriAclsList,
   uriTopicsAcls,
-  uriAclsByPrincipal
+  uriCreateConnect,
+  uriAclsByPrincipal,
 };

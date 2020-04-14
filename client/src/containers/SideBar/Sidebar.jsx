@@ -142,7 +142,7 @@ class Sidebar extends Component {
       selectedTab
     } = this.state;
     const tag = 'Snapshot';
-
+    let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <div className="wrapper">
@@ -204,10 +204,25 @@ class Sidebar extends Component {
               </li>{' '}
             </ul>
             <div className="sidebar-log">
-              <Link to="/login" data-turbolinks="false">
-                <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                Login
-              </Link>
+              {login === 'true' && (
+                <a
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    localStorage.setItem('login', 'false');
+                    this.forceUpdate();
+                  }}
+                  data-turbolinks="false"
+                >
+                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+                  Logout
+                </a>
+              )}
+              {(login === 'false' || !login) && (
+                <Link to="/login" data-turbolinks="false">
+                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+                  Login
+                </Link>
+              )}
             </div>
           </nav>
         </TabContainer>
