@@ -18,6 +18,7 @@ micronaut:
         mapping: "${akhq.server.base-path:}/swagger/**"
   security:
     enabled: false
+    reject-not-found: false
     endpoints:
       login:
         enabled: true
@@ -137,29 +138,29 @@ akhq:
     groups:
       admin:
         roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - topic/config/update
-          - node/read
-          - node/config/update
-          - topic/data/read
-          - topic/data/insert
-          - topic/data/delete
-          - group/read
-          - group/delete
-          - group/offsets/update
-          - registry/read
-          - registry/insert
-          - registry/update
-          - registry/delete
-          - registry/version/delete
-          - acls/read
-          - connect/read
-          - connect/insert
-          - connect/update
-          - connect/delete
-          - connect/state/update
+        - topic/read
+        - topic/insert
+        - topic/delete
+        - topic/config/update
+        - node/read
+        - node/config/update
+        - topic/data/read
+        - topic/data/insert
+        - topic/data/delete
+        - group/read
+        - group/delete
+        - group/offsets/update
+        - registry/read
+        - registry/insert
+        - registry/update
+        - registry/delete
+        - registry/version/delete
+        - acls/read
+        - connect/read
+        - connect/insert
+        - connect/update
+        - connect/delete
+        - connect/state/update
       reader:
         roles:
           - topic/read
