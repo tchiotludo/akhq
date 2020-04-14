@@ -24,6 +24,7 @@
 
     <div class="collapse navbar-collapse" id="topic-data">
         <ul class="navbar-nav mr-auto">
+            <#if navbar["search"]["current"].isPresent() == false>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
                    href="#"
@@ -41,6 +42,7 @@
                     </#list>
                 </div>
             </li>
+            </#if>
 
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"

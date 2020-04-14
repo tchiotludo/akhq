@@ -13,11 +13,11 @@
 
 <#list datas as data>
     <#assign i++>
-    <tr class="reduce <#if !(data.getValueAsString())??>deleted</#if>">
+    <tr class="reduce <#if !(data.getValue())??>deleted</#if>">
         <#if displayTopic?? && displayTopic == true>
             <td>${data.getTopic()}</td>
         </#if>
-        <td><code class="key">${data.getKeyAsString()!"null"}</code></td>
+        <td><code class="key">${data.getKey()!"null"}</code></td>
         <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
         <td class="text-right">${data.getPartition()}</td>
         <td class="text-right">${data.getOffset()}</td>
@@ -41,7 +41,7 @@
                 <#if data.getKeyAsBase64()??>
                     <a
                             href="${basePath}/${clusterId}/topic/${topic.getName()}/deleteRecord?partition=${data.getPartition()}&key=${data.getKeyAsBase64()}"
-                            data-confirm="Do you want to delete record <code>${data.getKeyAsString()!"null"} from topic ${topic.getName()}</code> ?"
+                            data-confirm="Do you want to delete record <code>${data.getKey()!"null"} from topic ${topic.getName()}</code> ?"
                     ><i class="fa fa-trash"></i></a>
                 </#if>
             </td>
@@ -62,7 +62,7 @@
                     </#list>
                 </table>
             </#if>
-            <pre class="mb-0 khq-data-highlight"><code>${(data.getValueAsString()?esc)!"null"}</code></pre>
+            <pre class="mb-0 khq-data-highlight"><code>${(data.getValue()?esc)!"null"}</code></pre>
         </td>
     </tr>
 </#list>

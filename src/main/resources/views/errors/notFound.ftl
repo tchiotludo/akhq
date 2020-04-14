@@ -10,7 +10,7 @@
 
 <div class="jumbotron" style="max-width: 360px; margin: 0 auto">
     <div class="mb-5">
-        <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
+        <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/></h3>
     </div>
 
     <p>
@@ -22,7 +22,7 @@
     </p>
 
     <div class="text-right mt-5">
-        <a href="${basePath}" class="btn btn-primary btn-lg">Back to home</a>
+        <a href="${basePath?has_content?then(basePath, "/")}" class="btn btn-primary btn-lg">Back to home</a>
     </div>
 </div>
 

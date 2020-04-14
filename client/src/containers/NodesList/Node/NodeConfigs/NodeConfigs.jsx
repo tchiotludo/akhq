@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Header from '../../../Header/Header';
 import { get, post } from '../../../../utils/api';
 import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
+import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
@@ -32,6 +33,7 @@ class NodeConfigs extends Form {
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
     history.push({
+      ...this.props.history,
       loading: true
     });
     try {
@@ -41,6 +43,7 @@ class NodeConfigs extends Form {
       console.error('Error:', err);
     } finally {
       history.push({
+        ...this.props.history,
         loading: false
       });
     }
@@ -57,8 +60,8 @@ class NodeConfigs extends Form {
         name: config.name,
         description: config.description,
         readOnly: config.readOnly,
-        dataType: config.dataType,
-        type: config.type,
+        dataType: this.getConfigDataType(config.name),
+        type: config.source,
         sensitive: config.sensitive
       };
     });
@@ -67,16 +70,27 @@ class NodeConfigs extends Form {
 
   handleDataType(dataType, value) {
     switch (dataType) {
-      case 'MILLI':
+      case MILLI:
         return (
           <small className="humanize form-text text-muted">{converters.showTime(value)}</small>
         );
-      case 'BYTES':
+      case BYTES:
         return (
           <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
         );
     }
   }
+
+  getConfigDataType = configName => {
+    switch (configName.substring(configName.lastIndexOf('.'))) {
+      case '.ms':
+        return MILLI;
+      case '.size':
+        return BYTES;
+      default:
+        return TEXT;
+    }
+  };
 
   createValidationSchema(config) {
     let { formData } = this.state;
@@ -112,8 +126,8 @@ class NodeConfigs extends Form {
           name: config.name,
           description: config.description,
           readOnly: config.readOnly,
-          dataType: config.dataType,
-          type: config.type,
+          dataType: this.getConfigDataType(config.name),
+          type: config.source,
           sensitive: config.sensitive
         };
       }
@@ -126,13 +140,13 @@ class NodeConfigs extends Form {
   async doSubmit() {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
     const { history, location } = this.props;
+    let { configs } = this.state;
+
     history.push({
       loading: true
     });
     try {
-      await post(uriNodesUpdateConfigs(), {
-        clusterId: selectedCluster,
-        nodeId: selectedNode,
+      await post(uriNodesUpdateConfigs(selectedCluster, selectedNode), {
         configs: changedConfigs
       });
 
@@ -143,6 +157,14 @@ class NodeConfigs extends Form {
           loading: false
         })
       );
+
+      Object.keys(changedConfigs).map(key => {
+        const changedConfig = changedConfigs[key];
+        const configIndex = configs.findIndex(config => config.name === key);
+        configs[configIndex].value = changedConfig;
+      });
+
+      this.setState({ configs });
     } catch (err) {
       this.props.history.push({
         showErrorToast: true,

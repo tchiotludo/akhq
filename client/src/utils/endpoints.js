@@ -53,10 +53,6 @@ export const uriDeleteDefinition = () => {
   return `${apiUrl}/connect/delete`;
 };
 
-export const uriNodes = id => {
-  return `${apiUrl}/cluster/nodes${id ? '?clusterId=' + id : ''}`;
-};
-
 export const uriSchemaRegistry = (id, search, pageNumber) => {
   return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
 };
@@ -126,22 +122,20 @@ export const uriTopicsLogs = (clusterId, topicId) => {
   );
 };
 
-export const uriNodesConfigs = (clusterId, nodeId) => {
-  return (
-    `${apiUrl}/cluster/nodes/configs${clusterId ? '?clusterId=' + clusterId : ''}` +
-    `${nodeId ? '&nodeId=' + nodeId : ''}`
-  );
+export const uriNodes = id => {
+  return `${apiUrl}/${id}/node`;
 };
 
-export const uriNodesUpdateConfigs = () => {
-  return `${apiUrl}/cluster/nodes/update-configs`;
+export const uriNodesConfigs = (clusterId, nodeId) => {
+  return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
+};
+
+export const uriNodesUpdateConfigs = (clusterId, nodeId) => {
+  return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
 };
 
 export const uriNodesLogs = (clusterId, nodeId) => {
-  return (
-    `${apiUrl}/cluster/nodes/logs${clusterId ? '?clusterId=' + clusterId : ''}` +
-    `${nodeId ? '&nodeId=' + nodeId : ''}`
-  );
+  return `${apiUrl}/${clusterId}/node/${nodeId}/logs`;
 };
 
 export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
@@ -154,10 +148,6 @@ export const uriConsumerGroupTopics = (clusterId, groupId) => {
 };
 export const uriConsumerGroupMembers = (clusterId, groupId) => {
   return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
-};
-
-export const uriConsumerGroupAcls = (clusterId, groupId) => {
-  return `${apiUrl}/group/acls?clusterId=${clusterId}&groupId=${groupId}`;
 };
 
 export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
@@ -198,22 +188,24 @@ export const uriSchemaCreate = () => {
 };
 
 export const uriAclsList = (clusterId, search) => {
-  return `${apiUrl}/aclsList?clusterId=${clusterId}${search.length > 0 ? `&search=${search}` : ''}`;
+  let url = `${apiUrl}/${clusterId}/acls`;
+  return search ? `${url}?search=${search}` : url;
 };
 
 export const uriTopicsAcls = (clusterId, topicId) => {
-  return `${apiUrl}/topic/acls?clusterId=${clusterId}&topicId=${topicId}`;
+  return `${apiUrl}/${clusterId}/topic/${topicId}/acls`;
 };
 
-export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
-  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
+export const uriConsumerGroupAcls = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
+};
+
+export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
+  return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };
 
 export const uriCreateConnect = () => {
   return `${apiUrl}/connect/definition/create`;
-
-export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
-  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
 };
 
 export default {
@@ -253,7 +245,6 @@ export default {
   uriLatestSchemaVersion,
   uriSchemaVersions,
   uriAclsList,
-  uriTopicsAcls,
   uriCreateConnect,
-  uriAclsByPrincipal,
+  uriAclsByPrincipal
 };

@@ -64,7 +64,7 @@ class ConnectConfigs extends Form {
         this.schema['transformsprops'] = Joi.object().required();
       }
     });
-    this.setState({ formData }, () => console.log(this.state.configs));
+    this.setState({ formData });
   };
 
   getConfigValue = name => {

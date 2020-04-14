@@ -2,6 +2,7 @@ package org.akhq.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 
@@ -10,9 +11,10 @@ import java.util.Optional;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class TopicPartition {
-    private final String topic;
-    private final int partition;
+    private String topic;
+    private int partition;
 
     public TopicPartition(org.apache.kafka.common.TopicPartition topicPartition) {
         this.topic = topicPartition.topic();
@@ -32,10 +34,11 @@ public class TopicPartition {
     @ToString
     @EqualsAndHashCode(callSuper=true)
     @Getter
+    @NoArgsConstructor
     public static class ConsumerGroupOffset extends TopicPartition {
-        private final Optional<Long> offset;
-        private final Optional<String> metadata;
-        private final Optional<Consumer> member;
+        private Optional<Long> offset;
+        private Optional<String> metadata;
+        private Optional<Consumer> member;
         private Optional<Long> firstOffset;
         private Optional<Long> lastOffset;
 

@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigValidationResults;
@@ -13,11 +14,12 @@ import java.util.stream.Stream;
 @ToString
 @EqualsAndHashCode
 @Getter
+@NoArgsConstructor
 public class ConnectPlugin {
-    private final String className;
-    private final String type;
-    private final String version;
-    private final List<Definition> definitions;
+    private String className;
+    private String type;
+    private String version;
+    private List<Definition> definitions;
 
     public ConnectPlugin(ConnectorPlugin connectorPlugin, ConnectorPluginConfigValidationResults results) {
         this.className = connectorPlugin.getClassName();
@@ -63,6 +65,7 @@ public class ConnectPlugin {
     @AllArgsConstructor
     @EqualsAndHashCode
     @Getter
+    @NoArgsConstructor
     public static final class Definition {
         private String name;
         private String type;
@@ -96,6 +99,7 @@ public class ConnectPlugin {
             this.order = definition.getOrder();
         }
 
+        @JsonIgnore
         public String getDependentsAsString() {
             return String.join(", ", this.getDependents());
         }

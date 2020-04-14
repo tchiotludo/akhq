@@ -1,6 +1,7 @@
 package org.akhq.modules;
 
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -27,7 +28,7 @@ abstract public class AbstractKafkaWrapper {
     @Inject
     private KafkaModule kafkaModule;
 
-    private Map<String, DescribeClusterResult> cluster = new HashMap<>();
+    private final Map<String, DescribeClusterResult> cluster = new HashMap<>();
 
     public DescribeClusterResult describeCluster(String clusterId) throws ExecutionException, InterruptedException {
         if (!this.cluster.containsKey(clusterId)) {
@@ -60,7 +61,7 @@ abstract public class AbstractKafkaWrapper {
         return this.listTopics.get(clusterId);
     }
 
-    private Map<String, Map<String, TopicDescription>> describeTopics = new HashMap<>();
+    private final Map<String, Map<String, TopicDescription>> describeTopics = new HashMap<>();
 
     public Map<String, TopicDescription> describeTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         describeTopics.computeIfAbsent(clusterId, s -> new HashMap<>());
@@ -108,7 +109,7 @@ abstract public class AbstractKafkaWrapper {
         listTopics = new HashMap<>();
     }
 
-    private Map<String, Map<String, List<Partition.Offsets>>> describeTopicsOffsets = new HashMap<>();
+    private final Map<String, Map<String, List<Partition.Offsets>>> describeTopicsOffsets = new HashMap<>();
 
     public Map<String, List<Partition.Offsets>> describeTopicsOffsets(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         describeTopicsOffsets.computeIfAbsent(clusterId, s -> new HashMap<>());
@@ -160,7 +161,7 @@ abstract public class AbstractKafkaWrapper {
         return this.describeTopicsOffsets.get(clusterId);
     }
 
-    private Map<String, Collection<ConsumerGroupListing>> listConsumerGroups = new HashMap<>();
+    private final Map<String, Collection<ConsumerGroupListing>> listConsumerGroups = new HashMap<>();
 
     public Collection<ConsumerGroupListing> listConsumerGroups(String clusterId) throws ExecutionException, InterruptedException {
         if (!this.listConsumerGroups.containsKey(clusterId)) {
@@ -211,6 +212,7 @@ abstract public class AbstractKafkaWrapper {
             .get();
 
         describeConsumerGroups = new HashMap<>();
+        consumerGroupOffset = new HashMap<>();
     }
 
     private Map<String, Map<String, Map<TopicPartition, OffsetAndMetadata>>> consumerGroupOffset = new HashMap<>();
@@ -232,7 +234,11 @@ abstract public class AbstractKafkaWrapper {
         return this.consumerGroupOffset.get(clusterId).get(groupId);
     }
 
-    private Map<String, Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>>> logDirs = new HashMap<>();
+    public void clearConsumerGroupsOffsets() {
+        this.consumerGroupOffset = new HashMap<>();
+    }
+
+    private final Map<String, Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>>> logDirs = new HashMap<>();
 
     public Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>> describeLogDir(String clusterId) throws ExecutionException, InterruptedException {
         if (!this.logDirs.containsKey(clusterId)) {
@@ -276,13 +282,23 @@ abstract public class AbstractKafkaWrapper {
         );
 
         if (list.size() > 0) {
-            Map<ConfigResource, Config> description =  Logger.call(() -> kafkaModule.getAdminClient(clusterId)
-                    .describeConfigs(names.stream()
-                        .map(s -> new ConfigResource(type, s))
-                        .collect(Collectors.toList())
-                    )
-                    .all()
-                    .get(),
+            Map<ConfigResource, Config> description = Logger.call(
+                () -> {
+                    try {
+                        return kafkaModule.getAdminClient(clusterId)
+                            .describeConfigs(names.stream()
+                                .map(s -> new ConfigResource(type, s))
+                                .collect(Collectors.toList())
+                            )
+                            .all()
+                            .get();
+                    } catch (ExecutionException e) {
+                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
+                            return ImmutableMap.of();
+                        }
+                        throw e;
+                    }
+                },
                 "Describe Topic Config {}",
                 names
             );
@@ -308,7 +324,7 @@ abstract public class AbstractKafkaWrapper {
         this.describeConfigs = new HashMap<>();
     }
 
-    private Map<String, Map<AclBindingFilter, Collection<AclBinding>>> describeAcls = new HashMap<>();
+    private final Map<String, Map<AclBindingFilter, Collection<AclBinding>>> describeAcls = new HashMap<>();
 
     public Collection<AclBinding> describeAcls(String clusterId, AclBindingFilter filter) throws ExecutionException, InterruptedException {
         describeAcls.computeIfAbsent(clusterId, s -> new HashMap<>());

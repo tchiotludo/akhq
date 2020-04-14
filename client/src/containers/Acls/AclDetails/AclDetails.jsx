@@ -4,12 +4,9 @@ import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
 
-// Adaptation of topic.ftl
-
 class AclDetails extends Component {
   state = {
     clusterId: this.props.match.params.clusterId,
-    principal: this.props.history.principal,
     principalEncoded: this.props.match.params.principalEncoded,
     selectedTab: 'topics'
   };
@@ -47,7 +44,7 @@ class AclDetails extends Component {
 
   render() {
     const { history, match } = this.props;
-    const { principal } = this.props.history || '';
+    const principal = atob(this.state.principalEncoded);
     return (
       <div id="content">
         <Header title={`Acl: ${principal}`} />

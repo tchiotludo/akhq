@@ -37,7 +37,7 @@ class NodesList extends Component {
   }
 
   handleData(nodes) {
-    let tableNodes = nodes.map(node => {
+    let tableNodes = nodes.nodes.map(node => {
       return {
         id: node.id || '',
         host: node.host || '',

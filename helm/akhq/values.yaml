@@ -38,9 +38,10 @@ secrets: |
           basic-auth-username: basic-auth-user
           basic-auth-password: basic-auth-pass
         connect:
-          url: "http://connect:8083"
-          basic-auth-username: basic-auth-user
-          basic-auth-password: basic-auth-pass
+          - name: "my-connect"
+            url: "http://connect:8083"
+            basic-auth-username: basic-auth-user
+            basic-auth-password: basic-auth-pass
 
 # Any extra volumes to define for the pod (like keystore/truststore)
 extraVolumes: []

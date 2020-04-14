@@ -2,9 +2,11 @@ package org.akhq.rest;
 
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
+import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.service.ClusterService;
 import org.akhq.service.dto.ClusterDTO;
-import org.akhq.service.dto.node.NodeDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
@@ -30,9 +32,9 @@ public class ClusterResource {
                 .getAllClusters();
     }
 
-    @Get("/cluster/nodes")
-    public List<NodeDTO> fetchAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
-        log.debug("Fetch all nodes from cluster {}", clusterId);
-        return clusterService.getAllNodesFromCluster(clusterId);
-    }
+//    @Get("/cluster/nodes")
+//    public List<NodeDTO> fetchAllNodesFromCluster(String clusterId) throws ExecutionException, InterruptedException {
+//        log.debug("Fetch all nodes from cluster {}", clusterId);
+//        return clusterService.getAllNodesFromCluster(clusterId);
+//    }
 }

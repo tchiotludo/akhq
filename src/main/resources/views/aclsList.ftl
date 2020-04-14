@@ -1,7 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="acls" type="java.util.List<org.akhq.models.AccessControlList>" -->
+<#-- @ftlvariable name="acls" type="java.util.List<org.akhq.models.AccessControl>" -->
 <#-- @ftlvariable name="search" type="java.util.Optional<java.lang.String>" -->
 
 <#import "includes/template.ftl" as template>
