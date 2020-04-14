@@ -1,4 +1,4 @@
-import {node} from 'prop-types';
+import { node } from 'prop-types';
 
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
@@ -204,10 +204,6 @@ export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = '
   return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };
 
-export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType) => {
-  return `${apiUrl}/aclsByPrincipal?clusterId=${clusterId}&principalEncoded=${principalEncoded}&resourceType=${resourceType}`;
-};
-
 export const uriCreateConnect = () => {
   return `${apiUrl}/connect/definition/create`;
 };
@@ -250,5 +246,5 @@ export default {
   uriSchemaVersions,
   uriAclsList,
   uriCreateConnect,
-  uriAclsByPrincipal,
+  uriAclsByPrincipal
 };
