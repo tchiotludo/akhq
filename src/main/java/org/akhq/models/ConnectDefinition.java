@@ -10,10 +10,7 @@ import lombok.ToString;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus;
 
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ToString
@@ -34,15 +31,17 @@ public class ConnectDefinition {
         this.configs = connectorDefinition.getConfig();
         this.tasks = connectorDefinition.getTasks()
             .stream()
-            .map(r -> new TaskDefinition(
-                r,
-                connectorStatus
-                    .getTasks()
-                    .stream()
-                    .filter(taskStatus -> taskStatus.getId() == r.getTask())
-                    .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("Task '" + r.getTask() + "' doesn't exist"))
-            ))
+            .map(r -> connectorStatus
+                .getTasks()
+                .stream()
+                .filter(taskStatus -> taskStatus.getId() == r.getTask())
+                .findFirst()
+                .map(s ->
+                    new TaskDefinition(r, s)
+                )
+                .orElse(null)
+            )
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 
