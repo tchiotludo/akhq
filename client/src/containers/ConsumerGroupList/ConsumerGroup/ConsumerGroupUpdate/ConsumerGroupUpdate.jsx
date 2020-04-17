@@ -7,7 +7,8 @@ import { formatDateTime } from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import { get, post } from '../../../../utils/api';
 import {
-  uriConsumerGroupGroupedTopicOffset,
+  uriConsumerGroup,
+  uriConsumerGroupOffsetsByTimestamp,
   uriConsumerGroupUpdate
 } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
@@ -19,7 +20,7 @@ class ConsumerGroupUpdate extends Form {
     clusterId: '',
     consumerGroupId: '',
     timestamp: '',
-    groupedTopicOffset: {},
+    groupedTopicOffset: this.props.groupedTopicOffset || {},
     firstOffsets: {},
     lastOffsets: {},
     formData: {},
@@ -37,7 +38,7 @@ class ConsumerGroupUpdate extends Form {
   }
 
   async getGroupedTopicOffset() {
-    const { clusterId, consumerGroupId, timestamp } = this.state;
+    const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
     const { history } = this.props;
     let data = {};
 
@@ -46,15 +47,23 @@ class ConsumerGroupUpdate extends Form {
       loading: true
     });
     try {
-      data = await get(uriConsumerGroupGroupedTopicOffset(clusterId, consumerGroupId, timestamp));
-      data = data.data;
-
-      if (data) {
-        this.setState({ groupedTopicOffset: data.groupedTopicOffset }, () =>
-          this.createValidationSchema(data.groupedTopicOffset)
-        );
+      let data = {};
+      if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
+        data = await get(uriConsumerGroup(clusterId, consumerGroupId));
+        data = data.data;
+        if (data) {
+          this.setState({ groupedTopicOffset: data.groupedTopicOffset }, () =>
+            this.createValidationSchema(data.groupedTopicOffset)
+          );
+        } else {
+          this.setState({ groupedTopicOffset: {} });
+        }
+      } else if (timestamp !== '') {
+        data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, timestamp));
+        data = data.data;
+        this.handleOffsetsByTimestamp(data);
       } else {
-        this.setState({ groupedTopicOffset: {} });
+        this.createValidationSchema(groupedTopicOffset);
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -74,19 +83,30 @@ class ConsumerGroupUpdate extends Form {
 
     Object.keys(groupedTopicOffset).map(topidId => {
       groupedTopicOffset[topidId].map(offset => {
-        name = `offset[${topidId}][${offset.partition}]`;
+        name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
-          .min(offset.firstOffset)
-          .max(offset.lastOffset)
+          .min(offset.firstOffset || 0)
+          .max(offset.lastOffset || 0)
           .required()
           .label(`Partition ${offset.partition} offset`);
-        formData[name] = offset.offset;
-        firstOffsets[name] = offset.firstOffset;
-        lastOffsets[name] = offset.lastOffset;
+        formData[name] = offset.offset || 0;
+        firstOffsets[name] = offset.firstOffset || 0;
+        lastOffsets[name] = offset.lastOffset || 0;
       });
     });
 
     this.setState({ formData, firstOffsets, lastOffsets });
+  };
+
+  handleOffsetsByTimestamp = offsets => {
+    let { formData } = this.state;
+    let topic = '';
+    let partition = '';
+    offsets.map(offset => {
+      topic = offset.topic;
+      partition = offset.partition;
+      formData[`${topic}-${partition}`] = offset.offset;
+    });
   };
 
   resetToFirstOffsets = () => {
@@ -111,18 +131,37 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
+  createSubmitBody = formData => {
+    let body = [];
+    let splitName = [];
+    let topic = '';
+    let partition = '';
+
+    Object.keys(formData).map(name => {
+      splitName = name.split('-');
+      topic = splitName[0];
+      partition = splitName[1];
+      body.push({
+        topic,
+        partition,
+        offset: formData[name]
+      });
+    });
+
+    return body;
+  };
+
   async doSubmit() {
     const { clusterId, consumerGroupId, formData } = this.state;
-    const { history, location } = this.props;
+    const { history } = this.props;
     history.push({
       loading: true
     });
     try {
-      await post(uriConsumerGroupUpdate(), {
-        clusterId,
-        groupId: consumerGroupId,
-        offsets: formData
-      });
+      await post(
+        uriConsumerGroupUpdate(clusterId, consumerGroupId),
+        this.createSubmitBody(formData)
+      );
 
       this.setState({ state: this.state }, () =>
         this.props.history.push({
@@ -132,11 +171,10 @@ class ConsumerGroupUpdate extends Form {
         })
       );
     } catch (err) {
-      console.log(err);
       this.props.history.push({
         showErrorToast: true,
         errorToastTitle: `Failed to update offsets for ${consumerGroupId}`,
-        errorToastMessage: err.response.data.title,
+        errorToastMessage: err.response.data.message,
         loading: false
       });
       console.error('Error:', err.response);
@@ -164,7 +202,7 @@ class ConsumerGroupUpdate extends Form {
 
     offsets.map(offset => {
       const { formData } = this.state;
-      const name = `offset[${topicId}][${offset.partition}]`;
+      const name = `${topicId}-${offset.partition}`;
 
       renderedInputs.push(
         <div className="form-group row" key={name}>
@@ -196,6 +234,7 @@ class ConsumerGroupUpdate extends Form {
     return (
       <span>
         <Link
+          to="#"
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
@@ -204,6 +243,7 @@ class ConsumerGroupUpdate extends Form {
           Reset to first offsets
         </Link>
         <Link
+          to="#"
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
@@ -212,6 +252,7 @@ class ConsumerGroupUpdate extends Form {
           Reset to last offsets
         </Link>
         <Link
+          to="#"
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem', padding: 0 }}

@@ -29,7 +29,7 @@ class SchemaControllerTest extends AbstractTest {
         Schema.Config.CompatibilityLevelConfig.BACKWARD
     );
 
-    //@Test
+    @Test
     void listApi() {
         ResultPagedList<Schema> result = this.retrievePagedList(HttpRequest.GET(BASE_URL), Schema.class);
         assertEquals(3, result.getResults().size());

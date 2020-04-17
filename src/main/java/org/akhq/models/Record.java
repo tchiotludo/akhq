@@ -23,10 +23,12 @@ public class Record {
     private int partition;
     private long offset;
     private long timestamp;
+    @JsonIgnore
     private TimestampType timestampType;
     private Integer keySchemaId;
     private Integer valueSchemaId;
     private Map<String, String> headers = new HashMap<>();
+    @JsonIgnore
     private KafkaAvroDeserializer kafkaAvroDeserializer;
 
     @Getter(AccessLevel.NONE)

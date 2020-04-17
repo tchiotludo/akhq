@@ -7,7 +7,6 @@ import org.akhq.repositories.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
-import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.topic.ConfigOperationDTO;
 import org.akhq.service.dto.topic.ConfigDTO;
 import org.akhq.service.dto.topic.CreateTopicDTO;
@@ -18,11 +17,9 @@ import org.akhq.service.dto.topic.RecordDTO;
 import org.akhq.service.dto.topic.TopicDTO;
 import org.akhq.service.dto.topic.TopicDataDTO;
 import org.akhq.service.dto.topic.TopicListDTO;
-import org.akhq.service.mapper.ConsumerGroupMapper;
 import org.akhq.service.mapper.TopicMapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.apache.kafka.common.resource.ResourceType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,7 +36,6 @@ public class TopicService {
     private KafkaModule kafkaModule;
     private AbstractKafkaWrapper kafkaWrapper;
     private Environment environment;
-    private ConsumerGroupMapper consumerGroupMapper;
     private TopicRepository topicRepository;
     private RecordRepository recordRepository;
     private LogDirRepository logDirRepository;
@@ -54,10 +50,9 @@ public class TopicService {
     private Integer pageSize;
 
     @Inject
-    public TopicService(KafkaModule kafkaModule,ConsumerGroupMapper consumerGroupMapper, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
+    public TopicService(KafkaModule kafkaModule, TopicMapper topicMapper, AbstractKafkaWrapper kafkaWrapper,
                         TopicRepository topicRepository, Environment environment, RecordRepository recordRepository, ConfigRepository configRepository, AccessControlListRepository aclRepository) {
         this.kafkaModule = kafkaModule;
-        this.consumerGroupMapper=consumerGroupMapper;
         this.topicMapper = topicMapper;
         this.kafkaWrapper = kafkaWrapper;
         this.topicRepository = topicRepository;
@@ -185,19 +180,6 @@ public class TopicService {
 //
 //       return this.aclRepository.findByResourceType(clusterId, ResourceType.TOPIC, topicName);
 //    }
-
-    public List<ConsumerGroupDTO>  getConsumerGroups(String clusterId, String topicName)
-            throws ExecutionException, InterruptedException {
-
-
-        List<ConsumerGroup> list =  this.topicRepository.findByName(clusterId,topicName).getConsumerGroups();
-
-
-        List<ConsumerGroupDTO> consumerGroupList = new ArrayList<>();
-        list.stream().map(consumerGroup -> consumerGroupList.add(consumerGroupMapper.fromConsumerGroupToConsumerGroupDTO(consumerGroup))).collect(Collectors.toList());
-
-        return  consumerGroupList;
-    }
 
     public List<LogDTO> getLogDTOList(String clusterId, Integer nodeId) throws ExecutionException, InterruptedException {
         List<LogDir> logList = logDirRepository.findByBroker(clusterId, nodeId);

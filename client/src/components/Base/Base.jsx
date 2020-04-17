@@ -93,7 +93,6 @@ class Base extends Component {
       selectedTab
     } = this.state;
     this.checkToasts();
-    console.log('props', this.props);
     return (
       <>
         <Loading show={loading} />
