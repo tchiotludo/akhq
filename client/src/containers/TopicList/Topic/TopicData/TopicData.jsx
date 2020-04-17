@@ -94,8 +94,9 @@ class TopicData extends Component {
         uriTopicData(
           selectedCluster,
           selectedTopic,
-          sortBy,
+          offsetsSearch !== '' ? offsetsSearch : undefined,
           partition,
+          sortBy,
           formatDateTime(
             {
               year: timestamp.year(),
@@ -108,11 +109,11 @@ class TopicData extends Component {
             },
             'YYYY-MM-DDThh:mm:ss.SSS'
           ) + 'Z',
-          currentSearch !== '' ? currentSearch : undefined,
-          offsetsSearch !== '' ? offsetsSearch : undefined
+          currentSearch !== '' ? currentSearch : undefined 
         )
       );
       data = data.data;
+      console.log('data', data);
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
       if (data.records) {

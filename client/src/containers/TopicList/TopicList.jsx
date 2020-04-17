@@ -120,11 +120,12 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      data = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search, pageNumber));
+      data = await api.get(endpoints.uriTopics(selectedCluster, search, pageNumber));
+      console.log('data', data);
       data = data.data;
       if (data) {
-        if (data.topics) {
-          this.handleTopics(data.topics);
+        if (data.results) {
+          this.handleTopics(data.results);
         } else {
           this.setState({ topics: [] });
         }
@@ -142,6 +143,7 @@ class TopicList extends Component {
 
   handleTopics(topics) {
     let tableTopics = [];
+    console.log('Topics', topics);
     topics.map(topic => {
       topic.size = 0;
       topic.logDirSize = 0;
@@ -149,11 +151,11 @@ class TopicList extends Component {
         id: topic.name,
         name: topic.name,
         size: topic.size,
-        weight: topic.count,
-        partitionsTotal: topic.total,
-        replicationFactor: topic.factor,
-        replicationInSync: topic.inSync,
-        groupComponent: topic.logDirSize
+        weight: topic.logDirSize,
+        partitionsTotal: topic.partitions.length,
+        replicationFactor: topic.replicaCount,
+        replicationInSync: topic.inSyncReplicaCount,
+        groupComponent: topic.logDir[0].offsetLag
       });
     });
     this.setState({ topics: tableTopics });
