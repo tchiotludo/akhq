@@ -38,9 +38,7 @@ class TopicList extends Component {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
-      this.getTopics();
-    });
+    this.setState({ selectedCluster: clusterId }, this.getTopics);
   }
 
   showDeleteModal = deleteMessage => {
@@ -143,7 +141,6 @@ class TopicList extends Component {
 
   handleTopics(topics) {
     let tableTopics = [];
-    console.log('Topics', topics);
     topics.map(topic => {
       topic.size = 0;
       topic.logDirSize = 0;
