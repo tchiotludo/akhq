@@ -23,7 +23,6 @@ class TopicPartitions extends Component {
     });
     try {
       partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
-      console.log('partitions', partitions.data);
       this.handleData(partitions.data);
     } catch (err) {
       console.error('Error:', err);
@@ -56,7 +55,6 @@ class TopicPartitions extends Component {
   }
 
   handleReplicas(replicas) {
-    console.log(replicas)
     return replicas.map(replica => {
       return (
         <span
