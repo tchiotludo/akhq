@@ -79,10 +79,6 @@ export const uriDeleteTopics = () => {
   return `${apiUrl}/topic/delete`;
 };
 
-export const uriDeleteGroups = () => {
-  return `${apiUrl}/group/delete`;
-};
-
 export const uriTopicData = (clusterId, topicId, sort, partition, timestamp, search, offsets) => {
   let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}`;
 
@@ -138,16 +134,28 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   return `${apiUrl}/${clusterId}/node/${nodeId}/logs`;
 };
 
-export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
+export const uriConsumerGroups = (clusterId, search, pageNumber) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/group?clusterId=${clusterId}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
+  return `${apiUrl}/${clusterId}/group?search=${search}&pageNumber=${pageNumber}`;
+};
+
+export const uriConsumerGroup = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}`;
 };
 
 export const uriConsumerGroupTopics = (clusterId, groupId) => {
   return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${groupId}`;
 };
 export const uriConsumerGroupMembers = (clusterId, groupId) => {
-  return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${groupId}/members`;
+};
+
+export const uriConsumerGroupOffsets = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+};
+
+export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
 };
 
 export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
@@ -160,8 +168,12 @@ export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp
   return uri;
 };
 
-export const uriConsumerGroupUpdate = () => {
-  return `${apiUrl}/group/update`;
+export const uriConsumerGroupDelete = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}`;
+};
+
+export const uriConsumerGroupUpdate = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
 };
 
 export const uriTopicsConfigs = (clusterId, topicId) => {
@@ -245,6 +257,5 @@ export default {
   uriLatestSchemaVersion,
   uriSchemaVersions,
   uriAclsList,
-  uriCreateConnect,
   uriAclsByPrincipal
 };

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Table from '../../components/Table';
-import endpoints, { uriDeleteGroups } from '../../utils/endpoints';
+import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
@@ -22,9 +22,7 @@ class ConsumerGroupList extends Component {
     pageNumber: 1,
     totalPageNumber: 1,
     history: this.props,
-    searchData: {
-      search: ''
-    }
+    search: ''
   };
 
   componentDidMount() {
@@ -35,8 +33,7 @@ class ConsumerGroupList extends Component {
   }
 
   handleSearch = data => {
-    const { searchData } = data;
-    this.setState({ pageNumber: 1, searchData }, () => {
+    this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
     });
   };
@@ -60,22 +57,20 @@ class ConsumerGroupList extends Component {
 
   async getConsumerGroup() {
     const { history } = this.props;
-    const { selectedCluster, pageNumber } = this.state;
-    const { search } = this.state.searchData;
+    const { selectedCluster, pageNumber, search } = this.state;
 
     history.push({
       loading: true
     });
 
     try {
-      let response = await api.get(
-        endpoints.uriConsumerGroups(selectedCluster, 'ALL', search, pageNumber)
-      );
+      let response = await api.get(uriConsumerGroups(selectedCluster, search, pageNumber));
       response = response.data;
-      if (response) {
-        let consumerGroups = response.consumerGroups || [];
-        this.handleConsumerGroup(consumerGroups);
-        this.setState({ selectedCluster, totalPageNumber: response.totalPageNumber });
+      if (response.results) {
+        this.handleConsumerGroup(response.results);
+        this.setState({ selectedCluster, totalPageNumber: response.total });
+      } else {
+        this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -89,23 +84,21 @@ class ConsumerGroupList extends Component {
   handleConsumerGroup(consumerGroup) {
     let tableConsumerGroup = [];
     consumerGroup.map(consumerGroup => {
-      consumerGroup.size = 0;
-      consumerGroup.logDirSize = 0;
       tableConsumerGroup.push({
         id: consumerGroup.id,
         state: consumerGroup.state,
-        size: consumerGroup.size,
-        coordinator: consumerGroup.coordinator,
-        members: consumerGroup.members,
-        topicLag: consumerGroup.topicLag
+        coordinator: consumerGroup.coordinator.id,
+        members: consumerGroup.members.length,
+        topics: consumerGroup.groupedTopicOffset
       });
     });
+
     this.setState({ consumerGroups: tableConsumerGroup });
   }
 
   handleState(state) {
     return (
-      <span className={state.state === 'Stable' ? 'badge badge-success' : 'badge badge-warning'}>
+      <span className={state === 'STABLE' ? 'badge badge-success' : 'badge badge-warning'}>
         {state}
       </span>
     );
@@ -115,35 +108,49 @@ class ConsumerGroupList extends Component {
     return <span className="badge badge-primary"> {coordinator}</span>;
   }
 
-  handleTopics(topicLag) {
+  handleTopics(groupedTopicOffset) {
     const { history } = this.props;
-    return topicLag.map(lagTopic => {
+    return Object.keys(groupedTopicOffset).map(topicId => {
+      const topicOffsets = groupedTopicOffset[topicId];
+      const offsetLag = this.calculateTopicOffsetLag(topicOffsets);
+
       return (
         <div
           onClick={() => {
             history.push({
-              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`,
+              pathname: `/${this.state.selectedCluster}/topic/${topicId}`,
               tab: constants.TOPIC
             });
           }}
         >
           <Link
-            to={{
-              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
-            }}
+            to={`/${this.state.selectedCluster}/topic/${topicId}`}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
           >
-            {lagTopic.topicId}
+            {topicId + ' '}
 
             <a href="#" className="badge badge-secondary">
-              Lag:{lagTopic.lag}
+              Lag:{offsetLag}
             </a>
           </Link>
         </div>
       );
     });
   }
+
+  calculateTopicOffsetLag = topicOffsets => {
+    let offsetLag = 0;
+    let firstOffset = 0;
+    let lastOffset = 0;
+    topicOffsets.map(topicOffset => {
+      firstOffset = topicOffset.firstOffset || 0;
+      lastOffset = topicOffset.lastOffset || 0;
+      offsetLag += lastOffset - firstOffset;
+    });
+
+    return offsetLag;
+  };
 
   handleOnDelete(group) {
     this.setState({ groupToDelete: group }, () => {
@@ -162,33 +169,29 @@ class ConsumerGroupList extends Component {
   deleteConsumerGroup = () => {
     const { selectedCluster, groupToDelete } = this.state;
     const { history } = this.props;
-    const deleteData = {
-      clusterId: selectedCluster,
-      groupId: groupToDelete.id
-    };
 
     history.push({ loading: true });
-    remove(uriDeleteGroups(), deleteData)
+    remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
           successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, groupToDelete: {} });
-        this.handleConsumerGroup(res.data.group);
+        this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
       .catch(err => {
         this.props.history.push({
           showErrorToast: true,
-          errorToastMessage: `Could not delete '${groupToDelete.id}'`,
+          errorToastTitle: `Failed to delete '${groupToDelete.id}'`,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
         this.setState({ showDeleteModal: false, groupToDelete: {} });
       });
   };
   render() {
-    const { consumerGroup, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const { consumerGroup, selectedCluster, search, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 
@@ -201,7 +204,7 @@ class ConsumerGroupList extends Component {
         >
           <SearchBar
             showSearch={true}
-            search={searchData.search}
+            search={search}
             showPagination={true}
             pagination={pageNumber}
             showTopicListView={false}
@@ -251,13 +254,14 @@ class ConsumerGroupList extends Component {
               accessor: 'topics',
               colName: 'Topics',
               cell: obj => {
-                if (obj.topicLag) {
-                  return this.handleTopics(obj.topicLag);
+                if (obj.topics) {
+                  return this.handleTopics(obj.topics);
                 }
               }
             }
           ]}
           data={this.state.consumerGroups}
+          noContent={'No consumer group available'}
           onDelete={group => {
             this.handleOnDelete(group);
           }}
