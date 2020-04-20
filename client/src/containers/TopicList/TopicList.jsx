@@ -134,7 +134,6 @@ class TopicList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
-        ...this.props.location,
         loading: false
       });
     }

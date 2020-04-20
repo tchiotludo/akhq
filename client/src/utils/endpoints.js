@@ -3,8 +3,8 @@ import { node } from 'prop-types';
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
-export const uriClusters = id => {
-  return `${apiUrl}/clusters${id ? '?clusterId=' + id : ''}`;
+export const uriClusters = () => {
+  return `${apiUrl}/cluster`;
 };
 
 export const uriConnects = id => {
