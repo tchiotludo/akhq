@@ -13,6 +13,7 @@ import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
+import { checkPropTypes } from 'prop-types';
 
 // Adaptation of data.ftl
 
@@ -109,15 +110,14 @@ class TopicData extends Component {
             },
             'YYYY-MM-DDThh:mm:ss.SSS'
           ) + 'Z',
-          currentSearch !== '' ? currentSearch : undefined 
+          currentSearch !== '' ? currentSearch : undefined
         )
       );
       data = data.data;
-      console.log('data', data);
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
-      if (data.records) {
-        this.handleMessages(data.records);
+      if (data.results) {
+        this.handleMessages(data.results);
       } else {
         this.setState({ messages: [], pageNumber: 1 });
       }
@@ -125,7 +125,7 @@ class TopicData extends Component {
         this.setState({
           partitionCount: partitionData.length,
           nextPage: data.after,
-          recordCount: data.recordCount
+          recordCount: data.size
         });
       }
     } catch (err) {
@@ -140,8 +140,23 @@ class TopicData extends Component {
   handleMessages = messages => {
     let tableMessages = [];
     messages.map(message => {
+      const date = moment(message.timestamp);
       message.key = message.key ? message.key : 'null';
-      message.date = formatDateTime(message.date, 'MMM DD, YYYY, hh:mm A');
+      message.value = message.value ? message.value : 'null';
+      message.timestamp = formatDateTime(
+        {
+          year: date.year(),
+          monthValue: date.month(),
+          dayOfMonth: date.daysInMonth(),
+          hour: date.hour(),
+          minute: date.minute(),
+          second: date.second(),
+          milli: date.millisecond()
+        },
+        'MMM DD, YYYY, hh:mm A'
+      );
+      message.partition = message.partition ? message.partition : '0';
+      message.offset = message.offset ? message.offset : '0';
       message.headers = message.headers ? message.headers : {};
       message.schema = message.schema ? message.schema : '';
 
@@ -482,8 +497,8 @@ class TopicData extends Component {
                 }
               },
               {
-                id: 'date',
-                accessor: 'date',
+                id: 'timestamp',
+                accessor: 'timestamp',
                 colName: 'Date',
                 type: 'text',
                 cell: (obj, col) => {
@@ -498,6 +513,19 @@ class TopicData extends Component {
                 id: 'partition',
                 accessor: 'partition',
                 colName: 'Partition',
+                type: 'text',
+                cell: (obj, col) => {
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">{obj[col.accessor]}</div>
+                    </div>
+                  );
+                }
+              },
+              {
+                id: 'offset',
+                accessor: 'offset',
+                colName: 'Offset',
                 type: 'text',
                 cell: (obj, col) => {
                   return (

@@ -57,7 +57,7 @@ class TopicCreate extends Form {
       loading: true
     });
 
-    post(uriTopicsCreate(), topic)
+    post(uriTopicsCreate(clusterId), topic)
       .then(res => {
         this.props.history.push({
           pathname: `/${clusterId}/topic`,

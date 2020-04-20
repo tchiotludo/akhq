@@ -35,7 +35,6 @@ class TopicAcls extends Component {
 
   handleData(data) {
     let tableAcls = data.map((acl, index) => {
-      console.log(acl);
       return {
         id: index,
         user: acl.principal || '',

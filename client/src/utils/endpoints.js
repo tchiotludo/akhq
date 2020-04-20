@@ -16,16 +16,17 @@ export const uriTopics = (id, search, show, page) => {
   return `${apiUrl}/${id}/topic?search=${search}&show=${show}&page=${page}`;
 };
 
-export const uriTopicsCreate = () => `${apiUrl}/topic/create`;
+export const uriTopicsCreate = (clusterId) => `${apiUrl}/${clusterId}/topic`;
 
-export const uriTopicsProduce = () => `${apiUrl}/topic/produce`;
+export const uriTopicsProduce = (clusterId, topicName) =>
+  `${apiUrl}/${clusterId}/topic/${topicName}/data`;
 
 export const uriDeleteTopics = () => {
   return `${apiUrl}/topic/delete`;
 };
 
 export const uriTopicData = (clusterId, topicId, offset, partition, sort, timestamp, search) => {
-  let uri = `${apiUrl}/topic/data?clusterId=${clusterId}&topicId=${topicId}&sort=${sort}`;
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;
   if (offset !== undefined) {
     uri += `offset=${offset}`;
     if (partition !== undefined) {
@@ -57,8 +58,9 @@ export const uriTopicsConfigs = (clusterId, topicId) => {
 export const uriTopicsAcls = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/acls`;
 };
-export const uriTopicsUpdateConfigs = () => {
-  return `${apiUrl}/cluster/topic/update-configs`;
+
+export const uriTopicsUpdateConfigs = (clusterId,topicId) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/configs`;
 };
 
 export const uriConnects = id => {

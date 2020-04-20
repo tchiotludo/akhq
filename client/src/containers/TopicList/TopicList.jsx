@@ -119,7 +119,6 @@ class TopicList extends Component {
     });
     try {
       data = await api.get(endpoints.uriTopics(selectedCluster, search, pageNumber));
-      console.log('data', data);
       data = data.data;
       if (data) {
         if (data.results) {
