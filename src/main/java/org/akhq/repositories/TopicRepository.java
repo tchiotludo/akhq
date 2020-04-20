@@ -48,9 +48,6 @@ public class TopicRepository extends AbstractRepository {
     @Value("${akhq.security.default-group}")
     private String defaultGroups;
 
-    @Value("${akhq.topic.skip-consumer-groups}")
-    protected Boolean skipConsumerGroups;
-
     public enum TopicListView {
         ALL,
         HIDE_INTERNAL,
@@ -59,9 +56,13 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
+        return this.list(clusterId, pagination, view, search, false);
+    }
+
+    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         List<String> all = all(clusterId, view, search);
 
-        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
+        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList, skipConsumerGroups));
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
@@ -95,16 +96,23 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
+        return this.findByName(clusterId, name, false);
+    }
 
+    public Topic findByName(String clusterId, String name, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         Optional<Topic> topic = Optional.empty();
         if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
-            topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
+            topic = this.findByName(clusterId, Collections.singletonList(name), skipConsumerGroups).stream().findFirst();
         }
 
         return topic.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+        return this.findByName(clusterId, topics, false);
+    }
+
+    public List<Topic> findByName(String clusterId, List<String> topics, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
 
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
@@ -117,7 +125,7 @@ public class TopicRepository extends AbstractRepository {
                 list.add(
                     new Topic(
                         description.getValue(),
-                        this.skipConsumerGroups ? Collections.emptyList() : consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
+                        skipConsumerGroups ? Collections.emptyList() : consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
                         isInternal(description.getValue().name()),

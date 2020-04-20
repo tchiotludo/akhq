@@ -122,7 +122,8 @@ public class TopicController extends AbstractController {
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
-            search
+            search,
+            skipConsumerGroups
         );
 
         return this.template(
