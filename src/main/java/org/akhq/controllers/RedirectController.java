@@ -30,7 +30,7 @@ public class RedirectController extends AbstractController {
 
     @Get("${akhq.server.base-path:}")
     public HttpResponse<?> home() throws URISyntaxException {
-        return HttpResponse.redirect(this.uri("/" + kafkaModule.getClustersList().get(0) + "/topic"));
+        return this.slash();
     }
 
     @Get("${akhq.server.base-path:}/{cluster:(?!login)[^/]+}")
