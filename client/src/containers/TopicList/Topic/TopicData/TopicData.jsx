@@ -84,7 +84,15 @@ class TopicData extends Component {
       currentSearch,
       offsetsSearch
     } = this.state;
-
+    console.log(
+      selectedCluster,
+      selectedTopic,
+      sortBy,
+      partition,
+      timestamp,
+      currentSearch,
+      offsetsSearch
+    );
     let data,
       partitionData = {};
     history.push({

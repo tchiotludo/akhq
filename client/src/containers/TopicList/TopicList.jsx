@@ -57,7 +57,7 @@ class TopicList extends Component {
       topicId: topicToDelete.id
     };
     history.push({ loading: true });
-    remove(uriDeleteTopics(), deleteData)
+    remove(uriDeleteTopics(selectedCluster, topicToDelete), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
@@ -65,7 +65,7 @@ class TopicList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });
-        this.handleTopics(res.data.topics);
+        this.getTopics();
       })
       .catch(err => {
         this.props.history.push({

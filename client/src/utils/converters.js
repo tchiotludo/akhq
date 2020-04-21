@@ -2,9 +2,7 @@ import _ from 'lodash';
 import moment from 'moment';
 
 export function formatDateTime(value, format) {
-  console.log('value',value)
   let milli = value.milli || 0;
-  console.log('milli',milli)
   const date = new Date(
     value.year,
     +value.monthValue - 1,

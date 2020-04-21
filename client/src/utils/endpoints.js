@@ -21,8 +21,8 @@ export const uriTopicsCreate = (clusterId) => `${apiUrl}/${clusterId}/topic`;
 export const uriTopicsProduce = (clusterId, topicName) =>
   `${apiUrl}/${clusterId}/topic/${topicName}/data`;
 
-export const uriDeleteTopics = () => {
-  return `${apiUrl}/topic/delete`;
+export const uriDeleteTopics = (clusterId,topicId) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}`;
 };
 
 export const uriTopicData = (clusterId, topicId, offset, partition, sort, timestamp, search) => {
