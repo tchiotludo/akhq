@@ -49,7 +49,7 @@ public class ErrorController extends AbstractController {
             .body(error);
     }
 
-    @Error(global = true)
+    @Error(status = HttpStatus.INTERNAL_SERVER_ERROR, global = true)
     public HttpResponse<?> error(HttpRequest<?> request, Throwable e) {
         log.error(e.getMessage(), e);
 
