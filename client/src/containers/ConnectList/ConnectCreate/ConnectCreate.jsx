@@ -10,6 +10,7 @@ import Select from '../../../components/Form/Select';
 import Form from '../../../components/Form/Form';
 import { red } from '@material-ui/core/colors';
 import AceEditor from 'react-ace';
+import _ from 'lodash';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
@@ -40,7 +41,8 @@ class ConnectCreate extends Component {
     });
     try {
       plugins = await get(uriConnectPlugins(clusterId, connectId));
-      this.setState({ clusterId, connectId, plugins: plugins.data });
+      plugins = plugins.data;
+      this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
@@ -69,7 +71,7 @@ class ConnectCreate extends Component {
       formData[definition.name] = '';
       this.schema[definition.name] = config;
       if (definition.name === 'transforms') {
-        formData['transformsprops'] = '';
+        formData['transformsprops'] = '{}';
         this.schema['transformsprops'] = Joi.object().required();
       }
     });
@@ -213,20 +215,23 @@ class ConnectCreate extends Component {
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    plugin.definitions.map(definition => {
-      if (definition.group !== actualGroup) {
-        if (actualGroup === '') {
-          actualGroup = definition.group;
-          sameGroup = [definition];
+    _(plugin.definitions)
+      .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
+      .value()
+      .map(definition => {
+        if (definition.group !== actualGroup) {
+          if (actualGroup === '') {
+            actualGroup = definition.group;
+            sameGroup = [definition];
+          } else {
+            allOfIt.push(this.handleGroup(sameGroup));
+            sameGroup = [definition];
+            actualGroup = definition.group;
+          }
         } else {
-          allOfIt.push(this.handleGroup(sameGroup));
-          sameGroup = [definition];
-          actualGroup = definition.group;
+          sameGroup.push(definition);
         }
-      } else {
-        sameGroup.push(definition);
-      }
-    });
+      });
     allOfIt.push(this.handleGroup(sameGroup));
     this.setState({ display: allOfIt });
     return allOfIt;
@@ -239,6 +244,10 @@ class ConnectCreate extends Component {
         <td colspan="3">{group[0].group}</td>
       </tr>
     ];
+
+    if (formData['transformsprops'] === undefined) {
+      formData['transformsprops'] = '{}';
+    }
 
     group.map(element => {
       const rows = this.renderTableRows(element);
@@ -308,7 +317,11 @@ class ConnectCreate extends Component {
     let { plugin } = this.state;
     plugin = this.getPlugin();
     this.setState({ plugin }, () => {
-      this.handleShema(plugin.definitions);
+      this.handleShema(
+        _(plugin.definitions)
+          .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
+          .value()
+      );
       this.handleData();
     });
   }
@@ -368,14 +381,20 @@ class ConnectCreate extends Component {
       clusterId,
       connectId,
       name: formData.subject,
-      transformsValue: formData.transformsprops
+      transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
     };
     let configs = {};
     Object.keys(formData).map(key => {
-      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type' && key !== 'name') {
-        configs[`configs[${key}]`] = formData[key];
+      if (
+        key !== 'subject' &&
+        key !== 'transformsprops' &&
+        key !== 'type' &&
+        key !== 'name' &&
+        formData[key] !== ''
+      ) {
+        configs[`${key}`] = formData[key];
       } else if (key === 'type') {
-        configs['configs[connector.class]'] = formData[key];
+        configs['connector.class'] = formData[key];
       }
     });
     body.configs = configs;
@@ -386,7 +405,7 @@ class ConnectCreate extends Component {
       loading: true
     });
 
-    post(uriCreateConnect(), body)
+    post(uriCreateConnect(clusterId, connectId), body)
       .then(res => {
         this.props.history.push({
           ...this.props.location,

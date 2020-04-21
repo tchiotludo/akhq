@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, put } from '../../../../utils/api';
-import { uriConnectDefinitionConfigs, uriUpdateDefinition } from '../../../../utils/endpoints';
+import { get, post } from '../../../../utils/api';
+import {
+  uriConnectDefinitionConfigs,
+  uriUpdateDefinition,
+  uriConnectPlugin
+} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import { red } from '@material-ui/core/colors';
 import AceEditor from 'react-ace';
+import _ from 'lodash';
 
 class ConnectConfigs extends Form {
   state = {
@@ -16,6 +21,7 @@ class ConnectConfigs extends Form {
     formData: {},
     errors: {},
     configs: {},
+    plugin: {},
     config: {},
     selectedType: '',
     display: ''
@@ -29,6 +35,7 @@ class ConnectConfigs extends Form {
   async getConfigs() {
     const { connectId, clusterId, definitionId } = this.state;
     let configs = [];
+    let plugin = {};
     const { history } = this.props;
     history.push({
       loading: true
@@ -36,6 +43,28 @@ class ConnectConfigs extends Form {
     try {
       configs = await get(uriConnectDefinitionConfigs(clusterId, connectId, definitionId));
       this.setState({ configs: configs.data }, () => {
+        const pluginId = this.state.configs['connector.class'];
+        this.getPlugin(pluginId);
+      });
+    } catch (err) {
+      history.replace('/error', { errorData: err });
+    } finally {
+      history.push({
+        loading: false
+      });
+    }
+  }
+
+  async getPlugin(pluginId) {
+    const { connectId, clusterId, definitionId } = this.state;
+    let plugin = {};
+    const { history } = this.props;
+    history.push({
+      loading: true
+    });
+    try {
+      plugin = await get(uriConnectPlugin(clusterId, connectId, pluginId));
+      this.setState({ plugin: plugin.data }, () => {
         this.renderForm();
       });
     } catch (err) {
@@ -68,7 +97,7 @@ class ConnectConfigs extends Form {
   };
 
   getConfigValue = name => {
-    const { configs } = this.state.configs;
+    const { configs } = this.state;
     const existingConfig = Object.keys(configs).find(configKey => configKey === name);
 
     return existingConfig ? configs[existingConfig] : '';
@@ -201,24 +230,27 @@ class ConnectConfigs extends Form {
   }
 
   handleData = () => {
-    let { plugin } = this.state.configs;
+    let { plugin } = this.state;
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    plugin.definitions.map(definition => {
-      if (definition.group !== actualGroup) {
-        if (actualGroup === '') {
-          actualGroup = definition.group;
-          sameGroup = [definition];
+    _(plugin.definitions)
+      .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
+      .value()
+      .map(definition => {
+        if (definition.group !== actualGroup) {
+          if (actualGroup === '') {
+            actualGroup = definition.group;
+            sameGroup = [definition];
+          } else {
+            allOfIt.push(this.handleGroup(sameGroup));
+            sameGroup = [definition];
+            actualGroup = definition.group;
+          }
         } else {
-          allOfIt.push(this.handleGroup(sameGroup));
-          sameGroup = [definition];
-          actualGroup = definition.group;
+          sameGroup.push(definition);
         }
-      } else {
-        sameGroup.push(definition);
-      }
-    });
+      });
     allOfIt.push(this.handleGroup(sameGroup));
     this.setState({ display: allOfIt });
   };
@@ -297,7 +329,7 @@ class ConnectConfigs extends Form {
   }
 
   renderForm = () => {
-    const { plugin } = this.state.configs;
+    const { plugin } = this.state;
     this.handleSchema(plugin.definitions);
     this.handleData();
   };
@@ -309,19 +341,23 @@ class ConnectConfigs extends Form {
   };
 
   async doSubmit() {
-    const { clusterId, connectId, formData, selectedType } = this.state;
+    const { clusterId, connectId, definitionId, formData, selectedType } = this.state;
     let body = {
-      clusterId,
-      connectId,
       name: formData.name,
       transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
     };
     let configs = {};
     Object.keys(formData).map(key => {
-      if (key !== 'subject' && key !== 'transformsprops' && key !== 'type' && key !== 'name') {
-        configs[`configs[${key}]`] = formData[key];
+      if (
+        key !== 'subject' &&
+        key !== 'transformsprops' &&
+        key !== 'type' &&
+        key !== 'name' &&
+        formData[key] !== ''
+      ) {
+        configs[`${key}`] = formData[key];
       } else if (key === 'type') {
-        configs['configs[connector.class]'] = formData[key];
+        configs['connector.class'] = formData[key];
       }
     });
     body.configs = configs;
@@ -332,7 +368,7 @@ class ConnectConfigs extends Form {
       loading: true
     });
     try {
-      await put(uriUpdateDefinition(), body);
+      await post(uriUpdateDefinition(clusterId, connectId, definitionId), body);
       history.push({
         ...this.props.location,
         pathname: `/${clusterId}/connect/${connectId}`,
@@ -352,7 +388,7 @@ class ConnectConfigs extends Form {
   }
 
   render() {
-    const { configs, display } = this.state;
+    const { plugin, display } = this.state;
     const { name } = this.state.formData;
 
     return (
@@ -362,13 +398,13 @@ class ConnectConfigs extends Form {
           className="khq-form khq-form-config"
           onSubmit={e => this.handleSubmit(e)}
         >
-          {configs.plugin && (
+          {plugin && (
             <React.Fragment>
               <div className="form-group row">
                 <label className="col-sm-2 col-form-label">Type</label>
                 <div className="col-sm-10">
                   <select disabled className="form-control" name="type" id="type">
-                    <option>{this.state.configs.plugin.shortClassName}</option>
+                    <option>{plugin.shortClassName}</option>
                   </select>
                 </div>
               </div>
