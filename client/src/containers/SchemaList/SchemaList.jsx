@@ -91,8 +91,8 @@ class SchemaList extends Component {
         endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
       );
       response = response.data;
-      if (response) {
-        let schemasRegistry = response.list || [];
+      if (response.results) {
+        let schemasRegistry = response.results || [];
         this.handleSchemaRegistry(schemasRegistry);
         this.setState({ selectedCluster, totalPageNumber: response.totalPageNumber });
       }
@@ -146,7 +146,7 @@ class SchemaList extends Component {
       subject: schemaToDelete.subject
     };
     history.push({ loading: true });
-    remove(uriDeleteSchema(), deleteData)
+    remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
@@ -154,7 +154,7 @@ class SchemaList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        this.handleSchemaRegistry(res.data.list);
+        this.getSchemaRegistry();
       })
       .catch(err => {
         this.props.history.push({

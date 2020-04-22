@@ -24,6 +24,8 @@ class SchemaVersions extends Component {
     this.handleData(this.state.schemaVersions);
   }
 
+  
+
   handleData(schemas) {
     if (schemas) {
       let data = schemas.map(schema => {
@@ -73,15 +75,20 @@ class SchemaVersions extends Component {
       versionId: schemaToDelete.version
     };
     history.push({ loading: true });
-    remove(uriDeleteSchemaVersion(), deleteData)
+    remove(
+      uriDeleteSchemaVersion(selectedCluster, selectedSchema, schemaToDelete.version),
+      deleteData
+    )
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
           successToastMessage: `Version'${schemaToDelete.version}' is deleted`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, schemaToDelete: {} }, () => {
-          this.handleData(res.data);
+
+        this.setState({ showDeleteModal: false, schemaToDelete: {} });
+        history.push({
+          pathname: `/${selectedCluster}/schema`,
         });
       })
       .catch(err => {

@@ -56,8 +56,7 @@ class SchemaCreate extends Form {
     history.push({
       loading: true
     });
-
-    post(uriSchemaCreate(), schema)
+    post(uriSchemaCreate(clusterId), schema)
       .then(res => {
         this.props.history.push({
           pathname: `/${clusterId}/schema`,

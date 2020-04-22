@@ -16,12 +16,12 @@ export const uriTopics = (id, search, show, page) => {
   return `${apiUrl}/${id}/topic?search=${search}&show=${show}&page=${page}`;
 };
 
-export const uriTopicsCreate = (clusterId) => `${apiUrl}/${clusterId}/topic`;
+export const uriTopicsCreate = clusterId => `${apiUrl}/${clusterId}/topic`;
 
 export const uriTopicsProduce = (clusterId, topicName) =>
   `${apiUrl}/${clusterId}/topic/${topicName}/data`;
 
-export const uriDeleteTopics = (clusterId,topicId) => {
+export const uriDeleteTopics = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}`;
 };
 
@@ -59,7 +59,7 @@ export const uriTopicsAcls = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/acls`;
 };
 
-export const uriTopicsUpdateConfigs = (clusterId,topicId) => {
+export const uriTopicsUpdateConfigs = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/configs`;
 };
 
@@ -109,19 +109,31 @@ export const uriDeleteDefinition = () => {
   return `${apiUrl}/connect/delete`;
 };
 
-export const uriSchemaRegistry = (id, search, pageNumber) => {
-  return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
+export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
 export const uriSchemaVersions = (clusterId, subject) => {
-  return `${apiUrl}/schema/versions?clusterId=${clusterId}&subject=${subject}`;
+  return `${apiUrl}/${clusterId}/schema/${subject}/version`;
 };
 
-export const uriDeleteSchema = () => {
-  return `${apiUrl}/schema/delete`;
+export const uriDeleteSchema = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
 };
 
-export const uriDeleteSchemaVersion = () => {
-  return `${apiUrl}/schema/version`;
+export const uriDeleteSchemaVersion = (clusterId, subject, version) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}/version/${version}`;
+};
+
+export const uriLatestSchemaVersion = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
+};
+
+export const uriUpdateSchema = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
+};
+
+export const uriSchemaCreate = clusterId => {
+  return `${apiUrl}/${clusterId}/schema`;
 };
 
 export const uriDeleteGroups = () => {
@@ -168,18 +180,6 @@ export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp
 
 export const uriConsumerGroupUpdate = () => {
   return `${apiUrl}/group/update`;
-};
-
-export const uriLatestSchemaVersion = (clusterId, subject) => {
-  return `${apiUrl}/schema/version?clusterId=${clusterId}&subject=${subject}`;
-};
-
-export const uriUpdateSchema = () => {
-  return `${apiUrl}/schema/update`;
-};
-
-export const uriSchemaCreate = () => {
-  return `${apiUrl}/schema/create`;
 };
 
 export const uriAclsList = (clusterId, search) => {

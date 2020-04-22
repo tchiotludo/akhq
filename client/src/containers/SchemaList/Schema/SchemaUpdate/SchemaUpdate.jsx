@@ -60,8 +60,8 @@ class SchemaUpdate extends Form {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-    const {schemaId}=this.props || this.props.match.params;
-    this.setState({ clusterId, schemaId }, () => this.getLatestSchemaVersion());
+    const { schemaId } = this.props || this.props.match.params;
+    this.setState({ clusterId, schemaId }, () => this.getLatestSchemaVersion(clusterId, schemaId));
   }
 
   async getLatestSchemaVersion() {
@@ -74,6 +74,7 @@ class SchemaUpdate extends Form {
     });
     try {
       data = await get(uriLatestSchemaVersion(clusterId, schemaId));
+
       data = data.data;
       if (data) {
         this.handleLatestSchemaVersion(data);
@@ -111,13 +112,15 @@ class SchemaUpdate extends Form {
     history.push({
       loading: true
     });
-
-    post(uriUpdateSchema(), body)
+    post(uriUpdateSchema(clusterId, formData.subject), body)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
           successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
+        });
+        history.push({
+          pathname: `/${clusterId}/schema`
         });
       })
       .catch(err => {
