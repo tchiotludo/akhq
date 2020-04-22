@@ -49,7 +49,7 @@ class Sidebar extends Component {
       exact: false,
       strict: false
     });
-    console.log(match);
+
     const clusterId = match ? match.params.clusterId || '' : '';
     let allClusters = {};
     try {
