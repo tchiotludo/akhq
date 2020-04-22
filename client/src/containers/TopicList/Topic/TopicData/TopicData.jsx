@@ -29,7 +29,7 @@ class TopicData extends Component {
     partition: 'All',
     partitionOptions: [],
     offsetsOptions: [],
-    timestamp: moment('Jan 01, 1970, 1:00 AM', 'MMM DD, YYYY, hh:mm A'),
+    timestamp: moment('Jan 01, 2020, 1:00 AM', 'MMM DD, YYYY, hh:mm A'),
     currentSearch: '',
     search: '',
     offsets: {},
@@ -84,15 +84,7 @@ class TopicData extends Component {
       currentSearch,
       offsetsSearch
     } = this.state;
-    console.log(
-      selectedCluster,
-      selectedTopic,
-      sortBy,
-      partition,
-      timestamp,
-      currentSearch,
-      offsetsSearch
-    );
+    console.log('Getting this timestamp', timestamp);
     let data,
       partitionData = {};
     history.push({
@@ -148,9 +140,9 @@ class TopicData extends Component {
   handleMessages = messages => {
     let tableMessages = [];
     messages.map(message => {
-      const date = moment(message.timestamp);
       message.key = message.key ? message.key : 'null';
       message.value = message.value ? message.value : 'null';
+      const date = moment(message.timestamp);
       message.timestamp = formatDateTime(
         {
           year: date.year(),
@@ -377,7 +369,12 @@ class TopicData extends Component {
                           name={'datetime-picker'}
                           value={timestamp}
                           onChange={value => {
-                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
+                            console.log(moment(value));
+                            this.setState(
+                              { timestamp: moment(value) },
+                              () => this.getMessages(),
+                              () => this.console.log(timestamp)
+                            );
                           }}
                         />
                       </div>

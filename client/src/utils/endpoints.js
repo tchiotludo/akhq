@@ -16,12 +16,12 @@ export const uriTopics = (id, search, show, page) => {
   return `${apiUrl}/${id}/topic?search=${search}&show=${show}&page=${page}`;
 };
 
-export const uriTopicsCreate = (clusterId) => `${apiUrl}/${clusterId}/topic`;
+export const uriTopicsCreate = clusterId => `${apiUrl}/${clusterId}/topic`;
 
 export const uriTopicsProduce = (clusterId, topicName) =>
   `${apiUrl}/${clusterId}/topic/${topicName}/data`;
 
-export const uriDeleteTopics = (clusterId,topicId) => {
+export const uriDeleteTopics = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}`;
 };
 
@@ -39,6 +39,7 @@ export const uriTopicData = (clusterId, topicId, offset, partition, sort, timest
       uri += `&search=${search}`;
     }
   }
+  console.log(uri);
   return uri;
 };
 
@@ -59,7 +60,7 @@ export const uriTopicsAcls = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/acls`;
 };
 
-export const uriTopicsUpdateConfigs = (clusterId,topicId) => {
+export const uriTopicsUpdateConfigs = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/configs`;
 };
 
