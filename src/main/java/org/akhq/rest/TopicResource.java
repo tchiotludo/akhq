@@ -8,7 +8,6 @@ import io.micronaut.http.annotation.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.service.TopicService;
-import org.akhq.service.dto.consumerGroup.ConsumerGroupDTO;
 import org.akhq.service.dto.topic.ConfigDTO;
 import org.akhq.service.dto.topic.ConfigOperationDTO;
 import org.akhq.service.dto.topic.CreateTopicDTO;
@@ -87,18 +86,6 @@ public class TopicResource {
         topicService.deleteTopic(deleteTopicDTO.getClusterId(), deleteTopicDTO.getTopicId());
         return topicService.getTopics(deleteTopicDTO.getClusterId(), "ALL", "", Optional.empty());
     }
-
-    @Get("/topic/groups")
-    public List<ConsumerGroupDTO> fetchTopicGroups(String clusterId, String topicId) throws ExecutionException, InterruptedException {
-        log.debug("Fetch topic groups ");
-        return topicService.getConsumerGroups(clusterId, topicId);
-    }
-
-//    @Get("/topic/acls")
-//    public List<AclsDTO> fetchTopicAcl(String clusterId, String topicId) throws ExecutionException, InterruptedException {
-//        log.debug("Fetch topic acls ");
-//        return aclService.getAcls(clusterId, ResourceType.TOPIC, topicId);
-//    }
 
     @Get("/cluster/topic/configs")
     public List<ConfigDTO> fetchTopicConfigs(String clusterId, String topicId) throws ExecutionException, InterruptedException {

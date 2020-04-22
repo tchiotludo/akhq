@@ -1,14 +1,10 @@
 import { node } from 'prop-types';
-/*
-export const baseUrl = `${window.location.protocol}//${window.location.hostname}:
-${window.location.port}`;
-*/
-export const baseUrl = 'http://localhost:8080';
-export const apiUrl = `${baseUrl}/api`;
-//Clusters endpoints
 
-export const uriClusters = id => {
-  return `${apiUrl}/clusters${id ? '?clusterId=' + id : ''}`;
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+export const apiUrl = `${baseUrl}/api`;
+
+export const uriClusters = () => {
+  return `${apiUrl}/cluster`;
 };
 
 //Topics Endpoints
@@ -69,45 +65,53 @@ export const uriConnects = id => {
 };
 
 export const uriConnectDefinitions = (clusterId, connectId) => {
-  return `${apiUrl}/connect/definitions?clusterId=${clusterId}&connectId=${connectId}`;
+  return `${apiUrl}/${clusterId}/connect/${connectId}`;
 };
 
 export const uriConnectPlugins = (clusterId, connectId) => {
-  return `${apiUrl}/connect/plugins?clusterId=${clusterId}&connectId=${connectId}`;
+  return `${apiUrl}/${clusterId}/connect/${connectId}/plugins`;
+};
+
+export const uriConnectPlugin = (clusterId, connectId, pluginId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/plugins/${pluginId}`;
+};
+
+export const uriCreateConnect = (clusterId, connectId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}`;
 };
 
 export const uriGetDefinition = (clusterId, connectId, definitionId) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/connect/definition?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}`;
 };
 
 export const uriConnectDefinitionConfigs = (clusterId, connectId, definitionId) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/connect/definition/configs?clusterId=${clusterId}&connectId=${connectId}&definitionId=${definitionId}`;
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/configs`;
 };
 
-export const uriUpdateDefinition = () => {
-  return `${apiUrl}/connect/definition/update`;
+export const uriUpdateDefinition = (clusterId, connectId, definitionId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/configs`;
 };
 
-export const uriPauseDefinition = () => {
-  return `${apiUrl}/connect/definition/pause`;
+export const uriPauseDefinition = (clusterId, connectId, definitionId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/pause`;
 };
 
-export const uriResumeDefinition = () => {
-  return `${apiUrl}/connect/definition/resume`;
+export const uriResumeDefinition = (clusterId, connectId, definitionId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/resume`;
 };
 
-export const uriRestartDefinition = () => {
-  return `${apiUrl}/connect/definition/restart`;
+export const uriRestartDefinition = (clusterId, connectId, definitionId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/restart`;
 };
 
-export const uriRestartTask = () => {
-  return `${apiUrl}/connect/definition/task/restart`;
+export const uriRestartTask = (clusterId, connectId, definitionId, taskId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}/tasks/${taskId}/restart`;
 };
 
-export const uriDeleteDefinition = () => {
-  return `${apiUrl}/connect/delete`;
+export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}`;
 };
 
 export const uriSchemaRegistry = (id, search, pageNumber) => {
@@ -145,16 +149,28 @@ export const uriNodesLogs = (clusterId, nodeId) => {
   return `${apiUrl}/${clusterId}/node/${nodeId}/logs`;
 };
 
-export const uriConsumerGroups = (clusterId, view, search, pageNumber) => {
+export const uriConsumerGroups = (clusterId, search, pageNumber) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/group?clusterId=${clusterId}&view=${view}&search=${search}&pageNumber=${pageNumber}`;
+  return `${apiUrl}/${clusterId}/group?search=${search}&pageNumber=${pageNumber}`;
+};
+
+export const uriConsumerGroup = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}`;
 };
 
 export const uriConsumerGroupTopics = (clusterId, groupId) => {
   return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${groupId}`;
 };
 export const uriConsumerGroupMembers = (clusterId, groupId) => {
-  return `${apiUrl}/group/members?clusterId=${clusterId}&groupId=${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${groupId}/members`;
+};
+
+export const uriConsumerGroupOffsets = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+};
+
+export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
 };
 
 export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
@@ -167,8 +183,12 @@ export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp
   return uri;
 };
 
-export const uriConsumerGroupUpdate = () => {
-  return `${apiUrl}/group/update`;
+export const uriConsumerGroupDelete = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}`;
+};
+
+export const uriConsumerGroupUpdate = (clusterId, groupId) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
 };
 
 export const uriLatestSchemaVersion = (clusterId, subject) => {
@@ -194,10 +214,6 @@ export const uriConsumerGroupAcls = (clusterId, groupId) => {
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
   return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
-};
-
-export const uriCreateConnect = () => {
-  return `${apiUrl}/connect/definition/create`;
 };
 
 export default {
