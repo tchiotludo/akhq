@@ -29,7 +29,7 @@ class TopicData extends Component {
     partition: 'All',
     partitionOptions: [],
     offsetsOptions: [],
-    timestamp: moment('Jan 01, 1970, 1:00 AM', 'MMM DD, YYYY, hh:mm A'),
+    timestamp: '',
     currentSearch: '',
     search: '',
     offsets: {},
@@ -84,15 +84,6 @@ class TopicData extends Component {
       currentSearch,
       offsetsSearch
     } = this.state;
-    console.log(
-      selectedCluster,
-      selectedTopic,
-      sortBy,
-      partition,
-      timestamp,
-      currentSearch,
-      offsetsSearch
-    );
     let data,
       partitionData = {};
     history.push({
@@ -106,18 +97,21 @@ class TopicData extends Component {
           offsetsSearch !== '' ? offsetsSearch : undefined,
           partition,
           sortBy,
-          formatDateTime(
-            {
-              year: timestamp.year(),
-              monthValue: timestamp.month() + 1,
-              dayOfMonth: timestamp.date(),
-              hour: timestamp.hour(),
-              minute: timestamp.minute(),
-              second: timestamp.second(),
-              milli: timestamp.millisecond()
-            },
-            'YYYY-MM-DDThh:mm:ss.SSS'
-          ) + 'Z',
+          timestamp !== ''
+            ? formatDateTime(
+                {
+                  year: timestamp.year(),
+                  monthValue: timestamp.month() + 1,
+                  dayOfMonth: timestamp.date(),
+                  hour: timestamp.hour(),
+                  minute: timestamp.minute(),
+                  second: timestamp.second(),
+                  milli: timestamp.millisecond()
+                },
+                'YYYY-MM-DDThh:mm:ss.SSS',
+                true
+              ) + 'Z'
+            : undefined,
           currentSearch !== '' ? currentSearch : undefined
         )
       );
@@ -148,14 +142,14 @@ class TopicData extends Component {
   handleMessages = messages => {
     let tableMessages = [];
     messages.map(message => {
-      const date = moment(message.timestamp);
       message.key = message.key ? message.key : 'null';
       message.value = message.value ? message.value : 'null';
+      const date = moment(message.timestamp);
       message.timestamp = formatDateTime(
         {
           year: date.year(),
-          monthValue: date.month(),
-          dayOfMonth: date.daysInMonth(),
+          monthValue: date.month() + 1,
+          dayOfMonth: date.date(),
           hour: date.hour(),
           minute: date.minute(),
           second: date.second(),
@@ -356,7 +350,7 @@ class TopicData extends Component {
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Timestamp:</strong>{' '}
-                    {timestamp.year() !== 1970 &&
+                    {timestamp !== '' &&
                       formatDateTime(
                         {
                           year: timestamp.year(),
@@ -377,7 +371,11 @@ class TopicData extends Component {
                           name={'datetime-picker'}
                           value={timestamp}
                           onChange={value => {
-                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
+                            this.setState(
+                              { timestamp: moment(value) },
+                              () => this.getMessages(),
+                              () => this.console.log(timestamp)
+                            );
                           }}
                         />
                       </div>

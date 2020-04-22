@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import moment from 'moment';
 
-export function formatDateTime(value, format) {
+export function formatDateTime(value, format, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,
@@ -13,9 +13,14 @@ export function formatDateTime(value, format) {
     milli
   );
 
-  return moment(date.toString())
-    .format(format)
-    .toString();
+  return utc
+    ? moment(date.toISOString())
+        .utc()
+        .format(format)
+        .toString()
+    : moment(date.toISOString())
+        .format(format)
+        .toString();
 }
 
 export function handleConvert(value, unit, exclude) {

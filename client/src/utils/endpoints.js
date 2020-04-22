@@ -1,19 +1,16 @@
 import { node } from 'prop-types';
-/*
-export const baseUrl = `${window.location.protocol}//${window.location.hostname}:
-${window.location.port}`;
-*/
-export const baseUrl = 'http://localhost:8080';
+
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}
+:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
-//Clusters endpoints
 
 export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
 //Topics Endpoints
-export const uriTopics = (id, search, show, page) => {
-  return `${apiUrl}/${id}/topic?search=${search}&show=${show}&page=${page}`;
+export const uriTopics = (clusterId, search, show, page) => {
+  return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
 };
 
 export const uriTopicsCreate = clusterId => `${apiUrl}/${clusterId}/topic`;
@@ -28,17 +25,18 @@ export const uriDeleteTopics = (clusterId, topicId) => {
 export const uriTopicData = (clusterId, topicId, offset, partition, sort, timestamp, search) => {
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;
   if (offset !== undefined) {
-    uri += `offset=${offset}`;
-    if (partition !== undefined) {
-      uri += `&partition=${partition}`;
-    }
-    if (timestamp !== undefined) {
-      uri += `&timestamp=${timestamp}`;
-    }
-    if (search !== undefined) {
-      uri += `&search=${search}`;
-    }
+    uri += `&offset=${offset}`;
   }
+  if (partition !== undefined) {
+    uri += `&partition=${partition}`;
+  }
+  if (timestamp !== undefined) {
+    uri += `&timestamp=${timestamp}`;
+  }
+  if (search !== undefined) {
+    uri += `&search=${search}`;
+  }
+  console.log(uri);
   return uri;
 };
 
