@@ -32,7 +32,6 @@ class TopicGroups extends Component {
     });
     try {
       data = await api.get(uriTopicsGroups(selectedCluster, topicId));
-
       data = data.data;
       if (data) {
         if (data) {
@@ -59,10 +58,9 @@ class TopicGroups extends Component {
       tableConsumerGroups.push({
         id: consumerGroup.id,
         state: consumerGroup.state,
-        size: consumerGroup.size,
-        coordinator: consumerGroup.coordinator,
-        members: consumerGroup.members,
-        topicLag: consumerGroup.topicLag
+        coordinator: consumerGroup.coordinator.id,
+        members: consumerGroup.members.length,
+        topicLag: consumerGroup.offsets
       });
     });
     this.setState({ consumerGroups: tableConsumerGroups });
@@ -70,7 +68,7 @@ class TopicGroups extends Component {
 
   handleState(state) {
     return (
-      <span className={state.state === 'Stable' ? 'badge badge-success' : 'badge badge-warning'}>
+      <span className={state === 'STABLE' ? 'badge badge-success' : 'badge badge-warning'}>
         {state}
       </span>
     );
@@ -80,8 +78,8 @@ class TopicGroups extends Component {
     return <span className="badge badge-primary"> {coordinator}</span>;
   }
 
-  handleTopics(topicLag) {
-    return topicLag.map(lagTopic => {
+  handleTopics(topics) {
+    return topics.map(lagTopic => {
       return (
         <div
           onClick={() => {
@@ -90,14 +88,14 @@ class TopicGroups extends Component {
         >
           <Link
             to={{
-              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topicId}`
+              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topic}`
             }}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
           >
-            {lagTopic.topicId}
+            {lagTopic.topic}
             <a href="#" className="badge badge-secondary">
-              Lag:{lagTopic.lag}
+              Lag:{lagTopic.partition}
             </a>
           </Link>
         </div>

@@ -38,7 +38,7 @@ class TopicLogs extends Component {
   handleData(logs) {
     let tableLogs = logs.map(log => {
       return {
-        broker: log.broker,
+        broker: log.brokerId,
         topic: log.topic,
         partition: log.partition,
         size: log.size,

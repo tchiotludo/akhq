@@ -46,18 +46,21 @@ class TopicCreate extends Form {
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
     const topic = {
-      clusterId,
-      topicId: formData.name,
+      cluster: clusterId,
+      name: formData.name,
       partition: formData.partition,
-      replicatorFactor: formData.replication,
-      cleanupPolicy: formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
-      retention: formData.retention
+      replication: formData.replication,
+      configs: {
+        'cleanup.policy': formData.cleanup === 'deleteAndCompact' ? '' : formData.cleanup,
+        'retention.ms': formData.retention
+      }
     };
+    console.log(topic);
     history.push({
       loading: true
     });
 
-    post(uriTopicsCreate(), topic)
+    post(uriTopicsCreate(clusterId), topic)
       .then(res => {
         this.props.history.push({
           pathname: `/${clusterId}/topic`,

@@ -7,6 +7,7 @@ import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
 import _ from 'lodash';
 import Joi from 'joi-browser';
+import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 
 class TopicConfigs extends Form {
   state = {
@@ -56,15 +57,25 @@ class TopicConfigs extends Form {
         id: config.name,
         name: config.name,
         description: config.description,
+        value: config.value,
         readOnly: config.readOnly,
-        dataType: config.dataType,
-        type: config.type,
+        dataType: this.getConfigDataType(config.name),
+        type: config.source,
         sensitive: config.sensitive
       };
     });
     this.setState({ data: tableTopics, configs });
   }
-
+  getConfigDataType = configName => {
+    switch (configName.substring(configName.lastIndexOf('.'))) {
+      case '.ms':
+        return MILLI;
+      case '.size':
+        return BYTES;
+      default:
+        return TEXT;
+    }
+  };
   handleDataType(dataType, value) {
     switch (dataType) {
       case 'MILLI':
@@ -111,9 +122,10 @@ class TopicConfigs extends Form {
           id: config.name,
           name: config.name,
           description: config.description,
+          value: config.value,
           readOnly: config.readOnly,
-          dataType: config.dataType,
-          type: config.type,
+          dataType: this.getConfigDataType(config.name),
+          type: config.source,
           sensitive: config.sensitive
         };
       }
@@ -130,7 +142,7 @@ class TopicConfigs extends Form {
       loading: true
     });
     try {
-      await post(uriTopicsUpdateConfigs(), {
+      await post(uriTopicsUpdateConfigs(selectedCluster, selectedTopic), {
         clusterId: selectedCluster,
         topicId: selectedTopic,
         configs: changedConfigs
@@ -164,9 +176,8 @@ class TopicConfigs extends Form {
             className="form-control"
             autoComplete="off"
             value={value}
-            readOnly={readOnly}
             name={name}
-            placeholder="Default"
+            placeholder="default"
           />
         ) : (
           <input
@@ -175,9 +186,8 @@ class TopicConfigs extends Form {
             className="form-control"
             autoComplete="off"
             value={value}
-            readOnly={readOnly}
             name={name}
-            placeholder="Default"
+            placeholder="default"
           />
         )}
         {this.handleDataType(dataType, value)}

@@ -104,7 +104,7 @@ class TopicProduce extends Form {
       ...this.props.location,
       loading: true
     });
-    post(uriTopicsProduce(), topic)
+    post(uriTopicsProduce(clusterId, topicId), topic)
       .then(res => {
         this.props.history.push({
           ...this.props.location,

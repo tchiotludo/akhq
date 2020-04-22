@@ -13,6 +13,7 @@ import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
+import { checkPropTypes } from 'prop-types';
 
 // Adaptation of data.ftl
 
@@ -28,7 +29,7 @@ class TopicData extends Component {
     partition: 'All',
     partitionOptions: [],
     offsetsOptions: [],
-    timestamp: moment('Jan 01, 1970, 1:00 AM', 'MMM DD, YYYY, hh:mm A'),
+    timestamp: '',
     currentSearch: '',
     search: '',
     offsets: {},
@@ -83,7 +84,6 @@ class TopicData extends Component {
       currentSearch,
       offsetsSearch
     } = this.state;
-
     let data,
       partitionData = {};
     history.push({
@@ -94,29 +94,32 @@ class TopicData extends Component {
         uriTopicData(
           selectedCluster,
           selectedTopic,
-          sortBy,
+          offsetsSearch !== '' ? offsetsSearch : undefined,
           partition,
-          formatDateTime(
-            {
-              year: timestamp.year(),
-              monthValue: timestamp.month() + 1,
-              dayOfMonth: timestamp.date(),
-              hour: timestamp.hour(),
-              minute: timestamp.minute(),
-              second: timestamp.second(),
-              milli: timestamp.millisecond()
-            },
-            'YYYY-MM-DDThh:mm:ss.SSS'
-          ) + 'Z',
-          currentSearch !== '' ? currentSearch : undefined,
-          offsetsSearch !== '' ? offsetsSearch : undefined
+          sortBy,
+          timestamp !== ''
+            ? formatDateTime(
+                {
+                  year: timestamp.year(),
+                  monthValue: timestamp.month() + 1,
+                  dayOfMonth: timestamp.date(),
+                  hour: timestamp.hour(),
+                  minute: timestamp.minute(),
+                  second: timestamp.second(),
+                  milli: timestamp.millisecond()
+                },
+                'YYYY-MM-DDThh:mm:ss.SSS',
+                true
+              ) + 'Z'
+            : undefined,
+          currentSearch !== '' ? currentSearch : undefined
         )
       );
       data = data.data;
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
-      if (data.records) {
-        this.handleMessages(data.records);
+      if (data.results) {
+        this.handleMessages(data.results);
       } else {
         this.setState({ messages: [], pageNumber: 1 });
       }
@@ -124,7 +127,7 @@ class TopicData extends Component {
         this.setState({
           partitionCount: partitionData.length,
           nextPage: data.after,
-          recordCount: data.recordCount
+          recordCount: data.size
         });
       }
     } catch (err) {
@@ -140,7 +143,22 @@ class TopicData extends Component {
     let tableMessages = [];
     messages.map(message => {
       message.key = message.key ? message.key : 'null';
-      message.date = formatDateTime(message.date, 'MMM DD, YYYY, hh:mm A');
+      message.value = message.value ? message.value : 'null';
+      const date = moment(message.timestamp);
+      message.timestamp = formatDateTime(
+        {
+          year: date.year(),
+          monthValue: date.month() + 1,
+          dayOfMonth: date.date(),
+          hour: date.hour(),
+          minute: date.minute(),
+          second: date.second(),
+          milli: date.millisecond()
+        },
+        'MMM DD, YYYY, hh:mm A'
+      );
+      message.partition = message.partition ? message.partition : '0';
+      message.offset = message.offset ? message.offset : '0';
       message.headers = message.headers ? message.headers : {};
       message.schema = message.schema ? message.schema : '';
 
@@ -332,7 +350,7 @@ class TopicData extends Component {
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Timestamp:</strong>{' '}
-                    {timestamp.year() !== 1970 &&
+                    {timestamp !== '' &&
                       formatDateTime(
                         {
                           year: timestamp.year(),
@@ -353,7 +371,11 @@ class TopicData extends Component {
                           name={'datetime-picker'}
                           value={timestamp}
                           onChange={value => {
-                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
+                            this.setState(
+                              { timestamp: moment(value) },
+                              () => this.getMessages(),
+                              () => this.console.log(timestamp)
+                            );
                           }}
                         />
                       </div>
@@ -481,8 +503,8 @@ class TopicData extends Component {
                 }
               },
               {
-                id: 'date',
-                accessor: 'date',
+                id: 'timestamp',
+                accessor: 'timestamp',
                 colName: 'Date',
                 type: 'text',
                 cell: (obj, col) => {
@@ -497,6 +519,19 @@ class TopicData extends Component {
                 id: 'partition',
                 accessor: 'partition',
                 colName: 'Partition',
+                type: 'text',
+                cell: (obj, col) => {
+                  return (
+                    <div className="value cell-div">
+                      <div className="align-cell">{obj[col.accessor]}</div>
+                    </div>
+                  );
+                }
+              },
+              {
+                id: 'offset',
+                accessor: 'offset',
+                colName: 'Offset',
                 type: 'text',
                 cell: (obj, col) => {
                   return (

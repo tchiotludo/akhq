@@ -6,7 +6,7 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
+import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import './styles.scss';
@@ -38,9 +38,7 @@ class TopicList extends Component {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
-      this.getTopics();
-    });
+    this.setState({ selectedCluster: clusterId }, this.getTopics);
   }
 
   showDeleteModal = deleteMessage => {
@@ -59,7 +57,7 @@ class TopicList extends Component {
       topicId: topicToDelete.id
     };
     history.push({ loading: true });
-    remove(uriDeleteTopics(), deleteData)
+    remove(uriDeleteTopics(selectedCluster, topicToDelete), deleteData)
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
@@ -67,7 +65,7 @@ class TopicList extends Component {
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });
-        this.handleTopics(res.data.topics);
+        this.getTopics();
       })
       .catch(err => {
         this.props.history.push({
@@ -120,15 +118,16 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      data = await api.get(endpoints.uriTopics(selectedCluster, topicListView, search, pageNumber));
+      console.log(uriTopics(selectedCluster, search, topicListView, pageNumber));
+      data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = data.data;
       if (data) {
-        if (data.topics) {
-          this.handleTopics(data.topics);
+        if (data.results) {
+          this.handleTopics(data.results);
         } else {
           this.setState({ topics: [] });
         }
-        this.setState({ selectedCluster, totalPageNumber: data.totalPageNumber });
+        this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
@@ -148,11 +147,11 @@ class TopicList extends Component {
         id: topic.name,
         name: topic.name,
         size: topic.size,
-        weight: topic.count,
-        partitionsTotal: topic.total,
-        replicationFactor: topic.factor,
-        replicationInSync: topic.inSync,
-        groupComponent: topic.logDirSize
+        weight: topic.logDirSize,
+        partitionsTotal: topic.partitions.length,
+        replicationFactor: topic.replicaCount,
+        replicationInSync: topic.inSyncReplicaCount,
+        groupComponent: topic.logDir[0].offsetLag
       });
     });
     this.setState({ topics: tableTopics });
