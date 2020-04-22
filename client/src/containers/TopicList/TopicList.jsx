@@ -6,7 +6,7 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-import endpoints, { uriDeleteTopics } from '../../utils/endpoints';
+import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import history from '../../utils/history';
 import './styles.scss';
@@ -118,7 +118,8 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      data = await api.get(endpoints.uriTopics(selectedCluster, search, pageNumber));
+      console.log(uriTopics(selectedCluster, search, topicListView, pageNumber));
+      data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = data.data;
       if (data) {
         if (data.results) {
@@ -126,7 +127,7 @@ class TopicList extends Component {
         } else {
           this.setState({ topics: [] });
         }
-        this.setState({ selectedCluster, totalPageNumber: data.totalPageNumber });
+        this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
