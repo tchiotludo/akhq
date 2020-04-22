@@ -7,7 +7,6 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
-//Topics Endpoints
 export const uriTopics = (id, search, show, page) => {
   return `${apiUrl}/${id}/topic?search=${search}&show=${show}&page=${page}`;
 };
