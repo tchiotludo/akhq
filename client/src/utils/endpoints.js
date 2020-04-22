@@ -8,7 +8,6 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
-//Topics Endpoints
 export const uriTopics = (clusterId, search, show, page) => {
   return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
 };
@@ -36,7 +35,6 @@ export const uriTopicData = (clusterId, topicId, offset, partition, sort, timest
   if (search !== undefined) {
     uri += `&search=${search}`;
   }
-  console.log(uri);
   return uri;
 };
 
