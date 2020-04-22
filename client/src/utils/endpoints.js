@@ -7,7 +7,6 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
-//Topics Endpoints
 export const uriTopics = (clusterId, search, show, page) => {
   return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
 };
@@ -35,7 +34,6 @@ export const uriTopicData = (clusterId, topicId, offset, partition, sort, timest
   if (search !== undefined) {
     uri += `&search=${search}`;
   }
-  console.log(uri);
   return uri;
 };
 
@@ -114,19 +112,31 @@ export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
   return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}`;
 };
 
-export const uriSchemaRegistry = (id, search, pageNumber) => {
-  return `${apiUrl}/schema?clusterId=${id}&search=${search}&pageNumber=${pageNumber}`;
+export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
 export const uriSchemaVersions = (clusterId, subject) => {
-  return `${apiUrl}/schema/versions?clusterId=${clusterId}&subject=${subject}`;
+  return `${apiUrl}/${clusterId}/schema/${subject}/version`;
 };
 
-export const uriDeleteSchema = () => {
-  return `${apiUrl}/schema/delete`;
+export const uriDeleteSchema = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
 };
 
-export const uriDeleteSchemaVersion = () => {
-  return `${apiUrl}/schema/version`;
+export const uriDeleteSchemaVersion = (clusterId, subject, version) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}/version/${version}`;
+};
+
+export const uriLatestSchemaVersion = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
+};
+
+export const uriUpdateSchema = (clusterId, subject) => {
+  return `${apiUrl}/${clusterId}/schema/${subject}`;
+};
+
+export const uriSchemaCreate = clusterId => {
+  return `${apiUrl}/${clusterId}/schema`;
 };
 
 export const uriDeleteGroups = () => {
@@ -189,18 +199,6 @@ export const uriConsumerGroupDelete = (clusterId, groupId) => {
 
 export const uriConsumerGroupUpdate = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
-};
-
-export const uriLatestSchemaVersion = (clusterId, subject) => {
-  return `${apiUrl}/schema/version?clusterId=${clusterId}&subject=${subject}`;
-};
-
-export const uriUpdateSchema = () => {
-  return `${apiUrl}/schema/update`;
-};
-
-export const uriSchemaCreate = () => {
-  return `${apiUrl}/schema/create`;
 };
 
 export const uriAclsList = (clusterId, search) => {
