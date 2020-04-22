@@ -94,7 +94,7 @@ class SchemaList extends Component {
       if (response.results) {
         let schemasRegistry = response.results || [];
         this.handleSchemaRegistry(schemasRegistry);
-        this.setState({ selectedCluster, totalPageNumber: response.totalPageNumber });
+        this.setState({ selectedCluster, totalPageNumber: response.page });
       }
     } catch (err) {
       history.replace('/error', { errorData: err });
