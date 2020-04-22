@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from '../../images/logo.svg';
 import TabContainer from 'react-bootstrap/TabContainer';
 import { Link, withRouter } from 'react-router-dom';
+import { matchPath } from 'react-router';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
@@ -43,11 +44,25 @@ class Sidebar extends Component {
   }
 
   async handleGetClusters(callback = () => {}) {
+    const match = matchPath(this.props.history.location.pathname, {
+      path: '/:clusterId/',
+      exact: false,
+      strict: false
+    });
+
+    const clusterId = match ? match.params.clusterId || '' : '';
     let allClusters = {};
     try {
       allClusters = await api.get(endpoints.uriClusters());
+      allClusters = _(allClusters.data)
+        .sortBy(cluster => cluster.id)
+        .value();
+      const cluster = allClusters.find(cluster => cluster.id === clusterId).id;
       this.setState(
-        { allClusters: allClusters.data, selectedCluster: allClusters.data[0].id },
+        {
+          allClusters: allClusters,
+          selectedCluster: cluster || allClusters[0].id
+        },
         () => {
           const { selectedCluster } = this.state;
 
@@ -55,55 +70,48 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      console.log('Erro allClusters:' + err);
+      this.props.history.replace('/error', { errorData: err });
     }
   }
 
   async handleGetConnects(selectedCluster) {
-    let allConnects = [];
-    try {
-      allConnects = await api.get(endpoints.uriConnects(selectedCluster));
-      allConnects = _(allConnects.data)
-        .sortBy()
-        .value();
-      this.setState({ allConnects: allConnects, selectedConnect: allConnects[0] });
-    } catch (err) {
-      console.log('Erro allConnects:' + err);
-    }
+    const { allClusters } = this.state;
+    const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
+    this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
   }
 
   setClustersAndConnects = () => {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
-    const listClusters = _(allClusters)
-      .sortBy()
-      .value()
-      .map(cluster => (
-        <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
-          <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
-        </li>
-      ));
-    const listConnects = _(allConnects)
-      .sortBy()
-      .value()
-      .map(connect => (
-        <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
-          <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
-        </li>
-      ));
+    const listClusters = allClusters.map(cluster => (
+      <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
+        <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
+      </li>
+    ));
+    const listConnects = allConnects.map(connect => (
+      <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
+        <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
+      </li>
+    ));
 
     return { listClusters, listConnects };
   };
 
   changeSelectedCluster(newSelectedCluster) {
-    this.setState({ selectedCluster: newSelectedCluster.id, showClusters: false }, () => {
-      const { selectedCluster } = this.state;
-      this.props.history.push({
-        pathname: `/${selectedCluster}/topic`,
-        selectedCluster
-      });
+    this.setState(
+      {
+        selectedCluster: newSelectedCluster.id,
+        showClusters: false
+      },
+      () => {
+        const { selectedCluster } = this.state;
+        this.props.history.push({
+          pathname: `/${selectedCluster}/topic`,
+          selectedCluster
+        });
 
-      this.handleGetConnects(selectedCluster);
-    });
+        this.handleGetConnects(selectedCluster);
+      }
+    );
   }
 
   changeSelectedConnect(connect) {

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
-import endpoints from '../../../../utils/endpoints';
+import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
+import { Link } from 'react-router-dom';
 
 class ConsumerGroupTopics extends Component {
   state = {
@@ -16,16 +17,17 @@ class ConsumerGroupTopics extends Component {
   }
 
   async getConsumerGroupTopics() {
-    let topics = [];
+    let offsets = [];
     const { selectedCluster, selectedConsumerGroup } = this.state;
     const { history } = this.props;
     history.push({
       loading: true
     });
     try {
-      topics = await get(endpoints.uriConsumerGroupTopics(selectedCluster, selectedConsumerGroup));
+      offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
+      offsets = offsets.data;
 
-      this.handleData(topics.data);
+      this.handleData(offsets);
     } catch (err) {
       console.error('Error:', err);
     } finally {
@@ -34,16 +36,15 @@ class ConsumerGroupTopics extends Component {
       });
     }
   }
-  
-  
-  handleData(topics) {
-    let data = topics.map(topic => {
+
+  handleData(offsets) {
+    let data = offsets.map(offset => {
       return {
-        name: topic.name,
-        partition: topic.partition,
-        member: topic.member,
-        offset: topic.offset,
-        lag: topic.lag
+        name: offset.topic,
+        partition: offset.partition,
+        member: offset.member,
+        offset: offset.offset,
+        lag: offset.lag
       };
     });
     this.setState({ data });
@@ -67,7 +68,14 @@ class ConsumerGroupTopics extends Component {
               id: 'name',
               accessor: 'name',
               colName: 'Name',
-              type: 'text'
+              type: 'text',
+              cell: (obj, col) => {
+                return (
+                  <Link to={`/${this.state.selectedCluster}/topic/${obj[col.accessor]}`}>
+                    {obj[col.accessor]}
+                  </Link>
+                );
+              }
             },
             {
               id: 'partition',

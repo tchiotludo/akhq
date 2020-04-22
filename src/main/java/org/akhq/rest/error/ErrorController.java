@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 @Slf4j
-@Controller
+//@Controller
 public class ErrorController {
 
     private static final String INTERNAL_TITLE_FORMAT = "%d %s - %s";

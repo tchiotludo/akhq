@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
-import endpoints from '../../../../utils/endpoints';
+import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
 import './styles.scss';
@@ -23,9 +23,7 @@ class ConsumerGroupMembers extends Component {
       loading: true
     });
     try {
-      const members = await get(
-        endpoints.uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup)
-      );
+      const members = await get(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
 
       this.handleData(members.data);
     } catch (err) {

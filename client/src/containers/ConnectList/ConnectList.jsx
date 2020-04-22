@@ -61,13 +61,8 @@ class ConnectList extends Component {
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
     const { history } = this.props;
-    const deleteData = {
-      clusterId,
-      connectId,
-      definitionId: definition
-    };
     history.push({ loading: true });
-    remove(uriDeleteDefinition(), deleteData)
+    remove(uriDeleteDefinition(clusterId, connectId, definition))
       .then(res => {
         this.props.history.push({
           ...this.props.location,
@@ -75,10 +70,9 @@ class ConnectList extends Component {
           successToastMessage: `Definition '${definition}' is deleted`,
           loading: false
         });
-        this.setState(
-          { showDeleteModal: false, definitionToDelete: '' },
-          this.handleData(res.data)
-        );
+        this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
+          this.getConnectDefinitions();
+        });
       })
       .catch(err => {
         this.props.history.push({
@@ -96,7 +90,7 @@ class ConnectList extends Component {
     tableData = data.map(connectDefinition => {
       return {
         id: connectDefinition.name || '',
-        config: connectDefinition.config || '',
+        config: JSON.stringify(connectDefinition.configs) || '',
         type:
           {
             type: connectDefinition.type,
@@ -154,7 +148,7 @@ class ConnectList extends Component {
       renderedTasks.push(
         <React.Fragment>
           <span class={`btn btn-sm mb-1 ${className}`}>
-            {`${task.name} (${task.id}) `}
+            {`${task.workerId} (${task.id}) `}
             <span class="badge badge-light">{task.state}</span>
           </span>
           <br />
@@ -197,7 +191,11 @@ class ConnectList extends Component {
                     <div className="value-button">
                       <button
                         className="btn btn-secondary headers pull-right"
-                        onClick={() => this.showConfigModal(obj[col.accessor])}
+                        onClick={() =>
+                          this.showConfigModal(
+                            JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)
+                          )
+                        }
                       >
                         ...
                       </button>

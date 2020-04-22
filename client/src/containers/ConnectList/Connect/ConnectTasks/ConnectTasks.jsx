@@ -10,7 +10,7 @@ import {
   uriRestartDefinition,
   uriRestartTask
 } from '../../../../utils/endpoints';
-import { get, put } from '../../../../utils/api';
+import { get } from '../../../../utils/api';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 
 class ConnectTasks extends Component {
@@ -43,7 +43,7 @@ class ConnectTasks extends Component {
     tasks.map(task => {
       tableData.push({
         id: task.id,
-        worker: task.name,
+        worker: task.workerId,
         state: task.state
       });
     });
@@ -69,36 +69,6 @@ class ConnectTasks extends Component {
     }
   }
 
-  // async restartTask(taskId) {
-  //   const { clusterId, connectId, definitionId } = this.state;
-  //   const { history } = this.props;
-  //   history.push({
-  //     loading: true
-  //   });
-  //   const body = {
-  //     clusterId,
-  //     connectId,
-  //     definitionId,
-  //     taskId
-  //   };
-  //   await put(uriRestartTask(), body)
-  //     .then(() => this.getDefinition())
-  //     .then(() => {
-  //       this.props.history.push({
-  //         showSuccessToast: true,
-  //         successToastMessage: `Definition '${definitionId}' tasks ${taskId} is restarted`,
-  //         loading: false
-  //       });
-  //     })
-  //     .catch(err => {
-  //       this.props.history.push({
-  //         showErrorToast: true,
-  //         errorToastMessage: `Failed to restart tasks ${taskId} from '${definitionId}'`,
-  //         loading: false
-  //       });
-  //     });
-  // }
-
   modifyDefinitionState = () => {
     const { clusterId, connectId, definitionId } = this.state;
     const { uri, action, failedAction, taskId } = this.state.definitionModifyData;
@@ -106,15 +76,8 @@ class ConnectTasks extends Component {
     history.push({
       loading: true
     });
-    let body = {
-      clusterId,
-      connectId,
-      definitionId
-    };
 
-    if (taskId !== undefined) body.taskId = taskId;
-
-    put(uri, body)
+    get(uri)
       .then(() => this.getDefinition())
       .then(() => {
         this.props.history.push({
@@ -154,33 +117,34 @@ class ConnectTasks extends Component {
   };
 
   handleAction = (option, taskId) => {
+    const { clusterId, connectId, definitionId } = this.state;
     let uri = '';
     let action = '';
     let failedAction = '';
 
     switch (option) {
       case 'PAUSE':
-        uri = uriPauseDefinition();
+        uri = uriPauseDefinition(clusterId, connectId, definitionId);
         action = 'paused';
         failedAction = 'pause';
         break;
       case 'RESUME':
-        uri = uriResumeDefinition();
+        uri = uriResumeDefinition(clusterId, connectId, definitionId);
         action = 'resumed';
         failedAction = 'resume';
         break;
       case 'RESTART':
-        uri = uriRestartDefinition();
+        uri = uriRestartDefinition(clusterId, connectId, definitionId);
         action = 'restarted';
         failedAction = 'restart';
         break;
       case 'RESTART_TASK':
-        uri = uriRestartTask();
+        uri = uriRestartTask(clusterId, connectId, definitionId, taskId);
         action = 'restarted';
         failedAction = 'restart';
         break;
       default:
-        uri = uriResumeDefinition();
+        uri = uriResumeDefinition(clusterId, connectId, definitionId);
         action = 'resumed';
         failedAction = 'resume';
         break;
