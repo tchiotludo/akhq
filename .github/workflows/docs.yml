@@ -24,7 +24,7 @@ jobs:
       - name: Contributor
         run: |
           npm i github-contributors-list
-          node_modules/.bin/githubcontrib --repo kafkahq --owner tchiotludo --format html --sortOrder desc > docs/contributors.html
+          node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > docs/contributors.html
 
       # Clone helm charts
       - name: Clone helm charts
