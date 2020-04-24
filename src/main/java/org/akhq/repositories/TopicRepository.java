@@ -96,7 +96,7 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
-        return this.findByName(clusterId, name, false);
+        return this.findByName(clusterId, name, true);
     }
 
     public Topic findByName(String clusterId, String name, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {

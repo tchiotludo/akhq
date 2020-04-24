@@ -469,7 +469,7 @@ public class TopicController extends AbstractController {
     }
 
     private HttpResponse<?> render(HttpRequest<?> request, String cluster, String topicName, String tab) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(cluster, topicName);
+        Topic topic = this.topicRepository.findByName(cluster, topicName, !tab.equals("groups"));
         List<Config> configs = this.configRepository.findByTopic(cluster, topicName);
 
         return this.template(
@@ -497,7 +497,7 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groupsApi(String cluster, String topicName) throws ExecutionException, InterruptedException {
-        return this.topicRepository.findByName(cluster, topicName).getConsumerGroups();
+        return this.topicRepository.findByName(cluster, topicName, false).getConsumerGroups();
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")
