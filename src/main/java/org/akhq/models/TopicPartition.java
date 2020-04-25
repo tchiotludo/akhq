@@ -60,11 +60,11 @@ public class TopicPartition {
         ) {
             super(topicPartition);
 
-            this.offset = Optional.of(offsetAndMetadata.offset());
-            this.metadata = Optional.of(offsetAndMetadata.metadata());
-            this.member = member != null ? Optional.of(member) : Optional.empty() ;
-            this.firstOffset = Optional.of(partiionOffsets.getFirstOffset());
-            this.lastOffset = Optional.of(partiionOffsets.getLastOffset());
+            this.offset = offsetAndMetadata != null ? Optional.of(offsetAndMetadata.offset()) : Optional.empty();
+            this.metadata = offsetAndMetadata != null ? Optional.of(offsetAndMetadata.metadata()) : Optional.empty();
+            this.member = member != null ? Optional.of(member) : Optional.empty();
+            this.firstOffset = partiionOffsets != null ? Optional.of(partiionOffsets.getFirstOffset()) : Optional.empty();
+            this.lastOffset = partiionOffsets != null ? Optional.of(partiionOffsets.getLastOffset()) : Optional.empty();
         }
 
         public Optional<Long> getOffsetLag() {
