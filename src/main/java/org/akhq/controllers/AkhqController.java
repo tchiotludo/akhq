@@ -40,23 +40,27 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
-    public List<ClusterDefinition> list() {
-        return this.connections
-            .stream()
-            .map(connection -> new ClusterDefinition(
-                connection.getName(),
-                connection.getSchemaRegistry() != null,
-                connection
-                    .getConnect()
+    public HttpResponse<List<ClusterDefinition>> list() {
+        if (this.getRights().size() > 0) {
+            return HttpResponse.ok(this.connections
                     .stream()
-                    .map(Connect::getName)
-                    .collect(Collectors.toList())
+                    .map(connection -> new ClusterDefinition(
+                            connection.getName(),
+                            connection.getSchemaRegistry() != null,
+                            connection
+                                    .getConnect()
+                                    .stream()
+                                    .map(Connect::getName)
+                                    .collect(Collectors.toList())
 
-            ))
-            .collect(Collectors.toList());
+                    ))
+                    .collect(Collectors.toList()));
+        }
+
+        return HttpResponse.unauthorized();
     }
 
     @Secured(SecurityRule.IS_ANONYMOUS)
@@ -84,13 +88,14 @@ public class AkhqController extends AbstractController {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
             securityService
-                .getAuthentication()
-                .ifPresent(authentication -> {
-                    authUser.logged = true;
-                    authUser.username = authentication.getName();
-                    authUser.roles = this.getRights();
-                });
+                    .getAuthentication()
+                    .ifPresent(authentication -> {
+                        authUser.logged = true;
+                        authUser.username = authentication.getName();
+                    });
         }
+
+        authUser.roles = this.getRights();
 
         return authUser;
     }
