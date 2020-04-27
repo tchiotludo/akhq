@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Table from '../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import { calculateTopicOffsetLag } from '../../utils/converters';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
 import ConsumerGroup from './ConsumerGroup/ConsumerGroup';
@@ -112,7 +113,7 @@ class ConsumerGroupList extends Component {
     const { history } = this.props;
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
-      const offsetLag = this.calculateTopicOffsetLag(topicOffsets);
+      const offsetLag = calculateTopicOffsetLag(topicOffsets);
 
       return (
         <div
@@ -138,19 +139,6 @@ class ConsumerGroupList extends Component {
       );
     });
   }
-
-  calculateTopicOffsetLag = topicOffsets => {
-    let offsetLag = 0;
-    let firstOffset = 0;
-    let lastOffset = 0;
-    topicOffsets.map(topicOffset => {
-      firstOffset = topicOffset.firstOffset || 0;
-      lastOffset = topicOffset.lastOffset || 0;
-      offsetLag += lastOffset - firstOffset;
-    });
-
-    return offsetLag;
-  };
 
   handleOnDelete(group) {
     this.setState({ groupToDelete: group }, () => {
