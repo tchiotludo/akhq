@@ -1,6 +1,19 @@
 import _ from 'lodash';
 import moment from 'moment';
 
+export function calculateTopicOffsetLag(topicOffsets) {
+  let offsetLag = 0;
+  let firstOffset = 0;
+  let lastOffset = 0;
+  topicOffsets.map(topicOffset => {
+    firstOffset = topicOffset.firstOffset || 0;
+    lastOffset = topicOffset.lastOffset || 0;
+    offsetLag += lastOffset - firstOffset;
+  });
+
+  return offsetLag;
+}
+
 export function formatDateTime(value, format, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(
@@ -63,7 +76,7 @@ export function showTime(milliseconds) {
 export function showBytes(bytes, dPlaces = 2) {
   if (!bytes) return '0B';
   const value = handleConvert(bytes, 'B');
-  return `${value.val.toFixed(dPlaces)}${value.unit}`;
+  return `${value.val.toFixed(dPlaces)} ${value.unit}`;
 }
 
 export default { showTime, showBytes };
