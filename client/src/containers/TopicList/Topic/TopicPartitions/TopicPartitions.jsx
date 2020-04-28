@@ -3,6 +3,7 @@ import { uriTopicsPartitions } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
+import constants from '../../../../utils/constants';
 
 class TopicPartitions extends Component {
   state = {
@@ -71,13 +72,13 @@ class TopicPartitions extends Component {
   handleSize(size) {
     return (
       <label>
-        {size.lastOffset-size.firstOffset} - {converters.showBytes(size.logDirSize, 0)}
+        {size.lastOffset - size.firstOffset} - {converters.showBytes(size.logDirSize, 0)}
       </label>
     );
   }
 
   render() {
-    const { data } = this.state;
+    const { data, selectedCluster, selectedTopic } = this.state;
     return (
       <div>
         <Table

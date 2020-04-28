@@ -19,6 +19,10 @@ class Topic extends Component {
     selectedTab: 'data'
   };
 
+  static getDerivedStateFromProps(props, state) {
+    return state;
+  }
+
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
 
