@@ -4,6 +4,7 @@ import Input from '../Form/Input';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core';
 import { DateTimePicker } from '@material-ui/pickers';
 import moment from 'moment';
+import { formatDateTime } from '../../utils/converters';
 
 const customTheme = createMuiTheme({
   overrides: {
@@ -124,7 +125,7 @@ const customTheme = createMuiTheme({
 
 class DatePicker extends React.Component {
   static propTypes = {
-    value: PropTypes.object,
+    value: PropTypes.string,
     onChange: PropTypes.func
   };
 
@@ -141,6 +142,24 @@ class DatePicker extends React.Component {
     this.setState({ value }, () => {
       this.props.onChange && this.props.onChange(value);
     });
+  };
+
+  getDisplayValue = value => {
+    try {
+      return formatDateTime(
+        {
+          year: value.year(),
+          monthValue: value.month(),
+          dayOfMonth: value.date(),
+          hour: value.hour(),
+          minute: value.minute(),
+          second: value.second()
+        },
+        'DD-MM-YYYY HH:mm'
+      );
+    } catch (e) {
+      return '';
+    }
   };
 
   render = () => {
@@ -162,13 +181,7 @@ class DatePicker extends React.Component {
               name={name}
               label={label}
               error={error}
-              value={() => {
-                try {
-                  return value.format('DD-MM-YYYY HH:mm');
-                } catch (e) {
-                  return '';
-                }
-              }}
+              value={this.getDisplayValue(value)}
               onClick={() => {
                 this.setState({ openDateModal: true });
               }}
