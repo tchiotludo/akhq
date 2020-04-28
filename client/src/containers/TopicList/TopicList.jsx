@@ -139,7 +139,6 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
-    console.log(topics);
     let tableTopics = [];
     topics.map(topic => {
       tableTopics.push({
