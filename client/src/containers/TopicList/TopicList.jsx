@@ -165,8 +165,7 @@ class TopicList extends Component {
         return (
           <React.Fragment>
             <Link to="#" class={className}>
-              {consumerGroup.id}
-              <span class="badge badge-light">Lag: {offsetLag}</span>
+              {consumerGroup.id} <span class="badge badge-light">Lag: {offsetLag}</span>
             </Link>
             <br />
           </React.Fragment>
