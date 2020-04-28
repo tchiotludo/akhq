@@ -270,7 +270,7 @@ class TopicProduce extends Form {
           {this.renderDatePicker('timestamp', 'Timestamp', value => {
             let { formData } = this.state;
             formData.timestamp = value;
-            this.setState({ formData }, () => console.log(formData));
+            this.setState({ formData });
           })}
           {this.renderButton(
             'Produce',
