@@ -74,9 +74,9 @@ export function showTime(milliseconds) {
 }
 
 export function showBytes(bytes, dPlaces = 2) {
-  if (!bytes) return '0B';
+  if (!bytes) return '0 B';
   const value = handleConvert(bytes, 'B');
-  return `${value.val.toFixed(dPlaces)} ${value.unit}`;
+  return `${parseFloat(value.val.toFixed(dPlaces))} ${value.unit}`;
 }
 
 export default { showTime, showBytes };

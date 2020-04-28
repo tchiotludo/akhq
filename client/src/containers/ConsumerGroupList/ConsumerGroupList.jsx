@@ -142,7 +142,11 @@ class ConsumerGroupList extends Component {
 
   handleOnDelete(group) {
     this.setState({ groupToDelete: group }, () => {
-      this.showDeleteModal(`Delete ConsumerGroup ${group.id}?`);
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete consumer group: {<code>{group.id}</code>} ?
+        </React.Fragment>
+      );
     });
   }
 

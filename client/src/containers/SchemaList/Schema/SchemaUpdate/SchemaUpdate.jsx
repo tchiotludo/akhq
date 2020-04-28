@@ -115,20 +115,19 @@ class SchemaUpdate extends Form {
     post(uriUpdateSchema(clusterId, formData.subject), body)
       .then(res => {
         this.props.history.push({
+          ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
-        });
-        history.push({
-          pathname: `/${clusterId}/schema`
         });
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.push({
+          ...this.props.location,
           showErrorToast: true,
           errorToastTitle: `Failed to update schema ${formData.subject}`,
-          errorToastMessage: err.response.data.title,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });
