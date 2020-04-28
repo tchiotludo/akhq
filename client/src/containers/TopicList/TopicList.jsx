@@ -75,7 +75,9 @@ class TopicList extends Component {
 
   handleOnDelete(topic) {
     this.setState({ topicToDelete: topic }, () => {
-      this.showDeleteModal(`Delete topic ${topic.id}?`);
+      this.showDeleteModal(
+        <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
+      );
     });
   }
 

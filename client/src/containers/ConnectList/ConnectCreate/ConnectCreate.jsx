@@ -420,7 +420,7 @@ class ConnectCreate extends Component {
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',
-          errorToastMessage: err.response.data.title,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });

@@ -124,7 +124,11 @@ class ConnectList extends Component {
 
   handleOnDelete(definition) {
     this.setState({ definitionToDelete: definition }, () => {
-      this.showDeleteModal(`Do you want to delete definition: ${definition}?`);
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete definition: {<code>{definition}</code>} ?
+        </React.Fragment>
+      );
     });
   }
 
@@ -250,6 +254,7 @@ class ConnectList extends Component {
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}
+          noContent={'No connectors available'}
         />
         <aside>
           <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">

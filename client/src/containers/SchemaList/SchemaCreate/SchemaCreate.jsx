@@ -61,7 +61,7 @@ class SchemaCreate extends Form {
         this.props.history.push({
           pathname: `/${clusterId}/schema`,
           showSuccessToast: true,
-          successToastMessage: `Schema '${formData.subject}' was created successfully.`,
+          successToastMessage: `Schema '${formData.subject}' is created`,
           loading: false
         });
       })
@@ -69,8 +69,8 @@ class SchemaCreate extends Form {
         console.log('err', err);
         this.props.history.push({
           showErrorToast: true,
-          errorToastTitle: err.response.data.title,
-          errorToastMessage: err.response.data.description,
+          errorToastTitle: `Failed to create schema '${formData.subject}'`,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });

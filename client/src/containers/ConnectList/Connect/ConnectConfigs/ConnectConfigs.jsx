@@ -381,7 +381,7 @@ class ConnectConfigs extends Form {
         ...this.props.location,
         showErrorToast: true,
         errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
-        errorToastMessage: err.response.data.tle,
+        errorToastMessage: err.response.data.message,
         loading: false
       });
     }
