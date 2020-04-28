@@ -37,11 +37,11 @@ class NodesList extends Component {
   }
 
   handleData(nodes) {
+    console.log(nodes);
     let tableNodes = nodes.nodes.map(node => {
       return {
         id: node.id || '',
-        host: node.host || '',
-        port: node.port || '',
+        host: `${node.host}:${node.port}` || '',
         rack: node.rack || ''
       };
     });
@@ -73,9 +73,9 @@ class NodesList extends Component {
               type: 'text'
             },
             {
-              id: 'racks',
+              id: 'rack',
               accessor: 'rack',
-              colName: 'Racks',
+              colName: 'Rack',
               type: 'text'
             }
           ]}
