@@ -21,10 +21,23 @@ export const uriDeleteTopics = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}`;
 };
 
-export const uriTopicData = (clusterId, topicId, offset, partition, sort, timestamp, search) => {
+export const uriTopicData = (
+  clusterId,
+  topicId,
+  offset,
+  partition,
+  sort,
+  timestamp,
+  search,
+  nextPage = ''
+) => {
+  if (nextPage !== '') {
+    return baseUrl + nextPage;
+  }
+
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;
   if (offset !== undefined) {
-    uri += `&offset=${offset}`;
+    uri += `&after=${offset}`;
   }
   if (partition !== undefined) {
     uri += `&partition=${partition}`;
