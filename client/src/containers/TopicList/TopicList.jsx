@@ -81,7 +81,6 @@ class TopicList extends Component {
 
   handleSearch = data => {
     const { searchData } = data;
-    console.log(searchData);
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
     });
@@ -115,7 +114,6 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      console.log(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = data.data;
       if (data) {
@@ -137,7 +135,6 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
-    console.log(topics);
     let tableTopics = [];
     topics.map(topic => {
       tableTopics.push({
