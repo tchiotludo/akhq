@@ -247,7 +247,7 @@ h3.logo sup {
 #content {
   padding: 20px 20px 65px;
   min-height: 100vh;
-  transition: none;
+  transition: 0.2s;
 }
 
 @media (min-width: 768px) {
@@ -1068,17 +1068,17 @@ a {
 }
 
 a:hover {
-  color: #178ab4;
+  color: #ecbb13;
   text-decoration: underline;
 }
 
 a:not([href]):not([tabindex]) {
-  color: inherit;
+  color: white;
   text-decoration: none;
 }
 
 a:not([href]):not([tabindex]):hover, a:not([href]):not([tabindex]):focus {
-  color: inherit;
+  color: white;
   text-decoration: none;
 }
 
@@ -5644,16 +5644,16 @@ input[type="button"].btn-block {
   padding: 0.5rem 0.75rem;
   margin-left: 0;
   line-height: 1.25;
-  color: #fff;
-  background-color: #299c46;
+  color: white;
+  background-color: #33b5e5;
   border: 0 solid transparent;
 }
 
 .page-link:hover {
   z-index: 2;
-  color: #fff;
+  color: white;
   text-decoration: none;
-  background-color: #34c458;
+  background-color: #33b5e5;
   border-color: transparent;
 }
 

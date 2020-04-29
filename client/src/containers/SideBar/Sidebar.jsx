@@ -206,7 +206,7 @@ class Sidebar extends Component {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                Clusters <span className="badge badge-success">{selectedCluster}</span>
+                Clusters <span className="badge badge-primary">{selectedCluster}</span>
               </a>
             </NavText>
             {listClusters}
@@ -235,7 +235,7 @@ class Sidebar extends Component {
                   this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                 }}
               >
-                Connects <span className="badge badge-success">{selectedConnect}</span>
+                Connects <span className="badge badge-primary">{selectedConnect}</span>
               </Link>
             </NavText>
 
