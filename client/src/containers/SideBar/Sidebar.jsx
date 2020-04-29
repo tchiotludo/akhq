@@ -149,7 +149,7 @@ class Sidebar extends Component {
       showConnects,
       selectedTab
     } = this.state;
-    const tag = 'Snapshot';
+    const tag = constants.VERSION;
     let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
@@ -175,8 +175,7 @@ class Sidebar extends Component {
                   }}
                 >
                   <i className="fa fa-fw fa fa-database" aria-hidden="true" />
-                  Clusters
-                  <span className="badge badge-success">{selectedCluster}</span>
+                  Clusters <span className="badge badge-success">{selectedCluster}</span>
                 </a>
                 <ul
                   className={`list-unstyled ${
@@ -189,7 +188,6 @@ class Sidebar extends Component {
               </li>
               {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
               {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-              {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
               {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
               {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
               {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
@@ -203,7 +201,7 @@ class Sidebar extends Component {
                     this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
                 >
-                  <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
+                  <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects{' '}
                   <span className="badge badge-success">{selectedConnect}</span>
                 </Link>
                 <ul className={`list-unstyled ${showConnects ? 'show' : 'collapse'}`} id="connects">
@@ -211,27 +209,6 @@ class Sidebar extends Component {
                 </ul>
               </li>{' '}
             </ul>
-            <div className="sidebar-log">
-              {login === 'true' && (
-                <a
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    localStorage.setItem('login', 'false');
-                    this.forceUpdate();
-                  }}
-                  data-turbolinks="false"
-                >
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Logout
-                </a>
-              )}
-              {(login === 'false' || !login) && (
-                <Link to="/login" data-turbolinks="false">
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Login
-                </Link>
-              )}
-            </div>
           </nav>
         </TabContainer>
       </div>
