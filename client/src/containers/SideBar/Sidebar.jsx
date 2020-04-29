@@ -126,9 +126,12 @@ class Sidebar extends Component {
 
   renderMenuItem(iconClassName, tab, label) {
     const { selectedCluster, selectedTab } = this.state;
+    const pathname = window.location.pathname;
+    console.log('selectedTab', selectedTab);
+    console.log('tab', tab);
     return (
       <li
-        className={selectedTab === tab ? 'active' : ''}
+        className={pathname.includes(tab) ? 'active' : ''}
         onClick={() => {
           this.setState({ selectedTab: tab });
         }}

@@ -37,7 +37,7 @@ class ConnectConfigs extends Form {
     let configs = [];
     let plugin = {};
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -49,7 +49,7 @@ class ConnectConfigs extends Form {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -59,7 +59,7 @@ class ConnectConfigs extends Form {
     const { connectId, clusterId, definitionId } = this.state;
     let plugin = {};
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -70,7 +70,7 @@ class ConnectConfigs extends Form {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -363,7 +363,7 @@ class ConnectConfigs extends Form {
     body.configs = configs;
 
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -377,7 +377,7 @@ class ConnectConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      history.push({
+      history.replace({
         ...this.props.location,
         showErrorToast: true,
         errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,

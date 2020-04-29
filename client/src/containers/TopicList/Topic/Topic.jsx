@@ -76,7 +76,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('data')}
                 onClick={() => this.selectTab('data')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Data
@@ -86,7 +86,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('partitions')}
                 onClick={() => this.selectTab('partitions')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Partitions
@@ -96,7 +96,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('groups')}
                 onClick={() => this.selectTab('groups')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Consumer Groups
@@ -106,7 +106,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Configs
@@ -116,7 +116,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('acls')}
                 onClick={() => this.selectTab('acls')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 ACLS
@@ -126,7 +126,7 @@ class Topic extends Component {
               <Link
                 className={this.tabClassName('logs')}
                 onClick={() => this.selectTab('logs')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Logs

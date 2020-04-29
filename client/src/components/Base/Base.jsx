@@ -63,7 +63,8 @@ class Base extends Component {
 
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        console.log('base', this.props);
+        this.props.history.replace({
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -72,7 +73,8 @@ class Base extends Component {
 
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        console.log('base', this.props);
+        this.props.history.replace({
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
@@ -83,6 +85,7 @@ class Base extends Component {
 
   render() {
     const { children } = this.props;
+    console.log('base', this.props);
     const {
       showSuccessToast,
       showErrorToast,

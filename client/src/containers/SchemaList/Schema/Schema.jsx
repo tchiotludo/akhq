@@ -32,16 +32,16 @@ class Schema extends Component {
     let schemas = [];
     const { clusterId, schemaId } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
       schemas = await get(endpoints.uriSchemaVersions(clusterId, schemaId));
-      this.setState({ schemaVersions: schemas.data , totalVersions:schemas.data.length});  
+      this.setState({ schemaVersions: schemas.data, totalVersions: schemas.data.length });
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

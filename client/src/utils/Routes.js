@@ -24,6 +24,7 @@ import AclDetails from '../containers/Acls/AclDetails';
 import Login from '../containers/Login';
 class Routes extends Component {
   componentWillReceiveProps(nextProps) {
+    console.log('here', nextProps.history);
     if (nextProps.location.pathname !== '/error') {
       let routeObject = {
         pathname: nextProps.location.pathname,

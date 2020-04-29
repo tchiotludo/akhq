@@ -56,7 +56,7 @@ class TopicCreate extends Form {
       }
     };
     console.log(topic);
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -71,7 +71,7 @@ class TopicCreate extends Form {
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: err.response.data.title,
           errorToastMessage: err.response.data.description,

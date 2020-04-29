@@ -18,7 +18,7 @@ class TopicPartitions extends Component {
     let partitions = [];
     const { selectedCluster, selectedTopic } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -27,7 +27,7 @@ class TopicPartitions extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -71,7 +71,7 @@ class TopicPartitions extends Component {
   handleSize(size) {
     return (
       <label>
-        {size.lastOffset-size.firstOffset} - {converters.showBytes(size.logDirSize, 0)}
+        {size.lastOffset - size.firstOffset} - {converters.showBytes(size.logDirSize, 0)}
       </label>
     );
   }

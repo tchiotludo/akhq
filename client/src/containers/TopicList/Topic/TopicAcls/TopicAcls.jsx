@@ -18,7 +18,7 @@ class TopicAcls extends Component {
     let acls = [];
     const { clusterId, topicId } = this.props;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -27,7 +27,7 @@ class TopicAcls extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

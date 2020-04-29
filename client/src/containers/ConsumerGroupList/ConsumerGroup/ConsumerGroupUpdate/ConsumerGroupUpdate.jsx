@@ -42,7 +42,7 @@ class ConsumerGroupUpdate extends Form {
     const { history } = this.props;
     let data = {};
 
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -68,7 +68,7 @@ class ConsumerGroupUpdate extends Form {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         ...this.props.location,
         loading: false
       });
@@ -154,7 +154,7 @@ class ConsumerGroupUpdate extends Form {
   async doSubmit() {
     const { clusterId, consumerGroupId, formData } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -164,14 +164,14 @@ class ConsumerGroupUpdate extends Form {
       );
 
       this.setState({ state: this.state }, () =>
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Offsets for '${consumerGroupId}' is updated`,
           loading: false
         })
       );
     } catch (err) {
-      this.props.history.push({
+      this.props.history.replace({
         showErrorToast: true,
         errorToastTitle: `Failed to update offsets for ${consumerGroupId}`,
         errorToastMessage: err.response.data.message,

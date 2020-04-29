@@ -36,7 +36,7 @@ class ConnectCreate extends Component {
     const { connectId, clusterId } = this.state;
     let plugins = [];
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -46,7 +46,7 @@ class ConnectCreate extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -400,7 +400,7 @@ class ConnectCreate extends Component {
     body.configs = configs;
 
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -416,7 +416,7 @@ class ConnectCreate extends Component {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',

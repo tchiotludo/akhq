@@ -27,7 +27,7 @@ class TopicGroups extends Component {
     const { history } = this.props;
     const { selectedCluster, topicId } = this.state;
     let data = {};
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -44,7 +44,7 @@ class TopicGroups extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

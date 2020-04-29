@@ -59,7 +59,7 @@ class ConsumerGroupList extends Component {
     const { history } = this.props;
     const { selectedCluster, pageNumber, search } = this.state;
 
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -75,7 +75,7 @@ class ConsumerGroupList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -170,10 +170,10 @@ class ConsumerGroupList extends Component {
     const { selectedCluster, groupToDelete } = this.state;
     const { history } = this.props;
 
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
           loading: false
@@ -181,7 +181,7 @@ class ConsumerGroupList extends Component {
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to delete '${groupToDelete.id}'`,
           errorToastMessage: err.response.data.message,

@@ -32,7 +32,7 @@ class NodeConfigs extends Form {
     let configs = [];
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.history,
       loading: true
     });
@@ -42,7 +42,7 @@ class NodeConfigs extends Form {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         ...this.props.history,
         loading: false
       });
@@ -142,7 +142,7 @@ class NodeConfigs extends Form {
     const { history, location } = this.props;
     let { configs } = this.state;
 
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -151,7 +151,7 @@ class NodeConfigs extends Form {
       });
 
       this.setState({ state: this.state }, () =>
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Node '${selectedNode}' was updated successfully.`,
           loading: false
@@ -166,7 +166,7 @@ class NodeConfigs extends Form {
 
       this.setState({ configs });
     } catch (err) {
-      this.props.history.push({
+      this.props.history.replace({
         showErrorToast: true,
         errorToastTitle: err.response.data.title,
         errorToastMessage: err.response.data.description,
