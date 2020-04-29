@@ -83,7 +83,6 @@ class Base extends Component {
 
   render() {
     const { children } = this.props;
-    console.log('base', this.props);
     const {
       showSuccessToast,
       showErrorToast,
