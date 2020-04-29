@@ -299,7 +299,7 @@ class ConsumerGroupUpdate extends Form {
     const { consumerGroupId } = this.state;
 
     return (
-      <div id="content">
+      <div>
         <Header title={`Update offsets: ${consumerGroupId}`} />
         <form
           className="khq-form khq-update-consumer-group-offsets"

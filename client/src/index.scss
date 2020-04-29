@@ -24,6 +24,9 @@
 @import "assets/modules/templates/layout.scss";
 @import "assets/modules/templates/login.scss";
 @import "assets/modules/templates/sidebar.scss";
+@import "./containers/SideBar/styles.scss";
+@import "./components/Base/Base.scss";
+@import "./variables.scss";
 
 body {
   margin: 0;

@@ -5,7 +5,7 @@ import Header from '../Header';
 class Tail extends Component {
   render() {
     return (
-      <div id="content">
+      <div>
         <Header title="Live Tail" />
         Tail
       </div>

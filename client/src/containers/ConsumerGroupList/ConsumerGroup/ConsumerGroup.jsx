@@ -72,7 +72,7 @@ class ConsumerGroup extends Component {
   render() {
     const { clusterId, consumerGroupId } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title={`Topic ${consumerGroupId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">

@@ -53,7 +53,7 @@ class NodesList extends Component {
     const { history } = this.props;
     const { data, selectedCluster } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title="Nodes" />
         <Table
           columns={[

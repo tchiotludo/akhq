@@ -81,7 +81,7 @@ class TopicCreate extends Form {
   }
   render() {
     return (
-      <div id="content">
+      <div>
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"

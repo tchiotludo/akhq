@@ -431,7 +431,7 @@ class ConnectCreate extends Component {
     const { history } = this.props;
 
     return (
-      <div id="content">
+      <div>
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"
