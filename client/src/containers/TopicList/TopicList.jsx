@@ -8,6 +8,7 @@ import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
 import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
 import history from '../../utils/history';
 import './styles.scss';
 
@@ -52,20 +53,15 @@ class TopicList extends Component {
   deleteTopic = () => {
     const { selectedCluster, topicToDelete } = this.state;
     const { history } = this.props;
-    const deleteData = {
-      clusterId: selectedCluster,
-      topicId: topicToDelete.id
-    };
     history.push({ loading: true });
-    remove(uriDeleteTopics(selectedCluster, topicToDelete), deleteData)
+    remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
       .then(res => {
         this.props.history.push({
           showSuccessToast: true,
           successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, topicToDelete: {} });
-        this.getTopics();
+        this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
       .catch(err => {
         this.props.history.push({
@@ -73,13 +69,15 @@ class TopicList extends Component {
           errorToastMessage: `Could not delete '${topicToDelete.name}'`,
           loading: false
         });
-        this.setState({ showDeleteModal: false, topicToDelete: {} });
+        this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       });
   };
 
   handleOnDelete(topic) {
     this.setState({ topicToDelete: topic }, () => {
-      this.showDeleteModal(`Delete topic ${topic.id}?`);
+      this.showDeleteModal(
+        <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
+      );
     });
   }
 
@@ -118,7 +116,6 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      console.log(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = data.data;
       if (data) {
@@ -133,6 +130,7 @@ class TopicList extends Component {
       history.replace('/error', { errorData: err });
     } finally {
       history.push({
+        ...this.props.location,
         loading: false
       });
     }
@@ -141,21 +139,42 @@ class TopicList extends Component {
   handleTopics(topics) {
     let tableTopics = [];
     topics.map(topic => {
-      topic.size = 0;
-      topic.logDirSize = 0;
       tableTopics.push({
         id: topic.name,
         name: topic.name,
-        size: topic.size,
-        weight: topic.logDirSize,
+        count: topic.size,
+        size: showBytes(topic.logDirSize, 0),
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
-        groupComponent: topic.logDir[0].offsetLag
+        groupComponent: topic.consumerGroups
       });
     });
     this.setState({ topics: tableTopics });
   }
+
+  handleConsumerGroups = (consumerGroups, topicId) => {
+    if (consumerGroups !== undefined) {
+      return consumerGroups.map(consumerGroup => {
+        let className = 'btn btn-sm mb-1 btn-';
+        let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
+
+        const activeTopic = consumerGroup.activeTopics.find(activeTopic => activeTopic === topicId);
+        activeTopic !== undefined ? (className += 'success') : (className += 'warning');
+
+        return (
+          <React.Fragment>
+            <Link to="#" class={className}>
+              {consumerGroup.id} <span class="badge badge-light">Lag: {offsetLag}</span>
+            </Link>
+            <br />
+          </React.Fragment>
+        );
+      });
+    }
+
+    return '';
+  };
 
   render() {
     const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
@@ -183,6 +202,11 @@ class TopicList extends Component {
             pagination={pageNumber}
             showTopicListView={true}
             topicListView={searchData.topicListView}
+            onTopicListViewChange={value => {
+              let { searchData } = { ...this.state };
+              searchData.topicListView = value;
+              this.setState(searchData);
+            }}
             doSubmit={this.handleSearch}
           />
 
@@ -205,18 +229,18 @@ class TopicList extends Component {
               type: 'text'
             },
             {
-              id: 'size',
-              accessor: 'size',
-              colName: 'Size',
+              id: 'count',
+              accessor: 'count',
+              colName: 'Count',
               type: 'text',
               cell: (obj, col) => {
                 return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
               }
             },
             {
-              id: 'weight',
-              accessor: 'weight',
-              colName: 'Weight',
+              id: 'size',
+              accessor: 'size',
+              colName: 'Size',
               type: 'text'
             },
             {
@@ -244,7 +268,10 @@ class TopicList extends Component {
               id: 'groupComponent',
               accessor: 'groupComponent',
               colName: 'Consumer Groups',
-              type: 'text'
+              type: 'text',
+              cell: (obj, col) => {
+                return this.handleConsumerGroups(obj[col.accessor], obj.id);
+              }
             }
           ]}
           data={topics}

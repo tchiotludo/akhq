@@ -343,8 +343,7 @@ class ConnectConfigs extends Form {
   async doSubmit() {
     const { clusterId, connectId, definitionId, formData, selectedType } = this.state;
     let body = {
-      name: formData.name,
-      transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
+      name: formData.name
     };
     let configs = {};
     Object.keys(formData).map(key => {
@@ -360,6 +359,12 @@ class ConnectConfigs extends Form {
         configs['connector.class'] = formData[key];
       }
     });
+
+    const transformsValue = JSON.parse(formData.transformsprops);
+    Object.keys(transformsValue).map(key => {
+      configs[key] = transformsValue[key];
+    });
+
     body.configs = configs;
 
     const { history } = this.props;
@@ -381,7 +386,7 @@ class ConnectConfigs extends Form {
         ...this.props.location,
         showErrorToast: true,
         errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
-        errorToastMessage: err.response.data.tle,
+        errorToastMessage: err.response.data.message,
         loading: false
       });
     }

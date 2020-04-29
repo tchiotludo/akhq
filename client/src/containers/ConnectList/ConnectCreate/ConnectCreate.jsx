@@ -380,8 +380,7 @@ class ConnectCreate extends Component {
     let body = {
       clusterId,
       connectId,
-      name: formData.subject,
-      transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
+      name: formData.subject
     };
     let configs = {};
     Object.keys(formData).map(key => {
@@ -397,6 +396,12 @@ class ConnectCreate extends Component {
         configs['connector.class'] = formData[key];
       }
     });
+
+    const transformsValue = JSON.parse(formData.transformsprops);
+    Object.keys(transformsValue).map(key => {
+      configs[key] = transformsValue[key];
+    });
+
     body.configs = configs;
 
     const { history } = this.props;
@@ -420,7 +425,7 @@ class ConnectCreate extends Component {
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',
-          errorToastMessage: err.response.data.title,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });
