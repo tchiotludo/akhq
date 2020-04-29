@@ -5,6 +5,7 @@ import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
+import './Base.scss';
 class Base extends Component {
   state = {
     clusterId: '',
