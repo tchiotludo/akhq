@@ -46,7 +46,7 @@ class AclDetails extends Component {
     const { history, match } = this.props;
     const principal = atob(this.state.principalEncoded);
     return (
-      <div id="content">
+      <div>
         <Header title={`Acl: ${principal}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">

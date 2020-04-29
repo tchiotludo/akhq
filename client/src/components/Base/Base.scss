@@ -1,0 +1,10 @@
+@import '../../variables.scss';
+.expanded {
+  margin-left: $sidebar-expanded !important;
+  width: calc(100% - 240px) !important;
+}
+
+.collapsed {
+  margin-left: $sidebar-collapsed !important;
+  width: calc(100% - 64px) !important;
+}

@@ -166,7 +166,12 @@ class Sidebar extends Component {
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
-      <SideNav style={{ background: 'black' }}>
+      <SideNav
+        onToggle={expanded => {
+          this.props.toggleSidebar(expanded);
+        }}
+        style={{ background: 'black' }}
+      >
         <SideNav.Toggle />{' '}
         <img styles={{ marginTop: '300%', position: 'absolute' }} src={logo} alt="" />
         <SideNav.Nav
