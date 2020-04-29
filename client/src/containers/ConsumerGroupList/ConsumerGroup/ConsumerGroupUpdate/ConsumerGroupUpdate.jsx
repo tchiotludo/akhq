@@ -233,26 +233,23 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <span>
-        <Link
-          to="#"
+        <a
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
           onClick={() => this.resetToFirstOffsets()}
         >
           Reset to first offsets
-        </Link>
-        <Link
-          to="#"
+        </a>
+        <a
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
           onClick={() => this.resetToLastOffsets()}
         >
           Reset to last offsets
-        </Link>
-        <Link
-          to="#"
+        </a>
+        <a
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem', padding: 0 }}
@@ -290,7 +287,7 @@ class ConsumerGroupUpdate extends Form {
               </Dropdown.Menu>
             )}
           </Dropdown>
-        </Link>
+        </a>
       </span>
     );
   };

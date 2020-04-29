@@ -153,7 +153,7 @@ class NodeConfigs extends Form {
       this.setState({ state: this.state }, () =>
         this.props.history.replace({
           showSuccessToast: true,
-          successToastMessage: `Node '${selectedNode}' was updated successfully.`,
+          successToastMessage: `Node configs '${selectedNode}' is updated`,
           loading: false
         })
       );
@@ -168,8 +168,8 @@ class NodeConfigs extends Form {
     } catch (err) {
       this.props.history.replace({
         showErrorToast: true,
-        errorToastTitle: err.response.data.title,
-        errorToastMessage: err.response.data.description,
+        errorToastTitle: `Failed to update node '${selectedNode}' configs`,
+        errorToastMessage: err.response.data.message,
         loading: false
       });
       console.error('Error:', err.response);

@@ -80,24 +80,22 @@ class Schema extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('update')}
                 onClick={() => this.selectTab('update')}
-                to="#"
                 role="tab"
               >
                 Update
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('versions')}
                 onClick={() => this.selectTab('versions')}
-                to="#"
                 role="tab"
               >
                 Versions <span className="badge badge-secondary">{totalVersions}</span>
-              </Link>
+              </a>
             </li>
           </ul>
 

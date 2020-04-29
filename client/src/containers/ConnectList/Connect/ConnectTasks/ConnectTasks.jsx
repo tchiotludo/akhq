@@ -160,11 +160,21 @@ class ConnectTasks extends Component {
 
     this.setState({ definitionModifyData }, () => {
       this.showActionModal(
-        `${
-          taskId !== undefined
-            ? `Do you want to restart task: ${taskId} from ${this.state.definitionId}`
-            : `Do you want to ${failedAction} definition: ${this.state.definitionId}`
-        }`
+        taskId !== undefined ? (
+          <React.Fragment>
+            Do you want to restart task:{' '}
+            {
+              <code>
+                {taskId} from {this.state.definitionId}
+              </code>
+            }{' '}
+            ?
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            Do you want to {failedAction} definition: {<code>{this.state.definitionId}</code>} ?
+          </React.Fragment>
+        )
       );
     });
   };

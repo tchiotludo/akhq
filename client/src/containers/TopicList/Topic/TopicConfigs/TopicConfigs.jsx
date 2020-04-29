@@ -151,15 +151,15 @@ class TopicConfigs extends Form {
       this.setState({ state: this.state }, () =>
         this.props.history.replace({
           showSuccessToast: true,
-          successToastMessage: `Node '${selectedTopic}' was updated successfully.`,
+          successToastMessage: `Topic configs '${selectedTopic}' is updated`,
           loading: false
         })
       );
     } catch (err) {
       this.props.history.replace({
         showErrorToast: true,
-        errorToastTitle: err.response.data.title,
-        errorToastMessage: err.response.data.description,
+        errorToastTitle: `Failed to update topic '${selectedTopic}' configs`,
+        errorToastMessage: err.response.data.message,
         loading: false
       });
       console.error('Error:', err.response);

@@ -52,7 +52,17 @@ class SchemaVersions extends Component {
 
   handleOnDelete(schema) {
     this.setState({ schemaToDelete: schema }, () => {
-      this.showDeleteModal(`Delete Version ${schema.id}?`);
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete version:{' '}
+          {
+            <code>
+              {schema.id} from {this.state.selectedSchema}
+            </code>
+          }{' '}
+          ?
+        </React.Fragment>
+      );
     });
   }
 

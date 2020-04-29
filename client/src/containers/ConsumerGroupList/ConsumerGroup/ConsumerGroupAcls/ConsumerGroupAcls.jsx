@@ -34,14 +34,17 @@ class TopicAcls extends Component {
   }
 
   handleData(data) {
-    let tableAcls = data.map((acl, index) => {
-      return {
-        id: index,
-        user: acl.principal || '',
-        host: acl.acls[0].host || '',
-        permission: acl.acls[0].operation.operation || ''
-      };
-    });
+    let tableAcls = [];
+    data.map(principal =>
+      principal.acls.map((acl, index) => {
+        tableAcls.push({
+          id: index,
+          group: acl.resource.name || '',
+          host: acl.host || '',
+          permission: acl.operation || ''
+        });
+      })
+    );
     this.setState({ data: tableAcls });
     return tableAcls;
   }
@@ -54,9 +57,9 @@ class TopicAcls extends Component {
         <Table
           columns={[
             {
-              id: 'user',
-              accessor: 'user',
-              colName: 'User',
+              id: 'group',
+              accessor: 'group',
+              colName: 'Group',
               type: 'text'
             },
             {
@@ -72,9 +75,12 @@ class TopicAcls extends Component {
               type: 'text',
               cell: (obj, col) => {
                 return (
-                  <div>
-                    <span class="badge badge-secondary">{obj[col.accessor]}</span>
-                  </div>
+                  <React.Fragment>
+                    <span className="badge badge-secondary">
+                      {obj[col.accessor].permissionType}
+                    </span>{' '}
+                    {obj[col.accessor].operation}
+                  </React.Fragment>
                 );
               }
             }

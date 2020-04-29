@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { get } from '../../../../utils/api';
 import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
+import { showBytes } from '../../../../utils/converters';
 
 class NodeLogs extends Component {
   state = {
@@ -41,7 +42,7 @@ class NodeLogs extends Component {
         broker: log.brokerId,
         topic: log.topic,
         partition: log.partition,
-        size: log.size,
+        size: showBytes(log.size),
         offsetLag: log.offsetLag
       };
     });
