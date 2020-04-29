@@ -167,7 +167,7 @@ class Sidebar extends Component {
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav style={{ background: 'black' }}>
-        <SideNav.Toggle />{' '}
+        <SideNav.Toggle  />{' '}
         <img styles={{ marginTop: '300%', position: 'absolute' }} src={logo} alt="" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
