@@ -9,7 +9,8 @@ class SearchBar extends Form {
     showPagination: PropTypes.bool,
     showTopicListView: PropTypes.bool,
     showSearch: PropTypes.bool,
-    showConsumerGroup: PropTypes.bool
+    showConsumerGroup: PropTypes.bool,
+    showFilters: ''
   };
   state = {
     formData: {},
@@ -81,10 +82,17 @@ class SearchBar extends Form {
     };
     this.props.doSubmit(data);
   };
-
+  openAndCloseFilters() {
+    let { showFilters } = this.state;
+    if (showFilters === 'show') {
+      this.setState({ showFilters: '' });
+    } else {
+      this.setState({ showFilters: 'show' });
+    }
+  }
   render() {
     const { showSearch, showPagination, showTopicListView } = this.props;
-    const { topicListViewOptions } = this.state;
+    const { topicListViewOptions, showFilters } = this.state;
 
     return (
       <React.Fragment>
@@ -96,11 +104,13 @@ class SearchBar extends Form {
           aria-controls="navbar-search"
           aria-expanded="false"
           aria-label="Toggle navigation"
+          onClick={() => {
+            this.openAndCloseFilters();
+          }}
         >
           <span className="navbar-toggler-icon" />
         </button>
-
-        <div className="collapse navbar-collapse" id="navbar-search">
+        <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
           <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
             {showSearch &&
               this.renderInput('search', '', 'Search', 'text', { autoComplete: 'off' })}
