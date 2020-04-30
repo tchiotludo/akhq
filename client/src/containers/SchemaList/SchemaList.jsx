@@ -83,7 +83,7 @@ class SchemaList extends Component {
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -99,7 +99,7 @@ class SchemaList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -145,10 +145,10 @@ class SchemaList extends Component {
       clusterId: selectedCluster,
       subject: schemaToDelete.subject
     };
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
           loading: false
@@ -157,7 +157,7 @@ class SchemaList extends Component {
         this.getSchemaRegistry();
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false
@@ -179,7 +179,7 @@ class SchemaList extends Component {
     const { clusterId } = this.props.match.params;
 
     return (
-      <div id="content">
+      <div>
         <Header title="Schemas Registry" />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto

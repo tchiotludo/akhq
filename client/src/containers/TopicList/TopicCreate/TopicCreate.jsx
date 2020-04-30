@@ -55,8 +55,7 @@ class TopicCreate extends Form {
         'retention.ms': formData.retention
       }
     };
-    console.log(topic);
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -71,7 +70,7 @@ class TopicCreate extends Form {
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to create topic '${formData.name}'`,
           errorToastMessage: err.response.data.message,
@@ -81,7 +80,7 @@ class TopicCreate extends Form {
   }
   render() {
     return (
-      <div id="content">
+      <div>
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"

@@ -1,3 +1,6 @@
+// Application version to display in sidebar
+export const VERSION = 'Beta';
+
 // Config data types
 export const MILLI = 'MILLI';
 export const BYTES = 'BYTES';
@@ -67,5 +70,6 @@ export default {
   SCHEMA,
   CONNECT,
   TYPES,
-  ROLE_TYPE
+  ROLE_TYPE,
+  VERSION
 };

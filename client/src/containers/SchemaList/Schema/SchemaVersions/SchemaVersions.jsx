@@ -82,13 +82,13 @@ class SchemaVersions extends Component {
       subject: selectedSchema,
       versionId: schemaToDelete.version
     };
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(
       uriDeleteSchemaVersion(selectedCluster, selectedSchema, schemaToDelete.version),
       deleteData
     )
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Version'${schemaToDelete.version}' is deleted`,
           loading: false
@@ -100,7 +100,7 @@ class SchemaVersions extends Component {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false

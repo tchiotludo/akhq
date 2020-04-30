@@ -8,6 +8,8 @@ import Loading from '../../containers/Loading';
 import { get } from '../../utils/api';
 import { uriCurrentUser } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
+import './Base.scss';
+import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -21,7 +23,8 @@ class Base extends Component {
     errorToastTitle: '',
     errorToastMessage: '',
     errorToastTimeout: 6000, // in ms
-    loading: false
+    loading: false,
+    expanded: false
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -53,10 +56,37 @@ class Base extends Component {
     };
   }
 
+  handleTitle() {
+    const page = window.location.pathname;
+    let title = '';
+    if (page.includes('node')) {
+      title = 'Nodes |';
+    }
+    if (page.includes('topic')) {
+      title = 'Topics |';
+    }
+    if (page.includes('tail')) {
+      title = 'Live Tail |';
+    }
+    if (page.includes('group')) {
+      title = 'Customer Groups |';
+    }
+    if (page.includes('acls')) {
+      title = 'Acls |';
+    }
+    if (page.includes('schema')) {
+      title = 'Schema Registry |';
+    }
+    if (page.includes('connect')) {
+      title = 'Connect |';
+    }
+
+    return title + ' akhq.io';
+  }
+
   componentDidMount() {
     this.checkToasts();
     if (localStorage.getItem('user') === undefined) {
-      console.log('test');
       this.getCurrentUser();
     }
   }
@@ -89,7 +119,7 @@ class Base extends Component {
 
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -98,7 +128,7 @@ class Base extends Component {
 
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
@@ -116,16 +146,27 @@ class Base extends Component {
       errorToastTitle,
       errorToastMessage,
       loading,
-      selectedTab
+      selectedTab,
+      expanded
     } = this.state;
     this.checkToasts();
     return (
       <>
+        <Helmet title={this.handleTitle()} />
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        {this.props.location.pathname !== '/login' && <Sidebar selectedTab={selectedTab} />}
-        {children}
+        {this.props.location.pathname !== '/login' && (
+          <Sidebar
+            toggleSidebar={newExpanded => {
+              this.setState({ expanded: newExpanded });
+            }}
+            selectedTab={selectedTab}
+          />
+        )}
+        <div id="content" className={expanded ? 'expanded' : 'collapsed'}>
+          {children}
+        </div>
       </>
     );
   }

@@ -72,69 +72,69 @@ class Topic extends Component {
   render() {
     const { topicId, clusterId, selectedTab } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('data')}
                 onClick={() => this.selectTab('data')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Data
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('partitions')}
                 onClick={() => this.selectTab('partitions')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Partitions
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('groups')}
                 onClick={() => this.selectTab('groups')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Consumer Groups
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Configs
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('acls')}
                 onClick={() => this.selectTab('acls')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 ACLS
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('logs')}
                 onClick={() => this.selectTab('logs')}
-                to="#"
+                //to="#"
                 role="tab"
               >
                 Logs
-              </Link>
+              </a>
             </li>
           </ul>
 
@@ -146,12 +146,11 @@ class Topic extends Component {
         </div>
         {selectedTab !== 'configs' && (
           <aside>
-            <Link to="#" className="btn btn-secondary mr-2">
+            <a className="btn btn-secondary mr-2">
               <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-            </Link>
+            </a>
 
-            <Link
-              to="#"
+            <a
               className="btn btn-primary"
               to={{
                 pathname: `/${clusterId}/topic/${topicId}/produce`
@@ -163,7 +162,7 @@ class Topic extends Component {
                 onClick={() => <TopicProduce clusterId={clusterId} topic={topicId} />}
               />{' '}
               Produce to topic
-            </Link>
+            </a>
           </aside>
         )}
       </div>

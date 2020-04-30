@@ -72,39 +72,36 @@ class ConsumerGroup extends Component {
   render() {
     const { clusterId, consumerGroupId } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title={`Topic ${consumerGroupId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('topics')}
                 onClick={() => this.selectTab('topics')}
-                to="#"
                 role="tab"
               >
                 Topics
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('members')}
                 onClick={() => this.selectTab('members')}
-                to="#"
                 role="tab"
               >
                 Members
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('acls')}
                 onClick={() => this.selectTab('acls')}
-                to="#"
                 role="tab"
               >
                 ACLS
-              </Link>
+              </a>
             </li>
           </ul>
 

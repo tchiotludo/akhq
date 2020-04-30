@@ -50,11 +50,12 @@ button.before-button, button.after-button {
 .page-item.before button:disabled:hover.before-button a span, .page-item.before button:disabled:hover.before-button a, 
 .page-item.after button:disabled:hover.after-button a span, .page-item.after button:disabled:hover.after-button a {
     cursor: not-allowed;
-    background-color: #299c46;
+    background-color: #32a9d4;
 }
 
 .page-item.before :hover, .page-item.after :hover {
     cursor: pointer;
+    background-color: #32a9d4;
 }
 
 /*remove arrows from input*/

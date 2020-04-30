@@ -46,29 +46,27 @@ class AclDetails extends Component {
     const { history, match } = this.props;
     const principal = atob(this.state.principalEncoded);
     return (
-      <div id="content">
+      <div>
         <Header title={`Acl: ${principal}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('topics')}
                 onClick={() => this.selectTab('topics')}
-                to="#"
                 role="tab"
               >
                 Topics
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('groups')}
                 onClick={() => this.selectTab('groups')}
-                to="#"
                 role="tab"
               >
                 Groups
-              </Link>
+              </a>
             </li>
           </ul>
 

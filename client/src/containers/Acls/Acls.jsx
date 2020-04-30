@@ -23,7 +23,7 @@ class Acls extends Component {
     let acls = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -32,7 +32,7 @@ class Acls extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -62,7 +62,7 @@ class Acls extends Component {
     const { data, searchData } = this.state;
     const { clusterId } = this.props.match.params;
     return (
-      <div id="content">
+      <div>
         <Header title="Acls" />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto

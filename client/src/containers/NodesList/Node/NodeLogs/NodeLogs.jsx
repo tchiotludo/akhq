@@ -21,7 +21,7 @@ class NodeLogs extends Component {
     let logs = [];
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -30,7 +30,7 @@ class NodeLogs extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

@@ -40,7 +40,7 @@ class ConnectList extends Component {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -51,7 +51,7 @@ class ConnectList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         ...this.props.location,
         loading: false
       });
@@ -61,10 +61,10 @@ class ConnectList extends Component {
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
     const { history } = this.props;
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(uriDeleteDefinition(clusterId, connectId, definition))
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Definition '${definition}' is deleted`,
@@ -75,7 +75,7 @@ class ConnectList extends Component {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastMessage: `Failed to delete definition from '${definition}'`,
@@ -168,7 +168,7 @@ class ConnectList extends Component {
     const { history } = this.props;
 
     return (
-      <div id="content">
+      <div>
         <Header title={`Connect: ${connectId}`} />
         <Table
           columns={[

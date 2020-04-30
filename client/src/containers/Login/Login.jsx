@@ -86,7 +86,7 @@ class Login extends Form {
 
     return (
       <div className="wrapper">
-        <div id="content" className="no-side-bar">
+        <div className="no-side-bar">
           <main>
             <form
               className="khq-login"
