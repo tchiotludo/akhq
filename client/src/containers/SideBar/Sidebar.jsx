@@ -157,6 +157,7 @@ class Sidebar extends Component {
       </NavItem>
     );
   }
+
   render() {
     const {
       selectedConnect,
@@ -166,6 +167,7 @@ class Sidebar extends Component {
       selectedTab
     } = this.state;
     const tag = 'Snapshot';
+    let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav

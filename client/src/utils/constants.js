@@ -1,3 +1,6 @@
+// Application version to display in sidebar
+export const VERSION = 'Beta';
+
 // Config data types
 export const MILLI = 'MILLI';
 export const BYTES = 'BYTES';
@@ -56,5 +59,6 @@ export default {
   ACLS,
   SCHEMA,
   CONNECT,
-  TYPES
+  TYPES,
+  VERSION
 };
