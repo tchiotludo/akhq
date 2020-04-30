@@ -53,7 +53,7 @@ class SchemaCreate extends Form {
       schema: formData.schemaData,
       compatibilityLevel: formData.compatibilityLevel
     };
-    history.push({
+    history.replace({
       loading: true
     });
     post(uriSchemaCreate(clusterId), schema)
@@ -61,16 +61,16 @@ class SchemaCreate extends Form {
         this.props.history.push({
           pathname: `/${clusterId}/schema`,
           showSuccessToast: true,
-          successToastMessage: `Schema '${formData.subject}' was created successfully.`,
+          successToastMessage: `Schema '${formData.subject}' is created`,
           loading: false
         });
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
-          errorToastTitle: err.response.data.title,
-          errorToastMessage: err.response.data.description,
+          errorToastTitle: `Failed to create schema '${formData.subject}'`,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });

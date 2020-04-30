@@ -19,7 +19,7 @@ class ConsumerGroupMembers extends Component {
   async getConsumerGroupMembers() {
     const { selectedCluster, selectedConsumerGroup } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -29,7 +29,7 @@ class ConsumerGroupMembers extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

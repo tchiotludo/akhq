@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { get } from '../../../../utils/api';
 import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
+import { showBytes } from '../../../../utils/converters';
 
 class NodeLogs extends Component {
   state = {
@@ -20,7 +21,7 @@ class NodeLogs extends Component {
     let logs = [];
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -29,7 +30,7 @@ class NodeLogs extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -41,7 +42,7 @@ class NodeLogs extends Component {
         broker: log.brokerId,
         topic: log.topic,
         partition: log.partition,
-        size: log.size,
+        size: showBytes(log.size),
         offsetLag: log.offsetLag
       };
     });

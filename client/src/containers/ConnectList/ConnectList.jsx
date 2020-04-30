@@ -40,7 +40,7 @@ class ConnectList extends Component {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -51,7 +51,7 @@ class ConnectList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         ...this.props.location,
         loading: false
       });
@@ -61,10 +61,10 @@ class ConnectList extends Component {
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
     const { history } = this.props;
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(uriDeleteDefinition(clusterId, connectId, definition))
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Definition '${definition}' is deleted`,
@@ -75,7 +75,7 @@ class ConnectList extends Component {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastMessage: `Failed to delete definition from '${definition}'`,
@@ -124,7 +124,11 @@ class ConnectList extends Component {
 
   handleOnDelete(definition) {
     this.setState({ definitionToDelete: definition }, () => {
-      this.showDeleteModal(`Do you want to delete definition: ${definition}?`);
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete definition: {<code>{definition}</code>} ?
+        </React.Fragment>
+      );
     });
   }
 
@@ -250,6 +254,7 @@ class ConnectList extends Component {
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}
+          noContent={'No connectors available'}
         />
         <aside>
           <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">

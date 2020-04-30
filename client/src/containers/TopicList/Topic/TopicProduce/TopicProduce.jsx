@@ -5,6 +5,7 @@ import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import { post, get } from '../../../../utils/api';
 import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
+import { formatDateTime } from '../../../../utils/converters';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import history from '../../../../utils/history';
@@ -39,20 +40,20 @@ class TopicProduce extends Form {
       .label('Key')
       .required(),
     hKey0: Joi.string()
-      .min(1)
-      .label('hKey0')
-      .required(),
+      .allow('')
+      .label('hKey0'),
     hValue0: Joi.string()
-      .min(1)
-      .label('hValue0')
-      .required(),
+      .allow('')
+      .label('hValue0'),
     timestamp: Joi.object().label('Timestamp'),
-    value: Joi.string().label('Value')
+    value: Joi.string()
+      .allow('')
+      .label('Value')
   };
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-    this.props.history.push({
+    this.props.history.replace({
       ...this.props.location,
       loading: true
     });
@@ -71,7 +72,7 @@ class TopicProduce extends Form {
     } catch (err) {
       console.error('err', err);
     } finally {
-      this.props.history.push({
+      this.props.history.replace({
         ...this.props.location,
         loading: false
       });
@@ -100,7 +101,7 @@ class TopicProduce extends Form {
     });
 
     topic.headers = headers;
-    this.props.history.push({
+    this.props.history.replace({
       ...this.props.location,
       loading: true
     });
@@ -115,7 +116,7 @@ class TopicProduce extends Form {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastMessage: 'There was an error while producing to topic.',
@@ -267,7 +268,9 @@ class TopicProduce extends Form {
           })}
 
           {this.renderDatePicker('timestamp', 'Timestamp', value => {
-            this.setState({ formData: { ...this.state.formData, timestamp: value } });
+            let { formData } = this.state;
+            formData.timestamp = value;
+            this.setState({ formData });
           })}
           {this.renderButton(
             'Produce',

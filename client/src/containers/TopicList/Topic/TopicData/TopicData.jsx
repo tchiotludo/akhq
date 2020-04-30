@@ -74,7 +74,7 @@ class TopicData extends Component {
     this.setState({ showHeadersModal: false, headersModalBody: '' });
   };
 
-  async getMessages() {
+  async getMessages(changePage = false) {
     const { history } = this.props;
     const {
       selectedCluster,
@@ -83,11 +83,12 @@ class TopicData extends Component {
       partition,
       timestamp,
       currentSearch,
-      offsetsSearch
+      offsetsSearch,
+      nextPage
     } = this.state;
     let data,
       partitionData = {};
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -113,7 +114,8 @@ class TopicData extends Component {
                 true
               ) + 'Z'
             : undefined,
-          currentSearch !== '' ? currentSearch : undefined
+          currentSearch !== '' ? currentSearch : undefined,
+          changePage ? nextPage : undefined
         )
       );
       data = data.data;
@@ -125,6 +127,9 @@ class TopicData extends Component {
         this.setState({ messages: [], pageNumber: 1 });
       }
       if (partitionData) {
+        if (changePage) {
+          this.getNextPageOffsets();
+        }
         this.setState({
           partitionCount: partitionData.length,
           nextPage: data.after,
@@ -134,7 +139,7 @@ class TopicData extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -166,6 +171,22 @@ class TopicData extends Component {
       tableMessages.push(message);
     });
     this.setState({ messages: tableMessages });
+  };
+
+  getNextPageOffsets = () => {
+    const { nextPage } = this.state;
+    let { offsets } = this.state;
+
+    let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
+    let afterString = aux.substring(0, aux.indexOf('&'));
+    const offsetsByPartition = afterString.split('_');
+
+    offsetsByPartition.map(offsetByPartition => {
+      const offset = offsetByPartition.split('-');
+      offsets[`partition${offset[0]}`] = offset[1];
+    });
+
+    this.setState({ offsets });
   };
 
   createPartitionOptions = () => {
@@ -319,21 +340,22 @@ class TopicData extends Component {
             <div>
               <Pagination
                 pageNumber={pageNumber}
+                totalPageNumber={messages.length === 0 ? pageNumber : undefined}
                 onChange={({ currentTarget: input }) => {
                   this.setState({ pageNumber: input.value });
                 }}
                 onSubmit={() => {
                   this.setState(
                     {
-                      pageNumber: offsetsSearch === nextPage ? pageNumber : pageNumber + 1,
-                      offsetsSearch: nextPage
+                      pageNumber: pageNumber + 1
                     },
                     () => {
-                      this.getMessages();
+                      this.getMessages(true);
                     }
                   );
                 }}
                 editPageNumber={false}
+                showTotalPageNumber={false}
               />
             </div>
           </nav>
@@ -381,11 +403,7 @@ class TopicData extends Component {
                           name={'datetime-picker'}
                           value={timestamp}
                           onChange={value => {
-                            this.setState(
-                              { timestamp: moment(value) },
-                              () => this.getMessages(),
-                              () => this.console.log(timestamp)
-                            );
+                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
                           }}
                         />
                       </div>
