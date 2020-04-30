@@ -88,16 +88,17 @@ class Sidebar extends Component {
         eventKey={`cluster/${cluster.id}`}
         onClick={() => this.changeSelectedCluster(cluster)}
       >
-        <NavText>
+        <NavText style={{color:'#32a9d4'}}>
           {' '}
-          <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
+          <a className={selectedCluster === cluster.id ? ' active' : ''}style={{color:'#759dac'}}>{cluster.id}</a>
         </NavText>
       </NavItem>
+
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
-        <NavText>
-          <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
+       <NavText >
+          <a className={selectedConnect === connect ? ' active' : ''}style={{color:'#759dac'}}>{connect}</a>
         </NavText>
       </NavItem>
     ));
@@ -178,6 +179,8 @@ class Sidebar extends Component {
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           id="khq-sidebar-tabs"
+          style={{ background: 'black' }}
+          s
           defaultActiveKey={selectedTab}
         >
           <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>
@@ -199,7 +202,7 @@ class Sidebar extends Component {
               <i className="fa fa-fw fa fa-database" aria-hidden="true" />
             </NavIcon>
             <NavText>
-              <a
+              <Link
                 data-toggle="collapse"
                 aria-expanded={showClusters}
                 className="dropdown-toggle"
@@ -208,7 +211,7 @@ class Sidebar extends Component {
                 }}
               >
                 Clusters <span className="badge badge-primary">{selectedCluster}</span>
-              </a>
+              </Link>
             </NavText>
             {listClusters}
           </NavItem>

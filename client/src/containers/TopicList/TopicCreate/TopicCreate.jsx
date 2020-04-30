@@ -55,7 +55,6 @@ class TopicCreate extends Form {
         'retention.ms': formData.retention
       }
     };
-    console.log(topic);
     history.push({
       loading: true
     });
