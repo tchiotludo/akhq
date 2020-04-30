@@ -54,7 +54,7 @@ class ConnectTasks extends Component {
     let definition = {};
     const { clusterId, connectId, definitionId } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -63,7 +63,7 @@ class ConnectTasks extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -73,14 +73,14 @@ class ConnectTasks extends Component {
     const { clusterId, connectId, definitionId } = this.state;
     const { uri, action, failedAction, taskId } = this.state.definitionModifyData;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
 
     get(uri)
       .then(() => this.getDefinition())
       .then(() => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `${
             taskId !== undefined
@@ -92,7 +92,7 @@ class ConnectTasks extends Component {
         this.closeActionModal();
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `${
             taskId !== undefined

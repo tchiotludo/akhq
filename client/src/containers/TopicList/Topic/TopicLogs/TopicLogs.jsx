@@ -3,7 +3,6 @@ import { uriTopicsLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
- 
 
 class TopicLogs extends Component {
   state = {
@@ -20,7 +19,7 @@ class TopicLogs extends Component {
     let logs = [];
     const { selectedCluster, selectedTopic } = this.state;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -29,7 +28,7 @@ class TopicLogs extends Component {
     } catch (err) {
       console.error('Error:', err);
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -49,12 +48,7 @@ class TopicLogs extends Component {
   }
 
   handleSize(size) {
-      
-    return (
-      <label>
-         {converters.showBytes(size, 0)}
-      </label>
-    );
+    return <label>{converters.showBytes(size, 0)}</label>;
   }
   render() {
     const { data } = this.state;

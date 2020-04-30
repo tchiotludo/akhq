@@ -53,7 +53,7 @@ class SchemaCreate extends Form {
       schema: formData.schemaData,
       compatibilityLevel: formData.compatibilityLevel
     };
-    history.push({
+    history.replace({
       loading: true
     });
     post(uriSchemaCreate(clusterId), schema)
@@ -67,7 +67,7 @@ class SchemaCreate extends Form {
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to create schema '${formData.subject}'`,
           errorToastMessage: err.response.data.message,

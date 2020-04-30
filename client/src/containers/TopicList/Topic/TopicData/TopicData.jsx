@@ -87,7 +87,7 @@ class TopicData extends Component {
     } = this.state;
     let data,
       partitionData = {};
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -138,7 +138,7 @@ class TopicData extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

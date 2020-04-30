@@ -20,7 +20,7 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -30,7 +30,7 @@ class NodesList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }

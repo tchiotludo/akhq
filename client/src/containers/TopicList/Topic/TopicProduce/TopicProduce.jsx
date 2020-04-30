@@ -53,7 +53,7 @@ class TopicProduce extends Form {
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-    this.props.history.push({
+    this.props.history.replace({
       ...this.props.location,
       loading: true
     });
@@ -72,7 +72,7 @@ class TopicProduce extends Form {
     } catch (err) {
       console.error('err', err);
     } finally {
-      this.props.history.push({
+      this.props.history.replace({
         ...this.props.location,
         loading: false
       });
@@ -101,7 +101,7 @@ class TopicProduce extends Form {
     });
 
     topic.headers = headers;
-    this.props.history.push({
+    this.props.history.replace({
       ...this.props.location,
       loading: true
     });
@@ -116,7 +116,7 @@ class TopicProduce extends Form {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastMessage: 'There was an error while producing to topic.',

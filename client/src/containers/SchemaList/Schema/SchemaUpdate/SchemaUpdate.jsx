@@ -68,7 +68,7 @@ class SchemaUpdate extends Form {
     const { history } = this.props;
     const { clusterId, schemaId } = this.state;
     let data = {};
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -82,7 +82,7 @@ class SchemaUpdate extends Form {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         ...this.props.location,
         loading: false
       });
@@ -109,7 +109,7 @@ class SchemaUpdate extends Form {
       schema: formData.schema
     };
 
-    history.push({
+    history.replace({
       loading: true
     });
     post(uriUpdateSchema(clusterId, formData.subject), body)
@@ -123,7 +123,7 @@ class SchemaUpdate extends Form {
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: `Failed to update schema ${formData.subject}`,

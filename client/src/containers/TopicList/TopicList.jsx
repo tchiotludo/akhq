@@ -53,10 +53,11 @@ class TopicList extends Component {
   deleteTopic = () => {
     const { selectedCluster, topicToDelete } = this.state;
     const { history } = this.props;
-    history.push({ loading: true });
+
+    history.replace({ loading: true });
     remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
           loading: false
@@ -64,7 +65,7 @@ class TopicList extends Component {
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${topicToDelete.name}'`,
           loading: false
@@ -111,7 +112,7 @@ class TopicList extends Component {
     const { selectedCluster, pageNumber } = this.state;
     const { search, topicListView } = this.state.searchData;
     let data = {};
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -129,7 +130,7 @@ class TopicList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         ...this.props.location,
         loading: false
       });
@@ -164,9 +165,9 @@ class TopicList extends Component {
 
         return (
           <React.Fragment>
-            <Link to="#" class={className}>
+            <a class={className}>
               {consumerGroup.id} <span class="badge badge-light">Lag: {offsetLag}</span>
-            </Link>
+            </a>
             <br />
           </React.Fragment>
         );
