@@ -88,17 +88,23 @@ class Sidebar extends Component {
         eventKey={`cluster/${cluster.id}`}
         onClick={() => this.changeSelectedCluster(cluster)}
       >
-        <NavText style={{color:'#32a9d4'}}>
+        <NavText style={{ color: '#32a9d4' }}>
           {' '}
-          <a className={selectedCluster === cluster.id ? ' active' : ''}style={{color:'#759dac'}}>{cluster.id}</a>
+          <a
+            className={selectedCluster === cluster.id ? ' active' : ''}
+            style={{ color: '#759dac' }}
+          >
+            {cluster.id}
+          </a>
         </NavText>
       </NavItem>
-
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
-       <NavText >
-          <a className={selectedConnect === connect ? ' active' : ''}style={{color:'#759dac'}}>{connect}</a>
+        <NavText>
+          <a className={selectedConnect === connect ? ' active' : ''} style={{ color: '#759dac' }}>
+            {connect}
+          </a>
         </NavText>
       </NavItem>
     ));
@@ -135,7 +141,8 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const { selectedCluster, selectedTab  } = this.state;const pathname = window.location.pathname;
+    const { selectedCluster, selectedTab } = this.state;
+    const pathname = window.location.pathname;
     return (
       <NavItem
         eventKey={label}
@@ -219,7 +226,6 @@ class Sidebar extends Component {
           </NavItem>
           {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
           {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-          {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
           {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
           {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
           {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
