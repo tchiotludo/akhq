@@ -141,8 +141,8 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const pathname = window.location.pathname;
     const { selectedCluster } = this.state;
+    const pathname = window.location.pathname;
     return (
       <NavItem
         eventKey={label}
