@@ -168,7 +168,7 @@ class ConnectList extends Component {
     const { history } = this.props;
 
     return (
-      <div id="content">
+      <div>
         <Header title={`Connect: ${connectId}`} />
         <Table
           columns={[

@@ -75,7 +75,7 @@ class Schema extends Component {
     const { schemaId, totalVersions } = this.state;
 
     return (
-      <div id="content">
+      <div>
         <Header title={`Schema: ${schemaId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">

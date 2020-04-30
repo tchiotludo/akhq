@@ -79,7 +79,7 @@ class SchemaCreate extends Form {
   render() {
     const { compatibilityLevelSelect, formData } = this.state;
     return (
-      <div id="content">
+      <div>
         <form
           encType="multipart/form-data"
           className="khq-form khq-form-config"

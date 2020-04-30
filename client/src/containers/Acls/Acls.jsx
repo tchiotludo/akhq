@@ -62,7 +62,7 @@ class Acls extends Component {
     const { data, searchData } = this.state;
     const { clusterId } = this.props.match.params;
     return (
-      <div id="content">
+      <div>
         <Header title="Acls" />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto

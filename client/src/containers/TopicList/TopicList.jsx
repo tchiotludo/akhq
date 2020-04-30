@@ -190,7 +190,7 @@ class TopicList extends Component {
     ];
 
     return (
-      <div id="content">
+      <div>
         <Header title="Topics" />
         <nav
           className="navbar navbar-expand-lg navbar-light 

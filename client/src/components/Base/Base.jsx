@@ -5,6 +5,7 @@ import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
+import './Base.scss';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
@@ -19,7 +20,8 @@ class Base extends Component {
     errorToastTitle: '',
     errorToastMessage: '',
     errorToastTimeout: 6000, // in ms
-    loading: false
+    loading: false,
+    expanded: false
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -119,7 +121,8 @@ class Base extends Component {
       errorToastTitle,
       errorToastMessage,
       loading,
-      selectedTab
+      selectedTab,
+      expanded
     } = this.state;
     this.checkToasts();
     return (
@@ -128,8 +131,17 @@ class Base extends Component {
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        {this.props.location.pathname !== '/login' && <Sidebar selectedTab={selectedTab} />}
-        {children}
+        {this.props.location.pathname !== '/login' && (
+          <Sidebar
+            toggleSidebar={newExpanded => {
+              this.setState({ expanded: newExpanded });
+            }}
+            selectedTab={selectedTab}
+          />
+        )}
+        <div id="content" className={expanded ? 'expanded' : 'collapsed'}>
+          {children}
+        </div>
       </>
     );
   }

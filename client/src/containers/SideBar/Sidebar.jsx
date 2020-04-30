@@ -7,7 +7,9 @@ import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import _ from 'lodash';
-
+import './styles.scss';
+import SideNav, { Toggle, Nav, NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
+import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 // Adaptation of template.ftl
 class Sidebar extends Component {
   state = {
@@ -79,18 +81,26 @@ class Sidebar extends Component {
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
     this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
   }
-
   setClustersAndConnects = () => {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
     const listClusters = allClusters.map(cluster => (
-      <li key={cluster.id} onClick={() => this.changeSelectedCluster(cluster)}>
-        <a className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</a>
-      </li>
+      <NavItem
+        eventKey={`cluster/${cluster.id}`}
+        onClick={() => this.changeSelectedCluster(cluster)}
+      >
+        <NavText style={{color:'#32a9d4'}}>
+          {' '}
+          <a className={selectedCluster === cluster.id ? ' active' : ''}style={{color:'#759dac'}}>{cluster.id}</a>
+        </NavText>
+      </NavItem>
+
     ));
     const listConnects = allConnects.map(connect => (
-      <li key={connect} onClick={() => this.changeSelectedConnect(connect)}>
-        <a className={selectedConnect === connect ? ' active' : ''}>{connect}</a>
-      </li>
+      <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
+       <NavText >
+          <a className={selectedConnect === connect ? ' active' : ''}style={{color:'#759dac'}}>{connect}</a>
+        </NavText>
+      </NavItem>
     ));
 
     return { listClusters, listConnects };
@@ -125,23 +135,28 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const { selectedCluster, selectedTab } = this.state;
-    const pathname = window.location.pathname;
+    const { selectedCluster, selectedTab  } = this.state;const pathname = window.location.pathname;
     return (
-      <li
+      <NavItem
+        eventKey={label}
         className={pathname.includes(tab) ? 'active' : ''}
         onClick={() => {
           this.setState({ selectedTab: tab });
         }}
       >
-        <Link to={`/${selectedCluster}/${tab}`}>
-          <i className={iconClassName} aria-hidden="true" />
-          {label}
-        </Link>
-      </li>
+        <NavIcon>
+          {' '}
+          <Link to={`/${selectedCluster}/${tab}`}>
+            <i className={iconClassName} aria-hidden="true" />
+          </Link>
+        </NavIcon>
+        <NavText>
+          {' '}
+          <Link to={`/${selectedCluster}/${tab}`}>{label}</Link>
+        </NavText>
+      </NavItem>
     );
   }
-
   render() {
     const {
       selectedConnect,
@@ -151,91 +166,87 @@ class Sidebar extends Component {
       selectedTab
     } = this.state;
     const tag = 'Snapshot';
-    let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
-      <div className="wrapper">
-        <TabContainer id="khq-sidebar-tabs" defaultActiveKey="first">
-          <nav id="khq-sidebar">
-            <div className="sidebar-header">
-              <div className="version">{tag}</div>
-              <a href="#">
-                <h3 className="logo">
-                  <img src={logo} alt="" />
-                </h3>
-              </a>
-            </div>
-            <ul className="list-unstyled components">
-              <li className={selectedTab === constants.CLUSTER ? 'active' : ''}>
-                <a
-                  data-toggle="collapse"
-                  aria-expanded={showClusters}
-                  className="dropdown-toggle"
-                  onClick={() => {
-                    this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
-                  }}
-                >
-                  <i className="fa fa-fw fa fa-database" aria-hidden="true" />
-                  Clusters
-                  <span className="badge badge-success">{selectedCluster}</span>
-                </a>
-                <ul
-                  className={`list-unstyled ${
-                    showClusters && selectedTab === constants.CLUSTER ? 'show' : 'collapse'
-                  }`}
-                  id="clusters"
-                >
-                  {listClusters}
-                </ul>
-              </li>
-              {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
-              {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-              {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
-              {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
-              {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-              {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
-              <li className={selectedTab === constants.CONNECT ? 'active' : ''}>
-                <Link
-                  to={`/${selectedCluster}/connect/${selectedConnect}`}
-                  data-toggle="collapse"
-                  aria-expanded={showConnects}
-                  className="dropdown-toggle"
-                  onClick={() => {
-                    this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
-                  }}
-                >
-                  <i className="fa fa-fw fa fa-exchange" aria-hidden="true" /> Connects
-                  <span className="badge badge-success">{selectedConnect}</span>
-                </Link>
-                <ul className={`list-unstyled ${showConnects ? 'show' : 'collapse'}`} id="connects">
-                  {listConnects}
-                </ul>
-              </li>{' '}
-            </ul>
-            <div className="sidebar-log">
-              {login === 'true' && (
-                <a
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    localStorage.setItem('login', 'false');
-                    this.forceUpdate();
-                  }}
-                  data-turbolinks="false"
-                >
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Logout
-                </a>
-              )}
-              {(login === 'false' || !login) && (
-                <Link to="/login" data-turbolinks="false">
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Login
-                </Link>
-              )}
-            </div>
-          </nav>
-        </TabContainer>
-      </div>
+      <SideNav
+        onToggle={expanded => {
+          this.props.toggleSidebar(expanded);
+        }}
+        style={{ background: 'black' }}
+      >
+        <SideNav.Toggle />{' '}
+        <img styles={{ marginTop: '300%', position: 'absolute' }} src={logo} alt="" />
+        <SideNav.Nav
+          defaultSelected={`${constants.TOPIC}`}
+          id="khq-sidebar-tabs"
+          style={{ background: 'black' }}
+          s
+          defaultActiveKey={selectedTab}
+        >
+          <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>
+            <NavIcon></NavIcon>
+            <NavText
+              style={{
+                color: 'grey',
+                fontStyle: 'Italic',
+                position: 'fixed',
+                paddingLeft: '9%'
+              }}
+            >
+              {''}
+              {tag}
+            </NavText>
+          </NavItem>
+          <NavItem eventKey="cluster">
+            <NavIcon>
+              <i className="fa fa-fw fa fa-database" aria-hidden="true" />
+            </NavIcon>
+            <NavText>
+              <Link
+                data-toggle="collapse"
+                aria-expanded={showClusters}
+                className="dropdown-toggle"
+                onClick={() => {
+                  this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
+                }}
+              >
+                Clusters <span className="badge badge-primary">{selectedCluster}</span>
+              </Link>
+            </NavText>
+            {listClusters}
+          </NavItem>
+          {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+          {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+          {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
+          {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
+          {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
+          {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+
+          <NavItem
+            eventKey="connects"
+            className={selectedTab === constants.CONNECT ? 'active' : ''}
+          >
+            <NavIcon>
+              <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
+            </NavIcon>
+            <NavText>
+              <Link
+                to={`/${selectedCluster}/connect/${selectedConnect}`}
+                data-toggle="collapse"
+                aria-expanded={showConnects}
+                className="dropdown-toggle"
+                onClick={() => {
+                  this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
+                }}
+              >
+                Connects <span className="badge badge-primary">{selectedConnect}</span>
+              </Link>
+            </NavText>
+
+            {listConnects}
+          </NavItem>
+        </SideNav.Nav>
+      </SideNav>
     );
   }
 }

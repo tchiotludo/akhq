@@ -63,7 +63,7 @@ class Node extends Component {
   render() {
     const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title={`Node ${nodeId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">

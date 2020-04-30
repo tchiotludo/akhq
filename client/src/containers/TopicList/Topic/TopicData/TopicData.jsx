@@ -38,7 +38,8 @@ class TopicData extends Component {
     messages: [],
     pageNumber: 1,
     nextPage: '',
-    recordCount: 0
+    recordCount: 0,
+    showFilters: ''
   };
 
   componentDidMount() {
@@ -276,6 +277,14 @@ class TopicData extends Component {
     return renderedOptions;
   };
 
+  openAndCloseFilters() {
+    let { showFilters } = this.state;
+    if (showFilters === 'show') {
+      this.setState({ showFilters: '' });
+    } else {
+      this.setState({ showFilters: 'show' });
+    }
+  }
   render() {
     const {
       sortBy,
@@ -292,7 +301,8 @@ class TopicData extends Component {
       headersModalBody,
       pageNumber,
       nextPage,
-      recordCount
+      recordCount,
+      showFilters
     } = this.state;
     const { loading } = this.props.history.location;
     const firstColumns = [
@@ -304,7 +314,6 @@ class TopicData extends Component {
       { colName: 'Headers', colSpan: 1 },
       { colname: 'Schema', colSpan: 1 }
     ];
-
     return (
       <React.Fragment>
         <nav
@@ -319,6 +328,7 @@ class TopicData extends Component {
             aria-controls="topic-data"
             aria-expanded="false"
             aria-label="Toggle navigation"
+            onClick={ ()=>{this.openAndCloseFilters()}}
           >
             <span className="navbar-toggler-icon" />
           </button>
@@ -350,7 +360,7 @@ class TopicData extends Component {
             </div>
           </nav>
 
-          <div className="collapse navbar-collapse" id="topic-data">
+          <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
             <ul className="navbar-nav mr-auto">
               <li className="nav-item dropdown">
                 <Dropdown>

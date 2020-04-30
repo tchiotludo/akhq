@@ -72,7 +72,7 @@ class Topic extends Component {
   render() {
     const { topicId, clusterId, selectedTab } = this.state;
     return (
-      <div id="content">
+      <div>
         <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">

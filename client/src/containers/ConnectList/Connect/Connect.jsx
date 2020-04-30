@@ -65,7 +65,7 @@ class Connect extends Component {
     const { clusterId, connectId, definitionId } = this.state;
 
     return (
-      <div id="content">
+      <div>
         <Header title={`Connect: ${definitionId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
