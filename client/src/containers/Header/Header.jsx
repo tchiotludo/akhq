@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { Link, withRouter } from 'react-router-dom';
 import { responsiveFontSizes } from '@material-ui/core';
 
@@ -41,4 +40,4 @@ function Header({ title, children }) {
   );
 }
 
-export default Header;
+export default withRouter(Header);

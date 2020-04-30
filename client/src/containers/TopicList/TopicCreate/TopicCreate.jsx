@@ -55,6 +55,7 @@ class TopicCreate extends Form {
         'retention.ms': formData.retention
       }
     };
+
     history.replace({
       loading: true
     });

@@ -88,17 +88,23 @@ class Sidebar extends Component {
         eventKey={`cluster/${cluster.id}`}
         onClick={() => this.changeSelectedCluster(cluster)}
       >
-        <NavText style={{color:'#32a9d4'}}>
+        <NavText style={{ color: '#32a9d4' }}>
           {' '}
-          <a className={selectedCluster === cluster.id ? ' active' : ''}style={{color:'#759dac'}}>{cluster.id}</a>
+          <a
+            className={selectedCluster === cluster.id ? ' active' : ''}
+            style={{ color: '#759dac' }}
+          >
+            {cluster.id}
+          </a>
         </NavText>
       </NavItem>
-
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
-       <NavText >
-          <a className={selectedConnect === connect ? ' active' : ''}style={{color:'#759dac'}}>{connect}</a>
+        <NavText>
+          <a className={selectedConnect === connect ? ' active' : ''} style={{ color: '#759dac' }}>
+            {connect}
+          </a>
         </NavText>
       </NavItem>
     ));
@@ -135,7 +141,8 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const { selectedCluster, selectedTab  } = this.state;const pathname = window.location.pathname;
+    const { selectedCluster } = this.state;
+    const pathname = window.location.pathname;
     return (
       <NavItem
         eventKey={label}
@@ -169,6 +176,7 @@ class Sidebar extends Component {
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav
+        expanded={this.props.expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
