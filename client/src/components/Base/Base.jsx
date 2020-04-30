@@ -5,6 +5,7 @@ import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
+import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -48,6 +49,34 @@ class Base extends Component {
       errorToastMessage: errorToastMessage,
       loading
     };
+  }
+
+  handleTitle() {
+    const page = window.location.pathname;
+    let title = '';
+    if (page.includes('node')) {
+      title = 'Nodes |';
+    }
+    if (page.includes('topic')) {
+      title = 'Topics |';
+    }
+    if (page.includes('tail')) {
+      title = 'Live Tail |';
+    }
+    if (page.includes('group')) {
+      title = 'Customer Groups |';
+    }
+    if (page.includes('acls')) {
+      title = 'Acls |';
+    }
+    if (page.includes('schema')) {
+      title = 'Schema Registry |';
+    }
+    if (page.includes('connect')) {
+      title = 'Connect |';
+    }
+
+    return title + ' akhq.io';
   }
 
   componentDidMount() {
@@ -95,6 +124,7 @@ class Base extends Component {
     this.checkToasts();
     return (
       <>
+        <Helmet title={this.handleTitle()} />
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
