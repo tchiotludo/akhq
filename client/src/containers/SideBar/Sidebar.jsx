@@ -173,7 +173,7 @@ class Sidebar extends Component {
       showConnects,
       selectedTab
     } = this.state;
-    const tag = 'Snapshot';
+    const tag = constants.VERSION;
     let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
