@@ -6,6 +6,7 @@ import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
 import './Base.scss';
+import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
     clusterId: '',
@@ -52,6 +53,34 @@ class Base extends Component {
     };
   }
 
+  handleTitle() {
+    const page = window.location.pathname;
+    let title = '';
+    if (page.includes('node')) {
+      title = 'Nodes |';
+    }
+    if (page.includes('topic')) {
+      title = 'Topics |';
+    }
+    if (page.includes('tail')) {
+      title = 'Live Tail |';
+    }
+    if (page.includes('group')) {
+      title = 'Customer Groups |';
+    }
+    if (page.includes('acls')) {
+      title = 'Acls |';
+    }
+    if (page.includes('schema')) {
+      title = 'Schema Registry |';
+    }
+    if (page.includes('connect')) {
+      title = 'Connect |';
+    }
+
+    return title + ' akhq.io';
+  }
+
   componentDidMount() {
     this.checkToasts();
   }
@@ -65,7 +94,7 @@ class Base extends Component {
 
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -74,7 +103,7 @@ class Base extends Component {
 
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''
@@ -98,6 +127,7 @@ class Base extends Component {
     this.checkToasts();
     return (
       <>
+        <Helmet title={this.handleTitle()} />
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />

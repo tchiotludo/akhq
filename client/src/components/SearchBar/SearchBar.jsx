@@ -114,7 +114,18 @@ class SearchBar extends Form {
           <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
             {showSearch &&
               this.renderInput('search', '', 'Search', 'text', { autoComplete: 'off' })}
-            {showTopicListView && this.renderSelect('topicListView', '', topicListViewOptions)}
+            {showTopicListView &&
+              this.renderSelect(
+                'topicListView',
+                '',
+                topicListViewOptions,
+                ({ currentTarget: input }) => {
+                  let { formData } = this.state;
+                  formData.topicListView = input.value;
+                  this.setState();
+                  this.props.onTopicListViewChange(input.value);
+                }
+              )}
 
             <button className="btn btn-primary" type="submit">
               <span className="d-md-none">Search </span>

@@ -77,34 +77,31 @@ class ConsumerGroup extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('topics')}
                 onClick={() => this.selectTab('topics')}
-                to="#"
                 role="tab"
               >
                 Topics
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('members')}
                 onClick={() => this.selectTab('members')}
-                to="#"
                 role="tab"
               >
                 Members
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link
+              <a
                 className={this.tabClassName('acls')}
                 onClick={() => this.selectTab('acls')}
-                to="#"
                 role="tab"
               >
                 ACLS
-              </Link>
+              </a>
             </li>
           </ul>
 

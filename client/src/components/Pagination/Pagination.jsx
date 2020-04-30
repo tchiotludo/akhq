@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import './styles.scss';
 
-const Pagination = ({ pageNumber, totalPageNumber, onChange, onSubmit, editPageNumber }) => {
+const Pagination = ({
+  pageNumber,
+  totalPageNumber,
+  onChange,
+  onSubmit,
+  editPageNumber,
+  showTotalPageNumber = true
+}) => {
   if (editPageNumber === undefined) {
     editPageNumber = true;
   }
@@ -33,7 +40,7 @@ const Pagination = ({ pageNumber, totalPageNumber, onChange, onSubmit, editPageN
               if (e.key === 'Enter') onSubmit(pageNumber);
             }}
           />
-          {totalPageNumber !== undefined && `of ${totalPageNumber}`}
+          {totalPageNumber !== undefined && showTotalPageNumber && `of ${totalPageNumber}`}
         </a>
       </li>
       <li className={'page-item after'}>

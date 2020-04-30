@@ -36,7 +36,7 @@ class ConnectCreate extends Component {
     const { connectId, clusterId } = this.state;
     let plugins = [];
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -46,7 +46,7 @@ class ConnectCreate extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -380,8 +380,7 @@ class ConnectCreate extends Component {
     let body = {
       clusterId,
       connectId,
-      name: formData.subject,
-      transformsValue: JSON.stringify(JSON.parse(formData.transformsprops))
+      name: formData.subject
     };
     let configs = {};
     Object.keys(formData).map(key => {
@@ -397,10 +396,16 @@ class ConnectCreate extends Component {
         configs['connector.class'] = formData[key];
       }
     });
+
+    const transformsValue = JSON.parse(formData.transformsprops);
+    Object.keys(transformsValue).map(key => {
+      configs[key] = transformsValue[key];
+    });
+
     body.configs = configs;
 
     const { history } = this.props;
-    history.push({
+    history.replace({
       ...this.props.location,
       loading: true
     });
@@ -416,11 +421,11 @@ class ConnectCreate extends Component {
         });
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',
-          errorToastMessage: err.response.data.title,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });

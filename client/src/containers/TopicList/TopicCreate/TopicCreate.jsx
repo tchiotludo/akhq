@@ -55,7 +55,7 @@ class TopicCreate extends Form {
         'retention.ms': formData.retention
       }
     };
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -64,16 +64,16 @@ class TopicCreate extends Form {
         this.props.history.push({
           pathname: `/${clusterId}/topic`,
           showSuccessToast: true,
-          successToastMessage: `Topic '${formData.name}' was created successfully.`,
+          successToastMessage: `Topic '${formData.name}' is created`,
           loading: false
         });
       })
       .catch(err => {
         console.log('err', err);
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
-          errorToastTitle: err.response.data.title,
-          errorToastMessage: err.response.data.description,
+          errorToastTitle: `Failed to create topic '${formData.name}'`,
+          errorToastMessage: err.response.data.message,
           loading: false
         });
       });

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Table from '../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import { calculateTopicOffsetLag } from '../../utils/converters';
 import history from '../../utils/history';
 import { Link } from 'react-router-dom';
 import ConsumerGroup from './ConsumerGroup/ConsumerGroup';
@@ -59,7 +60,7 @@ class ConsumerGroupList extends Component {
     const { history } = this.props;
     const { selectedCluster, pageNumber, search } = this.state;
 
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -75,7 +76,7 @@ class ConsumerGroupList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -112,7 +113,7 @@ class ConsumerGroupList extends Component {
     const { history } = this.props;
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
-      const offsetLag = this.calculateTopicOffsetLag(topicOffsets);
+      const offsetLag = calculateTopicOffsetLag(topicOffsets);
 
       return (
         <div
@@ -139,22 +140,13 @@ class ConsumerGroupList extends Component {
     });
   }
 
-  calculateTopicOffsetLag = topicOffsets => {
-    let offsetLag = 0;
-    let firstOffset = 0;
-    let lastOffset = 0;
-    topicOffsets.map(topicOffset => {
-      firstOffset = topicOffset.firstOffset || 0;
-      lastOffset = topicOffset.lastOffset || 0;
-      offsetLag += lastOffset - firstOffset;
-    });
-
-    return offsetLag;
-  };
-
   handleOnDelete(group) {
     this.setState({ groupToDelete: group }, () => {
-      this.showDeleteModal(`Delete ConsumerGroup ${group.id}?`);
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete consumer group: {<code>{group.id}</code>} ?
+        </React.Fragment>
+      );
     });
   }
 
@@ -170,10 +162,10 @@ class ConsumerGroupList extends Component {
     const { selectedCluster, groupToDelete } = this.state;
     const { history } = this.props;
 
-    history.push({ loading: true });
+    history.replace({ loading: true });
     remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(res => {
-        this.props.history.push({
+        this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
           loading: false
@@ -181,7 +173,7 @@ class ConsumerGroupList extends Component {
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
       .catch(err => {
-        this.props.history.push({
+        this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to delete '${groupToDelete.id}'`,
           errorToastMessage: err.response.data.message,

@@ -81,7 +81,6 @@ class Routes extends Component {
               path="/:clusterId/connect/:connectId/definition/:definitionId"
               component={Connect}
             />
-            {/* <Route exact path="/error" component={ErrorPage} /> */}
             <Redirect from="/" to={`/${clusterId}/topic`} />
           </Switch>
         </Base>

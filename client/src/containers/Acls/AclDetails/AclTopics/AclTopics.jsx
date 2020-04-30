@@ -21,7 +21,7 @@ class AclTopics extends Component {
     const { history } = this.props;
     const { selectedCluster, principalEncoded } = this.state;
 
-    history.push({
+    history.replace({
       loading: true
     });
 
@@ -34,7 +34,7 @@ class AclTopics extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -43,9 +43,9 @@ class AclTopics extends Component {
   handleAcls = data => {
     const tableData = data.acls.map(acl => {
       return {
-        topic: `${_.toLower(acl.resource.patternType)}:${acl.resource.name}`,
+        topic: acl.resource.name,
         host: acl.host,
-        permission: acl.operation.operation
+        permission: acl.operation
       };
     });
 
@@ -54,9 +54,10 @@ class AclTopics extends Component {
 
   handlePermission = permission => {
     return (
-      <h5 key={permission}>
-        <span className="badge badge-secondary">{permission}</span>
-      </h5>
+      <React.Fragment>
+        <span className="badge badge-secondary">{permission.permissionType}</span>{' '}
+        {permission.operation}
+      </React.Fragment>
     );
   };
 
@@ -77,9 +78,9 @@ class AclTopics extends Component {
             type: 'text'
           },
           {
-            id: 'permissions',
-            accessor: 'permissions',
-            colName: 'Permissions',
+            id: 'permission',
+            accessor: 'permission',
+            colName: 'Permission',
             type: 'text',
             cell: obj => {
               if (obj.permission) {

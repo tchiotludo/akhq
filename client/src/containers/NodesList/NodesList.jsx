@@ -20,7 +20,7 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
     const { history } = this.props;
-    history.push({
+    history.replace({
       loading: true
     });
     try {
@@ -30,7 +30,7 @@ class NodesList extends Component {
     } catch (err) {
       history.replace('/error', { errorData: err });
     } finally {
-      history.push({
+      history.replace({
         loading: false
       });
     }
@@ -40,8 +40,7 @@ class NodesList extends Component {
     let tableNodes = nodes.nodes.map(node => {
       return {
         id: node.id || '',
-        host: node.host || '',
-        port: node.port || '',
+        host: `${node.host}:${node.port}` || '',
         rack: node.rack || ''
       };
     });
@@ -73,9 +72,9 @@ class NodesList extends Component {
               type: 'text'
             },
             {
-              id: 'racks',
+              id: 'rack',
               accessor: 'rack',
-              colName: 'Racks',
+              colName: 'Rack',
               type: 'text'
             }
           ]}
