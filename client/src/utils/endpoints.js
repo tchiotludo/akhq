@@ -3,9 +3,17 @@ import { node } from 'prop-types';
 export const baseUrl = 'http://localhost:8080'; //`${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
-export const uriLogin = `${baseUrl}/login`;
+export const uriLogin = () => {
+  return `${baseUrl}/login`;
+};
 
-export const uriLogout = `${baseUrl}/logout`;
+export const uriLogout = () => {
+  return `${baseUrl}/logout`;
+};
+
+export const uriCurrentUser = () => {
+  return `${apiUrl}/me`;
+};
 
 export const uriClusters = () => {
   return `${apiUrl}/cluster`;

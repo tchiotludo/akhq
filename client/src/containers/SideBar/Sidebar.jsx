@@ -3,9 +3,10 @@ import logo from '../../images/logo.svg';
 import TabContainer from 'react-bootstrap/TabContainer';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
-import api from '../../utils/api';
-import endpoints from '../../utils/endpoints';
+import { get } from '../../utils/api';
+import { uriClusters, uriLogout } from '../../utils/endpoints';
 import constants from '../../utils/constants';
+import { organizeRoles } from '../../utils/converters';
 import _ from 'lodash';
 
 // Adaptation of template.ftl
@@ -17,7 +18,8 @@ class Sidebar extends Component {
     allClusters: [],
     allConnects: [],
     showClusters: false,
-    showConnects: false
+    showConnects: false,
+    login: localStorage.getItem('login')
   };
   static getDerivedStateFromProps(nextProps, prevState) {
     let selectedTab = nextProps.selectedTab || prevState.selectedTab;
@@ -53,7 +55,7 @@ class Sidebar extends Component {
     const clusterId = match ? match.params.clusterId || '' : '';
     let allClusters = {};
     try {
-      allClusters = await api.get(endpoints.uriClusters());
+      allClusters = await get(uriClusters());
       allClusters = _(allClusters.data)
         .sortBy(cluster => cluster.id)
         .value();
@@ -78,6 +80,28 @@ class Sidebar extends Component {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
     this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+  }
+
+  async logout() {
+    try {
+      await get(uriLogout()).then(res => {
+        let currentUserData = res.data;
+
+        localStorage.setItem('login', currentUserData.logged);
+        localStorage.setItem('user', 'default');
+        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+
+        this.setState({ login: currentUserData.logged }, () => {
+          this.props.history.replace({
+            ...this.props.history,
+            showSuccessToast: true,
+            successToastMessage: 'Logged out successfully'
+          });
+        });
+      });
+    } catch (err) {
+      this.props.history.replace('/error', { errorData: err });
+    }
   }
 
   setClustersAndConnects = () => {
@@ -147,10 +171,10 @@ class Sidebar extends Component {
       selectedCluster,
       showClusters,
       showConnects,
-      selectedTab
+      selectedTab,
+      login
     } = this.state;
     const tag = 'Snapshot';
-    let login = localStorage.getItem('login');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <div className="wrapper">
@@ -216,8 +240,7 @@ class Sidebar extends Component {
                 <a
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
-                    localStorage.setItem('login', 'false');
-                    this.forceUpdate();
+                    this.logout();
                   }}
                   data-turbolinks="false"
                 >
