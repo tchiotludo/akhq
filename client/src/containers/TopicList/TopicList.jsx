@@ -191,7 +191,7 @@ class TopicList extends Component {
 
     return (
       <div>
-        <Header title="Topics" />
+        <Header title="Topics" history={this.props.history} />
         <nav
           className="navbar navbar-expand-lg navbar-light 
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"

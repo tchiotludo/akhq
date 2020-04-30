@@ -85,7 +85,7 @@ class SchemaCreate extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Create a schema" />
+          <Header title="Create a schema" history={this.props.history} />
           {this.renderInput('subject', 'Subject', 'Subject')}
 
           {this.renderSelect(

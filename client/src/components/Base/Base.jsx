@@ -86,9 +86,6 @@ class Base extends Component {
 
   componentDidMount() {
     this.checkToasts();
-    if (localStorage.getItem('user') === undefined) {
-      this.getCurrentUser();
-    }
   }
 
   componentWillUnmount() {
@@ -150,6 +147,9 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
+    if (localStorage.getItem('user') === undefined) {
+      this.getCurrentUser();
+    }
     return (
       <>
         <Helmet title={this.handleTitle()} />

@@ -297,7 +297,7 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <div>
-        <Header title={`Update offsets: ${consumerGroupId}`} />
+        <Header title={`Update offsets: ${consumerGroupId}`} history={this.props.history} />
         <form
           className="khq-form khq-update-consumer-group-offsets"
           onSubmit={() => this.handleSubmit()}

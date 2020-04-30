@@ -4,7 +4,7 @@ import TabContainer from 'react-bootstrap/TabContainer';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import { get } from '../../utils/api';
-import { uriClusters, uriLogout } from '../../utils/endpoints';
+import { uriClusters } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { organizeRoles } from '../../utils/converters';
 import _ from 'lodash';
@@ -21,7 +21,7 @@ class Sidebar extends Component {
     allConnects: [],
     showClusters: false,
     showConnects: false,
-    login: localStorage.getItem('login')
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
   static getDerivedStateFromProps(nextProps, prevState) {
     let selectedTab = nextProps.selectedTab || prevState.selectedTab;
@@ -84,28 +84,6 @@ class Sidebar extends Component {
     this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
   }
 
-  async logout() {
-    try {
-      await get(uriLogout()).then(res => {
-        let currentUserData = res.data;
-
-        localStorage.setItem('login', currentUserData.logged);
-        localStorage.setItem('user', 'default');
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-
-        this.setState({ login: currentUserData.logged }, () => {
-          this.props.history.replace({
-            ...this.props.history,
-            showSuccessToast: true,
-            successToastMessage: 'Logged out successfully'
-          });
-        });
-      });
-    } catch (err) {
-      this.props.history.replace('/error', { errorData: err });
-    }
-  }
-
   setClustersAndConnects = () => {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
     const listClusters = allClusters.map(cluster => (
@@ -113,17 +91,23 @@ class Sidebar extends Component {
         eventKey={`cluster/${cluster.id}`}
         onClick={() => this.changeSelectedCluster(cluster)}
       >
-        <NavText style={{color:'#32a9d4'}}>
+        <NavText style={{ color: '#32a9d4' }}>
           {' '}
-          <a className={selectedCluster === cluster.id ? ' active' : ''}style={{color:'#759dac'}}>{cluster.id}</a>
+          <a
+            className={selectedCluster === cluster.id ? ' active' : ''}
+            style={{ color: '#759dac' }}
+          >
+            {cluster.id}
+          </a>
         </NavText>
       </NavItem>
-
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
-       <NavText >
-          <a className={selectedConnect === connect ? ' active' : ''}style={{color:'#759dac'}}>{connect}</a>
+        <NavText>
+          <a className={selectedConnect === connect ? ' active' : ''} style={{ color: '#759dac' }}>
+            {connect}
+          </a>
         </NavText>
       </NavItem>
     ));
@@ -160,7 +144,8 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const { selectedCluster, selectedTab  } = this.state;const pathname = window.location.pathname;
+    const { selectedCluster, selectedTab } = this.state;
+    const pathname = window.location.pathname;
     return (
       <NavItem
         eventKey={label}
@@ -190,7 +175,7 @@ class Sidebar extends Component {
       showClusters,
       showConnects,
       selectedTab,
-      login
+      roles
     } = this.state;
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
@@ -242,36 +227,40 @@ class Sidebar extends Component {
             </NavText>
             {listClusters}
           </NavItem>
-          {this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
-          {this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-          {this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
-          {this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
-          {this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+          {roles.node && this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+          {roles.topic && this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+          {roles.topic &&
+            this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
+          {roles.group &&
+            this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
+          {roles.acls && this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
+          {roles.schema &&
+            this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+          {roles.connect && (
+            <NavItem
+              eventKey="connects"
+              className={selectedTab === constants.CONNECT ? 'active' : ''}
+            >
+              <NavIcon>
+                <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
+              </NavIcon>
+              <NavText>
+                <Link
+                  to={`/${selectedCluster}/connect/${selectedConnect}`}
+                  data-toggle="collapse"
+                  aria-expanded={showConnects}
+                  className="dropdown-toggle"
+                  onClick={() => {
+                    this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
+                  }}
+                >
+                  Connects <span className="badge badge-primary">{selectedConnect}</span>
+                </Link>
+              </NavText>
 
-          <NavItem
-            eventKey="connects"
-            className={selectedTab === constants.CONNECT ? 'active' : ''}
-          >
-            <NavIcon>
-              <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
-            </NavIcon>
-            <NavText>
-              <Link
-                to={`/${selectedCluster}/connect/${selectedConnect}`}
-                data-toggle="collapse"
-                aria-expanded={showConnects}
-                className="dropdown-toggle"
-                onClick={() => {
-                  this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
-                }}
-              >
-                Connects <span className="badge badge-primary">{selectedConnect}</span>
-              </Link>
-            </NavText>
-
-            {listConnects}
-          </NavItem>
+              {listConnects}
+            </NavItem>
+          )}
         </SideNav.Nav>
       </SideNav>
     );
