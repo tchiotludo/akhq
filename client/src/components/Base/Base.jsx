@@ -103,6 +103,7 @@ class Base extends Component {
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         {this.props.location.pathname !== '/login' && (
           <Sidebar
+            expanded={expanded}
             toggleSidebar={newExpanded => {
               this.setState({ expanded: newExpanded });
             }}

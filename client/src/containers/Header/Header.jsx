@@ -1,8 +1,8 @@
 import React from 'react';
-
 import { Link, withRouter } from 'react-router-dom';
 import { responsiveFontSizes } from '@material-ui/core';
-function Header({ title, children }) {
+
+function Header({ title, children, ...props }) {
   let login = localStorage.getItem('login');
   return (
     <React.Fragment>
@@ -24,7 +24,7 @@ function Header({ title, children }) {
         <button
           data-turbolinks="false"
           onClick={() => {
-            this.props.history.push({
+            props.history.push({
               pathname: '/login'
             });
           }}
@@ -44,4 +44,4 @@ function Header({ title, children }) {
   );
 }
 
-export default Header;
+export default withRouter(Header);

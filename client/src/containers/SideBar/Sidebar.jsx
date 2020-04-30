@@ -167,6 +167,7 @@ class Sidebar extends Component {
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav
+        expanded={this.props.expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
