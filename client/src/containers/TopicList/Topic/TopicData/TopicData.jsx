@@ -293,7 +293,6 @@ class TopicData extends Component {
       { colName: 'Headers', colSpan: 1 },
       { colname: 'Schema', colSpan: 1 }
     ];
-    console.log('showFilters', showFilters);
     return (
       <React.Fragment>
         <nav

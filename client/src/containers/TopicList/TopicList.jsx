@@ -118,7 +118,6 @@ class TopicList extends Component {
       loading: true
     });
     try {
-      console.log(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
       data = data.data;
       if (data) {
