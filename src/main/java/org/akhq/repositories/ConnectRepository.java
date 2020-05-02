@@ -9,7 +9,7 @@ import io.micronaut.retry.annotation.Retryable;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition;
+import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDefinition;
 import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
@@ -54,9 +54,13 @@ public class ConnectRepository extends AbstractRepository {
 
 
     public Optional<ConnectPlugin> getPlugin(String clusterId, String connectId, String className) {
-        return this.getPlugins(clusterId, connectId)
+        return this.kafkaModule
+            .getConnectRestClient(clusterId)
+            .get(connectId)
+            .getConnectorPlugins()
             .stream()
-            .filter(connectPlugin -> connectPlugin.getShortClassName().equals(className))
+            .filter(connectPlugin -> getShortClassName(connectPlugin.getClassName()).equals(className))
+            .map(s -> mapToConnectPlugin(s, clusterId, connectId))
             .findFirst();
     }
 
@@ -66,18 +70,7 @@ public class ConnectRepository extends AbstractRepository {
             .get(connectId)
             .getConnectorPlugins()
             .stream()
-            .map(s -> new ConnectPlugin(
-                s,this.kafkaModule
-                .getConnectRestClient(clusterId)
-                .get(connectId)
-                .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
-                    Iterables.getLast(Arrays.asList(s.getClassName().split("/"))),
-                    ImmutableMap.of(
-                        "connector.class", s.getClassName(),
-                        "topics", "getPlugins"
-                    )
-                )))
-            )
+            .map(s -> mapToConnectPlugin(s, clusterId, connectId))
             .collect(Collectors.toList());
     }
 
@@ -185,5 +178,26 @@ public class ConnectRepository extends AbstractRepository {
         }
 
         return list;
+    }
+
+    private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
+        return new ConnectPlugin(
+                plugin,
+                this.kafkaModule
+                        .getConnectRestClient(clusterId)
+                        .get(connectId)
+                        .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
+                                Iterables.getLast(Arrays.asList(plugin.getClassName().split("/"))),
+                                ImmutableMap.of(
+                                        "connector.class", plugin.getClassName(),
+                                        "topics", "getPlugins"
+                                )
+                        )));
+    }
+
+    private String getShortClassName(String className) {
+        String[] split = className.split("\\.");
+
+        return split[split.length - 1];
     }
 }
