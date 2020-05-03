@@ -66,7 +66,7 @@ class ConsumerGroupUpdate extends Form {
         this.createValidationSchema(groupedTopicOffset);
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         ...this.props.location,

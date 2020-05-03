@@ -2,6 +2,7 @@
   "name": "kafkahq-front-end",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/ui",
   "dependencies": {
     "@date-io/moment": "^1.3.13",
     "@material-ui/core": "^4.9.5",

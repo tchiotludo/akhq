@@ -13,7 +13,7 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
         reject(handleError(err));
       });
   });

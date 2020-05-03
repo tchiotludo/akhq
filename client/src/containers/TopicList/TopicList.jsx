@@ -128,7 +128,7 @@ class TopicList extends Component {
         this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         ...this.props.location,
@@ -280,7 +280,7 @@ class TopicList extends Component {
             this.handleOnDelete(topic);
           }}
           onDetails={id => {
-            history.push(`/${selectedCluster}/topic/${id}`);
+            history.push(`/ui/${selectedCluster}/topic/${id}`);
           }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />
@@ -301,7 +301,7 @@ class TopicList extends Component {
         <aside>
           <Link
             to={{
-              pathname: `/${clusterId}/topic/create`,
+              pathname: `/ui/${clusterId}/topic/create`,
               state: { formData: this.state.createTopicFormData }
             }}
             className="btn btn-primary"

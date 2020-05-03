@@ -47,7 +47,7 @@ class Sidebar extends Component {
 
   async handleGetClusters(callback = () => {}) {
     const match = matchPath(this.props.history.location.pathname, {
-      path: '/:clusterId/',
+      path: '/ui/:clusterId/',
       exact: false,
       strict: false
     });
@@ -72,7 +72,7 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      this.props.history.replace('/error', { errorData: err });
+      this.props.history.replace('/ui/error', { errorData: err });
     }
   }
 
@@ -121,7 +121,7 @@ class Sidebar extends Component {
       () => {
         const { selectedCluster } = this.state;
         this.props.history.push({
-          pathname: `/${selectedCluster}/topic`,
+          pathname: `/ui/${selectedCluster}/topic`,
           selectedCluster
         });
 
@@ -134,7 +134,7 @@ class Sidebar extends Component {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
       this.props.history.push({
-        pathname: `/${selectedCluster}/connect/${selectedConnect}`,
+        pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
         selectedCluster
       });
     });
@@ -153,13 +153,13 @@ class Sidebar extends Component {
       >
         <NavIcon>
           {' '}
-          <Link to={`/${selectedCluster}/${tab}`}>
+          <Link to={`/ui/${selectedCluster}/${tab}`}>
             <i className={iconClassName} aria-hidden="true" />
           </Link>
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/${selectedCluster}/${tab}`}>{label}</Link>
+          <Link to={`/ui/${selectedCluster}/${tab}`}>{label}</Link>
         </NavText>
       </NavItem>
     );
@@ -239,7 +239,7 @@ class Sidebar extends Component {
             </NavIcon>
             <NavText>
               <Link
-                to={`/${selectedCluster}/connect/${selectedConnect}`}
+                to={`/ui/${selectedCluster}/connect/${selectedConnect}`}
                 data-toggle="collapse"
                 aria-expanded={showConnects}
                 className="dropdown-toggle"

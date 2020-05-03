@@ -27,7 +27,7 @@ class Login extends Component {
         this.props.history.push({ pathname: `/${res.data && res.data[0].id}/topic` });
       })
       .catch(err => {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
         this.setState({ clusterId: '' });
       });
   }

@@ -49,7 +49,7 @@ class ConnectList extends Component {
       this.handleData(connectDefinitions.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         ...this.props.location,
@@ -245,7 +245,7 @@ class ConnectList extends Component {
           actions={[constants.TABLE_DETAILS, constants.TABLE_DELETE]}
           onDetails={name => {
             history.push({
-              pathname: `/${clusterId}/connect/${connectId}/definition/${name}`,
+              pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`,
               clusterId,
               connectId,
               definitionId: name
@@ -257,7 +257,7 @@ class ConnectList extends Component {
           noContent={'No connectors available'}
         />
         <aside>
-          <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
+          <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
             Create a definition
           </Link>
         </aside>

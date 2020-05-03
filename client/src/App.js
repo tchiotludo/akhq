@@ -22,7 +22,7 @@ class App extends React.Component {
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
         this.setState({ clusterId: '' });
       });
   }

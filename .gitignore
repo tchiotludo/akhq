@@ -43,3 +43,4 @@ connects-plugins/
 ## Docker
 .env
 docker-compose.override.yml
+/client/.gradle/

@@ -42,7 +42,7 @@ class TopicGroups extends Component {
         this.setState({ selectedCluster });
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -150,7 +150,7 @@ class TopicGroups extends Component {
           ]}
           data={this.state.consumerGroups}
           onDetails={id => {
-            history.push({ pathname: `/${selectedCluster}/group/${id}`, tab: constants.GROUP });
+            history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
           }}
           actions={[constants.TABLE_DETAILS]}
         />

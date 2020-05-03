@@ -4,12 +4,16 @@ micronaut:
   server:
     cors:
       enabled: true
+    port: 8081
   io:
     watch:
       paths: src/main
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
+      react:
+        paths: classpath:static/ui
+        mapping: "${akhq.server.base-path:}/ui/**"
       static:
         paths: classpath:static
         mapping: "${akhq.server.base-path:}/static/**"

@@ -47,7 +47,7 @@ class ConnectConfigs extends Form {
         this.getPlugin(pluginId);
       });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -68,7 +68,7 @@ class ConnectConfigs extends Form {
         this.renderForm();
       });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -376,7 +376,7 @@ class ConnectConfigs extends Form {
       await post(uriUpdateDefinition(clusterId, connectId, definitionId), body);
       history.push({
         ...this.props.location,
-        pathname: `/${clusterId}/connect/${connectId}`,
+        pathname: `/ui/${clusterId}/connect/${connectId}`,
         showSuccessToast: true,
         successToastMessage: `${`Definition '${formData.name}' is updated`}`,
         loading: false

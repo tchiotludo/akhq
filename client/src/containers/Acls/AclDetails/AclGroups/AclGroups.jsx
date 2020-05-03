@@ -32,7 +32,7 @@ class AclTopics extends Component {
         this.handleAcls(acls);
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false

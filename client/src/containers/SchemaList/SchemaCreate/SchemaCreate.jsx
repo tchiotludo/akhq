@@ -59,7 +59,7 @@ class SchemaCreate extends Form {
     post(uriSchemaCreate(clusterId), schema)
       .then(res => {
         this.props.history.push({
-          pathname: `/${clusterId}/schema`,
+          pathname: `/ui/${clusterId}/schema`,
           showSuccessToast: true,
           successToastMessage: `Schema '${formData.subject}' is created`,
           loading: false

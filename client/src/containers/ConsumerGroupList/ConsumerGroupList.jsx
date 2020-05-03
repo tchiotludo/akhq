@@ -74,7 +74,7 @@ class ConsumerGroupList extends Component {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -258,7 +258,7 @@ class ConsumerGroupList extends Component {
             this.handleOnDelete(group);
           }}
           onDetails={id => {
-            history.push(`/${selectedCluster}/group/${id}`);
+            history.push(`/ui/${selectedCluster}/group/${id}`);
           }}
           actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
         />

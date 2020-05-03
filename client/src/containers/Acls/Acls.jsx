@@ -30,7 +30,7 @@ class Acls extends Component {
       acls = await get(uriAclsList(clusterId, this.state.searchData.search));
       this.handleData(acls.data);
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -101,7 +101,7 @@ class Acls extends Component {
           }
           onDetails={acl => {
             this.props.history.push({
-              pathname: `/${clusterId}/acls/${acl.principalEncoded}`,
+              pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`,
               principal: acl.user
             });
           }}

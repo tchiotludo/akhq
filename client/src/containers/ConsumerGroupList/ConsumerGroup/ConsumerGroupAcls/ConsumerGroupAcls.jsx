@@ -25,7 +25,7 @@ class TopicAcls extends Component {
       acls = await get(uriConsumerGroupAcls(clusterId, consumerGroupId));
       this.handleData(acls.data);
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false

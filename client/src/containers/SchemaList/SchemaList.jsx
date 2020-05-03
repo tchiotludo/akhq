@@ -97,7 +97,7 @@ class SchemaList extends Component {
         this.setState({ selectedCluster, totalPageNumber: response.page });
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -258,7 +258,7 @@ class SchemaList extends Component {
               return schema.id === schemaId;
             });
             history.push({
-              pathname: `/${selectedCluster}/schema/details/${schema.subject}`,
+              pathname: `/ui/${selectedCluster}/schema/details/${schema.subject}`,
               schemaId: schema.subject
             });
           }}
@@ -280,7 +280,7 @@ class SchemaList extends Component {
         <aside>
           <Link
             to={{
-              pathname: `/${clusterId}/schema/create`,
+              pathname: `/ui/${clusterId}/schema/create`,
               state: { formData: this.state.createSubjectFormData }
             }}
             className="btn btn-primary"

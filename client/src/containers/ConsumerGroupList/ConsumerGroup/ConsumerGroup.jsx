@@ -113,7 +113,7 @@ class ConsumerGroup extends Component {
         </div>
 
         <aside>
-          <Link to={`/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
+          <Link to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
             Update Offsets
           </Link>
         </aside>

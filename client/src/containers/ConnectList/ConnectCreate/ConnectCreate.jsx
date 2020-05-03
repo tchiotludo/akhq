@@ -44,7 +44,7 @@ class ConnectCreate extends Component {
       plugins = plugins.data;
       this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -414,7 +414,7 @@ class ConnectCreate extends Component {
       .then(res => {
         this.props.history.push({
           ...this.props.location,
-          pathname: `/${clusterId}/connect/${connectId}`,
+          pathname: `/ui/${clusterId}/connect/${connectId}`,
           showSuccessToast: true,
           successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
           loading: false

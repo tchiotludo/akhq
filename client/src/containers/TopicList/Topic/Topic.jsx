@@ -153,7 +153,7 @@ class Topic extends Component {
             <a
               className="btn btn-primary"
               to={{
-                pathname: `/${clusterId}/topic/${topicId}/produce`
+                pathname: `/ui/${clusterId}/topic/${topicId}/produce`
               }}
             >
               <i

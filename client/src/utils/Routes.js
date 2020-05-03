@@ -24,7 +24,7 @@ import AclDetails from '../containers/Acls/AclDetails';
 import Login from '../containers/Login';
 class Routes extends Component {
   componentWillReceiveProps(nextProps) {
-    if (nextProps.location.pathname !== '/error') {
+    if (nextProps.location.pathname !== '/ui/error') {
       let routeObject = {
         pathname: nextProps.location.pathname,
         ...nextProps.history.location.state
@@ -38,50 +38,52 @@ class Routes extends Component {
     let path = window.location.pathname.split('/');
 
     let clusterId = '';
-    clusterId = path[1];
-    if (clusterId.length <= 0) {
+    if(path.length < 4 || path[2] === '') {
       clusterId = this.props.clusterId;
+    } else {
+      clusterId = path[2];
     }
-
-    if (path[1] === 'error') {
+console.log(path);
+    console.log(clusterId);
+    if (path[2] === 'error') {
       return (
         <Switch>
-          <Route exact path="/error" component={ErrorPage} />
+          <Route exact path="/ui/error" component={ErrorPage} />
         </Switch>
       );
     }
-    if (clusterId.length > 0) {
+    if (path.length > 0) {
       return (
         <Base>
           <Switch location={location}>
-            <Route exact path="/:clusterId/topic" component={TopicList} />
-            <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
-            <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
-            <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
-            <Route exact path="/:login" component={Login} />
-            <Route exact path="/:clusterId/node" component={NodesList} />
-            <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
-            <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
-            <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
+            <Route exact path="/ui/:clusterId/topic" component={TopicList} />
+            <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
+            <Route exact path="/ui/:clusterId/topic/:topicId" component={Topic} />
+            <Route exact path="/ui/:clusterId/topic/:topicId/produce" component={TopicProduce} />
+            <Route exact path="/ui/:login" component={Login} />
+            <Route exact path="/ui/:clusterId/node" component={NodesList} />
+            <Route exact path="/ui/:clusterId/node/:nodeId" component={NodeDetails} />
+            <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
+            <Route exact path="/ui/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
             <Route
               exact
-              path="/:clusterId/group/:consumerGroupId/offsets"
+              path="/ui/:clusterId/group/:consumerGroupId/offsets"
               component={ConsumerGroupUpdate}
             />
-            <Route exact path="/:clusterId/tail" component={Tail} />
-            <Route exact path="/:clusterId/acls" component={Acls} />
-            <Route exact path="/:clusterId/schema" component={SchemaList} />
-            <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
-            <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
-            <Route exact path="/:clusterId/connect/:connectId/create" component={ConnectCreate} />
-            <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
-            <Route exact path="/:clusterId/acls/:principalEncoded" component={AclDetails} />
+            <Route exact path="/ui/:clusterId/tail" component={Tail} />
+            <Route exact path="/ui/:clusterId/acls" component={Acls} />
+            <Route exact path="/ui/:clusterId/schema" component={SchemaList} />
+            <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
+            <Route exact path="/ui/:clusterId/schema/details/:schemaId" component={Schema} />
+            <Route exact path="/ui/:clusterId/connect/:connectId/create" component={ConnectCreate} />
+            <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
+            <Route exact path="/ui/:clusterId/acls/:principalEncoded" component={AclDetails} />
             <Route
               exact
-              path="/:clusterId/connect/:connectId/definition/:definitionId"
+              path="/ui/:clusterId/connect/:connectId/definition/:definitionId"
               component={Connect}
             />
-            <Redirect from="/" to={`/${clusterId}/topic`} />
+            <Redirect from="/ui" to={`/ui/${clusterId}/topic`} />
           </Switch>
         </Base>
       );

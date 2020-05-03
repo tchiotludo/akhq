@@ -28,7 +28,7 @@ class NodesList extends Component {
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      history.replace('/ui/error', { errorData: err });
     } finally {
       history.replace({
         loading: false
@@ -81,7 +81,7 @@ class NodesList extends Component {
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {
-            history.push(`/${selectedCluster}/node/${id}`);
+            history.push(`/ui/${selectedCluster}/node/${id}`);
           }}
         />
       </div>
