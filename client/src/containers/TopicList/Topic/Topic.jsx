@@ -150,7 +150,7 @@ class Topic extends Component {
               <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
             </a>
 
-            <a
+            <Link
               className="btn btn-primary"
               to={{
                 pathname: `/ui/${clusterId}/topic/${topicId}/produce`
@@ -159,10 +159,10 @@ class Topic extends Component {
               <i
                 className="fa fa-plus"
                 aria-hidden={true}
-                onClick={() => <TopicProduce clusterId={clusterId} topic={topicId} />}
+
               />{' '}
               Produce to topic
-            </a>
+            </Link>
           </aside>
         )}
       </div>
