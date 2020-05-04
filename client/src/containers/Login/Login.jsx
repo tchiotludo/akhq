@@ -33,7 +33,7 @@ class Login extends Component {
   }
   render() {
     return (
-      <div className="wrapper">
+      <div className="wrapper" style={{ height: window.innerHeight - 100 }}>
         <div className="no-side-bar">
           <main>
             <form

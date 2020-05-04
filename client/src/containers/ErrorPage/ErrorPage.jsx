@@ -44,18 +44,20 @@ class ErrorPage extends Component {
   render() {
     const { title, description } = this.state;
     return (
-      <div className="no-side-bar">
+      <div className="no-side-bar" style={{ height: window.innerHeight - 100 }}>
         <div className="mb-5">
           <h3 className="logo">
             <img src={image} width={'195.53px'} height={'63px'} />
           </h3>
         </div>
-        <code>{title || 'Error'}</code>
-        <br />
-        <br />
-        <pre>
-          <code>{description || 'Something went wrong.'}</code>
-        </pre>
+        <div style={{ width: '100%' }}>
+          <code>{title || 'Error'}</code>
+          <br />
+          <br />
+          <pre>
+            <code>{description || 'Something went wrong.'}</code>
+          </pre>
+        </div>
       </div>
     );
   }

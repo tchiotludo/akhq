@@ -180,7 +180,8 @@ h3.logo sup {
 .wrapper {
   display: flex;
   width: 100%;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
 }
 
 .ace_editor {
@@ -270,11 +271,22 @@ h3.logo sup {
 
 #content.no-side-bar {
   width: 100%;
-  margin-left: 0;
+  margin: 20px;
   display: flex;
   justify-content: center;
+  align-items: center;
   flex-direction: column;
 }
+
+.no-side-bar {
+  width: 100%;
+  margin: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 
 .turbolinks-progress-bar {
   background-color: #d44a3a;
