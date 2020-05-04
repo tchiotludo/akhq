@@ -14,7 +14,6 @@ class ErrorPage extends Component {
   };
 
   onUnload(event) {
-    console.log('unload');
     localStorage.setItem('reload', true);
   }
 
@@ -22,11 +21,9 @@ class ErrorPage extends Component {
     window.addEventListener('beforeunload', this.onUnload);
     let errorData = {};
     if (localStorage.getItem('reload') === 'true') {
-      console.log('reload?');
       this.props.history.push(JSON.parse(localStorage.getItem('lastRoute')));
       localStorage.setItem('reload', false);
     } else {
-      console.log('no reload?');
       if (this.props.location && this.props.history.location.state) {
         errorData = this.props.history.location.state.errorData;
       } else if (history.location && history.location.state) {
