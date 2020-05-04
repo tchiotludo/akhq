@@ -168,7 +168,7 @@ class ConnectList extends Component {
 
     return (
       <div>
-        <Header title={`Connect: ${connectId}`} />
+        <Header title={`Connect: ${connectId}`} history={history} />
         <Table
           columns={[
             {

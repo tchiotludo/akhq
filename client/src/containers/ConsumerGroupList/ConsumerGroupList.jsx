@@ -189,7 +189,7 @@ class ConsumerGroupList extends Component {
 
     return (
       <div>
-        <Header title="Consumer Groups" />
+        <Header title="Consumer Groups" history={history} />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"

@@ -19,7 +19,8 @@ class NodeConfigs extends Form {
     formData: {},
     changedConfigs: {},
     errors: {},
-    configs: []
+    configs: [],
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   schema = {};
@@ -248,7 +249,8 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data, selectedNode, selectedCluster } = this.state;
+    const { data, selectedNode, selectedCluster, roles } = this.state;
+
     return (
       <form
         encType="multipart/form-data"
@@ -293,7 +295,8 @@ class NodeConfigs extends Form {
             ]}
             data={data}
           />
-          {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
+          {roles.node['node/config/update'] &&
+            this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
         </div>
       </form>
     );

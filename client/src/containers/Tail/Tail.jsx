@@ -6,7 +6,7 @@ class Tail extends Component {
   render() {
     return (
       <div>
-        <Header title="Live Tail" />
+        <Header title="Live Tail" history={this.props.history} />
         Tail
       </div>
     );

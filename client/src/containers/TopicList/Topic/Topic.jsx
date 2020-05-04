@@ -73,7 +73,7 @@ class Topic extends Component {
     const { topicId, clusterId, selectedTab } = this.state;
     return (
       <div>
-        <Header title={`Topic: ${topicId}`} />
+        <Header title={`Topic: ${topicId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

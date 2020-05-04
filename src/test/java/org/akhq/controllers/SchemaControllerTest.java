@@ -45,7 +45,7 @@ class SchemaControllerTest extends AbstractTest {
         assertEquals("stream-map-value", result.getSubject());
     }
 
-    //@Test
+    @Test
     void crud() {
         Schema result;
         int version;
@@ -96,7 +96,7 @@ class SchemaControllerTest extends AbstractTest {
         assertEquals(1, result.size());
     }
 
-    //@Test
+    @Test
     void deleteNotExistApi() {
         HttpClientResponseException e = assertThrows(
             HttpClientResponseException.class,

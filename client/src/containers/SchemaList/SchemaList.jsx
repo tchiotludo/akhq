@@ -180,7 +180,7 @@ class SchemaList extends Component {
 
     return (
       <div>
-        <Header title="Schemas Registry" />
+        <Header title="Schemas Registry" history={history} />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"

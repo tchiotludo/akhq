@@ -34,7 +34,8 @@ class TopicList extends Component {
       replication: 1,
       cleanup: 'delete',
       retention: 86400000
-    }
+    },
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   componentDidMount() {
@@ -178,7 +179,7 @@ class TopicList extends Component {
   };
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, roles } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -191,7 +192,7 @@ class TopicList extends Component {
 
     return (
       <div>
-        <Header title="Topics" />
+        <Header title="Topics" history={this.props.history} />
         <nav
           className="navbar navbar-expand-lg navbar-light 
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"
@@ -298,17 +299,19 @@ class TopicList extends Component {
           />
         </div>
 
-        <aside>
-          <Link
-            to={{
-              pathname: `/${clusterId}/topic/create`,
-              state: { formData: this.state.createTopicFormData }
-            }}
-            className="btn btn-primary"
-          >
-            Create a topic
-          </Link>
-        </aside>
+        {roles.topic['topic/insert'] && (
+          <aside>
+            <Link
+              to={{
+                pathname: `/${clusterId}/topic/create`,
+                state: { formData: this.state.createTopicFormData }
+              }}
+              className="btn btn-primary"
+            >
+              Create a topic
+            </Link>
+          </aside>
+        )}
 
         <ConfirmModal
           show={this.state.showDeleteModal}

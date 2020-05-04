@@ -73,7 +73,7 @@ class ConsumerGroup extends Component {
     const { clusterId, consumerGroupId } = this.state;
     return (
       <div>
-        <Header title={`Topic ${consumerGroupId}`} />
+        <Header title={`Topic ${consumerGroupId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
