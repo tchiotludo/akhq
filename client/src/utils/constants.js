@@ -1,7 +1,20 @@
+// Application version to display in sidebar
+export const VERSION = 'Beta';
+
 // Config data types
 export const MILLI = 'MILLI';
 export const BYTES = 'BYTES';
 export const TEXT = 'TEXT';
+
+// Role types
+export const ROLE_TYPE = {
+  TOPIC: 'topic',
+  NODE: 'node',
+  GROUP: 'group',
+  REGISTRY: 'registry',
+  ACLS: 'acls',
+  CONNECT: 'connect'
+};
 
 // Table actions
 export const TABLE_ADD = 'add';
@@ -56,5 +69,7 @@ export default {
   ACLS,
   SCHEMA,
   CONNECT,
-  TYPES
+  TYPES,
+  ROLE_TYPE,
+  VERSION
 };

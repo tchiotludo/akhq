@@ -2,36 +2,88 @@ import React, { Component } from 'react';
 
 import logo from '../../images/logo.svg';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { baseUrl, uriClusters } from '../../utils/endpoints';
+import { baseUrl, uriClusters, uriLogin, uriCurrentUser } from '../../utils/endpoints';
+import { organizeRoles } from '../../utils/converters';
 import Routes from '../../utils/Routes';
 import history from '../../utils/history';
-import api from '../../utils/api';
+import { get, post } from '../../utils/api';
 import ErrorBoundary from '../../containers/ErrorBoundary';
 import Loading from '../../containers/Loading';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import lkl from '../../';
+import Form from '../../components/Form/Form';
+import Joi from 'joi-browser';
 // Adaptation of login.ftl
 
-class Login extends Component {
+class Login extends Form {
   state = {
-    clusterId: ''
+    clusterId: '',
+    formData: {
+      username: '',
+      password: ''
+    },
+    errors: {}
   };
-  onLogin() {
-    let { clusterId } = this.state;
-    api
-      .get(uriClusters())
-      .then(res => {
-        //this.setState({ clusterId: res.data ? res.data[0].id : '' });
-        localStorage.setItem('login', 'true');
-        this.props.history.push({ pathname: `/${res.data && res.data[0].id}/topic` });
-      })
-      .catch(err => {
-        history.replace('/error', { errorData: err });
-        this.setState({ clusterId: '' });
+
+  schema = {
+    username: Joi.string()
+      .required()
+      .label('Username'),
+    password: Joi.string()
+      .required()
+      .label('Password')
+  };
+
+  async login() {
+    const { formData } = this.state;
+
+    history.push({
+      loading: true
+    });
+    try {
+      const body = {
+        username: formData.username,
+        password: formData.password
+      };
+      await post(uriLogin(), body).then(res => {
+        let currentUserData = res.data;
+
+        if (currentUserData.logged) {
+          localStorage.setItem('login', true);
+          localStorage.setItem('user', currentUserData.username);
+          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+          this.props.history.push({
+            ...this.props.history,
+            pathname: '/',
+            showSuccessToast: true,
+            successToastMessage: `User '${currentUserData.username}' logged in successfully`,
+            loading: false
+          });
+        } else {
+          this.props.history.replace({
+            ...this.props.history,
+            showErrorToast: true,
+            errorToastTitle: 'Login failed',
+            errorToastMessage: 'Invalid credentials',
+            loading: false
+          });
+        }
       });
+    } catch (err) {
+      this.props.history.replace({
+        ...this.props.history,
+        showErrorToast: true,
+        errorToastTitle: 'Login failed',
+        errorToastMessage: err.response.message,
+        loading: false
+      });
+    }
   }
+
   render() {
+    const { errors } = this.state;
+
     return (
       <div className="wrapper" style={{ height: window.innerHeight - 100 }}>
         <div className="no-side-bar">
@@ -40,7 +92,7 @@ class Login extends Component {
               className="khq-login"
               onSubmit={e => {
                 e.preventDefault();
-                this.onLogin();
+                this.login();
               }}
             >
               <div>
@@ -66,7 +118,13 @@ class Login extends Component {
                   aria-label="Username"
                   required=""
                   autoFocus=""
+                  onChange={this.handleChange}
                 />
+                {errors.username && (
+                  <div id="input-error" className="alert alert-danger mt-1 p-1">
+                    {errors.username}
+                  </div>
+                )}
               </div>
 
               <div className="input-group mb-3">
@@ -82,11 +140,22 @@ class Login extends Component {
                   placeholder="Password"
                   aria-label="Password"
                   required=""
+                  onChange={this.handleChange}
                 />
+                {errors.password && (
+                  <div id="input-error" className="alert alert-danger mt-1 p-1">
+                    {errors.password}
+                  </div>
+                )}
               </div>
 
               <div className="form-group text-right">
-                <input type="submit" value="Login" className="btn btn-primary btn-lg" />
+                <input
+                  type="submit"
+                  value="Login"
+                  className="btn btn-primary btn-lg"
+                  disabled={this.validate()}
+                />
               </div>
             </form>
           </main>

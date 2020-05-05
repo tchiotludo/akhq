@@ -23,7 +23,8 @@ class ConnectTasks extends Component {
     definitionModifyData: {},
     tableData: [],
     showActionModal: false,
-    actionMessage: ''
+    actionMessage: '',
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   definitionState = {
@@ -196,7 +197,7 @@ class ConnectTasks extends Component {
   };
 
   render() {
-    const { tableData, definition } = this.state;
+    const { tableData, definition, roles } = this.state;
 
     return (
       <div className="tab-pane active" role="tabpanel">
@@ -229,42 +230,46 @@ class ConnectTasks extends Component {
               }
             ]}
             data={tableData}
-            actions={[constants.TABLE_RESTART]}
+            actions={
+              roles.connect && roles.connect['connect/state/update'] && [constants.TABLE_RESTART]
+            }
             onRestart={row => {
               this.handleAction(this.definitionState.RESTART_TASK, row.id);
             }}
           />
         </div>
-        <aside>
-          {definition.paused ? (
-            <a
-              href="#"
-              className="btn btn-primary mr-2"
-              onClick={() => this.handleAction(this.definitionState.RESUME)}
-            >
-              <i className="fa fa-play" aria-hidden="true"></i> Resume Definition
-            </a>
-          ) : (
-            <React.Fragment>
+        {roles.connect && roles.connect['connect/state/update'] && (
+          <aside>
+            {definition.paused ? (
               <a
                 href="#"
-                type="pause"
                 className="btn btn-primary mr-2"
-                onClick={() => this.handleAction(this.definitionState.PAUSE)}
+                onClick={() => this.handleAction(this.definitionState.RESUME)}
               >
-                <i className="fa fa-pause" aria-hidden="true"></i> Pause Definition
+                <i className="fa fa-play" aria-hidden="true"></i> Resume Definition
               </a>
+            ) : (
+              <React.Fragment>
+                <a
+                  href="#"
+                  type="pause"
+                  className="btn btn-primary mr-2"
+                  onClick={() => this.handleAction(this.definitionState.PAUSE)}
+                >
+                  <i className="fa fa-pause" aria-hidden="true"></i> Pause Definition
+                </a>
 
-              <a
-                href="#"
-                className="btn btn-primary mr-2"
-                onClick={() => this.handleAction(this.definitionState.RESTART)}
-              >
-                <i className="fa fa-refresh" aria-hidden="true"></i> Restart Definition
-              </a>
-            </React.Fragment>
-          )}
-        </aside>
+                <a
+                  href="#"
+                  className="btn btn-primary mr-2"
+                  onClick={() => this.handleAction(this.definitionState.RESTART)}
+                >
+                  <i className="fa fa-refresh" aria-hidden="true"></i> Restart Definition
+                </a>
+              </React.Fragment>
+            )}
+          </aside>
+        )}
         <ConfirmModal
           show={this.state.showActionModal}
           handleCancel={this.closeActionModal}

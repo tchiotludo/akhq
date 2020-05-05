@@ -32,7 +32,8 @@ class SchemaList extends Component {
       schema: ''
     },
     showSchemaModal: false,
-    schemaModalBody: ''
+    schemaModalBody: '',
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   componentDidMount() {
@@ -173,14 +174,15 @@ class SchemaList extends Component {
       pageNumber,
       totalPageNumber,
       showSchemaModal,
-      schemaModalBody
+      schemaModalBody,
+      roles
     } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 
     return (
       <div>
-        <Header title="Schemas Registry" />
+        <Header title="Schema Registry" history={history} />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
@@ -262,7 +264,11 @@ class SchemaList extends Component {
               schemaId: schema.subject
             });
           }}
-          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
+          actions={
+            roles.registry && roles.registry['registry/delete']
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              : [constants.TABLE_DETAILS]
+          }
         />
 
         <div
@@ -277,17 +283,19 @@ class SchemaList extends Component {
             onSubmit={this.handlePageChangeSubmission}
           />
         </div>
-        <aside>
-          <Link
-            to={{
-              pathname: `/${clusterId}/schema/create`,
-              state: { formData: this.state.createSubjectFormData }
-            }}
-            className="btn btn-primary"
-          >
-            Create a Subject
-          </Link>
-        </aside>
+        {roles.registry && roles.registry['registry/insert'] && (
+          <aside>
+            <Link
+              to={{
+                pathname: `/${clusterId}/schema/create`,
+                state: { formData: this.state.createSubjectFormData }
+              }}
+              className="btn btn-primary"
+            >
+              Create a Subject
+            </Link>
+          </aside>
+        )}
 
         <ConfirmModal
           show={this.state.showDeleteModal}

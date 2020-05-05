@@ -5,6 +5,9 @@ import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
+import { get } from '../../utils/api';
+import { uriCurrentUser } from '../../utils/endpoints';
+import { organizeRoles } from '../../utils/converters';
 import './Base.scss';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
@@ -89,6 +92,24 @@ class Base extends Component {
     clearTimeout(this.interval);
   }
 
+  async getCurrentUser() {
+    try {
+      let currentUserData = await get(uriCurrentUser());
+      currentUserData = currentUserData.data;
+      if (currentUserData.logged) {
+        localStorage.setItem('login', true);
+        localStorage.setItem('user', currentUserData.username);
+        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      } else {
+        localStorage.setItem('login', false);
+        localStorage.setItem('user', 'default');
+        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  }
+
   checkToasts() {
     const { clusterId } = this.state;
 
@@ -125,6 +146,9 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
+    //if (!localStorage.getItem('user')) {
+    this.getCurrentUser();
+    //}
     return (
       <>
         <Helmet title={this.handleTitle()} />

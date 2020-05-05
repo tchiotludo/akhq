@@ -64,7 +64,7 @@ class Node extends Component {
     const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
     return (
       <div>
-        <Header title={`Node ${nodeId}`} />
+        <Header title={`Node ${nodeId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

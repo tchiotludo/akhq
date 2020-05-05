@@ -23,7 +23,8 @@ class ConsumerGroupList extends Component {
     pageNumber: 1,
     totalPageNumber: 1,
     history: this.props,
-    search: ''
+    search: '',
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   componentDidMount() {
@@ -89,8 +90,8 @@ class ConsumerGroupList extends Component {
         id: consumerGroup.id,
         state: consumerGroup.state,
         coordinator: consumerGroup.coordinator.id,
-        members: consumerGroup.members.length,
-        topics: consumerGroup.groupedTopicOffset
+        members: consumerGroup.members ? consumerGroup.members.length : 0,
+        topics: consumerGroup.groupedTopicOffset ? consumerGroup.groupedTopicOffset : {}
       });
     });
 
@@ -98,11 +99,21 @@ class ConsumerGroupList extends Component {
   }
 
   handleState(state) {
-    return (
-      <span className={state === 'STABLE' ? 'badge badge-success' : 'badge badge-warning'}>
-        {state}
-      </span>
-    );
+    let className = '';
+
+    switch (state) {
+      case 'STABLE':
+        className = 'badge badge-success';
+        break;
+      case 'PREPARING_REBALANCE':
+        className = 'badge badge-primary';
+        break;
+      default:
+        className = 'badge badge-warning';
+        break;
+    }
+
+    return <span className={className}>{state.replace('_', ' ')}</span>;
   }
 
   handleCoordinator(coordinator) {
@@ -183,13 +194,20 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const { consumerGroup, selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const {
+      consumerGroup,
+      selectedCluster,
+      search,
+      pageNumber,
+      totalPageNumber,
+      roles
+    } = this.state;
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 
     return (
       <div>
-        <Header title="Consumer Groups" />
+        <Header title="Consumer Groups" history={history} />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
@@ -260,7 +278,11 @@ class ConsumerGroupList extends Component {
           onDetails={id => {
             history.push(`/${selectedCluster}/group/${id}`);
           }}
-          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
+          actions={
+            roles.group && roles.group['group/delete']
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              : [constants.TABLE_DETAILS]
+          }
         />
 
         <div

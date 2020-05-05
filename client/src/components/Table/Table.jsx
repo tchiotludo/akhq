@@ -98,7 +98,7 @@ class Table extends Component {
             <span
               id="details"
               onClick={() => {
-                onDetails && onDetails(row.id);
+                onDetails && onDetails(row.id, row);
               }}
             >
               <i className="fa fa-search" />

@@ -16,7 +16,9 @@ class Topic extends Component {
     clusterId: '',
     topicId: '',
     topic: {},
-    selectedTab: 'data'
+    selectedTab: '',
+    roles: JSON.parse(localStorage.getItem('roles')),
+    topicInternal: false
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -25,8 +27,13 @@ class Topic extends Component {
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-
-    this.setState({ clusterId, topicId });
+    const { roles } = this.state;
+    this.setState({
+      clusterId,
+      topicId,
+      selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
+      topicInternal: this.props.location.internal
+    });
   }
 
   selectTab = tab => {
@@ -39,7 +46,7 @@ class Topic extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, topicId, clusterId } = this.state;
+    const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
     const { history, match } = this.props;
 
     switch (selectedTab) {
@@ -59,33 +66,46 @@ class Topic extends Component {
           />
         );
       case 'configs':
-        return <TopicConfigs history={history} topicId={topicId} clusterId={clusterId} />;
+        return (
+          <TopicConfigs
+            internal={topicInternal}
+            history={history}
+            topicId={topicId}
+            clusterId={clusterId}
+          />
+        );
       case 'acls':
         return <TopicAcls history={history} topicId={topicId} clusterId={clusterId} />;
       case 'logs':
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
-        return <TopicData history={history} />;
+        return roles.topic && roles.topic['topic/data/read'] ? (
+          <TopicData history={history} match={match} />
+        ) : (
+          <TopicPartitions history={history} />
+        );
     }
   }
 
   render() {
-    const { topicId, clusterId, selectedTab } = this.state;
+    const { topicId, clusterId, selectedTab, roles } = this.state;
     return (
       <div>
-        <Header title={`Topic: ${topicId}`} />
+        <Header title={`Topic: ${topicId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
-            <li className="nav-item">
-              <a
-                className={this.tabClassName('data')}
-                onClick={() => this.selectTab('data')}
-                //to="#"
-                role="tab"
-              >
-                Data
-              </a>
-            </li>
+            {roles.topic && roles.topic['topic/data/read'] && (
+              <li className="nav-item">
+                <a
+                  className={this.tabClassName('data')}
+                  onClick={() => this.selectTab('data')}
+                  //to="#"
+                  role="tab"
+                >
+                  Data
+                </a>
+              </li>
+            )}
             <li className="nav-item">
               <a
                 className={this.tabClassName('partitions')}
@@ -116,16 +136,18 @@ class Topic extends Component {
                 Configs
               </a>
             </li>
-            <li className="nav-item">
-              <a
-                className={this.tabClassName('acls')}
-                onClick={() => this.selectTab('acls')}
-                //to="#"
-                role="tab"
-              >
-                ACLS
-              </a>
-            </li>
+            {roles.acls && roles.acls['acls/read'] && (
+              <li className="nav-item">
+                <a
+                  className={this.tabClassName('acls')}
+                  onClick={() => this.selectTab('acls')}
+                  //to="#"
+                  role="tab"
+                >
+                  ACLS
+                </a>
+              </li>
+            )}
             <li className="nav-item">
               <a
                 className={this.tabClassName('logs')}
@@ -144,7 +166,7 @@ class Topic extends Component {
             </div>
           </div>
         </div>
-        {selectedTab !== 'configs' && (
+        {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <a className="btn btn-secondary mr-2">
               <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
