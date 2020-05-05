@@ -90,7 +90,6 @@ function insertRole(roles, roleType, role) {
 }
 
 export function organizeRoles(roles) {
-  console.log(roles);
   let newRoles = {};
 
   roles.map(role => {

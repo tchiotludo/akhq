@@ -186,8 +186,7 @@ class TopicList extends Component {
       { colName: 'Topics', colSpan: 3 },
       { colName: 'Partitions', colSpan: 1 },
       { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 },
-      { colName: '', colSpan: 1 }
+      { colName: 'Consumer Groups', colSpan: 1 }
     ];
 
     return (
@@ -283,7 +282,11 @@ class TopicList extends Component {
           onDetails={id => {
             history.push(`/${selectedCluster}/topic/${id}`);
           }}
-          actions={[constants.TABLE_DELETE, constants.TABLE_DETAILS]}
+          actions={
+            roles.topic && roles.topic['topic/delete']
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              : [constants.TABLE_DETAILS]
+          }
         />
 
         <div

@@ -9,7 +9,7 @@ class SchemaCreate extends Form {
   state = {
     formData: {
       subject: '',
-      compatibilityLevel: 'NONE',
+      compatibilityLevel: 'BACKWARD',
       schemaData: ''
     },
     compatibilityLevelSelect: [
