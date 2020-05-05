@@ -33,6 +33,16 @@ class Routes extends Component {
     }
   }
 
+  handleRedirect(clusterId) {
+    const roles = JSON.parse(localStorage.getItem('roles'));
+    if (roles.topic && roles.topic['topic/read']) return `/${clusterId}/topic`;
+    else if (roles.node && roles.node['node/read']) return `/${clusterId}/node`;
+    else if (roles.group && roles.group['group/read']) return `/${clusterId}/group`;
+    else if (roles.acls && roles.acls['acls/read']) return `/${clusterId}/acls`;
+    else if (roles.registry && roles.registry['registry/read']) return `/${clusterId}/schema`;
+    return `/${clusterId}/topic`;
+  }
+
   render() {
     const { location } = this.props;
     const roles = JSON.parse(localStorage.getItem('roles'));
@@ -118,7 +128,7 @@ class Routes extends Component {
                 component={Connect}
               />
             )}
-            <Redirect from="/" to={`/${clusterId}/topic`} />
+            <Redirect from="/" to={this.handleRedirect(clusterId)} />
           </Switch>
         </Base>
       );

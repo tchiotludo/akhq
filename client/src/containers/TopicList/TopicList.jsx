@@ -139,6 +139,7 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
+    console.log('topics', topics);
     let tableTopics = [];
     topics.map(topic => {
       tableTopics.push({
@@ -149,7 +150,8 @@ class TopicList extends Component {
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
-        groupComponent: topic.consumerGroups
+        groupComponent: topic.consumerGroups,
+        internal: topic.internal
       });
     });
     this.setState({ topics: tableTopics });
@@ -279,8 +281,9 @@ class TopicList extends Component {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={id => {
-            history.push(`/${selectedCluster}/topic/${id}`);
+          onDetails={(id, row) => {
+            console.log('row', row);
+            history.push({ pathname: `/${selectedCluster}/topic/${id}`, internal: row.internal });
           }}
           actions={
             roles.topic && roles.topic['topic/delete']

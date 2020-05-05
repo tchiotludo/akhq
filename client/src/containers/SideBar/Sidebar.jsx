@@ -101,7 +101,6 @@ class Sidebar extends Component {
           </a>
         </NavText>
       </NavItem>
-
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
@@ -194,7 +193,6 @@ class Sidebar extends Component {
           defaultSelected={`${constants.TOPIC}`}
           id="khq-sidebar-tabs"
           style={{ background: 'black' }}
-          s
           defaultActiveKey={selectedTab}
         >
           <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>

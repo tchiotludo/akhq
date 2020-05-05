@@ -19,7 +19,8 @@ class TopicConfigs extends Form {
     formData: {},
     changedConfigs: {},
     errors: {},
-    configs: []
+    configs: [],
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   schema = {};
@@ -236,7 +237,7 @@ class TopicConfigs extends Form {
   }
 
   render() {
-    const { data, selectedTopic, selectedCluster } = this.state;
+    const { data, selectedTopic, selectedCluster, roles } = this.state;
     return (
       <form
         encType="multipart/form-data"
@@ -281,10 +282,11 @@ class TopicConfigs extends Form {
             ]}
             data={data}
           />
-
-          <aside>
-            {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
-          </aside>
+          {roles.topic && roles.topic['topic/config/update'] && !this.props.internal ? (
+            <aside>
+              {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
+            </aside>
+          ) : null}
         </div>
       </form>
     );

@@ -17,7 +17,8 @@ class Topic extends Component {
     topicId: '',
     topic: {},
     selectedTab: '',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(localStorage.getItem('roles')),
+    topicInternal: false
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -27,11 +28,12 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
     const { roles } = this.state;
-
+    console.log('props', this.props);
     this.setState({
       clusterId,
       topicId,
-      selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions'
+      selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
+      topicInternal: this.props.location.internal
     });
   }
 
@@ -45,7 +47,7 @@ class Topic extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, topicId, clusterId, roles } = this.state;
+    const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
     const { history, match } = this.props;
 
     switch (selectedTab) {
@@ -65,7 +67,14 @@ class Topic extends Component {
           />
         );
       case 'configs':
-        return <TopicConfigs history={history} topicId={topicId} clusterId={clusterId} />;
+        return (
+          <TopicConfigs
+            internal={topicInternal}
+            history={history}
+            topicId={topicId}
+            clusterId={clusterId}
+          />
+        );
       case 'acls':
         return <TopicAcls history={history} topicId={topicId} clusterId={clusterId} />;
       case 'logs':
