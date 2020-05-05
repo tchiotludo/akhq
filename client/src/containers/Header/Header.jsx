@@ -28,6 +28,7 @@ class Header extends Component {
             showSuccessToast: true,
             successToastMessage: 'Logged out successfully'
           });
+          window.location.reload(false);
         });
       });
     } catch (err) {
@@ -47,7 +48,7 @@ class Header extends Component {
         >
           {' '}
           <h1>{title}</h1>{' '}
-          {login === 'false' ? (
+          {login === 'false' || !login ? (
             <Link to="/login">
               <button
                 data-turbolinks="false"

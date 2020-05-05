@@ -146,7 +146,9 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
+    //if (!localStorage.getItem('user')) {
     this.getCurrentUser();
+    //}
     return (
       <>
         <Helmet title={this.handleTitle()} />
