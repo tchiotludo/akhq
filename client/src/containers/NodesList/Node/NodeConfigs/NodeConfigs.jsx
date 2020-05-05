@@ -34,19 +34,19 @@ class NodeConfigs extends Form {
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
     history.replace({
-      ...this.props.history,
+      ...history,
       loading: true
     });
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
       this.handleData(configs.data);
-    } catch (err) {
-      console.error('Error:', err);
-    } finally {
       history.replace({
-        ...this.props.history,
+        ...history,
         loading: false
       });
+    } catch (err) {
+      history.replace('/error', { errorData: err, loading: false });
+      console.error('Error:', err);
     }
   }
 

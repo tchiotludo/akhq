@@ -101,6 +101,7 @@ class Sidebar extends Component {
           </a>
         </NavText>
       </NavItem>
+
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
@@ -181,6 +182,7 @@ class Sidebar extends Component {
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav
+        expanded={this.props.expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}

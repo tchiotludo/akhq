@@ -48,13 +48,12 @@ class ConnectList extends Component {
       connectDefinitions = await get(uriConnectDefinitions(clusterId, connectId));
       this.handleData(connectDefinitions.data);
       this.setState({ selectedCluster: clusterId });
-    } catch (err) {
-      history.replace('/error', { errorData: err });
-    } finally {
       history.replace({
         ...this.props.location,
         loading: false
       });
+    } catch (err) {
+      history.replace('/error', { errorData: err, loading: false });
     }
   }
 
