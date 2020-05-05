@@ -184,12 +184,13 @@ class Sidebar extends Component {
         style={{ background: 'black' }}
       >
         <SideNav.Toggle />{' '}
-        <img styles={{ marginTop: '300%', position: 'absolute' }} src={logo} alt="" />
+
+        <img src={logo} alt=""/>
+
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           id="khq-sidebar-tabs"
           style={{ background: 'black' }}
-          s
           defaultActiveKey={selectedTab}
         >
           <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>

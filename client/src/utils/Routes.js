@@ -43,8 +43,7 @@ class Routes extends Component {
     } else {
       clusterId = path[2];
     }
-console.log(path);
-    console.log(clusterId);
+
     if (path[2] === 'error') {
       return (
         <Switch>

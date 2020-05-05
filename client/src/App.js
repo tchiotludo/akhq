@@ -28,15 +28,19 @@ class App extends React.Component {
   }
   render() {
     const { clusterId } = this.state;
-    return (
-      <MuiPickersUtilsProvider utils={MomentUtils}>
-        <Router history={history}>
-          <ErrorBoundary history={history}>
-            <Routes clusterId={clusterId} location={baseUrl} />
-          </ErrorBoundary>
-        </Router>
-      </MuiPickersUtilsProvider>
-    );
+    if(clusterId) {
+      return (
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <Router history={history}>
+              <ErrorBoundary history={history}>
+                <Routes clusterId={clusterId} location={baseUrl}/>
+              </ErrorBoundary>
+            </Router>
+          </MuiPickersUtilsProvider>
+      );
+    } else {
+      return <Loading show="true" />
+    }
   }
 }
 
