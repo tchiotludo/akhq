@@ -96,7 +96,6 @@ class Base extends Component {
     try {
       let currentUserData = await get(uriCurrentUser());
       currentUserData = currentUserData.data;
-      console.log(currentUserData);
       if (currentUserData.logged) {
         localStorage.setItem('login', true);
         localStorage.setItem('user', currentUserData.username);
@@ -147,7 +146,7 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
-    if (localStorage.getItem('user') === undefined) {
+    if (!localStorage.getItem('user')) {
       this.getCurrentUser();
     }
     return (
