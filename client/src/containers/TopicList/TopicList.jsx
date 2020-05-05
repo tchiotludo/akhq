@@ -139,7 +139,6 @@ class TopicList extends Component {
   }
 
   handleTopics(topics) {
-    console.log('topics', topics);
     let tableTopics = [];
     topics.map(topic => {
       tableTopics.push({
@@ -282,7 +281,6 @@ class TopicList extends Component {
             this.handleOnDelete(topic);
           }}
           onDetails={(id, row) => {
-            console.log('row', row);
             history.push({ pathname: `/${selectedCluster}/topic/${id}`, internal: row.internal });
           }}
           actions={

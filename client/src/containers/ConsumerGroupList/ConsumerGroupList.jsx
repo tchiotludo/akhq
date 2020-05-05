@@ -68,7 +68,6 @@ class ConsumerGroupList extends Component {
     try {
       let response = await api.get(uriConsumerGroups(selectedCluster, search, pageNumber));
       response = response.data;
-      console.log(response);
       if (response.results) {
         this.handleConsumerGroup(response.results);
         this.setState({ selectedCluster, totalPageNumber: response.total });
@@ -87,14 +86,6 @@ class ConsumerGroupList extends Component {
   handleConsumerGroup(consumerGroup) {
     let tableConsumerGroup = [];
     consumerGroup.map(consumerGroup => {
-      console.log(consumerGroup);
-      console.log({
-        id: consumerGroup.id,
-        state: consumerGroup.state,
-        coordinator: consumerGroup.coordinator.id,
-        members: consumerGroup.members ? consumerGroup.members.length : 0
-        // topics: consumerGroup.groupedTopicOffset || {}
-      });
       tableConsumerGroup.push({
         id: consumerGroup.id,
         state: consumerGroup.state,
