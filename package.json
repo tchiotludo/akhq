@@ -37,9 +37,9 @@
     "webpack-merge": "^4.2.2"
   },
   "scripts": {
-    "dev": "node_modules/.bin/webpack-dev-server --mode development",
-    "watch": "node_modules/.bin/webpack --progress --mode development --watch",
-    "build": "node_modules/.bin/webpack -p --progress --mode production"
+    "dev": "webpack-dev-server --mode development",
+    "watch": "webpack --progress --mode development --watch",
+    "build": "webpack -p --progress --mode production"
   },
   "repository": {
     "type": "git",

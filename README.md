@@ -508,6 +508,7 @@ Dev server is a java server & webpack-dev-server with live reload.
 * [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
+* [BARMER](https://www.barmer.de/)
 
 
 ## Credits

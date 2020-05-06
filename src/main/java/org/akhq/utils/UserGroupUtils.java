@@ -26,6 +26,7 @@ public class UserGroupUtils {
 
         return this.akhqGroups.stream()
             .filter(group -> groups.contains(group.getName()))
+            .filter(group -> group.getRoles() != null)
             .flatMap(group -> group.getRoles().stream())
             .distinct()
             .collect(Collectors.toList());
