@@ -21,8 +21,7 @@ micronaut:
         paths: classpath:META-INF/swagger
         mapping: "${akhq.server.base-path:}/swagger/**"
   security:
-    enabled: false
-    reject-not-found: false
+    enabled: true
     endpoints:
       login:
         enabled: true
@@ -33,8 +32,8 @@ micronaut:
         get-allowed: true
     session:
       enabled: true
-      login-success-target-url: "${akhq.server.base-path:}/"
-      logout-target-url: "${akhq.server.base-path:}/"
+      login-success-target-url: "${akhq.server.base-path:}/api/me"
+      logout-target-url: "${akhq.server.base-path:}/api/me"
       forbidden-target-url: "${akhq.server.base-path:}/login/forbidden"
       unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
       login-failure-target-url: "${akhq.server.base-path:}/login/failed"
@@ -93,8 +92,8 @@ akhq:
       connect:
         - name: connect-3
           url: "http://localhost:8083"
-#        - name: connect-4
-#          url: "http://localhost:8082"
+  #        - name: connect-4
+  #          url: "http://localhost:8082"
   server:
     base-path: ""
     access-log:
@@ -138,41 +137,40 @@ akhq:
     poll-timeout: 1000
 
   security:
-    default-group: admin
+    default-group: reader
     groups:
       admin:
         roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
       reader:
         roles:
           - topic/read
-          - node/read
-          - topic/data/read
-          - group/read
-          - registry/read
-          - acls/read
-          - connect/read
       no-roles:
         roles: []
+    basic-auth:
+      user: # Username
+        password: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8 # Password in sha256
+        groups: # Groups for the user
+          - admin

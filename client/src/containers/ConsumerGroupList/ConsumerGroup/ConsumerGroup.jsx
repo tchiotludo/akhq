@@ -10,7 +10,8 @@ class ConsumerGroup extends Component {
     clusterId: '',
     consumerGroupId: '',
     consumerGroup: {},
-    selectedTab: 'topics'
+    selectedTab: 'topics',
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   componentDidMount() {
@@ -70,10 +71,10 @@ class ConsumerGroup extends Component {
   }
 
   render() {
-    const { clusterId, consumerGroupId } = this.state;
+    const { clusterId, consumerGroupId, roles } = this.state;
     return (
       <div>
-        <Header title={`Topic ${consumerGroupId}`} />
+        <Header title={`Topic ${consumerGroupId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
@@ -94,15 +95,17 @@ class ConsumerGroup extends Component {
                 Members
               </a>
             </li>
-            <li className="nav-item">
-              <a
-                className={this.tabClassName('acls')}
-                onClick={() => this.selectTab('acls')}
-                role="tab"
-              >
-                ACLS
-              </a>
-            </li>
+            {roles.acls && roles.acls['acls/read'] && (
+              <li className="nav-item">
+                <a
+                  className={this.tabClassName('acls')}
+                  onClick={() => this.selectTab('acls')}
+                  role="tab"
+                >
+                  ACLS
+                </a>
+              </li>
+            )}
           </ul>
 
           <div className="tab-content">
@@ -112,11 +115,13 @@ class ConsumerGroup extends Component {
           </div>
         </div>
 
-        <aside>
-          <Link to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
-            Update Offsets
-          </Link>
-        </aside>
+        {roles.group && roles.group['offsets/update'] && (
+          <aside>
+            <Link to={`/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
+              Update Offsets
+            </Link>
+          </aside>
+        )}
       </div>
     );
   }

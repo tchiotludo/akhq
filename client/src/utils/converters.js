@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import moment from 'moment';
+import { ROLE_TYPE } from './constants';
 
 export function calculateTopicOffsetLag(topicOffsets) {
   let offsetLag = 0;
@@ -77,6 +78,46 @@ export function showBytes(bytes, dPlaces = 2) {
   if (!bytes) return '0 B';
   const value = handleConvert(bytes, 'B');
   return `${parseFloat(value.val.toFixed(dPlaces))} ${value.unit}`;
+}
+
+function insertRole(roles, roleType, role) {
+  if (roles[roleType] === undefined) {
+    roles[roleType] = {};
+  }
+  roles[roleType][role] = true;
+
+  return roles;
+}
+
+export function organizeRoles(roles) {
+  let newRoles = {};
+
+  roles.map(role => {
+    switch (role.substring(0, role.indexOf('/'))) {
+      case ROLE_TYPE.TOPIC:
+        newRoles = insertRole(newRoles, ROLE_TYPE.TOPIC, role);
+        break;
+      case ROLE_TYPE.NODE:
+        newRoles = insertRole(newRoles, ROLE_TYPE.NODE, role);
+        break;
+      case ROLE_TYPE.GROUP:
+        newRoles = insertRole(newRoles, ROLE_TYPE.GROUP, role);
+        break;
+      case ROLE_TYPE.REGISTRY:
+        newRoles = insertRole(newRoles, ROLE_TYPE.REGISTRY, role);
+        break;
+      case ROLE_TYPE.ACLS:
+        newRoles = insertRole(newRoles, ROLE_TYPE.ACLS, role);
+        break;
+      case ROLE_TYPE.CONNECT:
+        newRoles = insertRole(newRoles, ROLE_TYPE.CONNECT, role);
+        break;
+      default:
+        break;
+    }
+  });
+
+  return JSON.stringify(newRoles);
 }
 
 export default { showTime, showBytes };

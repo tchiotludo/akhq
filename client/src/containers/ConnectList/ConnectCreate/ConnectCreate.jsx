@@ -445,7 +445,7 @@ class ConnectCreate extends Component {
             this.doSubmit();
           }}
         >
-          <Header title={'Create a definition'} />
+          <Header title={'Create a definition'} history={history} />
           {this.renderDropdown()}
           {selectedType.length > 0 && (
             <React.Fragment>

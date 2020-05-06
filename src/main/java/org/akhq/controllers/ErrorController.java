@@ -6,10 +6,12 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
 import io.micronaut.http.hateoas.JsonError;
 import io.micronaut.http.hateoas.Link;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.views.ViewsRenderer;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +19,12 @@ import org.akhq.modules.RequestHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import javax.inject.Inject;
 
 @Secured(SecurityRule.IS_ANONYMOUS)
 @Slf4j
-//@Controller("/errors")
+@Controller("/errors")
 public class ErrorController extends AbstractController {
     private final ViewsRenderer viewsRenderer;
     private final RequestHelper requestHelper;
@@ -46,6 +49,11 @@ public class ErrorController extends AbstractController {
 
         return HttpResponse.<JsonError>unprocessableEntity()
             .body(error);
+    }
+
+    @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
+        return HttpResponse.temporaryRedirect(this.uri("/login"));
     }
 
     @Error(global = true)

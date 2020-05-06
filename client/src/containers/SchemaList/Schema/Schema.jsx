@@ -76,7 +76,7 @@ class Schema extends Component {
 
     return (
       <div>
-        <Header title={`Schema: ${schemaId}`} />
+        <Header title={`Schema: ${schemaId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

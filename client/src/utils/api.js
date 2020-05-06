@@ -1,6 +1,10 @@
 import axios from 'axios';
 import history from './history';
 
+const configs = {
+  withCredentials: true
+};
+
 const handleError = err => {
   return err;
 };
@@ -8,7 +12,7 @@ const handleError = err => {
 export const get = url =>
   new Promise((resolve, reject) => {
     axios
-      .get(url)
+      .get(url, configs)
       .then(res => {
         resolve(res);
       })
@@ -21,7 +25,7 @@ export const get = url =>
 export const put = (url, body) =>
   new Promise((resolve, reject) => {
     axios
-      .put(url, body)
+      .put(url, body, configs)
       .then(res => {
         resolve(res);
       })
@@ -33,7 +37,7 @@ export const put = (url, body) =>
 export const post = (url, body) =>
   new Promise((resolve, reject) => {
     axios
-      .post(url, body)
+      .post(url, body, configs)
       .then(res => {
         resolve(res);
       })
@@ -45,7 +49,7 @@ export const post = (url, body) =>
 export const remove = (url, body) =>
   new Promise((resolve, reject) => {
     axios
-      .delete(url, { data: body })
+      .delete(url, { ...configs, data: body })
       .then(res => {
         resolve(res);
       })

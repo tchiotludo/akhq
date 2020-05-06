@@ -55,6 +55,7 @@ class TopicCreate extends Form {
         'retention.ms': formData.retention
       }
     };
+
     history.replace({
       loading: true
     });
@@ -86,7 +87,7 @@ class TopicCreate extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Create a topic" />
+          <Header title="Create a topic" history={this.props.history} />
           {this.renderInput('name', 'Name', 'Name')}
           {this.renderInput('partition', 'Partition', 'Partition', 'number')}
           {this.renderInput('replication', 'Replicator Factor', 'Replicator Factor', 'number')}

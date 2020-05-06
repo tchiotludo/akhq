@@ -66,7 +66,7 @@ class Connect extends Component {
 
     return (
       <div>
-        <Header title={`Connect: ${definitionId}`} />
+        <Header title={`Connect: ${definitionId}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">

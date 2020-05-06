@@ -3,6 +3,18 @@ import { node } from 'prop-types';
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
+export const uriLogin = () => {
+  return `${baseUrl}/login`;
+};
+
+export const uriLogout = () => {
+  return `${baseUrl}/logout`;
+};
+
+export const uriCurrentUser = () => {
+  return `${apiUrl}/me`;
+};
+
 export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };

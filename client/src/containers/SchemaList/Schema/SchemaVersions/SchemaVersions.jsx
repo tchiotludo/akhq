@@ -17,7 +17,8 @@ class SchemaVersions extends Component {
     schemaModalBody: '',
     deleteMessage: '',
     schemaToDelete: {},
-    deleteData: { clusterId: '', subject: '', versionId: 1 }
+    deleteData: { clusterId: '', subject: '', versionId: 1 },
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   componentDidMount() {
@@ -110,7 +111,7 @@ class SchemaVersions extends Component {
   };
 
   render() {
-    const { data, selectedCluster, showSchemaModal, schemaModalBody } = this.state;
+    const { data, selectedCluster, showSchemaModal, schemaModalBody, roles } = this.state;
     return (
       <div>
         <Table
@@ -159,7 +160,11 @@ class SchemaVersions extends Component {
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}
-          actions={[constants.TABLE_DELETE]}
+          actions={
+            roles.registry && roles.registry['registry/version/delete']
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              : []
+          }
         />
         <ConfirmModal
           show={this.state.showDeleteModal}

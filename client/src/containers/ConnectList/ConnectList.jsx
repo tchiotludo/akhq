@@ -19,7 +19,8 @@ class ConnectList extends Component {
     configModalBody: '',
     showDeleteModal: false,
     definitionToDelete: '',
-    deleteMessage: ''
+    deleteMessage: '',
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -48,13 +49,12 @@ class ConnectList extends Component {
       connectDefinitions = await get(uriConnectDefinitions(clusterId, connectId));
       this.handleData(connectDefinitions.data);
       this.setState({ selectedCluster: clusterId });
-    } catch (err) {
-      history.replace('/ui/error', { errorData: err });
-    } finally {
       history.replace({
         ...this.props.location,
         loading: false
       });
+    } catch (err) {
+      history.replace('/error', { errorData: err, loading: false });
     }
   }
 
@@ -122,6 +122,20 @@ class ConnectList extends Component {
     this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
 
+  getTableActions = () => {
+    const { roles } = this.state;
+    let actions = [];
+
+    if (roles.connect && roles.connect['connect/update']) {
+      actions.push(constants.TABLE_DETAILS);
+    }
+    if (roles.connect && roles.connect['connect/delete']) {
+      actions.push(constants.TABLE_DELETE);
+    }
+
+    return actions;
+  };
+
   handleOnDelete(definition) {
     this.setState({ definitionToDelete: definition }, () => {
       this.showDeleteModal(
@@ -164,12 +178,12 @@ class ConnectList extends Component {
   };
 
   render() {
-    const { clusterId, connectId, tableData, showConfigModal, configModalBody } = this.state;
+    const { clusterId, connectId, tableData, showConfigModal, configModalBody, roles } = this.state;
     const { history } = this.props;
 
     return (
       <div>
-        <Header title={`Connect: ${connectId}`} />
+        <Header title={`Connect: ${connectId}`} history={history} />
         <Table
           columns={[
             {
@@ -242,7 +256,7 @@ class ConnectList extends Component {
             }
           ]}
           data={tableData}
-          actions={[constants.TABLE_DETAILS, constants.TABLE_DELETE]}
+          actions={this.getTableActions()}
           onDetails={name => {
             history.push({
               pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`,
@@ -256,11 +270,13 @@ class ConnectList extends Component {
           }}
           noContent={'No connectors available'}
         />
-        <aside>
-          <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
-            Create a definition
-          </Link>
-        </aside>
+        {roles.connect && roles.connect['connect/insert'] && (
+          <aside>
+            <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
+              Create a definition
+            </Link>
+          </aside>
+        )}
         <ConfirmModal
           show={this.state.showDeleteModal}
           handleCancel={this.closeDeleteModal}
