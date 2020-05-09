@@ -281,7 +281,7 @@ class TopicList extends Component {
             this.handleOnDelete(topic);
           }}
           onDetails={(id, row) => {
-            history.push({ pathname: `/${selectedCluster}/topic/${id}`, internal: row.internal });
+            history.push({ pathname: `/ui/${selectedCluster}/topic/${id}`, internal: row.internal });
           }}
           actions={
             roles.topic && roles.topic['topic/delete']
@@ -307,7 +307,7 @@ class TopicList extends Component {
           <aside>
             <Link
               to={{
-                pathname: `/${clusterId}/topic/create`,
+                pathname: `/ui/${clusterId}/topic/create`,
                 state: { formData: this.state.createTopicFormData }
               }}
               className="btn btn-primary"

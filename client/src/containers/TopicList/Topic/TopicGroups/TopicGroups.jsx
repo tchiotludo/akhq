@@ -88,7 +88,7 @@ class TopicGroups extends Component {
         >
           <Link
             to={{
-              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topic}`
+              pathname: `/ui/${this.state.selectedCluster}/topic/${lagTopic.topic}`
             }}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"

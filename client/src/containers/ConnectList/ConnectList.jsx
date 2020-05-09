@@ -272,7 +272,7 @@ class ConnectList extends Component {
         />
         {roles.connect && roles.connect['connect/insert'] && (
           <aside>
-            <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
+            <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
               Create a definition
             </Link>
           </aside>

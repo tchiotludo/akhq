@@ -71,7 +71,7 @@ class ConsumerGroupTopics extends Component {
               type: 'text',
               cell: (obj, col) => {
                 return (
-                  <Link to={`/${this.state.selectedCluster}/topic/${obj[col.accessor]}`}>
+                  <Link to={`/ui/${this.state.selectedCluster}/topic/${obj[col.accessor]}`}>
                     {obj[col.accessor]}
                   </Link>
                 );

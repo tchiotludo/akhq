@@ -78,14 +78,14 @@ class ConsumerGroupMembers extends Component {
         <div
           onClick={() => {
             history.push({
-              pathname: `/${this.state.selectedCluster}/topic/${topic}`,
+              pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,
               tab: constants.TOPIC
             });
           }}
         >
           <Link
             to={{
-              pathname: `/${this.state.selectedCluster}/topic/${topic}`
+              pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`
             }}
             key="topic"
             className="btn btn-primary btn-sm mb-1"

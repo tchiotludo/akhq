@@ -32,12 +32,14 @@ micronaut:
         get-allowed: true
     session:
       enabled: true
-      login-success-target-url: "${akhq.server.base-path:}/api/me"
-      logout-target-url: "${akhq.server.base-path:}/api/me"
+      login-success-target-url: "${akhq.server.base-path:}/"
+      logout-target-url: "${akhq.server.base-path:}/"
       forbidden-target-url: "${akhq.server.base-path:}/login/forbidden"
       unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
       login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
+      - pattern: "${akhq.server.base-path:}/ui/**"
+        access: "isAnonymous()"
       - pattern: "${akhq.server.base-path:}/static/**"
         access: "isAnonymous()"
       - pattern: "${akhq.server.base-path:}/swagger/**"

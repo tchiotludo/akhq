@@ -45,7 +45,7 @@ class NodeConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      history.replace('/error', { errorData: err, loading: false });
+      history.replace('/ui/error', { errorData: err, loading: false });
       console.error('Error:', err);
     }
   }

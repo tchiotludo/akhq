@@ -287,7 +287,7 @@ class SchemaList extends Component {
           <aside>
             <Link
               to={{
-                pathname: `/${clusterId}/schema/create`,
+                pathname: `/ui/${clusterId}/schema/create`,
                 state: { formData: this.state.createSubjectFormData }
               }}
               className="btn btn-primary"
