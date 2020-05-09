@@ -1,0 +1,119 @@
+div.khq-search-sse {
+    .progress-container {
+        border-left: $table-border-width solid $table-border-color;
+        border-right: $table-border-width solid $table-border-color;
+        padding: $table-cell-padding;
+        display: flex;
+        flex-direction: row;
+
+        .progress {
+            border-radius: 0;
+            flex-grow: 2;
+            margin-top: $table-cell-padding / 2;
+
+
+            .progress-bar {
+                transition: width 0.1s ease;
+                color: darken($progress-bar-bg, 30%);
+            }
+        }
+
+        button {
+            margin-left: $table-cell-padding;
+        }
+    }
+}
+
+table {
+    tbody {
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            overflow: hidden;
+            max-height: 100px;
+            cursor: pointer;
+            position: relative;
+
+            code {
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+                word-break: break-all;
+                display: block;
+
+                &:after {
+                    content:'';
+                    width:100%;
+                    height:35px;
+                    position:absolute;
+                    left:0;
+                    bottom:0;
+                    background: linear-gradient(transparent, $body-bg);
+                }
+            }
+        }
+
+        tr.fade-in {
+            animation: fade-in 0.3s;
+        }
+
+        tr:hover {
+            pre code:after {
+                background: linear-gradient(transparent, $table-hover-bg);
+            }
+        }
+
+        tr.deleted {
+            opacity: 0.5;
+        }
+
+        tr.reduce {
+            th, td {
+                padding: $table-cell-padding-sm $table-cell-padding;
+            }
+        }
+
+        code.key {
+            font-size: 92.5%;
+        }
+
+        td a, td a:hover {
+            color: $body-color;
+        }
+
+        .table.table-sm {
+            margin-top: calc(-#{$table-cell-padding});
+            width: calc(100% + (#{$table-cell-padding } * 2));
+            margin-left: -$table-cell-padding;
+            position: relative;
+            border-bottom: $table-border-width dashed $table-border-color;
+            font-size: $font-size-sm;
+
+            td, th {
+                border: 0;
+            }
+
+            th {
+                border-right: $table-border-width dashed $table-border-color;
+            }
+
+            tbody tr:nth-of-type(even) {
+                background-color: lighten($table-accent-bg, 0.1);
+            }
+
+            tbody tr:nth-of-type(odd) {
+                background-color: lighten($table-bg, 0.1);
+            }
+        }
+    }
+}
+
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

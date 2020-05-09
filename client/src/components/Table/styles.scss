@@ -1,0 +1,11 @@
+.action-hover :hover {
+  cursor: pointer;
+}
+
+.align-cell {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  align-items: center;
+}

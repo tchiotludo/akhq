@@ -1,0 +1,13 @@
+{
+  "parser": "babel",
+  "trailingComma": "none",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "extends": ["plugin:prettier/recommended"],
+  "printWidth": 100,
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "jsxBracketSameLine": false
+
+}
