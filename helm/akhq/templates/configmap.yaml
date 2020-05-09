@@ -1,0 +1,14 @@
+{{- if .Values.configuration }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "akhq.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  application.yml: |
+{{ .Values.configuration | indent 4}}
+{{- end }}

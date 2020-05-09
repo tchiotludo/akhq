@@ -1,7 +1,7 @@
 <#ftl output_format="HTML">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="cluster" type="org.kafkahq.models.Cluster" -->
+<#-- @ftlvariable name="cluster" type="org.akhq.models.Cluster" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="message" type="java.lang.String" -->
 <#-- @ftlvariable name="stacktrace" type="java.lang.String" -->
@@ -11,7 +11,7 @@
 <@template.header "500 Internal server error" />
 
 <div class="mb-5">
-    <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
+    <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/></h3>
 </div>
 
 <code>${message!}</code><br /><br />

@@ -8,7 +8,7 @@
 
 <form class="khq-login" method="POST" action="${basePath}/login">
     <div>
-        <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/><sup><strong>HQ</strong></sup></h3>
+        <h3 class="logo"><img src="${basePath}/static/img/logo.svg" alt=""/></h3>
     </div>
 
     <div class="input-group mb-3">

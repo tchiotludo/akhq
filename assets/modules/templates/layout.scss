@@ -32,8 +32,9 @@ h1 {
 h3.logo {
     margin-bottom: 0;
     text-align: center;
-    sup {
-        color: $yellow;
+
+    img {
+        height: 60px;
     }
 }
 
@@ -149,6 +150,11 @@ h3.logo {
 
 form.khq-form {
     margin-bottom: 25px;
+}
+
+
+form.khq-form .bootstrap-select{
+    width: 100% !important;
 }
 
 form.khq-form div.khq-submit,

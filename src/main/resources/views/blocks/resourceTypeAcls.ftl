@@ -2,7 +2,7 @@
 
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="resourceType" type="java.lang.String" -->
-<#-- @ftlvariable name="acls" type="java.util.List<org.kafkahq.models.AccessControlList>" -->
+<#-- @ftlvariable name="acls" type="java.util.List<org.akhq.models.AccessControl>" -->
 
 
 <div class="table-responsive">
@@ -17,22 +17,16 @@
         <tbody>
         <#assign aclCounter=0>
         <#list acls as acl>
-            <#assign topicAcls=acl.getPermissions()[resourceType?lower_case]>
-            <#assign key_list = topicAcls?keys/>
-            <#assign value_list = topicAcls?values/>
-            <#list key_list as key>
+            <#assign topicAcls=acl.findByRessourceType(resourceType?lower_case)>
+            <#list topicAcls as current>
                 <#assign aclCounter++>
-                <#assign seq_index = key_list?seq_index_of(key) />
-                <#assign key_value = value_list[seq_index]/>
+
                 <tr>
-                    <td>${acl.getPrincipal()}</td>
-                    <td>${key.getHost()}</td>
+                    <td>${current.getResource().getName()}</td>
+                    <td>${current.getHost()}</td>
                     <td>
-                        <h5>
-                            <#list key_value as acl >
-                                <span class="badge badge-secondary">${acl}</span>
-                            </#list>
-                        </h5>
+                        <span class="badge badge-secondary">${current.getOperation().getPermissionType()}</span>
+                        ${current.getOperation().getOperation()}
                     </td>
                 </tr>
             </#list>
