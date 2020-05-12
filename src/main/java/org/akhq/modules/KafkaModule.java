@@ -213,7 +213,7 @@ public class KafkaModule {
                     }
 
                     if (connect.getSslKeyStore() != null) {
-                        configuration.useTrustStore(
+                        configuration.useKeyStore(
                                 new File(connect.getSslKeyStore()),
                                 connect.getSslKeyStorePassword()
                         );
