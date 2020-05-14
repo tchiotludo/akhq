@@ -227,23 +227,23 @@ class Sidebar extends Component {
             </NavText>
             {listClusters}
           </NavItem>
-          {roles.node && this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
-          {roles.topic &&
-            roles.topic['topic/read'] &&
-            this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-          {roles.topic &&
-            roles.topic['topic/data/read'] &&
+          {roles && roles.node && this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+          {roles && roles.topic &&
+          roles.topic['topic/read'] &&
+          this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+          {roles && roles.topic &&
+          roles.topic['topic/data/read'] &&
             this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
-          {roles.group &&
+          {roles && roles.group &&
             roles.group['group/read'] &&
             this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
-          {roles.acls &&
+          {roles && roles.acls &&
             roles.acls['acls/read'] &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {roles.registry &&
+          {roles && roles.registry &&
             roles.registry['registry/read'] &&
             this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
-          {roles.connect && roles.connect['connect/read'] && (
+          {roles && roles.connect && roles.connect['connect/read'] && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
