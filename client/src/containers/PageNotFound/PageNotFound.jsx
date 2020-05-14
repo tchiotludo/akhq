@@ -1,0 +1,41 @@
+import React, { Component } from 'react';
+import image from '../../images/logo.svg';
+
+class PageNotFound extends Component {
+  render() {
+    const { history } = this.props;
+
+    let path = window.location.pathname.split('/');
+
+    let clusterId = '';
+    clusterId = path[1];
+    if (clusterId.length <= 0) {
+      clusterId = this.props.clusterId;
+    }
+
+    return (
+      <div className="no-side-bar" style={{ height: window.innerHeight - 100 }}>
+        <div className="max-width" style={{ backgroundColor: '#333333', display: 'inline-block' }}>
+          <h3 className="logo mt-5">
+            <img src={image} width={'195.53px'} height={'63px'} />
+          </h3>
+          <div className="container mt-5">
+            <p>The page you were looking for doesn't exist.</p>
+            <p>You may have mistyped the address or the page doesn't exist.</p>
+          </div>
+          <div class="p-15 mb-4" style={{ display: 'flex' }}>
+            <button
+              class="btn btn-primary"
+              style={{ marginLeft: 'auto' }}
+              onClick={() => history.replace(`/${clusterId}/topic`)}
+            >
+              Back to home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default PageNotFound;
