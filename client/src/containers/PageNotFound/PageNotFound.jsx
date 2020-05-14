@@ -1,7 +1,18 @@
 import React, { Component } from 'react';
 import image from '../../images/logo.svg';
+import Sidebar from '../../containers/SideBar';
 
 class PageNotFound extends Component {
+  handleHide = () => {
+    this.setState({
+      display: 'none'
+    });
+  };
+
+  componentDidMount() {
+    return (<Sidebar onLoaded={this.handleHide} />);
+  }
+
   render() {
     const { history } = this.props;
 

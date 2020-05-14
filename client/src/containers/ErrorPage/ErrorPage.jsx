@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
 import history from '../../utils/history';
+import Sidebar from '../../containers/SideBar';
 
 class ErrorPage extends Component {
   static propTypes = {
@@ -16,6 +17,12 @@ class ErrorPage extends Component {
   onUnload(event) {
     localStorage.setItem('reload', true);
   }
+
+  handleHide = () => {
+    this.setState({
+      display: 'none'
+    });
+  };
 
   componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
@@ -35,6 +42,7 @@ class ErrorPage extends Component {
         this.setState({ title, description });
       }
     }
+    return (<Sidebar onLoaded={this.handleHide} />);
   }
 
   /**
