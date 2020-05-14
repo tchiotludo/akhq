@@ -201,7 +201,6 @@ class Sidebar extends Component {
               style={{
                 color: 'grey',
                 fontStyle: 'Italic',
-                position: 'fixed',
                 paddingLeft: '9%'
               }}
             >
