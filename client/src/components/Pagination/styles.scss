@@ -28,6 +28,8 @@
 .page-input{
     font-size: 12px;
     width: 40%;
+    max-width: 40%;
+    border-radius: 5%;
 }
 
 .page-item.before, .page-item.after {
@@ -69,4 +71,8 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance:textfield;
+}
+
+.pagination-input.page-input{
+    margin-top: 0px;
 }

@@ -30,6 +30,7 @@
 @import "~react-datepicker/dist/react-datepicker.css";
 @import "containers/PageNotFound/styles.scss";
 
+
 .App {
   text-align: center;
 }
@@ -47,7 +48,7 @@
 }
 
 
-.App-header {
+/*.App-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -60,7 +61,7 @@
 
 .App-link {
   color: #61dafb;
-}
+}*/
 
 @keyframes App-logo-spin {
   from {
@@ -212,7 +213,7 @@ h3.logo sup {
     margin-top: 0;
   }
   .khq-nav input, .khq-nav .bootstrap-select, .khq-nav select {
-    width: 100% !important;
+    width: 100% /*!important*/;
   }
   .khq-nav button.btn-primary {
     display: block;
