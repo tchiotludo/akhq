@@ -49,7 +49,7 @@ spec:
             value: /app/application.yml,/app/application-secrets.yml
           {{- end }}
           {{- with .Values.image.extraEnv }}
-{{ toYaml . | trim | indent 12 }}
+{{ toYaml . | trim | indent 10 }}
           {{- end }}
           volumeMounts:
           {{- if .Values.extraVolumeMounts }}{{ toYaml .Values.extraVolumeMounts | trim | nindent 12 }}{{ end }}
