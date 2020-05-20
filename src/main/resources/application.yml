@@ -163,6 +163,12 @@ akhq:
       reader:
         roles:
           - topic/read
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - topic/insert
+          - topic/delete
+          - topic/config/update
       no-roles:
         roles: []
     basic-auth:

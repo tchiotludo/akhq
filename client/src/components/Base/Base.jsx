@@ -155,15 +155,16 @@ class Base extends Component {
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        {this.props.location.pathname !== '/login' && (
-          <Sidebar
-            expanded={expanded}
-            toggleSidebar={newExpanded => {
-              this.setState({ expanded: newExpanded });
-            }}
-            selectedTab={selectedTab}
-          />
-        )}
+        {this.props.location.pathname !== '/login' &&
+          this.props.location.pathname !== '/page-not-found' && (
+            <Sidebar
+              expanded={expanded}
+              toggleSidebar={newExpanded => {
+                this.setState({ expanded: newExpanded });
+              }}
+              selectedTab={selectedTab}
+            />
+          )}
         <div id="content" className={expanded ? 'expanded' : 'collapsed'}>
           {children}
         </div>

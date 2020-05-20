@@ -22,6 +22,8 @@ import SchemaCreate from '../containers/SchemaList/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acls/AclDetails';
 import Login from '../containers/Login';
+import PageNotFound from './../containers/PageNotFound/PageNotFound';
+
 class Routes extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.location.pathname !== '/error') {
@@ -34,12 +36,13 @@ class Routes extends Component {
   }
 
   handleRedirect(clusterId) {
-    const roles = JSON.parse(localStorage.getItem('roles')) || {};
-    if (roles.topic && roles.topic['topic/read']) return `/${clusterId}/topic`;
-    else if (roles.node && roles.node['node/read']) return `/${clusterId}/node`;
-    else if (roles.group && roles.group['group/read']) return `/${clusterId}/group`;
-    else if (roles.acls && roles.acls['acls/read']) return `/${clusterId}/acls`;
-    else if (roles.registry && roles.registry['registry/read']) return `/${clusterId}/schema`;
+    const roles = JSON.parse(localStorage.getItem('roles'));
+    if (roles && roles.topic && roles.topic['topic/read']) return `/${clusterId}/topic`;
+    else if (roles && roles.node && roles.node['node/read']) return `/${clusterId}/node`;
+    else if (roles && roles.group && roles.group['group/read']) return `/${clusterId}/group`;
+    else if (roles && roles.acls && roles.acls['acls/read']) return `/${clusterId}/acls`;
+    else if (roles && roles.registry && roles.registry['registry/read'])
+      return `/${clusterId}/schema`;
     return `/${clusterId}/topic`;
   }
 
@@ -65,63 +68,65 @@ class Routes extends Component {
       return (
         <Base>
           <Switch location={location}>
+            <Route exact path="/page-not-found" component={PageNotFound} />
             <Route exact path="/:login" component={Login} />
-            {roles.topic && roles.topic['topic/read'] && (
+            {roles && roles.topic && roles.topic['topic/read'] && (
+              /*<Route exact path="/page-not-found" component={PageNotFound} /> */
               <Route exact path="/:clusterId/topic" component={TopicList} />
             )}
-            {roles.topic && roles.topic['topic/insert'] && (
+            {roles && roles.topic && roles.topic['topic/insert'] && (
               <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
             )}
-            {roles.topic && roles.topic['topic/read'] && (
+            {roles && roles.topic && roles.topic['topic/read'] && (
               <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
             )}
-            {roles.topic && roles.topic['topic/data/insert'] && (
+            {roles && roles.topic && roles.topic['topic/data/insert'] && (
               <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
             )}
-            {roles.node && roles.node['node/read'] && (
+            {roles && roles.node && roles.node['node/read'] && (
               <Route exact path="/:clusterId/node" component={NodesList} />
             )}
-            {roles.node && roles.node['node/read'] && (
+            {roles && roles.node && roles.node['node/read'] && (
               <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
             )}
-            {roles.group && roles.group['group/read'] && (
+            {roles && roles.group && roles.group['group/read'] && (
               <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
             )}
-            {roles.group && roles.group['group/read'] && (
+            {roles && roles.group && roles.group['group/read'] && (
               <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
             )}
-            {roles.group && roles.group['group/offsets/update'] && (
+            {roles && roles.group && roles.group['group/offsets/update'] && (
               <Route
                 exact
                 path="/:clusterId/group/:consumerGroupId/offsets"
                 component={ConsumerGroupUpdate}
               />
             )}
-            {roles.topic && roles.topic['topic/data/read'] && (
+            {roles && roles.topic && roles.topic['topic/data/read'] && (
               <Route exact path="/:clusterId/tail" component={Tail} />
             )}
-            {roles.acls && roles.acls['acls/read'] && (
+            {roles && roles.acls && roles.acls['acls/read'] && (
               <Route exact path="/:clusterId/acls" component={Acls} />
             )}
-            {roles.acls && roles.acls['acls/read'] && (
+            {roles && roles.acls && roles.acls['acls/read'] && (
               <Route exact path="/:clusterId/acls/:principalEncoded" component={AclDetails} />
             )}
-            {roles.registry && roles.registry['registry/read'] && (
+            {roles && roles.registry && roles.registry['registry/read'] && (
               <Route exact path="/:clusterId/schema" component={SchemaList} />
             )}
-            {roles.registry && roles.registry['registry/insert'] && (
+            {roles && roles.registry && roles.registry['registry/insert'] && (
               <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
             )}
-            {roles.registry && roles.registry['registry/read'] && (
+            {roles && roles.registry && roles.registry['registry/read'] && (
               <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
             )}
-            {roles.connect && roles.connect['connect/insert'] && (
+            {roles && roles.connect && roles.connect['connect/insert'] && (
               <Route exact path="/:clusterId/connect/:connectId/create" component={ConnectCreate} />
             )}
-            {roles.connect && roles.connect['connect/read'] && (
+            {roles && roles.connect && roles.connect['connect/read'] && (
               <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
             )}
-            {roles.connect && roles.connect['connect/update'] && (
+            {roles && roles.connect && roles.connect['connect/update'] && (
               <Route
                 exact
                 path="/:clusterId/connect/:connectId/definition/:definitionId"

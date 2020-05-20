@@ -45,7 +45,11 @@ class NodeConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      history.replace('/error', { errorData: err, loading: false });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
       console.error('Error:', err);
     }
   }

@@ -6,7 +6,13 @@ const configs = {
 };
 
 const handleError = err => {
-  return err;
+  if (err.response.status === 307) {
+    history.replace('/page-not-found', { errorData: err });
+    return err;
+  } else {
+    history.replace('/error', { errorData: err });
+    return err;
+  }
 };
 
 export const get = url =>
@@ -17,7 +23,6 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-        history.replace('/error', { errorData: err });
         reject(handleError(err));
       });
   });

@@ -47,7 +47,11 @@ class ConnectConfigs extends Form {
         this.getPlugin(pluginId);
       });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         loading: false
@@ -68,7 +72,11 @@ class ConnectConfigs extends Form {
         this.renderForm();
       });
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         loading: false

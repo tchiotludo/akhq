@@ -66,7 +66,11 @@ class ConsumerGroupUpdate extends Form {
         this.createValidationSchema(groupedTopicOffset);
       }
     } catch (err) {
-      history.replace('/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         ...this.props.location,

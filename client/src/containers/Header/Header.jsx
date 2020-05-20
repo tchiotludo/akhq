@@ -32,7 +32,11 @@ class Header extends Component {
         });
       });
     } catch (err) {
-      this.props.history.replace('/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        this.props.history.replace('/page-not-found', { errorData: err });
+      } else {
+        this.props.history.replace('/error', { errorData: err });
+      }
     }
   }
 
