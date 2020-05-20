@@ -194,14 +194,8 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const {
-      consumerGroup,
-      selectedCluster,
-      search,
-      pageNumber,
-      totalPageNumber,
-      roles
-    } = this.state;
+    const { consumerGroup, selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 

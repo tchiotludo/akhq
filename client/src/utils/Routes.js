@@ -34,7 +34,7 @@ class Routes extends Component {
   }
 
   handleRedirect(clusterId) {
-    const roles = JSON.parse(localStorage.getItem('roles'));
+    const roles = JSON.parse(localStorage.getItem('roles')) || {};
     if (roles.topic && roles.topic['topic/read']) return `/${clusterId}/topic`;
     else if (roles.node && roles.node['node/read']) return `/${clusterId}/node`;
     else if (roles.group && roles.group['group/read']) return `/${clusterId}/group`;
@@ -45,7 +45,7 @@ class Routes extends Component {
 
   render() {
     const { location } = this.props;
-    const roles = JSON.parse(localStorage.getItem('roles'));
+    const roles = JSON.parse(localStorage.getItem('roles')) || {};
     let path = window.location.pathname.split('/');
 
     let clusterId = '';

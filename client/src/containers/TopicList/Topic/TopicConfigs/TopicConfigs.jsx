@@ -237,7 +237,8 @@ class TopicConfigs extends Form {
   }
 
   render() {
-    const { data, selectedTopic, selectedCluster, roles } = this.state;
+    const { data, selectedTopic, selectedCluster } = this.state;
+    const roles = this.state.roles || {};
     return (
       <form
         encType="multipart/form-data"

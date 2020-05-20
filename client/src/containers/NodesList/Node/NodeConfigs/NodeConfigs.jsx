@@ -249,8 +249,8 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data, selectedNode, selectedCluster, roles } = this.state;
-
+    const { data, selectedNode, selectedCluster } = this.state;
+    const roles = this.state.roles || {};
     return (
       <form
         encType="multipart/form-data"

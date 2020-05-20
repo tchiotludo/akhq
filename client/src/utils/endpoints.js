@@ -239,6 +239,25 @@ export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = '
   return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };
 
+export const uriLiveTail = (clusterId, search, topics, size) => {
+  let searchUrl = `search=${search}`;
+  let topicsUrl = search.length > 0 ? '&' : '';
+  topics.map((topic, index) => {
+    console.log('oncount', topics.length, index);
+    if (index > 0) {
+      console.log('here', index);
+      topicsUrl += '&topics=' + topic;
+    } else {
+      topicsUrl += 'topics=' + topic;
+    }
+  });
+
+  let sizeUrl = `${search.length > 0 || topics.length > 0 ? '&' : ''}size=${size}`;
+  return `${apiUrl}/${clusterId}/tail/sse?${search.length > 0 ? searchUrl : ''}${
+    topics.length > 0 ? topicsUrl : ''
+  }${size.length > 0 ? sizeUrl : ''}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -276,5 +295,6 @@ export default {
   uriLatestSchemaVersion,
   uriSchemaVersions,
   uriAclsList,
-  uriAclsByPrincipal
+  uriAclsByPrincipal,
+  uriLiveTail
 };

@@ -5,9 +5,39 @@ import * as constants from '../../utils/constants';
 import './styles.scss';
 
 class Table extends Component {
-  state = {};
+  state = {
+    extraExpanded: [],
+    expanded: []
+  };
 
-  componentDidMount() {}
+  handleExpand = el => {
+    const currentExpandedRows = this.state.expanded;
+    const isRowCurrentlyExpanded = currentExpandedRows.includes(el.id);
+    const newExpandedRows = isRowCurrentlyExpanded
+      ? currentExpandedRows.filter(id => id !== el.id)
+      : currentExpandedRows.concat(el.id);
+    this.setState({ expanded: newExpandedRows });
+  };
+
+  handleExtraExpand = el => {
+    const currentExpandedRows = this.state.extraExpanded;
+    const isRowCurrentlyExpanded = currentExpandedRows.includes(el.id);
+
+    const newExpandedRows = isRowCurrentlyExpanded
+      ? currentExpandedRows
+      : currentExpandedRows.concat(el.id);
+    this.setState({ extraExpanded: newExpandedRows });
+  };
+
+  handleExtraCollapse = el => {
+    const currentExpandedRows = this.state.extraExpanded;
+    const isRowCurrentlyExpanded = currentExpandedRows.includes(el.id);
+
+    const newExpandedRows = !isRowCurrentlyExpanded
+      ? currentExpandedRows
+      : currentExpandedRows.filter(id => id !== el.id);
+    this.setState({ extraExpanded: newExpandedRows });
+  };
 
   renderHeader() {
     const { has2Headers, firstHeader, columns, actions, data } = this.props;
@@ -54,26 +84,124 @@ class Table extends Component {
   }
 
   renderRow(row, index) {
-    const { actions, columns } = this.props;
-    return (
+    const { actions, columns, extraRow, onExpand, noRowBackgroundChange } = this.props;
+    const { extraExpanded } = this.state;
+
+    let extraRowCol;
+    const items = [
       <tr key={`tableRow${index}`}>
         {columns.map((column, colIndex) => {
-          if (typeof column.cell === 'function') {
+          let extraStyles = [];
+          if (noRowBackgroundChange) {
+            extraStyles.push({ backgroundColor: '#444' });
+          }
+          if (column.expand) {
+            extraStyles.push({ cursor: 'pointer' });
+          }
+          if (column.extraRow) {
+            extraRowCol = column.cell ? column.cell(row, column) : row[column.accessor];
             return (
               <td id={`row_${column.id}_${colIndex}`}>
+                <div className={`align-cell`}></div>
+              </td>
+            );
+          }
+          if (typeof column.cell === 'function') {
+            return (
+              <td
+                style={column.expand ? { cursor: 'pointer' } : {}}
+                onClick={() => {
+                  column.expand && this.handleExpand(row);
+                }}
+                id={`row_${column.id}_${colIndex}`}
+              >
                 <div className={'align-cell'}>{column.cell(row, column)}</div>
               </td>
             );
           }
           return (
-            <td id={`row_${column.id}_${colIndex}`}>
+            <td
+              style={column.expand ? { cursor: 'pointer' } : {}}
+              onClick={() => {
+                column.expand && this.handleExpand(row);
+              }}
+              id={`row_${column.id}_${colIndex}`}
+            >
               <div className={'align-cell'}>{row[column.accessor]}</div>
             </td>
           );
         })}
         {actions && actions.length > 0 && this.renderActions(row)}
       </tr>
-    );
+    ];
+    if (
+      JSON.stringify(
+        this.state.expanded.find(el => {
+          return el === row.id;
+        })
+      )
+    ) {
+      items.push(
+        <tr key={'row-expandable-' + row.id}>
+          <td colSpan={columns.length} style={{ padding: 0 }}>
+            {onExpand(row)}
+          </td>
+        </tr>
+      );
+    }
+
+    if (extraRow) {
+      items.push(
+        <tr
+          onClick={() => {
+            if (
+              !extraExpanded ||
+              !JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) ||
+              !JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0
+            ) {
+              this.handleExtraExpand(row);
+            }
+          }}
+          key={'row-expanded-' + row.id}
+        >
+          <td style={{ backgroundColor: '#171819' }} colSpan={columns.length}>
+            {' '}
+            {extraExpanded &&
+            JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
+            JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0 ? (
+              <div style={{ zIndex: 5, display: 'flex', justifyContent: 'flex-end' }}>
+                <span
+                  onClick={() => {
+                    this.handleExtraCollapse(row);
+                  }}
+                  style={{
+                    color: 'white',
+                    cursor: 'pointer',
+                    justifyContent: 'flex-end'
+                  }}
+                  aria-hidden="true"
+                >
+                  ×
+                </span>
+              </div>
+            ) : null}
+            <div
+              className={
+                extraExpanded &&
+                JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
+                JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0
+                  ? ''
+                  : 'collapsed-extra-row'
+              }
+            >
+              {extraRowCol}
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    return items;
   }
 
   renderActions(row) {
@@ -174,19 +302,22 @@ class Table extends Component {
   }
 
   render() {
-    const { data, columns } = this.props;
+    const { columns } = this.props;
+    let allItemRows = [];
+    let data = this.props.data || [];
 
+    data.forEach((item, index) => {
+      if (!item.id) {
+        item.id = index;
+      }
+      const perItemRows = this.renderRow(item, index);
+      allItemRows = allItemRows.concat(perItemRows);
+    });
     return (
       <div className="table-responsive">
         <table className="table table-bordered table-striped table-hover mb-0">
           {this.renderHeader()}
-          <tbody>
-            {data && data.length > 0
-              ? data.map((row, index) => {
-                  return this.renderRow(row, index);
-                })
-              : this.renderNoContent()}
-          </tbody>
+          <tbody>{data && data.length > 0 ? allItemRows : this.renderNoContent()}</tbody>
         </table>
       </div>
     );

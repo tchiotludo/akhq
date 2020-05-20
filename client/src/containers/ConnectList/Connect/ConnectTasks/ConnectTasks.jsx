@@ -197,8 +197,8 @@ class ConnectTasks extends Component {
   };
 
   render() {
-    const { tableData, definition, roles } = this.state;
-
+    const { tableData, definition } = this.state;
+    const roles = this.state.roles || {};
     return (
       <div className="tab-pane active" role="tabpanel">
         <div className="table-responsive">

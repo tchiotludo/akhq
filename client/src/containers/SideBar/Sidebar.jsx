@@ -174,9 +174,9 @@ class Sidebar extends Component {
       selectedCluster,
       showClusters,
       showConnects,
-      selectedTab,
-      roles
+      selectedTab
     } = this.state;
+    const roles = this.state.roles || {};
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (

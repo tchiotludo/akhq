@@ -71,7 +71,8 @@ class ConsumerGroup extends Component {
   }
 
   render() {
-    const { clusterId, consumerGroupId, roles } = this.state;
+    const { clusterId, consumerGroupId } = this.state;
+    const roles = this.state.roles || {};
     return (
       <div>
         <Header title={`Topic ${consumerGroupId}`} history={this.props.history} />

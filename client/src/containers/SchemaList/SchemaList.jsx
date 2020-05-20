@@ -174,9 +174,9 @@ class SchemaList extends Component {
       pageNumber,
       totalPageNumber,
       showSchemaModal,
-      schemaModalBody,
-      roles
+      schemaModalBody
     } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 

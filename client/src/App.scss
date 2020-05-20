@@ -27,6 +27,7 @@
 
 @import "containers/NodesList/Node/styles.scss";
 @import "containers/TopicList/Topic/TopicProduce/styles.scss";
+@import "containers/Tail/styles.scss";
 @import "~react-datepicker/dist/react-datepicker.css";
 
 .App {
@@ -3513,21 +3514,21 @@ fieldset:disabled a.btn {
 }
 
 .btn-white.disabled, .btn-white:disabled {
-  color: #222;
-  background-color: #fff;
-  border-color: #fff;
+  color: #222 !important;
+  background-color: #fff !important;
+  border-color: #fff !important;
 }
 
 .btn-white:not(:disabled):not(.disabled):active, .btn-white:not(:disabled):not(.disabled).active,
 .show > .btn-white.dropdown-toggle {
-  color: #222;
-  background-color: #e6e6e6;
-  border-color: #dfdfdf;
+  color: #222 !important;
+  background-color: #e6e6e6 !important;
+  border-color: #dfdfdf !important;
 }
 
 .btn-white:not(:disabled):not(.disabled):active:focus, .btn-white:not(:disabled):not(.disabled).active:focus,
 .show > .btn-white.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(222, 222, 222, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(222, 222, 222, 0.5) !important;
 }
 
 .btn-outline-primary {

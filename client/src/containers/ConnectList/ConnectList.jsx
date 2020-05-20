@@ -123,7 +123,7 @@ class ConnectList extends Component {
   };
 
   getTableActions = () => {
-    const { roles } = this.state;
+    const roles = this.state.roles || {};
     let actions = [];
 
     if (roles.connect && roles.connect['connect/update']) {
@@ -178,7 +178,8 @@ class ConnectList extends Component {
   };
 
   render() {
-    const { clusterId, connectId, tableData, showConfigModal, configModalBody, roles } = this.state;
+    const { clusterId, connectId, tableData, showConfigModal, configModalBody } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
 
     return (

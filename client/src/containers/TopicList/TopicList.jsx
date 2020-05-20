@@ -180,7 +180,8 @@ class TopicList extends Component {
   };
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, roles } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [

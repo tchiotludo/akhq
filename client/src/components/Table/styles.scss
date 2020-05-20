@@ -9,3 +9,11 @@
   padding-right: 0.5rem;
   align-items: center;
 }
+
+.expanded-extra-row {
+}
+
+.collapsed-extra-row {
+  max-height: 30px !important;
+  overflow: hidden;
+}
