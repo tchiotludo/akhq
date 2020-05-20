@@ -6,7 +6,7 @@ const configs = {
 };
 
 const handleError = err => {
-  if (err.response.status === 307) {
+  if (err.response && err.response.status === 404) {
     history.replace('/page-not-found', { errorData: err });
     return err;
   } else {
