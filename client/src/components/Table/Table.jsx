@@ -84,7 +84,7 @@ class Table extends Component {
   }
 
   renderRow(row, index) {
-    const { actions, columns, extraRow, onExpand, noRowBackgroundChange } = this.props;
+    const { actions, columns, extraRow, onExpand, noRowBackgroundChange, onDetails } = this.props;
     const { extraExpanded } = this.state;
 
     let extraRowColCollapsed;
@@ -105,7 +105,14 @@ class Table extends Component {
               ? column.extraRowContent(row, column)
               : row[column.accessor];
             return (
-              <td id={`row_${column.id}_${colIndex}`}>
+              <td
+                onClick={() => {
+                  if (actions && actions.find(action => action === constants.TABLE_DETAILS)) {
+                    onDetails && onDetails(row.id, row);
+                  }
+                }}
+                id={`row_${column.id}_${colIndex}`}
+              >
                 <div className={`align-cell`}></div>
               </td>
             );
@@ -115,6 +122,14 @@ class Table extends Component {
               <td
                 style={column.expand ? { cursor: 'pointer' } : {}}
                 onClick={() => {
+                  if (
+                    actions &&
+                    actions.find(action => action === constants.TABLE_DETAILS) &&
+                    !column.expand
+                  ) {
+                    onDetails && onDetails(row.id, row);
+                  }
+
                   column.expand && this.handleExpand(row);
                 }}
                 id={`row_${column.id}_${colIndex}`}
@@ -127,6 +142,14 @@ class Table extends Component {
             <td
               style={column.expand ? { cursor: 'pointer' } : {}}
               onClick={() => {
+                if (
+                  actions &&
+                  actions.find(action => action === constants.TABLE_DETAILS) &&
+                  !column.expand
+                ) {
+                  onDetails && onDetails(row.id, row);
+                }
+
                 column.expand && this.handleExpand(row);
               }}
               id={`row_${column.id}_${colIndex}`}
