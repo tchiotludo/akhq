@@ -19,7 +19,6 @@ class PageNotFound extends Component {
     let path = window.location.pathname.split('/');
 
     let clusterId = this.props.clusterId;
-    console.log('here', this.props);
 
     return (
       <div className="no-side-bar" style={{ height: window.innerHeight - 100 }}>

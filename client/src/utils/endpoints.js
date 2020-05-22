@@ -1,5 +1,6 @@
 import { node } from 'prop-types';
 
+// 'http://localhost:8080';
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 export const apiUrl = `${baseUrl}/api`;
 
@@ -243,9 +244,7 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   let searchUrl = `search=${search}`;
   let topicsUrl = search.length > 0 ? '&' : '';
   topics.map((topic, index) => {
-    console.log('oncount', topics.length, index);
     if (index > 0) {
-      console.log('here', index);
       topicsUrl += '&topics=' + topic;
     } else {
       topicsUrl += 'topics=' + topic;

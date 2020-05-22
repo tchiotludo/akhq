@@ -14,6 +14,7 @@
     display: inline-block;
     padding-bottom: 0.6rem;
     padding-top: 0.6rem;
+    margin-left: auto;
 }
 
 .page-number {
@@ -27,7 +28,14 @@
 
 .page-input{
     font-size: 12px;
+    min-width: 40%;
     width: 40%;
+    max-width: 40%;
+    border-radius: 5%;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box;
+    box-sizing:content-box;
 }
 
 .page-item.before, .page-item.after {
@@ -69,4 +77,8 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance:textfield;
+}
+
+.pagination-input.page-input{
+    margin-top: 0px;
 }
