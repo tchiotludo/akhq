@@ -68,6 +68,7 @@ class Tail extends Component {
     let self = this;
     this.eventSource.addEventListener('tailBody', function(e) {
       let res = JSON.parse(e.data);
+      console.log('here', res);
       const { data } = self.state;
       if (res.records) {
         data.push(res.records[0]);
@@ -341,7 +342,10 @@ class Tail extends Component {
                 id: 'key',
                 accessor: 'key',
                 colName: 'Key',
-                type: 'text'
+                type: 'text',
+                cell: obj => {
+                  return <span style={{ color: 'red' }}>{obj.key}</span>;
+                }
               },
               {
                 id: 'timestamp',
@@ -377,7 +381,7 @@ class Tail extends Component {
                 colName: 'Schema',
                 type: 'text',
                 extraRow: true,
-                cell: (obj, index) => {
+                extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
                       mode="json"
@@ -390,12 +394,18 @@ class Tail extends Component {
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );
+                },
+                cell: (obj, index) => {
+                  return (
+                    <pre class="mb-0 khq-data-highlight">
+                      <code>{obj.value}</code>
+                    </pre>
+                  );
                 }
               }
             ]}
             extraRow
-            noRowBackgroundChange
-            //actions={[constants.TABLE_DETAILS]}
+            noStripes
             data={data}
             noContent={<tr></tr>}
             onExpand={obj => {

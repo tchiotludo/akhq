@@ -10,7 +10,8 @@
   align-items: center;
 }
 
-.expanded-extra-row {
+.no-stripes tr {
+  background-color: rgba(100, 100, 100, 0.4);
 }
 
 .collapsed-extra-row {

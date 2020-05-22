@@ -14,6 +14,7 @@ import DatePicker from '../../../../components/DatePicker/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
 import { checkPropTypes } from 'prop-types';
+import AceEditor from 'react-ace';
 
 // Adaptation of data.ftl
 
@@ -517,22 +518,26 @@ class TopicData extends Component {
                 accessor: 'value',
                 colName: 'Value',
                 type: 'text',
-                cell: (obj, col) => {
+                extraRow: true,
+                extraRowContent: (obj, index) => {
                   return (
-                    <div className="value cell-div" style={{ maxHeight: '100%' }}>
-                      <span className="align-cell value-span">
-                        {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
-                        {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
-                      </span>
-                      <div className="value-button">
-                        <button
-                          className="btn btn-secondary headers pull-right"
-                          onClick={() => this.showValueModal(obj[col.accessor])}
-                        >
-                          ...
-                        </button>
-                      </div>
-                    </div>
+                    <AceEditor
+                      mode="json"
+                      id={'value' + index}
+                      theme="dracula"
+                      value={obj.value}
+                      readOnly
+                      name="UNIQUE_ID_OF_DIV"
+                      editorProps={{ $blockScrolling: true }}
+                      style={{ width: '100%', minHeight: '25vh' }}
+                    />
+                  );
+                },
+                cell: (obj, index) => {
+                  return (
+                    <pre class="mb-0 khq-data-highlight">
+                      <code>{obj.value}</code>
+                    </pre>
                   );
                 }
               },
@@ -580,31 +585,9 @@ class TopicData extends Component {
                 accessor: 'headers',
                 colName: 'Headers',
                 type: 'text',
-                cell: (obj, col) => {
-                  return (
-                    <div
-                      className="value cell-div"
-                      style={{ marginLeft: '-10px', marginRight: '-10px' }}
-                    >
-                      <div style={{ float: 'right' }}>
-                        <span className="align-cell headers-span">
-                          {Object.keys(obj[col.accessor]).length}
-                        </span>
-                        {Object.keys(obj[col.accessor]).length > 0 && (
-                          <div className="headers-button">
-                            {' '}
-                            ⤑{' '}
-                            <button
-                              className="btn btn-secondary headers"
-                              onClick={() => this.showHeadersModal(obj[col.accessor])}
-                            >
-                              ...
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
+                expand: true,
+                cell: obj => {
+                  return <a className="tail-headers">{Object.keys(obj.headers).length}</a>;
                 }
               },
               {
@@ -621,7 +604,45 @@ class TopicData extends Component {
                 }
               }
             ]}
+            extraRow
+            noStripes
             data={messages}
+            onExpand={obj => {
+              return Object.keys(obj.headers).map(header => {
+                return (
+                  <tr
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      width: '100%'
+                    }}
+                  >
+                    <td
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        borderStyle: 'dashed',
+                        borderWidth: '1px',
+                        backgroundColor: '#171819'
+                      }}
+                    >
+                      {header}
+                    </td>
+                    <td
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        borderStyle: 'dashed',
+                        borderWidth: '1px',
+                        backgroundColor: '#171819'
+                      }}
+                    >
+                      {obj.headers[header]}
+                    </td>
+                  </tr>
+                );
+              });
+            }}
           />
         </div>
         <Modal show={showHeadersModal} handleClose={this.closeHeadersModal}>

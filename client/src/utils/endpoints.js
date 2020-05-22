@@ -1,7 +1,10 @@
 import { node } from 'prop-types';
 
-// 'http://localhost:8080';
+// Please, comment the localhost one before PR to dev
+
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+//export const baseUrl = 'http://localhost:8080';
+
 export const apiUrl = `${baseUrl}/api`;
 
 export const uriLogin = () => {

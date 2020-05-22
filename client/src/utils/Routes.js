@@ -68,8 +68,8 @@ class Routes extends Component {
       return (
         <Base>
           <Switch location={location}>
-            <Route exact path="/page-not-found" component={PageNotFound} />
             <Route exact path="/:login" component={Login} />
+            <Route exact path="/page-not-found" component={PageNotFound} />
             {roles && roles.topic && roles.topic['topic/read'] && (
               /*<Route exact path="/page-not-found" component={PageNotFound} /> */
               <Route exact path="/:clusterId/topic" component={TopicList} />
