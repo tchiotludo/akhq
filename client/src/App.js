@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.scss';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { baseUrl, uriClusters } from './utils/endpoints';
 import Routes from './utils/Routes';
