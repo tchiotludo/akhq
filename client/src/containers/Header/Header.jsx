@@ -30,9 +30,9 @@ class Header extends Component {
       });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        this.props.history.replace('/page-not-found', { errorData: err });
+        this.props.history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        this.props.history.replace('/error', { errorData: err });
+        this.props.history.replace('/ui/error', { errorData: err });
       }
     }
   }

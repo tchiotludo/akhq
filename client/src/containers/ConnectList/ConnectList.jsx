@@ -55,9 +55,9 @@ class ConnectList extends Component {
       });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err, loading: false });
+        history.replace('/ui/page-not-found', { errorData: err, loading: false });
       } else {
-        history.replace('/error', { errorData: err, loading: false });
+        history.replace('/ui/error', { errorData: err, loading: false });
       }
     }
   }

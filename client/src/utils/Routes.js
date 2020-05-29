@@ -37,13 +37,13 @@ class Routes extends Component {
 
   handleRedirect(clusterId) {
     const roles = JSON.parse(localStorage.getItem('roles'));
-    if (roles && roles.topic && roles.topic['topic/read']) return `/${clusterId}/topic`;
-    else if (roles && roles.node && roles.node['node/read']) return `/${clusterId}/node`;
-    else if (roles && roles.group && roles.group['group/read']) return `/${clusterId}/group`;
-    else if (roles && roles.acls && roles.acls['acls/read']) return `/${clusterId}/acls`;
+    if (roles && roles.topic && roles.topic['topic/read']) return `/ui/${clusterId}/topic`;
+    else if (roles && roles.node && roles.node['node/read']) return `/ui/${clusterId}/node`;
+    else if (roles && roles.group && roles.group['group/read']) return `/ui/${clusterId}/group`;
+    else if (roles && roles.acls && roles.acls['acls/read']) return `/ui/${clusterId}/acls`;
     else if (roles && roles.registry && roles.registry['registry/read'])
-      return `/${clusterId}/schema`;
-    return `/${clusterId}/topic`;
+      return `/ui/${clusterId}/schema`;
+    return `/ui/${clusterId}/topic`;
   }
 
   render() {
@@ -69,32 +69,32 @@ class Routes extends Component {
       return (
         <Base>
           <Switch location={location}>
-            <Route exact path="/:login" component={Login} />
-            <Route exact path="/page-not-found" component={PageNotFound} />
+            <Route exact path="/ui/:login" component={Login} />
+            <Route exact path="/ui/page-not-found" component={PageNotFound} />
             {roles && roles.topic && roles.topic['topic/read'] && (
               /*<Route exact path="/page-not-found" component={PageNotFound} /> */
-              <Route exact path="/:clusterId/topic" component={TopicList} />
+              <Route exact path="/ui/:clusterId/topic" component={TopicList} />
             )}
             {roles && roles.topic && roles.topic['topic/insert'] && (
-              <Route exact path="/:clusterId/topic/create" component={TopicCreate} />
+              <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
             )}
             {roles && roles.topic && roles.topic['topic/read'] && (
-              <Route exact path="/:clusterId/topic/:topicId" component={Topic} />
+              <Route exact path="/ui/:clusterId/topic/:topicId" component={Topic} />
             )}
             {roles && roles.topic && roles.topic['topic/data/insert'] && (
-              <Route exact path="/:clusterId/topic/:topicId/produce" component={TopicProduce} />
+              <Route exact path="/ui/:clusterId/topic/:topicId/produce" component={TopicProduce} />
             )}
             {roles && roles.node && roles.node['node/read'] && (
-              <Route exact path="/:clusterId/node" component={NodesList} />
+              <Route exact path="/ui/:clusterId/node" component={NodesList} />
             )}
             {roles && roles.node && roles.node['node/read'] && (
-              <Route exact path="/:clusterId/node/:nodeId" component={NodeDetails} />
+              <Route exact path="/ui/:clusterId/node/:nodeId" component={NodeDetails} />
             )}
             {roles && roles.group && roles.group['group/read'] && (
-              <Route exact path="/:clusterId/group" component={ConsumerGroupList} />
+              <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
             )}
             {roles && roles.group && roles.group['group/read'] && (
-              <Route exact path="/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
+              <Route exact path="/ui/:clusterId/group/:consumerGroupId" component={ConsumerGroup} />
             )}
             {roles && roles.group && roles.group['group/offsets/update'] && (
               <Route
@@ -104,28 +104,28 @@ class Routes extends Component {
               />
             )}
             {roles && roles.topic && roles.topic['topic/data/read'] && (
-              <Route exact path="/:clusterId/tail" component={Tail} />
+              <Route exact path="/ui/:clusterId/tail" component={Tail} />
             )}
             {roles && roles.acls && roles.acls['acls/read'] && (
-              <Route exact path="/:clusterId/acls" component={Acls} />
+              <Route exact path="/ui/:clusterId/acls" component={Acls} />
             )}
             {roles && roles.acls && roles.acls['acls/read'] && (
-              <Route exact path="/:clusterId/acls/:principalEncoded" component={AclDetails} />
+              <Route exact path="/ui/:clusterId/acls/:principalEncoded" component={AclDetails} />
             )}
             {roles && roles.registry && roles.registry['registry/read'] && (
-              <Route exact path="/:clusterId/schema" component={SchemaList} />
+              <Route exact path="/ui/:clusterId/schema" component={SchemaList} />
             )}
             {roles && roles.registry && roles.registry['registry/insert'] && (
-              <Route exact path="/:clusterId/schema/create" component={SchemaCreate} />
+              <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
             )}
             {roles && roles.registry && roles.registry['registry/read'] && (
-              <Route exact path="/:clusterId/schema/details/:schemaId" component={Schema} />
+              <Route exact path="/ui/:clusterId/schema/details/:schemaId" component={Schema} />
             )}
             {roles && roles.connect && roles.connect['connect/insert'] && (
-              <Route exact path="/:clusterId/connect/:connectId/create" component={ConnectCreate} />
+              <Route exact path="/ui/:clusterId/connect/:connectId/create" component={ConnectCreate} />
             )}
             {roles && roles.connect && roles.connect['connect/read'] && (
-              <Route exact path="/:clusterId/connect/:connectId" component={ConnectList} />
+              <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
             )}
             {roles && roles.connect && roles.connect['connect/update'] && (
               <Route

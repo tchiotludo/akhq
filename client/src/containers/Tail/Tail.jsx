@@ -48,7 +48,7 @@ class Tail extends Component {
         }
       }
     } catch (err) {
-      this.props.history.replace('/error', { errorData: err });
+      this.props.history.replace('/ui/error', { errorData: err });
     }
   };
 
