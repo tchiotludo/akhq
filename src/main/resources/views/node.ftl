@@ -1,9 +1,9 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="node" type="org.kafkahq.models.Node" -->
-<#-- @ftlvariable name="configs" type="java.util.ArrayList<org.kafkahq.models.Config>" -->
-<#-- @ftlvariable name="logs" type="java.util.ArrayList<org.kafkahq.models.LogDir>" -->
+<#-- @ftlvariable name="node" type="org.akhq.models.Node" -->
+<#-- @ftlvariable name="configs" type="java.util.ArrayList<org.akhq.models.Config>" -->
+<#-- @ftlvariable name="logs" type="java.util.ArrayList<org.akhq.models.LogDir>" -->
 <#-- @ftlvariable name="tab" type="java.lang.String" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 

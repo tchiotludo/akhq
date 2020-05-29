@@ -1,16 +1,39 @@
-# KafkaHQ
+# AKHQ (previously known as KafkaHQ)
 
-![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/kafkahq.svg)
-![License](https://img.shields.io/github/license/tchiotludo/kafkahq)
-![Docker Pull](https://img.shields.io/docker/pulls/tchiotludo/kafkahq.svg)
-![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/kafkahq/total)
-![Github Start](https://img.shields.io/github/stars/tchiotludo/kafkahq.svg)
-[![Build Status](https://travis-ci.org/tchiotludo/kafkahq.svg?branch=master)](https://travis-ci.org/tchiotludo/kafkahq)
+![Last Version](https://img.shields.io/github/tag-pre/tchiotludo/akhq.svg)
+![License](https://img.shields.io/github/license/tchiotludo/akhq)
+![Docker Pull](https://img.shields.io/docker/pulls/tchiotludo/akhq.svg)
+![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/akhq/total)
+![Github Start](https://img.shields.io/github/stars/tchiotludo/akhq.svg)
+![Main](https://github.com/tchiotludo/akhq/workflows/Main/badge.svg)
 
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
+<p align="center">
+  <img width="460" src="assets/img/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
+  <img width="720" src="docs/assets/images/video.gif"  alt="AKHQ for Kafka preview" />
+</p>
 
-![preview](https://user-images.githubusercontent.com/2064609/50536651-e050de80-0b56-11e9-816f-9d3aca3f1c88.gif)
+## Contents
+
+- [Features](#features)
+- [Quick Preview](#quick-preview)
+- [Installation](#installation)
+    - [Docker](#docker)
+    - [Stand Alone](#stand-alone)
+    - [Kubernetes using Helm](#running-in-kubernetes-using-a-helm-chart)
+- [Configuration](#configuration)
+    - [JVM.options file](#run-with-another-jvmoptions-file)
+    - [Kafka cluster](#kafka-cluster-configuration)
+    - [AKHQ](#akhq-configuration)
+    - [Security](#security)
+    - [Server](#server)
+    - [Micronaut](#micronaut-configuration)
+- [Api](#api)
+- [Monitoring Endpoint](#monitoring-endpoint)
+- [Development Environment](#development-environment)
+- [Who's using AKHQ](#whos-using-akhq)
+
 
 ## Features
 
@@ -38,7 +61,7 @@
   - Filter per partitions
   - Filter with a starting time
   - Filter data with a search string
-- **Consumer Groups** (only with kafka internal storage, not with old Zookepper)
+- **Consumer Groups** (only with kafka internal storage, not with old Zookeeper)
   - List with lag, topics assignments
   - Partitions view & lag
   - ACLS view
@@ -67,20 +90,20 @@
   - BasicHttp with roles per user
   - User groups configuration  
   - Filter topics with regexp for current groups
-  - Ldap configuration to match KafkaHQ groups/roles
+  - Ldap configuration to match AKHQ groups/roles
 
 ## Quick preview
-* Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/kafkahq/master/docker-compose.yml) file
-* run `docker-compose pull` to be sure to have the last version of KafkaHQ
+* Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/akhq/master/docker-compose.yml) file
+* run `docker-compose pull` to be sure to have the last version of AKHQ
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
 It will start a Kafka node, a Zookeeper node, a Schema Registry, a Connect, fill with some sample data, start a consumer
-group and a kafka stream & start KafkaHQ.
+group and a kafka stream & start AKHQ.
 
 ## Installation
 
-First you need a [configuration files](#configuration) in order to configure KafkaHQ connections to Kafka Brokers.
+First you need a [configuration files](#configuration) in order to configure AKHQ connections to Kafka Brokers.
 
 ### Docker
 
@@ -88,7 +111,7 @@ First you need a [configuration files](#configuration) in order to configure Kaf
 docker run -d \
     -p 8080:8080 \
     -v /tmp/application.yml:/app/application.yml \
-    tchiotludo/kafkahq
+    tchiotludo/akhq
 ```
 * With `-v /tmp/application.yml` must be an absolute path to configuration file
 * Go to <http://localhost:8080>
@@ -96,24 +119,37 @@ docker run -d \
 
 ### Stand Alone
 * Install Java 11
-* Download the latest jar on [release page](https://github.com/tchiotludo/kafkahq/releases)
+* Download the latest jar on [release page](https://github.com/tchiotludo/akhq/releases)
 * Create an [configuration files](#configuration)
-* Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar kafkahq.jar`
+* Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar akhq.jar`
 * Go to <http://localhost:8080>
 
 
 ### Running in Kubernetes (using a Helm Chart)
+
+### Using Helm repository
+
+* Add the AKHQ helm charts repository:
+```sh
+helm repo add akhq https://akhq.io/
+```
+* Install it:
+```sh
+helm install --name akhq akhq/akhq
+```
+
+### Using git
 * Clone the repository:
 ```sh
-git clone https://github.com/tchiotludo/kafkahq && cd kafkahq/deploy/helm
+git clone https://github.com/tchiotludo/akhq && cd akhq/deploy/helm/akhq
 ```
-* Update helm values located in [deploy/helm/values.yaml](deploy/helm/values.yaml)
+* Update helm values located in [deploy/helm/values.yaml](helm/akhq/values.yaml)
   * `configuration` values will contains all related configuration that you can find in [application.example.yml](application.example.yml) and will be store in a `ConfigMap`
   * `secrets` values will contains all sensitive configurations (with credentials) that you can find in [application.example.yml](application.example.yml) and will be store in `Secret`
   * Both values will be merged at startup
 * Apply the chart:
 ```sh
-helm install --name=kafkahq-release-name  .
+helm install --name=akhq-release-name  .
 ```
 
 
@@ -121,8 +157,41 @@ helm install --name=kafkahq-release-name  .
 Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files. YML Configuration
 file example can be found here :[application.example.yml](application.example.yml)
 
+### Run with another jvm.options file
+
+By default, the docker container will run with a [jvm.options](docker/app/jvm.options) file, you can override it with
+your own with an Environment Variable. With the `JVM_OPTS_FILE` environment variable, you can override the jvm.options file by passing
+the path of your file instead.
+
+Override the `JVM_OPTS_FILE` with docker run:
+
+```sh
+docker run -d \
+    --env JVM_OPTS_FILE={{path-of-your-jvm.options-file}}
+    -p 8080:8080 \
+    -v /tmp/application.yml:/app/application.yml \
+    tchiotludo/akhq
+```
+
+Override the `JVM_OPTS_FILE` with docker-compose:
+
+```yaml
+version: '3.7'
+services:
+  akhq:
+    image: tchiotludo/akhq-jvm:dev
+    environment:
+      JVM_OPTS_FILE: /app/jvm.options
+    ports:
+      - "8080:8080"
+    volumes:
+      - /tmp/application.yml:/app/application.yml
+```
+
+If you do not override the `JVM_OPTS_FILE`, the docker container will take the defaults one instead. 
+
 ### Kafka cluster configuration 
-* `kafkahq.connections` is a key value configuration with :
+* `akhq.connections` is a key value configuration with :
   * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
@@ -152,7 +221,7 @@ keytool -import -file ca.pem -alias CA -keystore client.truststore.jks
 Configurations will look like this example: 
 
 ```yaml
-kafkahq:
+akhq:
   connections:
     ssl-dev:
       properties:
@@ -176,67 +245,44 @@ kafkahq:
           basic-auth-password: {{password}}
 ```
 
-### KafkaHQ configuration 
+### AKHQ configuration 
 
 #### Pagination
-* `kafkahq.pagination.page-size` number of topics per page (default : 25)
+* `akhq.pagination.page-size` number of topics per page (default : 25)
 
 #### Topic List 
-* `kafkahq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
-* `kafkahq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
-* `kafkahq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
-* `kafkahq.topic.skip-consumer-groups` disable loading of consumer group information when showing topics (`true`), default is to load the information
+* `akhq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
+* `akhq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
+* `akhq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
+* `akhq.topic.skip-consumer-groups` disable loading of consumer group information when showing topics (`true`), default is to load the information
 
 #### Topic creation default values
 
 These parameters are the default values used in the topic creation page.
 
-* `kafkahq.topic.retention` Default retention in ms
-* `kafkahq.topic.replication` Default number of replica to use
-* `kafkahq.topic.partition` Default number of partition
+* `akhq.topic.retention` Default retention in ms
+* `akhq.topic.replication` Default number of replica to use
+* `akhq.topic.partition` Default number of partition
 
 #### Topic Data
-* `kafkahq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
-* `kafkahq.topic-data.size`: max record per page (default: 50)
-* `kafkahq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
+* `akhq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
+* `akhq.topic-data.size`: max record per page (default: 50)
+* `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
     
 ### Security
-* `kafkahq.security.default-roles`: Roles available for all the user even unlogged user, roles available are :
-  * `topic/read`
-  * `topic/insert`
-  * `topic/delete`
-  * `topic/config/update`
-  * `node/read`
-  * `node/config/update`
-  * `topic/data/read`
-  * `topic/data/insert`
-  * `topic/data/delete`
-  * `group/read`
-  * `group/delete`
-  * `group/offsets/update`
-  * `acls/read`
-  * `registry/read`
-  * `registry/insert`
-  * `registry/update`
-  * `registry/delete`
-  * `registry/version/delete`
+* `akhq.security.default-group`: Default group for all the user even unlogged user.
+By default, the default group is `admin` and allow you all read / write access on the whole app.
 
 By default, security & roles is enabled by default but anonymous user have full access. You can completely disabled
 security with `micronaut.security.enabled: false`.
 
 If you need a read-only application, simply add this to your configuration files : 
 ```yaml
-kafkahq:
+akhq:
   security:
-    default-roles:
-      - topic/read
-      - node/read
-      - topic/data/read
-      - group/read
-      - registry/read
-      - connect/read
+    default-group: reader
 ```
 
 
@@ -248,17 +294,21 @@ kafkahq:
 Groups allow you to limit user 
 
 Define groups with specific roles for your users
-* `kafkahq.security.groups`: Groups list definition
+* `akhq.security.default-group`: Default group for all the user even unlogged user
+
+* `akhq.security.groups`: Groups list definition
   * `group-name`: Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
 
-2 defaults group are available :
+
+3 defaults group are available :
 - `admin` with all right
-- `reader` with only read acces on all KafkaHQ
+- `reader` with only read acces on all AKHQ
+- `no-roles` without any roles, that force user to login 
 
 ##### Basic Auth
-* `kafkahq.security.basic-auth`: List user & password with affected roles 
+* `akhq.security.basic-auth`: List user & password with affected roles 
   * `actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `groups`: Groups for current user
@@ -270,10 +320,10 @@ Define groups with specific roles for your users
 
 
 ##### LDAP
-Configure how the ldap groups will be matched in KafkaHQ groups 
-* `kafkahq.security.ldap.group`: Ldap groups list
+Configure how the ldap groups will be matched in AKHQ groups 
+* `akhq.security.ldap.group`: Ldap groups list
   * `ldap-group-name`: Ldap group name (same name as in ldap)
-    * `groups`: KafkaHQ group list to be used for current ldap group
+    * `groups`: AKHQ group list to be used for current ldap group
 
 Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
 
@@ -295,18 +345,34 @@ micronaut:
           base: "dc=example,dc=com"
 ```
 
-Configure KafkaHQ groups and Ldap groups
+If you want to enable anonymous auth to your LDAP server you can pass : 
 ```yaml
-kafkahq:
+managerDn: ''
+managerPassword: ''
+```
+
+Debuging ldap connection can be done with 
+```bash
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8080/loggers/io.micronaut.configuration.security
+```
+
+
+Configure AKHQ groups and Ldap groups and users
+```yaml
+akhq:
   security:
     groups:
-      topic-reader: # Group name
+      topic-reader: # just a key, no matter will be override by name below
+        name: "topic-reader" # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
-      topic-writer: 
+      topic-writer: # just a key, no matter will be override by name below
+        name: "topic-writer" # Group name
         roles:
           - topic/read
           - topic/insert
@@ -323,34 +389,40 @@ kafkahq:
           groups:
             - topic-reader
             - topic-writer
+      user:
+        franz:
+          groups:
+            - topic-reader
+            - topic-writer
+
 ```
 
 ### Server 
-* `kafkahq.server.base-path`: if behind a reverse proxy, path to kafkahq with trailing slash (optional). Example:
-  kafkahq is behind a reverse proxy with url <http://my-server/kafkahq>, set base-path: "/kafkahq/". Not needed if you're
-  behind a reverse proxy with subdomain <http://kafkahq.my-server/>
+* `akhq.server.base-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
+  akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
+  behind a reverse proxy with subdomain <http://akhq.my-server/>
 
 ### Kafka admin / producer / consumer default properties
-* `kafkahq.clients-defaults.{{admin|producer|consumer}}.properties`: default configuration for admin producer or
+* `akhq.clients-defaults.{{admin|producer|consumer}}.properties`: default configuration for admin producer or
   consumer. All properties from [Kafka documentation](https://kafka.apache.org/documentation/) is available.
 
 ### Micronaut configuration 
-> Since KafkaHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
+> Since AKHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ### Docker
-KafkaHQ docker image support 3 environment variables to handle configuraiton :
-* `KAFKAHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
+AKHQ docker image support 3 environment variables to handle configuraiton :
+* `AKHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
   /app/configuration.yml on container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
 * `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
 
 #### How to mount configuration file
 
-Take care when you mount configuration files to not remove kafkahq files located on /app.
+Take care when you mount configuration files to not remove akhq files located on /app.
 You need to explicitely mount the `/app/application.yml` and not mount the `/app` directory.
-This will remove the KafkaHQ binnaries and give you this error: `
-/usr/local/bin/docker-entrypoint.sh: 9: exec: ./kafkahq: not found`
+This will remove the AKHQ binnaries and give you this error: `
+/usr/local/bin/docker-entrypoint.sh: 9: exec: ./akhq: not found`
 
 ```yaml
 volumeMounts:
@@ -361,6 +433,19 @@ volumeMounts:
 
 ``` 
 
+## Api
+An **experimental** api is available that allow you to fetch all the exposed on AKHQ through api.
+
+Take care that this api is **experimental** and **will** change in a future release. 
+Some endpoint expose too many datas and is slow to fetch, and we will remove 
+some properties in a future in order to be fast.
+
+Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all of theses 
+is slow for now and we will remove these in a future.
+
+You can discover the api endpoint here : 
+* `/api`: a [RapiDoc](https://mrin9.github.io/RapiDoc/) webpage that document all the endpoints.
+* `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files 
 
 ## Monitoring endpoint 
 Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
@@ -373,24 +458,33 @@ following micronaut configuration below.
 * `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
+## Debugging AKHQ performance issues 
+
+You can debug all query duration from AKHQ with this commands
+```bash
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8080/loggers/org.akhq
+```
+
 ## Development Environment
 
 ### Early dev image
 
 You can have access to last feature / bug fix with docker dev image automatically build on tag `dev`
 ```bash
-docker pull tchiotludo/kafkahq:dev
+docker pull tchiotludo/akhq:dev
 ```
 
 The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar : 
 
 Get it from docker image 
 ```bash
-docker pull tchiotludo/kafkahq:dev
-docker run --rm --name=kafkahq -it tchiotludo/kafkahq:dev
-docker cp kafkahq:/app/kafkahq.jar . 
+docker pull tchiotludo/akhq:dev
+docker run --rm --name=akhq -it tchiotludo/akhq:dev
+docker cp akhq:/app/akhq.jar . 
 ```
-Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/kafkahq-*.jar`
+Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/akhq-*.jar`
 
 
 ### Development Server
@@ -401,27 +495,30 @@ Dev server is a java server & webpack-dev-server with live reload.
 
 
 
-## Who's using KafkaHQ 
+## Who's using AKHQ 
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
 * [Bell](https://www.bell.ca)
+* [BMW Group](https://www.bmwgroup.com)
 * [Boulanger](https://www.boulanger.com/)
 * [GetYourGuide](https://www.getyourguide.com)
+* [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
+* [BARMER](https://www.barmer.de/)
 
 
 ## Credits
 
 Many thanks to:
 
-* Logo & favicon used is from [Apache Kafka](http://kafka.apache.org/).
-* [JetBrains](https://www.jetbrains.com/?from=KafkaHQ) for their free OpenSource license.
+* [JetBrains](https://www.jetbrains.com/?from=AKHQ) for their free OpenSource license.
+* Apache, Apache Kafka, Kafka, and associated open source project names are trademarks of the Apache Software Foundation. AKHQ is not affiliated with, endorsed by, or otherwise associated with the Apache Software.
 
-[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=KafkaHQ)
+[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=AKHQ)
 
 
 ## License

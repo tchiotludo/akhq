@@ -1,7 +1,7 @@
 <#ftl output_format="HTML" encoding="UTF-8">
 
 <#-- @ftlvariable name="clusterId" type="java.lang.String" -->
-<#-- @ftlvariable name="topics" type="java.util.ArrayList<org.kafkahq.models.Topic>" -->
+<#-- @ftlvariable name="topics" type="java.util.ArrayList<org.akhq.models.Topic>" -->
 <#-- @ftlvariable name="basePath" type="java.lang.String" -->
 <#-- @ftlvariable name="roles" type="java.util.ArrayList<java.lang.String>" -->
 <#-- @ftlvariable name="skipConsumerGroups" type="java.lang.Boolean" -->
@@ -95,7 +95,7 @@
                         </td>
                         <#if canDelete == true>
                             <td class="khq-row-action">
-                                <#if topic.isInternal() == false>
+                                <#if topic.isInternalTopic() == false>
                                     <a
                                         href="${basePath}/${clusterId}/topic/${topic.getName()}/delete"
                                         data-confirm="Do you want to delete topic: <code>${topic.getName()}</code> ?"

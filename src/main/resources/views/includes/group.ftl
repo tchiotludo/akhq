@@ -8,7 +8,7 @@
 <#assign canDelete=roles?seq_contains("group/delete")>
 
 <#macro table groups>
-    <#-- @ftlvariable name="groups" type="java.util.List<org.kafkahq.models.ConsumerGroup>" -->
+    <#-- @ftlvariable name="groups" type="java.util.List<org.akhq.models.ConsumerGroup>" -->
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover mb-0">
             <thead class="thead-dark">
