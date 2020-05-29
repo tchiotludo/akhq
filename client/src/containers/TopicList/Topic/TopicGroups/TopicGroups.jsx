@@ -43,9 +43,9 @@ class TopicGroups extends Component {
       }
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -92,7 +92,7 @@ class TopicGroups extends Component {
         >
           <Link
             to={{
-              pathname: `/${this.state.selectedCluster}/topic/${lagTopic.topic}`
+              pathname: `/ui/${this.state.selectedCluster}/topic/${lagTopic.topic}`
             }}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
@@ -154,7 +154,7 @@ class TopicGroups extends Component {
           ]}
           data={this.state.consumerGroups}
           onDetails={id => {
-            history.push({ pathname: `/${selectedCluster}/group/${id}`, tab: constants.GROUP });
+            history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
           }}
           actions={[constants.TABLE_DETAILS]}
         />

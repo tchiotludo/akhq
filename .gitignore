@@ -47,3 +47,4 @@ docs/contributors.html
 ## Docker
 .env
 docker-compose.override.yml
+/client/.gradle/

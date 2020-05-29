@@ -118,7 +118,7 @@ class ConsumerGroup extends Component {
 
         {roles.group && roles.group['offsets/update'] && (
           <aside>
-            <Link to={`/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
+            <Link to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
               Update Offsets
             </Link>
           </aside>

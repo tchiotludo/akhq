@@ -24,24 +24,28 @@ class App extends React.Component {
       .catch(err => {
         console.log('???', err);
         if (err.response && err.response.status === 404) {
-          history.replace('/page-not-found', { errorData: err });
+          history.replace('/ui/page-not-found', { errorData: err });
         } else {
-          history.replace('/error', { errorData: err });
+          history.replace('/ui/error', { errorData: err });
         }
         this.setState({ clusterId: '' });
       });
   }
   render() {
     const { clusterId } = this.state;
-    return (
-      <MuiPickersUtilsProvider utils={MomentUtils}>
-        <Router history={history}>
-          <ErrorBoundary history={history}>
-            <Routes clusterId={clusterId} location={baseUrl} />
-          </ErrorBoundary>
-        </Router>
-      </MuiPickersUtilsProvider>
-    );
+    if(clusterId) {
+      return (
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <Router history={history}>
+              <ErrorBoundary history={history}>
+                <Routes clusterId={clusterId} location={baseUrl}/>
+              </ErrorBoundary>
+            </Router>
+          </MuiPickersUtilsProvider>
+      );
+    } else {
+      return <Loading show="true" />
+    }
   }
 }
 

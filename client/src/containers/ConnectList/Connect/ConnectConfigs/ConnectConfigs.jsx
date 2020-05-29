@@ -48,9 +48,9 @@ class ConnectConfigs extends Form {
       });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -73,9 +73,9 @@ class ConnectConfigs extends Form {
       });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -384,7 +384,7 @@ class ConnectConfigs extends Form {
       await post(uriUpdateDefinition(clusterId, connectId, definitionId), body);
       history.push({
         ...this.props.location,
-        pathname: `/${clusterId}/connect/${connectId}`,
+        pathname: `/ui/${clusterId}/connect/${connectId}`,
         showSuccessToast: true,
         successToastMessage: `${`Definition '${formData.name}' is updated`}`,
         loading: false

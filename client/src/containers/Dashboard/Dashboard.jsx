@@ -58,7 +58,7 @@ class Dashboard extends Component {
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
+          pathname: `/ui/${clusterId}/topic`,
           showSuccessToast: false,
           successToastMessage: ''
         });
@@ -68,7 +68,7 @@ class Dashboard extends Component {
     if (this.state.showErrorToast) {
       this.interval = setTimeout(() => {
         this.props.history.push({
-          pathname: `/${clusterId}/topic`,
+          pathname: `/ui/${clusterId}/topic`,
           showErrorToast: false,
           errorToastTitle: '',
           errorToastMessage: ''

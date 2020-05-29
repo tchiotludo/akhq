@@ -46,30 +46,32 @@ class Login extends Form {
         username: formData.username,
         password: formData.password
       };
-      await post(uriLogin(), body).then(res => {
-        let currentUserData = res.data;
 
-        if (currentUserData.logged) {
-          localStorage.setItem('login', true);
-          localStorage.setItem('user', currentUserData.username);
-          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-          this.props.history.push({
-            ...this.props.history,
-            pathname: '/',
-            showSuccessToast: true,
-            successToastMessage: `User '${currentUserData.username}' logged in successfully`,
-            loading: false
-          });
-        } else {
-          this.props.history.replace({
-            ...this.props.history,
-            showErrorToast: true,
-            errorToastTitle: 'Login failed',
-            errorToastMessage: 'Invalid credentials',
-            loading: false
-          });
-        }
-      });
+      const response = await post(uriLogin(), body);
+      const res = await get(uriCurrentUser());
+      const currentUserData = res.data;
+
+      if (currentUserData.logged) {
+        localStorage.setItem('login', true);
+        localStorage.setItem('user', currentUserData.username);
+        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        this.props.history.push({
+          ...this.props.history,
+          pathname: '/',
+          showSuccessToast: true,
+          successToastMessage: `User '${currentUserData.username}' logged in successfully`,
+          loading: false
+        });
+      } else {
+        this.props.history.replace({
+          ...this.props.history,
+          showErrorToast: true,
+          errorToastTitle: 'Login failed',
+          errorToastMessage: 'Invalid credentials',
+          loading: false
+        });
+      }
+      window.location.reload(false);
     } catch (err) {
       this.props.history.replace({
         ...this.props.history,

@@ -99,9 +99,9 @@ class SchemaList extends Component {
       }
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -264,7 +264,7 @@ class SchemaList extends Component {
               return schema.id === schemaId;
             });
             history.push({
-              pathname: `/${selectedCluster}/schema/details/${schema.subject}`,
+              pathname: `/ui/${selectedCluster}/schema/details/${schema.subject}`,
               schemaId: schema.subject
             });
           }}
@@ -291,7 +291,7 @@ class SchemaList extends Component {
           <aside>
             <Link
               to={{
-                pathname: `/${clusterId}/schema/create`,
+                pathname: `/ui/${clusterId}/schema/create`,
                 state: { formData: this.state.createSubjectFormData }
               }}
               className="btn btn-primary"

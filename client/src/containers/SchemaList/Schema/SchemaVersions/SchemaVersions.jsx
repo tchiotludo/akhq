@@ -97,7 +97,7 @@ class SchemaVersions extends Component {
 
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         history.push({
-          pathname: `/${selectedCluster}/schema`
+          pathname: `/ui/${selectedCluster}/schema`
         });
       })
       .catch(err => {

@@ -1,3 +1,17 @@
 $sidebarWidth: 70px;
 $sidebarExpandedWidth: 250px;
 $sidebarTransition: 0.5s;
+
+.sidenav-subnav---1EN61{
+  background-color:  #32a9d4 !important;
+}
+
+.sidenav---collapsed---LQDEv {
+  img {
+    margin-top: 15px;
+    margin-bottom: 25px;
+    -webkit-transform: rotate(90deg);  /* to support Safari and Android browser */
+    -ms-transform: rotate(90deg);      /* to support IE 9 */
+    transform: rotate(90deg);
+  }
+}
