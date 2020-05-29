@@ -191,10 +191,7 @@ class Sidebar extends Component {
         }}
         style={{ background: 'black' }}
       >
-        <SideNav.Toggle />{' '}
-
-        <img src={logo} alt=""/>
-
+        <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           id="khq-sidebar-tabs"
@@ -227,7 +224,7 @@ class Sidebar extends Component {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                Clusters <span className="badge badge-primary">{selectedCluster}</span>
+                Clusters <span className="badge badge-primary clusters">{selectedCluster}</span>
               </Link>
             </NavText>
             {listClusters}

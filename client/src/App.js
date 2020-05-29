@@ -14,6 +14,7 @@ class App extends React.Component {
   state = {
     clusterId: ''
   };
+
   componentDidMount() {
     api
       .get(uriClusters())
@@ -31,20 +32,21 @@ class App extends React.Component {
         this.setState({ clusterId: '' });
       });
   }
+
   render() {
     const { clusterId } = this.state;
-    if(clusterId) {
+    if (clusterId) {
       return (
-          <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Router history={history}>
-              <ErrorBoundary history={history}>
-                <Routes clusterId={clusterId} location={baseUrl}/>
-              </ErrorBoundary>
-            </Router>
-          </MuiPickersUtilsProvider>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <Router history={history}>
+            <ErrorBoundary history={history}>
+              <Routes clusterId={clusterId} location={baseUrl} />
+            </ErrorBoundary>
+          </Router>
+        </MuiPickersUtilsProvider>
       );
     } else {
-      return <Loading show="true" />
+      return <Loading show="true" />;
     }
   }
 }

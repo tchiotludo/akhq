@@ -52,7 +52,7 @@ class Routes extends Component {
     let path = window.location.pathname.split('/');
 
     let clusterId = '';
-    if(path.length < 4 || path[2] === '') {
+    if (path.length < 4 || path[2] === '') {
       clusterId = this.props.clusterId;
     } else {
       clusterId = path[2];
@@ -62,6 +62,13 @@ class Routes extends Component {
       return (
         <Switch>
           <Route exact path="/ui/error" component={ErrorPage} />
+        </Switch>
+      );
+    }
+    if (path[1] === 'page-not-found') {
+      return (
+        <Switch>
+          <Route exact path="/page-not-found" component={PageNotFound} />
         </Switch>
       );
     }
@@ -122,7 +129,11 @@ class Routes extends Component {
               <Route exact path="/ui/:clusterId/schema/details/:schemaId" component={Schema} />
             )}
             {roles && roles.connect && roles.connect['connect/insert'] && (
-              <Route exact path="/ui/:clusterId/connect/:connectId/create" component={ConnectCreate} />
+              <Route
+                exact
+                path="/ui/:clusterId/connect/:connectId/create"
+                component={ConnectCreate}
+              />
             )}
             {roles && roles.connect && roles.connect['connect/read'] && (
               <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
