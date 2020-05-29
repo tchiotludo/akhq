@@ -1,0 +1,16 @@
+.tail-search-wrapper {
+  width: 240px;
+  display: flex;
+  justify-content: space-between;
+  padding-right: 20px;
+
+  @media (max-width: 991.98px) {
+    width: 100%!important;
+    display: none !important;
+  }
+}
+
+.tail-headers:hover {
+    text-decoration: underline !important;
+    color: white !important;
+}

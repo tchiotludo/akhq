@@ -20,8 +20,10 @@ build/*
 ### Assets
 src/main/resources/static
 node_modules
-node/
-
+client/node_modules
+client/build
+client/assets
+client/src/App.scss
 ### Ide ###
 .idea/*
 .vscode/*
@@ -45,3 +47,4 @@ docs/contributors.html
 ## Docker
 .env
 docker-compose.override.yml
+/client/.gradle/
