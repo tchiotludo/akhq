@@ -27,7 +27,7 @@ class Topic extends Component {
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
-    const { roles } = this.state;
+    const roles = this.state.roles || {};
     this.setState({
       clusterId,
       topicId,
@@ -88,7 +88,9 @@ class Topic extends Component {
   }
 
   render() {
-    const { topicId, clusterId, selectedTab, roles } = this.state;
+    const { topicId, clusterId, selectedTab } = this.state;
+
+    const roles = this.state.roles || {};
     return (
       <div>
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
@@ -172,19 +174,14 @@ class Topic extends Component {
               <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
             </a>
 
-            <Link
-              className="btn btn-primary"
-              to={{
-                pathname: `/ui/${clusterId}/topic/${topicId}/produce`
+            <a
+              onClick={() => {
+                this.props.history.push({ pathname: `/${clusterId}/topic/${topicId}/produce` });
               }}
+              className="btn btn-primary"
             >
-              <i
-                className="fa fa-plus"
-                aria-hidden={true}
-
-              />{' '}
-              Produce to topic
-            </Link>
+              <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
+            </a>
           </aside>
         )}
       </div>

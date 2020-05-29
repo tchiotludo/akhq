@@ -30,9 +30,8 @@ const Pagination = ({
       <li className=" page-item info">
         <a className=" page-link page-number">
           <input
-            className="pagination-input"
+            className="pagination-input page-input"
             disabled={!editPageNumber}
-            className="page-input"
             type="number"
             value={pageNumber}
             onChange={onChange}

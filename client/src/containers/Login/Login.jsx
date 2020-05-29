@@ -87,81 +87,79 @@ class Login extends Form {
     const { errors } = this.state;
 
     return (
-      <div className="wrapper" style={{ height: window.innerHeight - 100 }}>
-        <div className="no-side-bar">
-          <main>
-            <form
-              className="khq-login"
-              onSubmit={e => {
-                e.preventDefault();
-                this.login();
-              }}
-            >
-              <div>
-                <h3 className="logo">
-                  <img src={logo} alt="" />
-                  <sup>
-                    <strong>HQ</strong>
-                  </sup>
-                </h3>
-              </div>
+      <div style={{ height: window.innerHeight - 100, marginLeft: 0 }}>
+        <main>
+          <form
+            className="khq-login"
+            onSubmit={e => {
+              e.preventDefault();
+              this.login();
+            }}
+          >
+            <div>
+              <h3 className="logo">
+                <img src={logo} alt="" />
+                <sup>
+                  <strong>HQ</strong>
+                </sup>
+              </h3>
+            </div>
 
-              <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                  <span className="input-group-text">
-                    <i className="fa fa-user" />
-                  </span>
+            <div className="input-group mb-3">
+              <div className="input-group-prepend">
+                <span className="input-group-text">
+                  <i className="fa fa-user" />
+                </span>
+              </div>
+              <input
+                type="text"
+                name="username"
+                className="form-control"
+                placeholder="Username"
+                aria-label="Username"
+                required=""
+                autoFocus=""
+                onChange={this.handleChange}
+              />
+              {errors.username && (
+                <div id="input-error" className="alert alert-danger mt-1 p-1">
+                  {errors.username}
                 </div>
-                <input
-                  type="text"
-                  name="username"
-                  className="form-control"
-                  placeholder="Username"
-                  aria-label="Username"
-                  required=""
-                  autoFocus=""
-                  onChange={this.handleChange}
-                />
-                {errors.username && (
-                  <div id="input-error" className="alert alert-danger mt-1 p-1">
-                    {errors.username}
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
 
-              <div className="input-group mb-3">
-                <div className="input-group-prepend">
-                  <span className="input-group-text">
-                    <i className="fa fa-lock" />
-                  </span>
+            <div className="input-group mb-3">
+              <div className="input-group-prepend">
+                <span className="input-group-text">
+                  <i className="fa fa-lock" />
+                </span>
+              </div>
+              <input
+                type="password"
+                name="password"
+                className="form-control"
+                placeholder="Password"
+                aria-label="Password"
+                required=""
+                onChange={this.handleChange}
+              />
+              {errors.password && (
+                <div id="input-error" className="alert alert-danger mt-1 p-1">
+                  {errors.password}
                 </div>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control"
-                  placeholder="Password"
-                  aria-label="Password"
-                  required=""
-                  onChange={this.handleChange}
-                />
-                {errors.password && (
-                  <div id="input-error" className="alert alert-danger mt-1 p-1">
-                    {errors.password}
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
 
-              <div className="form-group text-right">
-                <input
-                  type="submit"
-                  value="Login"
-                  className="btn btn-primary btn-lg"
-                  disabled={this.validate()}
-                />
-              </div>
-            </form>
-          </main>
-        </div>
+            <div className="form-group text-right">
+              <input
+                type="submit"
+                value="Login"
+                className="btn btn-primary btn-lg"
+                disabled={this.validate()}
+              />
+            </div>
+          </form>
+        </main>
       </div>
     );
   }

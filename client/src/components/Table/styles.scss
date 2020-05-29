@@ -9,3 +9,12 @@
   padding-right: 0.5rem;
   align-items: center;
 }
+
+.no-stripes tr {
+  background-color: rgba(100, 100, 100, 0.4);
+}
+
+.collapsed-extra-row {
+  max-height: 30px !important;
+  overflow: hidden;
+}

@@ -45,7 +45,11 @@ class NodeConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      history.replace('/ui/error', { errorData: err, loading: false });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
       console.error('Error:', err);
     }
   }
@@ -249,8 +253,8 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data, selectedNode, selectedCluster, roles } = this.state;
-
+    const { data, selectedNode, selectedCluster } = this.state;
+    const roles = this.state.roles || {};
     return (
       <form
         encType="multipart/form-data"

@@ -129,7 +129,11 @@ class TopicList extends Component {
         this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
-      history.replace('/ui/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         ...this.props.location,
@@ -180,7 +184,8 @@ class TopicList extends Component {
   };
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, roles } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [

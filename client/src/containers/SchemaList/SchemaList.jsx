@@ -98,7 +98,11 @@ class SchemaList extends Component {
         this.setState({ selectedCluster, totalPageNumber: response.page });
       }
     } catch (err) {
-      history.replace('/ui/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         loading: false
@@ -174,9 +178,9 @@ class SchemaList extends Component {
       pageNumber,
       totalPageNumber,
       showSchemaModal,
-      schemaModalBody,
-      roles
+      schemaModalBody
     } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 

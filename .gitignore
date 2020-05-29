@@ -22,7 +22,8 @@ src/main/resources/static
 node_modules
 client/node_modules
 client/build
-
+client/assets
+client/src/App.scss
 ### Ide ###
 .idea/*
 .vscode/*

@@ -74,7 +74,11 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      this.props.history.replace('/ui/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        this.props.history.replace('/page-not-found', { errorData: err });
+      } else {
+        this.props.history.replace('/error', { errorData: err });
+      }
     }
   }
 
@@ -174,10 +178,9 @@ class Sidebar extends Component {
       selectedCluster,
       showClusters,
       showConnects,
-      selectedTab,
-      roles
+      selectedTab
     } = this.state;
-
+    const roles = this.state.roles || {};
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
@@ -204,7 +207,6 @@ class Sidebar extends Component {
               style={{
                 color: 'grey',
                 fontStyle: 'Italic',
-                position: 'fixed',
                 paddingLeft: '9%'
               }}
             >
@@ -230,20 +232,27 @@ class Sidebar extends Component {
             </NavText>
             {listClusters}
           </NavItem>
-          {roles && roles.node && this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
-          {roles && roles.topic &&
+          {roles &&
+            roles.node &&
+            this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+          {roles &&
+            roles.topic &&
             roles.topic['topic/read'] &&
             this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
-          {roles && roles.topic &&
+          {roles &&
+            roles.topic &&
             roles.topic['topic/data/read'] &&
             this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
-          {roles && roles.group &&
+          {roles &&
+            roles.group &&
             roles.group['group/read'] &&
             this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
-          {roles && roles.acls &&
+          {roles &&
+            roles.acls &&
             roles.acls['acls/read'] &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {roles && roles.registry &&
+          {roles &&
+            roles.registry &&
             roles.registry['registry/read'] &&
             this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
           {roles && roles.connect && roles.connect['connect/read'] && (

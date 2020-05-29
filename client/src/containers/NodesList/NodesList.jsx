@@ -28,7 +28,11 @@ class NodesList extends Component {
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      history.replace('/ui/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         loading: false

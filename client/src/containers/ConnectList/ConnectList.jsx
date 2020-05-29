@@ -54,7 +54,11 @@ class ConnectList extends Component {
         loading: false
       });
     } catch (err) {
-      history.replace('/error', { errorData: err, loading: false });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err, loading: false });
+      } else {
+        history.replace('/error', { errorData: err, loading: false });
+      }
     }
   }
 
@@ -123,7 +127,7 @@ class ConnectList extends Component {
   };
 
   getTableActions = () => {
-    const { roles } = this.state;
+    const roles = this.state.roles || {};
     let actions = [];
 
     if (roles.connect && roles.connect['connect/update']) {
@@ -178,7 +182,8 @@ class ConnectList extends Component {
   };
 
   render() {
-    const { clusterId, connectId, tableData, showConfigModal, configModalBody, roles } = this.state;
+    const { clusterId, connectId, tableData, showConfigModal, configModalBody } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
 
     return (

@@ -75,7 +75,11 @@ class ConsumerGroupList extends Component {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }
     } catch (err) {
-      history.replace('/ui/error', { errorData: err });
+      if (err.response && err.response.status === 404) {
+        history.replace('/page-not-found', { errorData: err });
+      } else {
+        history.replace('/error', { errorData: err });
+      }
     } finally {
       history.replace({
         loading: false
@@ -194,14 +198,8 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const {
-      consumerGroup,
-      selectedCluster,
-      search,
-      pageNumber,
-      totalPageNumber,
-      roles
-    } = this.state;
+    const { consumerGroup, selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
 
@@ -284,19 +282,17 @@ class ConsumerGroupList extends Component {
               : [constants.TABLE_DETAILS]
           }
         />
-
-        <div
-          className="navbar navbar-expand-lg navbar-light mr-auto
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
         >
-          <div className="collapse navbar-collapse" />
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={this.handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
-        </div>
+        </nav>
         <ConfirmModal
           show={this.state.showDeleteModal}
           handleCancel={this.closeDeleteModal}

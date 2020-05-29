@@ -111,7 +111,8 @@ class SchemaVersions extends Component {
   };
 
   render() {
-    const { data, selectedCluster, showSchemaModal, schemaModalBody, roles } = this.state;
+    const { data, selectedCluster, showSchemaModal, schemaModalBody } = this.state;
+    const roles = this.state.roles || {};
     return (
       <div>
         <Table
