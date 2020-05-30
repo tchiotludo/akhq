@@ -237,6 +237,7 @@ frontend {
     assembleScript = 'run build'
     checkScript = 'run test'
 }
+checkFrontend.enabled = false
 
 /**********************************************************************************************************************\
  * Jar
