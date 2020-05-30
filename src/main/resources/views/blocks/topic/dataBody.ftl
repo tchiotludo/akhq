@@ -18,7 +18,7 @@
             <td>${data.getTopic()}</td>
         </#if>
         <td><code class="key">${data.getKey()!"null"}</code></td>
-        <td>${data.getTimestamp()?number_to_datetime?string.medium_short}</td>
+        <td>${data.getTimestamp()?number_to_datetime?string.xs_ms_nz?replace("T", " ")}</td>
         <td class="text-right">${data.getPartition()}</td>
         <td class="text-right">${data.getOffset()}</td>
         <td class="text-right">
