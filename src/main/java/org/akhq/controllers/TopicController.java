@@ -720,6 +720,50 @@ public class TopicController extends AbstractController {
             });
     }
 
+    @Secured(Role.ROLE_TOPIC_INSERT)
+    @Post(value = "{cluster}/topic/{topicName}/add-partitions")
+    @Hidden
+    public HttpResponse<?> increasePartitions(
+            HttpRequest<?> request,
+            String cluster,
+            String topicName,
+            Integer partition
+    ) throws Throwable {
+        MutableHttpResponse<Void> response = HttpResponse.redirect(request.getUri());
+
+        this.toast(response, RequestHelper.runnableToToast(
+                () ->
+                        this.topicRepository.increasePartitions(
+                                cluster,
+                                topicName,
+                                partition
+                        ),
+                "Topic '" + topicName + "' partitions increased",
+                "Failed to increase topic '" + topicName + "' partitions"
+        ));
+
+        return response;
+
+    }
+
+    @Secured(Role.ROLE_TOPIC_INSERT)
+    @Post(value = "api/{cluster}/topic/{topicName}/add-partitions")
+    @Operation(tags = {"topic"}, summary = "Increase partitions of a topic")
+    public List<Partition> increasePartitionsApi(
+            String cluster,
+            String topicName,
+            Integer partition
+    ) throws Throwable {
+        this.topicRepository.increasePartitions(
+                cluster,
+                topicName,
+                partition
+        );
+
+        return this.topicRepository.findByName(cluster, topicName).getPartitions();
+
+    }
+
     private RecordRepository.Options dataSearchOptions(
         String cluster,
         String topicName,

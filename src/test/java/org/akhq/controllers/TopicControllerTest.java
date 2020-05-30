@@ -174,6 +174,19 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(3)
+    void increasePartitionsApi() {
+        List<Partition> result = this.retrieveList(HttpRequest.POST(
+                TOPIC_URL + "/add-partitions",
+                ImmutableMap.of(
+                        "name", KafkaTestCluster.TOPIC_COMPACTED,
+                        "partition", 5
+                )
+        ), Partition.class);
+        assertEquals(5, result.size());
+    }
+
+    @Test
     @Order(4)
     void dataGet() {
         ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);

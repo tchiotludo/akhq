@@ -191,4 +191,8 @@ public class TopicRepository extends AbstractRepository {
         return new ArrayList<>();
     }
 
+    public void increasePartitions(String clusterId, String name, int partitions) throws ExecutionException, InterruptedException {
+        kafkaWrapper.increaseTopicPartitions(clusterId, name, partitions);
+    }
+
 }

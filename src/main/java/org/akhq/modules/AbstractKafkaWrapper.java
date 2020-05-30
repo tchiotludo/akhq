@@ -351,4 +351,13 @@ abstract public class AbstractKafkaWrapper {
 
         return describeAcls.get(clusterId).get(filter);
     }
+
+    public void increaseTopicPartitions(String clusterId, String name, int partitions) throws ExecutionException, InterruptedException {
+        Map<String, NewPartitions> newPartitions = new HashMap<>();
+        newPartitions.put(name, NewPartitions.increaseTo(partitions));
+        kafkaModule.getAdminClient(clusterId)
+                .createPartitions(newPartitions)
+                .all()
+                .get();
+    }
 }

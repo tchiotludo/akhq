@@ -167,6 +167,13 @@ public class TopicRepositoryTest extends AbstractTest {
         assertEquals(3, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
     }
 
+    @Test
+    public void increasePartitions() throws ExecutionException, InterruptedException {
+        topicRepository.increasePartitions(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED, 5);
+        assertEquals(5, topicRepository
+                .findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
+    }
+
     private void mockApplicationContext() {
         Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topics-filter-regexp", new ArrayList<>(Arrays.asList("rando.*"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
