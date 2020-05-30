@@ -73,16 +73,16 @@ public class Topic {
 
     public long getReplicaCount() {
         return this.getPartitions().stream()
-                .mapToLong(partitions -> partitions.getNodes().size())
-                .max()
-                .orElseGet(() -> 0L);
+            .mapToLong(partitions -> partitions.getNodes().size())
+            .max()
+            .orElseGet(() -> 0L);
     }
 
     public long getInSyncReplicaCount() {
         return this.getPartitions().stream()
             .mapToLong(partition -> partition.getNodes().stream().filter(node -> node.isInSyncReplicas()).count())
             .min()
-            .orElse(0L);
+            .orElseGet(() -> 0L);
     }
 
     public List<LogDir> getLogDir() {
