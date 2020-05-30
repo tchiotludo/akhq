@@ -73,7 +73,7 @@ public class TailController extends AbstractController {
         List<String> topics,
         Optional<String> search,
         Optional<List<String>> after
-    ) throws ExecutionException, InterruptedException {
+    ) {
         RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
         search.ifPresent(options::setSearch);
         after.ifPresent(options::setAfter);
@@ -117,7 +117,7 @@ public class TailController extends AbstractController {
         List<String> topics,
         Optional<String> search,
         Optional<List<String>> after
-    ) throws ExecutionException, InterruptedException {
+    ) {
         RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
         search.ifPresent(options::setSearch);
         after.ifPresent(options::setAfter);
