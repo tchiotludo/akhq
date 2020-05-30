@@ -576,41 +576,44 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
-    public Flowable<Event<TailEvent>> tail(String clusterId, TailOptions options) throws ExecutionException, InterruptedException {
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+    public Flowable<Event<TailEvent>> tail(String clusterId, TailOptions options) {
+        return Flowable.generate(() -> {
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
-        List<Topic> topics = topicRepository.findByName(clusterId, options.topics);
+            List<Topic> topics = topicRepository.findByName(clusterId, options.topics);
 
-        consumer
-            .assign(topics
-                .stream()
-                .flatMap(topic -> topic.getPartitions()
+            consumer
+                .assign(topics
                     .stream()
-                    .map(partition -> new TopicPartition(topic.getName(), partition.getId()))
-                )
-                .collect(Collectors.toList())
-            );
+                    .flatMap(topic -> topic.getPartitions()
+                        .stream()
+                        .map(partition -> new TopicPartition(topic.getName(), partition.getId()))
+                    )
+                    .collect(Collectors.toList())
+                );
 
-        if (options.getAfter() != null) {
-            options
-                .getAfter()
-                .forEach(s -> {
-                    String[] split = s.split(",");
-                    consumer.seek(
-                        new TopicPartition(split[0], Integer.parseInt(split[1])),
-                        Long.parseLong(split[2])
-                    );
-                });
-        }
+            if (options.getAfter() != null) {
+                options
+                    .getAfter()
+                    .forEach(s -> {
+                        String[] split = s.split(",");
+                        consumer.seek(
+                            new TopicPartition(split[0], Integer.parseInt(split[1])),
+                            Long.parseLong(split[2])
+                        );
+                    });
+            }
 
-        return Flowable.generate(TailEvent::new, (state, subscriber) -> {
-            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            return new TailState(consumer, new TailEvent());
+        }, (state, subscriber) -> {
+            ConsumerRecords<byte[], byte[]> records = this.poll(state.getConsumer());
+            TailEvent tailEvent = state.getTailEvent();
 
             List<Record> list = new ArrayList<>();
 
             for (ConsumerRecord<byte[], byte[]> record : records) {
 
-                state.offsets.put(
+                tailEvent.offsets.put(
                     ImmutableMap.of(
                         record.topic(),
                         record.partition()
@@ -631,11 +634,21 @@ public class RecordRepository extends AbstractRepository {
                 }
             }
 
-            state.records = list;
-            subscriber.onNext(Event.of(state).name("tailBody"));
+            tailEvent.records = list;
+            subscriber.onNext(Event.of(tailEvent).name("tailBody"));
 
+            state.tailEvent = tailEvent;
             return state;
         });
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class TailState {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private TailEvent tailEvent;
     }
 
     @ToString
