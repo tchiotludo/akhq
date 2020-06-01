@@ -23,10 +23,12 @@ class Sidebar extends Component {
     showConnects: false,
     roles: JSON.parse(localStorage.getItem('roles'))
   };
+
   static getDerivedStateFromProps(nextProps, prevState) {
     let selectedTab = nextProps.selectedTab || prevState.selectedTab;
     return { selectedTab };
   }
+
   componentDidMount() {
     let tabs = [
       constants.CLUSTER,
@@ -183,13 +185,14 @@ class Sidebar extends Component {
     const roles = this.state.roles || {};
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
+    const height = document.getElementById('root').offsetHeight;
     return (
       <SideNav
         expanded={this.props.expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black' }}
+        style={{ background: 'black', height: height }}
       >
         <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav

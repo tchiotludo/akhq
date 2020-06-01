@@ -19,11 +19,9 @@ class App extends React.Component {
     api
       .get(uriClusters())
       .then(res => {
-        console.log('here', res.data);
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        console.log('???', err);
         if (err.response && err.response.status === 404) {
           history.replace('/ui/page-not-found', { errorData: err });
         } else {

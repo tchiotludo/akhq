@@ -72,6 +72,7 @@ class Routes extends Component {
         </Switch>
       );
     }
+
     if (path.length > 0) {
       return (
         <Base>

@@ -68,7 +68,6 @@ class Tail extends Component {
     let self = this;
     this.eventSource.addEventListener('tailBody', function(e) {
       let res = JSON.parse(e.data);
-      console.log('here', res);
       const { data } = self.state;
       if (res.records) {
         data.push(res.records[0]);
