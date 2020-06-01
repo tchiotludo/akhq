@@ -10,7 +10,7 @@ import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewMo
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
-import DatePicker from '../../../../components/DatePicker/DatePicker';
+import DatePicker from '../../../../components/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
 import { checkPropTypes } from 'prop-types';
