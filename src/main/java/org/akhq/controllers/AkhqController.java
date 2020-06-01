@@ -40,7 +40,7 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
@@ -78,20 +78,21 @@ public class AkhqController extends AbstractController {
     @Get("api/me")
     @Operation(tags = {"AKHQ"}, summary = "Get current user")
     public AuthUser users() {
+
         AuthUser authUser = new AuthUser();
 
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
             securityService
-                .getAuthentication()
-                .ifPresent(authentication -> {
-                    authUser.logged = true;
-                    authUser.username = authentication.getName();
-                    authUser.roles = this.getRights();
-                });
+                    .getAuthentication()
+                    .ifPresent(authentication -> {
+                        authUser.logged = true;
+                        authUser.username = authentication.getName();
+                    });
         }
 
+        authUser.roles = this.getRights();
         return authUser;
     }
 
