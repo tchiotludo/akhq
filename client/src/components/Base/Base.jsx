@@ -155,8 +155,8 @@ class Base extends Component {
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        {this.props.location.pathname !== '/login' &&
-          this.props.location.pathname !== '/page-not-found' && (
+        {this.props.location.pathname !== '/ui/login' &&
+          this.props.location.pathname !== '/ui/page-not-found' && (
             <Sidebar
               expanded={expanded}
               toggleSidebar={newExpanded => {
