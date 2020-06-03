@@ -29,9 +29,9 @@ class NodesList extends Component {
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -43,7 +43,7 @@ class NodesList extends Component {
   handleData(nodes) {
     let tableNodes = nodes.nodes.map(node => {
       return {
-        id: node.id || '',
+        id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || ''
       };
@@ -85,7 +85,7 @@ class NodesList extends Component {
           data={data}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {
-            history.push(`/${selectedCluster}/node/${id}`);
+            history.push(`/ui/${selectedCluster}/node/${id}`);
           }}
         />
       </div>

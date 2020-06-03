@@ -7,10 +7,10 @@ const configs = {
 
 const handleError = err => {
   if (err.response && err.response.status === 404) {
-    history.replace('/page-not-found', { errorData: err });
+    history.replace('/ui/page-not-found', { errorData: err });
     return err;
   } else {
-    history.replace('/error', { errorData: err });
+    history.replace('/ui/error', { errorData: err });
     return err;
   }
 };

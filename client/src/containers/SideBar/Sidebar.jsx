@@ -23,10 +23,12 @@ class Sidebar extends Component {
     showConnects: false,
     roles: JSON.parse(localStorage.getItem('roles'))
   };
+
   static getDerivedStateFromProps(nextProps, prevState) {
     let selectedTab = nextProps.selectedTab || prevState.selectedTab;
     return { selectedTab };
   }
+
   componentDidMount() {
     let tabs = [
       constants.CLUSTER,
@@ -49,7 +51,7 @@ class Sidebar extends Component {
 
   async handleGetClusters(callback = () => {}) {
     const match = matchPath(this.props.history.location.pathname, {
-      path: '/:clusterId/',
+      path: '/ui/:clusterId/',
       exact: false,
       strict: false
     });
@@ -75,9 +77,9 @@ class Sidebar extends Component {
       );
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        this.props.history.replace('/page-not-found', { errorData: err });
+        this.props.history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        this.props.history.replace('/error', { errorData: err });
+        this.props.history.replace('/ui/error', { errorData: err });
       }
     }
   }
@@ -128,7 +130,7 @@ class Sidebar extends Component {
       () => {
         const { selectedCluster } = this.state;
         this.props.history.push({
-          pathname: `/${selectedCluster}/topic`,
+          pathname: `/ui/${selectedCluster}/topic`,
           selectedCluster
         });
 
@@ -141,7 +143,7 @@ class Sidebar extends Component {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
       this.props.history.push({
-        pathname: `/${selectedCluster}/connect/${selectedConnect}`,
+        pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
         selectedCluster
       });
     });
@@ -160,13 +162,13 @@ class Sidebar extends Component {
       >
         <NavIcon>
           {' '}
-          <Link to={`/${selectedCluster}/${tab}`}>
+          <Link to={`/ui/${selectedCluster}/${tab}`}>
             <i className={iconClassName} aria-hidden="true" />
           </Link>
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/${selectedCluster}/${tab}`}>{label}</Link>
+          <Link to={`/ui/${selectedCluster}/${tab}`}>{label}</Link>
         </NavText>
       </NavItem>
     );
@@ -183,16 +185,16 @@ class Sidebar extends Component {
     const roles = this.state.roles || {};
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
+    const height = document.getElementById('root').offsetHeight;
     return (
       <SideNav
         expanded={this.props.expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black' }}
+        style={{ background: 'black', height: height }}
       >
-        <SideNav.Toggle />{' '}
-        <img styles={{ marginTop: '300%', position: 'absolute' }} src={logo} alt="" />
+        <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           id="khq-sidebar-tabs"
@@ -225,7 +227,7 @@ class Sidebar extends Component {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                Clusters <span className="badge badge-primary">{selectedCluster}</span>
+                Clusters <span className="badge badge-primary clusters">{selectedCluster}</span>
               </Link>
             </NavText>
             {listClusters}
@@ -263,7 +265,7 @@ class Sidebar extends Component {
               </NavIcon>
               <NavText>
                 <Link
-                  to={`/${selectedCluster}/connect/${selectedConnect}`}
+                  to={`/ui/${selectedCluster}/connect/${selectedConnect}`}
                   data-toggle="collapse"
                   aria-expanded={showConnects}
                   className="dropdown-toggle"

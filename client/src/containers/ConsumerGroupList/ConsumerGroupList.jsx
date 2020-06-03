@@ -76,9 +76,9 @@ class ConsumerGroupList extends Component {
       }
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -134,13 +134,13 @@ class ConsumerGroupList extends Component {
         <div
           onClick={() => {
             history.push({
-              pathname: `/${this.state.selectedCluster}/topic/${topicId}`,
+              pathname: `/ui/${this.state.selectedCluster}/topic/${topicId}`,
               tab: constants.TOPIC
             });
           }}
         >
           <Link
-            to={`/${this.state.selectedCluster}/topic/${topicId}`}
+            to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
           >
@@ -274,7 +274,7 @@ class ConsumerGroupList extends Component {
             this.handleOnDelete(group);
           }}
           onDetails={id => {
-            history.push(`/${selectedCluster}/group/${id}`);
+            history.push(`/ui/${selectedCluster}/group/${id}`);
           }}
           actions={
             roles.group && roles.group['group/delete']

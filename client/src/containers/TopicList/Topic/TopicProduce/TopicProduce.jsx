@@ -109,7 +109,7 @@ class TopicProduce extends Form {
       .then(res => {
         this.props.history.push({
           ...this.props.location,
-          pathname: `/${clusterId}/topic`,
+          pathname: `/ui/${clusterId}/topic`,
           showSuccessToast: true,
           successToastMessage: `Produced to ${topicId}.`,
           loading: false

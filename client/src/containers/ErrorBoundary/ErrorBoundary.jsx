@@ -25,7 +25,7 @@ class ErrorBoundary extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (window.location.pathname === '/error') {
+    if (window.location.pathname === '/ui/error') {
       this.setState({ hasError: true });
     } else {
       this.setState({ hasError: false });

@@ -55,9 +55,9 @@ class ConnectList extends Component {
       });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err, loading: false });
+        history.replace('/ui/page-not-found', { errorData: err, loading: false });
       } else {
-        history.replace('/error', { errorData: err, loading: false });
+        history.replace('/ui/error', { errorData: err, loading: false });
       }
     }
   }
@@ -264,7 +264,7 @@ class ConnectList extends Component {
           actions={this.getTableActions()}
           onDetails={name => {
             history.push({
-              pathname: `/${clusterId}/connect/${connectId}/definition/${name}`,
+              pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`,
               clusterId,
               connectId,
               definitionId: name
@@ -277,7 +277,7 @@ class ConnectList extends Component {
         />
         {roles.connect && roles.connect['connect/insert'] && (
           <aside>
-            <Link to={`/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
+            <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
               Create a definition
             </Link>
           </aside>

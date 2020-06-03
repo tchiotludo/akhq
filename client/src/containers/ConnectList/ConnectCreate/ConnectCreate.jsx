@@ -45,9 +45,9 @@ class ConnectCreate extends Component {
       this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -418,7 +418,7 @@ class ConnectCreate extends Component {
       .then(res => {
         this.props.history.push({
           ...this.props.location,
-          pathname: `/${clusterId}/connect/${connectId}`,
+          pathname: `/ui/${clusterId}/connect/${connectId}`,
           showSuccessToast: true,
           successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
           loading: false

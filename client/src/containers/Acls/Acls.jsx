@@ -31,9 +31,9 @@ class Acls extends Component {
       this.handleData(acls.data);
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -105,7 +105,7 @@ class Acls extends Component {
           }
           onDetails={acl => {
             this.props.history.push({
-              pathname: `/${clusterId}/acls/${acl.principalEncoded}`,
+              pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`,
               principal: acl.user
             });
           }}

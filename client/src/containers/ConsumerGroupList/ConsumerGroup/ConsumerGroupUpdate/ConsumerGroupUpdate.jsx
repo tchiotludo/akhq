@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
-import DatePicker from '../../../../components/DatePicker/DatePicker';
+import DatePicker from '../../../../components/DatePicker';
 import { formatDateTime } from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import { get, post } from '../../../../utils/api';
@@ -67,9 +67,9 @@ class ConsumerGroupUpdate extends Form {
       }
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        history.replace('/page-not-found', { errorData: err });
+        history.replace('/ui/page-not-found', { errorData: err });
       } else {
-        history.replace('/error', { errorData: err });
+        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({

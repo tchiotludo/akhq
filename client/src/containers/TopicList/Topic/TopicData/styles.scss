@@ -126,3 +126,10 @@ Datepicker div.form-group.row {
     border-top-left-radius: 0.25rem !important;
     border-bottom-left-radius: 0.25rem !important;
 }
+
+@media(min-width: 930px){
+    .resize-datepicker{
+        min-width: 400px;
+        min-height: 275px;
+    }
+}

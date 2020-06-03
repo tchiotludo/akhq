@@ -176,7 +176,7 @@ class Topic extends Component {
 
             <a
               onClick={() => {
-                this.props.history.push({ pathname: `/${clusterId}/topic/${topicId}/produce` });
+                this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
               }}
               className="btn btn-primary"
             >
