@@ -237,7 +237,7 @@ class TopicProduce extends Form {
       selectableValueFormats
     } = this.state;
     return (
-      <div style={{ overflow: 'auto', paddingRight: '20px', marginRight: 0 }}>
+      <div style={{ overflow: 'hidden', paddingRight: '20px', marginRight: 0 }}>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
           <div>
             <Header title={`Produce to ${topicId} `} />

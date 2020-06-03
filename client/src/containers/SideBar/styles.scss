@@ -3,29 +3,43 @@ $sidebarExpandedWidth: 250px;
 $sidebarTransition: 0.5s;
 
 nav {
-    -webkit-transition: all 1s ease !important;  
-    -moz-transition: all 1s ease !important;  
-    -o-transition: all 1s ease !important;  
-    -ms-transition: all 1s ease !important;  
-    transition: all 1s ease !important;
-}
-.clusters{
-    text-overflow: ellipsis;
-    direction: ltr;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 90px;
-}
-.sidenav-subnav---1EN61{
-  background-color:  #32a9d4 !important;
+  -webkit-transition: all 1s ease !important;
+  -moz-transition: all 1s ease !important;
+  -o-transition: all 1s ease !important;
+  -ms-transition: all 1s ease !important;
+  transition: all 1s ease !important;
 }
 
 .sidenav---collapsed---LQDEv {
   img {
     margin-top: 15px;
     margin-bottom: 25px;
-    -webkit-transform: rotate(90deg);  /* to support Safari and Android browser */
-    -ms-transform: rotate(90deg);      /* to support IE 9 */
-    transform: rotate(90deg);
+    -webkit-transform: rotate(-90deg);  /* to support Safari and Android browser */
+    -ms-transform: rotate(-90deg);      /* to support IE 9 */
+    transform: rotate(-90deg);
+    transition: all 1s ease;
   }
+}
+
+.sidenav---expanded---1KdUL{
+  img {
+    margin-top: 15px;
+    margin-bottom: 25px;
+    -webkit-transform: rotate(0deg);  /* to support Safari and Android browser */
+    -ms-transform: rotate(0deg);      /* to support IE 9 */
+    transform: rotate(0deg);
+    transition: all 1s ease;
+  }
+}
+
+.clusters{
+  text-overflow: ellipsis;
+  direction: ltr;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 90px;
+}
+
+.sidenav-subnav---1EN61{
+  background-color:  #32a9d4 !important;
 }
