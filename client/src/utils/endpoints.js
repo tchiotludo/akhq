@@ -2,8 +2,8 @@ import { node } from 'prop-types';
 
 // Please, comment the localhost one before PR to dev
 
-//export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-export const baseUrl = 'http://localhost:8081';
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+//export const baseUrl = 'http://localhost:8081';
 
 export const apiUrl = `${baseUrl}/api`;
 
