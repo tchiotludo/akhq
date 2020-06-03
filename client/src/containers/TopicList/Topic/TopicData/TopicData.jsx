@@ -589,7 +589,9 @@ class TopicData extends Component {
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
+                      <div className="align-cell">
+                        {obj[col.accessor]!="" && ( <span className="badge badge-primary">Value: {obj[col.accessor]}</span>)}
+                      </div>
                     </div>
                   );
                 }
