@@ -5,7 +5,7 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
-import { uriTopicData, uriTopicsPartitions } from '../../../../utils/endpoints';
+import { uriTopicData, uriTopicsPartitions, uriTopicDataSearch } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
@@ -44,7 +44,9 @@ class TopicData extends Component {
     datetime: ''
   };
 
-  componentDidMount() {
+  eventSource;
+
+  componentDidMount = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
 
@@ -54,7 +56,35 @@ class TopicData extends Component {
       });
       this.getMessages();
     });
-  }
+  };
+
+  componentWillUnmount = () => {
+    this.onStop();
+  };
+
+  startEventSource = () => {
+    let { clusterId, topicId } = this.props.match.params;
+    const { history } = this.props;
+    const { currentSearch } = this.state;
+    let self = this;
+    this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
+    this.eventSource.addEventListener('searchBody', function(e) {
+      let res = JSON.parse(e.data);
+      self.handleMessages(res.records || []);
+    });
+
+    this.eventSource.addEventListener('searchEnd', function(e) {
+      self.eventSource.close();
+    });
+  };
+
+  onStop = () => {
+    if (this.eventSource) this.eventSource.close();
+  };
+
+  onStart = () => {
+    this.startEventSource();
+  };
 
   showValueModal = body => {
     this.setState({
@@ -431,9 +461,13 @@ class TopicData extends Component {
                             className="btn btn-primary"
                             type="button"
                             onClick={() =>
-                              this.setState({ currentSearch: search, search: '' }, () =>
-                                this.getMessages()
-                              )
+                              this.setState({ currentSearch: search, search: '' }, () => {
+                                if (this.state.currentSearch.length <= 0) {
+                                  this.getMessages();
+                                } else {
+                                  this.onStart();
+                                }
+                              })
                             }
                           >
                             OK

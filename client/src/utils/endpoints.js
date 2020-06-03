@@ -260,6 +260,10 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   }${size.length > 0 ? sizeUrl : ''}`;
 };
 
+export const uriTopicDataSearch = (clusterId, topicId, search) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -298,5 +302,6 @@ export default {
   uriSchemaVersions,
   uriAclsList,
   uriAclsByPrincipal,
-  uriLiveTail
+  uriLiveTail,
+  uriTopicDataSearch
 };
