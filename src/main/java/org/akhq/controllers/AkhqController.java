@@ -82,6 +82,7 @@ public class AkhqController extends AbstractController {
     @Get("api/me")
     @Operation(tags = {"AKHQ"}, summary = "Get current user")
     public AuthUser users() {
+
         AuthUser authUser = new AuthUser();
 
         if (applicationContext.containsBean(SecurityService.class)) {

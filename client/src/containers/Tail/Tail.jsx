@@ -30,7 +30,8 @@ class Tail extends Component {
     selectedTopics: [],
     selectedStatus: 'STOPPED',
     maxRecords: 50,
-    data: []
+    data: [],
+    showFilters: ''
   };
   eventSource;
 
@@ -160,6 +161,15 @@ class Tail extends Component {
     );
   };
 
+  openAndCloseFilters() {
+    let { showFilters } = this.state;
+    if (showFilters === 'show') {
+      this.setState({ showFilters: '' });
+    } else {
+      this.setState({ showFilters: 'show' });
+    }
+  }
+
   render() {
     const {
       search,
@@ -169,7 +179,8 @@ class Tail extends Component {
       topics,
       selectedStatus,
       maxRecords,
-      data
+      data,
+      showFilters
     } = this.state;
     return (
       <div>
@@ -178,6 +189,21 @@ class Tail extends Component {
           className="navbar navbar-expand-lg navbar-light 
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"
         >
+          <button
+              className="navbar-toggler"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbar-search"
+              aria-controls="navbar-search"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+              onClick={() => {
+                this.openAndCloseFilters();
+              }}
+          >
+            <span className="navbar-toggler-icon" />
+          </button>
+          <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
           <Input
             type="text"
             name="search"
@@ -327,6 +353,7 @@ class Tail extends Component {
               <i class="fa fa-remove"></i> <span> Clear</span>
             </button>
           </div>
+          </div>
         </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
@@ -371,7 +398,7 @@ class Tail extends Component {
                 type: 'text',
                 expand: true,
                 cell: obj => {
-                  return <a className="tail-headers">{Object.keys(obj.headers).length}</a>;
+                  return <a className="tail-headers">{obj.headers? Object.keys(obj.headers).length: 0}</a>;
                 }
               },
               {
