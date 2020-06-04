@@ -1,4 +1,3 @@
-          def = Joi.string().allow('');
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
