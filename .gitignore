@@ -24,6 +24,7 @@ client/node_modules
 client/build
 client/assets
 client/src/App.scss
+client/bower_components
 ### Ide ###
 .idea/*
 .vscode/*

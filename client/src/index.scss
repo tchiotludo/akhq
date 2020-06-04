@@ -178,7 +178,7 @@ $scrollbar-width: 0.5em;
 
 body {
   -webkit-font-smoothing: antialiased;
-  //min-width: 992px;
+  min-width: 992px;
   margin: 0;
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-size: 0.875rem;
@@ -362,25 +362,24 @@ h3.logo sup {
   top: 0;
 }
 
-@media (min-width: 992px) {
-  .khq-nav input, .khq-nav button, .khq-nav select, .khq-nav .bootstrap-select {
-    margin-right: 0.5rem;
-  }
+.khq-nav input, .khq-nav button, .khq-nav select, .khq-nav .bootstrap-select {
+  margin-right: 0.5rem;
 }
 
+/*.khq-nav input, .khq-nav button, .khq-nav select {
+  margin-top: 0.5rem;
+}*/
+
 @media (max-width: 991.98px) {
-  .khq-nav input, .khq-nav button, .khq-nav select {
-    margin-top: 0.5rem;
-  }
   .khq-nav .navbar-toggler {
     margin-top: 0;
   }
   .khq-nav input, .khq-nav .bootstrap-select, .khq-nav select {
-    width: 100% !important;
+    width: 100%;
   }
   .khq-nav button.btn-primary {
     display: block;
-    width: 100%;
+    margin-left: 1%;
   }
   .khq-nav .btn-group {
     width: 100%;
@@ -428,11 +427,11 @@ h3.logo sup {
   }
 }
 
-//@media (max-width: 767.98px) {
-//  #content {
-//    width: 100%;
-//  }
-//}
+@media (max-width: 767.98px) {
+  #content {
+    width: 100%;
+  }
+}
 
 #content.no-side-bar {
   width: 100%;
@@ -2871,7 +2870,7 @@ textarea.form-control {
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0 ;
 }
 
 .form-text {
@@ -3183,6 +3182,12 @@ textarea.form-control {
   width: 100%;
 }
 
+.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
 @media (min-width: 576px) {
   .form-inline label {
     display: flex;
@@ -3190,17 +3195,11 @@ textarea.form-control {
     justify-content: center;
     margin-bottom: 0;
   }
-  .form-inline .form-group {
+  .form-inline {
     display: flex;
     flex: 0 0 auto;
     flex-flow: row wrap;
     align-items: center;
-    margin-bottom: 0;
-  }
-  .form-inline .form-control {
-    display: inline-block;
-    width: auto;
-    vertical-align: middle;
   }
   .form-inline .form-control-plaintext {
     display: inline-block;
@@ -15538,8 +15537,7 @@ select.selectpicker {
 }
 
 .form-inline .bootstrap-select,
-.form-horizontal .bootstrap-select,
-.form-group .bootstrap-select {
+.form-horizontal .bootstrap-select,.bootstrap-select {
   margin-bottom: 0;
 }
 

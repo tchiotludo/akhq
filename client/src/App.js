@@ -14,15 +14,14 @@ class App extends React.Component {
   state = {
     clusterId: ''
   };
+
   componentDidMount() {
     api
       .get(uriClusters())
       .then(res => {
-        console.log('here', res.data);
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        console.log('???', err);
         if (err.response && err.response.status === 404) {
           history.replace('/ui/page-not-found', { errorData: err });
         } else {
@@ -31,20 +30,21 @@ class App extends React.Component {
         this.setState({ clusterId: '' });
       });
   }
+
   render() {
     const { clusterId } = this.state;
-    if(clusterId) {
+    if (clusterId) {
       return (
-          <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Router history={history}>
-              <ErrorBoundary history={history}>
-                <Routes clusterId={clusterId} location={baseUrl}/>
-              </ErrorBoundary>
-            </Router>
-          </MuiPickersUtilsProvider>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <Router history={history}>
+            <ErrorBoundary history={history}>
+              <Routes clusterId={clusterId} location={baseUrl} />
+            </ErrorBoundary>
+          </Router>
+        </MuiPickersUtilsProvider>
       );
     } else {
-      return <Loading show="true" />
+      return <Loading show="true" />;
     }
   }
 }

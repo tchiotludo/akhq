@@ -1,3 +1,4 @@
+          def = Joi.string().allow('');
 import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
@@ -445,8 +446,13 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
-                <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
+              <div className="khq-submit button-footer" style={{ width: '100vw' }}>
+                <button
+                  type={'submit'}
+                  className="btn btn-primary"
+                  style={{ marginRight: '2%' }}
+                  disabled={this.validate()}
+                >
                   Update
                 </button>
               </div>
