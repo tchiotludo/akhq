@@ -5,7 +5,12 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
-import { uriTopicData, uriTopicsPartitions, uriTopicDataSearch } from '../../../../utils/endpoints';
+import {
+  uriTopicData,
+  uriTopicsPartitions,
+  uriTopicDataSearch,
+  uriSchemaRegistry
+} from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
@@ -41,7 +46,8 @@ class TopicData extends Component {
     nextPage: '',
     recordCount: 0,
     showFilters: '',
-    datetime: ''
+    datetime: '',
+    schemas: []
   };
 
   eventSource;
@@ -152,6 +158,10 @@ class TopicData extends Component {
         )
       );
       data = data.data;
+
+      let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+      schemas = schemas.data.results || [];
+      this.setState({ schemas });
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
       if (data.results) {
@@ -203,7 +213,7 @@ class TopicData extends Component {
       message.partition = message.partition ? message.partition : '0';
       message.offset = message.offset ? message.offset : '0';
       message.headers = message.headers ? message.headers : {};
-      message.schema = message.schema ? message.schema : '';
+      message.schema = message.valueSchemaId ? message.valueSchemaId : '';
 
       tableMessages.push(message);
     });
@@ -342,6 +352,7 @@ class TopicData extends Component {
       showFilters,
       datetime
     } = this.state;
+    let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
@@ -623,7 +634,26 @@ class TopicData extends Component {
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
+                      <div className="align-cell">
+                        {obj[col.accessor] != '' && (
+                          <span
+                            className="badge badge-primary clickable"
+                            onClick={() => {
+                              let schema = this.state.schemas.find(el => {
+                                return el.id === obj.schema;
+                              });
+                              if (schema) {
+                                this.props.history.push({
+                                  pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                  schemaId: schema.subject
+                                });
+                              }
+                            }}
+                          >
+                            Value: {obj[col.accessor]}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 }
