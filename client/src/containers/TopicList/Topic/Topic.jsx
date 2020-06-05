@@ -47,9 +47,6 @@ class Topic extends Component {
     let configs = [];
     try {
       configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
-      configs.data.map(item => {
-        console.log(item.value);
-      });
       this.setState({ configs: configs.data });
     } catch (err) {
       console.error('Error:', err);
