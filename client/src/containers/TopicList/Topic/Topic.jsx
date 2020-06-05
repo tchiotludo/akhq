@@ -8,6 +8,8 @@ import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
 import TopicProduce from './TopicProduce';
+import { get } from '../../../utils/api';
+import { uriTopicsConfigs } from '../../../utils/endpoints';
 
 // Adaptation of topic.ftl
 
@@ -18,7 +20,10 @@ class Topic extends Component {
     topic: {},
     selectedTab: '',
     roles: JSON.parse(localStorage.getItem('roles')),
-    topicInternal: false
+    topicInternal: false,
+    selectedCluster: this.props.clusterId,
+    selectedTopic: this.props.topicId,
+    configs: {}
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -34,6 +39,18 @@ class Topic extends Component {
       selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
       topicInternal: this.props.location.internal
     });
+    this.getTopicsConfig();
+  }
+
+  async getTopicsConfig() {
+    const { selectedCluster, selectedTopic } = this.state;
+    let configs = [];
+    try {
+      configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+      this.setState({ configs: configs.data });
+    } catch (err) {
+      console.error('Error:', err);
+    }
   }
 
   selectTab = tab => {
