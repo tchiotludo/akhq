@@ -163,7 +163,7 @@ class SchemaVersions extends Component {
           }}
           actions={
             roles.registry && roles.registry['registry/version/delete']
-              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              ? [constants.TABLE_DELETE]
               : []
           }
         />

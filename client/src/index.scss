@@ -378,7 +378,7 @@ h3.logo sup {
   }
   .khq-nav button.btn-primary {
     display: block;
-    margin-left: 1%;
+    //margin-left: 1%;
   }
   .khq-nav .btn-group {
     width: 100%;
@@ -502,6 +502,7 @@ form.khq-form div.khq-submit > div:last-child,
 form.khq-form div.khq-submit .btn,
 #content aside .btn {
   white-space: nowrap;
+  margin-right: 1%;
 }
 
 .tab-pane form.khq-form div.khq-submit {
@@ -1591,6 +1592,7 @@ pre code {
   flex-wrap: wrap;
   margin-right: -15px;
   margin-left: -15px;
+  margin-bottom: 5px;
 }
 
 .no-gutters {
@@ -5103,6 +5105,40 @@ input[type="button"].btn-block {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1rem;
+
+  @media (max-width: 991.98px) {
+    .btn {
+      width: 100%;
+      margin-right: 0;
+    }
+    .col-sm-10 {
+      width: 100%;
+      max-width: 100%;
+      flex: auto;
+      padding: 0;
+    }
+
+    .form-control {
+      width: 100%;
+      max-width: 100%;
+      flex: auto;
+    }
+
+    .form-inline .form-group  {
+      width: 100%;
+      margin-right: 0;
+      margin-left: 0;
+      margin-bottom: 5px;
+    }
+
+    .navbar-toggler{
+      margin-bottom: 5px;
+    }
+
+    .btn-group.actions {
+      margin-top: 5px;
+    }
+  }
 }
 
 .navbar > .container,
