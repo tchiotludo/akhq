@@ -104,7 +104,12 @@ class Base extends Component {
       } else {
         localStorage.setItem('login', false);
         localStorage.setItem('user', 'default');
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        if(currentUserData.roles) {
+          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        } else {
+          localStorage.setItem('roles', JSON.stringify({}));
+          //this.props.history.replace('/ui/login');
+        }
       }
     } catch (err) {
       console.error('Error:', err);
