@@ -55,16 +55,16 @@ class Login extends Form {
         localStorage.setItem('login', true);
         localStorage.setItem('user', currentUserData.username);
         localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-        this.props.history.push({
-          ...this.props.history,
+        history.push({
+          ...history,
           pathname: '/',
           showSuccessToast: true,
           successToastMessage: `User '${currentUserData.username}' logged in successfully`,
           loading: false
         });
       } else {
-        this.props.history.replace({
-          ...this.props.history,
+        history.replace({
+          ...history,
           showErrorToast: true,
           errorToastTitle: 'Login failed',
           errorToastMessage: 'Invalid credentials',
@@ -73,8 +73,8 @@ class Login extends Form {
       }
       window.location.reload(false);
     } catch (err) {
-      this.props.history.replace({
-        ...this.props.history,
+      history.replace({
+        ...history,
         showErrorToast: true,
         errorToastTitle: 'Login failed',
         errorToastMessage: err.response.message,

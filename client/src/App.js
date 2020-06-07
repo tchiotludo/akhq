@@ -14,37 +14,44 @@ class App extends React.Component {
   state = {
     clusterId: ''
   };
+
   componentDidMount() {
     api
       .get(uriClusters())
       .then(res => {
-        console.log('here', res.data);
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        console.log('???', err);
+        console.log('error here?');
+        if (err.response && err.response.status === 401) {
+          history.replace('/ui/:login');
+          this.setState({ clusterId: ':login' });
+          return;
+        }
         if (err.response && err.response.status === 404) {
           history.replace('/ui/page-not-found', { errorData: err });
+          this.setState({ clusterId: 'page-not-found' });
         } else {
           history.replace('/ui/error', { errorData: err });
+          this.setState({ clusterId: 'error' });
         }
-        this.setState({ clusterId: '' });
       });
   }
+
   render() {
     const { clusterId } = this.state;
-    if(clusterId) {
+    if (clusterId) {
       return (
-          <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Router history={history}>
-              <ErrorBoundary history={history}>
-                <Routes clusterId={clusterId} location={baseUrl}/>
-              </ErrorBoundary>
-            </Router>
-          </MuiPickersUtilsProvider>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <Router history={history}>
+            <ErrorBoundary history={history}>
+              <Routes clusterId={clusterId} location={baseUrl} />
+            </ErrorBoundary>
+          </Router>
+        </MuiPickersUtilsProvider>
       );
     } else {
-      return <Loading show="true" />
+      return <Loading show="true" />;
     }
   }
 }

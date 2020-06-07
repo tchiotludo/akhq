@@ -5,12 +5,17 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
-import { uriTopicData, uriTopicsPartitions } from '../../../../utils/endpoints';
+import {
+  uriTopicData,
+  uriTopicsPartitions,
+  uriTopicDataSearch,
+  uriSchemaRegistry
+} from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
-import DatePicker from '../../../../components/DatePicker/DatePicker';
+import DatePicker from '../../../../components/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
 import { checkPropTypes } from 'prop-types';
@@ -40,16 +45,52 @@ class TopicData extends Component {
     pageNumber: 1,
     nextPage: '',
     recordCount: 0,
-    showFilters: ''
+    showFilters: '',
+    datetime: '',
+    schemas: []
   };
 
-  componentDidMount() {
+  eventSource;
+
+  componentDidMount = () => {
     let { clusterId, topicId } = this.props.match.params;
+    const { history } = this.props;
 
     this.setState({ selectedCluster: clusterId, selectedTopic: topicId }, () => {
+      history.replace({
+        loading: true
+      });
       this.getMessages();
     });
-  }
+  };
+
+  componentWillUnmount = () => {
+    this.onStop();
+  };
+
+  startEventSource = () => {
+    let { clusterId, topicId } = this.props.match.params;
+    const { history } = this.props;
+    const { currentSearch } = this.state;
+    let self = this;
+    this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
+    this.eventSource.addEventListener('searchBody', function(e) {
+      let res = JSON.parse(e.data);
+      self.handleMessages(res.records || []);
+    });
+
+    this.eventSource.addEventListener('searchEnd', function(e) {
+      self.eventSource.close();
+    });
+  };
+
+  onStop = () => {
+    if (this.eventSource) this.eventSource.close();
+  };
+
+  onStart = () => {
+    this.startEventSource();
+  };
 
   showValueModal = body => {
     this.setState({
@@ -89,9 +130,6 @@ class TopicData extends Component {
     } = this.state;
     let data,
       partitionData = {};
-    history.replace({
-      loading: true
-    });
     try {
       data = await get(
         uriTopicData(
@@ -120,6 +158,10 @@ class TopicData extends Component {
         )
       );
       data = data.data;
+
+      let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+      schemas = schemas.data.results || [];
+      this.setState({ schemas });
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
       if (data.results) {
@@ -155,8 +197,8 @@ class TopicData extends Component {
     messages.map(message => {
       message.key = message.key ? message.key : 'null';
       message.value = message.value ? message.value : 'null';
-      const date = moment(message.timestamp);
-      message.timestamp = formatDateTime(
+      const date = moment(message.datetime);
+      message.datetime = formatDateTime(
         {
           year: date.year(),
           monthValue: date.month() + 1,
@@ -171,7 +213,7 @@ class TopicData extends Component {
       message.partition = message.partition ? message.partition : '0';
       message.offset = message.offset ? message.offset : '0';
       message.headers = message.headers ? message.headers : {};
-      message.schema = message.schema ? message.schema : '';
+      message.schema = message.valueSchemaId ? message.valueSchemaId : '';
 
       tableMessages.push(message);
     });
@@ -307,8 +349,10 @@ class TopicData extends Component {
       pageNumber,
       nextPage,
       recordCount,
-      showFilters
+      showFilters,
+      datetime
     } = this.state;
+    let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
@@ -388,29 +432,17 @@ class TopicData extends Component {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp:</strong>{' '}
-                    {timestamp !== '' &&
-                      formatDateTime(
-                        {
-                          year: timestamp.year(),
-                          monthValue: timestamp.month() + 1,
-                          dayOfMonth: timestamp.date(),
-                          hour: timestamp.hour(),
-                          minute: timestamp.minute(),
-                          second: timestamp.second(),
-                          milli: timestamp.millisecond()
-                        },
-                        'MMM DD, YYYY, hh:mm A'
-                      )}
+                    <strong>Timestamp:</strong>
+                    {datetime !== '' && ' ' + datetime}
                   </Dropdown.Toggle>
                   {!loading && (
-                    <Dropdown.Menu>
-                      <div className="input-group mb-2 datetime-picker-div">
+                    <Dropdown.Menu className="resize-datepicker">
+                      <div className="input-group">
                         <DatePicker
                           name={'datetime-picker'}
-                          value={timestamp}
+                          value={datetime}
                           onChange={value => {
-                            this.setState({ timestamp: moment(value) }, () => this.getMessages());
+                            this.setState({ datetime: value }, () => this.getMessages());
                           }}
                         />
                       </div>
@@ -440,9 +472,13 @@ class TopicData extends Component {
                             className="btn btn-primary"
                             type="button"
                             onClick={() =>
-                              this.setState({ currentSearch: search, search: '' }, () =>
-                                this.getMessages()
-                              )
+                              this.setState({ currentSearch: search, search: '' }, () => {
+                                if (this.state.currentSearch.length <= 0) {
+                                  this.getMessages();
+                                } else {
+                                  this.onStart();
+                                }
+                              })
                             }
                           >
                             OK
@@ -598,7 +634,26 @@ class TopicData extends Component {
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
+                      <div className="align-cell">
+                        {obj[col.accessor] != '' && (
+                          <span
+                            className="badge badge-primary clickable"
+                            onClick={() => {
+                              let schema = this.state.schemas.find(el => {
+                                return el.id === obj.schema;
+                              });
+                              if (schema) {
+                                this.props.history.push({
+                                  pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                  schemaId: schema.subject
+                                });
+                              }
+                            }}
+                          >
+                            Value: {obj[col.accessor]}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 }

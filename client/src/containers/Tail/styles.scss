@@ -5,10 +5,16 @@
   padding-right: 20px;
 
   @media (max-width: 991.98px) {
-    width: 100%!important;
-    display: none !important;
+    width: 100%;
+    padding-right: 0;
+
+    .tail-search-input {
+      width: 100%;
+    }
   }
+
 }
+
 
 .tail-headers:hover {
     text-decoration: underline !important;

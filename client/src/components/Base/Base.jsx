@@ -1,3 +1,4 @@
+import './Base.scss';
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
@@ -103,7 +104,12 @@ class Base extends Component {
       } else {
         localStorage.setItem('login', false);
         localStorage.setItem('user', 'default');
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        if(currentUserData.roles) {
+          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        } else {
+          localStorage.setItem('roles', JSON.stringify({}));
+          //this.props.history.replace('/ui/login');
+        }
       }
     } catch (err) {
       console.error('Error:', err);
@@ -155,8 +161,8 @@ class Base extends Component {
         <Loading show={loading} />
         <SuccessToast show={showSuccessToast} message={successToastMessage} />
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
-        {this.props.location.pathname !== '/login' &&
-          this.props.location.pathname !== '/page-not-found' && (
+        {this.props.location.pathname !== '/ui/login' &&
+          this.props.location.pathname !== '/ui/page-not-found' && (
             <Sidebar
               expanded={expanded}
               toggleSidebar={newExpanded => {

@@ -203,7 +203,7 @@ class Tail extends Component {
           >
             <span className="navbar-toggler-icon" />
           </button>
-          <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
+          <div className={`form-inline collapse navbar-collapse ${showFilters}`} id="navbar-search">
           <Input
             type="text"
             name="search"
@@ -216,10 +216,10 @@ class Tail extends Component {
               this.setState({ data: [] });
               this.handleChange(e);
             }}
-            wrapperClass={'tail-search-wrapper'}
+            wrapperClass={'tail-search-wrapper form-group'}
             inputClass={'tail-search-input'}
           />
-          <Dropdown className="dropdown bootstrap-select show-tick khq-select show">
+          <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
             <Dropdown.Toggle className="btn dropdown-toggle btn-white">
               {selectedTopics.length === 0
                 ? 'Topics'
@@ -281,7 +281,7 @@ class Tail extends Component {
             </Dropdown.Menu>
           </Dropdown>
 
-          <Dropdown className="dropdown bootstrap-select show-tick khq-select show">
+          <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
             <Dropdown.Toggle className="btn dropdown-toggle btn-white">
               Max Records: {maxRecords}
             </Dropdown.Toggle>
@@ -318,7 +318,7 @@ class Tail extends Component {
             <span className="d-md-none">Search </span>
             <i className="fa fa-search" />
           </button>
-          <div class="btn-group" role="group">
+          <div class="btn-group actions" role="group">
             <button
               className={`btn btn-secondary pause ${
                 selectedStatus === STATUS.STARTED ? '' : 'd-none'

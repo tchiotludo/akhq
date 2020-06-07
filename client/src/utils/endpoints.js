@@ -3,7 +3,7 @@ import { node } from 'prop-types';
 // Please, comment the localhost one before PR to dev
 
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-//export const baseUrl = 'http://localhost:8080';
+//export const baseUrl = 'http://localhost:8081';
 
 export const apiUrl = `${baseUrl}/api`;
 
@@ -260,6 +260,10 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   }${size.length > 0 ? sizeUrl : ''}`;
 };
 
+export const uriTopicDataSearch = (clusterId, topicId, search) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -298,5 +302,6 @@ export default {
   uriSchemaVersions,
   uriAclsList,
   uriAclsByPrincipal,
-  uriLiveTail
+  uriLiveTail,
+  uriTopicDataSearch
 };
