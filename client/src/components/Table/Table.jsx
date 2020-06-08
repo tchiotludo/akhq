@@ -170,7 +170,7 @@ class Table extends Component {
     ) {
       items.push(
         <tr key={'row-expandable-' + row.id}>
-          <td colSpan={columns.length} style={{ padding: 0 }}>
+          <td colSpan={columns.length + actions.length} style={{ padding: 0 }}>
             {onExpand(row)}
           </td>
         </tr>
@@ -191,7 +191,7 @@ class Table extends Component {
           }}
           key={'row-expanded-' + row.id}
         >
-          <td style={{ backgroundColor: '#171819' }} colSpan={columns.length}>
+          <td style={{ backgroundColor: '#171819' }} colSpan={columns.length + actions.length}>
             {' '}
             {extraExpanded &&
             JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
