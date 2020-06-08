@@ -76,16 +76,22 @@ class TopicData extends Component {
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
-      self.handleMessages(res.records || []);
+      self.setState({ isSearching: true }, () => {
+        self.handleMessages(res.records || []);
+      });
     });
 
     this.eventSource.addEventListener('searchEnd', function(e) {
       self.eventSource.close();
+      self.setState({ isSearching: false });
     });
   };
 
   onStop = () => {
-    if (this.eventSource) this.eventSource.close();
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.setState({ isSearching: false });
+    }
   };
 
   onStart = () => {
@@ -350,7 +356,8 @@ class TopicData extends Component {
       nextPage,
       recordCount,
       showFilters,
-      datetime
+      datetime,
+      isSearching
     } = this.state;
     let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
@@ -457,12 +464,13 @@ class TopicData extends Component {
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div className="input-group">
+                      <div style={{ minWidth: '350px' }} className="input-group">
                         <input
                           className="form-control"
                           name="search"
                           type="text"
                           value={search}
+                          style={{ minWidth: '150px' }}
                           onChange={({ currentTarget: input }) => {
                             this.setState({ search: input.value });
                           }}
@@ -481,8 +489,17 @@ class TopicData extends Component {
                               })
                             }
                           >
-                            OK
+                            {isSearching ? <div className="loader" /> : 'OK'}
                           </button>
+                          {isSearching && (
+                            <button
+                              className="btn btn-primary"
+                              type="button"
+                              onClick={() => this.onStop()}
+                            >
+                              Stop
+                            </button>
+                          )}
                         </div>
                       </div>
                     </Dropdown.Menu>

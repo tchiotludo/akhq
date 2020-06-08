@@ -65,10 +65,18 @@ class Routes extends Component {
         </Switch>
       );
     }
-    if (path[1] === 'page-not-found') {
+    if (path[2] === 'page-not-found') {
       return (
         <Switch>
-          <Route exact path="/page-not-found" component={PageNotFound} />
+          <Route exact path="/ui/page-not-found" component={PageNotFound} />
+        </Switch>
+      );
+    }
+
+    if (path[2] === ':login') {
+      return (
+        <Switch>
+          <Route exact path="/ui/:login" component={Login} />
         </Switch>
       );
     }
