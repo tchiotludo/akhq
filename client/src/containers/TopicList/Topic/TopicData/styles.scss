@@ -129,8 +129,8 @@ Datepicker div.form-group.row {
 
 @media(min-width: 930px){
     .resize-datepicker{
-        min-width: 400px;
-        min-height: 275px;
+        min-width: 200px;
+        min-height: 50px;
     }
 }
 
@@ -150,4 +150,9 @@ Datepicker div.form-group.row {
   
 .clickable {
     cursor: pointer;
+}
+
+
+.input-group > .btn-border > button {
+    border-radius: 4px;
 }
