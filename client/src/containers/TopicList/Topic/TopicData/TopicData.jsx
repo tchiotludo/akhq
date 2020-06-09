@@ -15,7 +15,7 @@ import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewMo
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
-import DatePicker from '../../../../components/DatePicker';
+import DatePicker from 'react-datepicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
 import { checkPropTypes } from 'prop-types';
@@ -312,6 +312,7 @@ class TopicData extends Component {
           <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
           <td className="offset-navbar-partition-td">
             <input
+              style={{ maxWidth: '100px' }}
               className="form-control"
               type="number"
               min="0"
@@ -464,7 +465,7 @@ class TopicData extends Component {
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div style={{ minWidth: '350px' }} className="input-group">
+                      <div style={{ minWidth: '300px' }} className="input-group">
                         <input
                           className="form-control"
                           name="search"
@@ -475,7 +476,7 @@ class TopicData extends Component {
                             this.setState({ search: input.value });
                           }}
                         />
-                        <div className="input-group-append">
+                        <div className="btn-border">
                           <button
                             className="btn btn-primary"
                             type="button"
@@ -489,17 +490,16 @@ class TopicData extends Component {
                               })
                             }
                           >
-                            {isSearching ? <div className="loader" /> : 'OK'}
+                            {isSearching ? <i className="fa fa-spinner fa-spin"></i> : <i className="fa fa-search"></i>  }
                           </button>
-                          {isSearching && (
-                            <button
-                              className="btn btn-primary"
-                              type="button"
-                              onClick={() => this.onStop()}
-                            >
-                              Stop
-                            </button>
-                          )}
+                          <button
+                            className="btn btn-primary btn-border"
+                            type="button"
+                            onClick={() => this.onStop()}
+                          >
+                            Close
+                          </button>
+
                         </div>
                       </div>
                     </Dropdown.Menu>
@@ -513,7 +513,7 @@ class TopicData extends Component {
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div className="khq-offset-navbar">
+                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                         <div className="input-group">
                           <table>{this.renderOffsetsOptions()}</table>
                           <div className="input-group-append">
