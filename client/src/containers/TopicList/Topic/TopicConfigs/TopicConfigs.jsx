@@ -220,7 +220,7 @@ class TopicConfigs extends Form {
     );
     return (
       <div className="name-color">
-        {name} {descript}
+        <code>{name}</code> {descript}
       </div>
     );
   }

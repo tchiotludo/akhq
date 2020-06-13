@@ -166,17 +166,20 @@ class TopicList extends Component {
         let className = 'btn btn-sm mb-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
 
-        const activeTopic = consumerGroup.activeTopics.find(activeTopic => activeTopic === topicId);
-        activeTopic !== undefined ? (className += 'success') : (className += 'warning');
+        if (consumerGroup.activeTopics !== undefined) {
+          const activeTopic = consumerGroup.activeTopics
+              .find(activeTopic => activeTopic === topicId);
+          activeTopic !== undefined ? (className += 'success') : (className += 'warning');
 
-        return (
-          <React.Fragment>
-            <a class={className}>
-              {consumerGroup.id} <span class="badge badge-light">Lag: {offsetLag}</span>
-            </a>
-            <br />
-          </React.Fragment>
-        );
+          return (
+              <React.Fragment>
+                <a className={className}>
+                  {consumerGroup.id} <span className="badge badge-light">Lag: {offsetLag}</span>
+                </a>
+                <br/>
+              </React.Fragment>
+          );
+        }
       });
     }
 

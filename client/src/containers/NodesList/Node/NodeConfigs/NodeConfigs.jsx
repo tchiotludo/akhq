@@ -235,8 +235,8 @@ class NodeConfigs extends Form {
       ''
     );
     return (
-      <div className="name-color">
-        {name} {descript}
+      <div>
+        <code>{name}</code> {descript}
       </div>
     );
   }

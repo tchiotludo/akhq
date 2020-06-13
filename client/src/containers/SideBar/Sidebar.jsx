@@ -87,7 +87,9 @@ class Sidebar extends Component {
   async handleGetConnects(selectedCluster) {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
-    this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+    if (cluster.connects !== undefined) {
+      this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+    }
   }
 
   setClustersAndConnects = () => {
@@ -197,7 +199,6 @@ class Sidebar extends Component {
         <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
-          id="khq-sidebar-tabs"
           style={{ background: 'black' }}
           defaultActiveKey={selectedTab}
         >
