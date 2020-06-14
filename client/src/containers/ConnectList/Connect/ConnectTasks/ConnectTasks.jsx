@@ -71,7 +71,7 @@ class ConnectTasks extends Component {
   }
 
   modifyDefinitionState = () => {
-    const { clusterId, connectId, definitionId } = this.state;
+    const { definitionId } = this.state;
     const { uri, action, failedAction, taskId } = this.state.definitionModifyData;
     const { history } = this.props;
     history.replace({
@@ -246,7 +246,7 @@ class ConnectTasks extends Component {
                 className="btn btn-primary mr-2"
                 onClick={() => this.handleAction(this.definitionState.RESUME)}
               >
-                <i className="fa fa-play" aria-hidden="true"></i> Resume Definition
+                <i className="fa fa-play" aria-hidden="true"/> Resume Definition
               </a>
             ) : (
               <React.Fragment>
@@ -256,7 +256,7 @@ class ConnectTasks extends Component {
                   className="btn btn-primary mr-2"
                   onClick={() => this.handleAction(this.definitionState.PAUSE)}
                 >
-                  <i className="fa fa-pause" aria-hidden="true"></i> Pause Definition
+                  <i className="fa fa-pause" aria-hidden="true"/> Pause Definition
                 </a>
 
                 <a
@@ -264,7 +264,7 @@ class ConnectTasks extends Component {
                   className="btn btn-primary mr-2"
                   onClick={() => this.handleAction(this.definitionState.RESTART)}
                 >
-                  <i className="fa fa-refresh" aria-hidden="true"></i> Restart Definition
+                  <i className="fa fa-refresh" aria-hidden="true"/> Restart Definition
                 </a>
               </React.Fragment>
             )}

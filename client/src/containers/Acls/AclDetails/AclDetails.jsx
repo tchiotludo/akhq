@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
@@ -43,7 +42,7 @@ class AclDetails extends Component {
   }
 
   render() {
-    const { history, match } = this.props;
+    const { history } = this.props;
     const principal = atob(this.state.principalEncoded);
     return (
       <div>

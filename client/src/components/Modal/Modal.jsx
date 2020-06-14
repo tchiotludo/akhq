@@ -2,7 +2,7 @@ import React from 'react';
 
 import './styles.scss';
 
-function Modal({ handleClose, show, children }) {
+function Modal({ show, children }) {
     const showHideClassname = show ? 'modal display-block' : 'modal display-none';
 
     return (

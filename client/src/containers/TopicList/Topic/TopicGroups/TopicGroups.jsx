@@ -3,12 +3,7 @@ import Table from '../../../../components/Table';
 import api from '../../../../utils/api';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
-import history from '../../../../utils/history';
 import { Link } from 'react-router-dom';
-import Header from '../../../Header';
-import SearchBar from '../../../../components/SearchBar';
-import Pagination from '../../../../components/Pagination';
-import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
 class TopicGroups extends Component {
   state = {

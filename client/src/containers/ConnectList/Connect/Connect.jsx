@@ -4,7 +4,6 @@ import './styles.scss';
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
-import { Link } from 'react-router-dom';
 
 class Connect extends Component {
   state = {
@@ -62,7 +61,7 @@ class Connect extends Component {
   }
 
   render() {
-    const { clusterId, connectId, definitionId } = this.state;
+    const { definitionId } = this.state;
 
     return (
       <div>

@@ -7,8 +7,6 @@ import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
-import Form from '../../../components/Form/Form';
-import { red } from '@material-ui/core/colors';
 import AceEditor from 'react-ace';
 import _ from 'lodash';
 
@@ -144,10 +142,10 @@ class ConnectCreate extends Component {
             {plugin.displayName}
             {''}
             <i
-              class="fa fa-exclamation text-danger"
-              style={{ marginleft: '2%' }}
+              className="fa fa-exclamation text-danger"
+              style={{marginleft: '2%'}}
               aria-hidden="true"
-            ></i>
+              />
           </span>
         );
         break;
@@ -155,7 +153,7 @@ class ConnectCreate extends Component {
         title = (
           <span>
             {plugin.displayName}
-            <i class="fa fa-info text-warning" style={{ marginleft: '2%' }} aria-hidden="true"></i>
+            <i className="fa fa-info text-warning" style={{marginleft: '2%'}} aria-hidden="true"/>
           </span>
         );
         break;
@@ -171,7 +169,7 @@ class ConnectCreate extends Component {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small class="form-text text-muted">{plugin.documentation}</small>;
+    let documentation = <small className="form-text text-muted">{plugin.documentation}</small>;
 
     rows = (
       <React.Fragment key={plugin.name}>
@@ -207,7 +205,7 @@ class ConnectCreate extends Component {
               {errors[plugin.name]}
             </div>
           )}
-          <small className="humanize form-text text-muted"></small>
+          <small className="humanize form-text text-muted"/>
         </td>
       </React.Fragment>
     );
@@ -244,8 +242,8 @@ class ConnectCreate extends Component {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr class="bg-primary">
-        <td colspan="3">{group[0].group}</td>
+      <tr className="bg-primary">
+        <td colSpan="3">{group[0].group}</td>
       </tr>
     ];
 
@@ -270,7 +268,7 @@ class ConnectCreate extends Component {
           <React.Fragment>
             <td>
               <code>Transforms additional properties</code>
-              <small class="form-text text-muted">
+              <small className="form-text text-muted">
                 {`Json object to be added to configurations. example:
                   {
                       "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
@@ -339,7 +337,6 @@ class ConnectCreate extends Component {
   }
 
   validate = () => {
-    const options = { abortEarly: false };
     const { error } = Joi.validate(this.state.formData, this.schema);
     if (!error) return null;
     const errors = {};
@@ -380,7 +377,7 @@ class ConnectCreate extends Component {
   }
 
   async doSubmit() {
-    const { clusterId, connectId, formData, selectedType } = this.state;
+    const { clusterId, connectId, formData } = this.state;
     let body = {
       clusterId,
       connectId,
@@ -415,7 +412,7 @@ class ConnectCreate extends Component {
     });
 
     post(uriCreateConnect(clusterId, connectId), body)
-      .then(res => {
+      .then(() => {
         this.props.history.push({
           ...this.props.location,
           pathname: `/ui/${clusterId}/connect/${connectId}`,
@@ -436,7 +433,7 @@ class ConnectCreate extends Component {
   }
 
   render() {
-    const { clusterId, connectId, formData, selectedType } = this.state;
+    const { formData, selectedType } = this.state;
     const { history } = this.props;
 
     return (

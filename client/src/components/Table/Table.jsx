@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import * as constants from '../../utils/constants';
 import './styles.scss';
 
@@ -113,7 +112,7 @@ class Table extends Component {
                 }}
                 id={`row_${column.id}_${colIndex}`}
               >
-                <div className={`align-cell`}></div>
+                <div className="align-cell"/>
               </td>
             );
           }

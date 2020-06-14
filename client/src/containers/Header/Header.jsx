@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
 import { Link, withRouter } from 'react-router-dom';
-import { responsiveFontSizes } from '@material-ui/core';
 import { organizeRoles } from '../../utils/converters';
 import { get } from '../../utils/api';
 import {uriCurrentUser, uriLogout} from '../../utils/endpoints';

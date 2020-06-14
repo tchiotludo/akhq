@@ -4,7 +4,6 @@ import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get } from '../../../../utils/api';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
-import _ from 'lodash';
 
 class AclTopics extends Component {
   state = {

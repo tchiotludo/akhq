@@ -1,20 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import logo from '../../images/logo.svg';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { baseUrl, uriClusters, uriLogin, uriCurrentUser } from '../../utils/endpoints';
+import { uriLogin, uriCurrentUser } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
-import Routes from '../../utils/Routes';
 import history from '../../utils/history';
 import { get, post } from '../../utils/api';
-import ErrorBoundary from '../../containers/ErrorBoundary';
-import Loading from '../../containers/Loading';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
-import lkl from '../../';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
-// Adaptation of login.ftl
 
 class Login extends Form {
   state = {

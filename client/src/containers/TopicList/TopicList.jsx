@@ -9,10 +9,7 @@ import api, { remove } from '../../utils/api';
 import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
-import history from '../../utils/history';
 import './styles.scss';
-
-// Adaptation of topicList.ftl
 
 class TopicList extends Component {
   state = {
@@ -57,7 +54,7 @@ class TopicList extends Component {
 
     history.replace({ loading: true });
     remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
-      .then(res => {
+      .then(() => {
         this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
@@ -65,7 +62,7 @@ class TopicList extends Component {
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
-      .catch(err => {
+      .catch(() => {
         this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${topicToDelete.name}'`,

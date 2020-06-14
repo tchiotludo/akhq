@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
-import * as constants from '../../../../utils/constants';
 import { get } from '../../../../utils/api';
 import { uriConsumerGroupAcls } from '../../../../utils/endpoints';
 
@@ -54,8 +53,7 @@ class TopicAcls extends Component {
   }
 
   render() {
-    const { history } = this.props;
-    const { data, selectedCluster } = this.state;
+    const { data } = this.state;
     return (
       <div>
         <Table

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './styles.scss';
 
 const Pagination = ({
@@ -49,8 +49,8 @@ const Pagination = ({
           disabled={+pageNumber === +totalPageNumber}
         >
           <a className=" page-link" aria-label=" Next">
-            <span aria-hidden=" true">&raquo;</span>
-            <span className=" sr-only">Next</span>
+            <span aria-hidden="true">&raquo;</span>
+            <span className="sr-only">Next</span>
           </a>
         </button>
       </li>

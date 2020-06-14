@@ -28,6 +28,7 @@ client/src/App.scss
 client/bower_components
 client/node
 client/.env*.local
+node
 
 ### Ide ###
 .idea/*

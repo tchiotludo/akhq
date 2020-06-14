@@ -1,5 +1,3 @@
-import { node } from 'prop-types';
-
 // Please, comment the localhost one before PR to dev
 
 export const baseUrl = process.env.REACT_APP_BASE_URL ||
