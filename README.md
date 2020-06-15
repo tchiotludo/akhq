@@ -138,6 +138,14 @@ helm repo add akhq https://akhq.io/
 helm install --name akhq akhq/akhq
 ```
 
+#### Requirements
+
+* Chart version >=0.1.1 requires Kubernetes version >=1.14
+* Chart version 0.1.0 works on previous Kubernetes versions
+```sh
+helm install --name akhq akhq/akhq --version 0.1.0
+```
+
 ### Using git
 * Clone the repository:
 ```sh
