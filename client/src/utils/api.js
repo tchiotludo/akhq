@@ -63,4 +63,33 @@ export const remove = (url, body) =>
       });
   });
 
-export default { get, put, post, remove };
+export const login = (url, body) => {
+
+    const requestOptions = {
+        method: 'POST',
+        redirect: 'manual',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+    };
+    return fetch(url, requestOptions);
+}
+
+export const logout = (url) => {
+
+    const requestOptions = {
+        method: 'GET',
+        redirect: 'manual'
+    };
+
+    new Promise((resolve, reject) => {
+        fetch(url, requestOptions)
+            .then(response => {
+                resolve(response);
+            })
+            .catch(function (err) {
+                reject(handleError(err));
+            });
+    });
+}
+
+export default { get, put, post, remove, login, logout };
