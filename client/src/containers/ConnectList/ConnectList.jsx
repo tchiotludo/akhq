@@ -68,7 +68,7 @@ class ConnectList extends Component {
     const { history } = this.props;
     history.replace({ loading: true });
     remove(uriDeleteDefinition(clusterId, connectId, definition))
-      .then(res => {
+      .then(() => {
         this.props.history.replace({
           ...this.props.location,
           showSuccessToast: true,
@@ -79,7 +79,7 @@ class ConnectList extends Component {
           this.getConnectDefinitions();
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
@@ -170,9 +170,9 @@ class ConnectList extends Component {
 
       renderedTasks.push(
         <React.Fragment>
-          <span class={`btn btn-sm mb-1 ${className}`}>
+          <span className={`btn btn-sm mb-1 ${className}`}>
             {`${task.workerId} (${task.id}) `}
-            <span class="badge badge-light">{task.state}</span>
+            <span className="badge badge-light">{task.state}</span>
           </span>
           <br />
         </React.Fragment>
@@ -240,14 +240,14 @@ class ConnectList extends Component {
                 if (obj[col.accessor].type === 'source') {
                   return (
                     <React.Fragment>
-                      <i class="fa fa-forward" aria-hidden="true"></i>
+                      <i className="fa fa-forward" aria-hidden="true"/>
                       {` ${obj[col.accessor].shortClassName}`}
                     </React.Fragment>
                   );
                 }
                 return (
                   <React.Fragment>
-                    <i class="fa fa-backward" aria-hidden="true"></i>
+                    <i className="fa fa-backward" aria-hidden="true"/>
                     {` ${obj[col.accessor].shortClassName}`}
                   </React.Fragment>
                 );

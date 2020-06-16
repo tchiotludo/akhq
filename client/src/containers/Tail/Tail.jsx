@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import SearchBar from '../../components/SearchBar';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
@@ -124,7 +122,7 @@ class Tail extends Component {
     return (
       <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
         <ul
-          class="dropdown-menu inner show"
+          className="dropdown-menu inner show"
           role="presentation"
           style={{ marginTop: '0px', marginBottom: '0px' }}
         >
@@ -146,12 +144,12 @@ class Tail extends Component {
                       this.handleSelectedTopics(topic);
                     }}
                     role="option"
-                    class={`dropdown-item ${selected ? 'selected' : ''}`}
+                    className={`dropdown-item ${selected ? 'selected' : ''}`}
                     id={`bs-select-${index}-0`}
                     aria-selected="false"
                   >
-                    <span class="fa fa-check check-mark"></span>
-                    <span class="text">{topic.name}</span>
+                    <span className="fa fa-check check-mark"/>
+                    <span className="text">{topic.name}</span>
                   </a>
                 </li>
               );
@@ -174,7 +172,6 @@ class Tail extends Component {
     const {
       search,
       dropdownSearch,
-      showDropdown,
       selectedTopics,
       topics,
       selectedStatus,
@@ -216,7 +213,7 @@ class Tail extends Component {
               this.setState({ data: [] });
               this.handleChange(e);
             }}
-            wrapperClass={'tail-search-wrapper form-group'}
+            wrapperClass={'tail-search-wrapper'}
             inputClass={'tail-search-input'}
           />
           <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
@@ -228,13 +225,13 @@ class Tail extends Component {
                 : `${selectedTopics.length} Topics Selected`}
             </Dropdown.Toggle>
             <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
-              <div class="bs-searchbox">
+              <div className="bs-searchbox">
                 <input
                   type="text"
                   name="dropdownSearch"
                   id="dropdownSearch"
-                  class="form-control"
-                  autocomplete="off"
+                  className="form-control"
+                  autoComplete="off"
                   role="combobox"
                   aria-label="Search"
                   aria-controls="bs-select-1"
@@ -244,8 +241,8 @@ class Tail extends Component {
                   value={dropdownSearch}
                 />
               </div>
-              <div class="bs-actionsbox">
-                <div class="btn-group btn-group-sm btn-block">
+              <div className="bs-actionsbox">
+                <div className="btn-group btn-group-sm btn-block">
                   <button
                     onClick={() => {
                       this.onStop();
@@ -261,7 +258,7 @@ class Tail extends Component {
                       });
                     }}
                     type="button"
-                    class="actions-btn bs-select-all btn btn-light"
+                    className="actions-btn bs-select-all btn btn-light"
                   >
                     Select All
                   </button>
@@ -271,7 +268,7 @@ class Tail extends Component {
                       this.setState({ data: [], selectedTopics: [] });
                     }}
                     type="button"
-                    class="actions-btn bs-deselect-all btn btn-light"
+                    className="actions-btn bs-deselect-all btn btn-light"
                   >
                     Deselect All
                   </button>
@@ -295,7 +292,7 @@ class Tail extends Component {
                         this.setState({ maxRecords: maxRecord, data: [] });
                       }}
                       role="option"
-                      class={`dropdown-item`}
+                      className="dropdown-item"
                       aria-selected="false"
                     >
                       {maxRecord}
@@ -318,7 +315,7 @@ class Tail extends Component {
             <span className="d-md-none">Search </span>
             <i className="fa fa-search" />
           </button>
-          <div class="btn-group actions" role="group">
+          <div className="btn-group actions" role="group">
             <button
               className={`btn btn-secondary pause ${
                 selectedStatus === STATUS.STARTED ? '' : 'd-none'
@@ -328,20 +325,20 @@ class Tail extends Component {
                 this.setState({ selectedStatus: STATUS.PAUSED });
               }}
             >
-              <i class={'fa fa-pause'}></i>
+              <i className={'fa fa-pause'}/>
               <span> Pause</span>
             </button>
             <button
-              class={`btn btn-secondary resume ${selectedStatus === STATUS.PAUSED ? '' : 'd-none'}`}
+              className={`btn btn-secondary resume ${selectedStatus === STATUS.PAUSED ? '' : 'd-none'}`}
               onClick={() => {
                 this.onStart();
                 this.setState({ selectedStatus: STATUS.STARTED });
               }}
             >
-              <i class="fa fa-play"></i> <span> Resume</span>
+              <i className="fa fa-play"/> <span> Resume</span>
             </button>
             <button
-              class={`btn btn-secondary empty ${
+              className={`btn btn-secondary empty ${
                 selectedStatus === STATUS.STARTED || selectedStatus === STATUS.PAUSED
                   ? ''
                   : 'd-none'
@@ -350,7 +347,7 @@ class Tail extends Component {
                 this.setState({ data: [] });
               }}
             >
-              <i class="fa fa-remove"></i> <span> Clear</span>
+              <i className="fa fa-remove"/> <span> Clear</span>
             </button>
           </div>
           </div>
@@ -421,9 +418,9 @@ class Tail extends Component {
                     />
                   );
                 },
-                cell: (obj, index) => {
+                cell: (obj) => {
                   return (
-                    <pre class="mb-0 khq-data-highlight">
+                    <pre className="mb-0 khq-data-highlight">
                       <code>{obj.value}</code>
                     </pre>
                   );
@@ -433,7 +430,7 @@ class Tail extends Component {
             extraRow
             noStripes
             data={data}
-            noContent={<tr></tr>}
+            noContent={<tr/>}
             onExpand={obj => {
               return Object.keys(obj.headers).map(header => {
                 return (

@@ -62,7 +62,6 @@ class Acls extends Component {
   };
 
   render() {
-    const { history } = this.props;
     const { data, searchData } = this.state;
     const { clusterId } = this.props.match.params;
     return (

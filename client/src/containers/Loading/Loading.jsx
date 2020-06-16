@@ -10,7 +10,7 @@ class Loading extends Component {
         <div className={loadingContainer}>
           <div className="loading">
             <h3 className="logo">
-              <img src={image} />
+              <img src={image}  alt="" />
               <sup>
                 <strong>HQ</strong>
               </sup>

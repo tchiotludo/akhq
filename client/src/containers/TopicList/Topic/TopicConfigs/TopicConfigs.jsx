@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import Header from '../../../Header/Header';
+import React from 'react';
 import { get, post } from '../../../../utils/api';
 import { uriTopicsConfigs, uriTopicsUpdateConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
-import _ from 'lodash';
 import Joi from 'joi-browser';
 import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 
@@ -138,7 +136,7 @@ class TopicConfigs extends Form {
 
   async doSubmit() {
     const { selectedCluster, selectedTopic, changedConfigs } = this.state;
-    const { history, location } = this.props;
+    const { history } = this.props;
     history.replace({
       loading: true
     });
@@ -220,7 +218,7 @@ class TopicConfigs extends Form {
     );
     return (
       <div className="name-color">
-        {name} {descript}
+        <code>{name}</code> {descript}
       </div>
     );
   }
@@ -237,7 +235,7 @@ class TopicConfigs extends Form {
   }
 
   render() {
-    const { data, selectedTopic, selectedCluster } = this.state;
+    const { data } = this.state;
     const roles = this.state.roles || {};
     return (
       <form

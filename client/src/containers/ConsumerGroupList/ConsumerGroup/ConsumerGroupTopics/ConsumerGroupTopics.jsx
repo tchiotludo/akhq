@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Table from '../../../../components/Table';
 import { get } from '../../../../utils/api';
 import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
-import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
 
 class ConsumerGroupTopics extends Component {

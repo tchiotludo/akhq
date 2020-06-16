@@ -4,8 +4,8 @@ import constants from '../../../../utils/constants';
 import './styles.scss';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-import api, { remove, get } from '../../../../utils/api';
-import endpoints, { uriDeleteSchemaVersion, uriSchemaVersions } from '../../../../utils/endpoints';
+import { remove } from '../../../../utils/api';
+import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 
 class SchemaVersions extends Component {
   state = {
@@ -111,7 +111,7 @@ class SchemaVersions extends Component {
   };
 
   render() {
-    const { data, selectedCluster, showSchemaModal, schemaModalBody } = this.state;
+    const { showSchemaModal, schemaModalBody } = this.state;
     const roles = this.state.roles || {};
     return (
       <div>

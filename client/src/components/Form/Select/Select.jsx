@@ -8,7 +8,7 @@ const Select = ({ name, label, items, error, ...rest }) => {
           {label}
         </label>
       ) : (
-        <div></div>
+        <div/>
       )}
       <div className="col-sm-10">
         <select className="form-control" id={name} name={name} {...rest}>

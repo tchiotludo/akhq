@@ -11,7 +11,6 @@ import {
   uriConsumerGroupOffsetsByTimestamp,
   uriConsumerGroupUpdate
 } from '../../../../utils/endpoints';
-import { Link } from 'react-router-dom';
 import moment from 'moment';
 import './styles.scss';
 
@@ -40,12 +39,12 @@ class ConsumerGroupUpdate extends Form {
   async getGroupedTopicOffset() {
     const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
     const { history } = this.props;
-    let data = {};
 
     history.replace({
       ...this.props.location,
       loading: true
     });
+    
     try {
       let data = {};
       if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
@@ -205,7 +204,6 @@ class ConsumerGroupUpdate extends Form {
     const renderedInputs = [];
 
     offsets.map(offset => {
-      const { formData } = this.state;
       const name = `${topicId}-${offset.partition}`;
 
       renderedInputs.push(

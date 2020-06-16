@@ -2,13 +2,10 @@ import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
-import { withRouter } from 'react-router-dom';
 import { post, get } from '../../../../utils/api';
 import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
-import { formatDateTime } from '../../../../utils/converters';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
-import history from '../../../../utils/history';
 
 class TopicProduce extends Form {
   state = {
@@ -106,7 +103,7 @@ class TopicProduce extends Form {
       loading: true
     });
     post(uriTopicsProduce(clusterId, topicId), topic)
-      .then(res => {
+      .then(() => {
         this.props.history.push({
           ...this.props.location,
           pathname: `/ui/${clusterId}/topic`,
@@ -115,7 +112,7 @@ class TopicProduce extends Form {
           loading: false
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
@@ -128,7 +125,7 @@ class TopicProduce extends Form {
   renderHeaders() {
     let headers = [];
 
-    Object.keys(this.state.formData).map((key, index) => {
+    Object.keys(this.state.formData).map((key) => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
         headers.push(this.renderHeader(Number(keyNumbers)));
@@ -137,28 +134,12 @@ class TopicProduce extends Form {
     return <div data-testId="headers">{headers.map(head => head)}</div>;
   }
 
-  onHeaderChange = ({ currentTarget: input }, position) => {
-    const { formData } = this.state;
-
-    const errors = { ...this.state.errors };
-    const errorMessage = this.validateProperty(input);
-    if (errorMessage) {
-      errors[input.name] = errorMessage;
-    } else {
-      delete errors[input.name];
-    }
-
-    formData.headers[position][input.name] = input.value;
-    this.setState({ formData, errors });
-  };
-
   renderHeader(position) {
-    const { formData } = this.state;
     return (
       <div className="row header-wrapper">
-        <label class="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
+        <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div class="row col-sm-10 khq-multiple header-row">
+        <div className="row col-sm-10 khq-multiple header-row">
           {this.renderInput(
             `hKey${position}`,
             '',
@@ -183,7 +164,7 @@ class TopicProduce extends Form {
           <div className="add-button">
             <button
               type="button"
-              class="btn btn-secondary"
+              className="btn btn-secondary"
               data-testId={`button_${position}`}
               onClick={() => {
                 position === 0 ? this.handlePlus() : this.handleRemove(position);
@@ -228,10 +209,7 @@ class TopicProduce extends Form {
 
   render() {
     const {
-      clusterId,
       topicId,
-      timestamp,
-      openDateModal,
       formData,
       partitions,
       selectableValueFormats

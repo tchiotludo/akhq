@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Header from '../../Header';
 import SchemaVersions from './SchemaVersions';
 import SchemaUpdate from './SchemaUpdate';
-import api, { get } from '../../../utils/api';
-import endpoints, { uriSchemaVersions } from '../../../utils/endpoints';
+import { get } from '../../../utils/api';
+import endpoints from '../../../utils/endpoints';
 
 class Schema extends Component {
   state = {

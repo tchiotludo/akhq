@@ -9,10 +9,7 @@ import api, { remove } from '../../utils/api';
 import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
-import history from '../../utils/history';
 import './styles.scss';
-
-// Adaptation of topicList.ftl
 
 class TopicList extends Component {
   state = {
@@ -57,7 +54,7 @@ class TopicList extends Component {
 
     history.replace({ loading: true });
     remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
-      .then(res => {
+      .then(() => {
         this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
@@ -65,7 +62,7 @@ class TopicList extends Component {
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
-      .catch(err => {
+      .catch(() => {
         this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${topicToDelete.name}'`,
@@ -166,17 +163,20 @@ class TopicList extends Component {
         let className = 'btn btn-sm mb-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
 
-        const activeTopic = consumerGroup.activeTopics.find(activeTopic => activeTopic === topicId);
-        activeTopic !== undefined ? (className += 'success') : (className += 'warning');
+        if (consumerGroup.activeTopics !== undefined) {
+          const activeTopic = consumerGroup.activeTopics
+              .find(activeTopic => activeTopic === topicId);
+          activeTopic !== undefined ? (className += 'success') : (className += 'warning');
 
-        return (
-          <React.Fragment>
-            <a class={className}>
-              {consumerGroup.id} <span class="badge badge-light">Lag: {offsetLag}</span>
-            </a>
-            <br />
-          </React.Fragment>
-        );
+          return (
+              <React.Fragment>
+                <a className={className}>
+                  {consumerGroup.id} <span className="badge badge-light">Lag: {offsetLag}</span>
+                </a>
+                <br/>
+              </React.Fragment>
+          );
+        }
       });
     }
 

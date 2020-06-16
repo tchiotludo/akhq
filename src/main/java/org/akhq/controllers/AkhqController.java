@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,9 +44,13 @@ public class AkhqController extends AbstractController {
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
-    public HttpResponse<List<ClusterDefinition>> list() {
-        if (this.getRights().size() > 0) {
-            return HttpResponse.ok(this.connections
+    public List<ClusterDefinition> list() {
+        return this.connections
+            .stream()
+            .map(connection -> new ClusterDefinition(
+                connection.getName(),
+                connection.getSchemaRegistry() != null,
+                (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
                     .stream()
                     .map(connection -> new ClusterDefinition(
                             connection.getName(),
@@ -82,7 +87,6 @@ public class AkhqController extends AbstractController {
     @Get("api/me")
     @Operation(tags = {"AKHQ"}, summary = "Get current user")
     public AuthUser users() {
-
         AuthUser authUser = new AuthUser();
 
         if (applicationContext.containsBean(SecurityService.class)) {

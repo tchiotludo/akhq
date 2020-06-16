@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Joi from 'joi-browser';
 import { get, post } from '../../../../utils/api';
@@ -117,7 +117,7 @@ class SchemaUpdate extends Form {
       loading: true
     });
     post(uriUpdateSchema(clusterId, formData.subject), body)
-      .then(res => {
+      .then(() => {
         this.props.history.push({
           ...this.props.location,
           showSuccessToast: true,
@@ -142,8 +142,8 @@ class SchemaUpdate extends Form {
 
     return (
       <form
-        enctype="multipart/form-data"
-        class="khq-form khq-form-config"
+        encType="multipart/form-data"
+        className="khq-form khq-form-config"
         onSubmit={e => this.handleSubmit(e)}
       >
         <fieldset>
