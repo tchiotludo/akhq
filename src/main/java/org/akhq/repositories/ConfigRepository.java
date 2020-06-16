@@ -54,8 +54,7 @@ public class ConfigRepository extends AbstractRepository {
 
             map.put(key.name(), collect);
         });
- 
-        return map;
+         return map;
     }
 
     public void updateBroker(String clusterId, Integer name, List<Config> configs) throws ExecutionException, InterruptedException {

@@ -4,9 +4,12 @@ import com.google.common.io.Files;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
+import kafka.server.KafkaServerStartable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.network.ListenerName;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.utils.Time;
+import scala.Option;
 
 import java.io.File;
 import java.util.Properties;

@@ -1,9 +1,0 @@
-{
-    "name": "Count",
-    "namespace": "org.akhq",
-    "type": "record",
-    "fields" : [
-        {"name": "count", "type": "int"},
-        {"name": "key", "type": "string"}
-    ]
-}

@@ -12,9 +12,11 @@ import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -10,9 +10,4 @@ public class Pagination{
     private Integer pageSize;
     private URIBuilder uri;
     private Integer currentPage;
-
-    public Pagination(Integer pageSize, Integer currentPage){
-        this.pageSize=pageSize;
-        this.currentPage=currentPage;
-    }
 }

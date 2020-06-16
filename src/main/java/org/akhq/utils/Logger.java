@@ -3,6 +3,7 @@ package org.akhq.utils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
