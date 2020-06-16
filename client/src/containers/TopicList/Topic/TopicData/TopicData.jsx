@@ -15,7 +15,7 @@ import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewMo
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
-import DatePicker from 'react-datepicker';
+import DatePicker from '../../../../components/DatePicker';
 import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
 import { checkPropTypes } from 'prop-types';
@@ -461,16 +461,13 @@ class TopicData extends Component {
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Dropdown show={isSearchOpen}>
+                <Dropdown>
                   <Dropdown.Toggle
-                    onClick={() => {
-                      this.setState({ isSearchOpen: !isSearchOpen });
-                    }}
                     className="nav-link dropdown-toggle"
                   >
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
-                  {!loading && isSearchOpen && (
+                  {!loading && (
                     <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="input-group">
                         <input
@@ -506,9 +503,10 @@ class TopicData extends Component {
                           <button
                             className="btn btn-primary btn-border"
                             type="button"
+                            disabled={!isSearching}
                             onClick={() => this.onStop()}
                           >
-                            Close
+                            Stop
                           </button>
                         </div>
                       </div>
