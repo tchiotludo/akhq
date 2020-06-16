@@ -23,8 +23,8 @@ public class KafkaWrapperFilter implements HttpServerFilter {
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         if (kafkaModule.getClustersList().size() == 0) {
             throw new IllegalArgumentException(
-                    "Couldn't find any clusters on your configuration file, " +
-                            "please ensure that the configuration file is loaded correctly"
+                "Couldn't find any clusters on your configuration file, " +
+                "please ensure that the configuration file is loaded correctly"
             );
         }
 

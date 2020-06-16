@@ -45,18 +45,18 @@ public class AkhqController extends AbstractController {
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
         return this.connections
-                .stream()
-                .map(connection -> new ClusterDefinition(
-                        connection.getName(),
-                        connection.getSchemaRegistry() != null,
-                        connection
-                                .getConnect()
-                                .stream()
-                                .map(Connect::getName)
-                                .collect(Collectors.toList())
+            .stream()
+            .map(connection -> new ClusterDefinition(
+                connection.getName(),
+                connection.getSchemaRegistry() != null,
+                connection
+                    .getConnect()
+                    .stream()
+                    .map(Connect::getName)
+                    .collect(Collectors.toList())
 
-                ))
-                .collect(Collectors.toList());
+            ))
+            .collect(Collectors.toList());
     }
 
     @Secured(SecurityRule.IS_ANONYMOUS)

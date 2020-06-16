@@ -56,8 +56,6 @@ public class KafkaModule {
             .get();
     }
 
-    
-
     private Properties getDefaultsProperties(List<? extends AbstractProperties> current, String type) {
         Properties properties = new Properties();
 
