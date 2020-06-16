@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,26 +45,18 @@ public class AkhqController extends AbstractController {
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
         return this.connections
-            .stream()
-            .map(connection -> new ClusterDefinition(
-                connection.getName(),
-                connection.getSchemaRegistry() != null,
-                (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
-                    .stream()
-                    .map(connection -> new ClusterDefinition(
-                            connection.getName(),
-                            connection.getSchemaRegistry() != null,
-                            connection
-                                    .getConnect()
-                                    .stream()
-                                    .map(Connect::getName)
-                                    .collect(Collectors.toList())
+                .stream()
+                .map(connection -> new ClusterDefinition(
+                        connection.getName(),
+                        connection.getSchemaRegistry() != null,
+                        connection
+                                .getConnect()
+                                .stream()
+                                .map(Connect::getName)
+                                .collect(Collectors.toList())
 
-                    ))
-                    .collect(Collectors.toList()));
-        }
-
-        return HttpResponse.unauthorized();
+                ))
+                .collect(Collectors.toList());
     }
 
     @Secured(SecurityRule.IS_ANONYMOUS)
@@ -99,9 +90,7 @@ public class AkhqController extends AbstractController {
                         authUser.username = authentication.getName();
                     });
         }
-
         authUser.roles = this.getRights();
-
         return authUser;
     }
 
