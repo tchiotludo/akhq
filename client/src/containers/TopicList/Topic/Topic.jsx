@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Header from '../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -7,11 +6,8 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import TopicProduce from './TopicProduce';
 import { get } from '../../../utils/api';
 import { uriTopicsConfigs } from '../../../utils/endpoints';
-
-// Adaptation of topic.ftl
 
 class Topic extends Component {
   state = {

@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import logo from '../../images/logo.svg';
-import TabContainer from 'react-bootstrap/TabContainer';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import { get } from '../../utils/api';
 import { uriClusters } from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import { organizeRoles } from '../../utils/converters';
 import _ from 'lodash';
 import './styles.scss';
-import SideNav, { Toggle, Nav, NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
+import SideNav, { NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
-// Adaptation of template.ftl
+
 class Sidebar extends Component {
   state = {
     selectedTab: constants.TOPIC,
@@ -87,7 +85,9 @@ class Sidebar extends Component {
   async handleGetConnects(selectedCluster) {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
-    this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+    if (cluster.connects !== undefined) {
+      this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+    }
   }
 
   setClustersAndConnects = () => {
@@ -150,7 +150,7 @@ class Sidebar extends Component {
   }
 
   renderMenuItem(iconClassName, tab, label) {
-    const { selectedCluster, selectedTab } = this.state;
+    const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
       <NavItem
@@ -197,7 +197,6 @@ class Sidebar extends Component {
         <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
-          id="khq-sidebar-tabs"
           style={{ background: 'black' }}
           defaultActiveKey={selectedTab}
         >

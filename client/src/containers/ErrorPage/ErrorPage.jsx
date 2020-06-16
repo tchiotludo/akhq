@@ -14,7 +14,7 @@ class ErrorPage extends Component {
     description: null
   };
 
-  onUnload(event) {
+  onUnload() {
     localStorage.setItem('reload', true);
   }
 
@@ -55,7 +55,7 @@ class ErrorPage extends Component {
       <div className="no-side-bar" style={{ height: window.innerHeight - 100 }}>
         <div className="mb-5">
           <h3 className="logo">
-            <img src={image} width={'195.53px'} height={'63px'} />
+            <img src={image} width={'195.53px'} height={'63px'}  alt="" />
           </h3>
         </div>
         <div style={{ width: '100%' }}>

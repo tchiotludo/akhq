@@ -1,15 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, post } from '../../../../utils/api';
-import {
-  uriConnectDefinitionConfigs,
-  uriUpdateDefinition,
-  uriConnectPlugin
-} from '../../../../utils/endpoints';
+import {get, post} from '../../../../utils/api';
+import {uriConnectDefinitionConfigs, uriConnectPlugin, uriUpdateDefinition} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
-import { red } from '@material-ui/core/colors';
 import AceEditor from 'react-ace';
 import _ from 'lodash';
 
@@ -35,7 +30,6 @@ class ConnectConfigs extends Form {
   async getConfigs() {
     const { connectId, clusterId, definitionId } = this.state;
     let configs = [];
-    let plugin = {};
     const { history } = this.props;
     history.replace({
       loading: true
@@ -60,7 +54,7 @@ class ConnectConfigs extends Form {
   }
 
   async getPlugin(pluginId) {
-    const { connectId, clusterId, definitionId } = this.state;
+    const { connectId, clusterId } = this.state;
     let plugin = {};
     const { history } = this.props;
     history.replace({
@@ -94,8 +88,7 @@ class ConnectConfigs extends Form {
 
     definitions.map(definition => {
       formData[definition.name] = this.getConfigValue(definition.name);
-      let config = this.handleDefinition(definition);
-      this.schema[definition.name] = config;
+      this.schema[definition.name] = this.handleDefinition(definition);
       if (definition.name === 'transforms') {
         formData['transformsprops'] = '{}';
         this.schema['transformsprops'] = Joi.object().required();
@@ -167,10 +160,10 @@ class ConnectConfigs extends Form {
           <span>
             {plugin.displayName}{' '}
             <i
-              class="fa fa-exclamation text-danger"
-              style={{ marginleft: '2%' }}
+              className="fa fa-exclamation text-danger"
+              style={{marginleft: '2%'}}
               aria-hidden="true"
-            ></i>
+              />
           </span>
         );
         break;
@@ -178,7 +171,7 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i class="fa fa-info text-warning" style={{ marginleft: '2%' }} aria-hidden="true"></i>
+            <i className="fa fa-info text-warning" style={{marginleft: '2%'}} aria-hidden="true"/>
           </span>
         );
         break;
@@ -194,17 +187,17 @@ class ConnectConfigs extends Form {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small class="form-text text-muted">{plugin.documentation}</small>;
+    let documentation = <small className="form-text text-muted">{plugin.documentation}</small>;
 
     rows = (
       <React.Fragment key={plugin.name}>
         <td>
           {title}
-          <br></br>
+          <br/>
           {name}
-          <br></br>
+          <br/>
           {required}
-          <br></br>
+          <br/>
           {documentation}
         </td>
         <td>
@@ -230,7 +223,7 @@ class ConnectConfigs extends Form {
               {errors[plugin.name]}
             </div>
           )}
-          <small className="humanize form-text text-muted"></small>
+          <small className="humanize form-text text-muted" />
         </td>
       </React.Fragment>
     );
@@ -266,14 +259,13 @@ class ConnectConfigs extends Form {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr class="bg-primary">
-        <td colspan="3">{group[0].group}</td>
+      <tr className="bg-primary">
+        <td colSpan="3">{group[0].group}</td>
       </tr>
     ];
 
     group.map(element => {
       const rows = this.renderTableRows(element);
-      const name = element.name;
       const errors = [];
 
       groupDisplay.push(<tr>{rows}</tr>);
@@ -289,7 +281,7 @@ class ConnectConfigs extends Form {
           <React.Fragment>
             <td>
               <code>Transforms additional properties</code>
-              <small class="form-text text-muted">
+              <small className="form-text text-muted">
                 {`Json object to be added to configurations. example:
                   {
                       "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
@@ -342,14 +334,8 @@ class ConnectConfigs extends Form {
     this.handleData();
   };
 
-  renderDropdown = () => {
-    const shortClassName = this.state.configs.plugin.shortClassName;
-    let names = [{ _id: shortClassName, name: shortClassName }];
-    return this.renderSelect('type', 'Type', names, undefined, { disabled: true });
-  };
-
   async doSubmit() {
-    const { clusterId, connectId, definitionId, formData, selectedType } = this.state;
+    const { clusterId, connectId, definitionId, formData } = this.state;
     let body = {
       name: formData.name
     };
@@ -423,7 +409,7 @@ class ConnectConfigs extends Form {
               </div>
               <div className="form-group row">
                 <label className="col-sm-2 col-form-label">{'Name'}</label>
-                <div class="col-sm-10">
+                <div className="col-sm-10">
                   <input
                     className="form-control"
                     name="name"

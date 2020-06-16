@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Header from '../../Header';
 import NodeConfigs from '../Node/NodeConfigs/NodeConfigs';
 import NodeLogs from '../Node/NodeLogs/NodeLogs';
-import { Link } from 'react-router-dom';
 
 class Node extends Component {
   state = {
@@ -30,7 +29,7 @@ class Node extends Component {
   };
 
   renderSelectedTab() {
-    const { selectedTab, node } = this.state;
+    const { selectedTab } = this.state;
 
     switch (selectedTab) {
       case 'configs':
@@ -61,7 +60,7 @@ class Node extends Component {
   }
 
   render() {
-    const { data, selectedNode: nodeId, selectedCluster: clusterId } = this.state;
+    const { selectedNode: nodeId } = this.state;
     return (
       <div>
         <Header title={`Node ${nodeId}`} history={this.props.history} />

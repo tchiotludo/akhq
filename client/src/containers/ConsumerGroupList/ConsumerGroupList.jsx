@@ -3,9 +3,7 @@ import Table from '../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { calculateTopicOffsetLag } from '../../utils/converters';
-import history from '../../utils/history';
 import { Link } from 'react-router-dom';
-import ConsumerGroup from './ConsumerGroup/ConsumerGroup';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
@@ -179,7 +177,7 @@ class ConsumerGroupList extends Component {
 
     history.replace({ loading: true });
     remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
-      .then(res => {
+      .then(() => {
         this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
@@ -198,10 +196,9 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const { consumerGroup, selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const { selectedCluster, search, pageNumber, totalPageNumber } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
-    const { clusterId } = this.props.match.params;
 
     return (
       <div>

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Table from '../../components/Table';
 import endpoints, { uriDeleteSchema } from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import history from '../../utils/history';
 import { Link } from 'react-router-dom';
 import Schema from './Schema/Schema';
 import Header from '../Header';
@@ -152,7 +151,7 @@ class SchemaList extends Component {
     };
     history.replace({ loading: true });
     remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
-      .then(res => {
+      .then(() => {
         this.props.history.replace({
           showSuccessToast: true,
           successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
@@ -161,7 +160,7 @@ class SchemaList extends Component {
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         this.getSchemaRegistry();
       })
-      .catch(err => {
+      .catch(() => {
         this.props.history.replace({
           showErrorToast: true,
           errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
@@ -172,7 +171,6 @@ class SchemaList extends Component {
   };
   render() {
     const {
-      SchemaRegistry,
       selectedCluster,
       searchData,
       pageNumber,

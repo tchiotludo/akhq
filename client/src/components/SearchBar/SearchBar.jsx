@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
@@ -38,7 +38,7 @@ class SearchBar extends Form {
   schema = {};
 
   componentDidMount() {
-    const { showSearch, showPagination, showTopicListView, showConsumerGroup } = this.props;
+    const { showSearch, showTopicListView, showConsumerGroup } = this.props;
     const { formData, errors } = this.state;
     if (showSearch) {
       const { search } = this.props;
@@ -91,7 +91,7 @@ class SearchBar extends Form {
     }
   }
   render() {
-    const { showSearch, showPagination, showTopicListView } = this.props;
+    const { showSearch, showTopicListView } = this.props;
     const { topicListViewOptions, showFilters } = this.state;
 
     return (

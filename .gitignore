@@ -19,12 +19,17 @@ build/*
 
 ### Assets
 src/main/resources/static
+src/main/resources/ui
 node_modules
 client/node_modules
 client/build
 client/assets
 client/src/App.scss
 client/bower_components
+client/node
+client/.env*.local
+node
+
 ### Ide ###
 .idea/*
 .vscode/*
@@ -48,4 +53,4 @@ docs/contributors.html
 ## Docker
 .env
 docker-compose.override.yml
-/client/.gradle/
+

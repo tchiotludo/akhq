@@ -22,7 +22,7 @@ const Input = props => {
           {label}
         </label>
       ) : (
-        <div></div>
+        <div/>
       )}
       <div className={`${inputClassRender}`}>
         <input

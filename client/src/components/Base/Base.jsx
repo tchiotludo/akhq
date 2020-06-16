@@ -9,7 +9,6 @@ import Loading from '../../containers/Loading';
 import { get } from '../../utils/api';
 import { uriCurrentUser } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
-import './Base.scss';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
@@ -28,10 +27,9 @@ class Base extends Component {
     expanded: false
   };
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps) {
     const clusterId = nextProps.match.params.clusterId;
     const topicId = nextProps.match.params.topicId;
-    const selectedTab = nextProps.match.params.tab;
     const action = nextProps.match.params.action;
     const {
       showSuccessToast,
@@ -108,7 +106,6 @@ class Base extends Component {
           localStorage.setItem('roles', organizeRoles(currentUserData.roles));
         } else {
           localStorage.setItem('roles', JSON.stringify({}));
-          //this.props.history.replace('/ui/login');
         }
       }
     } catch (err) {
@@ -117,8 +114,6 @@ class Base extends Component {
   }
 
   checkToasts() {
-    const { clusterId } = this.state;
-
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
         this.props.history.replace({
@@ -152,9 +147,7 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
-    //if (!localStorage.getItem('user')) {
     this.getCurrentUser();
-    //}
     return (
       <>
         <Helmet title={this.handleTitle()} />

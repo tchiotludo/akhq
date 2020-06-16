@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
-import Header from '../../../Header/Header';
+import React from 'react';
 import { get, post } from '../../../../utils/api';
 import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
 import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
-import _ from 'lodash';
 import Joi from 'joi-browser';
 
 class NodeConfigs extends Form {
@@ -144,7 +142,7 @@ class NodeConfigs extends Form {
 
   async doSubmit() {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
-    const { history, location } = this.props;
+    const { history } = this.props;
     let { configs } = this.state;
 
     history.replace({
@@ -235,8 +233,8 @@ class NodeConfigs extends Form {
       ''
     );
     return (
-      <div className="name-color">
-        {name} {descript}
+      <div>
+        <code>{name}</code> {descript}
       </div>
     );
   }
@@ -253,7 +251,7 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data, selectedNode, selectedCluster } = this.state;
+    const { data } = this.state;
     const roles = this.state.roles || {};
     return (
       <form

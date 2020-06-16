@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import image from '../../images/logo.svg';
-import { get } from '../../utils/api';
-import { uriClusters } from '../../utils/endpoints';
-import history from '../../utils/history';
 import ErrorPage from '../../containers/ErrorPage';
 
 class ErrorBoundary extends Component {
@@ -37,7 +33,7 @@ class ErrorBoundary extends Component {
    */
 
   render() {
-    const { error, info, hasError } = this.state;
+    const { hasError } = this.state;
     const { children } = this.props;
     if (hasError) {
       return <ErrorPage history={this.props.history} />;

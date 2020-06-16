@@ -12,7 +12,7 @@ micronaut:
   router:
     static-resources:
       react:
-        paths: classpath:static/ui
+        paths: classpath:ui
         mapping: "${akhq.server.base-path:}/ui/**"
       static:
         paths: classpath:static
