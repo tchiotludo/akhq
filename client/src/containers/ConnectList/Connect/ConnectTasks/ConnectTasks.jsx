@@ -39,13 +39,14 @@ class ConnectTasks extends Component {
   }
 
   handleTasks() {
-    const tasks = this.state.definition.tasks;
+    const tasks = this.state.definition.tasks || [];
     let tableData = [];
     tasks.map(task => {
       tableData.push({
-        id: task.id,
+        id: JSON.stringify(task.id),
         worker: task.workerId,
-        state: task.state
+        state: task.state,
+        trace: task.trace
       });
     });
     this.setState({ tableData });
@@ -227,8 +228,28 @@ class ConnectTasks extends Component {
                 cell: (obj, col) => {
                   return this.renderTask(obj[col.accessor]);
                 }
+              },
+              {
+                id: 'trace',
+                name: 'trace',
+                accessor: 'trace',
+                colName: 'Trace',
+                type: 'text',
+                extraRow: true,
+                extraRowContent: (obj, index) => {
+                  return <code>{obj.trace}</code>;
+                },
+                cell: (obj, index) => {
+                  return (
+                    <pre class="mb-0 khq-data-highlight">
+                      <code>{obj.trace}</code>
+                    </pre>
+                  );
+                }
               }
             ]}
+            extraRow
+            noStripes
             data={tableData}
             actions={
               roles.connect && roles.connect['connect/state/update'] && [constants.TABLE_RESTART]

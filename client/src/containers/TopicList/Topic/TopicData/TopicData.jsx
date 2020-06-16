@@ -47,7 +47,8 @@ class TopicData extends Component {
     recordCount: 0,
     showFilters: '',
     datetime: '',
-    schemas: []
+    schemas: [],
+    isSearchOpen: false
   };
 
   eventSource;
@@ -90,8 +91,8 @@ class TopicData extends Component {
   onStop = () => {
     if (this.eventSource) {
       this.eventSource.close();
-      this.setState({ isSearching: false });
     }
+    this.setState({ isSearching: false, isSearchOpen: false });
   };
 
   onStart = () => {
@@ -358,7 +359,8 @@ class TopicData extends Component {
       recordCount,
       showFilters,
       datetime,
-      isSearching
+      isSearching,
+      isSearchOpen
     } = this.state;
     let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
@@ -459,11 +461,16 @@ class TopicData extends Component {
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                <Dropdown show={isSearchOpen}>
+                  <Dropdown.Toggle
+                    onClick={() => {
+                      this.setState({ isSearchOpen: !isSearchOpen });
+                    }}
+                    className="nav-link dropdown-toggle"
+                  >
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
-                  {!loading && (
+                  {!loading && isSearchOpen && (
                     <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="input-group">
                         <input
@@ -490,7 +497,11 @@ class TopicData extends Component {
                               })
                             }
                           >
-                            {isSearching ? <i className="fa fa-spinner fa-spin"></i> : <i className="fa fa-search"></i>  }
+                            {isSearching ? (
+                              <i className="fa fa-spinner fa-spin"></i>
+                            ) : (
+                              <i className="fa fa-search"></i>
+                            )}
                           </button>
                           <button
                             className="btn btn-primary btn-border"
@@ -499,7 +510,6 @@ class TopicData extends Component {
                           >
                             Close
                           </button>
-
                         </div>
                       </div>
                     </Dropdown.Menu>

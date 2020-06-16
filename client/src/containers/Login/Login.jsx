@@ -1,19 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import logo from '../../images/logo.svg';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { baseUrl, uriClusters, uriLogin, uriCurrentUser } from '../../utils/endpoints';
-import { organizeRoles } from '../../utils/converters';
-import Routes from '../../utils/Routes';
+import {uriCurrentUser, uriLogin} from '../../utils/endpoints';
+import {organizeRoles} from '../../utils/converters';
 import history from '../../utils/history';
-import { get, post } from '../../utils/api';
-import ErrorBoundary from '../../containers/ErrorBoundary';
-import Loading from '../../containers/Loading';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
-import lkl from '../../';
+import {get, login} from '../../utils/api';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
+
 // Adaptation of login.ftl
 
 class Login extends Form {
@@ -35,8 +29,8 @@ class Login extends Form {
       .label('Password')
   };
 
-  async login() {
-    const { formData } = this.state;
+  login() {
+    const {formData} = this.state;
 
     history.push({
       loading: true
@@ -47,7 +41,36 @@ class Login extends Form {
         password: formData.password
       };
 
-      const response = await post(uriLogin(), body);
+      login(uriLogin(), body)
+          .then(response => {
+            this.getData();
+          })
+          .catch(function (err) {
+            this.props.history.replace({
+              ...this.props.history,
+              pathname: '/ui/login',
+              showErrorToast: true,
+              errorToastTitle: 'Login failed',
+              errorToastMessage: err.response.message,
+              loading: false
+            });
+          });
+    }
+    catch(err)
+    {
+      history.replace({
+        ...this.props.history,
+        pathname: '/ui/login',
+        showErrorToast: true,
+        errorToastTitle: 'Login failed',
+        errorToastMessage: err.response.message,
+        loading: false
+      });
+    }
+  }
+
+  async getData() {
+
       const res = await get(uriCurrentUser());
       const currentUserData = res.data;
 
@@ -55,32 +78,23 @@ class Login extends Form {
         localStorage.setItem('login', true);
         localStorage.setItem('user', currentUserData.username);
         localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-        history.push({
-          ...history,
-          pathname: '/',
+        this.props.history.push({
+          ...this.props.history,
+          pathname: '/ui',
           showSuccessToast: true,
           successToastMessage: `User '${currentUserData.username}' logged in successfully`,
           loading: false
         });
       } else {
-        history.replace({
-          ...history,
+        this.props.history.replace({
+          ...this.props.history,
+          pathname: '/ui/login',
           showErrorToast: true,
           errorToastTitle: 'Login failed',
           errorToastMessage: 'Invalid credentials',
           loading: false
         });
       }
-      window.location.reload(false);
-    } catch (err) {
-      history.replace({
-        ...history,
-        showErrorToast: true,
-        errorToastTitle: 'Login failed',
-        errorToastMessage: err.response.message,
-        loading: false
-      });
-    }
   }
 
   render() {

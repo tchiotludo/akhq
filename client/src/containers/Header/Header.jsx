@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { responsiveFontSizes } from '@material-ui/core';
 import { organizeRoles } from '../../utils/converters';
-import { get } from '../../utils/api';
+import { get, logout } from '../../utils/api';
 import {uriCurrentUser, uriLogout} from '../../utils/endpoints';
 
 class Header extends Component {
@@ -13,7 +13,7 @@ class Header extends Component {
 
   async logout() {
     try {
-      await get(uriLogout());
+      await logout(uriLogout());
       await get(uriCurrentUser()).then(res => {
         let currentUserData = res.data;
         localStorage.setItem('login', currentUserData.logged);
