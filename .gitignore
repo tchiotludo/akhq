@@ -13,6 +13,7 @@ hs_err_pid*
 
 ### Gradle
 .gradle/*
+client/.gradle/*
 build/*
 !gradle-wrapper.jar
 .gradletasknamecache
