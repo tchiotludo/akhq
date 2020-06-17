@@ -21,7 +21,6 @@ class App extends React.Component {
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        console.log('error here?');
         if (err.response && err.response.status === 401) {
           history.replace('/ui/:login');
           this.setState({ clusterId: ':login' });

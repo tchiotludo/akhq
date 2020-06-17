@@ -31,6 +31,9 @@ $fa-font-path: "../fonts";
 @import "containers/NodesList/Node/styles.scss";
 @import "containers/TopicList/Topic/TopicProduce/styles.scss";
 @import "containers/PageNotFound/styles.scss";
+@import "components/DatePicker/styles.scss";
+
+@import "node_modules/bootstrap/scss/bootstrap";
 
 // app
 .App {

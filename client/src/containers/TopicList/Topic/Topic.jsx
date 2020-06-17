@@ -29,20 +29,24 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
     const roles = this.state.roles || {};
-    this.setState({
-      clusterId,
-      topicId,
-      selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
-      topicInternal: this.props.location.internal
-    });
-    this.getTopicsConfig();
+    this.setState(
+      {
+        clusterId,
+        topicId,
+        selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
+        topicInternal: this.props.location.internal
+      },
+      () => {
+        this.getTopicsConfig();
+      }
+    );
   }
 
   async getTopicsConfig() {
-    const { selectedCluster, selectedTopic } = this.state;
+    const { clusterId, topicId } = this.state;
     let configs = [];
     try {
-      configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+      configs = await get(uriTopicsConfigs(clusterId, topicId));
       this.setState({ configs: configs.data });
     } catch (err) {
       console.error('Error:', err);
