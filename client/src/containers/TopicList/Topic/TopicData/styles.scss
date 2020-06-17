@@ -129,11 +129,30 @@ Datepicker div.form-group.row {
 
 @media(min-width: 930px){
     .resize-datepicker{
-        min-width: 400px;
-        min-height: 275px;
+        min-width: 200px;
+        min-height: 50px;
     }
 }
 
+.loader {
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
 .clickable {
     cursor: pointer;
+}
+
+
+.input-group > .btn-border > button {
+    border-radius: 4px;
 }

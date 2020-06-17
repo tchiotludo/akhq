@@ -47,7 +47,8 @@ class TopicData extends Component {
     recordCount: 0,
     showFilters: '',
     datetime: '',
-    schemas: []
+    schemas: [],
+    isSearchOpen: false
   };
 
   eventSource;
@@ -76,16 +77,22 @@ class TopicData extends Component {
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
-      self.handleMessages(res.records || []);
+      self.setState({ isSearching: true }, () => {
+        self.handleMessages(res.records || []);
+      });
     });
 
     this.eventSource.addEventListener('searchEnd', function(e) {
       self.eventSource.close();
+      self.setState({ isSearching: false });
     });
   };
 
   onStop = () => {
-    if (this.eventSource) this.eventSource.close();
+    if (this.eventSource) {
+      this.eventSource.close();
+    }
+    this.setState({ isSearching: false, isSearchOpen: false });
   };
 
   onStart = () => {
@@ -306,6 +313,7 @@ class TopicData extends Component {
           <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
           <td className="offset-navbar-partition-td">
             <input
+              style={{ maxWidth: '100px' }}
               className="form-control"
               type="number"
               min="0"
@@ -350,7 +358,9 @@ class TopicData extends Component {
       nextPage,
       recordCount,
       showFilters,
-      datetime
+      datetime,
+      isSearching,
+      isSearchOpen
     } = this.state;
     let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
@@ -452,22 +462,25 @@ class TopicData extends Component {
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                  <Dropdown.Toggle
+                    className="nav-link dropdown-toggle"
+                  >
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div className="input-group">
+                      <div style={{ minWidth: '300px' }} className="input-group">
                         <input
                           className="form-control"
                           name="search"
                           type="text"
                           value={search}
+                          style={{ minWidth: '150px' }}
                           onChange={({ currentTarget: input }) => {
                             this.setState({ search: input.value });
                           }}
                         />
-                        <div className="input-group-append">
+                        <div className="btn-border">
                           <button
                             className="btn btn-primary"
                             type="button"
@@ -481,7 +494,19 @@ class TopicData extends Component {
                               })
                             }
                           >
-                            OK
+                            {isSearching ? (
+                              <i className="fa fa-spinner fa-spin"></i>
+                            ) : (
+                              <i className="fa fa-search"></i>
+                            )}
+                          </button>
+                          <button
+                            className="btn btn-primary btn-border"
+                            type="button"
+                            disabled={!isSearching}
+                            onClick={() => this.onStop()}
+                          >
+                            Stop
                           </button>
                         </div>
                       </div>
@@ -496,7 +521,7 @@ class TopicData extends Component {
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div className="khq-offset-navbar">
+                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                         <div className="input-group">
                           <table>{this.renderOffsetsOptions()}</table>
                           <div className="input-group-append">

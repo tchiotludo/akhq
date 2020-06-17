@@ -9,6 +9,7 @@ import { get, remove } from '../../utils/api';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../utils/endpoints';
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import ConfirmModal from '../../components/Modal/ConfirmModal/ConfirmModal';
+import AceEditor from 'react-ace';
 
 class ConnectList extends Component {
   state = {
@@ -204,26 +205,29 @@ class ConnectList extends Component {
               accessor: 'config',
               colName: 'Config',
               type: 'text',
+              extraRow: true,
+              extraRowContent: (obj, col, index) => {
+                return (
+                  <AceEditor
+                    mode="json"
+                    id={'value' + index}
+                    theme="dracula"
+                    value={obj[col.accessor]}
+                    readOnly
+                    name="UNIQUE_ID_OF_DIV"
+                    editorProps={{ $blockScrolling: true }}
+                    style={{ width: '100%', minHeight: '25vh' }}
+                  />
+                );
+              },
               cell: (obj, col) => {
                 return (
-                  <div className="value cell-div" style={{ maxHeight: '100%' }}>
-                    <span className="align-cell value-span">
+                  <pre class="mb-0 khq-data-highlight">
+                    <code onClick={() => JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}>
                       {obj[col.accessor] ? obj[col.accessor].substring(0, 100) : 'N/A'}
-                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
-                    </span>
-                    <div className="value-button">
-                      <button
-                        className="btn btn-secondary headers pull-right"
-                        onClick={() =>
-                          this.showConfigModal(
-                            JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)
-                          )
-                        }
-                      >
-                        ...
-                      </button>
-                    </div>
-                  </div>
+                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}
+                    </code>
+                  </pre>
                 );
               }
             },
@@ -241,7 +245,6 @@ class ConnectList extends Component {
                     </React.Fragment>
                   );
                 }
-
                 return (
                   <React.Fragment>
                     <i className="fa fa-backward" aria-hidden="true"/>
@@ -272,6 +275,44 @@ class ConnectList extends Component {
           }}
           onDelete={row => {
             this.handleOnDelete(row.id);
+          }}
+          extraRow
+          noStripes
+          onExpand={obj => {
+            return Object.keys(obj.headers).map(header => {
+              return (
+                <tr
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    width: '100%'
+                  }}
+                >
+                  <td
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      borderStyle: 'dashed',
+                      borderWidth: '1px',
+                      backgroundColor: '#171819'
+                    }}
+                  >
+                    {header}
+                  </td>
+                  <td
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      borderStyle: 'dashed',
+                      borderWidth: '1px',
+                      backgroundColor: '#171819'
+                    }}
+                  >
+                    {obj.headers[header]}
+                  </td>
+                </tr>
+              );
+            });
           }}
           noContent={'No connectors available'}
         />

@@ -3,6 +3,7 @@ import { get } from '../../../../utils/api';
 import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { showBytes } from '../../../../utils/converters';
+import { sortBy } from '../../../../utils/constants';
 
 class NodeLogs extends Component {
   state = {
@@ -26,7 +27,9 @@ class NodeLogs extends Component {
     });
     try {
       logs = await get(uriNodesLogs(selectedCluster, selectedNode));
-      this.handleData(logs.data);
+      logs = logs.data.sort(sortBy('partition', false))
+                      .sort(sortBy('topic', false));
+      this.handleData(logs);
     } catch (err) {
       console.error('Error:', err);
     } finally {

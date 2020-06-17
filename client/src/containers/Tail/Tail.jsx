@@ -213,7 +213,7 @@ class Tail extends Component {
               this.setState({ data: [] });
               this.handleChange(e);
             }}
-            wrapperClass={'tail-search-wrapper form-group'}
+            wrapperClass={'tail-search-wrapper'}
             inputClass={'tail-search-input'}
           />
           <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
