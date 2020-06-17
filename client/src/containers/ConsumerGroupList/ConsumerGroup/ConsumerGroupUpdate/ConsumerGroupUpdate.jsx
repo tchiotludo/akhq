@@ -39,12 +39,24 @@ class ConsumerGroupUpdate extends Form {
   async getGroupedTopicOffset() {
     const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
     const { history } = this.props;
+    let data = {};
+    const momentValue = moment(timestamp);
 
-    history.replace({
-      ...this.props.location,
-      loading: true
-    });
-    
+    const date =
+      timestamp.toString().length > 0
+        ? formatDateTime(
+            {
+              year: momentValue.year(),
+              monthValue: momentValue.month() + 1,
+              dayOfMonth: momentValue.date(),
+              hour: momentValue.hour(),
+              minute: momentValue.minute(),
+              second: momentValue.second(),
+              milli: momentValue.millisecond()
+            },
+            'YYYY-MM-DDThh:mm:ss.SSS'
+          ) + 'Z'
+        : '';
     try {
       let data = {};
       if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
@@ -57,8 +69,8 @@ class ConsumerGroupUpdate extends Form {
         } else {
           this.setState({ groupedTopicOffset: {} });
         }
-      } else if (timestamp !== '') {
-        data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, timestamp));
+      } else if (date !== '') {
+        data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
         data = data.data;
         this.handleOffsetsByTimestamp(data);
       } else {
@@ -260,29 +272,13 @@ class ConsumerGroupUpdate extends Form {
             <Dropdown.Toggle>Filter datetime</Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
-                <div className="filter-datetime">
+                <div>
                   <DatePicker
-                    name={'datetime-picker'}
+                    showTimeInput
                     value={timestamp}
                     label={''}
                     onChange={value => {
-                      const momentValue = moment(value);
-
-                      const timestamp =
-                        formatDateTime(
-                          {
-                            year: momentValue.year(),
-                            monthValue: momentValue.month() + 1,
-                            dayOfMonth: momentValue.date(),
-                            hour: momentValue.hour(),
-                            minute: momentValue.minute(),
-                            second: momentValue.second(),
-                            milli: momentValue.millisecond()
-                          },
-                          'YYYY-MM-DDThh:mm:ss.SSS'
-                        ) + 'Z';
-
-                      this.setState({ timestamp }, () => this.getGroupedTopicOffset());
+                      this.setState({ timestamp: value }, () => this.getGroupedTopicOffset());
                     }}
                   />
                 </div>

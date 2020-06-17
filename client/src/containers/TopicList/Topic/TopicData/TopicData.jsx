@@ -130,13 +130,14 @@ class TopicData extends Component {
       selectedTopic,
       sortBy,
       partition,
-      timestamp,
+      datetime,
       currentSearch,
       offsetsSearch,
       nextPage
     } = this.state;
     let data,
       partitionData = {};
+    let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
     try {
       data = await get(
         uriTopicData(
@@ -165,7 +166,6 @@ class TopicData extends Component {
         )
       );
       data = data.data;
-
       let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
       schemas = schemas.data.results || [];
       this.setState({ schemas });
@@ -202,27 +202,17 @@ class TopicData extends Component {
   handleMessages = messages => {
     let tableMessages = [];
     messages.map(message => {
-      message.key = message.key ? message.key : 'null';
-      message.value = message.value ? message.value : 'null';
-      const date = moment(message.datetime);
-      message.datetime = formatDateTime(
-        {
-          year: date.year(),
-          monthValue: date.month() + 1,
-          dayOfMonth: date.date(),
-          hour: date.hour(),
-          minute: date.minute(),
-          second: date.second(),
-          milli: date.millisecond()
-        },
-        'MMM DD, YYYY, hh:mm A'
-      );
-      message.partition = message.partition ? message.partition : '0';
-      message.offset = message.offset ? message.offset : '0';
-      message.headers = message.headers ? message.headers : {};
-      message.schema = message.valueSchemaId ? message.valueSchemaId : '';
-
-      tableMessages.push(message);
+      let date = new Date(message.timestamp);
+      let messageToPush = {
+        key: message.key || '',
+        value: message.value || '',
+        timestamp: moment(date).format('DD-MM-YYYY HH:mm'),
+        partition: JSON.stringify(message.partition) || '',
+        offset: JSON.stringify(message.offset) || '',
+        headers: message.headers || {},
+        schema: message.valueSchemaId || 'No schema'
+      };
+      tableMessages.push(messageToPush);
     });
     this.setState({ messages: tableMessages });
   };
@@ -362,6 +352,7 @@ class TopicData extends Component {
       isSearching,
       isSearchOpen
     } = this.state;
+    let date = moment(datetime);
     let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
     const firstColumns = [
@@ -443,13 +434,26 @@ class TopicData extends Component {
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Timestamp:</strong>
-                    {datetime !== '' && ' ' + datetime}
+                    {datetime !== '' &&
+                      ' ' +
+                        formatDateTime(
+                          {
+                            year: date.year(),
+                            monthValue: date.month(),
+                            dayOfMonth: date.date(),
+                            hour: date.hour(),
+                            minute: date.minute(),
+                            second: date.second()
+                          },
+                          'DD-MM-YYYY HH:mm'
+                        )}
                   </Dropdown.Toggle>
                   {!loading && (
-                    <Dropdown.Menu className="resize-datepicker">
+                    <Dropdown.Menu>
                       <div className="input-group">
                         <DatePicker
-                          name={'datetime-picker'}
+                          showDateTimeInput
+                          showTimeSelect
                           value={datetime}
                           onChange={value => {
                             this.setState({ datetime: value }, () => this.getMessages());
