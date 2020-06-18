@@ -165,6 +165,11 @@ helm install --name=akhq-release-name  .
 Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files. YML Configuration
 file example can be found here :[application.example.yml](application.example.yml)
 
+### Pass custom Java opts
+
+By default, the docker container will allow a custom jvn options setting the environnments vars `JAVA_OPTS`.
+For example, if you want to change the default timezome, just add `-e "JAVA_OPTS=-Duser.timezone=Europe/Paris"`
+
 ### Run with another jvm.options file
 
 By default, the docker container will run with a [jvm.options](docker/app/jvm.options) file, you can override it with
