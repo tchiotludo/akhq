@@ -22,10 +22,12 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.models.*;
+import org.akhq.utils.TopicDataResultNextList;
 import org.akhq.utils.ResultNextList;
+import org.akhq.utils.PagedList;
+import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.resource.ResourceType;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.configs.Role;
 import org.akhq.middlewares.SchemaComparator;
@@ -36,8 +38,6 @@ import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.SchemaRegistryRepository;
 import org.akhq.repositories.TopicRepository;
-import org.akhq.utils.PagedList;
-import org.akhq.utils.Pagination;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
@@ -412,10 +412,11 @@ public class TopicController extends AbstractController {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
-        return ResultNextList.of(
+        return TopicDataResultNextList.of(
             data,
             options.after(data, uri),
-            (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition()))
+            (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())),
+            topic.canDeleteRecords(cluster, configRepository)
         );
     }
 

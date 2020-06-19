@@ -111,7 +111,7 @@ class Topic extends Component {
     return (
       <div>
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
-        <div className="tabs-container">
+        <div className="tabs-container" style={{marginBottom: '4%'}}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">

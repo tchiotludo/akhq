@@ -2,13 +2,15 @@ import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get } from '../../../../utils/api';
+import { get, remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriTopicData,
   uriTopicsPartitions,
   uriTopicDataSearch,
-  uriSchemaRegistry
+  uriSchemaRegistry,
+  uriTopicDataDelete,
+  uriTopicsConfigs
 } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
@@ -16,8 +18,9 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import _ from 'lodash';
+import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
-
+import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 // Adaptation of data.ftl
 
 class TopicData extends React.Component {
@@ -43,9 +46,16 @@ class TopicData extends React.Component {
     nextPage: '',
     recordCount: 0,
     showFilters: '',
+    showDeleteModal: false,
+    deleteMessage: '',
+    compactMessageToDelete: '',
+    selectedCluster: this.props.clusterId,
+    selectedTopic: this.props.topicId,
+    cleanupPolicy: '',
     datetime: '',
     schemas: [],
-    isSearchOpen: false
+    roles: JSON.parse(localStorage.getItem('roles')),
+    canDeleteRecords: false
   };
 
   eventSource;
@@ -53,18 +63,53 @@ class TopicData extends React.Component {
   componentDidMount = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
+    const roles = this.state.roles || {};
 
-    this.setState({ selectedCluster: clusterId, selectedTopic: topicId }, () => {
-      history.replace({
-        loading: true
-      });
-      this.getMessages();
-    });
+    this.setState(
+      {
+        selectedCluster: clusterId,
+        selectedTopic: topicId,
+        canAccessSchema: roles.topic && roles.topic['registry/read']
+      },
+      () => {
+        history.replace({
+          loading: true
+        });
+        this.getMessages();
+        this.getTopicsConfig();
+      }
+    );
   };
 
   componentWillUnmount = () => {
     this.onStop();
   };
+
+  async getTopicsConfig() {
+    let configs = [];
+    const { selectedCluster, selectedTopic } = this.state;
+    const { history } = this.props;
+    history.replace({
+      loading: true
+    });
+    try {
+      configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+      this.setState({
+        cleanupPolicy: configs.data.filter(config => config.name.includes('cleanup.policy'))[0]
+          .value
+      });
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        history.replace('/ui/page-not-found', { errorData: err, loading: false });
+      } else {
+        history.replace('/ui/error', { errorData: err, loading: false });
+      }
+    } finally {
+      history.replace({
+        loading: false
+      });
+    }
+  }
 
   startEventSource = () => {
     let { clusterId, topicId } = this.props.match.params;
@@ -88,7 +133,7 @@ class TopicData extends React.Component {
     if (this.eventSource) {
       this.eventSource.close();
     }
-    this.setState({ isSearching: false, isSearchOpen: false });
+    this.setState({ isSearching: false });
   };
 
   onStart = () => {
@@ -124,6 +169,7 @@ class TopicData extends React.Component {
     const {
       selectedCluster,
       selectedTopic,
+      canAccessSchema,
       sortBy,
       partition,
       datetime,
@@ -161,9 +207,15 @@ class TopicData extends React.Component {
           changePage ? nextPage : undefined
         )
       );
+
       data = data.data;
-      let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-      schemas = schemas.data.results || [];
+      this.setState({ canDeleteRecords: data.canDeleteRecords });
+
+      let schemas = [];
+      if (canAccessSchema) {
+        schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+        schemas = schemas.data.results || [];
+      }
       this.setState({ schemas });
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
@@ -194,6 +246,56 @@ class TopicData extends React.Component {
       });
     }
   }
+
+  handleOnDelete(message) {
+    this.setState({ compactMessageToDelete: message }, () => {
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete message: {<code>{message.key}</code>} ?
+        </React.Fragment>
+      );
+    });
+  }
+
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
+  };
+
+  closeDeleteModal = () => {
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
+  };
+
+  deleteCompactMessage = () => {
+    const { selectedCluster, selectedTopic, compactMessageToDelete: message } = this.state;
+    const { history } = this.props;
+    history.replace({ loading: true });
+    const encodedkey = new Buffer(message.key).toString('base64');
+    const deleteData = { partition: parseInt(message.partition), key: encodedkey };
+    remove(
+      uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
+      deleteData
+    )
+      .then(res => {
+        this.props.history.replace({
+          ...this.props.location,
+          showSuccessToast: true,
+          successToastMessage: `Record '${message}' will be deleted on compaction`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
+          this.getMessages();
+        });
+      })
+      .catch(err => {
+        this.props.history.replace({
+          ...this.props.location,
+          showErrorToast: true,
+          errorToastMessage: `Failed to delete message from '${message}'`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, messageToDelete: {} });
+      });
+  };
 
   handleMessages = messages => {
     let tableMessages = [];
@@ -343,7 +445,7 @@ class TopicData extends React.Component {
       showFilters,
       datetime,
       isSearching,
-      isSearchOpen
+      canDeleteRecords
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
@@ -459,9 +561,7 @@ class TopicData extends React.Component {
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
-                  <Dropdown.Toggle
-                    className="nav-link dropdown-toggle"
-                  >
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
                   {!loading && (
@@ -684,6 +784,10 @@ class TopicData extends React.Component {
             extraRow
             noStripes
             data={messages}
+            onDelete={row => {
+              this.handleOnDelete(row);
+            }}
+            actions={canDeleteRecords ? [constants.TABLE_DELETE] : []}
             onExpand={obj => {
               return Object.keys(obj.headers).map(header => {
                 return (
@@ -776,6 +880,12 @@ class TopicData extends React.Component {
             />
           </div>
         </Modal>
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteCompactMessage}
+          message={this.state.deleteMessage}
+        />
         <CodeViewModal
           show={showValueModal}
           body={valueModalBody}
