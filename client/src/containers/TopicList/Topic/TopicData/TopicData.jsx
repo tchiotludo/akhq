@@ -44,7 +44,8 @@ class TopicData extends React.Component {
     recordCount: 0,
     showFilters: '',
     datetime: '',
-    schemas: []
+    schemas: [],
+    roles: JSON.parse(localStorage.getItem('roles'))
   };
 
   eventSource;
@@ -52,11 +53,16 @@ class TopicData extends React.Component {
   componentDidMount = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
+    const roles = this.state.roles || {};
 
-    this.setState({ selectedCluster: clusterId, selectedTopic: topicId }, () => {
-      history.replace({
-        loading: true
-      });
+    this.setState(
+        {selectedCluster: clusterId,
+               selectedTopic: topicId,
+               canAccessSchema: roles.topic && roles.topic['registry/read'] },
+        () => {
+          history.replace({
+            loading: true
+          });
       this.getMessages();
     });
   };
@@ -123,6 +129,7 @@ class TopicData extends React.Component {
     const {
       selectedCluster,
       selectedTopic,
+      canAccessSchema,
       sortBy,
       partition,
       datetime,
@@ -161,8 +168,12 @@ class TopicData extends React.Component {
         )
       );
       data = data.data;
-      let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-      schemas = schemas.data.results || [];
+
+      let schemas = [];
+      if(canAccessSchema) {
+        schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+        schemas = schemas.data.results || [];
+      }
       this.setState({ schemas });
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
