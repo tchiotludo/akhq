@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
@@ -16,14 +15,12 @@ import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
-import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
-import { checkPropTypes } from 'prop-types';
 import AceEditor from 'react-ace';
 
 // Adaptation of data.ftl
 
-class TopicData extends Component {
+class TopicData extends React.Component {
   state = {
     showValueModal: false,
     valueModalBody: '',
@@ -71,7 +68,6 @@ class TopicData extends Component {
 
   startEventSource = () => {
     let { clusterId, topicId } = this.props.match.params;
-    const { history } = this.props;
     const { currentSearch } = this.state;
     let self = this;
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
@@ -201,7 +197,7 @@ class TopicData extends Component {
 
   handleMessages = messages => {
     let tableMessages = [];
-    messages.map(message => {
+    messages.forEach(message => {
       let date = new Date(message.timestamp);
       let messageToPush = {
         key: message.key || '',
@@ -225,7 +221,7 @@ class TopicData extends Component {
     let afterString = aux.substring(0, aux.indexOf('&'));
     const offsetsByPartition = afterString.split('_');
 
-    offsetsByPartition.map(offsetByPartition => {
+    offsetsByPartition.forEach(offsetByPartition => {
       const offset = offsetByPartition.split('-');
       offsets[`partition${offset[0]}`] = offset[1];
     });
@@ -334,18 +330,15 @@ class TopicData extends Component {
     const {
       sortBy,
       partition,
-      timestamp,
       currentSearch,
       search,
       offsets,
-      offsetsSearch,
       messages,
       showHeadersModal,
       showValueModal,
       valueModalBody,
       headersModalBody,
       pageNumber,
-      nextPage,
       recordCount,
       showFilters,
       datetime,
@@ -654,7 +647,7 @@ class TopicData extends Component {
                 type: 'text',
                 expand: true,
                 cell: obj => {
-                  return <a className="tail-headers">{Object.keys(obj.headers).length}</a>;
+                  return <div className="tail-headers">{Object.keys(obj.headers).length}</div>;
                 }
               },
               {
@@ -666,7 +659,7 @@ class TopicData extends Component {
                   return (
                     <div className="value cell-div">
                       <div className="align-cell">
-                        {obj[col.accessor] != '' && (
+                        {obj[col.accessor] !== '' && (
                           <span
                             className="badge badge-primary clickable"
                             onClick={() => {

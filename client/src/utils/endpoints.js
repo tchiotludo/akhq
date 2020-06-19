@@ -246,7 +246,7 @@ export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = '
 export const uriLiveTail = (clusterId, search, topics, size) => {
   let searchUrl = `search=${search}`;
   let topicsUrl = search.length > 0 ? '&' : '';
-  topics.map((topic, index) => {
+  topics.forEach((topic, index) => {
     if (index > 0) {
       topicsUrl += '&topics=' + topic;
     } else {

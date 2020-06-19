@@ -87,7 +87,7 @@ class ConsumerGroupList extends Component {
 
   handleConsumerGroup(consumerGroup) {
     let tableConsumerGroup = [];
-    consumerGroup.map(consumerGroup => {
+    consumerGroup.forEach(consumerGroup => {
       tableConsumerGroup.push({
         id: consumerGroup.id,
         state: consumerGroup.state,
@@ -144,9 +144,7 @@ class ConsumerGroupList extends Component {
           >
             {topicId + ' '}
 
-            <a href="#" className="badge badge-secondary">
-              Lag:{offsetLag}
-            </a>
+            <div className="badge badge-secondary">Lag:{offsetLag}</div>
           </Link>
         </div>
       );

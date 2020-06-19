@@ -50,22 +50,22 @@ class AclDetails extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('topics')}
                 onClick={() => this.selectTab('topics')}
                 role="tab"
               >
                 Topics
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('groups')}
                 onClick={() => this.selectTab('groups')}
                 role="tab"
               >
                 Groups
-              </a>
+              </div>
             </li>
           </ul>
 

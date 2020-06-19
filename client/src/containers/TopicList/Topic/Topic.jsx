@@ -115,67 +115,67 @@ class Topic extends Component {
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">
-                <a
+                <div
                   className={this.tabClassName('data')}
                   onClick={() => this.selectTab('data')}
                   //to="#"
                   role="tab"
                 >
                   Data
-                </a>
+                </div>
               </li>
             )}
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('partitions')}
                 onClick={() => this.selectTab('partitions')}
                 //to="#"
                 role="tab"
               >
                 Partitions
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('groups')}
                 onClick={() => this.selectTab('groups')}
                 //to="#"
                 role="tab"
               >
                 Consumer Groups
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
                 //to="#"
                 role="tab"
               >
                 Configs
-              </a>
+              </div>
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <a
+                <div
                   className={this.tabClassName('acls')}
                   onClick={() => this.selectTab('acls')}
                   //to="#"
                   role="tab"
                 >
                   ACLS
-                </a>
+                </div>
               </li>
             )}
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('logs')}
                 onClick={() => this.selectTab('logs')}
                 //to="#"
                 role="tab"
               >
                 Logs
-              </a>
+              </div>
             </li>
           </ul>
 
@@ -187,14 +187,15 @@ class Topic extends Component {
         </div>
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
-            <a className="btn btn-secondary mr-2">
+            <a href={`/ui/${clusterId}/tail`} className="btn btn-secondary mr-2">
               <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
             </a>
 
             <a
-              onClick={() => {
-                this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
-              }}
+              // onClick={() => {
+              //   this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
+              // }}
+              href={`/ui/${clusterId}/topic/${topicId}/produce`}
               className="btn btn-primary"
             >
               <i className="fa fa-plus" aria-hidden={true} /> Produce to topic

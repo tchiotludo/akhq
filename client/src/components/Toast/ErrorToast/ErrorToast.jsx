@@ -56,7 +56,6 @@ function ErrorToast({ title, message, show }) {
           />
         </div>
         <img className="swal2-image" style={{ display: 'none' }} alt="" />
-        <h2 className="swal2-title" id="swal2-title" />
         <button type="button" className="swal2-close" style={{ display: 'none' }}>
           ×
         </button>

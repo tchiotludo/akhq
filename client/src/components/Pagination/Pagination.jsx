@@ -21,14 +21,14 @@ const Pagination = ({
           onClick={() => onSubmit(pageNumber - 1)}
           disabled={+pageNumber === 1}
         >
-          <a className=" page-link">
-            <span aria-hidden=" true">&laquo;</span>
+          <div className="page-link">
+            <span aria-hidden="true">&laquo;</span>
             <span className=" sr-only">Previous</span>
-          </a>
+          </div>
         </button>
       </li>
       <li className=" page-item info">
-        <a className=" page-link page-number">
+        <div className=" page-link page-number">
           <input
             className="pagination-input page-input"
             disabled={!editPageNumber}
@@ -40,7 +40,7 @@ const Pagination = ({
             }}
           />
           {totalPageNumber !== undefined && showTotalPageNumber && `of ${totalPageNumber}`}
-        </a>
+        </div>
       </li>
       <li className={'page-item after'}>
         <button
@@ -48,10 +48,10 @@ const Pagination = ({
           onClick={() => onSubmit(pageNumber + 1)}
           disabled={+pageNumber === +totalPageNumber}
         >
-          <a className=" page-link" aria-label=" Next">
+          <div className=" page-link" aria-label=" Next">
             <span aria-hidden="true">&raquo;</span>
             <span className="sr-only">Next</span>
-          </a>
+          </div>
         </button>
       </li>
     </ul>

@@ -3,13 +3,11 @@ import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { withRouter } from 'react-router-dom';
 import { post, get } from '../../../../utils/api';
 import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
 import { formatDateTime } from '../../../../utils/converters';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
-import history from '../../../../utils/history';
 
 class TopicProduce extends Form {
   state = {
@@ -93,7 +91,7 @@ class TopicProduce extends Form {
     };
 
     let headers = {};
-    Object.keys(formData).map(key => {
+    Object.keys(formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
         headers[formData[key]] = formData[`hValue${keyNumbers}`];
@@ -128,7 +126,7 @@ class TopicProduce extends Form {
   renderHeaders() {
     let headers = [];
 
-    Object.keys(this.state.formData).map(key => {
+    Object.keys(this.state.formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
         headers.push(this.renderHeader(Number(keyNumbers)));
@@ -211,14 +209,7 @@ class TopicProduce extends Form {
   }
 
   render() {
-    const {
-      topicId,
-      openDateModal,
-      formData,
-      partitions,
-      selectableValueFormats,
-      datetime
-    } = this.state;
+    const { topicId, formData, partitions, selectableValueFormats, datetime } = this.state;
     let date = moment(datetime);
     return (
       <div style={{ overflow: 'hidden', paddingRight: '20px', marginRight: 0 }}>

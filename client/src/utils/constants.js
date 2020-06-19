@@ -86,6 +86,7 @@ export const sortBy = (field, reverse, primer) => {
   reverse = !reverse ? 1 : -1;
 
   return function(a, b) {
+    // eslint-disable-next-line
     return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
   };
 };

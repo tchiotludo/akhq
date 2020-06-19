@@ -39,7 +39,7 @@ class TopicAcls extends Component {
   handleData(data) {
     let tableAcls = [];
     data.map(principal =>
-      principal.acls.map((acl, index) => {
+      principal.acls.forEach((acl, index) => {
         tableAcls.push({
           id: index,
           topic: acl.resource.name || '',
