@@ -439,7 +439,7 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ width: '100vw' }}>
+              <div style={{ left: 0, width: '100%' }} className="khq-submit">
                 <button
                   type={'submit'}
                   className="btn btn-primary"
