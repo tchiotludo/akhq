@@ -456,16 +456,13 @@ class TopicData extends React.Component {
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Dropdown show={isSearchOpen}>
+                <Dropdown>
                   <Dropdown.Toggle
-                    onClick={() => {
-                      this.setState({ isSearchOpen: !isSearchOpen });
-                    }}
                     className="nav-link dropdown-toggle"
                   >
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
-                  {!loading && isSearchOpen && (
+                  {!loading && (
                     <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="input-group">
                         <input
@@ -503,7 +500,7 @@ class TopicData extends React.Component {
                             type="button"
                             onClick={() => this.onStop()}
                           >
-                            Close
+                            Stop
                           </button>
                         </div>
                       </div>
