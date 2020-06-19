@@ -25,7 +25,6 @@ configuration: |
       access-log: 
         enabled: false 
         name: org.akhq.log.access
-
 ##... and secret for connection information
 secrets: |
   akhq:
@@ -42,7 +41,6 @@ secrets: |
             url: "http://connect:8083"
             basic-auth-username: basic-auth-user
             basic-auth-password: basic-auth-pass
-
 # Any extra volumes to define for the pod (like keystore/truststore)
 extraVolumes: []
 # Any extra volume mounts to define for the akhq container
