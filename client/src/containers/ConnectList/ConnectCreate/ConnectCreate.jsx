@@ -173,7 +173,7 @@ class ConnectCreate extends Component {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small className="form-text text-muted">{plugin.documentation}</small>;
+    let documentation = <small className="form-text text-muted" dangerouslySetInnerHTML={{ __html:plugin.documentation}}></small>;
 
     rows = (
       <React.Fragment key={plugin.name}>
