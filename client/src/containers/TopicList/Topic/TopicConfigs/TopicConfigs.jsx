@@ -47,7 +47,7 @@ class TopicConfigs extends Form {
   }
 
   handleData(configs) {
-    configs.map(config => {
+    configs.forEach(config => {
       this.createValidationSchema(config);
     });
 
@@ -85,6 +85,8 @@ class TopicConfigs extends Form {
         return (
           <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
         );
+      default:
+        return <small></small>;
     }
   }
 
@@ -210,16 +212,16 @@ class TopicConfigs extends Form {
 
   handleNameAndDescription(name, description) {
     const descript = description ? (
-      <a className="text-secondary" data-toggle="tooltip" title={description}>
+      <span className="text-secondary" data-toggle="tooltip" title={description}>
         <i className="fa fa-question-circle" aria-hidden="true"></i>
-      </a>
+      </span>
     ) : (
       ''
     );
     return (
-      <div className="name-color">
+      <span className="name-color">
         <code>{name}</code> {descript}
-      </div>
+      </span>
     );
   }
 
@@ -227,9 +229,9 @@ class TopicConfigs extends Form {
     const active = isActive ? 'active' : '';
     return (
       <li className="nav-item">
-        <a className={`nav-link ${active}`} href="#" role="tab">
+        <div className={`nav-link ${active}`} href="#" role="tab">
           {tabName}
-        </a>
+        </div>
       </li>
     );
   }

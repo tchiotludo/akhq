@@ -69,22 +69,22 @@ class Connect extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('tasks')}
                 onClick={() => this.selectTab('tasks')}
                 role="tab"
               >
                 Tasks
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
                 role="tab"
               >
                 Configs
-              </a>
+              </div>
             </li>
           </ul>
 

@@ -53,7 +53,7 @@ class NodeConfigs extends Form {
   }
 
   handleData(configs) {
-    configs.map(config => {
+    configs.forEach(config => {
       this.createValidationSchema(config);
     });
 
@@ -81,6 +81,8 @@ class NodeConfigs extends Form {
         return (
           <small className="humanize form-text text-muted">{converters.showBytes(value)}</small>
         );
+      default:
+        return <small></small>;
     }
   }
 
@@ -161,7 +163,7 @@ class NodeConfigs extends Form {
         })
       );
 
-      Object.keys(changedConfigs).map(key => {
+      Object.keys(changedConfigs).forEach(key => {
         const changedConfig = changedConfigs[key];
         const configIndex = configs.findIndex(config => config.name === key);
         configs[configIndex].value = changedConfig;
@@ -226,9 +228,9 @@ class NodeConfigs extends Form {
 
   handleNameAndDescription(name, description) {
     const descript = description ? (
-      <a className="text-secondary" data-toggle="tooltip" title={description}>
+      <span className="text-secondary" data-toggle="tooltip" title={description}>
         <i className="fa fa-question-circle" aria-hidden="true"></i>
-      </a>
+      </span>
     ) : (
       ''
     );
@@ -243,9 +245,9 @@ class NodeConfigs extends Form {
     const active = isActive ? 'active' : '';
     return (
       <li className="nav-item">
-        <a className={`nav-link ${active}`} href="#" role="tab">
+        <div className={`nav-link ${active}`} role="tab">
           {tabName}
-        </a>
+        </div>
       </li>
     );
   }

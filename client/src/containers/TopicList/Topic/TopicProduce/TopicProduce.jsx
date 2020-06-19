@@ -2,10 +2,12 @@ import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { post, get } from '../../../../utils/api';
 import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
+import { formatDateTime } from '../../../../utils/converters';
 import moment from 'moment';
-import 'react-datepicker/dist/react-datepicker-cssmodules.css';
+import DatePicker from '../../../../components/DatePicker';
 
 class TopicProduce extends Form {
   state = {
@@ -16,9 +18,9 @@ class TopicProduce extends Form {
       key: '',
       hKey0: '',
       hValue0: '',
-      timestamp: moment(),
       value: ''
     },
+    datetime: new Date(),
     openDateModal: false,
     errors: {},
     selectableValueFormats: [
@@ -42,7 +44,6 @@ class TopicProduce extends Form {
     hValue0: Joi.string()
       .allow('')
       .label('hValue0'),
-    timestamp: Joi.object().label('Timestamp'),
     value: Joi.string()
       .allow('')
       .label('Value')
@@ -78,19 +79,19 @@ class TopicProduce extends Form {
   }
 
   doSubmit() {
-    const { formData } = this.state;
+    const { formData, datetime } = this.state;
     const { clusterId, topicId } = this.props.match.params;
     const topic = {
       clusterId,
       topicId,
       partition: formData.partition,
       key: formData.key,
-      timestamp: formData.timestamp.toDate().toISOString(),
+      timestamp: datetime.toISOString(),
       value: JSON.parse(JSON.stringify(formData.value))
     };
 
     let headers = {};
-    Object.keys(formData).map(key => {
+    Object.keys(formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
         headers[formData[key]] = formData[`hValue${keyNumbers}`];
@@ -125,7 +126,7 @@ class TopicProduce extends Form {
   renderHeaders() {
     let headers = [];
 
-    Object.keys(this.state.formData).map((key) => {
+    Object.keys(this.state.formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
         headers.push(this.renderHeader(Number(keyNumbers)));
@@ -208,12 +209,8 @@ class TopicProduce extends Form {
   }
 
   render() {
-    const {
-      topicId,
-      formData,
-      partitions,
-      selectableValueFormats
-    } = this.state;
+    const { topicId, formData, partitions, selectableValueFormats, datetime } = this.state;
+    let date = moment(datetime);
     return (
       <div style={{ overflow: 'hidden', paddingRight: '20px', marginRight: 0 }}>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
@@ -244,12 +241,75 @@ class TopicProduce extends Form {
               }
             });
           })}
+          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
+            <label
+              style={{ padding: 0, alignItems: 'center', display: 'flex' }}
+              className="col-sm-2 col-form-label"
+            >
+              Timestamp:
+            </label>
+            <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
+              <Dropdown.Toggle
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 0,
+                  margin: 0
+                }}
+                className="nav-link dropdown-toggle"
+              >
+                <input
+                  className="form-control"
+                  value={
+                    datetime !== '' &&
+                    ' ' +
+                      formatDateTime(
+                        {
+                          year: date.year(),
+                          monthValue: date.month(),
+                          dayOfMonth: date.date(),
+                          hour: date.hour(),
+                          minute: date.minute(),
+                          second: date.second()
+                        },
+                        'DD-MM-YYYY HH:mm'
+                      )
+                  }
+                  placeholder={
+                    datetime !== '' &&
+                    ' ' +
+                      formatDateTime(
+                        {
+                          year: date.year(),
+                          monthValue: date.month(),
+                          dayOfMonth: date.date(),
+                          hour: date.hour(),
+                          minute: date.minute(),
+                          second: date.second()
+                        },
+                        'DD-MM-YYYY HH:mm'
+                      )
+                  }
+                />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <div className="input-group">
+                  <DatePicker
+                    showTimeInput
+                    value={datetime}
+                    onChange={value => {
+                      this.setState({
+                        datetime: value
+                      });
+                    }}
+                  />
+                </div>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
 
-          {this.renderDatePicker('timestamp', 'Timestamp', value => {
-            let { formData } = this.state;
-            formData.timestamp = value;
-            this.setState({ formData });
-          })}
           {this.renderButton(
             'Produce',
             () => {

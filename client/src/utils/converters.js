@@ -6,7 +6,7 @@ export function calculateTopicOffsetLag(topicOffsets) {
   let offsetLag = 0;
   let firstOffset = 0;
   let lastOffset = 0;
-  topicOffsets.map(topicOffset => {
+  topicOffsets.forEach(topicOffset => {
     firstOffset = topicOffset.firstOffset || 0;
     lastOffset = topicOffset.lastOffset || 0;
     offsetLag += lastOffset - firstOffset;
@@ -92,7 +92,7 @@ function insertRole(roles, roleType, role) {
 export function organizeRoles(roles) {
   let newRoles = {};
 
-  roles.map(role => {
+  roles.forEach(role => {
     switch (role.substring(0, role.indexOf('/'))) {
       case ROLE_TYPE.TOPIC:
         newRoles = insertRole(newRoles, ROLE_TYPE.TOPIC, role);

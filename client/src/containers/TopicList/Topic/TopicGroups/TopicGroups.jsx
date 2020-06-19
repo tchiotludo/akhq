@@ -51,7 +51,7 @@ class TopicGroups extends Component {
 
   handleGroups(consumerGroups) {
     let tableConsumerGroups = [];
-    consumerGroups.map(consumerGroup => {
+    consumerGroups.forEach(consumerGroup => {
       consumerGroup.size = 0;
       consumerGroup.logDirSize = 0;
       tableConsumerGroups.push({
@@ -93,9 +93,7 @@ class TopicGroups extends Component {
             className="btn btn-dark btn-sm mb-1"
           >
             {lagTopic.topic}
-            <a href="#" className="badge badge-secondary">
-              Lag:{lagTopic.partition}
-            </a>
+            <div className="badge badge-secondary">Lag:{lagTopic.partition}</div>
           </Link>
         </div>
       );

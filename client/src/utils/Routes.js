@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { withRouter, Switch, Route, Redirect } from 'react-router-dom';
 import TopicList from '../containers/TopicList';
 import Topic from '../containers/TopicList/Topic';
@@ -25,7 +26,16 @@ import Login from '../containers/Login';
 import PageNotFound from './../containers/PageNotFound/PageNotFound';
 
 class Routes extends Component {
-  componentWillReceiveProps(nextProps) {
+  state = {};
+  static propTypes = {
+    location: PropTypes.object,
+    history: PropTypes.object,
+    clusterId: PropTypes.string
+  };
+
+  //componentWillReceiveProps(nextProps) {}
+
+  static getDerivedStateFromProps = nextProps => {
     if (nextProps.location.pathname !== '/ui/error') {
       let routeObject = {
         pathname: nextProps.location.pathname,
@@ -33,7 +43,8 @@ class Routes extends Component {
       };
       localStorage.setItem('lastRoute', JSON.stringify(routeObject));
     }
-  }
+    return {};
+  };
 
   handleRedirect(clusterId) {
     const roles = JSON.parse(localStorage.getItem('roles'));

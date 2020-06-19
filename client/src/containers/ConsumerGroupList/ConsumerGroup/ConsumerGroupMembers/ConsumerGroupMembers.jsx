@@ -49,11 +49,7 @@ class ConsumerGroupMembers extends Component {
 
   handlePartitions(partitions) {
     return partitions.map(partition => {
-      return (
-        <a href="#" className="badge badge-secondary partition">
-          {partition}
-        </a>
-      );
+      return <div className="badge badge-secondary partition">{partition}</div>;
     });
   }
 
@@ -61,14 +57,14 @@ class ConsumerGroupMembers extends Component {
     const { history } = this.props;
     let topics = [];
 
-    assignments.map(assignment => {
+    assignments.forEach(assignment => {
       if (!topics.find(topic => topic === assignment.topic)) {
         topics.push(assignment.topic);
       }
     });
     return topics.map(topic => {
       let partitions = [];
-      assignments.map(assignment => {
+      assignments.forEach(assignment => {
         if (assignment.topic === topic) {
           partitions.push(assignment.partition);
         }

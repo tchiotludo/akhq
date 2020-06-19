@@ -99,21 +99,24 @@ class Sidebar extends Component {
       >
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
-          <a
+          <div
             className={selectedCluster === cluster.id ? ' active' : ''}
             style={{ color: '#759dac' }}
           >
             {cluster.id}
-          </a>
+          </div>
         </NavText>
       </NavItem>
     ));
     const listConnects = allConnects.map(connect => (
       <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
         <NavText>
-          <a className={selectedConnect === connect ? ' active' : ''} style={{ color: '#759dac' }}>
+          <div
+            className={selectedConnect === connect ? ' active' : ''}
+            style={{ color: '#759dac' }}
+          >
             {connect}
-          </a>
+          </div>
         </NavText>
       </NavItem>
     ));

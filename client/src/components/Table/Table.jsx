@@ -112,7 +112,7 @@ class Table extends Component {
                 }}
                 id={`row_${column.id}_${colIndex}`}
               >
-                <div className="align-cell"/>
+                <div className="align-cell" />
               </td>
             );
           }
@@ -338,7 +338,7 @@ class Table extends Component {
   }
 
   render() {
-    const { columns, noStripes } = this.props;
+    const { noStripes } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 

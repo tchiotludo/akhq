@@ -39,12 +39,23 @@ class ConsumerGroupUpdate extends Form {
   async getGroupedTopicOffset() {
     const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
     const { history } = this.props;
+    const momentValue = moment(timestamp);
 
-    history.replace({
-      ...this.props.location,
-      loading: true
-    });
-    
+    const date =
+      timestamp.toString().length > 0
+        ? formatDateTime(
+            {
+              year: momentValue.year(),
+              monthValue: momentValue.month() + 1,
+              dayOfMonth: momentValue.date(),
+              hour: momentValue.hour(),
+              minute: momentValue.minute(),
+              second: momentValue.second(),
+              milli: momentValue.millisecond()
+            },
+            'YYYY-MM-DDThh:mm:ss.SSS'
+          ) + 'Z'
+        : '';
     try {
       let data = {};
       if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
@@ -57,8 +68,8 @@ class ConsumerGroupUpdate extends Form {
         } else {
           this.setState({ groupedTopicOffset: {} });
         }
-      } else if (timestamp !== '') {
-        data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, timestamp));
+      } else if (date !== '') {
+        data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
         data = data.data;
         this.handleOffsetsByTimestamp(data);
       } else {
@@ -84,8 +95,8 @@ class ConsumerGroupUpdate extends Form {
     let lastOffsets = {};
     let name = '';
 
-    Object.keys(groupedTopicOffset).map(topidId => {
-      groupedTopicOffset[topidId].map(offset => {
+    Object.keys(groupedTopicOffset).forEach(topidId => {
+      groupedTopicOffset[topidId].forEach(offset => {
         name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
           .min(offset.firstOffset || 0)
@@ -105,7 +116,7 @@ class ConsumerGroupUpdate extends Form {
     let { formData } = this.state;
     let topic = '';
     let partition = '';
-    offsets.map(offset => {
+    offsets.forEach(offset => {
       topic = offset.topic;
       partition = offset.partition;
       formData[`${topic}-${partition}`] = offset.offset;
@@ -116,7 +127,7 @@ class ConsumerGroupUpdate extends Form {
     const { firstOffsets } = this.state;
     let { formData } = this.state;
 
-    Object.keys(formData).map(name => {
+    Object.keys(formData).forEach(name => {
       formData[name] = firstOffsets[name];
     });
 
@@ -127,7 +138,7 @@ class ConsumerGroupUpdate extends Form {
     const { lastOffsets } = this.state;
     let { formData } = this.state;
 
-    Object.keys(formData).map(name => {
+    Object.keys(formData).forEach(name => {
       formData[name] = lastOffsets[name];
     });
 
@@ -140,7 +151,7 @@ class ConsumerGroupUpdate extends Form {
     let topic = '';
     let partition = '';
 
-    Object.keys(formData).map(name => {
+    Object.keys(formData).forEach(name => {
       splitName = name.split('-');
       topic = splitName[0];
       partition = splitName[1];
@@ -188,7 +199,7 @@ class ConsumerGroupUpdate extends Form {
     const { groupedTopicOffset } = this.state;
     const renderedItems = [];
 
-    Object.keys(groupedTopicOffset).map(topidId => {
+    Object.keys(groupedTopicOffset).forEach(topidId => {
       renderedItems.push(
         <fieldset id={`fieldset-${topidId}`} key={topidId}>
           <legend id={`legend-${topidId}`}>{topidId}</legend>
@@ -203,7 +214,7 @@ class ConsumerGroupUpdate extends Form {
   renderPartitionInputs = (offsets, topicId) => {
     const renderedInputs = [];
 
-    offsets.map(offset => {
+    offsets.forEach(offset => {
       const name = `${topicId}-${offset.partition}`;
 
       renderedInputs.push(
@@ -218,7 +229,7 @@ class ConsumerGroupUpdate extends Form {
                 undefined,
                 true,
                 'partition-input-div',
-                'partition-input ${name}-input'
+                `partition-input ${name}-input`
               )}
             </span>
           </div>
@@ -235,23 +246,23 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <span>
-        <a
+        <div
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
           onClick={() => this.resetToFirstOffsets()}
         >
           Reset to first offsets
-        </a>
-        <a
+        </div>
+        <div
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
           onClick={() => this.resetToLastOffsets()}
         >
           Reset to last offsets
-        </a>
-        <a
+        </div>
+        <div
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem', padding: 0 }}
@@ -260,36 +271,20 @@ class ConsumerGroupUpdate extends Form {
             <Dropdown.Toggle>Filter datetime</Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
-                <div className="filter-datetime">
+                <div>
                   <DatePicker
-                    name={'datetime-picker'}
+                    showTimeInput
                     value={timestamp}
                     label={''}
                     onChange={value => {
-                      const momentValue = moment(value);
-
-                      const timestamp =
-                        formatDateTime(
-                          {
-                            year: momentValue.year(),
-                            monthValue: momentValue.month() + 1,
-                            dayOfMonth: momentValue.date(),
-                            hour: momentValue.hour(),
-                            minute: momentValue.minute(),
-                            second: momentValue.second(),
-                            milli: momentValue.millisecond()
-                          },
-                          'YYYY-MM-DDThh:mm:ss.SSS'
-                        ) + 'Z';
-
-                      this.setState({ timestamp }, () => this.getGroupedTopicOffset());
+                      this.setState({ timestamp: value }, () => this.getGroupedTopicOffset());
                     }}
                   />
                 </div>
               </Dropdown.Menu>
             )}
           </Dropdown>
-        </a>
+        </div>
       </span>
     );
   };

@@ -246,7 +246,7 @@ export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = '
 export const uriLiveTail = (clusterId, search, topics, size) => {
   let searchUrl = `search=${search}`;
   let topicsUrl = search.length > 0 ? '&' : '';
-  topics.map((topic, index) => {
+  topics.forEach((topic, index) => {
     if (index > 0) {
       topicsUrl += '&topics=' + topic;
     } else {
@@ -262,6 +262,10 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
 
 export const uriTopicDataSearch = (clusterId, topicId, search) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+};
+
+export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
+  return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
 };
 
 export default {
@@ -303,5 +307,6 @@ export default {
   uriAclsList,
   uriAclsByPrincipal,
   uriLiveTail,
-  uriTopicDataSearch
+  uriTopicDataSearch,
+  uriTopicDataDelete
 };

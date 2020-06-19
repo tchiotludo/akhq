@@ -1,8 +1,12 @@
 import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import {get, post} from '../../../../utils/api';
-import {uriConnectDefinitionConfigs, uriConnectPlugin, uriUpdateDefinition} from '../../../../utils/endpoints';
+import { get, post } from '../../../../utils/api';
+import {
+  uriConnectDefinitionConfigs,
+  uriConnectPlugin,
+  uriUpdateDefinition
+} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
@@ -86,7 +90,7 @@ class ConnectConfigs extends Form {
     formData.name = this.getConfigValue('name');
     this.schema['name'] = Joi.string().required();
 
-    definitions.map(definition => {
+    definitions.forEach(definition => {
       formData[definition.name] = this.getConfigValue(definition.name);
       this.schema[definition.name] = this.handleDefinition(definition);
       if (definition.name === 'transforms') {
@@ -161,9 +165,9 @@ class ConnectConfigs extends Form {
             {plugin.displayName}{' '}
             <i
               className="fa fa-exclamation text-danger"
-              style={{marginleft: '2%'}}
+              style={{ marginleft: '2%' }}
               aria-hidden="true"
-              />
+            />
           </span>
         );
         break;
@@ -171,7 +175,11 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i className="fa fa-info text-warning" style={{marginleft: '2%'}} aria-hidden="true"/>
+            <i
+              className="fa fa-info text-warning"
+              style={{ marginleft: '2%' }}
+              aria-hidden="true"
+            />
           </span>
         );
         break;
@@ -193,11 +201,11 @@ class ConnectConfigs extends Form {
       <React.Fragment key={plugin.name}>
         <td>
           {title}
-          <br/>
+          <br />
           {name}
-          <br/>
+          <br />
           {required}
-          <br/>
+          <br />
           {documentation}
         </td>
         <td>
@@ -238,7 +246,7 @@ class ConnectConfigs extends Form {
     _(plugin.definitions)
       .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
       .value()
-      .map(definition => {
+      .forEach(definition => {
         if (definition.group !== actualGroup) {
           if (actualGroup === '') {
             actualGroup = definition.group;
@@ -264,7 +272,7 @@ class ConnectConfigs extends Form {
       </tr>
     ];
 
-    group.map(element => {
+    group.forEach(element => {
       const rows = this.renderTableRows(element);
       const errors = [];
 
@@ -340,7 +348,7 @@ class ConnectConfigs extends Form {
       name: formData.name
     };
     let configs = {};
-    Object.keys(formData).map(key => {
+    Object.keys(formData).forEach(key => {
       if (
         key !== 'subject' &&
         key !== 'transformsprops' &&
@@ -355,7 +363,7 @@ class ConnectConfigs extends Form {
     });
 
     const transformsValue = JSON.parse(formData.transformsprops);
-    Object.keys(transformsValue).map(key => {
+    Object.keys(transformsValue).forEach(key => {
       configs[key] = transformsValue[key];
     });
 
@@ -431,7 +439,7 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ width: '100vw' }}>
+              <div style={{ left: 0, width: '100%' }} className="khq-submit">
                 <button
                   type={'submit'}
                   className="btn btn-primary"

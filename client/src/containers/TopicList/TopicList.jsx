@@ -141,7 +141,7 @@ class TopicList extends Component {
 
   handleTopics(topics) {
     let tableTopics = [];
-    topics.map(topic => {
+    topics.forEach(topic => {
       tableTopics.push({
         id: topic.name,
         name: topic.name,
@@ -158,23 +158,24 @@ class TopicList extends Component {
   }
 
   handleConsumerGroups = (consumerGroups, topicId) => {
-    if (consumerGroups !== undefined) {
-      return consumerGroups.map(consumerGroup => {
+    if (consumerGroups) {
+      return consumerGroups.forEach(consumerGroup => {
         let className = 'btn btn-sm mb-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
 
-        if (consumerGroup.activeTopics !== undefined) {
-          const activeTopic = consumerGroup.activeTopics
-              .find(activeTopic => activeTopic === topicId);
-          activeTopic !== undefined ? (className += 'success') : (className += 'warning');
+        if (consumerGroup.activeTopics) {
+          const activeTopic = consumerGroup.activeTopics.find(
+            activeTopic => activeTopic === topicId
+          );
+          activeTopic ? (className += 'success') : (className += 'warning');
 
           return (
-              <React.Fragment>
-                <a className={className}>
-                  {consumerGroup.id} <span className="badge badge-light">Lag: {offsetLag}</span>
-                </a>
-                <br/>
-              </React.Fragment>
+            <React.Fragment>
+              <div className={className}>
+                {consumerGroup.id} <span className="badge badge-light">Lag: {offsetLag}</span>
+              </div>
+              <br />
+            </React.Fragment>
           );
         }
       });
@@ -286,7 +287,10 @@ class TopicList extends Component {
             this.handleOnDelete(topic);
           }}
           onDetails={(id, row) => {
-            history.push({ pathname: `/ui/${selectedCluster}/topic/${id}`, internal: row.internal });
+            history.push({
+              pathname: `/ui/${selectedCluster}/topic/${id}`,
+              internal: row.internal
+            });
           }}
           actions={
             roles.topic && roles.topic['topic/delete']

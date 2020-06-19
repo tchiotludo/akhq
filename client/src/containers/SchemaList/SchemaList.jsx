@@ -3,7 +3,6 @@ import Table from '../../components/Table';
 import endpoints, { uriDeleteSchema } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { Link } from 'react-router-dom';
-import Schema from './Schema/Schema';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
@@ -111,7 +110,7 @@ class SchemaList extends Component {
 
   handleSchemaRegistry(SchemaRegistry) {
     let tableSchemaRegistry = [];
-    SchemaRegistry.map(SchemaRegistry => {
+    SchemaRegistry.forEach(SchemaRegistry => {
       SchemaRegistry.size = 0;
       SchemaRegistry.logDirSize = 0;
       tableSchemaRegistry.push({

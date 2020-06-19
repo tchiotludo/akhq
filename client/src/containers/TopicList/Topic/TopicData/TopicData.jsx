@@ -1,29 +1,29 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get } from '../../../../utils/api';
+import { get, remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriTopicData,
   uriTopicsPartitions,
   uriTopicDataSearch,
-  uriSchemaRegistry
+  uriSchemaRegistry,
+  uriTopicDataDelete,
+  uriTopicsConfigs
 } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
-import Input from '../../../../components/Form/Input';
 import _ from 'lodash';
-import { checkPropTypes } from 'prop-types';
+import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
-
+import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 // Adaptation of data.ftl
 
-class TopicData extends Component {
+class TopicData extends React.Component {
   state = {
     showValueModal: false,
     valueModalBody: '',
@@ -46,9 +46,16 @@ class TopicData extends Component {
     nextPage: '',
     recordCount: 0,
     showFilters: '',
+    showDeleteModal: false,
+    deleteMessage: '',
+    compactMessageToDelete: '',
+    selectedCluster: this.props.clusterId,
+    selectedTopic: this.props.topicId,
+    cleanupPolicy: '',
     datetime: '',
     schemas: [],
-    isSearchOpen: false
+    roles: JSON.parse(localStorage.getItem('roles')),
+    canDeleteRecords: false
   };
 
   eventSource;
@@ -56,22 +63,56 @@ class TopicData extends Component {
   componentDidMount = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
+    const roles = this.state.roles || {};
 
-    this.setState({ selectedCluster: clusterId, selectedTopic: topicId }, () => {
-      history.replace({
-        loading: true
-      });
-      this.getMessages();
-    });
+    this.setState(
+      {
+        selectedCluster: clusterId,
+        selectedTopic: topicId,
+        canAccessSchema: roles.topic && roles.topic['registry/read']
+      },
+      () => {
+        history.replace({
+          loading: true
+        });
+        this.getMessages();
+        this.getTopicsConfig();
+      }
+    );
   };
 
   componentWillUnmount = () => {
     this.onStop();
   };
 
+  async getTopicsConfig() {
+    let configs = [];
+    const { selectedCluster, selectedTopic } = this.state;
+    const { history } = this.props;
+    history.replace({
+      loading: true
+    });
+    try {
+      configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+      this.setState({
+        cleanupPolicy: configs.data.filter(config => config.name.includes('cleanup.policy'))[0]
+          .value
+      });
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        history.replace('/ui/page-not-found', { errorData: err, loading: false });
+      } else {
+        history.replace('/ui/error', { errorData: err, loading: false });
+      }
+    } finally {
+      history.replace({
+        loading: false
+      });
+    }
+  }
+
   startEventSource = () => {
     let { clusterId, topicId } = this.props.match.params;
-    const { history } = this.props;
     const { currentSearch } = this.state;
     let self = this;
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
@@ -92,7 +133,7 @@ class TopicData extends Component {
     if (this.eventSource) {
       this.eventSource.close();
     }
-    this.setState({ isSearching: false, isSearchOpen: false });
+    this.setState({ isSearching: false });
   };
 
   onStart = () => {
@@ -128,15 +169,17 @@ class TopicData extends Component {
     const {
       selectedCluster,
       selectedTopic,
+      canAccessSchema,
       sortBy,
       partition,
-      timestamp,
+      datetime,
       currentSearch,
       offsetsSearch,
       nextPage
     } = this.state;
     let data,
       partitionData = {};
+    let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
     try {
       data = await get(
         uriTopicData(
@@ -164,10 +207,15 @@ class TopicData extends Component {
           changePage ? nextPage : undefined
         )
       );
-      data = data.data;
 
-      let schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-      schemas = schemas.data.results || [];
+      data = data.data;
+      this.setState({ canDeleteRecords: data.canDeleteRecords });
+
+      let schemas = [];
+      if (canAccessSchema) {
+        schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+        schemas = schemas.data.results || [];
+      }
       this.setState({ schemas });
       partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
       partitionData = partitionData.data;
@@ -199,30 +247,70 @@ class TopicData extends Component {
     }
   }
 
+  handleOnDelete(message) {
+    this.setState({ compactMessageToDelete: message }, () => {
+      this.showDeleteModal(
+        <React.Fragment>
+          Do you want to delete message: {<code>{message.key}</code>} ?
+        </React.Fragment>
+      );
+    });
+  }
+
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
+  };
+
+  closeDeleteModal = () => {
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
+  };
+
+  deleteCompactMessage = () => {
+    const { selectedCluster, selectedTopic, compactMessageToDelete: message } = this.state;
+    const { history } = this.props;
+    history.replace({ loading: true });
+    const encodedkey = new Buffer(message.key).toString('base64');
+    const deleteData = { partition: parseInt(message.partition), key: encodedkey };
+    remove(
+      uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
+      deleteData
+    )
+      .then(res => {
+        this.props.history.replace({
+          ...this.props.location,
+          showSuccessToast: true,
+          successToastMessage: `Record '${message}' will be deleted on compaction`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
+          this.getMessages();
+        });
+      })
+      .catch(err => {
+        this.props.history.replace({
+          ...this.props.location,
+          showErrorToast: true,
+          errorToastMessage: `Failed to delete message from '${message}'`,
+          loading: false
+        });
+        this.setState({ showDeleteModal: false, messageToDelete: {} });
+      });
+  };
+
   handleMessages = messages => {
     let tableMessages = [];
-    messages.map(message => {
-      message.key = message.key ? message.key : 'null';
-      message.value = message.value ? message.value : 'null';
-      const date = moment(message.datetime);
-      message.datetime = formatDateTime(
-        {
-          year: date.year(),
-          monthValue: date.month() + 1,
-          dayOfMonth: date.date(),
-          hour: date.hour(),
-          minute: date.minute(),
-          second: date.second(),
-          milli: date.millisecond()
-        },
-        'MMM DD, YYYY, hh:mm A'
-      );
-      message.partition = message.partition ? message.partition : '0';
-      message.offset = message.offset ? message.offset : '0';
-      message.headers = message.headers ? message.headers : {};
-      message.schema = message.valueSchemaId ? message.valueSchemaId : '';
-
-      tableMessages.push(message);
+    messages.forEach(message => {
+      let date = new Date(message.timestamp);
+      let messageToPush = {
+        key: message.key || '',
+        value: message.value || '',
+        timestamp: moment(date).format('DD-MM-YYYY HH:mm'),
+        partition: JSON.stringify(message.partition) || '',
+        offset: JSON.stringify(message.offset) || '',
+        headers: message.headers || {},
+        schema: message.valueSchemaId || 'No schema'
+      };
+      tableMessages.push(messageToPush);
     });
     this.setState({ messages: tableMessages });
   };
@@ -235,7 +323,7 @@ class TopicData extends Component {
     let afterString = aux.substring(0, aux.indexOf('&'));
     const offsetsByPartition = afterString.split('_');
 
-    offsetsByPartition.map(offsetByPartition => {
+    offsetsByPartition.forEach(offsetByPartition => {
       const offset = offsetByPartition.split('-');
       offsets[`partition${offset[0]}`] = offset[1];
     });
@@ -344,24 +432,22 @@ class TopicData extends Component {
     const {
       sortBy,
       partition,
-      timestamp,
       currentSearch,
       search,
       offsets,
-      offsetsSearch,
       messages,
       showHeadersModal,
       showValueModal,
       valueModalBody,
       headersModalBody,
       pageNumber,
-      nextPage,
       recordCount,
       showFilters,
       datetime,
       isSearching,
-      isSearchOpen
+      canDeleteRecords
     } = this.state;
+    let date = moment(datetime);
     let { clusterId } = this.props.match.params;
     const { loading } = this.props.history.location;
     const firstColumns = [
@@ -443,13 +529,26 @@ class TopicData extends Component {
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Timestamp:</strong>
-                    {datetime !== '' && ' ' + datetime}
+                    {datetime !== '' &&
+                      ' ' +
+                        formatDateTime(
+                          {
+                            year: date.year(),
+                            monthValue: date.month(),
+                            dayOfMonth: date.date(),
+                            hour: date.hour(),
+                            minute: date.minute(),
+                            second: date.second()
+                          },
+                          'DD-MM-YYYY HH:mm'
+                        )}
                   </Dropdown.Toggle>
                   {!loading && (
-                    <Dropdown.Menu className="resize-datepicker">
+                    <Dropdown.Menu>
                       <div className="input-group">
                         <DatePicker
-                          name={'datetime-picker'}
+                          showDateTimeInput
+                          showTimeSelect
                           value={datetime}
                           onChange={value => {
                             this.setState({ datetime: value }, () => this.getMessages());
@@ -648,7 +747,7 @@ class TopicData extends Component {
                 type: 'text',
                 expand: true,
                 cell: obj => {
-                  return <a className="tail-headers">{Object.keys(obj.headers).length}</a>;
+                  return <div className="tail-headers">{Object.keys(obj.headers).length}</div>;
                 }
               },
               {
@@ -660,7 +759,7 @@ class TopicData extends Component {
                   return (
                     <div className="value cell-div">
                       <div className="align-cell">
-                        {obj[col.accessor] != '' && (
+                        {obj[col.accessor] !== '' && (
                           <span
                             className="badge badge-primary clickable"
                             onClick={() => {
@@ -687,6 +786,10 @@ class TopicData extends Component {
             extraRow
             noStripes
             data={messages}
+            onDelete={row => {
+              this.handleOnDelete(row);
+            }}
+            actions={canDeleteRecords ? [constants.TABLE_DELETE] : []}
             onExpand={obj => {
               return Object.keys(obj.headers).map(header => {
                 return (
@@ -779,6 +882,12 @@ class TopicData extends Component {
             />
           </div>
         </Modal>
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteCompactMessage}
+          message={this.state.deleteMessage}
+        />
         <CodeViewModal
           show={showValueModal}
           body={valueModalBody}
