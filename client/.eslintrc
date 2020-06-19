@@ -10,11 +10,11 @@
     "node": true,
     "browser": true
   },
-  "extends": "eslint:recommended",
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module",
-
+    "ecmaVersion": 7,
     "ecmaFeatures": {
       "jsx": true
     }

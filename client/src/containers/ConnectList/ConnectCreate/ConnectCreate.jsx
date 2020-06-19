@@ -68,7 +68,7 @@ class ConnectCreate extends Component {
     this.schema['type'] = Joi.string().required();
     formData.subject = '';
     this.schema['subject'] = Joi.string().required();
-    definitions.map(definition => {
+    definitions.forEach(definition => {
       let config = this.handleDefinition(definition);
       formData[definition.name] = '';
       this.schema[definition.name] = config;
@@ -143,9 +143,9 @@ class ConnectCreate extends Component {
             {''}
             <i
               className="fa fa-exclamation text-danger"
-              style={{marginleft: '2%'}}
+              style={{ marginleft: '2%' }}
               aria-hidden="true"
-              />
+            />
           </span>
         );
         break;
@@ -153,7 +153,11 @@ class ConnectCreate extends Component {
         title = (
           <span>
             {plugin.displayName}
-            <i className="fa fa-info text-warning" style={{marginleft: '2%'}} aria-hidden="true"/>
+            <i
+              className="fa fa-info text-warning"
+              style={{ marginleft: '2%' }}
+              aria-hidden="true"
+            />
           </span>
         );
         break;
@@ -169,7 +173,7 @@ class ConnectCreate extends Component {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small className="form-text text-muted">{plugin.documentation}</small>;
+    let documentation = <small className="form-text text-muted" dangerouslySetInnerHTML={{ __html:plugin.documentation}}></small>;
 
     rows = (
       <React.Fragment key={plugin.name}>
@@ -205,7 +209,7 @@ class ConnectCreate extends Component {
               {errors[plugin.name]}
             </div>
           )}
-          <small className="humanize form-text text-muted"/>
+          <small className="humanize form-text text-muted" />
         </td>
       </React.Fragment>
     );
@@ -220,7 +224,7 @@ class ConnectCreate extends Component {
     _(plugin.definitions)
       .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
       .value()
-      .map(definition => {
+      .forEach(definition => {
         if (definition.group !== actualGroup) {
           if (actualGroup === '') {
             actualGroup = definition.group;
@@ -251,7 +255,7 @@ class ConnectCreate extends Component {
       formData['transformsprops'] = '{}';
     }
 
-    group.map(element => {
+    group.forEach(element => {
       const rows = this.renderTableRows(element);
       const errors = [];
 
@@ -329,11 +333,7 @@ class ConnectCreate extends Component {
   }
 
   getPlugin() {
-    return this.state.plugins.find(plugin => {
-      if (this.state.selectedType === plugin.className) {
-        return plugin;
-      }
-    });
+    return this.state.plugins.find(plugin => this.state.selectedType === plugin.className);
   }
 
   validate = () => {
@@ -359,7 +359,7 @@ class ConnectCreate extends Component {
   renderDropdown() {
     const label = 'Types';
     let items = [{ _id: '', name: '' }];
-    this.state.plugins.map(plugin => {
+    this.state.plugins.forEach(plugin => {
       let name = [plugin.className, ' [', plugin.version, ']'];
       items.push({ _id: plugin.className, name: name });
     });
@@ -384,7 +384,7 @@ class ConnectCreate extends Component {
       name: formData.subject
     };
     let configs = {};
-    Object.keys(formData).map(key => {
+    Object.keys(formData).forEach(key => {
       if (
         key !== 'subject' &&
         key !== 'transformsprops' &&
@@ -399,7 +399,7 @@ class ConnectCreate extends Component {
     });
 
     const transformsValue = JSON.parse(formData.transformsprops);
-    Object.keys(transformsValue).map(key => {
+    Object.keys(transformsValue).forEach(key => {
       configs[key] = transformsValue[key];
     });
 

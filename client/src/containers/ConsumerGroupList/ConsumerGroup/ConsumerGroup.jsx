@@ -79,32 +79,32 @@ class ConsumerGroup extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('topics')}
                 onClick={() => this.selectTab('topics')}
                 role="tab"
               >
                 Topics
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('members')}
                 onClick={() => this.selectTab('members')}
                 role="tab"
               >
                 Members
-              </a>
+              </div>
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <a
+                <div
                   className={this.tabClassName('acls')}
                   onClick={() => this.selectTab('acls')}
                   role="tab"
                 >
                   ACLS
-                </a>
+                </div>
               </li>
             )}
           </ul>
@@ -118,7 +118,10 @@ class ConsumerGroup extends Component {
 
         {roles.group && roles.group['offsets/update'] && (
           <aside>
-            <Link to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`} className="btn btn-primary">
+            <Link
+              to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`}
+              className="btn btn-primary"
+            >
               Update Offsets
             </Link>
           </aside>

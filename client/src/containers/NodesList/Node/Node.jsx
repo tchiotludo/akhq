@@ -67,22 +67,22 @@ class Node extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('configs')}
                 onClick={() => this.selectTab('configs')}
                 role="tab"
               >
                 Configs
-              </a>
+              </div>
             </li>
             <li className="nav-item">
-              <a
+              <div
                 className={this.tabClassName('logs')}
                 onClick={() => this.selectTab('logs')}
                 role="tab"
               >
                 Logs
-              </a>
+              </div>
             </li>
           </ul>
 
