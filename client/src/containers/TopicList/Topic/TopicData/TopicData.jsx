@@ -44,8 +44,7 @@ class TopicData extends React.Component {
     recordCount: 0,
     showFilters: '',
     datetime: '',
-    schemas: [],
-    isSearchOpen: false
+    schemas: []
   };
 
   eventSource;
@@ -88,7 +87,7 @@ class TopicData extends React.Component {
     if (this.eventSource) {
       this.eventSource.close();
     }
-    this.setState({ isSearching: false, isSearchOpen: false });
+    this.setState({ isSearching: false });
   };
 
   onStart = () => {
@@ -342,8 +341,7 @@ class TopicData extends React.Component {
       recordCount,
       showFilters,
       datetime,
-      isSearching,
-      isSearchOpen
+      isSearching
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
