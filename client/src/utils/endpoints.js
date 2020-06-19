@@ -264,6 +264,10 @@ export const uriTopicDataSearch = (clusterId, topicId, search) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
 };
 
+export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
+  return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
+};
+
 export default {
   apiUrl,
   uriClusters,
@@ -303,5 +307,6 @@ export default {
   uriAclsList,
   uriAclsByPrincipal,
   uriLiveTail,
-  uriTopicDataSearch
+  uriTopicDataSearch,
+  uriTopicDataDelete
 };

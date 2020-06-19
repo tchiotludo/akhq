@@ -101,7 +101,7 @@ class Login extends Form {
     const { errors } = this.state;
 
     return (
-      <div style={{ height: window.innerHeight - 100, marginLeft: 0 }}>
+      <div>
         <main>
           <form
             className="khq-login"

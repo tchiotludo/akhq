@@ -158,16 +158,16 @@ class TopicList extends Component {
   }
 
   handleConsumerGroups = (consumerGroups, topicId) => {
-    if (consumerGroups !== undefined) {
+    if (consumerGroups) {
       return consumerGroups.forEach(consumerGroup => {
         let className = 'btn btn-sm mb-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
 
-        if (consumerGroup.activeTopics !== undefined) {
+        if (consumerGroup.activeTopics) {
           const activeTopic = consumerGroup.activeTopics.find(
             activeTopic => activeTopic === topicId
           );
-          activeTopic !== undefined ? (className += 'success') : (className += 'warning');
+          activeTopic ? (className += 'success') : (className += 'warning');
 
           return (
             <React.Fragment>
