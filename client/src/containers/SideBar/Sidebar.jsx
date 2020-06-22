@@ -195,7 +195,7 @@ class Sidebar extends Component {
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black', height: height }}
+        style={{ background: 'black', height: 'auto' }}
       >
         <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav

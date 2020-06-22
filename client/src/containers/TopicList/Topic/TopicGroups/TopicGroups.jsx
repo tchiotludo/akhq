@@ -3,7 +3,6 @@ import Table from '../../../../components/Table';
 import api from '../../../../utils/api';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
-import { Link } from 'react-router-dom';
 
 class TopicGroups extends Component {
   state = {
@@ -50,19 +49,25 @@ class TopicGroups extends Component {
   }
 
   handleGroups(consumerGroups) {
-    let tableConsumerGroups = [];
-    consumerGroups.forEach(consumerGroup => {
-      consumerGroup.size = 0;
-      consumerGroup.logDirSize = 0;
-      tableConsumerGroups.push({
+    let tableConsumerGroups = consumerGroups.map(consumerGroup => {
+        return {
         id: consumerGroup.id,
         state: consumerGroup.state,
         coordinator: consumerGroup.coordinator.id,
-        members: consumerGroup.members.length,
-        topicLag: consumerGroup.offsets
-      });
-    });
+        members: (consumerGroup.members)? consumerGroup.members.length : 0,
+        topics: this.groupTopics(consumerGroup.offsets)
+        };
+    }) || []
     this.setState({ consumerGroups: tableConsumerGroups });
+  }
+
+  groupTopics(topics) {
+     if(!topics) return {};
+     return topics.reduce(function(a,e) {
+        let key = e.topic;
+        (a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag ))
+       return a;
+    }, {});
   }
 
   handleState(state) {
@@ -78,23 +83,19 @@ class TopicGroups extends Component {
   }
 
   handleTopics(topics) {
-    return topics.map(lagTopic => {
+    const noPropagation = e => e.stopPropagation()
+    return Object.keys(topics).map(topic => {
       return (
-        <div
-          onClick={() => {
-            this.props.changeTab('data');
-          }}
-        >
-          <Link
-            to={{
-              pathname: `/ui/${this.state.selectedCluster}/topic/${lagTopic.topic}`
-            }}
+        <div>
+          <a
+            href={`/ui/${this.state.selectedCluster}/topic/${topic}` }
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
+            onClick={noPropagation}
           >
-            {lagTopic.topic}
-            <div className="badge badge-secondary">Lag:{lagTopic.partition}</div>
-          </Link>
+            {topic}
+            <div className="badge badge-secondary">Lag:{topics[topic]}</div>
+          </a>
         </div>
       );
     });
@@ -139,8 +140,8 @@ class TopicGroups extends Component {
               accessor: 'topics',
               colName: 'Topics',
               cell: obj => {
-                if (obj.topicLag) {
-                  return this.handleTopics(obj.topicLag);
+                if (obj.topics) {
+                  return this.handleTopics(obj.topics);
                 }
               }
             }
