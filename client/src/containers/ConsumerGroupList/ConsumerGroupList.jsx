@@ -3,7 +3,6 @@ import Table from '../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { calculateTopicOffsetLag } from '../../utils/converters';
-import { Link } from 'react-router-dom';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
@@ -123,29 +122,24 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(groupedTopicOffset) {
-    const { history } = this.props;
+
+    const noPropagation = e => e.stopPropagation()
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
       const offsetLag = calculateTopicOffsetLag(topicOffsets);
 
       return (
-        <div
-          onClick={() => {
-            history.push({
-              pathname: `/ui/${this.state.selectedCluster}/topic/${topicId}`,
-              tab: constants.TOPIC
-            });
-          }}
-        >
-          <Link
-            to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
+        <div>
+          <a
+            href={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
+            onClick={noPropagation}
           >
             {topicId + ' '}
 
             <div className="badge badge-secondary">Lag:{offsetLag}</div>
-          </Link>
+          </a>
         </div>
       );
     });

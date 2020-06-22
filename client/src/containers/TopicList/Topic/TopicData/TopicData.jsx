@@ -9,8 +9,7 @@ import {
   uriTopicsPartitions,
   uriTopicDataSearch,
   uriSchemaRegistry,
-  uriTopicDataDelete,
-  uriTopicsConfigs
+  uriTopicDataDelete
 } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
@@ -76,7 +75,6 @@ class TopicData extends React.Component {
           loading: true
         });
         this.getMessages();
-        this.getTopicsConfig();
       }
     );
   };
@@ -85,41 +83,16 @@ class TopicData extends React.Component {
     this.onStop();
   };
 
-  async getTopicsConfig() {
-    let configs = [];
-    const { selectedCluster, selectedTopic } = this.state;
-    const { history } = this.props;
-    history.replace({
-      loading: true
-    });
-    try {
-      configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
-      this.setState({
-        cleanupPolicy: configs.data.filter(config => config.name.includes('cleanup.policy'))[0]
-          .value
-      });
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err, loading: false });
-      } else {
-        history.replace('/ui/error', { errorData: err, loading: false });
-      }
-    } finally {
-      history.replace({
-        loading: false
-      });
-    }
-  }
-
   startEventSource = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { currentSearch } = this.state;
     let self = this;
+    this.setState({ messages: [], pageNumber: 1 });
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
       self.setState({ isSearching: true }, () => {
-        self.handleMessages(res.records || []);
+        self.handleMessages(res.records || [], true);
       });
     });
 
@@ -297,8 +270,8 @@ class TopicData extends React.Component {
       });
   };
 
-  handleMessages = messages => {
-    let tableMessages = [];
+  handleMessages = (messages, append = false) => {
+    let tableMessages = (append)? this.state.messages: [];
     messages.forEach(message => {
       let date = new Date(message.timestamp);
       let messageToPush = {
@@ -314,6 +287,7 @@ class TopicData extends React.Component {
     });
     this.setState({ messages: tableMessages });
   };
+
 
   getNextPageOffsets = () => {
     const { nextPage } = this.state;

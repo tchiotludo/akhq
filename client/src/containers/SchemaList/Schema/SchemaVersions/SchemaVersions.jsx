@@ -6,6 +6,7 @@ import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewMo
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
+import AceEditor from "react-ace";
 
 class SchemaVersions extends Component {
   state = {
@@ -134,25 +135,33 @@ class SchemaVersions extends Component {
             },
             {
               id: 'schema',
+              name: 'schema',
               accessor: 'schema',
               colName: 'Schema',
               type: 'text',
+              extraRow: true,
+              extraRowContent: (obj, col, index) => {
+                return (
+                    <AceEditor
+                        mode="json"
+                        id={'value' + index}
+                        theme="dracula"
+                        value={obj[col.accessor]}
+                        readOnly
+                        name="UNIQUE_ID_OF_DIV"
+                        editorProps={{ $blockScrolling: true }}
+                        style={{ width: '100%', minHeight: '25vh' }}
+                    />
+                );
+              },
               cell: (obj, col) => {
                 return (
-                  <div className="value cell-div">
-                    <span className="align-cell value-span">
-                      {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
-                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
-                    </span>
-                    <div className="value-button">
-                      <button
-                        className="btn btn-secondary headers pull-right"
-                        onClick={() => this.showSchemaModal(obj[col.accessor])}
-                      >
-                        ...
-                      </button>
-                    </div>
-                  </div>
+                    <pre class="mb-0 khq-data-highlight">
+                      <code>
+                        {obj[col.accessor] ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '') : 'N/A'}
+                        {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}
+                      </code>
+                  </pre>
                 );
               }
             }
@@ -166,6 +175,44 @@ class SchemaVersions extends Component {
               ? [constants.TABLE_DELETE]
               : []
           }
+          extraRow
+          noStripes
+          onExpand={obj => {
+            return Object.keys(obj.headers).map(header => {
+              return (
+                  <tr
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        width: '100%'
+                      }}
+                  >
+                    <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                    >
+                      {header}
+                    </td>
+                    <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                    >
+                      {obj.headers[header]}
+                    </td>
+                  </tr>
+              );
+            });
+          }}
         />
         <ConfirmModal
           show={this.state.showDeleteModal}
