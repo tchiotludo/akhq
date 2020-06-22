@@ -35,9 +35,8 @@ class TopicProduce extends Form {
       .label('Partition')
       .required(),
     key: Joi.string()
-      .min(1)
-      .label('Key')
-      .required(),
+      .allow('')
+      .label('Key'),
     hKey0: Joi.string()
       .allow('')
       .label('hKey0'),
@@ -107,7 +106,7 @@ class TopicProduce extends Form {
       .then(() => {
         this.props.history.push({
           ...this.props.location,
-          pathname: `/ui/${clusterId}/topic`,
+          pathname: `/ui/${clusterId}/topic/${topicId}`,
           showSuccessToast: true,
           successToastMessage: `Produced to ${topicId}.`,
           loading: false
@@ -268,7 +267,7 @@ class TopicProduce extends Form {
                       formatDateTime(
                         {
                           year: date.year(),
-                          monthValue: date.month(),
+                          monthValue: date.month() +1,
                           dayOfMonth: date.date(),
                           hour: date.hour(),
                           minute: date.minute(),
@@ -283,7 +282,7 @@ class TopicProduce extends Form {
                       formatDateTime(
                         {
                           year: date.year(),
-                          monthValue: date.month(),
+                          monthValue: date.month() + 1,
                           dayOfMonth: date.date(),
                           hour: date.hour(),
                           minute: date.minute(),
@@ -297,6 +296,7 @@ class TopicProduce extends Form {
               <Dropdown.Menu>
                 <div className="input-group">
                   <DatePicker
+                    showDateTimeInput
                     showTimeInput
                     value={datetime}
                     onChange={value => {
