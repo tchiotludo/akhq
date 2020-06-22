@@ -10,6 +10,7 @@ import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
 import './styles.scss';
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
+import AceEditor from "react-ace";
 class SchemaList extends Component {
   state = {
     schemasRegistry: [],
@@ -89,12 +90,11 @@ class SchemaList extends Component {
       let response = await api.get(
         endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
       );
-      response = response.data;
-      if (response.results) {
-        let schemasRegistry = response.results || [];
-        this.handleSchemaRegistry(schemasRegistry);
-        this.setState({ selectedCluster, totalPageNumber: response.page });
-      }
+
+      let schemasRegistry = (response.data)? response.data.results || [] : [];
+      this.handleSchemaRegistry(schemasRegistry);
+      this.setState({ selectedCluster, totalPageNumber: response.page });
+
     } catch (err) {
       if (err.response && err.response.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
@@ -227,31 +227,39 @@ class SchemaList extends Component {
                 return this.handleVersion(obj.version);
               }
             },
-
             {
               id: 'schema',
+              name: 'schema',
               accessor: 'schema',
               colName: 'Schema',
+              type: 'text',
+              extraRow: true,
+              extraRowContent: (obj, col, index) => {
+                return (
+                    <AceEditor
+                        mode="json"
+                        id={'value' + index}
+                        theme="dracula"
+                        value={obj[col.accessor]}
+                        readOnly
+                        name="UNIQUE_ID_OF_DIV"
+                        editorProps={{ $blockScrolling: true }}
+                        style={{ width: '100%', minHeight: '25vh' }}
+                    />
+                );
+              },
               cell: (obj, col) => {
                 return (
-                  <div className="value cell-div">
-                    <span className="align-cell value-span">
-                      {obj[col.accessor] ? obj[col.accessor].substring(0, 150) : 'N/A'}
-                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}{' '}
-                    </span>
-                    <div className="value-button">
-                      <button
-                        className="btn btn-secondary headers pull-right"
-                        onClick={() => this.showSchemaModal(obj[col.accessor])}
-                      >
-                        ...
-                      </button>
-                    </div>
-                  </div>
+                    <pre class="mb-0 khq-data-highlight">
+                      <code>
+                        {obj[col.accessor] ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '') : 'N/A'}
+                        {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}
+                      </code>
+                  </pre>
                 );
               }
             }
-          ]}
+            ]}
           data={this.state.schemasRegistry}
           onDelete={schema => {
             this.handleOnDelete(schema);
@@ -270,6 +278,45 @@ class SchemaList extends Component {
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
               : [constants.TABLE_DETAILS]
           }
+          extraRow
+          noStripes
+          onExpand={obj => {
+            return Object.keys(obj.headers).map(header => {
+              return (
+                  <tr
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        width: '100%'
+                      }}
+                  >
+                    <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                    >
+                      {header}
+                    </td>
+                    <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                    >
+                      {obj.headers[header]}
+                    </td>
+                  </tr>
+              );
+            });
+          }}
+          noContent={'No schemas available'}
         />
 
         <div
