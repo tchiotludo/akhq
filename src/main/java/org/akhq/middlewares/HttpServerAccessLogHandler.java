@@ -18,33 +18,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 
-import javax.inject.Singleton;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Singleton;
 
 /**
  * @author croudet
  */
 @Sharable
 @Singleton
-@Requires(property = "akhq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.TRUE)
+@Requires(property = "akhq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.FALSE)
 public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
-    private final Logger accessLogger;
-    private static String logFormat;
     private static final AttributeKey<AccessLog> LOG_HANDLER_CONTEXT = AttributeKey.valueOf("logHandlerContext");
     private static final String MISSING = "-";
 
-    public HttpServerAccessLogHandler(@Value("${akhq.server.access-log.name}") String name,
-                                      @Value("${akhq.server.access-log.format}") String format) {
-        this(LoggerFactory.getLogger(name), format);
+    private List<String> filters = new ArrayList<>();
+    private String logFormat;
+    private final Logger accessLogger;
+
+    public HttpServerAccessLogHandler(
+        @Value("${akhq.server.access-log.name:access-log}") String name,
+        @Value("${akhq.server.access-log.format}") String logFormat,
+        @Value("${akhq.server.access-log.filters}") List<String> filters
+    ) {
+        this(LoggerFactory.getLogger(name));
+        this.logFormat = logFormat;
+        this.filters = filters;
     }
 
-    private HttpServerAccessLogHandler(Logger accessLogger, String format) {
+    private HttpServerAccessLogHandler(Logger accessLogger) {
         super();
         this.accessLogger = accessLogger;
-        logFormat = format;
     }
 
     private static String inetAddress(SocketChannel channel, HttpRequest request) {
@@ -65,7 +72,7 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
         }
     }
 
-    private static AccessLog accessLog(SocketChannel channel) {
+    private AccessLog accessLog(SocketChannel channel) {
         final Attribute<AccessLog> attr = channel.attr(LOG_HANDLER_CONTEXT);
 
         AccessLog accessLog = attr.get();
@@ -109,7 +116,7 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
     private void logAtLast(ChannelHandlerContext ctx, Object msg, ChannelPromise promise, AccessLog accessLog) {
         ctx.write(msg, promise).addListener(future -> {
             if (future.isSuccess()) {
-                accessLog.logAccess(accessLogger);
+                accessLog.logAccess(accessLogger, filters);
             }
         });
     }
@@ -132,6 +139,7 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
                     accessLog.contentLength = HttpUtil.getContentLength(response, -1L);
                 }
             }
+
             if (msg instanceof LastHttpContent) {
                 accessLog.increaseContentLength(((LastHttpContent) msg).content().readableBytes());
                 logAtLast(ctx, msg, promise, accessLog);
@@ -161,11 +169,11 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
 
         AccessLog(String logFormat) {
             this.logFormat = logFormat;
-            this.zonedDateTime = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            this.zonedDateTime = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         }
 
         private void reset() {
-            this.zonedDateTime = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            this.zonedDateTime = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             inetAddress = null;
             method = null;
             uri = null;
@@ -183,8 +191,7 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
             }
         }
 
-        @SuppressWarnings("boxing")
-        void logAccess(Logger accessLogger) {
+        void logAccess(Logger accessLogger, List<String> filters) {
             if (accessLogger.isInfoEnabled()) {
                 final long timeElapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
                 String message = MessageFormatter.arrayFormat(logFormat, new Object[]{
@@ -192,13 +199,19 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
                     timeElapsed,
                     method,
                     uri,
-                    protocol,
                     status,
-                    inetAddress,
                     contentLength > -1L ? contentLength : MISSING,
+                    inetAddress,
                     port
                 }).getMessage();
 
+                boolean filtered = filters
+                    .stream()
+                    .anyMatch(message::matches);
+
+                if (!filtered) {
+                    return;
+                }
 
                 if (status >= 400) {
                     accessLogger.warn(message);
@@ -208,5 +221,4 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
             }
         }
     }
-
 }
