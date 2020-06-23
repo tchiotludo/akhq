@@ -47,6 +47,14 @@ secrets: |
 extraVolumes: []
 # Any extra volume mounts to define for the akhq container
 extraVolumeMounts: []
+# Add your own init container or uncomment and modify the example.
+initContainers: {}
+#   create-keystore: 
+#     image: "openjdk:11-slim"
+#     command: ['sh', '-c', 'keytool']
+#     volumeMounts:
+#      - mountPath: /tmp
+#        name: certs
 
 service:
   enabled: true
