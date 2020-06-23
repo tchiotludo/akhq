@@ -3,7 +3,29 @@ entries:
   akhq:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-06-06T13:19:34.61008702Z"
+    created: "2020-06-23T07:57:19.31385011Z"
+    description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
+      group, schema registry, connect and more...
+    digest: 948a3c20285c9da87ef9a8a1b70953d4d72c4313c8c3c3f6e12d80552db06b38
+    home: https://akhq.io
+    icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/assets/img/logo_black.png
+    keywords:
+    - kafka
+    - confluent
+    - timeseries
+    - influxdata
+    maintainers:
+    - email: hello@akhq.io
+      name: tchiotludo
+    name: akhq
+    sources:
+    - https://github.com/tchiotludo/akhq
+    urls:
+    - akhq-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-06-23T07:57:19.313302208Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 9b327a2adfb91219e4ce2d176dff26eb74d59de29332912e034b37ea60b02645
@@ -25,7 +47,7 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-06-06T13:19:34.559903877Z"
+    created: "2020-06-23T07:57:19.312771405Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 25a5a2c7d0d4e4ba7080e0193435c3dad0035bdaee2379885a42cfe4fceb144d
@@ -45,4 +67,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2020-06-06T13:19:34.558925045Z"
+generated: "2020-06-23T07:57:19.312002802Z"
