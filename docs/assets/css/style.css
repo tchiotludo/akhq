@@ -458,7 +458,7 @@ button:focus {
 }
 
 .mu-single-using {
-	display: inline;
+	display: flex;
 	float: left;
 	text-align: center;
 	vertical-align: center;
@@ -467,6 +467,8 @@ button:focus {
 	padding-bottom: 15px;
 	padding-top: 15px;
 	margin: 10% 5%;
+	align-items: center;
+	justify-content: center;
 }
 
 .mu-single-using i {
@@ -748,11 +750,12 @@ button:focus {
 }
 
 .mu-about-info-companies {
+	margin-top: 5%;
 	text-align: center;
 }
 
 .mu-about-info-companies > span {
-margin: 0 5%;
+	margin: 0 5%;
 }
 
 
