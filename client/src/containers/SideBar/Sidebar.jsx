@@ -188,7 +188,6 @@ class Sidebar extends Component {
     const roles = this.state.roles || {};
     const tag = 'Snapshot';
     const { listConnects, listClusters } = this.setClustersAndConnects();
-    const height = document.getElementById('root').offsetHeight;
     return (
       <SideNav
         expanded={this.props.expanded}

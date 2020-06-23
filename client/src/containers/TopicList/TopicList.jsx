@@ -183,6 +183,7 @@ class TopicList extends Component {
             </div>
           );
         }
+        return null;
       });
     }
 

@@ -4,8 +4,12 @@ import Header from '../../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { post, get } from '../../../../utils/api';
-import { uriTopicsProduce, uriTopicsPartitions } from '../../../../utils/endpoints';
 import { formatDateTime } from '../../../../utils/converters';
+import {
+  uriTopicsProduce,
+  uriTopicsPartitions,
+  uriPreferredSchemaForTopic
+} from '../../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 
@@ -26,7 +30,15 @@ class TopicProduce extends Form {
     selectableValueFormats: [
       { _id: 'string', name: 'string' },
       { _id: 'json', name: 'json' }
-    ]
+    ],
+    keySchema: [],
+    keySchemaSearchValue: '',
+    selectedKeySchema: '',
+    valueSchema: [],
+    valueSchemaSearchValue: '',
+    selectedValueSchema: '',
+    clusterId: '',
+    topicId: ''
   };
 
   schema = {
@@ -74,19 +86,51 @@ class TopicProduce extends Form {
         loading: false
       });
     }
+    this.getPreferredSchemaForTopic();
     this.setState({ clusterId, topicId });
   }
 
-  doSubmit() {
-    const { formData, datetime } = this.state;
+  async getPreferredSchemaForTopic() {
     const { clusterId, topicId } = this.props.match.params;
+    const { history } = this.props;
+    try {
+      let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
+      let keySchema = [];
+      let valueSchema = [];
+      schema.data.key.map(index => keySchema.push(index));
+      schema.data.value.map(index => valueSchema.push(index));
+      this.setState({ keySchema: keySchema, valueSchema: valueSchema });
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        history.replace('/ui/page-not-found', { errorData: err });
+      } else {
+        history.replace('/ui/error', { errorData: err });
+      }
+    }
+  }
+
+  doSubmit() {
+    const {
+      formData,
+      datetime,
+      selectedKeySchema,
+      selectedValueSchema,
+      keySchema,
+      valueSchema
+    } = this.state;
+    const { clusterId, topicId } = this.props.match.params;
+
+    let schemaKeyToSend = keySchema.find(key => key.subject === selectedKeySchema);
+    let schemaValueToSend = valueSchema.find(value => value.subject === selectedValueSchema);
     const topic = {
       clusterId,
       topicId,
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: JSON.parse(JSON.stringify(formData.value))
+      value: JSON.parse(JSON.stringify(formData.value)),
+      keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
+      valueSchema: schemaValueToSend ? schemaValueToSend.id : ''
     };
 
     let headers = {};
@@ -112,11 +156,13 @@ class TopicProduce extends Form {
           loading: false
         });
       })
-      .catch(() => {
+      .catch(err => {
         this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
-          errorToastMessage: 'There was an error while producing to topic.',
+          errorToastMessage: err.response.data
+            ? err.response.data.message
+            : 'There was an error while producing to topic.',
           loading: false
         });
       });
@@ -207,8 +253,66 @@ class TopicProduce extends Form {
     this.setState(state);
   }
 
+  renderResults = (results, searchValue, selectedValue, tag) => {
+    return (
+      <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
+        <ul
+          className="dropdown-menu inner show"
+          role="presentation"
+          style={{ marginTop: '0px', marginBottom: '0px' }}
+        >
+          {results
+            .filter(key => {
+              if (searchValue.length > 0) {
+                return key.includes(searchValue);
+              }
+              return results;
+            })
+            .map((key, index) => {
+              let selected = selectedValue === key ? 'selected' : '';
+              return (
+                <li>
+                  <div
+                    onClick={e => {
+                      if (tag === 'key') {
+                        selectedValue === key
+                          ? this.setState({ selectedKeySchema: '' })
+                          : this.setState({ selectedKeySchema: key });
+                      } else if (tag === 'value') {
+                        selectedValue === key
+                          ? this.setState({ selectedValueSchema: '' })
+                          : this.setState({ selectedValueSchema: key });
+                      }
+                    }}
+                    role="option"
+                    className={`dropdown-item ${selected}`}
+                    id={`bs-select-${index}-0`}
+                    aria-selected="false"
+                  >
+                    <span className="text">{key}</span>
+                  </div>
+                </li>
+              );
+            })}
+        </ul>{' '}
+      </div>
+    );
+  };
+
   render() {
-    const { topicId, formData, partitions, selectableValueFormats, datetime } = this.state;
+    const {
+      topicId,
+      formData,
+      partitions,
+      datetime,
+      selectableValueFormats,
+      keySchema,
+      keySchemaSearchValue,
+      selectedKeySchema,
+      valueSchema,
+      valueSchemaSearchValue,
+      selectedValueSchema
+    } = this.state;
     let date = moment(datetime);
     return (
       <div style={{ overflow: 'hidden', paddingRight: '20px', marginRight: 0 }}>
@@ -218,6 +322,24 @@ class TopicProduce extends Form {
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
             })}
+            {this.renderDropdown(
+              'Key schema',
+              keySchema.map(key => key.subject),
+              keySchemaSearchValue,
+              selectedKeySchema,
+              value => {
+                this.setState({
+                  keySchemaSearchValue: value.target.value,
+                  selectedKeySchema: value.target.value
+                });
+              },
+              this.renderResults(
+                keySchema.map(key => key.subject),
+                keySchemaSearchValue,
+                selectedKeySchema,
+                'key'
+              )
+            )}
             {this.renderInput('key', 'Key', 'Key', 'Key')}
             <div></div>
           </div>
@@ -232,6 +354,24 @@ class TopicProduce extends Form {
               this.forceUpdate();
             }
           })}
+          {this.renderDropdown(
+            'Value schema',
+            valueSchema.map(value => value.subject),
+            valueSchemaSearchValue,
+            selectedValueSchema,
+            value => {
+              this.setState({
+                valueSchemaSearchValue: value.target.value,
+                selectedValueSchema: value.target.value
+              });
+            },
+            this.renderResults(
+              valueSchema.map(value => value.subject),
+              valueSchemaSearchValue,
+              selectedValueSchema,
+              'value'
+            )
+          )}
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
               formData: {
@@ -267,7 +407,7 @@ class TopicProduce extends Form {
                       formatDateTime(
                         {
                           year: date.year(),
-                          monthValue: date.month() +1,
+                          monthValue: date.month() + 1,
                           dayOfMonth: date.date(),
                           hour: date.hour(),
                           minute: date.minute(),
