@@ -159,7 +159,7 @@ class TopicList extends Component {
 
   handleConsumerGroups = (consumerGroups, topicId) => {
     if (consumerGroups) {
-      return consumerGroups.forEach(consumerGroup => {
+      return consumerGroups.map(consumerGroup => {
         let className = 'btn btn-sm mb-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
 
@@ -169,15 +169,21 @@ class TopicList extends Component {
           );
           activeTopic ? (className += 'success') : (className += 'warning');
 
+          const noPropagation = e => e.stopPropagation();
+
           return (
-            <React.Fragment>
-              <div className={className}>
-                {consumerGroup.id} <span className="badge badge-light">Lag: {offsetLag}</span>
-              </div>
-              <br />
-            </React.Fragment>
+            <div>
+              <a
+                href={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
+                className={{ activeTopic }}
+                onClick={noPropagation}
+              >
+                {consumerGroup.id} <div className="badge badge-light"> Lag: {offsetLag}</div>
+              </a>
+            </div>
           );
         }
+        return null;
       });
     }
 
@@ -200,7 +206,7 @@ class TopicList extends Component {
       <div>
         <Header title="Topics" history={this.props.history} />
         <nav
-          className="navbar navbar-expand-lg navbar-light 
+          className="navbar navbar-expand-lg navbar-light
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"
         >
           <SearchBar
@@ -277,8 +283,10 @@ class TopicList extends Component {
               accessor: 'groupComponent',
               colName: 'Consumer Groups',
               type: 'text',
-              cell: (obj, col) => {
-                return this.handleConsumerGroups(obj[col.accessor], obj.id);
+              cell: obj => {
+                if (obj.groupComponent) {
+                  return this.handleConsumerGroups(obj.groupComponent, obj.id);
+                }
               }
             }
           ]}
@@ -300,7 +308,7 @@ class TopicList extends Component {
         />
 
         <div
-          className="navbar navbar-expand-lg navbar-light mr-auto 
+          className="navbar navbar-expand-lg navbar-light mr-auto
         khq-data-filter khq-sticky khq-nav"
         >
           <div className="collapse navbar-collapse" />
