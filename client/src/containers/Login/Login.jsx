@@ -1,10 +1,10 @@
 import React from 'react';
 
 import logo from '../../images/logo.svg';
-import {uriCurrentUser, uriLogin} from '../../utils/endpoints';
-import {organizeRoles} from '../../utils/converters';
+import { uriCurrentUser, uriLogin } from '../../utils/endpoints';
+import { organizeRoles } from '../../utils/converters';
 import history from '../../utils/history';
-import {get, login} from '../../utils/api';
+import { get, login } from '../../utils/api';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
 
@@ -30,7 +30,7 @@ class Login extends Form {
   };
 
   login() {
-    const {formData} = this.state;
+    const { formData } = this.state;
 
     history.push({
       loading: true
@@ -42,59 +42,56 @@ class Login extends Form {
       };
 
       login(uriLogin(), body)
-          .then(response => {
-            this.getData();
-          })
-          .catch(function (err) {
-            this.props.history.replace({
-              ...this.props.history,
-              pathname: '/ui/login',
-              showErrorToast: true,
-              errorToastTitle: 'Login failed',
-              errorToastMessage: err.response.message,
-              loading: false
-            });
+        .then(response => {
+          this.getData();
+        })
+        .catch(function(err) {
+          this.props.history.replace({
+            ...this.props.history,
+            pathname: '/ui/login',
+            showErrorToast: true,
+            errorToastTitle: 'Login failed',
+            errorToastMessage: err.message,
+            loading: false
           });
-    }
-    catch(err)
-    {
+        });
+    } catch (err) {
       history.replace({
         ...this.props.history,
         pathname: '/ui/login',
         showErrorToast: true,
         errorToastTitle: 'Login failed',
-        errorToastMessage: err.response.message,
+        errorToastMessage: err.message,
         loading: false
       });
     }
   }
 
   async getData() {
+    const res = await get(uriCurrentUser());
+    const currentUserData = res.data;
 
-      const res = await get(uriCurrentUser());
-      const currentUserData = res.data;
-
-      if (currentUserData.logged) {
-        localStorage.setItem('login', true);
-        localStorage.setItem('user', currentUserData.username);
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-        this.props.history.push({
-          ...this.props.history,
-          pathname: '/ui',
-          showSuccessToast: true,
-          successToastMessage: `User '${currentUserData.username}' logged in successfully`,
-          loading: false
-        });
-      } else {
-        this.props.history.replace({
-          ...this.props.history,
-          pathname: '/ui/login',
-          showErrorToast: true,
-          errorToastTitle: 'Login failed',
-          errorToastMessage: 'Invalid credentials',
-          loading: false
-        });
-      }
+    if (currentUserData.logged) {
+      localStorage.setItem('login', true);
+      localStorage.setItem('user', currentUserData.username);
+      localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      this.props.history.push({
+        ...this.props.history,
+        pathname: '/ui',
+        showSuccessToast: true,
+        successToastMessage: `User '${currentUserData.username}' logged in successfully`,
+        loading: false
+      });
+    } else {
+      this.props.history.replace({
+        ...this.props.history,
+        pathname: '/ui/login',
+        showErrorToast: true,
+        errorToastTitle: 'Login failed',
+        errorToastMessage: 'Invalid credentials',
+        loading: false
+      });
+    }
   }
 
   render() {

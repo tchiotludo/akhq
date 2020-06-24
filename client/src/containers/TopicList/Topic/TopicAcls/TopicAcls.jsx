@@ -24,7 +24,7 @@ class TopicAcls extends Component {
       acls = await get(uriTopicsAcls(clusterId, topicId));
       this.handleData(acls.data);
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });

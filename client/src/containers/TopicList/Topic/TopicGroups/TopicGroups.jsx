@@ -36,7 +36,7 @@ class TopicGroups extends Component {
         this.setState({ selectedCluster });
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -49,24 +49,25 @@ class TopicGroups extends Component {
   }
 
   handleGroups(consumerGroups) {
-    let tableConsumerGroups = consumerGroups.map(consumerGroup => {
+    let tableConsumerGroups =
+      consumerGroups.map(consumerGroup => {
         return {
-        id: consumerGroup.id,
-        state: consumerGroup.state,
-        coordinator: consumerGroup.coordinator.id,
-        members: (consumerGroup.members)? consumerGroup.members.length : 0,
-        topics: this.groupTopics(consumerGroup.offsets)
+          id: consumerGroup.id,
+          state: consumerGroup.state,
+          coordinator: consumerGroup.coordinator.id,
+          members: consumerGroup.members ? consumerGroup.members.length : 0,
+          topics: this.groupTopics(consumerGroup.offsets)
         };
-    }) || []
+      }) || [];
     this.setState({ consumerGroups: tableConsumerGroups });
   }
 
   groupTopics(topics) {
-     if(!topics) return {};
-     return topics.reduce(function(a,e) {
-        let key = e.topic;
-        (a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag ))
-       return a;
+    if (!topics) return {};
+    return topics.reduce(function(a, e) {
+      let key = e.topic;
+      a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag);
+      return a;
     }, {});
   }
 
@@ -83,12 +84,12 @@ class TopicGroups extends Component {
   }
 
   handleTopics(topics) {
-    const noPropagation = e => e.stopPropagation()
+    const noPropagation = e => e.stopPropagation();
     return Object.keys(topics).map(topic => {
       return (
         <div>
           <a
-            href={`/ui/${this.state.selectedCluster}/topic/${topic}` }
+            href={`/ui/${this.state.selectedCluster}/topic/${topic}`}
             key="lagTopic.topicId"
             className="btn btn-dark btn-sm mb-1"
             onClick={noPropagation}

@@ -42,7 +42,7 @@ class ConnectCreate extends Component {
       plugins = plugins.data;
       this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -173,7 +173,12 @@ class ConnectCreate extends Component {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small className="form-text text-muted" dangerouslySetInnerHTML={{ __html:plugin.documentation}}></small>;
+    let documentation = (
+      <small
+        className="form-text text-muted"
+        dangerouslySetInnerHTML={{ __html: plugin.documentation }}
+      ></small>
+    );
 
     rows = (
       <React.Fragment key={plugin.name}>
@@ -426,7 +431,7 @@ class ConnectCreate extends Component {
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
       });
