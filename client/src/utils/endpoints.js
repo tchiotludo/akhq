@@ -152,6 +152,10 @@ export const uriDeleteSchema = (clusterId, subject) => {
   return `${apiUrl}/${clusterId}/schema/${subject}`;
 };
 
+export const uriPreferredSchemaForTopic = (clusterId, topicId) => {
+  return `${apiUrl}/${clusterId}/schema/topic/${topicId}`;
+};
+
 export const uriDeleteSchemaVersion = (clusterId, subject, version) => {
   return `${apiUrl}/${clusterId}/schema/${subject}/version/${version}`;
 };
@@ -298,6 +302,7 @@ export default {
   uriConsumerGroupMembers,
   uriSchemaRegistry,
   uriDeleteSchema,
+  uriPreferredSchemaForTopic,
   uriSchemaCreate,
   uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,

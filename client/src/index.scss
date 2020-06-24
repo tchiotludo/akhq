@@ -24,6 +24,8 @@ $fa-font-path: "../fonts";
 // components
 @import "components/Base/Base.scss";
 @import "components/Table/styles.scss";
+@import "components/Form/styles.scss";
+@import "components/Form/Select/styles.scss";
 
 // containers
 @import "containers/SideBar/styles.scss";

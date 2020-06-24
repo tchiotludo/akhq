@@ -8,6 +8,7 @@ import Select from './Select';
 import RadioGroup from './RadioGroup';
 import DatePicker from '../DatePicker';
 import AceEditor from 'react-ace';
+import Dropdown from 'react-bootstrap/Dropdown';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
@@ -140,7 +141,7 @@ class Form extends Component {
     );
   };
 
-  renderSelect = (name, label, items, onChange, rest) => {
+  renderSelect = (name, label, items, onChange, wrapperClass, inputClass, rest) => {
     const { formData, errors } = this.state;
 
     return (
@@ -153,6 +154,8 @@ class Form extends Component {
         onChange={value => {
           onChange(value);
         }}
+        wrapperClass={wrapperClass}
+        inputClass={inputClass}
         {...rest}
       />
     );
@@ -190,6 +193,48 @@ class Form extends Component {
     }
 
     return <RadioGroup name={name} label={label} items={items} handleChange={onChange} />;
+  };
+
+  renderDropdown = (name, options, searchValue, selectedKeySchema, onChange, renderResults) => {
+    return (
+      <React.Fragment>
+        <div className=" form-group row">
+          <label className="col-sm-2 col-form-label">{name}</label>
+          <div className="col-sm-10">
+            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+                <input
+                  type="text"
+                  name="searchValue"
+                  className="form-control placeholder"
+                  placeholder={name}
+                  value={selectedKeySchema}
+                />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <div className="bs-searchbox input-group">
+                  <input
+                    type="text"
+                    name="searchValue"
+                    className="form-control col-sm-9 mr-2"
+                    autoComplete="off"
+                    role="combobox"
+                    aria-expanded="false"
+                    aria-label="Search"
+                    aria-controls="bs-select-1"
+                    aria-autocomplete="list"
+                    placeholder={'search'}
+                    onChange={onChange}
+                    value={searchValue}
+                  />
+                </div>
+                {renderResults}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </div>
+      </React.Fragment>
+    );
   };
 }
 

@@ -113,7 +113,14 @@ class SearchBar extends Form {
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
           <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
             {showSearch &&
-              this.renderInput('search', '', 'Search', 'text', { autoComplete: 'off' })}
+              this.renderInput('search',
+                  '',
+                  'Search',
+                  'text',
+                  { autoComplete: 'off' },
+                  '',
+                  'topic-search-wrapper',
+                  'topic-search-input')}
             {showTopicListView &&
               this.renderSelect(
                 'topicListView',
@@ -124,7 +131,10 @@ class SearchBar extends Form {
                   formData.topicListView = input.value;
                   this.setState();
                   this.props.onTopicListViewChange(input.value);
-                }
+                },
+                  'select-wrapper',
+                  'select-class',
+                  {className: 'form-control topic-select'}
               )}
 
             <button className="btn btn-primary" type="submit">

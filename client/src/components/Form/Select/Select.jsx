@@ -1,8 +1,17 @@
 import React from 'react';
 
-const Select = ({ name, label, items, error, ...rest }) => {
-  return (
-    <div className="form-group row">
+const Select = ({ name, label, items, error, wrapperClass, selectClass, ...rest }) => {
+    let wrapperClassRender = 'form-group';
+    let selectClassRender = 'col-sm-12';
+    if (wrapperClass) {
+        wrapperClassRender = wrapperClass;
+    }
+    if (selectClass) {
+        selectClassRender = selectClass;
+    }
+
+    return (
+    <div className={`${wrapperClassRender} row`}>
       {label !== '' ? (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
@@ -10,7 +19,7 @@ const Select = ({ name, label, items, error, ...rest }) => {
       ) : (
         <div/>
       )}
-      <div className="col-sm-10">
+      <div className={`${selectClassRender} no-padding`}>
         <select className="form-control" id={name} name={name} {...rest}>
           {items.map(item => (
             <option key={item._id} value={item._id}>
