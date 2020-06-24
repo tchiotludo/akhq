@@ -486,7 +486,7 @@ class ConnectCreate extends Component {
                   <tbody>{this.state.display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+              <div className="khq-submit button-footer" style={{ marginRight: 0, left: 0 }}>
                 <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
                   Create
                 </button>

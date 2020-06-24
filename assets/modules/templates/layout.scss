@@ -173,7 +173,7 @@ form.khq-form div.khq-submit,
 
     @include media-breakpoint-up(md) {
         left: $menu-width;
-        width: calc(100vw - #{$menu-width} - 15px);
+        /*width: calc(100vw - #{$menu-width} - 15px);*/
     }
 
     > div {

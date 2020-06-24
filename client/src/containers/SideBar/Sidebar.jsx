@@ -260,6 +260,7 @@ class Sidebar extends Component {
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
+              style={{marginBottom: '3rem'}}
             >
               <NavIcon>
                 <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
