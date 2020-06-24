@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { organizeRoles } from '../../utils/converters';
 import { get, logout } from '../../utils/api';
-import {uriCurrentUser, uriLogout} from '../../utils/endpoints';
+import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 
 class Header extends Component {
   state = {
@@ -28,7 +28,7 @@ class Header extends Component {
         });
       });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         this.props.history.replace('/ui/page-not-found', { errorData: err });
       } else {
         this.props.history.replace('/ui/error', { errorData: err });

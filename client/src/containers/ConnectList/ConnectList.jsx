@@ -55,7 +55,7 @@ class ConnectList extends Component {
         loading: false
       });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err, loading: false });
       } else {
         history.replace('/ui/error', { errorData: err, loading: false });
@@ -240,14 +240,14 @@ class ConnectList extends Component {
                 if (obj[col.accessor].type === 'source') {
                   return (
                     <React.Fragment>
-                      <i className="fa fa-forward" aria-hidden="true"/>
+                      <i className="fa fa-forward" aria-hidden="true" />
                       {` ${obj[col.accessor].shortClassName}`}
                     </React.Fragment>
                   );
                 }
                 return (
                   <React.Fragment>
-                    <i className="fa fa-backward" aria-hidden="true"/>
+                    <i className="fa fa-backward" aria-hidden="true" />
                     {` ${obj[col.accessor].shortClassName}`}
                   </React.Fragment>
                 );

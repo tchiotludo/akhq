@@ -67,11 +67,14 @@ class Table extends Component {
         <thead id="secondHeader" className="thead-dark">
           <tr key="secondHeader">
             {columns.map((column, index) => {
-              return (
-                <th className="header-text" key={`secondHead${column.colName}${index}`}>
-                  {column.colName}
-                </th>
-              );
+              if (!column.extraRow) {
+                return (
+                  <th className="header-text" key={`secondHead${column.colName}${index}`}>
+                    {column.colName}
+                  </th>
+                );
+              }
+              return null;
             })}
             {actions && actions.length > 0 && data && data.length > 0 && (
               <th colSpan={actions.length} />
@@ -103,18 +106,7 @@ class Table extends Component {
             extraRowColExpanded = column.extraRowContent
               ? column.extraRowContent(row, column)
               : row[column.accessor];
-            return (
-              <td
-                onClick={() => {
-                  if (actions && actions.find(action => action === constants.TABLE_DETAILS)) {
-                    onDetails && onDetails(row.id, row);
-                  }
-                }}
-                id={`row_${column.id}_${colIndex}`}
-              >
-                <div className="align-cell" />
-              </td>
-            );
+            return null;
           }
           if (typeof column.cell === 'function') {
             return (

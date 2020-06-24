@@ -45,6 +45,10 @@
     vertical-align: middle;
 }
 
+.page-link:not(.page-number){
+    background-color: #32a9d4 !important;
+}
+
 button.before-button, button.after-button {
     background-color: Transparent;
     background-repeat:no-repeat;

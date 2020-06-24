@@ -80,7 +80,7 @@ class SchemaUpdate extends Form {
         this.handleLatestSchemaVersion(data);
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -131,7 +131,7 @@ class SchemaUpdate extends Form {
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: `Failed to update schema ${formData.subject}`,
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
       });

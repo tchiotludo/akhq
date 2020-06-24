@@ -43,7 +43,7 @@ class NodeConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -174,10 +174,10 @@ class NodeConfigs extends Form {
       this.props.history.replace({
         showErrorToast: true,
         errorToastTitle: `Failed to update node '${selectedNode}' configs`,
-        errorToastMessage: err.response.data.message,
+        errorToastMessage: err.message,
         loading: false
       });
-      console.error('Error:', err.response);
+      console.error('Error:', err);
     }
   }
 

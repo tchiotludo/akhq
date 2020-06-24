@@ -21,12 +21,12 @@ class App extends React.Component {
         this.setState({ clusterId: res.data ? res.data[0].id : '' });
       })
       .catch(err => {
-        if (err.response && err.response.status === 401) {
+        if (err.status === 401) {
           history.replace('/ui/:login');
           this.setState({ clusterId: ':login' });
           return;
         }
-        if (err.response && err.response.status === 404) {
+        if (err.status === 404) {
           history.replace('/ui/page-not-found', { errorData: err });
           this.setState({ clusterId: 'page-not-found' });
         } else {

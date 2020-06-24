@@ -58,9 +58,10 @@ class Sidebar extends Component {
     let allClusters = {};
     try {
       allClusters = await get(uriClusters());
-      allClusters = _(allClusters.data)
-        .sortBy(cluster => cluster.id)
-        .value();
+      allClusters =
+        _(allClusters.data)
+          .sortBy(cluster => cluster.id)
+          .value() || [];
       const cluster = allClusters.find(cluster => cluster.id === clusterId).id;
       this.setState(
         {
@@ -74,7 +75,8 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      console.log(err);
+      if (err.status === 404) {
         this.props.history.replace('/ui/page-not-found', { errorData: err });
       } else {
         this.props.history.replace('/ui/error', { errorData: err });
@@ -260,6 +262,7 @@ class Sidebar extends Component {
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
+              style={{marginBottom: '3rem'}}
             >
               <NavIcon>
                 <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />

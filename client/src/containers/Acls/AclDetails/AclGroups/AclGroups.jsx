@@ -31,7 +31,7 @@ class AclTopics extends Component {
         this.handleAcls(acls);
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
