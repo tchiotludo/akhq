@@ -67,7 +67,7 @@ class ConsumerGroupList extends Component {
       response = response.data;
       if (response.results) {
         this.handleConsumerGroup(response.results);
-        this.setState({ selectedCluster, totalPageNumber: response.total });
+        this.setState({ selectedCluster, totalPageNumber: response.page });
       } else {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }

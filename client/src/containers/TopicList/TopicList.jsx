@@ -175,10 +175,10 @@ class TopicList extends Component {
             <div>
               <a
                 href={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
-                className={{ activeTopic }}
+                className={className}
                 onClick={noPropagation}
               >
-                {consumerGroup.id} <div className="badge badge-light"> Lag: {offsetLag}</div>
+                {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
               </a>
             </div>
           );

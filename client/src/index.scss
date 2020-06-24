@@ -26,6 +26,8 @@ $fa-font-path: "../fonts";
 @import "components/Table/styles.scss";
 @import "components/Form/styles.scss";
 @import "components/Form/Select/styles.scss";
+@import "components/DatePicker/styles.scss";
+@import "components/Pagination/styles.scss";
 
 // containers
 @import "containers/SideBar/styles.scss";
@@ -34,7 +36,6 @@ $fa-font-path: "../fonts";
 @import "containers/TopicList/Topic/TopicProduce/styles.scss";
 @import "containers/Login/styles.scss";
 @import "containers/PageNotFound/styles.scss";
-@import "components/DatePicker/styles.scss";
 
 
 // app
