@@ -211,12 +211,14 @@ class SchemaList extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id'
+              colName: 'Id',
+              sortable: true
             },
             {
               id: 'subject',
               accessor: 'subject',
-              colName: 'Subject'
+              colName: 'Subject',
+              sortable: true
             },
             {
               id: 'version',
@@ -262,6 +264,9 @@ class SchemaList extends Component {
             }
           ]}
           data={this.state.schemasRegistry}
+          updateData={data => {
+            this.setState({ schemasRegistry: data });
+          }}
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}

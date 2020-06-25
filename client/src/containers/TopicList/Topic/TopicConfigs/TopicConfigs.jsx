@@ -282,6 +282,9 @@ class TopicConfigs extends Form {
               }
             ]}
             data={data}
+            updateData={data => {
+              this.setState({ data });
+            }}
           />
           {roles.topic && roles.topic['topic/config/update'] && !this.props.internal ? (
             <aside>

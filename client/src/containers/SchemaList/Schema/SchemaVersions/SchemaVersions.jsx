@@ -6,7 +6,7 @@ import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewMo
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
-import AceEditor from "react-ace";
+import AceEditor from 'react-ace';
 
 class SchemaVersions extends Component {
   state = {
@@ -122,13 +122,15 @@ class SchemaVersions extends Component {
               id: 'id',
               accessor: 'id',
               colName: 'Id',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'version',
               accessor: 'version',
               colName: 'Version',
               type: 'text',
+              sortable: true,
               cell: (obj, col) => {
                 return <span className="badge badge-primary">{obj[col.accessor] || ''}</span>;
               }
@@ -142,31 +144,36 @@ class SchemaVersions extends Component {
               extraRow: true,
               extraRowContent: (obj, col, index) => {
                 return (
-                    <AceEditor
-                        mode="json"
-                        id={'value' + index}
-                        theme="dracula"
-                        value={obj[col.accessor]}
-                        readOnly
-                        name="UNIQUE_ID_OF_DIV"
-                        editorProps={{ $blockScrolling: true }}
-                        style={{ width: '100%', minHeight: '25vh' }}
-                    />
+                  <AceEditor
+                    mode="json"
+                    id={'value' + index}
+                    theme="dracula"
+                    value={obj[col.accessor]}
+                    readOnly
+                    name="UNIQUE_ID_OF_DIV"
+                    editorProps={{ $blockScrolling: true }}
+                    style={{ width: '100%', minHeight: '25vh' }}
+                  />
                 );
               },
               cell: (obj, col) => {
                 return (
-                    <pre class="mb-0 khq-data-highlight">
-                      <code>
-                        {obj[col.accessor] ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '') : 'N/A'}
-                        {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}
-                      </code>
+                  <pre class="mb-0 khq-data-highlight">
+                    <code>
+                      {obj[col.accessor]
+                        ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '')
+                        : 'N/A'}
+                      {obj[col.accessor] && obj[col.accessor].length > 100 && '(...)'}
+                    </code>
                   </pre>
                 );
               }
             }
           ]}
           data={this.state.data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}
@@ -180,36 +187,36 @@ class SchemaVersions extends Component {
           onExpand={obj => {
             return Object.keys(obj.headers).map(header => {
               return (
-                  <tr
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        width: '100%'
-                      }}
+                <tr
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    width: '100%'
+                  }}
+                >
+                  <td
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      borderStyle: 'dashed',
+                      borderWidth: '1px',
+                      backgroundColor: '#171819'
+                    }}
                   >
-                    <td
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          borderStyle: 'dashed',
-                          borderWidth: '1px',
-                          backgroundColor: '#171819'
-                        }}
-                    >
-                      {header}
-                    </td>
-                    <td
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          borderStyle: 'dashed',
-                          borderWidth: '1px',
-                          backgroundColor: '#171819'
-                        }}
-                    >
-                      {obj.headers[header]}
-                    </td>
-                  </tr>
+                    {header}
+                  </td>
+                  <td
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      borderStyle: 'dashed',
+                      borderWidth: '1px',
+                      backgroundColor: '#171819'
+                    }}
+                  >
+                    {obj.headers[header]}
+                  </td>
+                </tr>
               );
             });
           }}

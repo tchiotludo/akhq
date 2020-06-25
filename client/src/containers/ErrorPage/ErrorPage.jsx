@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import image from '../../images/logo.svg';
-import history from '../../utils/history';
 import Sidebar from '../../containers/SideBar';
 
 class ErrorPage extends Component {

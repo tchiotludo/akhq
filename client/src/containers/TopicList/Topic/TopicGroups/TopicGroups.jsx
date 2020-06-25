@@ -113,7 +113,8 @@ class TopicGroups extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id'
+              colName: 'Id',
+              sortable: true
             },
             {
               id: 'state',
@@ -134,7 +135,8 @@ class TopicGroups extends Component {
             {
               id: 'members',
               accessor: 'members',
-              colName: 'Members'
+              colName: 'Members',
+              sortable: true
             },
             {
               id: 'topics',
@@ -148,6 +150,9 @@ class TopicGroups extends Component {
             }
           ]}
           data={this.state.consumerGroups}
+          updateData={data => {
+            this.setState({ consumerGroups: data });
+          }}
           onDetails={id => {
             history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
           }}

@@ -87,11 +87,15 @@ class Acls extends Component {
               id: 'user',
               accessor: 'user',
               colName: 'Principals',
-              type: 'text'
+              type: 'text',
+              sortable: true
             }
           ]}
           actions={[constants.TABLE_DETAILS]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           noContent={
             <tr>
               <td colSpan={3}>

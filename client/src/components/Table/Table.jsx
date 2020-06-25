@@ -6,7 +6,9 @@ import './styles.scss';
 class Table extends Component {
   state = {
     extraExpanded: [],
-    expanded: []
+    expanded: [],
+    sortingColumn: '',
+    reverse: false
   };
 
   handleExpand = el => {
@@ -40,7 +42,6 @@ class Table extends Component {
 
   renderHeader() {
     const { has2Headers, firstHeader, columns, actions, data } = this.props;
-
     return (
       <>
         {has2Headers && (
@@ -70,7 +71,36 @@ class Table extends Component {
               if (!column.extraRow) {
                 return (
                   <th className="header-text" key={`secondHead${column.colName}${index}`}>
-                    {column.colName}
+                    <div className="header-content">
+                      {column.colName}
+                      {column.sortable && (
+                        <i
+                          className="fa fa-sort clickable"
+                          onClick={() => {
+                            let data = [];
+                            this.setState(
+                              {
+                                sortingColumn:
+                                  column.accessor !== this.state.sortingColumn
+                                    ? column.accessor
+                                    : this.state.sortingColumn,
+                                reverse:
+                                  column.accessor !== this.state.sortingColumn &&
+                                  this.state.sortingColumn > 0
+                                    ? false
+                                    : !this.state.reverse
+                              },
+                              () => {
+                                data = this.props.data.sort(
+                                  constants.sortBy(this.state.sortingColumn, this.state.reverse)
+                                );
+                                this.props.updateData(data);
+                              }
+                            );
+                          }}
+                        />
+                      )}
+                    </div>
                   </th>
                 );
               }

@@ -222,7 +222,8 @@ class ConsumerGroupList extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id'
+              colName: 'Id',
+              sortable: true
             },
             {
               id: 'state',
@@ -243,7 +244,8 @@ class ConsumerGroupList extends Component {
             {
               id: 'members',
               accessor: 'members',
-              colName: 'Members'
+              colName: 'Members',
+              sortable: true
             },
             {
               id: 'topics',
@@ -257,6 +259,9 @@ class ConsumerGroupList extends Component {
             }
           ]}
           data={this.state.consumerGroups}
+          updateData={data => {
+            this.setState({ consumerGroups: data });
+          }}
           noContent={'No consumer group available'}
           onDelete={group => {
             this.handleOnDelete(group);

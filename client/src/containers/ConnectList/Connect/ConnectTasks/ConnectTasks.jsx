@@ -211,14 +211,16 @@ class ConnectTasks extends Component {
                 name: 'id',
                 accessor: 'id',
                 colName: 'Id',
-                type: 'text'
+                type: 'text',
+                sortable: true
               },
               {
                 id: 'worker',
                 name: 'worker',
                 accessor: 'worker',
                 colName: 'Worker',
-                type: 'text'
+                type: 'text',
+                sortable: true
               },
               {
                 id: 'state',
@@ -252,6 +254,9 @@ class ConnectTasks extends Component {
             extraRow
             noStripes
             data={tableData}
+            updateData={data => {
+              this.setState({ tableData: data });
+            }}
             actions={
               roles.connect && roles.connect['connect/state/update'] && [constants.TABLE_RESTART]
             }
