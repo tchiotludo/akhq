@@ -572,6 +572,7 @@ class TopicData extends React.Component {
                           <button
                             className="btn btn-primary btn-border"
                             type="button"
+                            disabled={!isSearching}
                             onClick={() => this.onStop()}
                           >
                             Stop

@@ -63,11 +63,11 @@ class Sidebar extends Component {
         _(allClusters.data)
           .sortBy(cluster => cluster.id)
           .value() || [];
-      const cluster = allClusters.find(cluster => cluster.id === clusterId).id;
+      const cluster = allClusters.find(cluster => cluster.id === clusterId);
       this.setState(
         {
           allClusters: allClusters,
-          selectedCluster: cluster || allClusters[0].id
+          selectedCluster: ((cluster)? cluster.id : allClusters[0].id) || allClusters[0].id
         },
         () => {
           const { selectedCluster } = this.state;
