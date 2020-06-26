@@ -133,8 +133,7 @@ class SearchBar extends Form {
                   this.props.onTopicListViewChange(input.value);
                 },
                   'select-wrapper',
-                  'select-class',
-                  {className: 'form-control topic-select'}
+                  'select-class'
               )}
 
             <button className="btn btn-primary" type="submit">

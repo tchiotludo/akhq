@@ -97,8 +97,8 @@ class TopicProduce extends Form {
       let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
       let keySchema = [];
       let valueSchema = [];
-      schema.data.key.map(index => keySchema.push(index));
-      schema.data.value.map(index => valueSchema.push(index));
+      (schema.data && schema.data.key) && schema.data.key.map(index => keySchema.push(index));
+      (schema.data && schema.data.value) && schema.data.value.map(index => valueSchema.push(index));
       this.setState({ keySchema: keySchema, valueSchema: valueSchema });
     } catch (err) {
       if (err.status === 404) {

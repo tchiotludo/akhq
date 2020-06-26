@@ -374,7 +374,6 @@ class TopicData extends React.Component {
           <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
           <td className="offset-navbar-partition-td">
             <input
-              style={{ maxWidth: '100px' }}
               className="form-control"
               type="number"
               min="0"
