@@ -70,7 +70,7 @@ class SchemaCreate extends Form {
         this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to create schema '${formData.subject}'`,
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
       });

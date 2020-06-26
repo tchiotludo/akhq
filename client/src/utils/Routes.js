@@ -54,7 +54,8 @@ class Routes extends Component {
     else if (roles && roles.acls && roles.acls['acls/read']) return `/ui/${clusterId}/acls`;
     else if (roles && roles.registry && roles.registry['registry/read'])
       return `/ui/${clusterId}/schema`;
-    return `/ui/${clusterId}/topic`;
+    else if (roles && Object.keys(roles).length > 0) return `/ui/${clusterId}/topic`;
+    else return '/ui/login';
   }
 
   render() {

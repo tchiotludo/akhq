@@ -97,11 +97,11 @@ class TopicProduce extends Form {
       let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
       let keySchema = [];
       let valueSchema = [];
-      schema.data.key.map(index => keySchema.push(index));
-      schema.data.value.map(index => valueSchema.push(index));
+      (schema.data && schema.data.key) && schema.data.key.map(index => keySchema.push(index));
+      (schema.data && schema.data.value) && schema.data.value.map(index => valueSchema.push(index));
       this.setState({ keySchema: keySchema, valueSchema: valueSchema });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -157,12 +157,11 @@ class TopicProduce extends Form {
         });
       })
       .catch(err => {
+        console.log('err', err);
         this.props.history.replace({
           ...this.props.location,
           showErrorToast: true,
-          errorToastMessage: err.response.data
-            ? err.response.data.message
-            : 'There was an error while producing to topic.',
+          errorToastMessage: err.message || 'There was an error while producing to topic.',
           loading: false
         });
       });

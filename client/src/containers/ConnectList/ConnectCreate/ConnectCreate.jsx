@@ -30,6 +30,13 @@ class ConnectCreate extends Component {
     this.getPlugins();
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.location === prevProps.location) {
+      let height = document.getElementById('root').offsetHeight;
+      document.getElementsByClassName("sidenav---sidenav---_2tBP")[0].style.height=height+'px';
+    }
+  }
+
   async getPlugins() {
     const { connectId, clusterId } = this.state;
     let plugins = [];
@@ -42,7 +49,7 @@ class ConnectCreate extends Component {
       plugins = plugins.data;
       this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -173,7 +180,12 @@ class ConnectCreate extends Component {
       required = <React.Fragment></React.Fragment>;
     }
 
-    let documentation = <small className="form-text text-muted" dangerouslySetInnerHTML={{ __html:plugin.documentation}}></small>;
+    let documentation = (
+      <small
+        className="form-text text-muted"
+        dangerouslySetInnerHTML={{ __html: plugin.documentation }}
+      ></small>
+    );
 
     rows = (
       <React.Fragment key={plugin.name}>
@@ -426,7 +438,7 @@ class ConnectCreate extends Component {
           ...this.props.location,
           showErrorToast: true,
           errorToastTitle: 'Error',
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
       });
@@ -486,7 +498,7 @@ class ConnectCreate extends Component {
                   <tbody>{this.state.display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+              <div className="khq-submit button-footer" style={{ marginRight: 0, left: 0 }}>
                 <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
                   Create
                 </button>

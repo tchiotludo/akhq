@@ -74,7 +74,7 @@ class TopicCreate extends Form {
         this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to create topic '${formData.name}'`,
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
       });

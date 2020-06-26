@@ -45,7 +45,7 @@ class ConnectConfigs extends Form {
         this.getPlugin(pluginId);
       });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -70,7 +70,7 @@ class ConnectConfigs extends Form {
         this.renderForm();
       });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -388,7 +388,7 @@ class ConnectConfigs extends Form {
         ...this.props.location,
         showErrorToast: true,
         errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
-        errorToastMessage: err.response.data.message,
+        errorToastMessage: err.message,
         loading: false
       });
     }

@@ -6,7 +6,9 @@ import './styles.scss';
 class Table extends Component {
   state = {
     extraExpanded: [],
-    expanded: []
+    expanded: [],
+    sortingColumn: '',
+    reverse: false
   };
 
   handleExpand = el => {
@@ -40,7 +42,6 @@ class Table extends Component {
 
   renderHeader() {
     const { has2Headers, firstHeader, columns, actions, data } = this.props;
-
     return (
       <>
         {has2Headers && (
@@ -67,11 +68,43 @@ class Table extends Component {
         <thead id="secondHeader" className="thead-dark">
           <tr key="secondHeader">
             {columns.map((column, index) => {
-              return (
-                <th className="header-text" key={`secondHead${column.colName}${index}`}>
-                  {column.colName}
-                </th>
-              );
+              if (!column.extraRow) {
+                return (
+                  <th className="header-text" key={`secondHead${column.colName}${index}`}>
+                    <div className="header-content">
+                      {column.colName}
+                      {column.sortable && (
+                        <i
+                          className="fa fa-sort clickable"
+                          onClick={() => {
+                            let data = [];
+                            this.setState(
+                              {
+                                sortingColumn:
+                                  column.accessor !== this.state.sortingColumn
+                                    ? column.accessor
+                                    : this.state.sortingColumn,
+                                reverse:
+                                  column.accessor !== this.state.sortingColumn &&
+                                  this.state.sortingColumn > 0
+                                    ? false
+                                    : !this.state.reverse
+                              },
+                              () => {
+                                data = this.props.data.sort(
+                                  constants.sortBy(this.state.sortingColumn, this.state.reverse)
+                                );
+                                this.props.updateData(data);
+                              }
+                            );
+                          }}
+                        />
+                      )}
+                    </div>
+                  </th>
+                );
+              }
+              return null;
             })}
             {actions && actions.length > 0 && data && data.length > 0 && (
               <th colSpan={actions.length} />
@@ -103,18 +136,7 @@ class Table extends Component {
             extraRowColExpanded = column.extraRowContent
               ? column.extraRowContent(row, column)
               : row[column.accessor];
-            return (
-              <td
-                onClick={() => {
-                  if (actions && actions.find(action => action === constants.TABLE_DETAILS)) {
-                    onDetails && onDetails(row.id, row);
-                  }
-                }}
-                id={`row_${column.id}_${colIndex}`}
-              >
-                <div className="align-cell" />
-              </td>
-            );
+            return null;
           }
           if (typeof column.cell === 'function') {
             return (

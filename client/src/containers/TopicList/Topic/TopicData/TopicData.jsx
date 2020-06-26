@@ -208,7 +208,7 @@ class TopicData extends React.Component {
         });
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -271,7 +271,7 @@ class TopicData extends React.Component {
   };
 
   handleMessages = (messages, append = false) => {
-    let tableMessages = (append)? this.state.messages: [];
+    let tableMessages = append ? this.state.messages : [];
     messages.forEach(message => {
       let date = new Date(message.timestamp);
       let messageToPush = {
@@ -287,7 +287,6 @@ class TopicData extends React.Component {
     });
     this.setState({ messages: tableMessages });
   };
-
 
   getNextPageOffsets = () => {
     const { nextPage } = this.state;
@@ -375,7 +374,6 @@ class TopicData extends React.Component {
           <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
           <td className="offset-navbar-partition-td">
             <input
-              style={{ maxWidth: '100px' }}
               className="form-control"
               type="number"
               min="0"
@@ -760,6 +758,9 @@ class TopicData extends React.Component {
             extraRow
             noStripes
             data={messages}
+            updateData={data => {
+              this.setState({ messages: data });
+            }}
             onDelete={row => {
               this.handleOnDelete(row);
             }}
@@ -853,6 +854,9 @@ class TopicData extends React.Component {
                 }
               ]}
               data={headersModalBody}
+              updateData={data => {
+                this.setState({ headersModalBody: data });
+              }}
             />
           </div>
         </Modal>

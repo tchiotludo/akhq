@@ -160,10 +160,10 @@ class TopicConfigs extends Form {
       this.props.history.replace({
         showErrorToast: true,
         errorToastTitle: `Failed to update topic '${selectedTopic}' configs`,
-        errorToastMessage: err.response.data.message,
+        errorToastMessage: err.message,
         loading: false
       });
-      console.error('Error:', err.response);
+      console.error('Error:', err);
     }
   }
 
@@ -282,6 +282,9 @@ class TopicConfigs extends Form {
               }
             ]}
             data={data}
+            updateData={data => {
+              this.setState({ data });
+            }}
           />
           {roles.topic && roles.topic['topic/config/update'] && !this.props.internal ? (
             <aside>

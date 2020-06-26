@@ -31,7 +31,7 @@ class AclTopics extends Component {
         this.handleAcls(acls);
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -72,13 +72,15 @@ class AclTopics extends Component {
             id: 'topic',
             accessor: 'topic',
             colName: 'Topic',
-            type: 'text'
+            type: 'text',
+            sortable: true
           },
           {
             id: 'host',
             accessor: 'host',
             colName: 'Host',
-            type: 'text'
+            type: 'text',
+            sortable: true
           },
           {
             id: 'permission',
@@ -93,6 +95,9 @@ class AclTopics extends Component {
           }
         ]}
         data={this.state.tableData}
+        updateData={data => {
+          this.setState({ tableData: data });
+        }}
         noContent={
           'No ACLS found, or the "authorizer.class.name" parameter is not configured on the cluster.'
         }

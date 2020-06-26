@@ -92,6 +92,10 @@ function insertRole(roles, roleType, role) {
 export function organizeRoles(roles) {
   let newRoles = {};
 
+  if(!roles) {
+    return JSON.stringify(newRoles);
+  }
+
   roles.forEach(role => {
     switch (role.substring(0, role.indexOf('/'))) {
       case ROLE_TYPE.TOPIC:

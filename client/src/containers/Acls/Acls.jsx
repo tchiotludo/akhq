@@ -30,7 +30,7 @@ class Acls extends Component {
       acls = await get(uriAclsList(clusterId, this.state.searchData.search));
       this.handleData(acls.data);
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -87,11 +87,15 @@ class Acls extends Component {
               id: 'user',
               accessor: 'user',
               colName: 'Principals',
-              type: 'text'
+              type: 'text',
+              sortable: true
             }
           ]}
           actions={[constants.TABLE_DETAILS]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           noContent={
             <tr>
               <td colSpan={3}>

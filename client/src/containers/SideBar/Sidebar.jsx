@@ -19,7 +19,8 @@ class Sidebar extends Component {
     allConnects: [],
     showClusters: false,
     showConnects: false,
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(localStorage.getItem('roles')),
+    height: 'auto'
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -58,14 +59,15 @@ class Sidebar extends Component {
     let allClusters = {};
     try {
       allClusters = await get(uriClusters());
-      allClusters = _(allClusters.data)
-        .sortBy(cluster => cluster.id)
-        .value();
-      const cluster = allClusters.find(cluster => cluster.id === clusterId).id;
+      allClusters =
+        _(allClusters.data)
+          .sortBy(cluster => cluster.id)
+          .value() || [];
+      const cluster = allClusters.find(cluster => cluster.id === clusterId);
       this.setState(
         {
           allClusters: allClusters,
-          selectedCluster: cluster || allClusters[0].id
+          selectedCluster: ((cluster)? cluster.id : allClusters[0].id) || allClusters[0].id
         },
         () => {
           const { selectedCluster } = this.state;
@@ -74,11 +76,18 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      console.log(err);
+      if (err.status === 404) {
         this.props.history.replace('/ui/page-not-found', { errorData: err });
       } else {
         this.props.history.replace('/ui/error', { errorData: err });
       }
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.location !== prevProps.location) {
+      this.setState({ height: document.getElementById('root').offsetHeight });
     }
   }
 
@@ -183,7 +192,8 @@ class Sidebar extends Component {
       selectedCluster,
       showClusters,
       showConnects,
-      selectedTab
+      selectedTab,
+      height
     } = this.state;
     const roles = this.state.roles || {};
     const tag = 'Snapshot';
@@ -194,7 +204,7 @@ class Sidebar extends Component {
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black', height: 'auto' }}
+        style={{ background: 'black', height: height }}
       >
         <SideNav.Toggle /> <img src={logo} alt="" />
         <SideNav.Nav

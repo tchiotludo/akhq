@@ -27,7 +27,7 @@ class NodesList extends Component {
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -64,6 +64,7 @@ class NodesList extends Component {
               accessor: 'id',
               colName: 'Id',
               type: 'text',
+              sortable: true,
               cell: (obj, col) => {
                 return <span className="badge badge-info">{obj[col.accessor] || ''}</span>;
               }
@@ -72,16 +73,21 @@ class NodesList extends Component {
               id: 'host',
               accessor: 'host',
               colName: 'Host',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'rack',
               accessor: 'rack',
               colName: 'Rack',
-              type: 'text'
+              type: 'text',
+              sortable: true
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           actions={[constants.TABLE_DETAILS]}
           onDetails={id => {
             history.push(`/ui/${selectedCluster}/node/${id}`);

@@ -436,6 +436,9 @@ class Tail extends Component {
             extraRow
             noStripes
             data={data}
+            updateData={data => {
+              this.setState({ data });
+            }}
             noContent={<tr />}
             onExpand={obj => {
               return Object.keys(obj.headers).map(header => {

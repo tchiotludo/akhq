@@ -126,7 +126,7 @@ class TopicList extends Component {
         this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -175,10 +175,10 @@ class TopicList extends Component {
             <div>
               <a
                 href={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
-                className={{ activeTopic }}
+                className={className}
                 onClick={noPropagation}
               >
-                {consumerGroup.id} <div className="badge badge-light"> Lag: {offsetLag}</div>
+                {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
               </a>
             </div>
           );
@@ -280,7 +280,7 @@ class TopicList extends Component {
             },
             {
               id: 'groupComponent',
-              accessor: 'groupComponent',
+              accessor: 'groupComponent.id',
               colName: 'Consumer Groups',
               type: 'text',
               cell: obj => {
@@ -291,6 +291,9 @@ class TopicList extends Component {
             }
           ]}
           data={topics}
+          updateData={data => {
+            this.setState({ topics: data });
+          }}
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}

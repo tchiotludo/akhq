@@ -24,7 +24,7 @@ class TopicAcls extends Component {
       acls = await get(uriTopicsAcls(clusterId, topicId));
       this.handleData(acls.data);
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -62,13 +62,15 @@ class TopicAcls extends Component {
               id: 'topic',
               accessor: 'topic',
               colName: 'Topic',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'host',
               accessor: 'host',
               colName: 'Host',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'permission',
@@ -88,6 +90,9 @@ class TopicAcls extends Component {
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           noContent={
             <tr>
               <td colSpan={3}>

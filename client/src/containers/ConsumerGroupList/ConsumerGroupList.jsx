@@ -67,12 +67,12 @@ class ConsumerGroupList extends Component {
       response = response.data;
       if (response.results) {
         this.handleConsumerGroup(response.results);
-        this.setState({ selectedCluster, totalPageNumber: response.total });
+        this.setState({ selectedCluster, totalPageNumber: response.page });
       } else {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
       } else {
         history.replace('/ui/error', { errorData: err });
@@ -122,8 +122,7 @@ class ConsumerGroupList extends Component {
   }
 
   handleTopics(groupedTopicOffset) {
-
-    const noPropagation = e => e.stopPropagation()
+    const noPropagation = e => e.stopPropagation();
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
       const offsetLag = calculateTopicOffsetLag(topicOffsets);
@@ -181,7 +180,7 @@ class ConsumerGroupList extends Component {
         this.props.history.replace({
           showErrorToast: true,
           errorToastTitle: `Failed to delete '${groupToDelete.id}'`,
-          errorToastMessage: err.response.data.message,
+          errorToastMessage: err.message,
           loading: false
         });
         this.setState({ showDeleteModal: false, groupToDelete: {} });
@@ -258,6 +257,9 @@ class ConsumerGroupList extends Component {
             }
           ]}
           data={this.state.consumerGroups}
+          updateData={data => {
+            this.setState({ consumerGroups: data });
+          }}
           noContent={'No consumer group available'}
           onDelete={group => {
             this.handleOnDelete(group);
