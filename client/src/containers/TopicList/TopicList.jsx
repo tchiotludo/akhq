@@ -240,15 +240,13 @@ class TopicList extends Component {
               id: 'name',
               accessor: 'name',
               colName: 'Name',
-              type: 'text',
-              sortable: true
+              type: 'text'
             },
             {
               id: 'count',
               accessor: 'count',
               colName: 'Count',
               type: 'text',
-              sortable: true,
               cell: (obj, col) => {
                 return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
               }
@@ -257,29 +255,25 @@ class TopicList extends Component {
               id: 'size',
               accessor: 'size',
               colName: 'Size',
-              type: 'text',
-              sortable: true
+              type: 'text'
             },
             {
               id: 'partitionsTotal',
               accessor: 'partitionsTotal',
               colName: 'Total',
-              type: 'text',
-              sortable: true
+              type: 'text'
             },
             {
               id: 'replicationFactor',
               accessor: 'replicationFactor',
               colName: 'Factor',
-              type: 'text',
-              sortable: true
+              type: 'text'
             },
             {
               id: 'replicationInSync',
               accessor: 'replicationInSync',
               colName: 'In Sync',
               type: 'text',
-              sortable: true,
               cell: (obj, col) => {
                 return <span>{obj[col.accessor]}</span>;
               }

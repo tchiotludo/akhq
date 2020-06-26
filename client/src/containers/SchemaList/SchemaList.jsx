@@ -211,14 +211,12 @@ class SchemaList extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id',
-              sortable: true
+              colName: 'Id'
             },
             {
               id: 'subject',
               accessor: 'subject',
-              colName: 'Subject',
-              sortable: true
+              colName: 'Subject'
             },
             {
               id: 'version',

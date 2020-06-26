@@ -222,8 +222,7 @@ class ConsumerGroupList extends Component {
             {
               id: 'id',
               accessor: 'id',
-              colName: 'Id',
-              sortable: true
+              colName: 'Id'
             },
             {
               id: 'state',
@@ -244,8 +243,7 @@ class ConsumerGroupList extends Component {
             {
               id: 'members',
               accessor: 'members',
-              colName: 'Members',
-              sortable: true
+              colName: 'Members'
             },
             {
               id: 'topics',

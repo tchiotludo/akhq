@@ -361,15 +361,13 @@ class Tail extends Component {
                 id: 'topic',
                 accessor: 'topic',
                 colName: 'Topic',
-                type: 'text',
-                sortable: true
+                type: 'text'
               },
               {
                 id: 'key',
                 accessor: 'key',
                 colName: 'Key',
                 type: 'text',
-                sortable: true,
                 cell: obj => {
                   return <span style={{ color: 'red' }}>{obj.key}</span>;
                 }
@@ -378,22 +376,19 @@ class Tail extends Component {
                 id: 'timestamp',
                 accessor: 'timestamp',
                 colName: 'Date',
-                type: 'text',
-                sortable: true
+                type: 'text'
               },
               {
                 id: 'partition',
                 accessor: 'partition',
                 colName: 'Partition',
-                type: 'text',
-                sortable: true
+                type: 'text'
               },
               {
                 id: 'offset',
                 accessor: 'offset',
                 colName: 'Offset',
-                type: 'text',
-                sortable: true
+                type: 'text'
               },
               {
                 id: 'headers',
