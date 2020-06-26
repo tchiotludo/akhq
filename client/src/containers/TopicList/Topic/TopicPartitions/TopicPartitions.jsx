@@ -86,7 +86,8 @@ class TopicPartitions extends Component {
               id: 'id',
               accessor: 'id',
               colName: 'Id',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'leader',
@@ -110,7 +111,8 @@ class TopicPartitions extends Component {
               id: 'offsets',
               accessor: 'offsets',
               colName: 'Offsets',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'size',
@@ -123,6 +125,9 @@ class TopicPartitions extends Component {
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
         />
       </div>
     );

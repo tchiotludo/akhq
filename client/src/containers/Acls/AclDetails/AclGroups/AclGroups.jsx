@@ -72,13 +72,15 @@ class AclTopics extends Component {
             id: 'group',
             accessor: 'group',
             colName: 'Group',
-            type: 'text'
+            type: 'text',
+            sortable: true
           },
           {
             id: 'host',
             accessor: 'host',
             colName: 'Host',
-            type: 'text'
+            type: 'text',
+            sortable: true
           },
           {
             id: 'permission',
@@ -93,6 +95,9 @@ class AclTopics extends Component {
           }
         ]}
         data={this.state.tableData}
+        updateData={data => {
+          this.setState({ tableData: data });
+        }}
         noContent={
           'No ACLS found, or the "authorizer.class.name" parameter is not configured on the cluster.'
         }

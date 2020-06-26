@@ -18,3 +18,11 @@
   max-height: 30px !important;
   overflow: hidden;
 }
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+

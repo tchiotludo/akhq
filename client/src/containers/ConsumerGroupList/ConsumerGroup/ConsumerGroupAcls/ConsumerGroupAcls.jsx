@@ -62,13 +62,15 @@ class TopicAcls extends Component {
               id: 'group',
               accessor: 'group',
               colName: 'Group',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'host',
               accessor: 'host',
               colName: 'Host',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'permission',
@@ -88,6 +90,9 @@ class TopicAcls extends Component {
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
           noContent={
             <tr>
               <td colSpan={3}>

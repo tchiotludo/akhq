@@ -197,7 +197,8 @@ class ConnectList extends Component {
               name: 'id',
               accessor: 'id',
               colName: 'Name',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'config',
@@ -264,6 +265,9 @@ class ConnectList extends Component {
             }
           ]}
           data={tableData}
+          updateData={data => {
+            this.setState({ tableData: data });
+          }}
           actions={this.getTableActions()}
           onDetails={name => {
             history.push({

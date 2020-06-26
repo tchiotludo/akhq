@@ -632,6 +632,7 @@ class TopicData extends React.Component {
                 accessor: 'key',
                 colName: 'Key',
                 type: 'text',
+                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -677,6 +678,7 @@ class TopicData extends React.Component {
                 accessor: 'timestamp',
                 colName: 'Date',
                 type: 'text',
+                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -690,6 +692,7 @@ class TopicData extends React.Component {
                 accessor: 'partition',
                 colName: 'Partition',
                 type: 'text',
+                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -703,6 +706,7 @@ class TopicData extends React.Component {
                 accessor: 'offset',
                 colName: 'Offset',
                 type: 'text',
+                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -757,6 +761,9 @@ class TopicData extends React.Component {
             extraRow
             noStripes
             data={messages}
+            updateData={data => {
+              this.setState({ messages: data });
+            }}
             onDelete={row => {
               this.handleOnDelete(row);
             }}
@@ -820,6 +827,7 @@ class TopicData extends React.Component {
                   accessor: 'key',
                   colName: 'Key',
                   type: 'text',
+                  sortable: true,
                   cell: (obj, col) => {
                     return <div className="align-cell">{obj[col.accessor]}</div>;
                   }
@@ -850,6 +858,9 @@ class TopicData extends React.Component {
                 }
               ]}
               data={headersModalBody}
+              updateData={data => {
+                this.setState({ headersModalBody: data });
+              }}
             />
           </div>
         </Modal>

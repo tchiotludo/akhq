@@ -240,13 +240,15 @@ class TopicList extends Component {
               id: 'name',
               accessor: 'name',
               colName: 'Name',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'count',
               accessor: 'count',
               colName: 'Count',
               type: 'text',
+              sortable: true,
               cell: (obj, col) => {
                 return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
               }
@@ -255,32 +257,36 @@ class TopicList extends Component {
               id: 'size',
               accessor: 'size',
               colName: 'Size',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'partitionsTotal',
               accessor: 'partitionsTotal',
               colName: 'Total',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'replicationFactor',
               accessor: 'replicationFactor',
               colName: 'Factor',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'replicationInSync',
               accessor: 'replicationInSync',
               colName: 'In Sync',
               type: 'text',
+              sortable: true,
               cell: (obj, col) => {
                 return <span>{obj[col.accessor]}</span>;
               }
             },
             {
               id: 'groupComponent',
-              accessor: 'groupComponent',
+              accessor: 'groupComponent.id',
               colName: 'Consumer Groups',
               type: 'text',
               cell: obj => {
@@ -291,6 +297,12 @@ class TopicList extends Component {
             }
           ]}
           data={topics}
+          updateData={data => {
+            this.setState({ topics: data });
+          }}
+          updateData={data => {
+            this.setState({ topics: data });
+          }}
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}

@@ -104,19 +104,22 @@ class ConsumerGroupMembers extends Component {
               id: 'clientId',
               accessor: 'clientId',
               colName: 'ClientId',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'id',
               accessor: 'id',
               colName: 'Id',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'host',
               accessor: 'host',
               colName: 'Host',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'assignments',
@@ -129,6 +132,9 @@ class ConsumerGroupMembers extends Component {
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
         />
       </div>
     );

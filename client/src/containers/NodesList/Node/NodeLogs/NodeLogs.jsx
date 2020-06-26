@@ -62,34 +62,42 @@ class NodeLogs extends Component {
               id: 'broker',
               accessor: 'broker',
               colName: 'Broker',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'topic',
               accessor: 'topic',
               colName: 'Topic',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'partition',
               accessor: 'partition',
               colName: 'Partition',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'size',
               accessor: 'size',
               colName: 'Size',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'offsetLag',
               accessor: 'offsetLag',
               colName: 'OffsetLag',
-              type: 'text'
+              type: 'text',
+              sortable: true
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
         />
       </div>
     );

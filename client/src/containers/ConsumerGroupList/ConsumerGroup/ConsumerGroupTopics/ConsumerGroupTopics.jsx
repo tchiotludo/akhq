@@ -68,6 +68,7 @@ class ConsumerGroupTopics extends Component {
               accessor: 'name',
               colName: 'Name',
               type: 'text',
+              sortable: true,
               cell: (obj, col) => {
                 return (
                   <Link to={`/ui/${this.state.selectedCluster}/topic/${obj[col.accessor]}`}>
@@ -80,7 +81,8 @@ class ConsumerGroupTopics extends Component {
               id: 'partition',
               accessor: 'partition',
               colName: 'Partition',
-              type: 'text'
+              type: 'text',
+              sortable: true
             },
             {
               id: 'member',
@@ -111,6 +113,9 @@ class ConsumerGroupTopics extends Component {
             }
           ]}
           data={data}
+          updateData={data => {
+            this.setState({ data });
+          }}
         />
       </div>
     );
