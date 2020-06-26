@@ -631,7 +631,6 @@ class TopicData extends React.Component {
                 accessor: 'key',
                 colName: 'Key',
                 type: 'text',
-                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -677,7 +676,6 @@ class TopicData extends React.Component {
                 accessor: 'timestamp',
                 colName: 'Date',
                 type: 'text',
-                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -691,7 +689,6 @@ class TopicData extends React.Component {
                 accessor: 'partition',
                 colName: 'Partition',
                 type: 'text',
-                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -705,7 +702,6 @@ class TopicData extends React.Component {
                 accessor: 'offset',
                 colName: 'Offset',
                 type: 'text',
-                sortable: true,
                 cell: (obj, col) => {
                   return (
                     <div className="value cell-div">
@@ -826,7 +822,6 @@ class TopicData extends React.Component {
                   accessor: 'key',
                   colName: 'Key',
                   type: 'text',
-                  sortable: true,
                   cell: (obj, col) => {
                     return <div className="align-cell">{obj[col.accessor]}</div>;
                   }
