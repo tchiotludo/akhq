@@ -1,0 +1,78 @@
+version: '3.6'
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-log:
+    driver: local
+  kafka-data:
+    driver: local
+services:
+  zookeeper1:
+    image: confluentinc/cp-zookeeper
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+  kafka1:
+    image: confluentinc/cp-kafka
+    volumes:
+      - kafka-data:/var/lib/kafka
+    ports:
+      - 9072:9072
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_NUM_PARTITIONS: 12
+      KAFKA_COMPRESSION_TYPE: gzip
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9072
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+      KAFKA_JMX_PORT: 9071
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.auth.SimpleAclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
+    links:
+      - zookeeper1
+  schema-registry1:
+    image: confluentinc/cp-schema-registry
+    ports:
+      - 8075:8075
+    depends_on:
+      - kafka1
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka1:9072"
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry1
+      SCHEMA_REGISTRY_LISTENERS: "http://schema-registry1:8075"
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+  connect-3:
+    image: confluentinc/cp-kafka-connect
+    ports:
+      - 8073:8073
+    depends_on:
+      - kafka1
+      - schema-registry1
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka1:9072
+      CONNECT_REST_PORT: 8073
+      CONNECT_HOST_NAME: connect-3
+      CONNECT_REST_LISTENERS: http://connect-3:8073
+      CONNECT_LISTENERS: http://connect-3:8073
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-3
+      CONNECT_CONFIG_STORAGE_TOPIC: __connect-3-config
+      CONNECT_OFFSET_STORAGE_TOPIC: __connect-3-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: __connect-3-status
+      CONNECT_GROUP_ID: "kafka-connect-3"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry1:8075
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry1:8075
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_PLUGIN_PATH: ' /usr/share/java/'
