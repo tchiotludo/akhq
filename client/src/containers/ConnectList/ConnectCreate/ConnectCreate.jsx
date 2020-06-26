@@ -30,6 +30,13 @@ class ConnectCreate extends Component {
     this.getPlugins();
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.location == prevProps.location) {
+      let height = document.getElementById('root').offsetHeight;
+      document.getElementsByClassName("sidenav---sidenav---_2tBP")[0].style.height=height+'px';
+    }
+  }
+
   async getPlugins() {
     const { connectId, clusterId } = this.state;
     let plugins = [];

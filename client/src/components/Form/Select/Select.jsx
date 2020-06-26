@@ -2,7 +2,7 @@ import React from 'react';
 
 const Select = ({ name, label, items, error, wrapperClass, selectClass, ...rest }) => {
     let wrapperClassRender = 'form-group';
-    let selectClassRender = 'col-sm-12';
+    let selectClassRender = 'col-sm-10';
     if (wrapperClass) {
         wrapperClassRender = wrapperClass;
     }
@@ -19,8 +19,8 @@ const Select = ({ name, label, items, error, wrapperClass, selectClass, ...rest 
       ) : (
         <div/>
       )}
-      <div className={`${selectClassRender} no-padding`}>
-        <select className="form-control" id={name} name={name} {...rest}>
+      <div className={`${selectClassRender}`}>
+        <select className={'form-control'} id={name} name={name} {...rest}>
           {items.map(item => (
             <option key={item._id} value={item._id}>
               {item.name}

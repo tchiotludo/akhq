@@ -1,16 +1,21 @@
 .topic-search-wrapper, .select-wrapper {
   display: flex;
   justify-content: space-between;
-  padding-right: 20px;
+  margin-left: 0px !important;
 
   @media (max-width: 991.98px) {
     width: 100%;
-    padding-right: 0;
-    margin: 0!important;
+    margin: 0 !important;
 
     .topic-search-input, .select-class {
       width: 100%;
     }
+  }
+}
+
+@media (min-width: 991.98px) {
+  .topic-search-input, .select-class{
+    margin-right: 1rem;
   }
 }
 

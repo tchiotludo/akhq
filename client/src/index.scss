@@ -69,3 +69,11 @@ $fa-font-path: "../fonts";
   width: 100%;
   left: 0;
 }
+
+.khq-data-filter {
+  @include media-breakpoint-up(sm) {
+    select {
+      max-width: 100%;
+    }
+  }
+}

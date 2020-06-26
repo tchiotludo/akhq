@@ -155,7 +155,7 @@ class Form extends Component {
           onChange(value);
         }}
         wrapperClass={wrapperClass}
-        inputClass={inputClass}
+        selectClass={inputClass}
         {...rest}
       />
     );
