@@ -31,7 +31,7 @@ class ConnectCreate extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.location == prevProps.location) {
+    if (this.props.location === prevProps.location) {
       let height = document.getElementById('root').offsetHeight;
       document.getElementsByClassName("sidenav---sidenav---_2tBP")[0].style.height=height+'px';
     }

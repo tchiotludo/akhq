@@ -300,9 +300,6 @@ class TopicList extends Component {
           updateData={data => {
             this.setState({ topics: data });
           }}
-          updateData={data => {
-            this.setState({ topics: data });
-          }}
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
