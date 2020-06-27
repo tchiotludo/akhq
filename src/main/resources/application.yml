@@ -89,11 +89,6 @@ akhq:
     my-cluster2:
       properties:
         bootstrap.servers: localhost:9072
-      schema-registry:
-        url: "localhost:8075"
-      connect:
-        - name: connect-3
-          url: "http://localhost:8073"
   server:
     base-path: ""
     access-log:
