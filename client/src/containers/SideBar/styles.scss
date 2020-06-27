@@ -1,34 +1,27 @@
+@import "../assets/css/init";
+
 $sidebarWidth: 70px;
 $sidebarExpandedWidth: 250px;
 $sidebarTransition: 0.5s;
 
-nav {
-  -webkit-transition: all 1s ease !important;
-  -moz-transition: all 1s ease !important;
-  -o-transition: all 1s ease !important;
-  -ms-transition: all 1s ease !important;
-  transition: all 1s ease !important;
-}
-
-.sidenav---collapsed---LQDEv {
-  img {
-    margin-top: 15px;
-    margin-bottom: 25px;
-    -webkit-transform: rotate(-90deg);  /* to support Safari and Android browser */
-    -ms-transform: rotate(-90deg);      /* to support IE 9 */
-    transform: rotate(-90deg);
-    transition: all 1s ease;
+.sidenav---sidenav---_2tBP {
+  span.logo {
+    width: calc(100% - 8px);
+    height: 65px;
+    display: block;
+    background: url("../../images/logo.svg") no-repeat 16px;
+    background-size: cover;
+    margin-top: 60px;
+    margin-left: 4px;
+    margin-right: 4px;
+    transition: all 0.2s  ease;
   }
 }
 
 .sidenav---expanded---1KdUL{
-  img {
-    margin-top: 15px;
-    margin-bottom: 25px;
-    -webkit-transform: rotate(0deg);  /* to support Safari and Android browser */
-    -ms-transform: rotate(0deg);      /* to support IE 9 */
-    transform: rotate(0deg);
-    transition: all 1s ease;
+
+  span.logo {
+    background-position: 0 ;
   }
 }
 
@@ -41,5 +34,5 @@ nav {
 }
 
 .sidenav-subnav---1EN61{
-  background-color:  #32a9d4 !important;
+  background-color: $primary !important;
 }

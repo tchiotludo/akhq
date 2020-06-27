@@ -206,7 +206,7 @@ class Sidebar extends Component {
         }}
         style={{ background: 'black', height: height }}
       >
-        <SideNav.Toggle /> <img src={logo} alt="" />
+        <SideNav.Toggle /> <span className="logo" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           style={{ background: 'black' }}
