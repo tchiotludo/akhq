@@ -25,7 +25,6 @@ class ConsumerGroupTopics extends Component {
     try {
       offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
       offsets = offsets.data;
-
       this.handleData(offsets);
     } catch (err) {
       console.error('Error:', err);
@@ -41,16 +40,16 @@ class ConsumerGroupTopics extends Component {
       return {
         name: offset.topic,
         partition: offset.partition,
-        member: offset.member,
+        member: (offset.member)?offset.member.host : '',
         offset: offset.offset,
-        lag: offset.lag
+        lag: offset.offsetLag
       };
     });
     this.setState({ data });
   }
 
   handleOptional(optional) {
-    if (optional) {
+    if (optional !== undefined && optional !== '') {
       return <label>{optional}</label>;
     } else {
       return <label>-</label>;
