@@ -273,11 +273,10 @@ class TopicData extends React.Component {
   handleMessages = (messages, append = false) => {
     let tableMessages = append ? this.state.messages : [];
     messages.forEach(message => {
-      let date = new Date(message.timestamp);
       let messageToPush = {
-        key: message.key || '',
-        value: message.value || '',
-        timestamp: moment(date).format('DD-MM-YYYY HH:mm'),
+        key: message.key || 'null',
+        value: message.value || 'null',
+        timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || {},
@@ -453,12 +452,10 @@ class TopicData extends React.Component {
           </button>
 
           <nav className="pagination-data">
-            <div style={{ paddingTop: '1rem' }}>
-              <label>Total records: ≈{recordCount}</label>
-            </div>
             <div>
               <Pagination
                 pageNumber={pageNumber}
+                totalRecords={recordCount}
                 totalPageNumber={messages.length === 0 ? pageNumber : undefined}
                 onChange={({ currentTarget: input }) => {
                   this.setState({ pageNumber: input.value });
@@ -634,14 +631,12 @@ class TopicData extends React.Component {
                 colName: 'Key',
                 type: 'text',
                 cell: (obj, col) => {
+
+                  let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
                   return (
-                    <div className="value cell-div">
-                      <div className="align-cell">
-                        <span>
-                          <code className="key">{obj[col.accessor]}</code>
-                        </span>
-                      </div>
-                    </div>
+                    <span>
+                      <code className="key">{value}</code>
+                    </span>
                   );
                 }
               },
@@ -652,6 +647,15 @@ class TopicData extends React.Component {
                 type: 'text',
                 extraRow: true,
                 extraRowContent: (obj, index) => {
+
+                  let value = obj.value;
+                  try {
+                    let json = JSON.parse(obj.value);
+                    value = JSON.stringify(json, null, 2);
+                    // eslint-disable-next-line no-empty
+                  } catch (e) {
+                  }
+
                   return (
                     <AceEditor
                       mode="json"
@@ -665,9 +669,9 @@ class TopicData extends React.Component {
                     />
                   );
                 },
-                cell: (obj, index) => {
+                cell: (obj) => {
                   return (
-                    <pre class="mb-0 khq-data-highlight">
+                    <pre className="mb-0 khq-data-highlight">
                       <code>{obj.value}</code>
                     </pre>
                   );
@@ -679,11 +683,7 @@ class TopicData extends React.Component {
                 colName: 'Date',
                 type: 'text',
                 cell: (obj, col) => {
-                  return (
-                    <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
-                    </div>
-                  );
+                  return obj[col.accessor];
                 }
               },
               {
@@ -692,11 +692,7 @@ class TopicData extends React.Component {
                 colName: 'Partition',
                 type: 'text',
                 cell: (obj, col) => {
-                  return (
-                    <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
-                    </div>
-                  );
+                  return obj[col.accessor];
                 }
               },
               {
@@ -705,11 +701,7 @@ class TopicData extends React.Component {
                 colName: 'Offset',
                 type: 'text',
                 cell: (obj, col) => {
-                  return (
-                    <div className="value cell-div">
-                      <div className="align-cell">{obj[col.accessor]}</div>
-                    </div>
-                  );
+                  return obj[col.accessor];
                 }
               },
               {
@@ -729,28 +721,26 @@ class TopicData extends React.Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <div className="value cell-div">
-                      <div className="align-cell">
-                        {obj[col.accessor] !== '' && (
-                          <span
-                            className="badge badge-primary clickable"
-                            onClick={() => {
-                              let schema = this.state.schemas.find(el => {
-                                return el.id === obj.schema;
+                    <span>
+                      {obj[col.accessor] !== '' && (
+                        <span
+                          className="badge badge-primary clickable"
+                          onClick={() => {
+                            let schema = this.state.schemas.find(el => {
+                              return el.id === obj.schema;
+                            });
+                            if (schema) {
+                              this.props.history.push({
+                                pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                schemaId: schema.subject
                               });
-                              if (schema) {
-                                this.props.history.push({
-                                  pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                  schemaId: schema.subject
-                                });
-                              }
-                            }}
-                          >
-                            Value: {obj[col.accessor]}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                            }
+                          }}
+                        >
+                          Value: {obj[col.accessor]}
+                        </span>
+                      )}
+                    </span>
                   );
                 }
               }
@@ -825,7 +815,7 @@ class TopicData extends React.Component {
                   colName: 'Key',
                   type: 'text',
                   cell: (obj, col) => {
-                    return <div className="align-cell">{obj[col.accessor]}</div>;
+                    return obj[col.accessor];
                   }
                 },
                 {
@@ -836,7 +826,7 @@ class TopicData extends React.Component {
                   cell: (obj, col) => {
                     return (
                       <div className="value">
-                        <div className="align-cell value-text headers-detail-value">
+                        <div className="value-text headers-detail-value">
                           {obj[col.accessor] ? obj[col.accessor].substring(0, 50) : 'N/A'}
                           {obj[col.accessor] && obj[col.accessor].length > 50 && '(...)'}{' '}
                         </div>

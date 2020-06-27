@@ -49,6 +49,10 @@ micronaut:
       record-stats: true
       expire-after-write: 0s
 
+jackson:
+  serialization:
+    writeDatesAsTimestamps: false
+
 endpoints:
   all:
     path: "${akhq.server.base-path:}"
