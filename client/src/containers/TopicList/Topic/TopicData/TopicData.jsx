@@ -656,8 +656,8 @@ class TopicData extends React.Component {
                     <AceEditor
                       mode="json"
                       id={'value' + index}
-                      theme="dracula"
-                      value={obj.value}
+                      theme="merbivore_soft"
+                      value={value}
                       readOnly
                       name="UNIQUE_ID_OF_DIV"
                       editorProps={{ $blockScrolling: true }}

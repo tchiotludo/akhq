@@ -30,7 +30,7 @@
     "react-dom": "^16.13.1",
     "react-helmet": "^6.0.0",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.4.0",
+    "react-scripts": "3.4.1",
     "react-spinners": "^0.8.0",
     "react-time-picker": "^4.0.1",
     "reactstrap": "^8.4.0",
