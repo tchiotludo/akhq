@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from '../../images/logo.svg';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import { get } from '../../utils/api';
