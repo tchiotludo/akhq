@@ -68,8 +68,15 @@ public class ErrorController extends AbstractController {
             return htmlError(request, e);
         }
 
+        StringWriter stringWriter = new StringWriter();
+        e.printStackTrace(new PrintWriter(stringWriter));
+
         JsonError error = new JsonError("Internal Server Error: " + e.getMessage())
-            .link(Link.SELF, Link.of(request.getUri()));
+            .link(Link.SELF, Link.of(request.getUri()))
+            .embedded(
+                "stacktrace",
+                new JsonError(stringWriter.toString())
+            );
 
         return HttpResponse.<JsonError>serverError()
             .body(error);

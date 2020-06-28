@@ -1,7 +1,8 @@
 @import "../assets/css/init";
 
-.page-input{
-    width: 30px;
+input.page-input{
+    width: 30px !important;
+    margin-top: 0;
     border: 0;
     padding: 0;
     background: transparent;
