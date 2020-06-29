@@ -68,7 +68,7 @@ class TopicData extends React.Component {
       {
         selectedCluster: clusterId,
         selectedTopic: topicId,
-        canAccessSchema: roles.topic && roles.topic['registry/read']
+        canAccessSchema: roles.registry && roles.registry['registry/read']
       },
       () => {
         history.replace({
@@ -280,7 +280,7 @@ class TopicData extends React.Component {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || {},
-        schema: message.valueSchemaId || 'No schema'
+        schema: {key: message.keySchemaId, value: message.valueSchemaId}
       };
       tableMessages.push(messageToPush);
     });
@@ -721,26 +721,45 @@ class TopicData extends React.Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <span>
-                      {obj[col.accessor] !== '' && (
-                        <span
-                          className="badge badge-primary clickable"
-                          onClick={() => {
-                            let schema = this.state.schemas.find(el => {
-                              return el.id === obj.schema;
-                            });
-                            if (schema) {
-                              this.props.history.push({
-                                pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                schemaId: schema.subject
+                      <div className="justify-items">
+                        {obj[col.accessor].key !== undefined && (
+                          <span
+                            className="badge badge-primary clickable"
+                            onClick={() => {
+                              let schema = this.state.schemas.find(el => {
+                                return el.id === obj.schema.key;
                               });
-                            }
-                          }}
-                        >
-                          Value: {obj[col.accessor]}
-                        </span>
-                      )}
-                    </span>
+                              if (schema) {
+                                this.props.history.push({
+                                  pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                  schemaId: schema.subject
+                                });
+                              }
+                            }}
+                          >
+                            Key: {obj[col.accessor].key}
+                          </span>
+                        )}
+
+                          {obj[col.accessor].value !== undefined && (
+                              <span
+                                  className="badge badge-primary clickable"
+                                  onClick={() => {
+                                      let schema = this.state.schemas.find(el => {
+                                          return el.id === obj.schema.value;
+                                      });
+                                      if (schema) {
+                                          this.props.history.push({
+                                              pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                              schemaId: schema.subject
+                                          });
+                                      }
+                                  }}
+                              >
+                            Value: {obj[col.accessor].value}
+                          </span>
+                          )}
+                      </div>
                   );
                 }
               }
