@@ -24,3 +24,17 @@
   padding: 0 !important;
   padding-right: 2% !important;
 }
+
+@media (max-width: 575px) {
+  .wrapper-class.key{
+    margin-left: 15px;
+  }
+
+  .wrapper-class{
+    padding-right: 0px;
+  }
+
+  .header-row{
+    width: 102%;
+  }
+}

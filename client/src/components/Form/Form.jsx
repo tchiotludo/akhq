@@ -98,7 +98,7 @@ class Form extends Component {
         type={type}
         name={name}
         id={name}
-        value={formData[name]}
+        value={formData[name] || ''}
         label={label}
         placeholder={placeholder}
         onChange={this.handleChange}
@@ -141,7 +141,7 @@ class Form extends Component {
     );
   };
 
-  renderSelect = (name, label, items, onChange, wrapperClass, inputClass, rest) => {
+  renderSelect = (name, label, items, onChange, wrapperClass, rest) => {
     const { formData, errors } = this.state;
 
     return (
@@ -155,7 +155,6 @@ class Form extends Component {
           onChange(value);
         }}
         wrapperClass={wrapperClass}
-        selectClass={inputClass}
         {...rest}
       />
     );
