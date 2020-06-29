@@ -392,7 +392,15 @@ class Tail extends Component {
                 id: 'timestamp',
                 accessor: 'timestamp',
                 colName: 'Date',
-                type: 'text'
+                type: 'text',
+                cell: obj => {
+                  let date = obj.timestamp.split('T')[0];
+                  return (
+                      <div className="tail-headers">
+                        {date}
+                      </div>
+                  );
+                }
               },
               {
                 id: 'partition',
