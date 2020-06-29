@@ -192,7 +192,7 @@ class TopicProduce extends Form {
             'text',
             undefined,
             true,
-            'wrapper-class col-sm-6 ',
+            'wrapper-class col-sm-6 col-5 key',
             'input-class'
           )}
 
@@ -203,7 +203,7 @@ class TopicProduce extends Form {
             'text',
             undefined,
             true,
-            'wrapper-class col-sm-6',
+            'wrapper-class col-sm-6 col-5',
             'input-class'
           )}
           <div className="add-button">
