@@ -11,7 +11,7 @@ import AceEditor from 'react-ace';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class Form extends Component {
   state = {
@@ -126,7 +126,7 @@ class Form extends Component {
           <AceEditor
             mode="json"
             id={name}
-            theme="dracula"
+            theme="merbivore_soft"
             value={formData[name]}
             onChange={value => {
               onChange(value);

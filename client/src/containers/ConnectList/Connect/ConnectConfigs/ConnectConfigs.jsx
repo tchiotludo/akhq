@@ -303,7 +303,7 @@ class ConnectConfigs extends Form {
               <AceEditor
                 mode="json"
                 id={'transformsprops'}
-                theme="dracula"
+                theme="merbivore_soft"
                 value={formData['transformsprops']}
                 onChange={value => {
                   let { formData } = this.state;

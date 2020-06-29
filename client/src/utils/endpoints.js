@@ -1,7 +1,6 @@
 // Please, comment the localhost one before PR to dev
 
-//export const baseUrl = process.env.REACT_APP_BASE_URL ||
-//    `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+//export const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 
 export const baseUrl = 'http://localhost:8081';
 

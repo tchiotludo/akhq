@@ -30,10 +30,9 @@ public class ReactStaticResourceResolver extends StaticResourceResolver {
     public Optional<URL> resolve(String resourcePath) {
         Optional<URL> resolve = super.resolve(resourcePath);
 
-        if (resolve.isEmpty()) {
+        if (resolve.isEmpty() && resourcePath.startsWith("/ui/")) {
             for (ResourceLoader loader : uiResourceLoader) {
-                Optional<URL> ret = loader.getResource("index.html");
-                return ret;
+                return loader.getResource("index.html");
             }
         }
 

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from '../../images/logo.svg';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import { get } from '../../utils/api';
@@ -206,7 +205,7 @@ class Sidebar extends Component {
         }}
         style={{ background: 'black', height: height }}
       >
-        <SideNav.Toggle /> <img src={logo} alt="" />
+        <SideNav.Toggle /> <span className="logo" />
         <SideNav.Nav
           defaultSelected={`${constants.TOPIC}`}
           style={{ background: 'black' }}

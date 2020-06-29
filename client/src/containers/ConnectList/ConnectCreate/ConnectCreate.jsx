@@ -11,7 +11,7 @@ import AceEditor from 'react-ace';
 import _ from 'lodash';
 
 import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class ConnectCreate extends Component {
   state = {
@@ -298,7 +298,7 @@ class ConnectCreate extends Component {
               <AceEditor
                 mode="json"
                 id={'transformsprops'}
-                theme="dracula"
+                theme="merbivore_soft"
                 value={formData['transformsprops']}
                 onChange={value => {
                   let { formData } = this.state;

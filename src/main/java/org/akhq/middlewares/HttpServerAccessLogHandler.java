@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 
 import javax.inject.Singleton;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
@@ -146,7 +147,7 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
     }
 
     private static class AccessLog {
-        private String logFormat;
+        private final String logFormat;
         private String inetAddress;
         private String method;
         private String uri;
@@ -160,11 +161,11 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
 
         AccessLog(String logFormat) {
             this.logFormat = logFormat;
-            this.zonedDateTime = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            this.zonedDateTime = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         }
 
         private void reset() {
-            this.zonedDateTime = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            this.zonedDateTime = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             inetAddress = null;
             method = null;
             uri = null;
