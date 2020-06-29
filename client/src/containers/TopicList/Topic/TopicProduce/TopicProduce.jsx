@@ -254,7 +254,6 @@ class TopicProduce extends Form {
   }
 
   renderResults = (results, searchValue, selectedValue, tag) => {
-    const { selectedValueSchema } = this.state;
     return (
         <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
           <ul
