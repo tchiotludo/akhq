@@ -35,15 +35,31 @@ class Tail extends Component {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
+    const { location } = this.props.history;
     let data = {};
     try {
       data = await get(uriTopics(clusterId, '', 'ALL', ''));
       data = data.data;
+      let topics = [];
+      if (location.topicId && location.topicId.length > 0) {
+        topics = [{ name: location.topicId }];
+      }
+
       if (data) {
         if (data.results) {
-          this.setState({ topics: data.results });
+          this.setState({ topics: data.results, selectedTopics: topics }, () => {
+            if (location.topicId && location.topicId.length > 0) {
+              this.setState({ selectedStatus: STATUS.STARTED });
+              this.startEventSource();
+            }
+          });
         } else {
-          this.setState({ topics: [] });
+          this.setState({ topics: [], selectedTopics: topics }, () => {
+            if (location.topicId && location.topicId.length > 0) {
+              this.setState({ selectedStatus: STATUS.STARTED });
+              this.startEventSource();
+            }
+          });
         }
       }
     } catch (err) {
