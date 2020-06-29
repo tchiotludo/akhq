@@ -141,6 +141,7 @@ class Table extends Component {
           if (typeof column.cell === 'function') {
             return (
               <td
+                key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
                 onClick={() => {
                   if (
@@ -161,6 +162,7 @@ class Table extends Component {
           }
           return (
             <td
+              key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
               onClick={() => {
                 if (
@@ -192,6 +194,7 @@ class Table extends Component {
       items.push(
         <tr key={'row-expandable-' + row.id}>
           <td
+            key={'col-expandable-' + row.id}
             colSpan={columns.length + (actions && actions.length ? actions.length : 0)}
             style={{ padding: 0 }}
           >

@@ -54,7 +54,16 @@ class Schema extends Component {
 
     switch (selectedTab) {
       case 'update':
-        return <SchemaUpdate schemaId={schemaId} history={history} match={match} />;
+        return (
+          <SchemaUpdate
+            getSchemaVersions={() => {
+              this.getSchemaVersions();
+            }}
+            schemaId={schemaId}
+            history={history}
+            match={match}
+          />
+        );
       case 'versions':
         return (
           <SchemaVersions
