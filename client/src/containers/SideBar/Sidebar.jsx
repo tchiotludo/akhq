@@ -18,6 +18,8 @@ class Sidebar extends Component {
     allConnects: [],
     showClusters: false,
     showConnects: false,
+    enableRegistry: false,
+    enableConnect: false,
     roles: JSON.parse(localStorage.getItem('roles')),
     height: 'auto'
   };
@@ -43,7 +45,7 @@ class Sidebar extends Component {
       this.setState({ selectedTab: path[2] });
     }
     this.handleGetClusters(selectedCluster => {
-      this.handleGetConnects(selectedCluster);
+      this.handleRegistryAndConnects(selectedCluster);
     });
   }
 
@@ -90,11 +92,16 @@ class Sidebar extends Component {
     }
   }
 
-  async handleGetConnects(selectedCluster) {
+  handleRegistryAndConnects(selectedCluster) {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
-    if (cluster.connects !== undefined) {
-      this.setState({ allConnects: cluster.connects, selectedConnect: cluster.connects[0] });
+    const enableConnects = cluster.connects !== undefined;
+    if(enableConnects) {
+      this.setState({enableRegistry: cluster.registry, enableConnect: enableConnects,
+        allConnects: cluster.connects, selectedConnect: cluster.connects[0]});
+    } else {
+      this.setState({ enableRegistry: cluster.registry, enableConnect: enableConnects,
+        allConnects: [], selectedConnect: '' });
     }
   }
 
@@ -145,7 +152,7 @@ class Sidebar extends Component {
           selectedCluster
         });
 
-        this.handleGetConnects(selectedCluster);
+        this.handleRegistryAndConnects(selectedCluster);
       }
     );
   }
@@ -192,7 +199,9 @@ class Sidebar extends Component {
       showClusters,
       showConnects,
       selectedTab,
-      height
+      height,
+      enableRegistry,
+      enableConnect
     } = this.state;
     const roles = this.state.roles || {};
     const tag = 'Snapshot';
@@ -261,11 +270,13 @@ class Sidebar extends Component {
             roles.acls &&
             roles.acls['acls/read'] &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {roles &&
+          {enableRegistry &&
+            roles &&
             roles.registry &&
             roles.registry['registry/read'] &&
             this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
-          {roles && roles.connect && roles.connect['connect/read'] && (
+          {enableConnect &&
+             roles && roles.connect && roles.connect['connect/read'] && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}

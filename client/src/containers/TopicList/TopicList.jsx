@@ -40,6 +40,13 @@ class TopicList extends Component {
     this.setState({ selectedCluster: clusterId }, this.getTopics);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.location.pathname !== prevProps.location.pathname) {
+      let { clusterId } = this.props.match.params;
+      this.setState({ selectedCluster: clusterId }, this.getTopics);
+    }
+  }
+
   showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
   };
