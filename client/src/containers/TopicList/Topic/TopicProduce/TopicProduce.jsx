@@ -12,6 +12,7 @@ import {
 } from '../../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
+import Tooltip from '@material-ui/core/Tooltip';
 
 class TopicProduce extends Form {
   state = {
@@ -253,48 +254,57 @@ class TopicProduce extends Form {
   }
 
   renderResults = (results, searchValue, selectedValue, tag) => {
+    const { selectedValueSchema } = this.state;
     return (
-      <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
-        <ul
-          className="dropdown-menu inner show"
-          role="presentation"
-          style={{ marginTop: '0px', marginBottom: '0px' }}
-        >
-          {results
-            .filter(key => {
-              if (searchValue.length > 0) {
-                return key.includes(searchValue);
-              }
-              return results;
-            })
-            .map((key, index) => {
-              let selected = selectedValue === key ? 'selected' : '';
-              return (
-                <li>
-                  <div
-                    onClick={e => {
-                      if (tag === 'key') {
-                        selectedValue === key
-                          ? this.setState({ selectedKeySchema: '' })
-                          : this.setState({ selectedKeySchema: key });
-                      } else if (tag === 'value') {
-                        selectedValue === key
-                          ? this.setState({ selectedValueSchema: '' })
-                          : this.setState({ selectedValueSchema: key });
-                      }
-                    }}
-                    role="option"
-                    className={`dropdown-item ${selected}`}
-                    id={`bs-select-${index}-0`}
-                    aria-selected="false"
-                  >
-                    <span className="text">{key}</span>
-                  </div>
-                </li>
-              );
-            })}
-        </ul>{' '}
-      </div>
+        <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
+          <ul
+              className="dropdown-menu inner show"
+              role="presentation"
+              style={{ marginTop: '0px', marginBottom: '0px' }}
+          >
+            {results
+              .filter(key => {
+                if (searchValue.length > 0) {
+                  return key.includes(searchValue);
+                }
+                return results;
+              })
+              .map((key, index) => {
+                let selected = selectedValue === key ? 'selected' : '';
+                return (
+                  <li>
+                    <Tooltip
+                        title={
+                          selectedValue === key
+                              ? 'Click to unselect option'
+                              : 'Click to select option'
+                        }
+                    >
+                      <div
+                          onClick={e => {
+                            if (tag === 'key') {
+                              selectedValue === key
+                                  ? this.setState({ selectedKeySchema: '' })
+                                  : this.setState({ selectedKeySchema: key });
+                            } else if (tag === 'value') {
+                              selectedValue === key
+                                  ? this.setState({ selectedValueSchema: '' })
+                                  : this.setState({ selectedValueSchema: key });
+                            }
+                          }}
+                          role="option"
+                          className={`dropdown-item ${selected}`}
+                          id={`bs-select-${index}-0`}
+                          aria-selected="false"
+                      >
+                        <span className="text">{key}</span>
+                      </div>
+                    </Tooltip>
+                  </li>
+                );
+              })}
+          </ul>{' '}
+        </div>
     );
   };
 
