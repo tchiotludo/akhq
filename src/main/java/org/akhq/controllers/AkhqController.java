@@ -41,7 +41,7 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
