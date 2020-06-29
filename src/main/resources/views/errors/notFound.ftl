@@ -22,7 +22,7 @@
     </p>
 
     <div class="text-right mt-5">
-        <a href="${basePath}" class="btn btn-primary btn-lg">Back to home</a>
+        <a href="${basePath?has_content?then(basePath, "/")}" class="btn btn-primary btn-lg">Back to home</a>
     </div>
 </div>
 

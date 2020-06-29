@@ -72,6 +72,8 @@ akhq:
       enabled: true
       name: org.akhq.log.access
       format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
+      filters:
+        - "((?!/health).)*"
 
   clients-defaults:
     consumer:

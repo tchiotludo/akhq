@@ -22,39 +22,49 @@
                 </tr>
             </thead>
             <tbody>
-            <#list configs as config>
-                <tr>
-                    <td>
-                        <code>${config.getName()}</code>
-                        <#if config.getDescription()?? >
-                        <a class="text-secondary" data-toggle="tooltip" title="${config.getDescription()?replace('<[^>]+>','','r')}">
-                            <i class="fa fa-question-circle" aria-hidden="true"></i>
-                        </a>
-                        </#if>
-                    </td>
-                    <td>
-                        <input type="text"
-                            class="form-control"
-                            autocomplete="off"
-                            name="configs[${config.getName()}]"
-                            value="${config.getValue()!}"
-                            ${(config.isReadOnly())?then("readonly", "")}
-                        />
-                        <small class="humanize form-text text-muted"></small>
-                    </td>
-                    <td>
-                        <span
-                            class="badge badge-${(config.getSource().name() == "DEFAULT_CONFIG")?then("secondary", "warning")}"
-                        >
-                                ${config.getSource().name()}
-                        </span>
+            <#if configs??>
+                <#list configs as config>
+                    <tr>
+                        <td>
+                            <code>${config.getName()}</code>
+                            <#if config.getDescription()?? >
+                                <a class="text-secondary" data-toggle="tooltip" title="${config.getDescription()?replace('<[^>]+>','','r')}">
+                                    <i class="fa fa-question-circle" aria-hidden="true"></i>
+                                </a>
+                            </#if>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   class="form-control"
+                                   autocomplete="off"
+                                   name="configs[${config.getName()}]"
+                                   value="${config.getValue()!}"
+                                    ${(config.isReadOnly())?then("readonly", "")}
+                            />
+                            <small class="humanize form-text text-muted"></small>
+                        </td>
+                        <td>
+                            <span
+                                    class="badge badge-${(config.getSource().name() == "DEFAULT_CONFIG")?then("secondary", "warning")}"
+                            >
+                                    ${config.getSource().name()}
+                            </span>
 
-                        <#if config.isSensitive() >
-                            <i class="fa fa-exclamation-triangle text-danger" aria-hidden="true"></i>
-                        </#if>
+                            <#if config.isSensitive() >
+                                <i class="fa fa-exclamation-triangle text-danger" aria-hidden="true"></i>
+                            </#if>
+                        </td>
+                    </tr>
+                </#list>
+            <#else>
+                <tr>
+                    <td colspan="3">
+                        <div class="alert alert-warning mb-0" role="alert">
+                            No acl for configs for current kafka user.
+                        </div>
                     </td>
                 </tr>
-            </#list>
+            </#if>
             </tbody>
         </table>
     </div>

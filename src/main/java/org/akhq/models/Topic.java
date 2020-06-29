@@ -73,19 +73,16 @@ public class Topic {
 
     public long getReplicaCount() {
         return this.getPartitions().stream()
-            .flatMap(partition -> partition.getNodes().stream())
-            .map(Node::getId)
-            .distinct()
-            .count();
+            .mapToLong(partitions -> partitions.getNodes().size())
+            .max()
+            .orElseGet(() -> 0L);
     }
 
     public long getInSyncReplicaCount() {
         return this.getPartitions().stream()
-            .flatMap(partition -> partition.getNodes().stream())
-            .filter(Node.Partition::isInSyncReplicas)
-            .map(Node::getId)
-            .distinct()
-            .count();
+            .mapToLong(partition -> partition.getNodes().stream().filter(node -> node.isInSyncReplicas()).count())
+            .min()
+            .orElseGet(() -> 0L);
     }
 
     public List<LogDir> getLogDir() {
@@ -130,8 +127,9 @@ public class Topic {
             return false;
         }
 
-        return configRepository
-            .findByTopic(clusterId, this.getName())
+        List<Config> configs = configRepository.findByTopic(clusterId, this.getName());
+
+        return configs != null && configs
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
             .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));

@@ -8,9 +8,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
+import org.joda.time.DateTime;
 
 import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,11 +27,13 @@ public class Record {
     private String topic;
     private int partition;
     private long offset;
-    private long timestamp;
+    private ZonedDateTime timestamp;
+    @JsonIgnore
     private TimestampType timestampType;
     private Integer keySchemaId;
     private Integer valueSchemaId;
     private Map<String, String> headers = new HashMap<>();
+    @JsonIgnore
     private KafkaAvroDeserializer kafkaAvroDeserializer;
 
     @Getter(AccessLevel.NONE)
@@ -45,7 +52,7 @@ public class Record {
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
-        this.timestamp = record.timestamp();
+        this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.bytesKey = bytesKey;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
         this.bytesValue = bytesValue;
@@ -57,7 +64,7 @@ public class Record {
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
-        this.timestamp = record.timestamp();
+        this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.timestampType = record.timestampType();
         this.bytesKey = record.key();
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
@@ -123,5 +130,15 @@ public class Record {
 
         }
         return null;
+    }
+
+    // @TOOD remove this after removal of freemarker
+    @JsonIgnore
+    public Date getDate() {
+        return Date.from(this.timestamp
+            .toLocalDateTime()
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+        );
     }
 }

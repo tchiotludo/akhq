@@ -1,6 +1,7 @@
 package org.akhq.modules;
 
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -281,13 +282,23 @@ abstract public class AbstractKafkaWrapper {
         );
 
         if (list.size() > 0) {
-            Map<ConfigResource, Config> description =  Logger.call(() -> kafkaModule.getAdminClient(clusterId)
-                    .describeConfigs(names.stream()
-                        .map(s -> new ConfigResource(type, s))
-                        .collect(Collectors.toList())
-                    )
-                    .all()
-                    .get(),
+            Map<ConfigResource, Config> description = Logger.call(
+                () -> {
+                    try {
+                        return kafkaModule.getAdminClient(clusterId)
+                            .describeConfigs(names.stream()
+                                .map(s -> new ConfigResource(type, s))
+                                .collect(Collectors.toList())
+                            )
+                            .all()
+                            .get();
+                    } catch (ExecutionException e) {
+                        if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
+                            return ImmutableMap.of();
+                        }
+                        throw e;
+                    }
+                },
                 "Describe Topic Config {}",
                 names
             );

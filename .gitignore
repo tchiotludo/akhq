@@ -39,6 +39,9 @@ logs/*
 src/**/*-*.yml
 connects-plugins/
 
+### Docs
+docs/contributors.html
+
 ## Docker
 .env
 docker-compose.override.yml
