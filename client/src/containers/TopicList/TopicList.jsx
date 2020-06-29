@@ -179,7 +179,7 @@ class TopicList extends Component {
           const noPropagation = e => e.stopPropagation();
 
           return (
-            <div>
+            <div key={consumerGroup.id}>
               <a
                 href={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
                 className={className}

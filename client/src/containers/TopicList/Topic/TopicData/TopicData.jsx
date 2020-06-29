@@ -20,6 +20,10 @@ import _ from 'lodash';
 import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-dracula';
+
 // Adaptation of data.ftl
 
 class TopicData extends React.Component {
@@ -27,7 +31,7 @@ class TopicData extends React.Component {
     showValueModal: false,
     valueModalBody: '',
     showHeadersModal: false,
-    headersModalBody: '',
+    headersModalBody: [],
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
     partitionCount: 0,

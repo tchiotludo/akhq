@@ -68,7 +68,7 @@ class Sidebar extends Component {
       this.setState(
         {
           allClusters: allClusters,
-          selectedCluster: ((cluster)? cluster.id : allClusters[0].id) || allClusters[0].id
+          selectedCluster: (cluster ? cluster.id : allClusters[0].id) || allClusters[0].id
         },
         () => {
           const { selectedCluster } = this.state;
@@ -109,6 +109,7 @@ class Sidebar extends Component {
     const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
     const listClusters = allClusters.map(cluster => (
       <NavItem
+        key={`cluster/${cluster.id}`}
         eventKey={`cluster/${cluster.id}`}
         onClick={() => this.changeSelectedCluster(cluster)}
       >
@@ -124,7 +125,11 @@ class Sidebar extends Component {
       </NavItem>
     ));
     const listConnects = allConnects.map(connect => (
-      <NavItem eventKey={`cluster/${connect}`} onClick={() => this.changeSelectedConnect(connect)}>
+      <NavItem
+        key={`cluster/${connect}`}
+        eventKey={`cluster/${connect}`}
+        onClick={() => this.changeSelectedConnect(connect)}
+      >
         <NavText>
           <div
             className={selectedConnect === connect ? ' active' : ''}
@@ -215,11 +220,7 @@ class Sidebar extends Component {
         style={{ background: 'black', height: height }}
       >
         <SideNav.Toggle /> <span className="logo" />
-        <SideNav.Nav
-          defaultSelected={`${constants.TOPIC}`}
-          style={{ background: 'black' }}
-          defaultActiveKey={selectedTab}
-        >
+        <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
           <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>
             <NavIcon></NavIcon>
             <NavText
@@ -238,7 +239,7 @@ class Sidebar extends Component {
               <i className="fa fa-fw fa fa-database" aria-hidden="true" />
             </NavIcon>
             <NavText>
-              <Link
+              <div
                 data-toggle="collapse"
                 aria-expanded={showClusters}
                 className="dropdown-toggle"
@@ -247,7 +248,7 @@ class Sidebar extends Component {
                 }}
               >
                 Clusters <span className="badge badge-primary clusters">{selectedCluster}</span>
-              </Link>
+              </div>
             </NavText>
             {listClusters}
           </NavItem>

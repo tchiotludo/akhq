@@ -20,13 +20,12 @@ class ErrorBoundary extends Component {
     this.setState({ error, info, hasError: true });
   }
 
-  componentWillReceiveProps(nextProps) {
+  static getDerivedStateFromProps = nextProps => {
     if (window.location.pathname === '/ui/error') {
-      this.setState({ hasError: true });
-    } else {
-      this.setState({ hasError: false });
+      return { hasError: true };
     }
-  }
+    return { hasError: false };
+  };
 
   /**
    * If there will be a reload button, use this at onClick: window.location.reload()
