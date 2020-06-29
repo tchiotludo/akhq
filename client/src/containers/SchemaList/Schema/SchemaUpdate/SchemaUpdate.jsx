@@ -117,13 +117,14 @@ class SchemaUpdate extends Form {
       loading: true
     });
     post(uriUpdateSchema(clusterId, formData.subject), body)
-      .then(() => {
+      .then(res => {
         this.props.history.push({
           ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
         });
+        this.props.getSchemaVersions();
       })
       .catch(err => {
         console.log('err', err);
