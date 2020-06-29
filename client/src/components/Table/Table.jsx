@@ -155,7 +155,7 @@ class Table extends Component {
                 }}
                 id={`row_${column.id}_${colIndex}`}
               >
-                <div className={'align-cell'}>{column.cell(row, column)}</div>
+                {column.cell(row, column)}
               </td>
             );
           }
@@ -175,7 +175,7 @@ class Table extends Component {
               }}
               id={`row_${column.id}_${colIndex}`}
             >
-              <div className={'align-cell'}>{row[column.accessor]}</div>
+              {row[column.accessor]}
             </td>
           );
         })}
@@ -223,15 +223,10 @@ class Table extends Component {
             {extraExpanded &&
             JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
             JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0 ? (
-              <div style={{ zIndex: 5, display: 'flex', justifyContent: 'flex-end' }}>
+              <div className="close-container">
                 <span
                   onClick={() => {
                     this.handleExtraCollapse(row);
-                  }}
-                  style={{
-                    color: 'white',
-                    cursor: 'pointer',
-                    justifyContent: 'flex-end'
                   }}
                   aria-hidden="true"
                 >

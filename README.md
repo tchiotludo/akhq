@@ -138,6 +138,14 @@ helm repo add akhq https://akhq.io/
 helm install --name akhq akhq/akhq
 ```
 
+#### Requirements
+
+* Chart version >=0.1.1 requires Kubernetes version >=1.14
+* Chart version 0.1.0 works on previous Kubernetes versions
+```sh
+helm install --name akhq akhq/akhq --version 0.1.0
+```
+
 ### Using git
 * Clone the repository:
 ```sh
@@ -156,6 +164,11 @@ helm install --name=akhq-release-name  .
 ## Configuration
 Configuration file can by default be provided in either Java properties, YAML, JSON or Groovy files. YML Configuration
 file example can be found here :[application.example.yml](application.example.yml)
+
+### Pass custom Java opts
+
+By default, the docker container will allow a custom jvn options setting the environnments vars `JAVA_OPTS`.
+For example, if you want to change the default timezome, just add `-e "JAVA_OPTS=-Duser.timezone=Europe/Paris"`
 
 ### Run with another jvm.options file
 

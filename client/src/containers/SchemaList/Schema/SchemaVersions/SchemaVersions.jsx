@@ -147,7 +147,7 @@ class SchemaVersions extends Component {
                   <AceEditor
                     mode="json"
                     id={'value' + index}
-                    theme="dracula"
+                    theme="merbivore_soft"
                     value={obj[col.accessor]}
                     readOnly
                     name="UNIQUE_ID_OF_DIV"

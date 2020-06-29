@@ -2,7 +2,7 @@ import React from 'react';
 import './styles.scss';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 function CodeViewModal({ show, body, handleClose }) {
   const showHideClassname = show ? 'modal display-block' : 'modal display-none';
@@ -35,7 +35,7 @@ function CodeViewModal({ show, body, handleClose }) {
               <AceEditor
                 mode="json"
                 name="aceEditor"
-                theme="dracula"
+                theme="merbivore_soft"
                 editorProps={{ $blockScrolling: true }}
                 value={body}
               />

@@ -1,13 +1,7 @@
+@import "../assets/css/init";
+
 .action-hover :hover {
   cursor: pointer;
-}
-
-.align-cell {
-  display: flex;
-  justify-content: flex-start;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  align-items: center;
 }
 
 .no-stripes tr {
@@ -19,6 +13,7 @@
   overflow: hidden;
 }
 
+
 .header-content {
   display: flex;
   flex-direction: row;
@@ -26,8 +21,15 @@
   align-items: center;
 }
 
+td {
+  position: relative;
+}
 
-
-code{
-  word-break: break-word;
+.close-container {
+  position: absolute;
+  z-index: 100;
+  right:2px;
+  top:-5px;
+  cursor: pointer;
+  font-size: $font-size-lg;
 }
