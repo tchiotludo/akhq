@@ -1,5 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get, remove } from '../../../../utils/api';
@@ -58,7 +59,8 @@ class TopicData extends React.Component {
     datetime: '',
     schemas: [],
     roles: JSON.parse(localStorage.getItem('roles')),
-    canDeleteRecords: false
+    canDeleteRecords: false,
+    percent: 0
   };
 
   eventSource;
@@ -95,14 +97,14 @@ class TopicData extends React.Component {
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
-      self.setState({ isSearching: true }, () => {
+      self.setState({ isSearching: true, percent: res.percent.toFixed(2) }, () => {
         self.handleMessages(res.records || [], true);
       });
     });
 
     this.eventSource.addEventListener('searchEnd', function(e) {
       self.eventSource.close();
-      self.setState({ isSearching: false });
+      self.setState({ percent: 100, isSearching: false });
     });
   };
 
@@ -114,7 +116,9 @@ class TopicData extends React.Component {
   };
 
   onStart = () => {
-    this.startEventSource();
+    this.setState({ percent: 0, isSearching: true }, () => {
+      this.startEventSource();
+    });
   };
 
   showValueModal = body => {
@@ -420,7 +424,8 @@ class TopicData extends React.Component {
       showFilters,
       datetime,
       isSearching,
-      canDeleteRecords
+      canDeleteRecords,
+      percent
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
@@ -558,7 +563,7 @@ class TopicData extends React.Component {
                             className="btn btn-primary"
                             type="button"
                             onClick={() =>
-                              this.setState({ currentSearch: search, search: '' }, () => {
+                              this.setState({ currentSearch: search }, () => {
                                 if (this.state.currentSearch.length <= 0) {
                                   this.getMessages();
                                 } else {
@@ -626,6 +631,7 @@ class TopicData extends React.Component {
             </ul>
           </div>
         </nav>
+        {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
           <Table
             firstHeader={firstColumns}
