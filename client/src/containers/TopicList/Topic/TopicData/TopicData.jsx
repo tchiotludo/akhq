@@ -284,7 +284,7 @@ class TopicData extends React.Component {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || {},
-        schema: {key: message.keySchemaId, value: message.valueSchemaId}
+        schema: { key: message.keySchemaId, value: message.valueSchemaId }
       };
       tableMessages.push(messageToPush);
     });
@@ -520,6 +520,9 @@ class TopicData extends React.Component {
                     <Dropdown.Menu>
                       <div className="input-group">
                         <DatePicker
+                          onClear={() => {
+                            this.setState({ datetime: '' });
+                          }}
                           showDateTimeInput
                           showTimeSelect
                           value={datetime}
@@ -534,9 +537,7 @@ class TopicData extends React.Component {
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
-                  <Dropdown.Toggle
-                    className="nav-link dropdown-toggle"
-                  >
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
                   {!loading && (
@@ -635,7 +636,6 @@ class TopicData extends React.Component {
                 colName: 'Key',
                 type: 'text',
                 cell: (obj, col) => {
-
                   let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
                   return (
                     <span>
@@ -651,14 +651,12 @@ class TopicData extends React.Component {
                 type: 'text',
                 extraRow: true,
                 extraRowContent: (obj, index) => {
-
                   let value = obj.value;
                   try {
                     let json = JSON.parse(obj.value);
                     value = JSON.stringify(json, null, 2);
                     // eslint-disable-next-line no-empty
-                  } catch (e) {
-                  }
+                  } catch (e) {}
 
                   return (
                     <AceEditor
@@ -673,7 +671,7 @@ class TopicData extends React.Component {
                     />
                   );
                 },
-                cell: (obj) => {
+                cell: obj => {
                   return (
                     <pre className="mb-0 khq-data-highlight">
                       <code>{obj.value}</code>
@@ -725,45 +723,45 @@ class TopicData extends React.Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                      <div className="justify-items">
-                        {obj[col.accessor].key !== undefined && (
-                          <span
-                            className="badge badge-primary clickable"
-                            onClick={() => {
-                              let schema = this.state.schemas.find(el => {
-                                return el.id === obj.schema.key;
+                    <div className="justify-items">
+                      {obj[col.accessor].key !== undefined && (
+                        <span
+                          className="badge badge-primary clickable"
+                          onClick={() => {
+                            let schema = this.state.schemas.find(el => {
+                              return el.id === obj.schema.key;
+                            });
+                            if (schema) {
+                              this.props.history.push({
+                                pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                schemaId: schema.subject
                               });
-                              if (schema) {
-                                this.props.history.push({
-                                  pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                  schemaId: schema.subject
-                                });
-                              }
-                            }}
-                          >
-                            Key: {obj[col.accessor].key}
-                          </span>
-                        )}
+                            }
+                          }}
+                        >
+                          Key: {obj[col.accessor].key}
+                        </span>
+                      )}
 
-                          {obj[col.accessor].value !== undefined && (
-                              <span
-                                  className="badge badge-primary clickable"
-                                  onClick={() => {
-                                      let schema = this.state.schemas.find(el => {
-                                          return el.id === obj.schema.value;
-                                      });
-                                      if (schema) {
-                                          this.props.history.push({
-                                              pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                              schemaId: schema.subject
-                                          });
-                                      }
-                                  }}
-                              >
-                            Value: {obj[col.accessor].value}
-                          </span>
-                          )}
-                      </div>
+                      {obj[col.accessor].value !== undefined && (
+                        <span
+                          className="badge badge-primary clickable"
+                          onClick={() => {
+                            let schema = this.state.schemas.find(el => {
+                              return el.id === obj.schema.value;
+                            });
+                            if (schema) {
+                              this.props.history.push({
+                                pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                schemaId: schema.subject
+                              });
+                            }
+                          }}
+                        >
+                          Value: {obj[col.accessor].value}
+                        </span>
+                      )}
+                    </div>
                   );
                 }
               }
