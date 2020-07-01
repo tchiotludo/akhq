@@ -225,6 +225,10 @@ class TopicData extends React.Component {
       history.replace({
         loading: false
       });
+      if(data.after){
+        let params = data.after.split('/data?')[1];
+        history.push({ pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`, search: params });
+      }
     }
   }
 

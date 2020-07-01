@@ -107,7 +107,7 @@ class Routes extends Component {
               <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
             )}
             {roles && roles.topic && roles.topic['topic/read'] && (
-              <Route exact path="/ui/:clusterId/topic/:topicId" component={Topic} />
+              <Route exact path="/ui/:clusterId/topic/:topicId/:data?" component={Topic} />
             )}
             {roles && roles.topic && roles.topic['topic/data/insert'] && (
               <Route exact path="/ui/:clusterId/topic/:topicId/produce" component={TopicProduce} />
