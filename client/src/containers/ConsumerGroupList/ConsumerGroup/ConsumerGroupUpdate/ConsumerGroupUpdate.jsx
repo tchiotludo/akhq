@@ -274,6 +274,7 @@ class ConsumerGroupUpdate extends Form {
                 <div>
                   <DatePicker
                     showTimeInput
+                    showDateTimeInput
                     value={timestamp}
                     label={''}
                     onChange={value => {

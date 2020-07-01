@@ -353,15 +353,6 @@ class TopicProduce extends Form {
           </div>
 
           {this.renderHeaders()}
-          {this.renderSelect('valueFormat', 'Value Format', selectableValueFormats, value => {
-            if (value.target.value === 'string') {
-              this.schema.value = Joi.string().label('Value');
-              this.forceUpdate();
-            } else if (value.target.value === 'json') {
-              this.schema.value = Joi.any().label('Value');
-              this.forceUpdate();
-            }
-          })}
           {this.renderDropdown(
             'Value schema',
             valueSchema.map(value => value.subject),

@@ -83,11 +83,15 @@ class Tail extends Component {
     let self = this;
     this.eventSource.addEventListener('tailBody', function(e) {
       let res = JSON.parse(e.data);
-      const { data } = self.state;
+      let { data } = self.state;
+
       if (res.records) {
         data.push(res.records[0]);
-        self.setState({ data });
+        if (data.length > maxRecords) {
+          data = data.slice(data.length - maxRecords);
+        }
       }
+      self.setState({ data });
     });
 
     this.eventSource.onerror = e => {
