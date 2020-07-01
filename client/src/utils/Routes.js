@@ -27,7 +27,7 @@ import PageNotFound from './../containers/PageNotFound/PageNotFound';
 import TopicData from '../containers/TopicList/Topic/TopicData';
 
 class Routes extends Component {
-  state = {};
+  state = { clusterId: '' };
   static propTypes = {
     location: PropTypes.object,
     history: PropTypes.object,
@@ -44,7 +44,14 @@ class Routes extends Component {
       };
       localStorage.setItem('lastRoute', JSON.stringify(routeObject));
     }
-    return {};
+    let path = window.location.pathname.split('/');
+    let clusterId = '';
+    if (path.length < 4 || path[2] === '') {
+      clusterId = nextProps.clusterId;
+    } else {
+      clusterId = path[2];
+    }
+    return { clusterId };
   };
 
   handleRedirect(clusterId) {
@@ -64,14 +71,9 @@ class Routes extends Component {
     const roles = JSON.parse(localStorage.getItem('roles')) || {};
     let path = window.location.pathname.split('/');
 
-    let clusterId = '';
-    if (path.length < 4 || path[2] === '') {
-      clusterId = this.props.clusterId;
-    } else {
-      clusterId = path[2];
-    }
+    let clusterId = this.state.clusterId;
 
-    if (path[2] === 'error') {
+    if (path[2] === 'error' || clusterId.length <= 0) {
       return (
         <Switch>
           <Route exact path="/ui/error" component={ErrorPage} />
