@@ -29,11 +29,13 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
     const roles = this.state.roles || {};
+    const url = this.props.location.pathname.split('/');
+    const tabSelected = this.props.location.pathname.split('/')[url.length-1];
     this.setState(
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
+        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'partitions',
         topicInternal: this.props.location.internal
       },
       () => {

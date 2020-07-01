@@ -18,7 +18,8 @@ class TopicAcls extends Component {
     const { clusterId, topicId } = this.props;
     const { history } = this.props;
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${clusterId}/topic/${topicId}/acls`
     });
     try {
       acls = await get(uriTopicsAcls(clusterId, topicId));

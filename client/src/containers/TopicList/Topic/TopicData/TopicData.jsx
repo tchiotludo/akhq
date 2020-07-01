@@ -78,7 +78,8 @@ class TopicData extends React.Component {
       },
       () => {
         history.replace({
-          loading: true
+          loading: true,
+          pathname: `/ui/${clusterId}/topic/${topicId}/data`
         });
         this.getMessages();
       }

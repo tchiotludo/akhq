@@ -70,7 +70,7 @@ class SchemaUpdate extends Form {
     let data = {};
     history.replace({
       ...this.props.location,
-      loading: true
+      loading: true,
     });
     try {
       data = await get(uriLatestSchemaVersion(clusterId, schemaId));
@@ -79,6 +79,7 @@ class SchemaUpdate extends Form {
       if (data) {
         this.handleLatestSchemaVersion(data);
       }
+      history.replace({ pathname: `/ui/${clusterId}/schema/details/${schemaId}/update`});
     } catch (err) {
       if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });

@@ -15,8 +15,12 @@ class Node extends Component {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-
-    this.setState({ clusterId });
+    const url = this.props.location.pathname.split('/');
+    const tabSelected = url[url.length-1];
+    this.setState({
+      clusterId,
+      selectedTab: tabSelected == 'logs' ? tabSelected : 'configs',
+    });
   }
 
   selectTab = tab => {
