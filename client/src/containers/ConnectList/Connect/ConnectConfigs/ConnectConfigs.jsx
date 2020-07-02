@@ -1,12 +1,8 @@
 import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, post } from '../../../../utils/api';
-import {
-  uriConnectDefinitionConfigs,
-  uriConnectPlugin,
-  uriUpdateDefinition
-} from '../../../../utils/endpoints';
+import {get, handleCatch, post} from '../../../../utils/api';
+import {uriConnectDefinitionConfigs, uriConnectPlugin, uriUpdateDefinition} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
@@ -45,11 +41,7 @@ class ConnectConfigs extends Form {
         this.getPlugin(pluginId);
       });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -70,11 +62,7 @@ class ConnectConfigs extends Form {
         this.renderForm();
       });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

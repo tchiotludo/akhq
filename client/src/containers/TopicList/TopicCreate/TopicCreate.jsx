@@ -5,6 +5,7 @@ import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { post } from '../../../utils/api';
 import { uriTopicsCreate } from '../../../utils/endpoints';
+import {toast} from "react-toastify";
 
 class TopicCreate extends Form {
   state = {
@@ -77,6 +78,8 @@ class TopicCreate extends Form {
           errorToastMessage: err.message,
           loading: false
         });
+
+        toast.warn(`Failed to create topic '${formData.name}'`);
       });
   }
   render() {

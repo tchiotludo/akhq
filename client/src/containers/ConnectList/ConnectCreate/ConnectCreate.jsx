@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, post } from '../../../utils/api';
-import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
+import {get, handleCatch, post} from '../../../utils/api';
+import {uriConnectPlugins, uriCreateConnect} from '../../../utils/endpoints';
+import {withRouter} from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
@@ -49,11 +49,7 @@ class ConnectCreate extends Component {
       plugins = plugins.data;
       this.setState({ clusterId, connectId, plugins: plugins });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

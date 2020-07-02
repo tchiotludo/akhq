@@ -12,7 +12,6 @@ import ConnectList from '../containers/ConnectList/ConnectList';
 import ConnectCreate from '../containers/ConnectList/ConnectCreate/ConnectCreate';
 import Connect from '../containers/ConnectList/Connect/Connect';
 import TopicCreate from '../containers/TopicList/TopicCreate/TopicCreate';
-import ErrorPage from '../containers/ErrorPage';
 import TopicProduce from '../containers/TopicList/Topic/TopicProduce';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroupList';
@@ -23,7 +22,6 @@ import SchemaCreate from '../containers/SchemaList/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acls/AclDetails';
 import Login from '../containers/Login';
-import PageNotFound from './../containers/PageNotFound/PageNotFound';
 
 class Routes extends Component {
   state = {};
@@ -31,19 +29,6 @@ class Routes extends Component {
     location: PropTypes.object,
     history: PropTypes.object,
     clusterId: PropTypes.string
-  };
-
-  //componentWillReceiveProps(nextProps) {}
-
-  static getDerivedStateFromProps = nextProps => {
-    if (nextProps.location.pathname !== '/ui/error') {
-      let routeObject = {
-        pathname: nextProps.location.pathname,
-        ...nextProps.history.location.state
-      };
-      localStorage.setItem('lastRoute', JSON.stringify(routeObject));
-    }
-    return {};
   };
 
   handleRedirect(clusterId) {
@@ -70,21 +55,6 @@ class Routes extends Component {
       clusterId = path[2];
     }
 
-    if (path[2] === 'error') {
-      return (
-        <Switch>
-          <Route exact path="/ui/error" component={ErrorPage} />
-        </Switch>
-      );
-    }
-    if (path[2] === 'page-not-found') {
-      return (
-        <Switch>
-          <Route exact path="/ui/page-not-found" component={PageNotFound} />
-        </Switch>
-      );
-    }
-
     if (path[2] === ':login') {
       return (
         <Switch>
@@ -98,9 +68,7 @@ class Routes extends Component {
         <Base>
           <Switch location={location}>
             <Route exact path="/ui/:login" component={Login} />
-            <Route exact path="/ui/page-not-found" component={PageNotFound} />
             {roles && roles.topic && roles.topic['topic/read'] && (
-              /*<Route exact path="/page-not-found" component={PageNotFound} /> */
               <Route exact path="/ui/:clusterId/topic" component={TopicList} />
             )}
             {roles && roles.topic && roles.topic['topic/insert'] && (

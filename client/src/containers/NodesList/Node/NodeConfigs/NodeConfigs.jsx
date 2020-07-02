@@ -1,7 +1,7 @@
 import React from 'react';
-import { get, post } from '../../../../utils/api';
-import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
-import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
+import {get, handleCatch, post} from '../../../../utils/api';
+import {uriNodesConfigs, uriNodesUpdateConfigs} from '../../../../utils/endpoints';
+import {BYTES, MILLI, TEXT} from '../../../../utils/constants';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
@@ -43,12 +43,11 @@ class NodeConfigs extends Form {
         loading: false
       });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
-      console.error('Error:', err);
+      handleCatch(err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 

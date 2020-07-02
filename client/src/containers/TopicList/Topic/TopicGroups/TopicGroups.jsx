@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Table from '../../../../components/Table';
-import api from '../../../../utils/api';
-import { uriTopicsGroups } from '../../../../utils/endpoints';
+import api, {handleCatch} from '../../../../utils/api';
+import {uriTopicsGroups} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 
 class TopicGroups extends Component {
@@ -36,11 +36,7 @@ class TopicGroups extends Component {
         this.setState({ selectedCluster });
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

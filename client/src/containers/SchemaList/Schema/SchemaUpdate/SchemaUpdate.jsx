@@ -1,8 +1,8 @@
 import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Joi from 'joi-browser';
-import { get, post } from '../../../../utils/api';
-import { uriLatestSchemaVersion, uriUpdateSchema } from '../../../../utils/endpoints';
+import {get, handleCatch, post} from '../../../../utils/api';
+import {uriLatestSchemaVersion, uriUpdateSchema} from '../../../../utils/endpoints';
 
 class SchemaUpdate extends Form {
   state = {
@@ -80,14 +80,9 @@ class SchemaUpdate extends Form {
         this.handleLatestSchemaVersion(data);
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
-        ...this.props.location,
         loading: false
       });
     }

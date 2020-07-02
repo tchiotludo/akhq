@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 import Table from '../../components/Table';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, { remove } from '../../utils/api';
-import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
+import api, {handleCatch, remove} from '../../utils/api';
+import {uriDeleteTopics, uriTopics} from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
+import {calculateTopicOffsetLag, showBytes} from '../../utils/converters';
 import './styles.scss';
 
 class TopicList extends Component {
@@ -133,11 +133,7 @@ class TopicList extends Component {
         this.setState({ selectedCluster, totalPageNumber: data.page });
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         ...this.props.location,

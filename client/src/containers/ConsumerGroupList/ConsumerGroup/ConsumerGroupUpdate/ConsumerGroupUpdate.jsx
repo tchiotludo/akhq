@@ -3,9 +3,9 @@ import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
-import { formatDateTime } from '../../../../utils/converters';
+import {formatDateTime} from '../../../../utils/converters';
 import Joi from 'joi-browser';
-import { get, post } from '../../../../utils/api';
+import {get, handleCatch, post} from '../../../../utils/api';
 import {
   uriConsumerGroup,
   uriConsumerGroupOffsetsByTimestamp,
@@ -76,11 +76,7 @@ class ConsumerGroupUpdate extends Form {
         this.createValidationSchema(groupedTopicOffset);
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         ...this.props.location,

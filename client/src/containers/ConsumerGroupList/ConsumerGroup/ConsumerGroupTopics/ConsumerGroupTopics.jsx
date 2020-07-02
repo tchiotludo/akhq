@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
+import {get, handleCatch} from '../../../../utils/api';
 import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
+import history from "../../../../utils/history";
 
 class ConsumerGroupTopics extends Component {
   state = {
@@ -27,7 +28,7 @@ class ConsumerGroupTopics extends Component {
       offsets = offsets.data;
       this.handleData(offsets);
     } catch (err) {
-      console.error('Error:', err);
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -89,7 +90,7 @@ class ConsumerGroupTopics extends Component {
               colName: 'Member',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.member);
+                return this.handleOptional(obj.member.host);
               }
             },
             {

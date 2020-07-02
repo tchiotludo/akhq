@@ -1,16 +1,17 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Table from '../../components/Table';
-import endpoints, { uriDeleteSchema } from '../../utils/endpoints';
+import endpoints, {uriDeleteSchema} from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, { remove } from '../../utils/api';
+import api, {handleCatch, remove} from '../../utils/api';
 import './styles.scss';
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import AceEditor from 'react-ace';
+
 class SchemaList extends Component {
   state = {
     schemasRegistry: [],
@@ -95,11 +96,7 @@ class SchemaList extends Component {
       this.handleSchemaRegistry(schemasRegistry);
       this.setState({ selectedCluster, totalPageNumber: response.page });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

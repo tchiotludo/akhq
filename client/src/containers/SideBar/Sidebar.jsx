@@ -1,13 +1,14 @@
-import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { matchPath } from 'react-router';
-import { get } from '../../utils/api';
-import { uriClusters } from '../../utils/endpoints';
+import React, {Component} from 'react';
+import {Link, withRouter} from 'react-router-dom';
+import {matchPath} from 'react-router';
+import {get, handleCatch} from '../../utils/api';
+import {uriClusters} from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import _ from 'lodash';
 import './styles.scss';
-import SideNav, { NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
+import SideNav, {NavIcon, NavItem, NavText} from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
+import history from "../../utils/history";
 
 class Sidebar extends Component {
   state = {
@@ -77,12 +78,11 @@ class Sidebar extends Component {
         }
       );
     } catch (err) {
-      console.log(err);
-      if (err.status === 404) {
-        this.props.history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        this.props.history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 

@@ -110,9 +110,6 @@ class Login extends Form {
             <div>
               <h3 className="logo">
                 <img src={logo} alt="" />
-                <sup>
-                  <strong>HQ</strong>
-                </sup>
               </h3>
             </div>
 

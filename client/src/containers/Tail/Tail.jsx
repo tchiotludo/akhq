@@ -1,15 +1,16 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
-import { get } from '../../utils/api';
-import { uriTopics, uriLiveTail } from '../../utils/endpoints';
+import {get, handleCatch} from '../../utils/api';
+import {uriLiveTail, uriTopics} from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import history from "../../utils/history";
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -63,7 +64,11 @@ class Tail extends Component {
         }
       }
     } catch (err) {
-      this.props.history.replace('/ui/error', { errorData: err });
+      handleCatch(err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   };
 

@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
-import { uriTopicsAcls } from '../../../../utils/endpoints';
+import {get, handleCatch} from '../../../../utils/api';
+import {uriTopicsAcls} from '../../../../utils/endpoints';
 
 class TopicAcls extends Component {
   state = {
@@ -24,11 +24,7 @@ class TopicAcls extends Component {
       acls = await get(uriTopicsAcls(clusterId, topicId));
       this.handleData(acls.data);
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

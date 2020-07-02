@@ -3,14 +3,14 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get, remove } from '../../../../utils/api';
-import { formatDateTime } from '../../../../utils/converters';
+import {get, handleCatch, remove} from '../../../../utils/api';
+import {formatDateTime} from '../../../../utils/converters';
 import {
-  uriTopicData,
-  uriTopicsPartitions,
-  uriTopicDataSearch,
   uriSchemaRegistry,
-  uriTopicDataDelete
+  uriTopicData,
+  uriTopicDataDelete,
+  uriTopicDataSearch,
+  uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import CodeViewModal from '../../../../components/Modal/CodeViewModal/CodeViewModal';
 import Modal from '../../../../components/Modal/Modal';
@@ -156,7 +156,7 @@ class TopicData extends React.Component {
       datetime,
       currentSearch,
       offsetsSearch,
-      nextPage
+      nextPage,
     } = this.state;
     let data,
       partitionData = {};
@@ -216,11 +216,7 @@ class TopicData extends React.Component {
         });
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

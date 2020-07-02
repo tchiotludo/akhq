@@ -3,16 +3,13 @@ import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { post, get } from '../../../../utils/api';
-import { formatDateTime } from '../../../../utils/converters';
-import {
-  uriTopicsProduce,
-  uriTopicsPartitions,
-  uriPreferredSchemaForTopic
-} from '../../../../utils/endpoints';
+import {get, handleCatch, post} from '../../../../utils/api';
+import {formatDateTime} from '../../../../utils/converters';
+import {uriPreferredSchemaForTopic, uriTopicsPartitions, uriTopicsProduce} from '../../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import Tooltip from '@material-ui/core/Tooltip';
+import history from "../../../../utils/history";
 
 class TopicProduce extends Form {
   state = {
@@ -93,7 +90,6 @@ class TopicProduce extends Form {
 
   async getPreferredSchemaForTopic() {
     const { clusterId, topicId } = this.props.match.params;
-    const { history } = this.props;
     try {
       let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
       let keySchema = [];
@@ -102,11 +98,11 @@ class TopicProduce extends Form {
       (schema.data && schema.data.value) && schema.data.value.map(index => valueSchema.push(index));
       this.setState({ keySchema: keySchema, valueSchema: valueSchema });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 

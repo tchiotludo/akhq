@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 
-import { Link, withRouter } from 'react-router-dom';
-import { organizeRoles } from '../../utils/converters';
-import { get, logout } from '../../utils/api';
-import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
+import {Link, withRouter} from 'react-router-dom';
+import {organizeRoles} from '../../utils/converters';
+import {get, handleCatch, logout} from '../../utils/api';
+import {uriCurrentUser, uriLogout} from '../../utils/endpoints';
+import history from "../../utils/history";
 
 class Header extends Component {
   state = {
@@ -28,11 +29,11 @@ class Header extends Component {
         });
       });
     } catch (err) {
-      if (err.status === 404) {
-        this.props.history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        this.props.history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 

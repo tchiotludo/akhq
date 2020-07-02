@@ -7,7 +7,7 @@ import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, { remove } from '../../utils/api';
+import api, {handleCatch, handleFinally, remove} from '../../utils/api';
 
 class ConsumerGroupList extends Component {
   state = {
@@ -72,11 +72,7 @@ class ConsumerGroupList extends Component {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false

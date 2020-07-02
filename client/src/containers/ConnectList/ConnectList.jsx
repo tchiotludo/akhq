@@ -61,11 +61,9 @@ class ConnectList extends Component {
         loading: false
       });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err, loading: false });
-      } else {
-        history.replace('/ui/error', { errorData: err, loading: false });
-      }
+      history.replace({
+        loading: false
+      });
     }
   }
 

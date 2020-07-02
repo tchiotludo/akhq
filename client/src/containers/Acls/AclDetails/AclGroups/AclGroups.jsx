@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import './styles.scss';
 
 import Table from '../../../../components/Table/Table';
-import { get } from '../../../../utils/api';
-import { uriAclsByPrincipal } from '../../../../utils/endpoints';
+import {get, handleCatch} from '../../../../utils/api';
+import {uriAclsByPrincipal} from '../../../../utils/endpoints';
 
 class AclTopics extends Component {
   state = {
@@ -31,11 +31,7 @@ class AclTopics extends Component {
         this.handleAcls(acls);
       }
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+      handleCatch(err);
     } finally {
       history.replace({
         loading: false
