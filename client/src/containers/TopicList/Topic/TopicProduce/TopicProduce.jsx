@@ -329,7 +329,7 @@ class TopicProduce extends Form {
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
-            })}
+            }, "col-sm-10")}
             {this.renderDropdown(
               'Key schema',
               keySchema.map(key => key.subject),
