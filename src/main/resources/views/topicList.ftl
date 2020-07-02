@@ -25,7 +25,7 @@
                 <#if skipConsumerGroups == false>
                     <th>Consumers Groups</th>
                 </#if>
-                <th colspan="2" class="khq-row-action"></th>
+                <th colspan="3" class="khq-row-action"></th>
             </tr>
         </thead>
         <thead class="thead-dark">
@@ -43,6 +43,7 @@
                 <#if skipConsumerGroups == false>
                     <th class="text-nowrap">Consumer Groups</th>
                 </#if>
+                <th class="khq-row-action"></th>
                 <th class="khq-row-action"></th>
                 <#if canDelete == true>
                     <th class="khq-row-action"></th>
@@ -92,6 +93,9 @@
                         </#if>
                         <td class="khq-row-action khq-row-action-main">
                             <a href="${basePath}/${clusterId}/topic/${topic.getName()}${roles?seq_contains("topic/data/read")?then("", "/partitions")}" ><i class="fa fa-search"></i></a>
+                        </td>
+                        <td class="khq-row-action">
+                            <a href="${basePath}/${clusterId}/topic/${topic.getName()}/configs" ><i class="fa fa-gear"></i></a>
                         </td>
                         <#if canDelete == true>
                             <td class="khq-row-action">
