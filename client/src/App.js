@@ -5,7 +5,6 @@ import Routes from './utils/Routes';
 import history from './utils/history';
 import api from './utils/api';
 import ErrorBoundary from './containers/ErrorBoundary';
-import Loading from '../src/containers/Loading';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 

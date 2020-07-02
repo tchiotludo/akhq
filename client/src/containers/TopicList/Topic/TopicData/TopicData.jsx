@@ -22,6 +22,7 @@ import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
+import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 
@@ -66,10 +67,14 @@ class TopicData extends React.Component {
   eventSource;
 
   componentDidMount = () => {
+    this.checkProps();
+  };
+
+  checkProps = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
     const roles = this.state.roles || {};
-
+    console.log('state', this.state.selectedCluster, this.state.selectedTopic);
     this.setState(
       {
         selectedCluster: clusterId,
@@ -226,9 +231,12 @@ class TopicData extends React.Component {
       history.replace({
         loading: false
       });
-      if(data.after){
+      if (data.after) {
         let params = data.after.split('/data?')[1];
-        history.push({ pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`, search: params });
+        history.push({
+          pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+          search: params
+        });
       }
     }
   }

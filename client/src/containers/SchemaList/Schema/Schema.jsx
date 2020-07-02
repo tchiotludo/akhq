@@ -35,14 +35,14 @@ class Schema extends Component {
       loading: true
     });
     const url = this.props.location.pathname.split('/');
-    const tabSelected = this.props.location.pathname.split('/')[url.length-1];
+    const tabSelected = this.props.location.pathname.split('/')[url.length - 1];
 
     try {
       schemas = await get(endpoints.uriSchemaVersions(clusterId, schemaId));
       this.setState({
         schemaVersions: schemas.data,
         totalVersions: schemas.data.length,
-        selectedTab: tabSelected == 'versions' ? tabSelected : 'update'
+        selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
       });
     } catch (err) {
       console.error('Error:', err);

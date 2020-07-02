@@ -98,8 +98,8 @@ class TopicProduce extends Form {
       let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
       let keySchema = [];
       let valueSchema = [];
-      (schema.data && schema.data.key) && schema.data.key.map(index => keySchema.push(index));
-      (schema.data && schema.data.value) && schema.data.value.map(index => valueSchema.push(index));
+      schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
+      schema.data && schema.data.value && schema.data.value.map(index => valueSchema.push(index));
       this.setState({ keySchema: keySchema, valueSchema: valueSchema });
     } catch (err) {
       if (err.status === 404) {
@@ -255,55 +255,53 @@ class TopicProduce extends Form {
 
   renderResults = (results, searchValue, selectedValue, tag) => {
     return (
-        <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
-          <ul
-              className="dropdown-menu inner show"
-              role="presentation"
-              style={{ marginTop: '0px', marginBottom: '0px' }}
-          >
-            {results
-              .filter(key => {
-                if (searchValue.length > 0) {
-                  return key.includes(searchValue);
-                }
-                return results;
-              })
-              .map((key, index) => {
-                let selected = selectedValue === key ? 'selected' : '';
-                return (
-                  <li>
-                    <Tooltip
-                        title={
+      <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
+        <ul
+          className="dropdown-menu inner show"
+          role="presentation"
+          style={{ marginTop: '0px', marginBottom: '0px' }}
+        >
+          {results
+            .filter(key => {
+              if (searchValue.length > 0) {
+                return key.includes(searchValue);
+              }
+              return results;
+            })
+            .map((key, index) => {
+              let selected = selectedValue === key ? 'selected' : '';
+              return (
+                <li>
+                  <Tooltip
+                    title={
+                      selectedValue === key ? 'Click to unselect option' : 'Click to select option'
+                    }
+                  >
+                    <div
+                      onClick={e => {
+                        if (tag === 'key') {
                           selectedValue === key
-                              ? 'Click to unselect option'
-                              : 'Click to select option'
+                            ? this.setState({ selectedKeySchema: '' })
+                            : this.setState({ selectedKeySchema: key });
+                        } else if (tag === 'value') {
+                          selectedValue === key
+                            ? this.setState({ selectedValueSchema: '' })
+                            : this.setState({ selectedValueSchema: key });
                         }
+                      }}
+                      role="option"
+                      className={`dropdown-item ${selected}`}
+                      id={`bs-select-${index}-0`}
+                      aria-selected="false"
                     >
-                      <div
-                          onClick={e => {
-                            if (tag === 'key') {
-                              selectedValue === key
-                                  ? this.setState({ selectedKeySchema: '' })
-                                  : this.setState({ selectedKeySchema: key });
-                            } else if (tag === 'value') {
-                              selectedValue === key
-                                  ? this.setState({ selectedValueSchema: '' })
-                                  : this.setState({ selectedValueSchema: key });
-                            }
-                          }}
-                          role="option"
-                          className={`dropdown-item ${selected}`}
-                          id={`bs-select-${index}-0`}
-                          aria-selected="false"
-                      >
-                        <span className="text">{key}</span>
-                      </div>
-                    </Tooltip>
-                  </li>
-                );
-              })}
-          </ul>{' '}
-        </div>
+                      <span className="text">{key}</span>
+                    </div>
+                  </Tooltip>
+                </li>
+              );
+            })}
+        </ul>{' '}
+      </div>
     );
   };
 
@@ -313,7 +311,6 @@ class TopicProduce extends Form {
       formData,
       partitions,
       datetime,
-      selectableValueFormats,
       keySchema,
       keySchemaSearchValue,
       selectedKeySchema,
