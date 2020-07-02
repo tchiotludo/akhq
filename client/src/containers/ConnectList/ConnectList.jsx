@@ -10,6 +10,9 @@ import { uriConnectDefinitions, uriDeleteDefinition } from '../../utils/endpoint
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import ConfirmModal from '../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class ConnectList extends Component {
   state = {
@@ -39,8 +42,8 @@ class ConnectList extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(this.props.location.pathname !== prevProps.location.pathname) {
-        this.getConnectDefinitions();
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.getConnectDefinitions();
     }
   }
 

@@ -7,6 +7,9 @@ import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class SchemaVersions extends Component {
   state = {
@@ -39,7 +42,9 @@ class SchemaVersions extends Component {
         };
       });
       this.setState({ data });
-      history.replace({ pathname: `/ui/${selectedCluster}/schema/details/${selectedSchema}/versions`});
+      history.replace({
+        pathname: `/ui/${selectedCluster}/schema/details/${selectedSchema}/versions`
+      });
     } else {
       this.setState({ data: [] });
     }

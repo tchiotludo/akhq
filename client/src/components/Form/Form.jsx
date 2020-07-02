@@ -141,7 +141,7 @@ class Form extends Component {
     );
   };
 
-  renderSelect = (name, label, items, onChange, wrapperClass, rest) => {
+  renderSelect = (name, label, items, onChange, selectClass, wrapperClass, rest) => {
     const { formData, errors } = this.state;
 
     return (
@@ -154,6 +154,7 @@ class Form extends Component {
         onChange={value => {
           onChange(value);
         }}
+        selectClass={selectClass}
         wrapperClass={wrapperClass}
         {...rest}
       />
@@ -197,8 +198,8 @@ class Form extends Component {
   renderDropdown = (name, options, searchValue, selectedKeySchema, onChange, renderResults) => {
     return (
       <React.Fragment>
-        <div className=" form-group row">
-          <label className="col-sm-2 col-form-label">{name}</label>
+        <div className="form-group row">
+          <label className="col-sm-2">{name}</label>
           <div className="col-sm-10">
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
               <Dropdown.Toggle className="btn dropdown-toggle btn-white">

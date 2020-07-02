@@ -14,10 +14,9 @@ class Connect extends Component {
   };
 
   componentDidMount() {
-    const { selectedTab } = this.props;
     const url = this.props.location.pathname.split('/');
     const tabSelected = url[url.length - 1];
-    this.setState({ selectedTab: tabSelected == 'configs' ? tabSelected : 'tasks' });
+    this.setState({ selectedTab: tabSelected === 'configs' ? tabSelected : 'tasks' });
   }
 
   selectTab = tab => {

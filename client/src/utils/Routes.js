@@ -24,10 +24,9 @@ import ConsumerGroupUpdate from '../containers/ConsumerGroupList/ConsumerGroup/C
 import AclDetails from '../containers/Acls/AclDetails';
 import Login from '../containers/Login';
 import PageNotFound from './../containers/PageNotFound/PageNotFound';
-import TopicData from '../containers/TopicList/Topic/TopicData';
 
 class Routes extends Component {
-  state = { clusterId: '' };
+  state = {};
   static propTypes = {
     location: PropTypes.object,
     history: PropTypes.object,
@@ -44,14 +43,7 @@ class Routes extends Component {
       };
       localStorage.setItem('lastRoute', JSON.stringify(routeObject));
     }
-    let path = window.location.pathname.split('/');
-    let clusterId = '';
-    if (path.length < 4 || path[2] === '') {
-      clusterId = nextProps.clusterId;
-    } else {
-      clusterId = path[2];
-    }
-    return { clusterId };
+    return {};
   };
 
   handleRedirect(clusterId) {
@@ -71,9 +63,14 @@ class Routes extends Component {
     const roles = JSON.parse(localStorage.getItem('roles')) || {};
     let path = window.location.pathname.split('/');
 
-    let clusterId = this.state.clusterId;
+    let clusterId = '';
+    if (path.length < 4 || path[2] === '') {
+      clusterId = this.props.clusterId;
+    } else {
+      clusterId = path[2];
+    }
 
-    if (path[2] === 'error' || clusterId.length <= 0) {
+    if (path[2] === 'error') {
       return (
         <Switch>
           <Route exact path="/ui/error" component={ErrorPage} />
@@ -112,7 +109,9 @@ class Routes extends Component {
             {roles && roles.topic && roles.topic['topic/data/insert'] && (
               <Route exact path="/ui/:clusterId/topic/:topicId/produce" component={TopicProduce} />
             )}
-
+            {roles && roles.topic && roles.topic['topic/read'] && (
+              <Route exact path="/ui/:clusterId/topic/:topicId/:data?" component={Topic} />
+            )}
             {roles && roles.node && roles.node['node/read'] && (
               <Route exact path="/ui/:clusterId/node" component={NodesList} />
             )}

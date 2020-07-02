@@ -2,7 +2,7 @@ import React from 'react';
 
 const Select = ({ name, label, items, error, wrapperClass, selectClass, ...rest }) => {
     let wrapperClassRender = 'form-group';
-    let selectClassRender = 'col-sm-10';
+    let selectClassRender = 'col-xs-10';
     if (wrapperClass) {
         wrapperClassRender = wrapperClass;
     }
