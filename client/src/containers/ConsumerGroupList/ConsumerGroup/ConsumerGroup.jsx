@@ -116,7 +116,7 @@ class ConsumerGroup extends Component {
           </div>
         </div>
 
-        {roles.group && roles.group['offsets/update'] && (
+        {roles.group && roles.group['group/offsets/update'] && (
           <aside>
             <Link
               to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`}

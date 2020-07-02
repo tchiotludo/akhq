@@ -41,7 +41,7 @@ class App extends React.Component {
     if (clusterId) {
       return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-          <Router history={history}>
+          <Router>
             <ErrorBoundary history={history}>
               <Routes clusterId={clusterId} location={baseUrl} />
             </ErrorBoundary>

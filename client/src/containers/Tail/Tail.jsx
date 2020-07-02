@@ -35,15 +35,31 @@ class Tail extends Component {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
+    const { location } = this.props.history;
     let data = {};
     try {
       data = await get(uriTopics(clusterId, '', 'ALL', ''));
       data = data.data;
+      let topics = [];
+      if (location.topicId && location.topicId.length > 0) {
+        topics = [{ name: location.topicId }];
+      }
+
       if (data) {
         if (data.results) {
-          this.setState({ topics: data.results });
+          this.setState({ topics: data.results, selectedTopics: topics }, () => {
+            if (location.topicId && location.topicId.length > 0) {
+              this.setState({ selectedStatus: STATUS.STARTED });
+              this.startEventSource();
+            }
+          });
         } else {
-          this.setState({ topics: [] });
+          this.setState({ topics: [], selectedTopics: topics }, () => {
+            if (location.topicId && location.topicId.length > 0) {
+              this.setState({ selectedStatus: STATUS.STARTED });
+              this.startEventSource();
+            }
+          });
         }
       }
     } catch (err) {
@@ -67,11 +83,15 @@ class Tail extends Component {
     let self = this;
     this.eventSource.addEventListener('tailBody', function(e) {
       let res = JSON.parse(e.data);
-      const { data } = self.state;
+      let { data } = self.state;
+
       if (res.records) {
         data.push(res.records[0]);
-        self.setState({ data });
+        if (data.length > maxRecords) {
+          data = data.slice(data.length - maxRecords);
+        }
       }
+      self.setState({ data });
     });
 
     this.eventSource.onerror = e => {
@@ -376,7 +396,15 @@ class Tail extends Component {
                 id: 'timestamp',
                 accessor: 'timestamp',
                 colName: 'Date',
-                type: 'text'
+                type: 'text',
+                cell: obj => {
+                  let date = obj.timestamp.split('T')[0];
+                  return (
+                      <div className="tail-headers">
+                        {date}
+                      </div>
+                  );
+                }
               },
               {
                 id: 'partition',

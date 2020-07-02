@@ -1,5 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { get, remove } from '../../../../utils/api';
@@ -20,6 +21,10 @@ import _ from 'lodash';
 import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-dracula';
+
 // Adaptation of data.ftl
 
 class TopicData extends React.Component {
@@ -27,7 +32,7 @@ class TopicData extends React.Component {
     showValueModal: false,
     valueModalBody: '',
     showHeadersModal: false,
-    headersModalBody: '',
+    headersModalBody: [],
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
     partitionCount: 0,
@@ -54,7 +59,8 @@ class TopicData extends React.Component {
     datetime: '',
     schemas: [],
     roles: JSON.parse(localStorage.getItem('roles')),
-    canDeleteRecords: false
+    canDeleteRecords: false,
+    percent: 0
   };
 
   eventSource;
@@ -68,7 +74,7 @@ class TopicData extends React.Component {
       {
         selectedCluster: clusterId,
         selectedTopic: topicId,
-        canAccessSchema: roles.topic && roles.topic['registry/read']
+        canAccessSchema: roles.registry && roles.registry['registry/read']
       },
       () => {
         history.replace({
@@ -91,14 +97,14 @@ class TopicData extends React.Component {
     this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
-      self.setState({ isSearching: true }, () => {
+      self.setState({ isSearching: true, percent: res.percent.toFixed(2) }, () => {
         self.handleMessages(res.records || [], true);
       });
     });
 
     this.eventSource.addEventListener('searchEnd', function(e) {
       self.eventSource.close();
-      self.setState({ isSearching: false });
+      self.setState({ percent: 100, isSearching: false });
     });
   };
 
@@ -110,7 +116,9 @@ class TopicData extends React.Component {
   };
 
   onStart = () => {
-    this.startEventSource();
+    this.setState({ percent: 0, isSearching: true }, () => {
+      this.startEventSource();
+    });
   };
 
   showValueModal = body => {
@@ -280,7 +288,7 @@ class TopicData extends React.Component {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || {},
-        schema: message.valueSchemaId || 'No schema'
+        schema: { key: message.keySchemaId, value: message.valueSchemaId }
       };
       tableMessages.push(messageToPush);
     });
@@ -416,7 +424,8 @@ class TopicData extends React.Component {
       showFilters,
       datetime,
       isSearching,
-      canDeleteRecords
+      canDeleteRecords,
+      percent
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
@@ -516,6 +525,9 @@ class TopicData extends React.Component {
                     <Dropdown.Menu>
                       <div className="input-group">
                         <DatePicker
+                          onClear={() => {
+                            this.setState({ datetime: '' });
+                          }}
                           showDateTimeInput
                           showTimeSelect
                           value={datetime}
@@ -530,9 +542,7 @@ class TopicData extends React.Component {
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
-                  <Dropdown.Toggle
-                    className="nav-link dropdown-toggle"
-                  >
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Search:</strong> {currentSearch !== '' ? `(${currentSearch})` : ''}
                   </Dropdown.Toggle>
                   {!loading && (
@@ -553,7 +563,7 @@ class TopicData extends React.Component {
                             className="btn btn-primary"
                             type="button"
                             onClick={() =>
-                              this.setState({ currentSearch: search, search: '' }, () => {
+                              this.setState({ currentSearch: search }, () => {
                                 if (this.state.currentSearch.length <= 0) {
                                   this.getMessages();
                                 } else {
@@ -621,6 +631,7 @@ class TopicData extends React.Component {
             </ul>
           </div>
         </nav>
+        {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
           <Table
             firstHeader={firstColumns}
@@ -631,7 +642,6 @@ class TopicData extends React.Component {
                 colName: 'Key',
                 type: 'text',
                 cell: (obj, col) => {
-
                   let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
                   return (
                     <span>
@@ -647,14 +657,12 @@ class TopicData extends React.Component {
                 type: 'text',
                 extraRow: true,
                 extraRowContent: (obj, index) => {
-
                   let value = obj.value;
                   try {
                     let json = JSON.parse(obj.value);
                     value = JSON.stringify(json, null, 2);
                     // eslint-disable-next-line no-empty
-                  } catch (e) {
-                  }
+                  } catch (e) {}
 
                   return (
                     <AceEditor
@@ -669,7 +677,7 @@ class TopicData extends React.Component {
                     />
                   );
                 },
-                cell: (obj) => {
+                cell: obj => {
                   return (
                     <pre className="mb-0 khq-data-highlight">
                       <code>{obj.value}</code>
@@ -721,13 +729,13 @@ class TopicData extends React.Component {
                 type: 'text',
                 cell: (obj, col) => {
                   return (
-                    <span>
-                      {obj[col.accessor] !== '' && (
+                    <div className="justify-items">
+                      {obj[col.accessor].key !== undefined && (
                         <span
                           className="badge badge-primary clickable"
                           onClick={() => {
                             let schema = this.state.schemas.find(el => {
-                              return el.id === obj.schema;
+                              return el.id === obj.schema.key;
                             });
                             if (schema) {
                               this.props.history.push({
@@ -737,10 +745,29 @@ class TopicData extends React.Component {
                             }
                           }}
                         >
-                          Value: {obj[col.accessor]}
+                          Key: {obj[col.accessor].key}
                         </span>
                       )}
-                    </span>
+
+                      {obj[col.accessor].value !== undefined && (
+                        <span
+                          className="badge badge-primary clickable"
+                          onClick={() => {
+                            let schema = this.state.schemas.find(el => {
+                              return el.id === obj.schema.value;
+                            });
+                            if (schema) {
+                              this.props.history.push({
+                                pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
+                                schemaId: schema.subject
+                              });
+                            }
+                          }}
+                        >
+                          Value: {obj[col.accessor].value}
+                        </span>
+                      )}
+                    </div>
                   );
                 }
               }

@@ -7,8 +7,11 @@ const configs = {
 
 const handleError = err => {
   let error = {
-    status: (err.response)? err.response.status || '' : '',
-    message: (err.response)? err.response.data.message || ''    : ''
+    status: err.response ? err.response.status : '',
+    message:
+      err.response && err.response.data && err.response.data.message
+        ? err.response.data.message
+        : ''
   };
   if (err.response && err.response.status === 404) {
     history.replace('/ui/page-not-found', { errorData: error });

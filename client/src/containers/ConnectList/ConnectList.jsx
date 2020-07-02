@@ -38,6 +38,12 @@ class ConnectList extends Component {
     this.getConnectDefinitions();
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.location.pathname !== prevProps.location.pathname) {
+        this.getConnectDefinitions();
+    }
+  }
+
   async getConnectDefinitions() {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;

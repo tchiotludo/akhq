@@ -111,7 +111,7 @@ class Topic extends Component {
     return (
       <div>
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
-        <div className="tabs-container" style={{marginBottom: '4%'}}>
+        <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">
@@ -187,9 +187,16 @@ class Topic extends Component {
         </div>
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
-            <a href={`/ui/${clusterId}/tail`} className="btn btn-secondary mr-2">
-              <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-            </a>
+            <li className="aside-button">
+              <div
+                onClick={() => {
+                  this.props.history.push({ pathname: `/ui/${clusterId}/tail`, topicId: topicId });
+                }}
+                className="btn btn-secondary mr-2"
+              >
+                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+              </div>
+            </li>
 
             <a
               // onClick={() => {

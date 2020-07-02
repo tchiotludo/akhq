@@ -48,16 +48,33 @@ class DatePicker extends React.Component {
 
   render = () => {
     const { value } = this.state;
-    const { showDateTimeInput, showTimeInput, showTimeSelect } = this.props;
+    const { showDateTimeInput, showTimeInput, showTimeSelect, onClear } = this.props;
     return (
       <div style={{ display: 'block', padding: 10 }}>
         {showDateTimeInput && (
-          <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'row' }}>
             <input
               value={this.getDisplayValue(value)}
               className="form-control"
               placeholder={this.getDisplayValue(value)}
             />
+            {onClear && (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  this.setState(
+                    {
+                      value: new Date()
+                    },
+                    () => {
+                      onClear && onClear();
+                    }
+                  );
+                }}
+              >
+                Clear
+              </button>
+            )}
           </div>
         )}
 
