@@ -20,7 +20,8 @@ class TopicLogs extends Component {
     const { selectedCluster, selectedTopic } = this.state;
     const { history } = this.props;
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/logs`
     });
     try {
       logs = await get(uriTopicsLogs(selectedCluster, selectedTopic));

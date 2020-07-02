@@ -19,7 +19,8 @@ class TopicPartitions extends Component {
     const { selectedCluster, selectedTopic } = this.state;
     const { history } = this.props;
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/partitions`
     });
     try {
       partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));

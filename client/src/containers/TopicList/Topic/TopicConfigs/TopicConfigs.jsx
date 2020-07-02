@@ -32,7 +32,8 @@ class TopicConfigs extends Form {
     const { selectedCluster, selectedTopic } = this.state;
     const { history } = this.props;
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/configs`
     });
     try {
       configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));

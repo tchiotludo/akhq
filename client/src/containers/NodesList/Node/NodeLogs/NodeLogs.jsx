@@ -23,7 +23,8 @@ class NodeLogs extends Component {
     const { selectedCluster, selectedNode } = this.state;
     const { history } = this.props;
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/node/${selectedNode}/logs`
     });
     try {
       logs = await get(uriNodesLogs(selectedCluster, selectedNode));

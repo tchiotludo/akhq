@@ -44,6 +44,7 @@ class ConnectConfigs extends Form {
         const pluginId = this.state.configs['connector.class'];
         this.getPlugin(pluginId);
       });
+      history.replace({pathname: `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`});
     } catch (err) {
       if (err.status === 404) {
         history.replace('/ui/page-not-found', { errorData: err });
