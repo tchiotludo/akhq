@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "^9.5.0",
-    "babel-eslint": "^10.0.3",
+    "babel-eslint": "10.1.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^6.8.0",
@@ -70,6 +70,7 @@
     "jest-dom": "^4.0.0",
     "joi-browser": "^13.4.0",
     "prettier": "^1.19.1",
-    "react-test-render": "^1.1.2"
+    "react-test-render": "^1.1.2",
+    "webpack": "4.42.0"
   }
 }
