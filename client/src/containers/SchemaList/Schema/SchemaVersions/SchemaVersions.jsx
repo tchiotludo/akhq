@@ -167,7 +167,7 @@ class SchemaVersions extends Component {
               },
               cell: (obj, col) => {
                 return (
-                  <pre class="mb-0 khq-data-highlight">
+                  <pre className="mb-0 khq-data-highlight">
                     <code>
                       {obj[col.accessor]
                         ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '')

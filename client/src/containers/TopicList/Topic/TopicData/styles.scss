@@ -142,3 +142,16 @@ Datepicker div.form-group.row {
 code{
     word-break: break-word;
 }
+
+.inline-block{
+    display: inline;
+}
+
+@media (max-width: 991.98px) {
+    .khq-nav button.btn.btn-primary.inline-block {
+        width: calc(49%);
+    }
+    .search{
+        margin-right: 2%;
+    }
+}

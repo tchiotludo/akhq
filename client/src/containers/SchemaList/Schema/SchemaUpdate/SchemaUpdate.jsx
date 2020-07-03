@@ -48,14 +48,14 @@ class SchemaUpdate extends Form {
 
   schema = {
     subject: Joi.string()
-      .required()
-      .label('Subject'),
+        .required()
+        .label('Subject'),
     compatibility: Joi.string()
-      .required()
-      .label('Compatibility Level'),
+        .required()
+        .label('Compatibility Level'),
     schema: Joi.string()
-      .required()
-      .label('Latest Schema')
+        .required()
+        .label('Latest Schema')
   };
 
   componentDidMount() {
@@ -70,7 +70,7 @@ class SchemaUpdate extends Form {
     let data = {};
     history.replace({
       ...this.props.location,
-      loading: true,
+      loading: true
     });
     try {
       data = await get(uriLatestSchemaVersion(clusterId, schemaId));
@@ -117,15 +117,16 @@ class SchemaUpdate extends Form {
     history.replace({
       loading: true
     });
+
     post(uriUpdateSchema(clusterId, formData.subject), body)
-      .then(res => {
+      .then(() => {
         this.props.history.push({
           ...this.props.location,
           showSuccessToast: true,
           successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
         });
-        this.props.getSchemaVersions();
+        window.location.reload(false);
       })
       .catch(err => {
         console.log('err', err);
@@ -136,39 +137,48 @@ class SchemaUpdate extends Form {
           errorToastMessage: err.message,
           loading: false
         });
-      });
+      }
+    );
   }
 
   render() {
     const { compatibilityOptions } = this.state;
 
     return (
-      <form
-        encType="multipart/form-data"
-        className="khq-form khq-form-config"
-        onSubmit={e => this.handleSubmit(e)}
-      >
-        <fieldset>
-          {this.renderInput(
-            'subject',
-            'Subject',
-            'Subject',
-            undefined,
-            undefined,
-            false,
-            false,
-            false,
-            { disabled: true }
-          )}
-          {this.renderSelect(
-            'compatibility',
-            'Compatibility Level',
-            compatibilityOptions,
-            ({ currentTarget: input }) => {
+        <form
+            encType="multipart/form-data"
+            className="khq-form khq-form-config"
+            onSubmit={e => this.handleSubmit(e)}
+        >
+          <fieldset>
+            {this.renderInput(
+                'subject',
+                'Subject',
+                'Subject',
+                undefined,
+                undefined,
+                false,
+                false,
+                false,
+                { disabled: true }
+            )}
+            {this.renderSelect(
+                'compatibility',
+                'Compatibility Level',
+                compatibilityOptions,
+                ({ currentTarget: input }) => {
+                  let { formData } = { ...this.state };
+                  formData.compatibility = input.value;
+                  this.setState({ formData });
+                },
+                'col-sm-10'
+            )}
+            {this.renderJSONInput('schema', 'Latest Schema', value => {
               let { formData } = { ...this.state };
-              formData.compatibility = input.value;
+              formData.schema = value;
               this.setState({ formData });
-            }
+            },
+            'col-sm-10'
           )}
           {this.renderJSONInput('schema', 'Latest Schema', value => {
             let { formData } = { ...this.state };
@@ -176,9 +186,9 @@ class SchemaUpdate extends Form {
             this.setState({ formData });
           })}
 
-          {this.renderButton('Update', undefined, undefined, 'submit')}
-        </fieldset>
-      </form>
+            {this.renderButton('Update', undefined, undefined, 'submit')}
+          </fieldset>
+        </form>
     );
   }
 }

@@ -319,7 +319,7 @@ class TopicList extends Component {
 
         <div
           className="navbar navbar-expand-lg navbar-light mr-auto
-        khq-data-filter khq-sticky khq-nav"
+        khq-data-filter khq-sticky khq-nav align-right"
         >
           <div className="collapse navbar-collapse" />
           <Pagination
