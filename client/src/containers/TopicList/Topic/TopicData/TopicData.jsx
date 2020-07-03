@@ -571,35 +571,33 @@ class TopicData extends React.Component {
                             this.setState({ search: input.value });
                           }}
                         />
-                        <div className="btn-border">
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={() =>
-                              this.setState({ currentSearch: search }, () => {
-                                if (this.state.currentSearch.length <= 0) {
-                                  this.getMessages();
-                                } else {
-                                  this.onStart();
-                                }
-                              })
-                            }
-                          >
-                            {isSearching ? (
-                              <i className="fa fa-spinner fa-spin"></i>
-                            ) : (
-                              <i className="fa fa-search"></i>
-                            )}
-                          </button>
-                          <button
-                            className="btn btn-primary btn-border"
-                            type="button"
-                            disabled={!isSearching}
-                            onClick={() => this.onStop()}
-                          >
-                            Stop
-                          </button>
-                        </div>
+                        <button
+                          className="btn btn-primary inline-block search"
+                          type="button"
+                          onClick={() =>
+                            this.setState({ currentSearch: search }, () => {
+                              if (this.state.currentSearch.length <= 0) {
+                                this.getMessages();
+                              } else {
+                                this.onStart();
+                              }
+                            })
+                          }
+                        >
+                          {isSearching ? (
+                            <i className="fa fa-spinner fa-spin"></i>
+                          ) : (
+                            <i className="fa fa-search"></i>
+                          )}
+                        </button>
+                        <button
+                          className="btn btn-primary btn-border inline-block"
+                          type="button"
+                          disabled={!isSearching}
+                          onClick={() => this.onStop()}
+                        >
+                          Stop
+                        </button>
                       </div>
                     </Dropdown.Menu>
                   )}

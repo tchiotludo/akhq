@@ -168,7 +168,8 @@ class SchemaUpdate extends Form {
               let { formData } = { ...this.state };
               formData.compatibility = input.value;
               this.setState({ formData });
-            }
+            },
+            'col-sm-10'
           )}
           {this.renderJSONInput('schema', 'Latest Schema', value => {
             let { formData } = { ...this.state };
