@@ -9,7 +9,7 @@ import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import AceEditor from 'react-ace';
 import _ from 'lodash';
-
+import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
@@ -328,15 +328,17 @@ class ConnectCreate extends Component {
 
   renderForm() {
     let { plugin } = this.state;
-    plugin = this.getPlugin();
-    this.setState({ plugin }, () => {
-      this.handleShema(
-        _(plugin.definitions)
-          .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
-          .value()
-      );
-      this.handleData();
-    });
+    if(plugin.definitions){
+      plugin = this.getPlugin();
+      this.setState({ plugin }, () => {
+        this.handleShema(
+          _(plugin.definitions)
+            .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
+            .value()
+        );
+        this.handleData();
+      });
+    }
   }
 
   getPlugin() {

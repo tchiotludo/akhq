@@ -29,11 +29,13 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
     const roles = this.state.roles || {};
+    const url = this.props.location.pathname.split('/');
+    const tabSelected = this.props.location.pathname.split('/')[url.length - 1];
     this.setState(
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? 'data' : 'partitions',
+        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'partitions',
         topicInternal: this.props.location.internal
       },
       () => {
@@ -62,7 +64,7 @@ class Topic extends Component {
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
   };
 
-  renderSelectedTab() {
+  renderSelectedTab = () => {
     const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
     const { history, match } = this.props;
 
@@ -102,7 +104,7 @@ class Topic extends Component {
           <TopicPartitions history={history} />
         );
     }
-  }
+  };
 
   render() {
     const { topicId, clusterId, selectedTab } = this.state;
@@ -198,13 +200,7 @@ class Topic extends Component {
               </div>
             </li>
 
-            <a
-              // onClick={() => {
-              //   this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
-              // }}
-              href={`/ui/${clusterId}/topic/${topicId}/produce`}
-              className="btn btn-primary"
-            >
+            <a href={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
               <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
             </a>
           </aside>

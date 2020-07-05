@@ -10,8 +10,12 @@ import { uriConnectDefinitions, uriDeleteDefinition } from '../../utils/endpoint
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import ConfirmModal from '../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 class ConnectList extends Component {
   state = {
     clusterId: '',

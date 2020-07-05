@@ -91,7 +91,8 @@ class SchemaCreate extends Form {
             compatibilityLevelSelect,
             value => {
               this.setState({ formData: { ...formData, compatibilityLevel: value.target.value } });
-            }
+            },
+            'col-sm-10'
           )}
 
           {this.renderJSONInput('schemaData', 'Schema', value => {

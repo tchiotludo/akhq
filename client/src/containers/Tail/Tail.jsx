@@ -7,7 +7,7 @@ import { get } from '../../utils/api';
 import { uriLiveTail, uriTopics } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
-
+import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import history from '../../utils/history';
@@ -157,7 +157,7 @@ class Tail extends Component {
             .map((topic, index) => {
               let selected = selectedTopics.find(selected => selected.name === topic.name);
               return (
-                <li>
+                <li key={`topic_${topic.name}_${index}`}>
                   <div
                     onClick={() => {
                       this.onStop();
@@ -306,7 +306,7 @@ class Tail extends Component {
               <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
                 {MAX_RECORDS.map(maxRecord => {
                   return (
-                    <li>
+                    <li key={`record_${maxRecord}`}>
                       <div
                         onClick={() => {
                           this.onStop();

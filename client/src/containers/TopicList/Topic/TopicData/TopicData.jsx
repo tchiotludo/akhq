@@ -22,6 +22,7 @@ import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
+import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
@@ -67,10 +68,14 @@ class TopicData extends React.Component {
   eventSource;
 
   componentDidMount = () => {
+    this.checkProps();
+  };
+
+  checkProps = () => {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
     const roles = this.state.roles || {};
-
+    console.log('state', this.state.selectedCluster, this.state.selectedTopic);
     this.setState(
       {
         selectedCluster: clusterId,
@@ -79,7 +84,8 @@ class TopicData extends React.Component {
       },
       () => {
         history.replace({
-          loading: true
+          loading: true,
+          pathname: `/ui/${clusterId}/topic/${topicId}/data`
         });
         this.getMessages();
       }
@@ -220,6 +226,13 @@ class TopicData extends React.Component {
       history.replace({
         loading: false
       });
+      if (data.after) {
+        let params = data.after.split('/data?')[1];
+        history.push({
+          pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+          search: params
+        });
+      }
     }
   }
 
@@ -550,35 +563,33 @@ class TopicData extends React.Component {
                             this.setState({ search: input.value });
                           }}
                         />
-                        <div className="btn-border">
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={() =>
-                              this.setState({ currentSearch: search }, () => {
-                                if (this.state.currentSearch.length <= 0) {
-                                  this.getMessages();
-                                } else {
-                                  this.onStart();
-                                }
-                              })
-                            }
-                          >
-                            {isSearching ? (
-                              <i className="fa fa-spinner fa-spin"></i>
-                            ) : (
-                              <i className="fa fa-search"></i>
-                            )}
-                          </button>
-                          <button
-                            className="btn btn-primary btn-border"
-                            type="button"
-                            disabled={!isSearching}
-                            onClick={() => this.onStop()}
-                          >
-                            Stop
-                          </button>
-                        </div>
+                        <button
+                          className="btn btn-primary inline-block search"
+                          type="button"
+                          onClick={() =>
+                            this.setState({ currentSearch: search }, () => {
+                              if (this.state.currentSearch.length <= 0) {
+                                this.getMessages();
+                              } else {
+                                this.onStart();
+                              }
+                            })
+                          }
+                        >
+                          {isSearching ? (
+                            <i className="fa fa-spinner fa-spin"></i>
+                          ) : (
+                            <i className="fa fa-search"></i>
+                          )}
+                        </button>
+                        <button
+                          className="btn btn-primary btn-border inline-block"
+                          type="button"
+                          disabled={!isSearching}
+                          onClick={() => this.onStop()}
+                        >
+                          Stop
+                        </button>
                       </div>
                     </Dropdown.Menu>
                   )}

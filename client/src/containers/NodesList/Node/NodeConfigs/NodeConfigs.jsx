@@ -34,7 +34,8 @@ class NodeConfigs extends Form {
     const { history } = this.props;
     history.replace({
       ...history,
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/node/${selectedNode}/configs`
     });
     try {
       configs = await get(uriNodesConfigs(selectedCluster, selectedNode));

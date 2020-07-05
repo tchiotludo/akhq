@@ -22,7 +22,8 @@ class TopicGroups extends Component {
     const { selectedCluster, topicId } = this.state;
     let data = {};
     history.replace({
-      loading: true
+      loading: true,
+      pathname: `/ui/${selectedCluster}/topic/${topicId}/groups`
     });
     try {
       data = await api.get(uriTopicsGroups(selectedCluster, topicId));

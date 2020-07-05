@@ -298,7 +298,7 @@ class TopicList extends Component {
           }}
           onDetails={(id, row) => {
             history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}`,
+              pathname: `/ui/${selectedCluster}/topic/${id}/data`,
               internal: row.internal
             });
           }}
@@ -311,7 +311,7 @@ class TopicList extends Component {
 
         <div
           className="navbar navbar-expand-lg navbar-light mr-auto
-        khq-data-filter khq-sticky khq-nav"
+        khq-data-filter khq-sticky khq-nav align-right"
         >
           <div className="collapse navbar-collapse" />
           <Pagination
