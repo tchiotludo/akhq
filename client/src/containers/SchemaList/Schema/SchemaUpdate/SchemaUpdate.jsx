@@ -180,12 +180,6 @@ class SchemaUpdate extends Form {
             },
             'col-sm-10'
           )}
-          {this.renderJSONInput('schema', 'Latest Schema', value => {
-            let { formData } = { ...this.state };
-            formData.schema = value;
-            this.setState({ formData });
-          })}
-
             {this.renderButton('Update', undefined, undefined, 'submit')}
           </fieldset>
         </form>
