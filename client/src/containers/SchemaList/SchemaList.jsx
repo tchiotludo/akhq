@@ -11,6 +11,10 @@ import api, { remove } from '../../utils/api';
 import './styles.scss';
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import AceEditor from 'react-ace';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
+
 class SchemaList extends Component {
   state = {
     schemasRegistry: [],
@@ -249,7 +253,7 @@ class SchemaList extends Component {
               },
               cell: (obj, col) => {
                 return (
-                  <pre class="mb-0 khq-data-highlight">
+                  <pre className="mb-0 khq-data-highlight">
                     <code>
                       {obj[col.accessor]
                         ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '')

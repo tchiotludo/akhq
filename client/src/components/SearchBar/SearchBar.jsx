@@ -134,6 +134,7 @@ class SearchBar extends Form {
                   this.setState();
                   this.props.onTopicListViewChange(input.value);
                 },
+                '',
                 'select-wrapper',
                 { className: 'form-control topic-select' }
               )}

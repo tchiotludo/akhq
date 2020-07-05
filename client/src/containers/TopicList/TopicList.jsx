@@ -41,7 +41,7 @@ class TopicList extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(this.props.location.pathname !== prevProps.location.pathname) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
       let { clusterId } = this.props.match.params;
       this.setState({ selectedCluster: clusterId }, this.getTopics);
     }
@@ -306,7 +306,7 @@ class TopicList extends Component {
           }}
           onDetails={(id, row) => {
             history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}`,
+              pathname: `/ui/${selectedCluster}/topic/${id}/data`,
               internal: row.internal
             });
           }}
@@ -319,7 +319,7 @@ class TopicList extends Component {
 
         <div
           className="navbar navbar-expand-lg navbar-light mr-auto
-        khq-data-filter khq-sticky khq-nav"
+        khq-data-filter khq-sticky khq-nav align-right"
         >
           <div className="collapse navbar-collapse" />
           <Pagination

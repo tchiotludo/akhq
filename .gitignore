@@ -30,6 +30,7 @@ client/bower_components
 client/node
 client/.env*.local
 node
+client/.idea
 
 ### Ide ###
 .idea/*

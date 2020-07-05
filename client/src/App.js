@@ -5,7 +5,6 @@ import Routes from './utils/Routes';
 import history from './utils/history';
 import api from './utils/api';
 import ErrorBoundary from './containers/ErrorBoundary';
-import Loading from '../src/containers/Loading';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 
@@ -38,19 +37,15 @@ class App extends React.Component {
 
   render() {
     const { clusterId } = this.state;
-    if (clusterId) {
-      return (
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-          <Router>
-            <ErrorBoundary history={history}>
-              <Routes clusterId={clusterId} location={baseUrl} />
-            </ErrorBoundary>
-          </Router>
-        </MuiPickersUtilsProvider>
-      );
-    } else {
-      return <Loading show="true" />;
-    }
+    return (
+      <MuiPickersUtilsProvider utils={MomentUtils}>
+        <Router>
+          <ErrorBoundary history={history}>
+            <Routes clusterId={clusterId} location={baseUrl} />
+          </ErrorBoundary>
+        </Router>
+      </MuiPickersUtilsProvider>
+    );
   }
 }
 

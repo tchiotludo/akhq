@@ -7,6 +7,9 @@ import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class SchemaVersions extends Component {
   state = {
@@ -27,6 +30,9 @@ class SchemaVersions extends Component {
   }
 
   handleData(schemas) {
+    const { selectedCluster, selectedSchema } = this.state;
+    const { history } = this.props;
+
     if (schemas) {
       let data = schemas.map(schema => {
         return {
@@ -36,6 +42,9 @@ class SchemaVersions extends Component {
         };
       });
       this.setState({ data });
+      history.replace({
+        pathname: `/ui/${selectedCluster}/schema/details/${selectedSchema}/versions`
+      });
     } else {
       this.setState({ data: [] });
     }
@@ -158,7 +167,7 @@ class SchemaVersions extends Component {
               },
               cell: (obj, col) => {
                 return (
-                  <pre class="mb-0 khq-data-highlight">
+                  <pre className="mb-0 khq-data-highlight">
                     <code>
                       {obj[col.accessor]
                         ? obj[col.accessor].substring(0, 100).replace(/(\r\n|\n|\r)/gm, '')

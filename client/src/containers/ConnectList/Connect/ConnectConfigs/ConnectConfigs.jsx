@@ -11,6 +11,9 @@ import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
 import _ from 'lodash';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-merbivore_soft';
 
 class ConnectConfigs extends Form {
   state = {
@@ -43,6 +46,9 @@ class ConnectConfigs extends Form {
       this.setState({ configs: configs.data }, () => {
         const pluginId = this.state.configs['connector.class'];
         this.getPlugin(pluginId);
+      });
+      history.replace({
+        pathname: `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`
       });
     } catch (err) {
       if (err.status === 404) {
