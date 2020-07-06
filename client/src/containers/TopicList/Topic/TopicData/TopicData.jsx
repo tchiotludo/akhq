@@ -74,7 +74,6 @@ class TopicData extends React.Component {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
     const roles = this.state.roles || {};
-    console.log('state', this.state.selectedCluster, this.state.selectedTopic);
     this.setState(
       {
         selectedCluster: clusterId,

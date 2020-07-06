@@ -324,9 +324,26 @@ class SchemaList extends Component {
               );
             });
           }}
+          handleExtraExpand={ (extraExpanded, el) => {
+            const currentExpandedRows = extraExpanded;
+            const isRowCurrentlyExpanded = currentExpandedRows.includes(el.subject);
+
+            const newExpandedRows = isRowCurrentlyExpanded
+                ? currentExpandedRows
+                : currentExpandedRows.concat({id: el.id, subject: el.subject});
+            return newExpandedRows;
+          }}
+          handleExtraCollapse={ (extraExpanded, el) => {
+            const currentExpandedRows = extraExpanded;
+            const isRowCurrentlyExpanded = currentExpandedRows.some(obj => obj.subject === el.subject);
+
+            const newExpandedRows = !isRowCurrentlyExpanded
+                ? currentExpandedRows
+                : currentExpandedRows.filter(obj => !(obj.id === el.id && obj.subject === el.subject));
+            return newExpandedRows;
+          }}
           noContent={'No schemas available'}
         />
-
         {roles.registry && roles.registry['registry/insert'] && (
           <aside>
             <Link
