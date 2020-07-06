@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Header from '../Header';
 import Table from '../../components/Table';
 import * as constants from '../../utils/constants';
-import {get, handleCatch} from '../../utils/api';
-import {uriNodes} from '../../utils/endpoints';
+import { get } from '../../utils/api';
+import { uriNodes } from '../../utils/endpoints';
 
 class NodesList extends Component {
   state = {
@@ -26,8 +26,6 @@ class NodesList extends Component {
       nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false

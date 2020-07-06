@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Header from '../Header';
 import Table from '../../components/Table';
 import * as constants from '../../utils/constants';
-import {get, handleCatch} from '../../utils/api';
-import {uriAclsList} from '../../utils/endpoints';
+import { get } from '../../utils/api';
+import { uriAclsList } from '../../utils/endpoints';
 import SearchBar from '../../components/SearchBar';
 
 class Acls extends Component {
@@ -29,8 +29,6 @@ class Acls extends Component {
     try {
       acls = await get(uriAclsList(clusterId, this.state.searchData.search));
       this.handleData(acls.data);
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false

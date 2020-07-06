@@ -10,7 +10,8 @@ import { uriConnectDefinitions, uriDeleteDefinition } from '../../utils/endpoint
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import ConfirmModal from '../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConnectList extends Component {
   state = {
     clusterId: '',
@@ -39,8 +40,8 @@ class ConnectList extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(this.props.location.pathname !== prevProps.location.pathname) {
-        this.getConnectDefinitions();
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.getConnectDefinitions();
     }
   }
 
@@ -75,10 +76,9 @@ class ConnectList extends Component {
       .then(() => {
         this.props.history.replace({
           ...this.props.location,
-          showSuccessToast: true,
-          successToastMessage: `Definition '${definition}' is deleted`,
           loading: false
         });
+        toast.success(`Definition '${definition}' is deleted`);
         this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
           this.getConnectDefinitions();
         });
@@ -86,8 +86,6 @@ class ConnectList extends Component {
       .catch(() => {
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastMessage: `Failed to delete definition from '${definition}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });

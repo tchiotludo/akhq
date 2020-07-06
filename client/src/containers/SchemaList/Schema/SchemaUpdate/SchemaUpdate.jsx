@@ -1,9 +1,10 @@
 import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Joi from 'joi-browser';
-import {get, handleCatch, post} from '../../../../utils/api';
-import {uriLatestSchemaVersion, uriUpdateSchema} from '../../../../utils/endpoints';
-
+import { get, post } from '../../../../utils/api';
+import { uriLatestSchemaVersion, uriUpdateSchema } from '../../../../utils/endpoints';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class SchemaUpdate extends Form {
   state = {
     clusterId: '',
@@ -79,8 +80,6 @@ class SchemaUpdate extends Form {
       if (data) {
         this.handleLatestSchemaVersion(data);
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -115,19 +114,15 @@ class SchemaUpdate extends Form {
       .then(res => {
         this.props.history.push({
           ...this.props.location,
-          showSuccessToast: true,
-          successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
         });
+        toast.success(`Schema '${formData.subject}' is updated`);
         this.props.getSchemaVersions();
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastTitle: `Failed to update schema ${formData.subject}`,
-          errorToastMessage: err.message,
           loading: false
         });
       });

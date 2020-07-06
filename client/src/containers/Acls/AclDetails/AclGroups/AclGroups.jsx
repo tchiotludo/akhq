@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import './styles.scss';
 
 import Table from '../../../../components/Table/Table';
-import {get, handleCatch} from '../../../../utils/api';
-import {uriAclsByPrincipal} from '../../../../utils/endpoints';
+import { get } from '../../../../utils/api';
+import { uriAclsByPrincipal } from '../../../../utils/endpoints';
 
 class AclTopics extends Component {
   state = {
@@ -30,8 +30,6 @@ class AclTopics extends Component {
         const acls = response.data || [];
         this.handleAcls(acls);
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false

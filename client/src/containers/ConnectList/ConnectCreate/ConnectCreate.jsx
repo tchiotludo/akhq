@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import {get, handleCatch, post} from '../../../utils/api';
-import {uriConnectPlugins, uriCreateConnect} from '../../../utils/endpoints';
-import {withRouter} from 'react-router-dom';
+import { get, post } from '../../../utils/api';
+import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
+import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
@@ -12,7 +12,8 @@ import _ from 'lodash';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConnectCreate extends Component {
   state = {
     clusterId: this.props.match.params.clusterId,
@@ -33,7 +34,7 @@ class ConnectCreate extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.location === prevProps.location) {
       let height = document.getElementById('root').offsetHeight;
-      document.getElementsByClassName("sidenav---sidenav---_2tBP")[0].style.height=height+'px';
+      document.getElementsByClassName('sidenav---sidenav---_2tBP')[0].style.height = height + 'px';
     }
   }
 
@@ -48,8 +49,6 @@ class ConnectCreate extends Component {
       plugins = await get(uriConnectPlugins(clusterId, connectId));
       plugins = plugins.data;
       this.setState({ clusterId, connectId, plugins: plugins });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -424,17 +423,14 @@ class ConnectCreate extends Component {
         this.props.history.push({
           ...this.props.location,
           pathname: `/ui/${clusterId}/connect/${connectId}`,
-          showSuccessToast: true,
-          successToastMessage: `${`Connection '${formData.subject}' was created successfully`}`,
+
           loading: false
         });
+        toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
       })
       .catch(err => {
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastTitle: 'Error',
-          errorToastMessage: err.message,
           loading: false
         });
       });

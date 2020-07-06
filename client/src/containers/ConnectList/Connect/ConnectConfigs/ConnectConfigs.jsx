@@ -1,12 +1,18 @@
 import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import {get, handleCatch, post} from '../../../../utils/api';
-import {uriConnectDefinitionConfigs, uriConnectPlugin, uriUpdateDefinition} from '../../../../utils/endpoints';
+import { get, post } from '../../../../utils/api';
+import {
+  uriConnectDefinitionConfigs,
+  uriConnectPlugin,
+  uriUpdateDefinition
+} from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
 import _ from 'lodash';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class ConnectConfigs extends Form {
   state = {
@@ -40,8 +46,6 @@ class ConnectConfigs extends Form {
         const pluginId = this.state.configs['connector.class'];
         this.getPlugin(pluginId);
       });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -61,8 +65,6 @@ class ConnectConfigs extends Form {
       this.setState({ plugin: plugin.data }, () => {
         this.renderForm();
       });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -367,16 +369,12 @@ class ConnectConfigs extends Form {
       history.push({
         ...this.props.location,
         pathname: `/ui/${clusterId}/connect/${connectId}`,
-        showSuccessToast: true,
-        successToastMessage: `${`Definition '${formData.name}' is updated`}`,
         loading: false
       });
+      toast.success(`${`Definition '${formData.name}' is updated`}`);
     } catch (err) {
       history.replace({
         ...this.props.location,
-        showErrorToast: true,
-        errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
-        errorToastMessage: err.message,
         loading: false
       });
     }

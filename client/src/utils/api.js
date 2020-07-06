@@ -10,16 +10,23 @@ const configs = {
 
 const handleError = err => {
   let error = {
-    status: (err.response) ? err.response.status : '',
-    message: (err.response) ? err.response.data.message : 'Internal Server Error',
-    stacktrace: (err.response && err.response.data && err.response.data._embedded
-        && err.response.data._embedded.stacktrace && err.response.data._embedded.stacktrace.message) ?
-        err.response.data._embedded.stacktrace.message :
-        null
+    status: err.response ? err.response.status : '',
+    message: err.response ? err.response.data.message : 'Internal Server Error',
+    stacktrace:
+      err.response &&
+      err.response.data &&
+      err.response.data._embedded &&
+      err.response.data._embedded.stacktrace &&
+      err.response.data._embedded.stacktrace.message
+        ? err.response.data._embedded.stacktrace.message
+        : null
   };
 
   if (err.response && err.response.status < 500) {
     toast.warn(error.message);
+    if (err.status === 401) {
+      history.replace('/ui/:login');
+    }
 
     return error;
   } else {
@@ -27,7 +34,7 @@ const handleError = err => {
 
     if (error.stacktrace) {
       let detailedReactHTMLElement = React.createElement('pre', null, error.stacktrace);
-       message = React.createElement('div', null, message, detailedReactHTMLElement);
+      message = React.createElement('div', null, message, detailedReactHTMLElement);
     }
 
     toast.error(message, {
@@ -39,14 +46,6 @@ const handleError = err => {
   }
 };
 
-export const handleCatch = err => {
-  if (err.status === 401) {
-    history.replace('/ui/:login');
-    this.setState({ clusterId: ':login' });
-
-  }
-};
-
 export const get = url =>
   new Promise((resolve, reject) => {
     axios
@@ -55,7 +54,6 @@ export const get = url =>
         resolve(res);
       })
       .catch(err => {
-
         reject(handleError(err));
       });
   });
@@ -123,4 +121,4 @@ export const logout = url => {
   });
 };
 
-export default { get, put, post, remove, login, logout, handleCatch };
+export default { get, put, post, remove, login, logout };

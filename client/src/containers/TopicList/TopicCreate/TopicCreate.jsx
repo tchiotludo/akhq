@@ -5,7 +5,7 @@ import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { post } from '../../../utils/api';
 import { uriTopicsCreate } from '../../../utils/endpoints';
-import {toast} from "react-toastify";
+import { toast } from 'react-toastify';
 
 class TopicCreate extends Form {
   state = {
@@ -65,17 +65,13 @@ class TopicCreate extends Form {
       .then(res => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/topic`,
-          showSuccessToast: true,
-          successToastMessage: `Topic '${formData.name}' is created`,
           loading: false
         });
+        toast.success(`Topic '${formData.name}' is created`);
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastTitle: `Failed to create topic '${formData.name}'`,
-          errorToastMessage: err.message,
           loading: false
         });
 

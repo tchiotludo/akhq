@@ -1,17 +1,18 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Table from '../../components/Table';
-import endpoints, {uriDeleteSchema} from '../../utils/endpoints';
+import endpoints, { uriDeleteSchema } from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, {handleCatch, remove} from '../../utils/api';
+import api, { remove } from '../../utils/api';
 import './styles.scss';
 import CodeViewModal from '../../components/Modal/CodeViewModal/CodeViewModal';
 import AceEditor from 'react-ace';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class SchemaList extends Component {
   state = {
     schemasRegistry: [],
@@ -95,8 +96,6 @@ class SchemaList extends Component {
       let schemasRegistry = response.data ? response.data.results || [] : [];
       this.handleSchemaRegistry(schemasRegistry);
       this.setState({ selectedCluster, totalPageNumber: response.page });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -148,17 +147,14 @@ class SchemaList extends Component {
     remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
           loading: false
         });
+        toast.success(`Schema '${schemaToDelete.subject}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         this.getSchemaRegistry();
       })
       .catch(() => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });

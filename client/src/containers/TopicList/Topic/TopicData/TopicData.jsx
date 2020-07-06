@@ -3,8 +3,8 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import {get, handleCatch, remove} from '../../../../utils/api';
-import {formatDateTime} from '../../../../utils/converters';
+import { get, remove } from '../../../../utils/api';
+import { formatDateTime } from '../../../../utils/converters';
 import {
   uriSchemaRegistry,
   uriTopicData,
@@ -24,7 +24,8 @@ import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // Adaptation of data.ftl
 
 class TopicData extends React.Component {
@@ -156,7 +157,7 @@ class TopicData extends React.Component {
       datetime,
       currentSearch,
       offsetsSearch,
-      nextPage,
+      nextPage
     } = this.state;
     let data,
       partitionData = {};
@@ -215,8 +216,6 @@ class TopicData extends React.Component {
           recordCount: data.size
         });
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -255,10 +254,9 @@ class TopicData extends React.Component {
       .then(res => {
         this.props.history.replace({
           ...this.props.location,
-          showSuccessToast: true,
-          successToastMessage: `Record '${message}' will be deleted on compaction`,
           loading: false
         });
+        toast.success(`Record '${message}' will be deleted on compaction`);
         this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
           this.getMessages();
         });
@@ -266,8 +264,6 @@ class TopicData extends React.Component {
       .catch(err => {
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastMessage: `Failed to delete message from '${message}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, messageToDelete: {} });

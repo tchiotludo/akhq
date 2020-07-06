@@ -3,9 +3,9 @@ import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
-import {formatDateTime} from '../../../../utils/converters';
+import { formatDateTime } from '../../../../utils/converters';
 import Joi from 'joi-browser';
-import {get, handleCatch, post} from '../../../../utils/api';
+import { get, post } from '../../../../utils/api';
 import {
   uriConsumerGroup,
   uriConsumerGroupOffsetsByTimestamp,
@@ -13,7 +13,8 @@ import {
 } from '../../../../utils/endpoints';
 import moment from 'moment';
 import './styles.scss';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConsumerGroupUpdate extends Form {
   state = {
     clusterId: '',
@@ -75,8 +76,6 @@ class ConsumerGroupUpdate extends Form {
       } else {
         this.createValidationSchema(groupedTopicOffset);
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         ...this.props.location,
@@ -175,16 +174,12 @@ class ConsumerGroupUpdate extends Form {
 
       this.setState({ state: this.state }, () =>
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Offsets for '${consumerGroupId}' is updated`,
           loading: false
         })
       );
+      toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
     } catch (err) {
       this.props.history.replace({
-        showErrorToast: true,
-        errorToastTitle: `Failed to update offsets for ${consumerGroupId}`,
-        errorToastMessage: err.message,
         loading: false
       });
       console.error('Error:', err);

@@ -1,16 +1,16 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
-import {get, handleCatch} from '../../utils/api';
-import {uriLiveTail, uriTopics} from '../../utils/endpoints';
+import { get } from '../../utils/api';
+import { uriLiveTail, uriTopics } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
-import history from "../../utils/history";
+import history from '../../utils/history';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -63,8 +63,6 @@ class Tail extends Component {
           });
         }
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -102,8 +100,6 @@ class Tail extends Component {
     this.eventSource.onerror = e => {
       this.props.history.replace({
         ...this.props.location,
-        showErrorToast: true,
-        errorToastMessage: 'There was an error while trying to connect to the live tail.',
         loading: false
       });
       this.setState({ selectedStatus: STATUS.STOPPED });
@@ -404,11 +400,7 @@ class Tail extends Component {
                 type: 'text',
                 cell: obj => {
                   let date = obj.timestamp.split('T')[0];
-                  return (
-                      <div className="tail-headers">
-                        {date}
-                      </div>
-                  );
+                  return <div className="tail-headers">{date}</div>;
                 }
               },
               {

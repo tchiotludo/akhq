@@ -13,7 +13,8 @@ import {
 import { get } from '../../../../utils/api';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 import './styles.scss';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConnectTasks extends Component {
   state = {
     clusterId: this.props.clusterId || this.props.match.params.clusterId,
@@ -74,7 +75,7 @@ class ConnectTasks extends Component {
 
   modifyDefinitionState = () => {
     const { definitionId } = this.state;
-    const { uri, action, failedAction, taskId } = this.state.definitionModifyData;
+    const { uri, action, taskId } = this.state.definitionModifyData;
     const { history } = this.props;
     history.replace({
       loading: true
@@ -84,24 +85,19 @@ class ConnectTasks extends Component {
       .then(() => this.getDefinition())
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `${
+          loading: false
+        });
+        toast.success(
+          `${
             taskId !== undefined
               ? `Definition '${definitionId}' tasks ${taskId} is restarted`
               : `Definition '${definitionId}' is ${action}`
-          }`,
-          loading: false
-        });
+          }`
+        );
         this.closeActionModal();
       })
       .catch(err => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `${
-            taskId !== undefined
-              ? `Failed to restart tasks ${taskId} from '${definitionId}'`
-              : `Failed to ${failedAction} definition from '${definitionId}'`
-          }`,
           loading: false
         });
       });

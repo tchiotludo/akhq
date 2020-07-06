@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
-import {get, handleCatch} from '../../../../utils/api';
+import { get } from '../../../../utils/api';
 import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
-import history from "../../../../utils/history";
 
 class ConsumerGroupTopics extends Component {
   state = {
@@ -27,8 +26,6 @@ class ConsumerGroupTopics extends Component {
       offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
       offsets = offsets.data;
       this.handleData(offsets);
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -41,7 +38,7 @@ class ConsumerGroupTopics extends Component {
       return {
         name: offset.topic,
         partition: offset.partition,
-        member: (offset.member)?offset.member.host : '',
+        member: offset.member ? offset.member.host : '',
         offset: offset.offset,
         lag: offset.offsetLag
       };

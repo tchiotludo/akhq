@@ -1,16 +1,17 @@
-import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import Table from '../../components/Table';
 import Header from '../Header';
 import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, {handleCatch, remove} from '../../utils/api';
-import {uriDeleteTopics, uriTopics} from '../../utils/endpoints';
+import api, { remove } from '../../utils/api';
+import { uriDeleteTopics, uriTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
-import {calculateTopicOffsetLag, showBytes} from '../../utils/converters';
+import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
 import './styles.scss';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class TopicList extends Component {
   state = {
     topics: [],
@@ -41,7 +42,7 @@ class TopicList extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(this.props.location.pathname !== prevProps.location.pathname) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
       let { clusterId } = this.props.match.params;
       this.setState({ selectedCluster: clusterId }, this.getTopics);
     }
@@ -63,16 +64,13 @@ class TopicList extends Component {
     remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
           loading: false
         });
+        toast.success(`Topic '${topicToDelete.name}' is deleted`);
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
       .catch(() => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `Could not delete '${topicToDelete.name}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
@@ -132,8 +130,6 @@ class TopicList extends Component {
         }
         this.setState({ selectedCluster, totalPageNumber: data.page });
       }
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         ...this.props.location,

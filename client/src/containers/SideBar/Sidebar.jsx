@@ -1,14 +1,14 @@
-import React, {Component} from 'react';
-import {Link, withRouter} from 'react-router-dom';
-import {matchPath} from 'react-router';
-import {get, handleCatch} from '../../utils/api';
-import {uriClusters} from '../../utils/endpoints';
+import React, { Component } from 'react';
+import { Link, withRouter } from 'react-router-dom';
+import { matchPath } from 'react-router';
+import { get } from '../../utils/api';
+import { uriClusters } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import _ from 'lodash';
 import './styles.scss';
-import SideNav, {NavIcon, NavItem, NavText} from '@trendmicro/react-sidenav';
+import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
-import history from "../../utils/history";
+import history from '../../utils/history';
 
 class Sidebar extends Component {
   state = {
@@ -77,8 +77,6 @@ class Sidebar extends Component {
           callback(selectedCluster);
         }
       );
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
@@ -96,12 +94,20 @@ class Sidebar extends Component {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
     const enableConnects = cluster.connects !== undefined;
-    if(enableConnects) {
-      this.setState({enableRegistry: cluster.registry, enableConnect: enableConnects,
-        allConnects: cluster.connects, selectedConnect: cluster.connects[0]});
+    if (enableConnects) {
+      this.setState({
+        enableRegistry: cluster.registry,
+        enableConnect: enableConnects,
+        allConnects: cluster.connects,
+        selectedConnect: cluster.connects[0]
+      });
     } else {
-      this.setState({ enableRegistry: cluster.registry, enableConnect: enableConnects,
-        allConnects: [], selectedConnect: '' });
+      this.setState({
+        enableRegistry: cluster.registry,
+        enableConnect: enableConnects,
+        allConnects: [],
+        selectedConnect: ''
+      });
     }
   }
 
@@ -276,8 +282,7 @@ class Sidebar extends Component {
             roles.registry &&
             roles.registry['registry/read'] &&
             this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
-          {enableConnect &&
-             roles && roles.connect && roles.connect['connect/read'] && (
+          {enableConnect && roles && roles.connect && roles.connect['connect/read'] && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}

@@ -4,7 +4,8 @@ import Joi from 'joi-browser';
 import Form from '../../../components/Form/Form';
 import { post } from '../../../utils/api';
 import { uriSchemaCreate } from '../../../utils/endpoints';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class SchemaCreate extends Form {
   state = {
     formData: {
@@ -60,17 +61,13 @@ class SchemaCreate extends Form {
       .then(res => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/schema`,
-          showSuccessToast: true,
-          successToastMessage: `Schema '${formData.subject}' is created`,
           loading: false
         });
+        toast.success(`Schema '${formData.subject}' is created`);
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastTitle: `Failed to create schema '${formData.subject}'`,
-          errorToastMessage: err.message,
           loading: false
         });
       });

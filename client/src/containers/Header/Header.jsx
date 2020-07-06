@@ -1,11 +1,12 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
-import {Link, withRouter} from 'react-router-dom';
-import {organizeRoles} from '../../utils/converters';
-import {get, handleCatch, logout} from '../../utils/api';
-import {uriCurrentUser, uriLogout} from '../../utils/endpoints';
-import history from "../../utils/history";
-
+import { Link, withRouter } from 'react-router-dom';
+import { organizeRoles } from '../../utils/converters';
+import { get, logout } from '../../utils/api';
+import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
+import history from '../../utils/history';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class Header extends Component {
   state = {
     login: localStorage.getItem('login')
@@ -22,14 +23,11 @@ class Header extends Component {
         this.setState({ login: currentUserData.logged }, () => {
           window.location.reload(false);
           this.props.history.replace({
-            ...this.props.history,
-            showSuccessToast: true,
-            successToastMessage: 'Logged out successfully'
+            ...this.props.history
           });
+          toast.success('Logged out successfully');
         });
       });
-    } catch (err) {
-      handleCatch(err);
     } finally {
       history.replace({
         loading: false
