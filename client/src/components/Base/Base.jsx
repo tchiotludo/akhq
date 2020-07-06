@@ -6,9 +6,6 @@ import constants from '../../utils/constants';
 import SuccessToast from '../../components/Toast/SuccessToast';
 import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
-import { get } from '../../utils/api';
-import { uriCurrentUser } from '../../utils/endpoints';
-import { organizeRoles } from '../../utils/converters';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
@@ -91,28 +88,6 @@ class Base extends Component {
     clearTimeout(this.interval);
   }
 
-  async getCurrentUser() {
-    try {
-      let currentUserData = await get(uriCurrentUser());
-      currentUserData = currentUserData.data;
-      if (currentUserData.logged) {
-        localStorage.setItem('login', true);
-        localStorage.setItem('user', currentUserData.username);
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-      } else {
-        localStorage.setItem('login', false);
-        localStorage.setItem('user', 'default');
-        if(currentUserData.roles) {
-          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-        } else {
-          localStorage.setItem('roles', JSON.stringify({}));
-        }
-      }
-    } catch (err) {
-      console.error('Error:', err);
-    }
-  }
-
   checkToasts() {
     if (this.state.showSuccessToast) {
       this.interval = setTimeout(() => {
@@ -135,7 +110,7 @@ class Base extends Component {
   }
 
   render() {
-    const { children } = this.props;
+    const { children, clusters } = this.props;
     const {
       showSuccessToast,
       showErrorToast,
@@ -147,7 +122,7 @@ class Base extends Component {
       expanded
     } = this.state;
     this.checkToasts();
-    this.getCurrentUser();
+
     return (
       <>
         <Helmet title={this.handleTitle()} />
@@ -156,7 +131,7 @@ class Base extends Component {
         <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         {this.props.location.pathname !== '/ui/login' &&
           this.props.location.pathname !== '/ui/page-not-found' && (
-            <Sidebar
+            <Sidebar clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
                 this.setState({ expanded: newExpanded });

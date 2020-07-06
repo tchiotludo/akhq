@@ -24,7 +24,7 @@ class ConnectList extends Component {
     showDeleteModal: false,
     definitionToDelete: '',
     deleteMessage: '',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {

@@ -30,7 +30,8 @@ class Routes extends Component {
   static propTypes = {
     location: PropTypes.object,
     history: PropTypes.object,
-    clusterId: PropTypes.string
+    clusterId: PropTypes.string,
+    clusters: PropTypes.array,
   };
 
   //componentWillReceiveProps(nextProps) {}
@@ -41,13 +42,13 @@ class Routes extends Component {
         pathname: nextProps.location.pathname,
         ...nextProps.history.location.state
       };
-      localStorage.setItem('lastRoute', JSON.stringify(routeObject));
+      sessionStorage.setItem('lastRoute', JSON.stringify(routeObject));
     }
     return {};
   };
 
   handleRedirect(clusterId) {
-    const roles = JSON.parse(localStorage.getItem('roles'));
+    const roles = JSON.parse(sessionStorage.getItem('roles'));
     if (roles && roles.topic && roles.topic['topic/read']) return `/ui/${clusterId}/topic`;
     else if (roles && roles.node && roles.node['node/read']) return `/ui/${clusterId}/node`;
     else if (roles && roles.group && roles.group['group/read']) return `/ui/${clusterId}/group`;
@@ -59,10 +60,9 @@ class Routes extends Component {
   }
 
   render() {
-    const { location } = this.props;
-    const roles = JSON.parse(localStorage.getItem('roles')) || {};
+    const { location, clusters} = this.props;
+    const roles = JSON.parse(sessionStorage.getItem('roles')) || {};
     let path = window.location.pathname.split('/');
-
     let clusterId = '';
     if (path.length < 4 || path[2] === '') {
       clusterId = this.props.clusterId;
@@ -85,19 +85,19 @@ class Routes extends Component {
       );
     }
 
-    if (path[2] === ':login') {
+    if (path[2] === 'login') {
       return (
         <Switch>
-          <Route exact path="/ui/:login" component={Login} />
+          <Route exact path="/ui/login" component={Login} />
         </Switch>
       );
     }
 
-    if (path.length > 0) {
+    if (clusterId && path.length > 0) {
       return (
-        <Base>
+        <Base clusters={clusters}>
           <Switch location={location}>
-            <Route exact path="/ui/:login" component={Login} />
+            <Route exact path="/ui/login" component={Login} />
             <Route exact path="/ui/page-not-found" component={PageNotFound} />
             {roles && roles.topic && roles.topic['topic/read'] && (
               /*<Route exact path="/page-not-found" component={PageNotFound} /> */

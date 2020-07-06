@@ -59,7 +59,7 @@ class TopicData extends React.Component {
     cleanupPolicy: '',
     datetime: '',
     schemas: [],
-    roles: JSON.parse(localStorage.getItem('roles')),
+    roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0
   };

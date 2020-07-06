@@ -11,7 +11,7 @@ class ConsumerGroup extends Component {
     consumerGroupId: '',
     consumerGroup: {},
     selectedTab: 'topics',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   componentDidMount() {

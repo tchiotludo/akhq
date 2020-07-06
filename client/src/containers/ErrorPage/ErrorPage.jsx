@@ -14,7 +14,7 @@ class ErrorPage extends Component {
   };
 
   onUnload() {
-    localStorage.setItem('reload', true);
+    sessionStorage.setItem('reload', true);
   }
 
   handleHide = () => {
@@ -26,9 +26,9 @@ class ErrorPage extends Component {
   componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
     let errorData = null;
-    if (localStorage.getItem('reload') === 'true') {
-      this.props.history.push(JSON.parse(localStorage.getItem('lastRoute')));
-      localStorage.setItem('reload', false);
+    if (sessionStorage.getItem('reload') === 'true') {
+      this.props.history.push(JSON.parse(sessionStorage.getItem('lastRoute')));
+      sessionStorage.setItem('reload', false);
     } else {
       if (this.props.location && this.props.location.state) {
         errorData = this.props.location.state.errorData;

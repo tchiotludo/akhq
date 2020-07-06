@@ -13,33 +13,33 @@ volumes:
   kafka-data-1:
     driver: local
 services:
-  akhq:
-    image: tchiotludo/akhq
-    environment:
-      AKHQ_CONFIGURATION: |
-        akhq:
-          connections:
-            docker-kafka-server-1:
-              properties:
-                bootstrap.servers: "kafka-0:29092"
-              schema-registry:
-                url: "http://schema-registry-0:8085"
-              connect:
-                - name: connect-1
-                  url: "http://connect-0:8083"
-                - name: connect-2
-                  url: "http://connect-1:8084"
-            docker-kafka-server-2:
-              properties:
-                bootstrap.servers: "kafka-1:29072"
-    ports:
-      - 8080:8080
-    links:
-      - kafka-0
-      - schema-registry-0
-      - connect-0
-      - connect-1
-      - kafka-1
+#  akhq:
+#    image: tchiotludo/akhq
+#    environment:
+#      AKHQ_CONFIGURATION: |
+#        akhq:
+#          connections:
+#            docker-kafka-server-1:
+#              properties:
+#                bootstrap.servers: "kafka-0:29092"
+#              schema-registry:
+#                url: "http://schema-registry-0:8085"
+#              connect:
+#                - name: connect-1
+#                  url: "http://connect-0:8083"
+#                - name: connect-2
+#                  url: "http://connect-1:8084"
+#            docker-kafka-server-2:
+#              properties:
+#                bootstrap.servers: "kafka-1:29072"
+#    ports:
+#      - 8080:8080
+#    links:
+#      - kafka-0
+#      - schema-registry-0
+#      - connect-0
+#      - connect-1
+#      - kafka-1
   zookeeper-0:
     image: confluentinc/cp-zookeeper
     volumes:

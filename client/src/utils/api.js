@@ -13,7 +13,11 @@ const handleError = err => {
         ? err.response.data.message
         : ''
   };
-  if (err.response && err.response.status === 404) {
+  if (error.status === 401) {
+    history.replace('/ui/login');
+    window.location.reload(false);
+    return error;
+  } else if (error.status === 404) {
     history.replace('/ui/page-not-found', { errorData: error });
     return error;
   } else {

@@ -80,7 +80,7 @@ endpoints:
 
 akhq:
   connections:
-    my-big-and-large-fantastic-cluster:
+    fantastic-cluster:
       properties:
         bootstrap.servers: localhost:9092
       schema-registry:
@@ -141,7 +141,7 @@ akhq:
         password: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8 # Password in sha256
         groups: # Groups for the user
           - admin
-    default-group: admin
+    default-group: no-roles
     groups:
       admin:
         roles:

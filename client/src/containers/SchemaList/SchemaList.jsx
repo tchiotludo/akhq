@@ -36,7 +36,7 @@ class SchemaList extends Component {
     },
     showSchemaModal: false,
     schemaModalBody: '',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   componentDidMount() {

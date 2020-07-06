@@ -15,7 +15,7 @@ class Topic extends Component {
     topicId: '',
     topic: {},
     selectedTab: '',
-    roles: JSON.parse(localStorage.getItem('roles')),
+    roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
     selectedCluster: this.props.clusterId,
     selectedTopic: this.props.topicId,

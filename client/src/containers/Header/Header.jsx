@@ -7,7 +7,7 @@ import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 
 class Header extends Component {
   state = {
-    login: localStorage.getItem('login')
+    login: sessionStorage.getItem('login')
   };
 
   async logout() {
@@ -15,16 +15,17 @@ class Header extends Component {
       await logout(uriLogout());
       await get(uriCurrentUser()).then(res => {
         let currentUserData = res.data;
-        localStorage.setItem('login', currentUserData.logged);
-        localStorage.setItem('user', 'default');
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        sessionStorage.setItem('login', currentUserData.logged);
+        sessionStorage.setItem('user', 'default');
+        sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
         this.setState({ login: currentUserData.logged }, () => {
-          window.location.reload(false);
           this.props.history.replace({
             ...this.props.history,
-            showSuccessToast: true,
+            pathname: '/ui/login',
+            howSuccessToast: true,
             successToastMessage: 'Logged out successfully'
           });
+          window.location.reload(false);
         });
       });
     } catch (err) {
