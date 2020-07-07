@@ -4,9 +4,6 @@ import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import Loading from '../../containers/Loading';
-import { get } from '../../utils/api';
-import { uriCurrentUser } from '../../utils/endpoints';
-import { organizeRoles } from '../../utils/converters';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
   state = {
@@ -97,7 +94,7 @@ class Base extends Component {
         <Loading show={loading} />
         {this.props.location.pathname !== '/ui/login' &&
           this.props.location.pathname !== '/ui/page-not-found' && (
-            <Sidebar
+            <Sidebar clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
                 this.setState({ expanded: newExpanded });

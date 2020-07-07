@@ -79,6 +79,20 @@ endpoints:
     sensitive: false
 
 akhq:
+  connections:
+    fantastic-cluster:
+      properties:
+        bootstrap.servers: localhost:9092
+      schema-registry:
+        url: "localhost:8085"
+      connect:
+        - name: connect-1
+          url: "http://localhost:8083"
+        - name: connect-2
+          url: "http://localhost:8084"
+    my-cluster2:
+      properties:
+        bootstrap.servers: localhost:9072
   server:
     base-path: ""
     access-log:
@@ -122,7 +136,12 @@ akhq:
     poll-timeout: 1000
 
   security:
-    default-group: admin
+    basic-auth:
+      user: # Username
+        password: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8 # Password in sha256
+        groups: # Groups for the user
+          - admin
+    default-group: no-roles
     groups:
       admin:
         roles:

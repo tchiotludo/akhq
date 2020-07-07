@@ -60,7 +60,7 @@ class TopicData extends React.Component {
     cleanupPolicy: '',
     datetime: '',
     schemas: [],
-    roles: JSON.parse(localStorage.getItem('roles')),
+    roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0
   };
@@ -75,7 +75,6 @@ class TopicData extends React.Component {
     let { clusterId, topicId } = this.props.match.params;
     const { history } = this.props;
     const roles = this.state.roles || {};
-    console.log('state', this.state.selectedCluster, this.state.selectedTopic);
     this.setState(
       {
         selectedCluster: clusterId,

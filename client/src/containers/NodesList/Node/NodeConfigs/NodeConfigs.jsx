@@ -19,7 +19,7 @@ class NodeConfigs extends Form {
     changedConfigs: {},
     errors: {},
     configs: [],
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {};

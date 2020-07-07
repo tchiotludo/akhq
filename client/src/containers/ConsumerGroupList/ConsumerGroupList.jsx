@@ -22,7 +22,7 @@ class ConsumerGroupList extends Component {
     totalPageNumber: 1,
     history: this.props,
     search: '',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   componentDidMount() {

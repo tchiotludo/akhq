@@ -67,14 +67,16 @@ class Login extends Form {
     const currentUserData = res.data;
 
     if (currentUserData.logged) {
-      localStorage.setItem('login', true);
-      localStorage.setItem('user', currentUserData.username);
-      localStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      sessionStorage.setItem('login', true);
+      sessionStorage.setItem('user', currentUserData.username);
+      sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+
       this.props.history.push({
         ...this.props.history,
         pathname: '/ui',
         loading: false
       });
+      window.location.reload(true);
       toast.success(`User '${currentUserData.username}' logged in successfully`);
     } else {
       this.props.history.replace({

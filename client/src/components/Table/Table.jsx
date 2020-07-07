@@ -116,7 +116,7 @@ class Table extends Component {
   }
 
   renderRow(row, index) {
-    const { actions, columns, extraRow, onExpand, noRowBackgroundChange, onDetails } = this.props;
+    const { actions, columns, extraRow, onExpand, noRowBackgroundChange, onDetails, handleExtraExpand, handleExtraCollapse } = this.props;
     const { extraExpanded } = this.state;
 
     let extraRowColCollapsed;
@@ -210,10 +210,11 @@ class Table extends Component {
           onClick={() => {
             if (
               !extraExpanded ||
-              !JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) ||
-              !JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0
-            ) {
-              this.handleExtraExpand(row);
+              !JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)) ||
+              !JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)).length > 0) {
+                typeof handleExtraExpand === 'function'
+                  ? this.setState({ extraExpanded: handleExtraExpand(extraExpanded, row)})
+                  : this.handleExtraExpand(row);
             }
           }}
           key={'row-expanded-' + row.id}
@@ -224,12 +225,14 @@ class Table extends Component {
           >
             {' '}
             {extraExpanded &&
-            JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
-            JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0 ? (
+            JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)) &&
+            JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)).length > 0 ? (
               <div className="close-container">
                 <span
                   onClick={() => {
-                    this.handleExtraCollapse(row);
+                    typeof handleExtraCollapse === 'function'
+                        ? this.setState({ extraExpanded: handleExtraCollapse(extraExpanded, row)})
+                        : this.handleExtraCollapse(row);
                   }}
                   aria-hidden="true"
                 >
@@ -240,15 +243,15 @@ class Table extends Component {
             <div
               className={
                 extraExpanded &&
-                JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
-                JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0
+                JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)) &&
+                JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)).length > 0
                   ? ''
                   : 'collapsed-extra-row'
               }
             >
               {extraExpanded &&
-              JSON.stringify(extraExpanded.find(expanded => expanded === row.id)) &&
-              JSON.stringify(extraExpanded.find(expanded => expanded === row.id)).length > 0
+              JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)) &&
+              JSON.stringify(extraExpanded.find(expanded => expanded.subject ? expanded.subject === row.subject : expanded === row.id)).length > 0
                 ? extraRowColExpanded
                 : extraRowColCollapsed}
             </div>
@@ -407,7 +410,9 @@ Table.propTypes = {
   onDetails: PropTypes.func,
   onDelete: PropTypes.func,
   toPresent: PropTypes.array,
-  noContent: PropTypes.any
+  noContent: PropTypes.any,
+  handleExtraExpand: PropTypes.func,
+  handleExtraCollapse: PropTypes.func
 };
 
 export default Table;

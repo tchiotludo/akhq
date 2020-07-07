@@ -24,7 +24,7 @@ class SchemaVersions extends Component {
     deleteMessage: '',
     schemaToDelete: {},
     deleteData: { clusterId: '', subject: '', versionId: 1 },
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   componentDidMount() {

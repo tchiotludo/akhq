@@ -33,7 +33,7 @@ class TopicList extends Component {
       cleanup: 'delete',
       retention: 86400000
     },
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   componentDidMount() {

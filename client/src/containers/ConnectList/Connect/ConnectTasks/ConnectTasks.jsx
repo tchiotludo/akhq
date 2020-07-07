@@ -26,7 +26,7 @@ class ConnectTasks extends Component {
     tableData: [],
     showActionModal: false,
     actionMessage: '',
-    roles: JSON.parse(localStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   definitionState = {
