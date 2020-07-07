@@ -3,7 +3,8 @@ import Form from '../../../../components/Form/Form';
 import Joi from 'joi-browser';
 import { get, post } from '../../../../utils/api';
 import { uriLatestSchemaVersion, uriUpdateSchema } from '../../../../utils/endpoints';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class SchemaUpdate extends Form {
   state = {
     clusterId: '',
@@ -80,15 +81,8 @@ class SchemaUpdate extends Form {
         this.handleLatestSchemaVersion(data);
       }
       history.replace({ pathname: `/ui/${clusterId}/schema/details/${schemaId}/update`});
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
-        ...this.props.location,
         loading: false
       });
     }
@@ -122,19 +116,16 @@ class SchemaUpdate extends Form {
       .then(() => {
         this.props.history.push({
           ...this.props.location,
-          showSuccessToast: true,
-          successToastMessage: `Schema '${formData.subject}' is updated`,
           loading: false
         });
+        toast.success(`Schema '${formData.subject}' is updated`);
+        this.props.getSchemaVersions();
         window.location.reload(false);
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastTitle: `Failed to update schema ${formData.subject}`,
-          errorToastMessage: err.message,
           loading: false
         });
       }

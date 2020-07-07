@@ -3,17 +3,19 @@ import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { post, get } from '../../../../utils/api';
+import { get, post } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
-  uriTopicsProduce,
+  uriPreferredSchemaForTopic,
   uriTopicsPartitions,
-  uriPreferredSchemaForTopic
+  uriTopicsProduce
 } from '../../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import Tooltip from '@material-ui/core/Tooltip';
-
+import history from '../../../../utils/history';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class TopicProduce extends Form {
   state = {
     partitions: [],
@@ -93,7 +95,6 @@ class TopicProduce extends Form {
 
   async getPreferredSchemaForTopic() {
     const { clusterId, topicId } = this.props.match.params;
-    const { history } = this.props;
     try {
       let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
       let keySchema = [];
@@ -101,12 +102,10 @@ class TopicProduce extends Form {
       schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
       schema.data && schema.data.value && schema.data.value.map(index => valueSchema.push(index));
       this.setState({ keySchema: keySchema, valueSchema: valueSchema });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 
@@ -152,17 +151,14 @@ class TopicProduce extends Form {
         this.props.history.push({
           ...this.props.location,
           pathname: `/ui/${clusterId}/topic/${topicId}`,
-          showSuccessToast: true,
-          successToastMessage: `Produced to ${topicId}.`,
           loading: false
         });
+        toast.success(`Produced to ${topicId}.`);
       })
       .catch(err => {
         console.log('err', err);
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastMessage: err.message || 'There was an error while producing to topic.',
           loading: false
         });
       });

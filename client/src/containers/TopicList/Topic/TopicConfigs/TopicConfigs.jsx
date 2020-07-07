@@ -6,7 +6,8 @@ import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class TopicConfigs extends Form {
   state = {
     host: '',
@@ -150,18 +151,14 @@ class TopicConfigs extends Form {
         configs: changedConfigs
       });
 
-      this.setState({ state: this.state }, () =>
+      this.setState({ state: this.state }, () => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Topic configs '${selectedTopic}' is updated`,
           loading: false
-        })
-      );
+        });
+        toast.success(`Topic configs '${selectedTopic}' updated successfully`);
+      });
     } catch (err) {
       this.props.history.replace({
-        showErrorToast: true,
-        errorToastTitle: `Failed to update topic '${selectedTopic}' configs`,
-        errorToastMessage: err.message,
         loading: false
       });
       console.error('Error:', err);

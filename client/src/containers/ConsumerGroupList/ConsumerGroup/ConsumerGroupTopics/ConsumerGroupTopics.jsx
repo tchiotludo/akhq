@@ -26,8 +26,6 @@ class ConsumerGroupTopics extends Component {
       offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
       offsets = offsets.data;
       this.handleData(offsets);
-    } catch (err) {
-      console.error('Error:', err);
     } finally {
       history.replace({
         loading: false
@@ -40,7 +38,7 @@ class ConsumerGroupTopics extends Component {
       return {
         name: offset.topic,
         partition: offset.partition,
-        member: (offset.member)?offset.member.host : '',
+        member: offset.member ? offset.member.host : '',
         offset: offset.offset,
         lag: offset.offsetLag
       };
@@ -89,7 +87,7 @@ class ConsumerGroupTopics extends Component {
               colName: 'Member',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.member);
+                return this.handleOptional(obj.member.host);
               }
             },
             {

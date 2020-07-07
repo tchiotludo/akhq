@@ -13,7 +13,8 @@ import {
 } from '../../../../utils/endpoints';
 import moment from 'moment';
 import './styles.scss';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConsumerGroupUpdate extends Form {
   state = {
     clusterId: '',
@@ -74,12 +75,6 @@ class ConsumerGroupUpdate extends Form {
         this.handleOffsetsByTimestamp(data);
       } else {
         this.createValidationSchema(groupedTopicOffset);
-      }
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -179,16 +174,12 @@ class ConsumerGroupUpdate extends Form {
 
       this.setState({ state: this.state }, () =>
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Offsets for '${consumerGroupId}' is updated`,
           loading: false
         })
       );
+      toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
     } catch (err) {
       this.props.history.replace({
-        showErrorToast: true,
-        errorToastTitle: `Failed to update offsets for ${consumerGroupId}`,
-        errorToastMessage: err.message,
         loading: false
       });
       console.error('Error:', err);

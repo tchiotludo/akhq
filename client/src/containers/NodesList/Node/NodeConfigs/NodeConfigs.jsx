@@ -1,12 +1,13 @@
 import React from 'react';
 import { get, post } from '../../../../utils/api';
 import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
-import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
+import { BYTES, MILLI, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
 import Joi from 'joi-browser';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class NodeConfigs extends Form {
   state = {
     host: '',
@@ -43,13 +44,10 @@ class NodeConfigs extends Form {
         ...history,
         loading: false
       });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
-      console.error('Error:', err);
+    } finally {
+      history.replace({
+        loading: false
+      });
     }
   }
 
@@ -158,12 +156,10 @@ class NodeConfigs extends Form {
 
       this.setState({ state: this.state }, () =>
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Node configs '${selectedNode}' is updated`,
           loading: false
         })
       );
-
+      toast.success(`Node configs '${selectedNode}' updated successfully.`);
       Object.keys(changedConfigs).forEach(key => {
         const changedConfig = changedConfigs[key];
         const configIndex = configs.findIndex(config => config.name === key);
@@ -173,9 +169,6 @@ class NodeConfigs extends Form {
       this.setState({ configs });
     } catch (err) {
       this.props.history.replace({
-        showErrorToast: true,
-        errorToastTitle: `Failed to update node '${selectedNode}' configs`,
-        errorToastMessage: err.message,
         loading: false
       });
       console.error('Error:', err);

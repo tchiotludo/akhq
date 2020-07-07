@@ -16,8 +16,8 @@
     "bootstrap": "^4.5.0",
     "convert-units": "^2.3.4",
     "css-loader": "^3.4.1",
-    "joi-validation": "^2.0.0",
     "font-awesome": "^4.7.0",
+    "joi-validation": "^2.0.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "node-sass": "^4.14.1",
@@ -33,6 +33,7 @@
     "react-scripts": "3.4.1",
     "react-spinners": "^0.8.0",
     "react-time-picker": "^4.0.1",
+    "react-toastify": "^6.0.6",
     "reactstrap": "^8.4.0",
     "style-loader": "^1.1.2"
   },
@@ -61,7 +62,6 @@
   },
   "devDependencies": {
     "@testing-library/react": "^9.5.0",
-    "babel-eslint": "^10.0.3",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^6.8.0",

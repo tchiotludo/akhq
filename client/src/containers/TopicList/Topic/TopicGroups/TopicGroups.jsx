@@ -36,12 +36,6 @@ class TopicGroups extends Component {
         }
         this.setState({ selectedCluster });
       }
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false

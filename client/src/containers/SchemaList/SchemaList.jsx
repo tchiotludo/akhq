@@ -14,6 +14,8 @@ import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class SchemaList extends Component {
   state = {
@@ -98,12 +100,6 @@ class SchemaList extends Component {
       let schemasRegistry = response.data ? response.data.results || [] : [];
       this.handleSchemaRegistry(schemasRegistry);
       this.setState({ selectedCluster, totalPageNumber: response.page });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false
@@ -155,17 +151,14 @@ class SchemaList extends Component {
     remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Schema '${schemaToDelete.subject}' is deleted`,
           loading: false
         });
+        toast.success(`Schema '${schemaToDelete.subject}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         this.getSchemaRegistry();
       })
       .catch(() => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
