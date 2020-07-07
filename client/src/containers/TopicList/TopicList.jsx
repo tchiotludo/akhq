@@ -6,11 +6,12 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-import { uriTopics, uriDeleteTopics } from '../../utils/endpoints';
+import { uriDeleteTopics, uriTopics } from '../../utils/endpoints';
 import constants from '../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../utils/converters';
 import './styles.scss';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class TopicList extends Component {
   state = {
     topics: [],
@@ -63,16 +64,13 @@ class TopicList extends Component {
     remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Topic '${topicToDelete.name}' is deleted`,
           loading: false
         });
+        toast.success(`Topic '${topicToDelete.name}' is deleted`);
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
       })
       .catch(() => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `Could not delete '${topicToDelete.name}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
@@ -131,12 +129,6 @@ class TopicList extends Component {
           this.setState({ topics: [] });
         }
         this.setState({ selectedCluster, totalPageNumber: data.page });
-      }
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({

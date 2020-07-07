@@ -7,6 +7,8 @@ import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
@@ -100,11 +102,9 @@ class SchemaVersions extends Component {
     )
       .then(res => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Version'${schemaToDelete.version}' is deleted`,
           loading: false
         });
-
+        toast.success(`Version'${schemaToDelete.version}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         history.push({
           pathname: `/ui/${selectedCluster}/schema`
@@ -112,8 +112,6 @@ class SchemaVersions extends Component {
       })
       .catch(err => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastMessage: `Could not delete '${schemaToDelete.subject}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, schemaToDelete: {} });

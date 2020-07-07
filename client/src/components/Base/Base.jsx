@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
-import SuccessToast from '../../components/Toast/SuccessToast';
-import ErrorToast from '../../components/Toast/ErrorToast';
 import Loading from '../../containers/Loading';
 import { Helmet } from 'react-helmet';
 class Base extends Component {
@@ -13,13 +11,6 @@ class Base extends Component {
     topicId: '',
     selectedTab: constants.CLUSTER, //cluster | node | topic | tail | group | acls | schema | connect
     action: '',
-    showSuccessToast: false,
-    successToastMessage: '',
-    successToastTimeout: 6000, // in ms
-    showErrorToast: false,
-    errorToastTitle: '',
-    errorToastMessage: '',
-    errorToastTimeout: 6000, // in ms
     loading: false,
     expanded: false
   };
@@ -28,26 +19,13 @@ class Base extends Component {
     const clusterId = nextProps.match.params.clusterId;
     const topicId = nextProps.match.params.topicId;
     const action = nextProps.match.params.action;
-    const {
-      showSuccessToast,
-      successToastMessage,
-      showErrorToast,
-      errorToastTitle,
-      errorToastMessage,
-      loading,
-      tab
-    } = nextProps.location;
+    const { loading, tab } = nextProps.location;
 
     return {
       topicId: topicId,
       clusterId: clusterId,
       selectedTab: tab,
       action: action,
-      showSuccessToast: showSuccessToast,
-      successToastMessage: successToastMessage,
-      showErrorToast: showErrorToast,
-      errorToastTitle: errorToastTitle,
-      errorToastMessage: errorToastMessage,
       loading
     };
   }
@@ -80,55 +58,17 @@ class Base extends Component {
     return title + ' akhq.io';
   }
 
-  componentDidMount() {
-    this.checkToasts();
-  }
-
   componentWillUnmount() {
     clearTimeout(this.interval);
   }
 
-  checkToasts() {
-    if (this.state.showSuccessToast) {
-      this.interval = setTimeout(() => {
-        this.props.history.replace({
-          showSuccessToast: false,
-          successToastMessage: ''
-        });
-      }, this.state.successToastTimeout);
-    }
-
-    if (this.state.showErrorToast) {
-      this.interval = setTimeout(() => {
-        this.props.history.replace({
-          showErrorToast: false,
-          errorToastTitle: '',
-          errorToastMessage: ''
-        });
-      }, this.state.errorToastTimeout);
-    }
-  }
-
   render() {
     const { children, clusters } = this.props;
-    const {
-      showSuccessToast,
-      showErrorToast,
-      successToastMessage,
-      errorToastTitle,
-      errorToastMessage,
-      loading,
-      selectedTab,
-      expanded
-    } = this.state;
-    this.checkToasts();
-
-    return (
+    const { loading, selectedTab, expanded } = this.state;
+     return (
       <>
         <Helmet title={this.handleTitle()} />
         <Loading show={loading} />
-        <SuccessToast show={showSuccessToast} message={successToastMessage} />
-        <ErrorToast show={showErrorToast} title={errorToastTitle} message={errorToastMessage} />
         {this.props.location.pathname !== '/ui/login' &&
           this.props.location.pathname !== '/ui/page-not-found' && (
             <Sidebar clusters={clusters}

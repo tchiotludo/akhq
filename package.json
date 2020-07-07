@@ -14,6 +14,7 @@
     "jquery": "^3.5.0",
     "jquery-ui": "^1.12.1",
     "moment": "^2.24.0",
+    "nprogress": "^0.2.0",
     "popper.js": "^1.16.1",
     "sweetalert2": "^7.33.1",
     "tempusdominus-bootstrap-4": "^5.1.2",
@@ -34,7 +35,8 @@
     "webpack": "4.42.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "3.10.3",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "babel-eslint": "10.1.0"
   },
   "scripts": {
     "dev": "webpack-dev-server --mode development",

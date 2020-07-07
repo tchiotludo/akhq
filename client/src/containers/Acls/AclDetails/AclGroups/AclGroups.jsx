@@ -30,12 +30,6 @@ class AclTopics extends Component {
         const acls = response.data || [];
         this.handleAcls(acls);
       }
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false

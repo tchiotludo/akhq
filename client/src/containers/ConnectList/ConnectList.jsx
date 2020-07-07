@@ -13,6 +13,8 @@ import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class ConnectList extends Component {
   state = {
@@ -64,11 +66,9 @@ class ConnectList extends Component {
         loading: false
       });
     } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err, loading: false });
-      } else {
-        history.replace('/ui/error', { errorData: err, loading: false });
-      }
+      history.replace({
+        loading: false
+      });
     }
   }
 
@@ -80,10 +80,9 @@ class ConnectList extends Component {
       .then(() => {
         this.props.history.replace({
           ...this.props.location,
-          showSuccessToast: true,
-          successToastMessage: `Definition '${definition}' is deleted`,
           loading: false
         });
+        toast.success(`Definition '${definition}' is deleted`);
         this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
           this.getConnectDefinitions();
         });
@@ -91,8 +90,6 @@ class ConnectList extends Component {
       .catch(() => {
         this.props.history.replace({
           ...this.props.location,
-          showErrorToast: true,
-          errorToastMessage: `Failed to delete definition from '${definition}'`,
           loading: false
         });
         this.setState({ showDeleteModal: false, topicToDelete: {} });

@@ -14,6 +14,8 @@ import _ from 'lodash';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class ConnectConfigs extends Form {
   state = {
@@ -50,12 +52,6 @@ class ConnectConfigs extends Form {
       history.replace({
         pathname: `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`
       });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false
@@ -75,12 +71,6 @@ class ConnectConfigs extends Form {
       this.setState({ plugin: plugin.data }, () => {
         this.renderForm();
       });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false
@@ -385,16 +375,12 @@ class ConnectConfigs extends Form {
       history.push({
         ...this.props.location,
         pathname: `/ui/${clusterId}/connect/${connectId}`,
-        showSuccessToast: true,
-        successToastMessage: `${`Definition '${formData.name}' is updated`}`,
         loading: false
       });
+      toast.success(`${`Definition '${formData.name}' is updated`}`);
     } catch (err) {
       history.replace({
         ...this.props.location,
-        showErrorToast: true,
-        errorToastTitle: `${`Failed to update definition '${formData.name}'`}`,
-        errorToastMessage: err.message,
         loading: false
       });
     }

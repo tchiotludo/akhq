@@ -17,13 +17,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 
-import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 
 
@@ -56,6 +54,7 @@ public class AkhqController extends AbstractController {
                     .stream()
                     .map(Connect::getName)
                     .collect(Collectors.toList())
+
             ))
             .collect(Collectors.toList());
     }

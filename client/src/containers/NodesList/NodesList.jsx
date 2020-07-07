@@ -26,12 +26,6 @@ class NodesList extends Component {
       nodes = await get(uriNodes(clusterId));
       this.handleData(nodes.data);
       this.setState({ selectedCluster: clusterId });
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false

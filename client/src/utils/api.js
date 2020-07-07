@@ -1,4 +1,7 @@
+import React from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import history from './history';
 
 const configs = {
@@ -8,20 +11,37 @@ const configs = {
 const handleError = err => {
   let error = {
     status: err.response ? err.response.status : '',
-    message:
-      err.response && err.response.data && err.response.data.message
-        ? err.response.data.message
-        : ''
+    message: err.response ? err.response.data.message : 'Internal Server Error',
+    stacktrace:
+      err.response &&
+      err.response.data &&
+      err.response.data._embedded &&
+      err.response.data._embedded.stacktrace &&
+      err.response.data._embedded.stacktrace.message
+        ? err.response.data._embedded.stacktrace.message
+        : null
   };
-  if (error.status === 401) {
-    history.replace('/ui/login');
-    window.location.reload(false);
-    return error;
-  } else if (error.status === 404) {
-    history.replace('/ui/page-not-found', { errorData: error });
+
+  if (err.response && err.response.status < 500) {
+    toast.warn(error.message);
+    if (err.status === 401) {
+      history.replace('/ui/login');
+    }
+
     return error;
   } else {
-    history.replace('/ui/error', { errorData: error });
+    let message = React.createElement('h4', null, error.message);
+
+    if (error.stacktrace) {
+      let detailedReactHTMLElement = React.createElement('pre', null, error.stacktrace);
+      message = React.createElement('div', null, message, detailedReactHTMLElement);
+    }
+
+    toast.error(message, {
+      autoClose: false,
+      className: 'internal-error'
+    });
+
     return error;
   }
 };
