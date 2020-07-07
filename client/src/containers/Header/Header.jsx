@@ -23,10 +23,10 @@ class Header extends Component {
         this.setState({ login: currentUserData.logged }, () => {
           this.props.history.replace({
             pathname: '/ui/login',
-            ...this.props.history,
+            ...this.props.history
           });
-          toast.success('Logged out successfully');
           window.location.reload(false);
+          toast.success('Logged out successfully');
         });
       });
     } finally {

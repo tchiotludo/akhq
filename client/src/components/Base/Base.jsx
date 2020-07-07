@@ -62,33 +62,10 @@ class Base extends Component {
     clearTimeout(this.interval);
   }
 
-  async getCurrentUser() {
-    try {
-      let currentUserData = await get(uriCurrentUser());
-      currentUserData = currentUserData.data;
-      if (currentUserData.logged) {
-        localStorage.setItem('login', true);
-        localStorage.setItem('user', currentUserData.username);
-        localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-      } else {
-        localStorage.setItem('login', false);
-        localStorage.setItem('user', 'default');
-        if (currentUserData.roles) {
-          localStorage.setItem('roles', organizeRoles(currentUserData.roles));
-        } else {
-          localStorage.setItem('roles', JSON.stringify({}));
-        }
-      }
-    } catch (err) {
-      console.error('Error:', err);
-    }
-  }
-
   render() {
-    const { children } = this.props;
+    const { children, clusters } = this.props;
     const { loading, selectedTab, expanded } = this.state;
-    this.getCurrentUser();
-    return (
+     return (
       <>
         <Helmet title={this.handleTitle()} />
         <Loading show={loading} />

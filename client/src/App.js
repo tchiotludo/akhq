@@ -20,13 +20,13 @@ class App extends React.Component {
 
   componentDidMount() {
       if(history.location.pathname !== '/ui/login' && history.location.pathname !== '/ui/page-not-found' ) {
-    api.get(uriClusters()).then(res => {
-      this.setState({ clusterId: res.data ? res.data[0].id : '' }, () => {
-        history.replace({
-          loading: false
+        api.get(uriClusters()).then(res => {
+          this.setState({ clusterId: res.data ? res.data[0].id : '' }, () => {
+            history.replace({
+              loading: false
+            });
+          });
         });
-      });
-    });
       }
   }
 
@@ -59,7 +59,7 @@ class App extends React.Component {
       return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
           <Router>
-            <Routes clusterId={clusterId} location={baseUrl} />
+            <Routes clusters={clusters} clusterId={clusterId} location={baseUrl} />
             <ToastContainer draggable={false} closeOnClick={false} />
           </Router>
         </MuiPickersUtilsProvider>

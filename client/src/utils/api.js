@@ -25,7 +25,7 @@ const handleError = err => {
   if (err.response && err.response.status < 500) {
     toast.warn(error.message);
     if (err.status === 401) {
-      history.replace('/ui/:login');
+      history.replace('/ui/login');
     }
 
     return error;

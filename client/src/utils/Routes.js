@@ -55,7 +55,7 @@ class Routes extends Component {
       clusterId = path[2];
     }
 
-    if (path[2] === ':login') {
+    if (path[2] === 'login') {
       return (
         <Switch>
           <Route exact path="/ui/login" component={Login} />
