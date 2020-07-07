@@ -43,7 +43,7 @@ class Sidebar extends Component {
     if (tabs.find(el => el === path[2])) {
       this.setState({ selectedTab: path[2] });
     }
-    if(this.props.clusters && this.props.clusters.length > 0) {
+    if (this.props.clusters && this.props.clusters.length > 0) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
         this.handleRegistryAndConnects(selectedCluster);
       });
@@ -60,7 +60,7 @@ class Sidebar extends Component {
     const clusterId = match ? match.params.clusterId || '' : '';
     try {
       let allClusters =
-          _(clusters)
+        _(clusters)
           .sortBy(cluster => cluster.id)
           .value() || [];
       const cluster = allClusters.find(cluster => cluster.id === clusterId);
@@ -85,10 +85,10 @@ class Sidebar extends Component {
     if (this.props.location !== prevProps.location) {
       this.setState({ height: document.getElementById('root').offsetHeight });
     }
-    if(this.props.clusters !== prevProps.clusters) {
-       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
-         this.handleRegistryAndConnects(selectedCluster);
-       });
+    if (this.props.clusters !== prevProps.clusters) {
+      this.handleGetClusters(this.props.clusters || [], selectedCluster => {
+        this.handleRegistryAndConnects(selectedCluster);
+      });
     }
   }
 

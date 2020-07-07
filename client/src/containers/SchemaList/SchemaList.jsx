@@ -317,22 +317,26 @@ class SchemaList extends Component {
               );
             });
           }}
-          handleExtraExpand={ (extraExpanded, el) => {
+          handleExtraExpand={(extraExpanded, el) => {
             const currentExpandedRows = extraExpanded;
             const isRowCurrentlyExpanded = currentExpandedRows.includes(el.subject);
 
             const newExpandedRows = isRowCurrentlyExpanded
-                ? currentExpandedRows
-                : currentExpandedRows.concat({id: el.id, subject: el.subject});
+              ? currentExpandedRows
+              : currentExpandedRows.concat({ id: el.id, subject: el.subject });
             return newExpandedRows;
           }}
-          handleExtraCollapse={ (extraExpanded, el) => {
+          handleExtraCollapse={(extraExpanded, el) => {
             const currentExpandedRows = extraExpanded;
-            const isRowCurrentlyExpanded = currentExpandedRows.some(obj => obj.subject === el.subject);
+            const isRowCurrentlyExpanded = currentExpandedRows.some(
+              obj => obj.subject === el.subject
+            );
 
             const newExpandedRows = !isRowCurrentlyExpanded
-                ? currentExpandedRows
-                : currentExpandedRows.filter(obj => !(obj.id === el.id && obj.subject === el.subject));
+              ? currentExpandedRows
+              : currentExpandedRows.filter(
+                  obj => !(obj.id === el.id && obj.subject === el.subject)
+                );
             return newExpandedRows;
           }}
           noContent={'No schemas available'}
