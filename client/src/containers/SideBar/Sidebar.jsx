@@ -58,8 +58,8 @@ class Sidebar extends Component {
     });
 
     const clusterId = match ? match.params.clusterId || '' : '';
-
-    let allClusters =
+    try {
+      let allClusters =
           _(clusters)
           .sortBy(cluster => cluster.id)
           .value() || [];
@@ -71,7 +71,6 @@ class Sidebar extends Component {
         },
         () => {
           const { selectedCluster } = this.state;
-
           callback(selectedCluster);
         }
       );
