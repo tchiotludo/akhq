@@ -29,12 +29,6 @@ class Acls extends Component {
     try {
       acls = await get(uriAclsList(clusterId, this.state.searchData.search));
       this.handleData(acls.data);
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
-      }
     } finally {
       history.replace({
         loading: false

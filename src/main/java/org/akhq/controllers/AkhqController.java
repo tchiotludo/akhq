@@ -17,13 +17,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 
-import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 
 
@@ -43,7 +41,7 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Secured(SecurityRule.IS_AUTHENTICATED)
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
@@ -56,6 +54,7 @@ public class AkhqController extends AbstractController {
                     .stream()
                     .map(Connect::getName)
                     .collect(Collectors.toList())
+
             ))
             .collect(Collectors.toList());
     }

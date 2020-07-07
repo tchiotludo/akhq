@@ -8,7 +8,8 @@ import SearchBar from '../../components/SearchBar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
 import api, { remove } from '../../utils/api';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 class ConsumerGroupList extends Component {
   state = {
     consumerGroups: [],
@@ -70,12 +71,6 @@ class ConsumerGroupList extends Component {
         this.setState({ selectedCluster, totalPageNumber: response.page });
       } else {
         this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
-      }
-    } catch (err) {
-      if (err.status === 404) {
-        history.replace('/ui/page-not-found', { errorData: err });
-      } else {
-        history.replace('/ui/error', { errorData: err });
       }
     } finally {
       history.replace({
@@ -170,17 +165,13 @@ class ConsumerGroupList extends Component {
     remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(() => {
         this.props.history.replace({
-          showSuccessToast: true,
-          successToastMessage: `Consumer Group '${groupToDelete.id}' is deleted`,
           loading: false
         });
+        toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
       .catch(err => {
         this.props.history.replace({
-          showErrorToast: true,
-          errorToastTitle: `Failed to delete '${groupToDelete.id}'`,
-          errorToastMessage: err.message,
           loading: false
         });
         this.setState({ showDeleteModal: false, groupToDelete: {} });

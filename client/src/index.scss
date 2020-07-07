@@ -36,7 +36,6 @@ $fa-font-path: "../fonts";
 @import "containers/NodesList/Node/styles.scss";
 @import "containers/TopicList/Topic/TopicProduce/styles.scss";
 @import "containers/Login/styles.scss";
-@import "containers/PageNotFound/styles.scss";
 
 #content {
   transition: all 0.2s ease;
@@ -51,6 +50,52 @@ $fa-font-path: "../fonts";
   @include media-breakpoint-up(sm) {
     select {
       max-width: 100%;
+    }
+  }
+}
+
+.table-hover tbody tr:hover code:after {
+  background: linear-gradient(transparent, $body-bg);
+}
+
+.Toastify__toast-container {
+  width: 98% !important;
+  top: 1% !important;
+  right: 1% !important;
+
+  .Toastify__toast {
+    width: 320px;
+    top: 1em;
+    right: 1em;
+    position: absolute;
+
+    &.internal-error {
+      width: 98% !important;
+      top: 1% !important;
+      right: 1% !important;
+
+      > div {
+        overflow: auto;
+      }
+
+      p {
+        font-weight: bold;
+      }
+
+      .Toastify__toast {
+        cursor: default;
+      }
+
+      .Toastify__close-button {
+        position: fixed;
+        background: $red;
+        border: 1px solid darken($red, 15);
+        border-radius: $border-radius;
+        width: 31px;
+        right: 25px;
+        padding: 4px;
+        opacity: 1;
+      }
     }
   }
 }
