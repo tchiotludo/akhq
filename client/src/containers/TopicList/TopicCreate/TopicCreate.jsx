@@ -74,8 +74,6 @@ class TopicCreate extends Form {
         this.props.history.replace({
           loading: false
         });
-
-        toast.warn(`Failed to create topic '${formData.name}'`);
       });
   }
   render() {
