@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
+import org.akhq.modules.HasAnyPermission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    @HasAnyPermission()
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
