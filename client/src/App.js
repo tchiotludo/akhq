@@ -23,7 +23,7 @@ class App extends React.Component {
     ) {
       api.get(uriClusters()).then(res => {
         console.log('here', res);
-        this.setState({ clusterId: res.data ? res.data[0].id : '' }, () => {
+        this.setState({ clusters: res.data, clusterId: res.data ? res.data[0].id : '' }, () => {
           history.replace({
             loading: false
           });
