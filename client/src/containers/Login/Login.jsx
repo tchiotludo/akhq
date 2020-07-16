@@ -13,7 +13,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 class Login extends Form {
   state = {
-    clusterId: '',
     formData: {
       username: '',
       password: ''
@@ -76,7 +75,6 @@ class Login extends Form {
         pathname: '/ui',
         loading: false
       });
-      window.location.reload(true);
       toast.success(`User '${currentUserData.username}' logged in successfully`);
     } else {
       this.props.history.replace({

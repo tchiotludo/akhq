@@ -42,7 +42,6 @@ class Header extends Component {
             pathname: '/ui/login',
             ...this.props.history
           });
-          window.location.reload(false);
           toast.success('Logged out successfully');
         });
       });
