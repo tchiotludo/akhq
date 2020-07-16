@@ -34,7 +34,6 @@ class Routes extends Component {
 
   handleRedirect(clusterId) {
     const roles = JSON.parse(sessionStorage.getItem('roles'));
-    console.log('roles', roles);
     if (roles && roles.topic && roles.topic['topic/read']) return `/ui/${clusterId}/topic`;
     else if (roles && roles.node && roles.node['node/read']) return `/ui/${clusterId}/node`;
     else if (roles && roles.group && roles.group['group/read']) return `/ui/${clusterId}/group`;

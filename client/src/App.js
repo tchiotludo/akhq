@@ -22,7 +22,6 @@ class App extends React.Component {
       history.location.pathname !== '/ui/page-not-found'
     ) {
       api.get(uriClusters()).then(res => {
-        console.log('here', res);
         this.setState({ clusters: res.data, clusterId: res.data ? res.data[0].id : '' }, () => {
           history.replace({
             loading: false
