@@ -19,7 +19,7 @@ export function formatDateTime(value, format, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,
-    +value.monthValue - 1,
+    value.monthValue,
     value.dayOfMonth,
     value.hour,
     value.minute,

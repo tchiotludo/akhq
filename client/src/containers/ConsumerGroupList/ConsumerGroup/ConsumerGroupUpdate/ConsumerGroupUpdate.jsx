@@ -47,7 +47,7 @@ class ConsumerGroupUpdate extends Form {
         ? formatDateTime(
             {
               year: momentValue.year(),
-              monthValue: momentValue.month() + 1,
+              monthValue: momentValue.month(),
               dayOfMonth: momentValue.date(),
               hour: momentValue.hour(),
               minute: momentValue.minute(),

@@ -33,7 +33,7 @@ class DatePicker extends React.Component {
       return formatDateTime(
         {
           year: date.year(),
-          monthValue: date.month() + 1,
+          monthValue: date.month(),
           dayOfMonth: date.date(),
           hour: date.hour(),
           minute: date.minute(),
