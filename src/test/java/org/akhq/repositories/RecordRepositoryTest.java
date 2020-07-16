@@ -137,6 +137,15 @@ public class RecordRepositoryTest extends AbstractTest {
         assertEquals(0, consumeAll(options) );
     }
 
+    @Test
+    public void emptyTopicByTimestamp() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_TOBE_EMPTIED);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        repository.emptyTopicByTimestamp(options.clusterId, options.getTopic(), System.currentTimeMillis());
+        assertEquals(0, consumeAll(options) );
+    }
+
     private List<Record> consumeAllRecord(RecordRepository.Options options) throws ExecutionException, InterruptedException {
         boolean hasNext = true;
 

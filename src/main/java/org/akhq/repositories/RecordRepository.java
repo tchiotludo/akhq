@@ -390,6 +390,29 @@ public class RecordRepository extends AbstractRepository {
             recordsToDelete.put(new TopicPartition(partition.getTopic(), partition.getId()),
                     RecordsToDelete.beforeOffset(partition.getLastOffset()));
         });
+        deleteRecords(clusterId, recordsToDelete);
+    }
+
+    public void emptyTopicByTimestamp(String clusterId,
+                                      String topicName,
+                                      Long timestamp) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, Long> timestamps = new HashMap<>();
+        Map<TopicPartition, RecordsToDelete> recordsToDelete = new HashMap<>();
+        var topic = topicRepository.findByName(clusterId, topicName);
+        topic.getPartitions().forEach(partition -> {
+            timestamps.put(new TopicPartition(partition.getTopic(), partition.getId()),
+                            timestamp);
+        });
+        Map<TopicPartition, OffsetAndTimestamp> offsets = kafkaModule.getConsumer(clusterId).offsetsForTimes(timestamps);
+
+        offsets.forEach((topicPartition, offsetAndTimestamp) -> {
+            recordsToDelete.put(topicPartition, RecordsToDelete.beforeOffset(offsetAndTimestamp.offset()));
+        });
+        deleteRecords(clusterId, recordsToDelete);
+
+    }
+
+    private void deleteRecords(String clusterId, Map<TopicPartition, RecordsToDelete> recordsToDelete) throws InterruptedException, ExecutionException {
         var deleted = kafkaModule.getAdminClient(clusterId).deleteRecords(recordsToDelete).lowWatermarks();
         for (Map.Entry<TopicPartition, KafkaFuture<DeletedRecords>> entry : deleted.entrySet()){
             log.debug(entry.getKey().topic() + " " + entry.getKey().partition() + " " + entry.getValue().get().lowWatermark());
