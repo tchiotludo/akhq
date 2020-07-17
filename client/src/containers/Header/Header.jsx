@@ -13,21 +13,21 @@ class Header extends Component {
     goBack: true
   };
 
-  unauthorizedGoBack = ['topic', 'node', 'tail', 'group', 'acls', 'schema'];
+  // unauthorizedGoBack = ['topic', 'node', 'tail', 'group', 'acls', 'schema'];
+  //
+  // componentDidMount() {
+  //   const url = window.location.pathname.split('/');
+  //   this.unauthorizedGoBack.forEach(el => {
+  //     if ('' === url[url.length - 1] ||  el === url[url.length - 1] || 'connect' === url[url.length - 2]) {
+  //       this.setState({ goBack: false });
+  //     }
+  //   });
+  //   this.goBack = this.goBack.bind(this);
+  // }
 
-  componentDidMount() {
-    const url = window.location.pathname.split('/');
-    this.unauthorizedGoBack.forEach(el => {
-      if ('' === url[url.length - 1] ||  el === url[url.length - 1] || 'connect' === url[url.length - 2]) {
-        this.setState({ goBack: false });
-      }
-    });
-    this.goBack = this.goBack.bind(this);
-  }
-
-  goBack() {
-    this.props.history.goBack();
-  }
+  // goBack() {
+  //   this.props.history.goBack();
+  // }
 
   async logout() {
     try {
@@ -64,17 +64,6 @@ class Header extends Component {
           {' '}
           <h1>{title}</h1>{' '}
           <div>
-            {goBack && (
-                <Link>
-                  <button
-                      className="btn btn-primary mr-2"
-                      onClick={() => this.goBack()}
-                  >
-                    <i className="fa fa-fw fa-arrow-left" aria-hidden="true" />
-                    Previous
-                  </button>
-                </Link>
-            )}
             {login === 'false' || !login ? (
               <Link to="/ui/login">
                 <button data-turbolinks="false" className="btn btn-primary">
