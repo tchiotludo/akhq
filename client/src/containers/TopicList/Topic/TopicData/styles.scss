@@ -7,7 +7,6 @@
     outline: none;
 }
 
-
 .value {
     overflow: hidden;
 }
@@ -153,5 +152,11 @@ code{
     }
     .search{
         margin-right: 2%;
+    }
+}
+
+@media (max-width: 968px) {
+    .schema-value {
+        margin-left: 0 !important;
     }
 }

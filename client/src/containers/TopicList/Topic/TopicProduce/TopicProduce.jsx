@@ -212,7 +212,7 @@ class TopicProduce extends Form {
                 position === 0 ? this.handlePlus() : this.handleRemove(position);
               }}
             >
-              <i class={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
+              <i className={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
             </button>
           </div>
         </div>
@@ -322,7 +322,7 @@ class TopicProduce extends Form {
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
-            }, "col-sm-10")}
+            }, 'col-sm-10')}
             {this.renderDropdown(
               'Key schema',
               keySchema.map(key => key.subject),
@@ -399,7 +399,7 @@ class TopicProduce extends Form {
                       formatDateTime(
                         {
                           year: date.year(),
-                          monthValue: date.month() + 1,
+                          monthValue: date.month(),
                           dayOfMonth: date.date(),
                           hour: date.hour(),
                           minute: date.minute(),
@@ -414,7 +414,7 @@ class TopicProduce extends Form {
                       formatDateTime(
                         {
                           year: date.year(),
-                          monthValue: date.month() + 1,
+                          monthValue: date.month(),
                           dayOfMonth: date.date(),
                           hour: date.hour(),
                           minute: date.minute(),

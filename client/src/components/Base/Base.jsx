@@ -20,7 +20,6 @@ class Base extends Component {
     const topicId = nextProps.match.params.topicId;
     const action = nextProps.match.params.action;
     const { loading, tab } = nextProps.location;
-
     return {
       topicId: topicId,
       clusterId: clusterId,
@@ -65,13 +64,14 @@ class Base extends Component {
   render() {
     const { children, clusters } = this.props;
     const { loading, selectedTab, expanded } = this.state;
-     return (
+    return (
       <>
         <Helmet title={this.handleTitle()} />
         <Loading show={loading} />
         {this.props.location.pathname !== '/ui/login' &&
           this.props.location.pathname !== '/ui/page-not-found' && (
-            <Sidebar clusters={clusters}
+            <Sidebar
+              clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
                 this.setState({ expanded: newExpanded });

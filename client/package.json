@@ -71,6 +71,7 @@
     "jest-dom": "^4.0.0",
     "joi-browser": "^13.4.0",
     "prettier": "^1.19.1",
-    "react-test-render": "^1.1.2"
+    "react-test-render": "^1.1.2",
+    "webpack": "4.42.0"
   }
 }

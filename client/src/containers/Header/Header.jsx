@@ -9,8 +9,25 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 class Header extends Component {
   state = {
-    login: sessionStorage.getItem('login')
+    login: sessionStorage.getItem('login'),
+    goBack: true
   };
+
+  unauthorizedGoBack = ['topic', 'node', 'tail', 'group', 'acls', 'schema'];
+
+  componentDidMount() {
+    const url = window.location.pathname.split('/');
+    this.unauthorizedGoBack.forEach(el => {
+      if (el === url[url.length - 1] || 'connect' === url[url.length - 2]) {
+        this.setState({ goBack: false });
+      }
+    });
+    this.goBack = this.goBack.bind(this);
+  }
+
+  goBack() {
+    this.props.history.goBack();
+  }
 
   async logout() {
     try {
@@ -25,7 +42,6 @@ class Header extends Component {
             pathname: '/ui/login',
             ...this.props.history
           });
-          window.location.reload(false);
           toast.success('Logged out successfully');
         });
       });
@@ -38,8 +54,7 @@ class Header extends Component {
 
   render() {
     const { title, children } = this.props;
-    const { login } = this.state;
-
+    const { login, goBack } = this.state;
     return (
       <React.Fragment>
         <div
@@ -48,35 +63,42 @@ class Header extends Component {
         >
           {' '}
           <h1>{title}</h1>{' '}
-          {login === 'false' || !login ? (
-            <Link to="/ui/login">
-              <button
-                data-turbolinks="false"
-                className="btn btn-primary"
-                style={{ float: 'right' }}
-              >
-                {' '}
-                <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                Login
-              </button>
-            </Link>
-          ) : (
-            <Link to="#">
-              <button
-                data-turbolinks="false"
-                className="btn btn-primary"
-                style={{ float: 'right' }}
-                onClick={() => {
-                  this.logout();
-                }}
-              >
-                {' '}
-                <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                Logout
-              </button>
-            </Link>
-          )}
-          {children}
+          <div>
+            {login === 'false' || !login ? (
+              <Link to="/ui/login">
+                <button data-turbolinks="false" className="btn btn-primary">
+                  {' '}
+                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+                  Login
+                </button>
+              </Link>
+            ) : (
+              <Link to="#">
+                <button
+                  data-turbolinks="false"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    this.logout();
+                  }}
+                >
+                  {' '}
+                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+                  Logout
+                </button>
+              </Link>
+            )}
+            {children}
+            {goBack && (
+              <Link>
+                <button
+                  className="btn btn-primary ml-2"
+                  onClick={() => this.goBack()}
+                >
+                  Back
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
       </React.Fragment>
     );
