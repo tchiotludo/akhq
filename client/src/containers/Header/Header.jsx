@@ -18,7 +18,7 @@ class Header extends Component {
   componentDidMount() {
     const url = window.location.pathname.split('/');
     this.unauthorizedGoBack.forEach(el => {
-      if (el === url[url.length - 1] || 'connect' === url[url.length - 2]) {
+      if ('' === url[url.length - 1] ||  el === url[url.length - 1] || 'connect' === url[url.length - 2]) {
         this.setState({ goBack: false });
       }
     });
@@ -64,6 +64,17 @@ class Header extends Component {
           {' '}
           <h1>{title}</h1>{' '}
           <div>
+            {goBack && (
+                <Link>
+                  <button
+                      className="btn btn-primary mr-2"
+                      onClick={() => this.goBack()}
+                  >
+                    <i className="fa fa-fw fa-arrow-left" aria-hidden="true" />
+                    Previous
+                  </button>
+                </Link>
+            )}
             {login === 'false' || !login ? (
               <Link to="/ui/login">
                 <button data-turbolinks="false" className="btn btn-primary">
@@ -88,16 +99,6 @@ class Header extends Component {
               </Link>
             )}
             {children}
-            {goBack && (
-              <Link>
-                <button
-                  className="btn btn-primary ml-2"
-                  onClick={() => this.goBack()}
-                >
-                  Back
-                </button>
-              </Link>
-            )}
           </div>
         </div>
       </React.Fragment>
