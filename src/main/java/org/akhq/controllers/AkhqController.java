@@ -17,11 +17,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
 
 
 @Controller("${akhq.server.base-path:}/")
@@ -39,6 +39,9 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private List<BasicAuth> basicAuths;
+
+    @Inject
+    private Oidc oidc;
 
     @Secured(SecurityRule.IS_AUTHENTICATED)
     @Get("api/cluster")
@@ -66,7 +69,7 @@ public class AkhqController extends AbstractController {
         AuthDefinition authDefinition = new AuthDefinition();
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            authDefinition.loginEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0;
+            authDefinition.loginEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0 || oidc.isEnabled();
         } else {
             authDefinition.loginEnabled = false;
         }
@@ -82,10 +85,12 @@ public class AkhqController extends AbstractController {
 
         if (applicationContext.containsBean(SecurityService.class)) {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
+            System.out.println("Got Security!");
 
             securityService
                 .getAuthentication()
                 .ifPresent(authentication -> {
+                    System.out.println("Got User!");
                     authUser.logged = true;
                     authUser.username = authentication.getName();
                     authUser.roles = this.getRights();

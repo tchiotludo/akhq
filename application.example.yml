@@ -1,5 +1,6 @@
 micronaut:
   security:
+    enabled: true
     # Ldap authentificaton configuration
     ldap:
       default:
@@ -13,6 +14,26 @@ micronaut:
         groups:
           enabled: true
           base: "dc=example,dc=com"
+    # OIDC authentification configuration
+    oauth2:
+      enabled: true
+      clients:
+        oidc:
+          client-id: "<client-id>"
+          client-secret: "<client-secret>"
+          openid:
+            issuer: "<issuer-url>"
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: pleasechangeme
+    session:
+      enabled: false
 
 akhq:
   server:
@@ -179,3 +200,11 @@ akhq:
         einstein:
           groups:
             - admin
+
+    # OIDC groups configuration
+    oidc:
+      enabled: true
+      provider: oidc
+      label: "Login with OIDC"
+      username-field: preferred_username
+      roles-field: roles

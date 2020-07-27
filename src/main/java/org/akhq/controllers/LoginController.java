@@ -10,7 +10,9 @@ import io.micronaut.security.config.SecurityConfigurationProperties;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.views.View;
 import io.swagger.v3.oas.annotations.Hidden;
+import org.akhq.configs.Oidc;
 
+import javax.inject.Inject;
 import java.util.Optional;
 
 @Secured(SecurityRule.IS_ANONYMOUS)
@@ -18,12 +20,25 @@ import java.util.Optional;
 @Controller
 @Hidden
 public class LoginController extends AbstractController {
+    @Inject
+    private Oidc oidc;
+
     @Get("${akhq.server.base-path:}/login")
     @View("login")
     public HttpResponse<?> login() {
         return HttpResponse
             .ok()
-            .body(templateData(Optional.empty()));
+            .body(
+                    templateData(
+                            Optional.empty(),
+                            "oidcEnabled",
+                            oidc.isEnabled(),
+                            "oidcProvider",
+                            oidc.getProvider(),
+                            "oidcLabel",
+                            oidc.getLabel()
+                    )
+            );
     }
 
     @Get("${akhq.server.base-path:}/login/{failed:[a-zA-Z]+}")

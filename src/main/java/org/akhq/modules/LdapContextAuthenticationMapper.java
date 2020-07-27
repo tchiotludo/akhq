@@ -3,7 +3,9 @@ package org.akhq.modules;
 import io.micronaut.configuration.security.ldap.ContextAuthenticationMapper;
 import io.micronaut.configuration.security.ldap.DefaultContextAuthenticationMapper;
 import io.micronaut.context.annotation.Replaces;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.convert.value.ConvertibleValues;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import org.akhq.configs.LdapGroup;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
+@Requires(property = "akhq.security.ldap.enabled", value = StringUtils.TRUE)
 @Replaces(DefaultContextAuthenticationMapper.class)
 public class LdapContextAuthenticationMapper implements ContextAuthenticationMapper {
 

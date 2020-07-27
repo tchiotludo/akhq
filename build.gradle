@@ -121,9 +121,11 @@ dependencies {
     runtime 'org.freemarker:freemarker:2.3.30'
     compile "io.micronaut:micronaut-security"
     compile "io.micronaut:micronaut-security-session"
+    compile "io.micronaut:micronaut-security-jwt"
     compile "io.micronaut:micronaut-management"
     compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
     compile "io.micronaut.configuration:micronaut-security-ldap"
+    compile "io.micronaut.configuration:micronaut-security-oauth2"
 
     // kafka
     compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
