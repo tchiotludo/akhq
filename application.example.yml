@@ -204,7 +204,8 @@ akhq:
     # OIDC groups configuration
     oidc:
       enabled: true
-      provider: oidc
-      label: "Login with OIDC"
-      username-field: preferred_username
-      roles-field: roles
+      providers:
+        oidc:
+          label: "Login with OIDC"
+          username-field: preferred_username
+          roles-field: roles

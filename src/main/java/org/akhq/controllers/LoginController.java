@@ -33,10 +33,8 @@ public class LoginController extends AbstractController {
                             Optional.empty(),
                             "oidcEnabled",
                             oidc.isEnabled(),
-                            "oidcProvider",
-                            oidc.getProvider(),
-                            "oidcLabel",
-                            oidc.getLabel()
+                            "oidcProviders",
+                            oidc.getProviders()
                     )
             );
     }

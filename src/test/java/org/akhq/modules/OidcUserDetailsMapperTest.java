@@ -32,6 +32,7 @@ class OidcUserDetailsMapperTest {
     private static final String ROLE_2 = "role2";
     private static final String DEFAULT_ROLE = "test";
     private static final String TRANSLATED_PREFIX = "translated/";
+    private static final String PROVIDER_NAME = "sample";
 
     @Mock
     private Oidc oidc;
@@ -51,15 +52,15 @@ class OidcUserDetailsMapperTest {
         when(openIdAdditionalClaimsConfiguration.isJwt()).thenReturn(false);
         when(openIdAdditionalClaimsConfiguration.isRefreshToken()).thenReturn(false);
 
-        when(oidc.getRolesField()).thenReturn(CLAIM_ROLES);
-        when(oidc.getUsernameField()).thenReturn(OpenIdClaims.CLAIMS_PREFERRED_USERNAME);
+        Oidc.Provider provider = new Oidc.Provider();
+        when(oidc.getProvider(PROVIDER_NAME)).thenReturn(provider);
     }
 
     @Test
     void createUserDetails() {
         stubRoles();
         JWTOpenIdClaims claims = buildClaims(Arrays.asList(ROLE_1, ROLE_2));
-        UserDetails userDetails = subject.createUserDetails("", new OpenIdTokenResponse(), claims);
+        UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
         assertEquals(userDetails.getUsername(), USERNAME);
         assertEquals(userDetails.getRoles(), Arrays.asList("translated/role1", "translated/role2"));
         Map<String, Object> attributes = userDetails.getAttributes("roles", "username");
@@ -71,7 +72,7 @@ class OidcUserDetailsMapperTest {
     void fieldMissing() {
         stubDefaultRole();
         JWTOpenIdClaims claims = buildClaims(null);
-        UserDetails userDetails = subject.createUserDetails("", new OpenIdTokenResponse(), claims);
+        UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
         assertDefaultRole(userDetails);
     }
 
@@ -79,7 +80,7 @@ class OidcUserDetailsMapperTest {
     void fieldIncompatible() {
         stubDefaultRole();
         JWTOpenIdClaims claims = buildClaims(ROLE_1);
-        UserDetails userDetails = subject.createUserDetails("", new OpenIdTokenResponse(), claims);
+        UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
         assertDefaultRole(userDetails);
     }
 

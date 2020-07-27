@@ -57,7 +57,8 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      */
     @Override
     protected String getUsername(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
-        return Objects.toString(openIdClaims.get(oidc.getUsernameField()));
+        Oidc.Provider provider = oidc.getProvider(providerName);
+        return Objects.toString(openIdClaims.get(provider.getUsernameField()));
     }
 
     /**
@@ -71,7 +72,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      */
     @Override
     protected List<String> getRoles(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
-        return userGroupUtils.getUserRoles(getOidcRoles(openIdClaims));
+        return userGroupUtils.getUserRoles(getOidcRoles(providerName, openIdClaims));
     }
     /**
      * Adds the configured attributes for the user roles to the user attributes.
@@ -84,7 +85,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     @Override
     protected Map<String, Object> buildAttributes(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
         Map<String, Object> attributes = super.buildAttributes(providerName, tokenResponse, openIdClaims);
-        userGroupUtils.getUserAttributes(getOidcRoles(openIdClaims)).forEach(attributes::put);
+        userGroupUtils.getUserAttributes(getOidcRoles(providerName, openIdClaims)).forEach(attributes::put);
         return attributes;
     }
 
@@ -92,13 +93,15 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      * Tries to read roles from the configured roles field.
      * If the configured field cannot be found or isn't some kind of collection, it will return the default group.
      *
+     * @param providerName The OpenID provider name
      * @param openIdClaims The OpenID claims
      * @return The roles from oidc
      */
-    protected List<String> getOidcRoles(OpenIdClaims openIdClaims) {
+    protected List<String> getOidcRoles(String providerName, OpenIdClaims openIdClaims) {
+        Oidc.Provider provider = oidc.getProvider(providerName);
         List<String> roles = Collections.singletonList(defaultGroups);
-        if (openIdClaims.contains(oidc.getRolesField())) {
-            Object rolesField = openIdClaims.get(oidc.getRolesField());
+        if (openIdClaims.contains(provider.getRolesField())) {
+            Object rolesField = openIdClaims.get(provider.getRolesField());
             if (rolesField instanceof Collection) {
                 roles = ((Collection<Object>) rolesField)
                         .stream()
