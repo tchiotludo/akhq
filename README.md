@@ -92,6 +92,13 @@
   - Filter topics with regexp for current groups
   - Ldap configuration to match AKHQ groups/roles
 
+## New React UI
+Release `0.15.0` introduce a new UI based on React. This is the default one when you reach AKHQ.
+
+The old one is still available on path `/{cluster}/topic` but will be remove on release `0.16.0`.
+
+Since this is a major rework, the new UI can have some issue, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks ! 
+
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/akhq/master/docker-compose.yml) file
 * run `docker-compose pull` to be sure to have the last version of AKHQ

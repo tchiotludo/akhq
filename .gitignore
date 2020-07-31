@@ -14,13 +14,15 @@ hs_err_pid*
 ### Gradle
 .gradle/*
 build/*
-!gradle-wrapper.jar
-.gradletasknamecache
 
 ### Assets
 src/main/resources/static
+src/main/resources/ui
 node_modules
-node/
+node
+client/node_modules
+client/node
+client/.env*.local
 
 ### Ide ###
 .idea/*
@@ -45,3 +47,4 @@ docs/contributors.html
 ## Docker
 .env
 docker-compose.override.yml
+

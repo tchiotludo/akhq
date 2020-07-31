@@ -1,0 +1,118 @@
+@import "./../assets/css/init";
+
+// vendor
+@import "~bootstrap/scss/bootstrap";
+$fa-font-path: "../fonts";
+@import "~font-awesome/scss/font-awesome";
+@import "~react-datepicker/dist/react-datepicker.css";
+@import "~axios-progress-bar/dist/nprogress.css";
+
+// old styles
+@import "../../assets/modules/templates/bootstrap";
+@import "../../assets/modules/templates/layout";
+@import "../../assets/modules/templates/login";
+@import "../../assets/modules/templates/sidebar";
+@import "../../assets/modules/datas/filter";
+@import "../../assets/modules/datas/highlight";
+@import "../../assets/modules/datas/after-offset";
+@import "../../assets/modules/forms/ace";
+@import "../../assets/modules/forms/datetime";
+@import "../../assets/modules/forms/multiple";
+@import "../../assets/modules/forms/select";
+@import "../../assets/modules/tables/table";
+@import "../../assets/modules/tables/row-action";
+
+// components
+@import "components/Base/Base.scss";
+@import "components/Table/styles.scss";
+@import "components/Form/styles.scss";
+@import "components/Form/Select/styles.scss";
+@import "components/DatePicker/styles.scss";
+@import "components/Pagination/styles.scss";
+@import "components/SearchBar/styles.scss";
+
+// containers
+@import "containers/SideBar/styles.scss";
+@import "containers/Tail/styles.scss";
+@import "containers/NodesList/Node/styles.scss";
+@import "containers/TopicList/Topic/TopicProduce/styles.scss";
+@import "containers/Login/styles.scss";
+
+#content {
+  transition: all 0.2s ease;
+
+  aside {
+    width: 100%;
+    left: 0;
+  }
+}
+
+.khq-data-filter {
+  @include media-breakpoint-up(sm) {
+    select {
+      max-width: 100%;
+    }
+  }
+}
+
+.table-hover tbody tr:hover code:after {
+  background: linear-gradient(transparent, $body-bg);
+}
+
+#nprogress .bar {
+  background: $red;
+  height: 4px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px $red, 0 0 5px $red;
+}
+
+#nprogress .spinner-icon {
+  border: solid 4px transparent;
+  border-top-color: $red;
+  border-left-color: $red;
+}
+
+
+.Toastify__toast-container {
+  width: 98% !important;
+  top: 1% !important;
+  right: 1% !important;
+
+  .Toastify__toast {
+    width: 320px;
+    top: 1em;
+    right: 1em;
+    position: absolute;
+
+    &.internal-error {
+      width: 98% !important;
+      top: 1% !important;
+      right: 1% !important;
+
+      > div {
+        overflow: auto;
+      }
+
+      p {
+        font-weight: bold;
+      }
+
+      .Toastify__toast {
+        cursor: default;
+      }
+
+      .Toastify__close-button {
+        position: fixed;
+        background: $red;
+        border: 1px solid darken($red, 15);
+        border-radius: $border-radius;
+        width: 31px;
+        right: 25px;
+        padding: 4px;
+        opacity: 1;
+      }
+    }
+  }
+}

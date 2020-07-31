@@ -1,0 +1,44 @@
+@import "../assets/css/init";
+
+$sidebarWidth: 70px;
+$sidebarExpandedWidth: 250px;
+$sidebarTransition: 0.5s;
+
+.sidenav---sidenav---_2tBP {
+  .logo-wrapper {
+    background: $tertiary;
+    border-bottom: 4px solid $yellow;
+    padding-bottom: 10px;
+    padding-top: 1px;
+  }
+  span.logo {
+    width: calc(100% - 8px);
+    height: 65px;
+    display: block;
+    background: url("../../images/logo.svg") no-repeat 16px;
+    background-size: cover;
+    margin-top: 60px;
+    margin-left: 4px;
+    margin-right: 4px;
+    transition: all 0.2s  ease;
+  }
+}
+
+.sidenav---expanded---1KdUL{
+
+  span.logo {
+    background-position: 0 ;
+  }
+}
+
+.clusters{
+  text-overflow: ellipsis;
+  direction: ltr;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 90px;
+}
+
+.sidenav-subnav---1EN61{
+  background-color: $primary !important;
+}

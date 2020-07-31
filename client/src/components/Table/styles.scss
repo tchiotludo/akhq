@@ -1,0 +1,29 @@
+@import "../assets/css/init";
+
+.action-hover :hover {
+  cursor: pointer;
+}
+
+.no-stripes tr {
+  background-color: rgba(100, 100, 100, 0.4);
+}
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+td {
+  position: relative;
+}
+
+.close-container {
+  position: absolute;
+  z-index: 100;
+  right:2px;
+  top:-5px;
+  cursor: pointer;
+  font-size: $font-size-lg;
+}

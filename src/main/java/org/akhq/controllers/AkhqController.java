@@ -16,7 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
+import org.akhq.modules.HasAnyPermission;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +42,7 @@ public class AkhqController extends AbstractController {
     @Inject
     private List<BasicAuth> basicAuths;
 
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    @HasAnyPermission()
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
@@ -49,8 +51,7 @@ public class AkhqController extends AbstractController {
             .map(connection -> new ClusterDefinition(
                 connection.getName(),
                 connection.getSchemaRegistry() != null,
-                connection
-                    .getConnect()
+                (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
                     .stream()
                     .map(Connect::getName)
                     .collect(Collectors.toList())
@@ -84,13 +85,14 @@ public class AkhqController extends AbstractController {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
             securityService
-                .getAuthentication()
-                .ifPresent(authentication -> {
-                    authUser.logged = true;
-                    authUser.username = authentication.getName();
-                    authUser.roles = this.getRights();
-                });
+                    .getAuthentication()
+                    .ifPresent(authentication -> {
+                        authUser.logged = true;
+                        authUser.username = authentication.getName();
+                    });
         }
+
+        authUser.roles = this.getRights();
 
         return authUser;
     }

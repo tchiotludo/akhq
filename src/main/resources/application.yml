@@ -7,6 +7,9 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   router:
     static-resources:
+      react:
+        paths: classpath:ui
+        mapping: "${akhq.server.base-path:}/ui/**"
       static:
         paths: classpath:static
         mapping: "${akhq.server.base-path:}/static/**"
@@ -31,6 +34,8 @@ micronaut:
       unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
       login-failure-target-url: "${akhq.server.base-path:}/login/failed"
     intercept-url-map:
+      - pattern: "${akhq.server.base-path:}/ui/**"
+        access: "isAnonymous()"
       - pattern: "${akhq.server.base-path:}/static/**"
         access: "isAnonymous()"
       - pattern: "${akhq.server.base-path:}/swagger/**"
@@ -39,6 +44,10 @@ micronaut:
     kafka-wrapper:
       record-stats: true
       expire-after-write: 0s
+
+jackson:
+  serialization:
+    writeDatesAsTimestamps: false
 
 endpoints:
   all:

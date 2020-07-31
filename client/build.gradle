@@ -1,0 +1,23 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+apply plugin: "org.siouan.frontend"
+
+frontend {
+    nodeVersion = '12.14.0'
+    assembleScript = 'run build'
+}
+
+task copyClientResources(dependsOn: 'assembleFrontend') {
+    group = 'frontend'
+    description = 'Copy client resources into server'
+
+    doFirst {
+        copy {
+            from "build"
+            into "../src/main/resources/ui/"
+        }
+    }
+}
