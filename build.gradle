@@ -241,14 +241,14 @@ frontend {
 }
 checkFrontend.enabled = false
 
+processResources.dependsOn "installFrontend"
+processResources.dependsOn "assembleFrontend"
+processResources.dependsOn ":client:copyClientResources"
+assembleFrontend.shouldRunAfter installFrontend
+
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
-shadowJar.dependsOn installFrontend
-shadowJar.dependsOn assembleFrontend
-shadowJar.dependsOn ":client:copyClientResources"
-assembleFrontend.shouldRunAfter installFrontend
-
 shadowJar {
     mergeServiceFiles()
 }

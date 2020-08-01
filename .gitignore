@@ -23,6 +23,7 @@ node
 client/node_modules
 client/node
 client/.env*.local
+client/build
 
 ### Ide ###
 .idea/*

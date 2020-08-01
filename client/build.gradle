@@ -10,14 +10,15 @@ frontend {
     assembleScript = 'run build'
 }
 
-task copyClientResources(dependsOn: 'assembleFrontend') {
+task copyClientResources(type: Copy) {
+    dependsOn = [
+        'installFrontend',
+        'assembleFrontend'
+    ]
+
     group = 'frontend'
     description = 'Copy client resources into server'
 
-    doFirst {
-        copy {
-            from "build"
-            into "../src/main/resources/ui/"
-        }
-    }
+    from "build"
+    into "../src/main/resources/ui/"
 }
