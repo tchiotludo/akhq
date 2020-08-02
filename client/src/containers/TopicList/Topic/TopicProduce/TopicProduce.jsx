@@ -287,7 +287,7 @@ class TopicProduce extends Form {
     } = this.state;
     let date = moment(datetime);
     return (
-      <div style={{ overflow: 'hidden', paddingRight: '20px', marginRight: 0 }}>
+      <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
           <div>
             <Header title={`Produce to ${topicId} `} />
@@ -348,7 +348,7 @@ class TopicProduce extends Form {
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
               className="col-sm-2 col-form-label"
             >
-              Timestamp:
+              Timestamp
             </label>
             <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
               <Dropdown.Toggle

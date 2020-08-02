@@ -61,7 +61,7 @@ class Header extends Component {
           <div>
             {login === 'false' || !login ? (
               <Link to="/ui/login">
-                <button data-turbolinks="false" className="btn btn-primary">
+                <button className="btn btn-primary">
                   {' '}
                   <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
                   Login
@@ -70,7 +70,6 @@ class Header extends Component {
             ) : (
               <Link to="#">
                 <button
-                  data-turbolinks="false"
                   className="btn btn-primary"
                   onClick={() => {
                     this.logout();
