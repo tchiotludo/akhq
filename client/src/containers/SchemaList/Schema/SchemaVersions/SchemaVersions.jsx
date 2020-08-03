@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Table from '../../../../components/Table';
 import constants from '../../../../utils/constants';
-import './styles.scss';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';

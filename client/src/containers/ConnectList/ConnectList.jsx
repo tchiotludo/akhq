@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './styles.scss';
 
 import Header from '../Header';
 import Table from '../../components/Table/Table';

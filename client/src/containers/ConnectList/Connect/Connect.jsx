@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './styles.scss';
 
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
