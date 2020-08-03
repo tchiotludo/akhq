@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import Header from '../Header';
-import Table from '../../components/Table';
-import * as constants from '../../utils/constants';
-import { get } from '../../utils/api';
-import { uriAclsList } from '../../utils/endpoints';
-import SearchBar from '../../components/SearchBar';
+import Header from '../../Header';
+import Table from '../../../components/Table';
+import * as constants from '../../../utils/constants';
+import { get } from '../../../utils/api';
+import { uriAclsList } from '../../../utils/endpoints';
+import SearchBar from '../../../components/SearchBar';
 
 class Acls extends Component {
   state = {

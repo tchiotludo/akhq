@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import Table from '../../components/Table';
-import { uriConsumerGroups, uriConsumerGroupDelete } from '../../utils/endpoints';
-import constants from '../../utils/constants';
-import { calculateTopicOffsetLag } from '../../utils/converters';
-import Header from '../Header';
-import SearchBar from '../../components/SearchBar';
-import Pagination from '../../components/Pagination';
-import ConfirmModal from '../../components/Modal/ConfirmModal';
-import api, { remove } from '../../utils/api';
+import Table from '../../../components/Table';
+import { uriConsumerGroups, uriConsumerGroupDelete } from '../../../utils/endpoints';
+import constants from '../../../utils/constants';
+import { calculateTopicOffsetLag } from '../../../utils/converters';
+import Header from '../../Header';
+import SearchBar from '../../../components/SearchBar';
+import Pagination from '../../../components/Pagination';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import api, { remove } from '../../../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 class ConsumerGroupList extends Component {
@@ -105,7 +105,7 @@ class ConsumerGroupList extends Component {
     return <span className="badge badge-primary"> {coordinator}</span>;
   }
 
-  handleTopics(groupedTopicOffset) {
+  handleTopics(group, groupedTopicOffset) {
     const noPropagation = e => e.stopPropagation();
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
@@ -114,7 +114,7 @@ class ConsumerGroupList extends Component {
       return (
         <a
           href={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
-          key="lagTopic.topicId"
+          key={group + '-' + topicId}
           className="btn btn-dark btn-sm mb-1 mr-1"
           onClick={noPropagation}
         >
@@ -222,7 +222,7 @@ class ConsumerGroupList extends Component {
               colName: 'Topics',
               cell: obj => {
                 if (obj.topics) {
-                  return this.handleTopics(obj.topics);
+                  return this.handleTopics(obj.id, obj.topics);
                 }
               }
             }

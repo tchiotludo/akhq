@@ -1,17 +1,17 @@
 import React from 'react';
-import Form from '../../../../components/Form/Form';
-import Header from '../../../Header';
+import Form from '../../../components/Form/Form';
+import Header from '../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { get, post } from '../../../../utils/api';
-import { formatDateTime } from '../../../../utils/converters';
+import { get, post } from '../../../utils/api';
+import { formatDateTime } from '../../../utils/converters';
 import {
   uriPreferredSchemaForTopic,
   uriTopicsPartitions,
   uriTopicsProduce
-} from '../../../../utils/endpoints';
+} from '../../../utils/endpoints';
 import moment from 'moment';
-import DatePicker from '../../../../components/DatePicker';
+import DatePicker from '../../../components/DatePicker';
 import Tooltip from '@material-ui/core/Tooltip';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

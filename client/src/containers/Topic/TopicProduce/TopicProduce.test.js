@@ -3,7 +3,7 @@ import React, { Children } from 'react';
 import ReactDOM from 'react-dom';
 import { createMemoryHistory } from 'history';
 import TopicProduce from './TopicProduce';
-import App from '../../../../App';
+import App from '../../../App';
 import { render } from '@testing-library/react';
 
 import { MemoryRouter } from 'react-router-dom';

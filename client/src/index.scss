@@ -34,8 +34,8 @@ $fa-font-path: "../fonts";
 // containers
 @import "containers/SideBar/styles.scss";
 @import "containers/Tail/styles.scss";
-@import "containers/NodesList/Node/styles.scss";
-@import "containers/TopicList/Topic/TopicProduce/styles.scss";
+@import "src/containers/Node/NodeDetail/styles.scss";
+@import "src/containers/Topic/TopicProduce/styles.scss";
 @import "containers/Login/styles.scss";
 
 #content {

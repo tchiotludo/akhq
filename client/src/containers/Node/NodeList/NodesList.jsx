@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import Header from '../Header';
-import Table from '../../components/Table';
-import * as constants from '../../utils/constants';
-import { get } from '../../utils/api';
-import { uriNodes } from '../../utils/endpoints';
+import Header from '../../Header';
+import Table from '../../../components/Table';
+import * as constants from '../../../utils/constants';
+import { get } from '../../../utils/api';
+import { uriNodes } from '../../../utils/endpoints';
 
 class NodesList extends Component {
   state = {

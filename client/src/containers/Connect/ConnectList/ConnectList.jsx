@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 
-import Header from '../Header';
-import Table from '../../components/Table/Table';
-import constants from '../../utils/constants';
+import Header from '../../Header';
+import Table from '../../../components/Table/Table';
+import constants from '../../../utils/constants';
 import { Link } from 'react-router-dom';
-import { get, remove } from '../../utils/api';
-import { uriConnectDefinitions, uriDeleteDefinition } from '../../utils/endpoints';
-import ConfirmModal from '../../components/Modal/ConfirmModal/ConfirmModal';
+import { get, remove } from '../../../utils/api';
+import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
+import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';

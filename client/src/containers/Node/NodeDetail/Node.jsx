@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Header from '../../Header';
-import NodeConfigs from '../Node/NodeConfigs/NodeConfigs';
-import NodeLogs from '../Node/NodeLogs/NodeLogs';
+import NodeConfigs from './/NodeConfigs/NodeConfigs';
+import NodeLogs from './/NodeLogs/NodeLogs';
 
 class Node extends Component {
   state = {
