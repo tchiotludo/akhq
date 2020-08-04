@@ -3,10 +3,10 @@ entries:
   akhq:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-06-23T09:59:43.552039992Z"
+    created: "2020-08-04T05:48:14.838235153Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
-    digest: f6aa23dbe4948a37e633a658a55fd767586b9a135b7cbd97450e0c3930e3a901
+    digest: 004ec4f314a076b51532d6124867dc2f2947e2e9595fa8879386a06690c7de8c
     home: https://akhq.io
     icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/assets/img/logo_black.png
     keywords:
@@ -25,7 +25,7 @@ entries:
     version: 0.1.2
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-06-23T09:59:43.551480788Z"
+    created: "2020-08-04T05:48:14.837241436Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 9b327a2adfb91219e4ce2d176dff26eb74d59de29332912e034b37ea60b02645
@@ -47,7 +47,7 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-06-23T09:59:43.533488449Z"
+    created: "2020-08-04T05:48:14.83624742Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 25a5a2c7d0d4e4ba7080e0193435c3dad0035bdaee2379885a42cfe4fceb144d
@@ -67,4 +67,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2020-06-23T09:59:43.532804043Z"
+generated: "2020-08-04T05:48:14.800714328Z"
