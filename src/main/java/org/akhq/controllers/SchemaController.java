@@ -9,6 +9,8 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.views.View;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import org.akhq.middlewares.SchemaComparator;
+import org.akhq.models.TopicSchema;
 import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.configs.Role;
@@ -25,6 +27,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_REGISTRY_READ)
 @Controller("${akhq.server.base-path:}/")
@@ -80,6 +83,25 @@ public class SchemaController extends AbstractController {
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
         return ResultPagedList.of(this.schemaRepository.list(cluster, pagination, search));
+    }
+
+    @Get("api/{cluster}/schema/topic/{topic}")
+    @Operation(tags = {"schema registry"}, summary = "List all schemas prefered schemas for this topic")
+    public TopicSchema listSchemaForTopic(
+        HttpRequest<?> request,
+        String cluster,
+        String topic
+    ) throws IOException, RestClientException {
+        List<Schema> schemas = this.schemaRepository.listAll(cluster, Optional.empty());
+
+        return new TopicSchema(
+            schemas.stream()
+                .sorted(new SchemaComparator(topic, true))
+                .collect(Collectors.toList()),
+            schemas.stream()
+                .sorted(new SchemaComparator(topic, false))
+                .collect(Collectors.toList())
+        );
     }
 
     @Get("{cluster}/schema/id/{id}")

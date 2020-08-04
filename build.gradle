@@ -146,6 +146,9 @@ dependencies {
     // api
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.10.0'
 
+    // client
+    compile project(":client")
+
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
     testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
@@ -237,17 +240,17 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
 frontend {
     nodeVersion = '12.14.0'
     assembleScript = 'run build'
-    checkScript = 'run test'
 }
 checkFrontend.enabled = false
+
+processResources.dependsOn "installFrontend"
+processResources.dependsOn "assembleFrontend"
+processResources.dependsOn ":client:copyClientResources"
+assembleFrontend.shouldRunAfter installFrontend
 
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
-shadowJar.dependsOn installFrontend
-shadowJar.dependsOn assembleFrontend
-assembleFrontend.shouldRunAfter installFrontend
-
 shadowJar {
     mergeServiceFiles()
 }

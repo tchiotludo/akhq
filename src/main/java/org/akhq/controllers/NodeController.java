@@ -21,6 +21,7 @@ import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -160,6 +161,10 @@ public class NodeController extends AbstractController {
 
     private List<Config> nodeConfig(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
         List<Config> configs = this.configRepository.findByBroker(cluster, nodeId);
+
+        if (configs == null) {
+            return new ArrayList<>();
+        }
 
         configs.sort((o1, o2) -> o1.isReadOnly() == o2.isReadOnly() ? 0 :
             (o1.isReadOnly() ? 1 : -1 )

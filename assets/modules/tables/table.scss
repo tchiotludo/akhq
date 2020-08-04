@@ -39,7 +39,7 @@ table {
                 overflow-wrap: break-word;
                 word-break: break-all;
                 display: block;
-
+                color: $gray-500;
                 &:after {
                     content:'';
                     width:100%;

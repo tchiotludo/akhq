@@ -1,0 +1,65 @@
+{
+  /*
+   * ENVIRONMENTS
+   * =================
+   */
+
+  "env": {
+    "commonjs": false,
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 7,
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    /*
+     * ENFORCING OPTIONS
+     * =================
+     */
+
+    // Force all variable names to use either camelCase style or UPPER_CASE
+    // with underscores.
+    "camelcase": "warn",
+
+    // Prohibit use of == and != in favor of === and !==.
+    "eqeqeq": "error",
+
+    // Prohibit use of a variable before it is defined.
+    "no-use-before-define": "error",
+
+    // Enforce line length to 120 characters
+    "max-len": ["error", 120],
+
+    // Require capitalized names for constructor functions.
+    "new-cap": "error",
+
+    // Enforce use of single quotation marks for strings.
+    "quotes": ["error", "single"],
+
+    // Prohibit use of explicitly undeclared variables.
+    "no-undef": "error",
+
+    // Warn when variables are defined but never used.
+    "no-unused-vars": "warn",
+
+    "no-var": "error",
+
+    "no-duplicate-imports": "error",
+
+    /*
+     * RELAXING OPTIONS
+     * =================
+     */
+
+    // Suppress warnings about == null comparisons.
+    "no-eq-null": "off"
+  }
+}

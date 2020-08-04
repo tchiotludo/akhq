@@ -2,6 +2,8 @@ package org.akhq.modules;
 
 
 import com.google.common.collect.ImmutableMap;
+import org.akhq.models.Partition;
+import org.akhq.utils.Logger;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -10,17 +12,16 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.acl.AclBinding;
 import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.config.ConfigResource;
+import org.apache.kafka.common.errors.ApiException;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.kafka.common.requests.DescribeLogDirsResponse;
-import org.akhq.models.Partition;
-import org.akhq.utils.Logger;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 
 import static java.util.stream.Collectors.*;
 
@@ -30,31 +31,28 @@ abstract public class AbstractKafkaWrapper {
 
     private final Map<String, DescribeClusterResult> cluster = new HashMap<>();
 
-    public DescribeClusterResult describeCluster(String clusterId) throws ExecutionException, InterruptedException {
+    public DescribeClusterResult describeCluster(String clusterId) throws ExecutionException {
         if (!this.cluster.containsKey(clusterId)) {
-            this.cluster.put(clusterId, Logger.call(() -> {
-                DescribeClusterResult cluster = kafkaModule.getAdminClient(clusterId).describeCluster();
+            DescribeClusterResult cluster = kafkaModule.getAdminClient(clusterId).describeCluster();
 
-                cluster.clusterId().get();
-                cluster.nodes().get();
-                cluster.controller().get();
+            Logger.call(cluster.clusterId(), "Get cluster");
+            Logger.call(cluster.nodes() , "Get nodes");
+            Logger.call(cluster.controller() , "Get contoller");
 
-                return cluster;
-            }, "Cluster", null));
+            return cluster;
         }
         return this.cluster.get(clusterId);
     }
 
     private Map<String, Collection<TopicListing>> listTopics = new HashMap<>();
 
-    public Collection<TopicListing> listTopics(String clusterId) throws ExecutionException, InterruptedException {
+    public Collection<TopicListing> listTopics(String clusterId) throws ExecutionException {
         if (!this.listTopics.containsKey(clusterId)) {
             this.listTopics.put(clusterId, Logger.call(
-                () -> kafkaModule.getAdminClient(clusterId).listTopics(
+                kafkaModule.getAdminClient(clusterId).listTopics(
                     new ListTopicsOptions().listInternal(true)
-                ).listings().get(),
-                "List topics",
-                null
+                ).listings(),
+                "List topics"
             ));
         }
 
@@ -63,7 +61,7 @@ abstract public class AbstractKafkaWrapper {
 
     private final Map<String, Map<String, TopicDescription>> describeTopics = new HashMap<>();
 
-    public Map<String, TopicDescription> describeTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+    public Map<String, TopicDescription> describeTopics(String clusterId, List<String> topics) throws ExecutionException {
         describeTopics.computeIfAbsent(clusterId, s -> new HashMap<>());
 
         List<String> list = new ArrayList<>(topics);
@@ -71,10 +69,9 @@ abstract public class AbstractKafkaWrapper {
 
         if (list.size() > 0) {
             Map<String, TopicDescription> description = Logger.call(
-                () -> kafkaModule.getAdminClient(clusterId)
+                kafkaModule.getAdminClient(clusterId)
                     .describeTopics(list)
-                    .all()
-                    .get(),
+                    .all(),
                 "Describe Topics {}",
                 topics
             );
@@ -90,21 +87,25 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void createTopics(String clusterId, String name, int partitions, short replicationFactor) throws ExecutionException, InterruptedException {
-        kafkaModule
+    public void createTopics(String clusterId, String name, int partitions, short replicationFactor) throws ExecutionException {
+        Logger.call(kafkaModule
             .getAdminClient(clusterId)
             .createTopics(Collections.singleton(new NewTopic(name, partitions, replicationFactor)))
-            .all()
-            .get();
+            .all(),
+            "Create Topics",
+            Collections.singletonList(name)
+        );
 
         listTopics = new HashMap<>();
     }
 
-    public void deleteTopics(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule.getAdminClient(clusterId)
+    public void deleteTopics(String clusterId, String name) throws ExecutionException {
+        Logger.call(kafkaModule.getAdminClient(clusterId)
             .deleteTopics(Collections.singleton(name))
-            .all()
-            .get();
+            .all(),
+            "Delete Topic",
+            Collections.singletonList(name)
+        );
 
         listTopics = new HashMap<>();
     }
@@ -163,10 +164,10 @@ abstract public class AbstractKafkaWrapper {
 
     private final Map<String, Collection<ConsumerGroupListing>> listConsumerGroups = new HashMap<>();
 
-    public Collection<ConsumerGroupListing> listConsumerGroups(String clusterId) throws ExecutionException, InterruptedException {
+    public Collection<ConsumerGroupListing> listConsumerGroups(String clusterId) throws ExecutionException {
         if (!this.listConsumerGroups.containsKey(clusterId)) {
             this.listConsumerGroups.put(clusterId, Logger.call(
-                () -> kafkaModule.getAdminClient(clusterId).listConsumerGroups().all().get(),
+                kafkaModule.getAdminClient(clusterId).listConsumerGroups().all(),
                 "List ConsumerGroups",
                 null
             ));
@@ -177,7 +178,7 @@ abstract public class AbstractKafkaWrapper {
 
     private Map<String, Map<String, ConsumerGroupDescription>> describeConsumerGroups = new HashMap<>();
 
-    public Map<String, ConsumerGroupDescription> describeConsumerGroups(String clusterId, List<String> groups) throws ExecutionException, InterruptedException {
+    public Map<String, ConsumerGroupDescription> describeConsumerGroups(String clusterId, List<String> groups) throws ExecutionException {
         describeConsumerGroups.computeIfAbsent(clusterId, s -> new HashMap<>());
 
         List<String> list = new ArrayList<>(groups);
@@ -185,10 +186,9 @@ abstract public class AbstractKafkaWrapper {
 
         if (list.size() > 0) {
             Map<String, ConsumerGroupDescription> description = Logger.call(
-                () -> kafkaModule.getAdminClient(clusterId)
+                kafkaModule.getAdminClient(clusterId)
                     .describeConsumerGroups(groups)
-                    .all()
-                    .get(),
+                    .all(),
                 "Describe ConsumerGroups {}",
                 groups
             );
@@ -204,12 +204,14 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void deleteConsumerGroups(String clusterId, String name) throws ExecutionException, InterruptedException {
-        kafkaModule
+    public void deleteConsumerGroups(String clusterId, String name) throws ApiException, ExecutionException {
+        Logger.call(kafkaModule
             .getAdminClient(clusterId)
             .deleteConsumerGroups(Collections.singleton(name))
-            .all()
-            .get();
+            .all(),
+            "deleteConsumerGroups",
+            Collections.singletonList(name)
+        );
 
         describeConsumerGroups = new HashMap<>();
         consumerGroupOffset = new HashMap<>();
@@ -217,15 +219,14 @@ abstract public class AbstractKafkaWrapper {
 
     private Map<String, Map<String, Map<TopicPartition, OffsetAndMetadata>>> consumerGroupOffset = new HashMap<>();
 
-    public Map<TopicPartition, OffsetAndMetadata> consumerGroupsOffsets(String clusterId, String groupId) throws ExecutionException, InterruptedException {
+    public Map<TopicPartition, OffsetAndMetadata> consumerGroupsOffsets(String clusterId, String groupId) throws ExecutionException {
         consumerGroupOffset.computeIfAbsent(clusterId, s -> new HashMap<>());
 
         if (!this.consumerGroupOffset.get(clusterId).containsKey(groupId)) {
             this.consumerGroupOffset.get(clusterId).put(groupId, Logger.call(
-                () -> kafkaModule.getAdminClient(clusterId)
+                kafkaModule.getAdminClient(clusterId)
                     .listConsumerGroupOffsets(groupId)
-                    .partitionsToOffsetAndMetadata()
-                    .get(),
+                    .partitionsToOffsetAndMetadata(),
                 "ConsumerGroup Offsets {}",
                 Collections.singletonList(groupId)
             ));
@@ -256,6 +257,10 @@ abstract public class AbstractKafkaWrapper {
                     } catch (ExecutionException e) {
                         if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
                             return new HashMap<>();
+                        }
+
+                        if (e.getCause() instanceof ApiException) {
+                            throw (ApiException) e.getCause();
                         }
 
                         throw e;
@@ -296,6 +301,11 @@ abstract public class AbstractKafkaWrapper {
                         if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
                             return ImmutableMap.of();
                         }
+
+                        if (e.getCause() instanceof ApiException) {
+                            throw (ApiException) e.getCause();
+                        }
+
                         throw e;
                     }
                 },
@@ -315,11 +325,14 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void alterConfigs(String clusterId, Map<ConfigResource, Config> configs) throws ExecutionException, InterruptedException {
-         kafkaModule.getAdminClient(clusterId)
+    public void alterConfigs(String clusterId, Map<ConfigResource, Config> configs) throws ExecutionException {
+         Logger.call(
+             kafkaModule.getAdminClient(clusterId)
             .alterConfigs(configs)
-            .all()
-            .get();
+            .all(),
+             "Alter cofigs",
+             Collections.singletonList(clusterId)
+         );
 
         this.describeConfigs = new HashMap<>();
     }
@@ -337,10 +350,15 @@ abstract public class AbstractKafkaWrapper {
                             .describeAcls(filter)
                             .values()
                             .get();
-                    } catch (ExecutionException e) {
+                    } catch (ApiException e) {
                         if (e.getCause() instanceof SecurityDisabledException || e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
                             return Collections.emptyList();
                         }
+
+                        if (e.getCause() instanceof ApiException) {
+                            throw (ApiException) e.getCause();
+                        }
+
                         throw e;
                     }
                 },
