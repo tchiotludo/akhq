@@ -29,7 +29,6 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.2.2"
 
     // akhq
-    id 'org.siouan.frontend' version '1.4.1'
     id 'com.adarshr.test-logger' version '2.0.0'
     id 'org.gradle.test-retry' version '1.1.4'
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -107,18 +106,11 @@ dependencies {
     annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.3"
     compile "io.micronaut:micronaut-inject"
     compile "io.micronaut:micronaut-validation"
-    compile ('io.micronaut:micronaut-views') {
-        exclude group: 'io.micronaut', module: 'micronaut-views-handlebars'
-        exclude group: 'io.micronaut', module: 'micronaut-views-soy'
-        exclude group: 'io.micronaut', module: 'micronaut-views-thymeleaf'
-        exclude group: 'io.micronaut', module: 'micronaut-views-velocity'
-    }
     compile "io.micronaut:micronaut-runtime"
     compile "io.micronaut:micronaut-http-client"
     compile "io.micronaut:micronaut-http-server-netty"
     compile "io.swagger.core.v3:swagger-annotations"
     runtime "ch.qos.logback:logback-classic:1.2.3"
-    runtime 'org.freemarker:freemarker:2.3.30'
     compile "io.micronaut:micronaut-security"
     compile "io.micronaut:micronaut-security-session"
     compile "io.micronaut:micronaut-management"
@@ -233,22 +225,13 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
 }
 
 /**********************************************************************************************************************\
- * Node + Webpack
- **********************************************************************************************************************/
-frontend {
-    nodeVersion = '12.14.0'
-    assembleScript = 'run build'
-}
-checkFrontend.enabled = false
-
-processResources.dependsOn "installFrontend"
-processResources.dependsOn "assembleFrontend"
-processResources.dependsOn ":client:copyClientResources"
-assembleFrontend.shouldRunAfter installFrontend
-
-/**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
 shadowJar {
     mergeServiceFiles()
 }
+
+processResources.dependsOn ":client:installFrontend"
+processResources.dependsOn ":client:assembleFrontend"
+processResources.dependsOn ":client:copyClientResources"
+

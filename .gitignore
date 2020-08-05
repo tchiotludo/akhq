@@ -16,10 +16,7 @@ hs_err_pid*
 build/*
 
 ### Assets
-src/main/resources/static
 src/main/resources/ui
-node_modules
-node
 client/node_modules
 client/node
 client/.env*.local

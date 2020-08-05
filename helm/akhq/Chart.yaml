@@ -9,7 +9,7 @@ keywords:
   - timeseries
   - influxdata
 home: https://akhq.io
-icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/assets/img/logo_black.png
+icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
 sources:
   - https://github.com/tchiotludo/akhq
 maintainers:

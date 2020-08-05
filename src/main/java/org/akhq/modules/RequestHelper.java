@@ -4,13 +4,12 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Connection;
-import org.akhq.controllers.AbstractController;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @Slf4j
@@ -40,31 +39,5 @@ public class RequestHelper {
         }
 
         return Optional.empty();
-    }
-
-    public static AbstractController.Toast runnableToToast(ResultStatusResponseRunnable callable, String successMessage, String failedMessage) {
-        AbstractController.Toast.ToastBuilder builder = AbstractController.Toast.builder();
-
-        try {
-            callable.run();
-            builder
-                .message(successMessage)
-                .type(AbstractController.Toast.Type.success);
-        } catch (Exception exception) {
-            String cause = exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage();
-
-            builder
-                .title(failedMessage)
-                .message(exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage())
-                .type(AbstractController.Toast.Type.error);
-
-            log.error(failedMessage != null ? failedMessage : cause, exception);
-        }
-
-        return builder.build();
-    }
-
-    public interface ResultStatusResponseRunnable {
-        void run() throws Exception;
     }
 }
