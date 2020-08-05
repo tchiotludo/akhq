@@ -11,6 +11,14 @@ export const uriLogin = () => {
   return `${baseUrl}/login`;
 };
 
+export const uriAuths = () => {
+  return `${baseUrl}/api/auths`;
+};
+
+export const uriOidc = (provider) => {
+  return `${baseUrl}/oauth/login/${provider}`;
+};
+
 export const uriLogout = () => {
   return `${baseUrl}/logout`;
 };

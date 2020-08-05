@@ -70,9 +70,15 @@ public class AkhqController extends AbstractController {
         AuthDefinition authDefinition = new AuthDefinition();
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            authDefinition.loginEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0 || oidc.isEnabled();
-        } else {
-            authDefinition.loginEnabled = false;
+            authDefinition.loginEnabled = true;
+            authDefinition.formEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0;
+        }
+
+        if (oidc.isEnabled()) {
+            authDefinition.oidcAuths = oidc.getProviders().entrySet()
+                    .stream()
+                    .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
+                    .collect(Collectors.toList());
         }
 
         return authDefinition;
@@ -115,6 +121,16 @@ public class AkhqController extends AbstractController {
     @Getter
     public static class AuthDefinition {
         private boolean loginEnabled;
+        private boolean formEnabled;
+        private List<OidcAuth> oidcAuths;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class OidcAuth {
+        private String key;
+        private String label;
     }
 
     @AllArgsConstructor
