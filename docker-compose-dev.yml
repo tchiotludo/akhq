@@ -7,6 +7,10 @@ volumes:
     driver: local
   kafka-data:
     driver: local
+  ui-modules:
+    driver: local
+  ui-build:
+    driver: local
 
 services:
   akhq:
@@ -33,6 +37,20 @@ services:
       - ./:/app
     ports:
       - 127.11.8.17:8081:8081
+    depends_on:
+      - akhq
+
+  ui:
+    image: node:12
+    command: "sh -c 'npm install && npm start'"
+    working_dir: /app/client
+    tty: true
+    volumes:
+      - ./:/app
+      - ui-modules:/app/client/node_modules
+      - ui-build:/app/client/build
+    ports:
+      - 127.11.8.17:3000:3000
     depends_on:
       - akhq
 

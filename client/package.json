@@ -71,5 +71,6 @@
     "react-test-render": "^1.1.2",
     "style-loader": "^1.1.2",
     "webpack": "4.42.0"
-  }
+  },
+  "proxy": "http://akhq:8080"
 }
