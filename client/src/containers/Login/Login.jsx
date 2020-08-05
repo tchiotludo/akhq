@@ -92,12 +92,6 @@ class Login extends Form {
     const { errors } = this.state;
     return (
       <>
-        <div>
-          <h3 className="logo">
-            <img src={logo} alt="" />
-          </h3>
-        </div>
-
         <div className="input-group mb-3">
           <div className="input-group-prepend">
               <span className="input-group-text">
@@ -182,6 +176,11 @@ class Login extends Form {
               this.login();
             }}
           >
+            <div>
+              <h3 className="logo">
+                <img src={logo} alt="" />
+              </h3>
+            </div>
             {formEnabled && this._renderForm()}
             {formEnabled && oidcAuths && this._renderSeparator()}
             {oidcAuths && this._renderOidc(oidcAuths)}
