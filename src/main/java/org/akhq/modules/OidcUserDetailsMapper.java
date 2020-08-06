@@ -86,6 +86,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     protected Map<String, Object> buildAttributes(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
         Map<String, Object> attributes = super.buildAttributes(providerName, tokenResponse, openIdClaims);
         userGroupUtils.getUserAttributes(getOidcRoles(providerName, openIdClaims)).forEach(attributes::put);
+        attributes.remove("roles");
         return attributes;
     }
 
