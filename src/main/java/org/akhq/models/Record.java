@@ -131,14 +131,4 @@ public class Record {
         }
         return null;
     }
-
-    // @TOOD remove this after removal of freemarker
-    @JsonIgnore
-    public Date getDate() {
-        return Date.from(this.timestamp
-            .toLocalDateTime()
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-        );
-    }
 }

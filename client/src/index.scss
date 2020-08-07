@@ -1,4 +1,4 @@
-@import "./../assets/css/init";
+@import "css/init";
 
 // vendor
 @import "~bootstrap/scss/bootstrap";
@@ -8,19 +8,19 @@ $fa-font-path: "../fonts";
 @import "~axios-progress-bar/dist/nprogress.css";
 
 // old styles
-@import "../../assets/modules/templates/bootstrap";
-@import "../../assets/modules/templates/layout";
-@import "../../assets/modules/templates/login";
-@import "../../assets/modules/templates/sidebar";
-@import "../../assets/modules/datas/filter";
-@import "../../assets/modules/datas/highlight";
-@import "../../assets/modules/datas/after-offset";
-@import "../../assets/modules/forms/ace";
-@import "../../assets/modules/forms/datetime";
-@import "../../assets/modules/forms/multiple";
-@import "../../assets/modules/forms/select";
-@import "../../assets/modules/tables/table";
-@import "../../assets/modules/tables/row-action";
+@import "css/templates/bootstrap";
+@import "css/templates/layout";
+@import "css/templates/login";
+@import "css/templates/sidebar";
+@import "css/datas/filter";
+@import "css/datas/highlight";
+@import "css/datas/after-offset";
+@import "css/forms/ace";
+@import "css/forms/datetime";
+@import "css/forms/multiple";
+@import "css/forms/select";
+@import "css/tables/table";
+@import "css/tables/row-action";
 
 // components
 @import "components/Base/Base.scss";

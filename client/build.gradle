@@ -1,9 +1,11 @@
+plugins {
+    id 'org.siouan.frontend' version '1.4.1'
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
 }
-
-apply plugin: "org.siouan.frontend"
 
 frontend {
     nodeVersion = '12.14.0'
@@ -22,3 +24,6 @@ task copyClientResources(type: Copy) {
     from "build"
     into "../src/main/resources/ui/"
 }
+
+checkFrontend.enabled = false
+assembleFrontend.shouldRunAfter installFrontend

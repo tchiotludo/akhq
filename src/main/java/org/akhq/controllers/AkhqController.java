@@ -3,13 +3,13 @@ package org.akhq.controllers;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.utils.SecurityService;
-import io.micronaut.views.View;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -20,11 +20,8 @@ import org.akhq.modules.HasAnyPermission;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-
 
 @Controller("${akhq.server.base-path:}/")
 public class AkhqController extends AbstractController {
@@ -98,13 +95,48 @@ public class AkhqController extends AbstractController {
     }
 
     @Secured(SecurityRule.IS_ANONYMOUS)
-    @View("rapidoc")
     @Get("api")
     @Hidden
     public HttpResponse<?> rapidoc() {
-        MutableHttpResponse<Map<String, Object>> response = HttpResponse.ok();
+        MutableHttpResponse<String> response = HttpResponse.ok();
 
-        return response.body(templateData(Optional.empty()));
+        String doc = "<!doctype html>\n" +
+            "<html>\n" +
+            "<head>\n" +
+            "  <title>Api | AKHQ</title>\n" +
+            "  <meta charset='utf-8'/>\n" +
+            "  <link rel=\"shortcut icon\" type=\"image/png\" href=\"/static/icon_black.png\" />\n" +
+            "  <meta name='viewport' content='width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes'/>\n" +
+            "  <link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300,600&display=swap\" rel=\"stylesheet\">\n" +
+            "  <script src='https://unpkg.com/rapidoc/dist/rapidoc-min.js'></script>\n" +
+            "</head>\n" +
+            "<body>\n" +
+            "  <rapi-doc id='rapidoc'\n" +
+            "            layout=\"row\"\n" +
+            "            sort-tags=\"true\"\n" +
+            "            sort-endpoints-by=\"method\"\n" +
+            "            show-header=\"false\"\n" +
+            "            theme=\"dark\"\n" +
+            "            header-color=\"#005f81\"\n" +
+            "            primary-color=\"#33b5e5\"\n" +
+            "            render-style=\"read\"\n" +
+            "            schema-style=\"table\"\n" +
+            "            regular-font='Open Sans'\n" +
+            "  >\n" +
+            "    <img src=\"" + getBasePath() + "/static/logo.svg\" slot=\"nav-logo\" alt=\"logo\" />\n" +
+            "\n" +
+            "  </rapi-doc>\n" +
+            "  <script>\n" +
+            "      const rapidoc = document.getElementById('rapidoc');\n" +
+            "      rapidoc.setAttribute('spec-url', '" + getBasePath() + "/swagger/akhq.yml');\n" +
+            "  </script>\n" +
+            "</body>\n" +
+            "</html>\n";
+
+        return HttpResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML_TYPE)
+            .body(doc);
     }
 
     @AllArgsConstructor
