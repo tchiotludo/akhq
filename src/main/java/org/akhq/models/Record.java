@@ -3,12 +3,12 @@ package org.akhq.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
+import org.akhq.utils.AvroToJsonSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
-import org.joda.time.DateTime;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -107,8 +107,8 @@ public class Record {
             return null;
         } else  if (keySchemaId != null) {
             try {
-                GenericRecord deserialize = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
-                return deserialize.toString();
+                GenericRecord record = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
+                return AvroToJsonSerializer.toJson(record);
             } catch (Exception exception) {
                 return new String(payload);
             }

@@ -8,7 +8,7 @@ import org.apache.avro.Schema;
 
 import java.io.IOException;
 
-public class AvroDeserializer extends JsonDeserializer<Schema> {
+public class AvroSchemaDeserializer extends JsonDeserializer<Schema> {
     @Override
     public Schema deserialize(
         JsonParser p,

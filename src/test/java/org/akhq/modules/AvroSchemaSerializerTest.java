@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AvroSerializerTest {
+class AvroSchemaSerializerTest {
 
     private final org.apache.avro.Schema SCHEMA = SchemaBuilder
             .record("schema1").namespace("org.akhq")
