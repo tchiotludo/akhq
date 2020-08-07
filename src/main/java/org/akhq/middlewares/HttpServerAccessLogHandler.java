@@ -200,8 +200,8 @@ public class HttpServerAccessLogHandler extends ChannelDuplexHandler {
                     method,
                     uri,
                     status,
-                    contentLength > -1L ? contentLength : MISSING,
                     inetAddress,
+                    contentLength > -1L ? contentLength : MISSING,
                     port
                 }).getMessage();
 
