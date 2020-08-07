@@ -23,7 +23,7 @@ public class Connection extends AbstractProperties {
     @Getter
     @ConfigurationProperties("schema-registry")
     public static class SchemaRegistry {
-        URL url;
+        String url;
         String basicAuthUsername;
         String basicAuthPassword;
 
