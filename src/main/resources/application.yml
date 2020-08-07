@@ -80,7 +80,7 @@ akhq:
     access-log:
       enabled: true
       name: org.akhq.log.access
-      format: "[Date: {}] [Duration: {} ms] [Url: {} {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]"
       filters:
         - "((?!/health).)*"
 
