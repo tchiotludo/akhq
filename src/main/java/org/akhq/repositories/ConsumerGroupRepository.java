@@ -82,6 +82,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
                     .distinct()
                     .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
             ))
+            .sorted(Comparator.comparing(ConsumerGroup::getId))
             .collect(Collectors.toList());
     }
 
