@@ -10,7 +10,7 @@
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
 <p align="center">
-  <img width="460" src="assets/img/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
+  <img width="460" src="client/src/images/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
   <img width="720" src="docs/assets/images/video.gif"  alt="AKHQ for Kafka preview" />
 </p>
 
