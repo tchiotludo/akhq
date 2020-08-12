@@ -42,7 +42,7 @@ class Base extends Component {
       title = 'Live Tail |';
     }
     if (page.includes('group')) {
-      title = 'Customer Groups |';
+      title = 'Consumer Groups |';
     }
     if (page.includes('acls')) {
       title = 'Acls |';
