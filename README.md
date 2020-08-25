@@ -401,7 +401,7 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
     ldap:
-      group:
+      groups:
         mathematicians:
           groups:
             - topic-reader
@@ -409,7 +409,7 @@ akhq:
           groups:
             - topic-reader
             - topic-writer
-      user:
+      users:
         franz:
           groups:
             - topic-reader
@@ -454,7 +454,21 @@ akhq:
         google:
           label: "Login with Google"
           username-field: preferred_username
-          roles-field: roles
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            mathematicians:
+              groups:
+                - topic-reader
+            scientists:
+              groups:
+                - topic-reader
+                - topic-writer
+          users:
+            franz:
+              groups:
+                - topic-reader
+                - topic-writer
 ```
 
 The username field can be any string field, the roles field has to be a JSON array.

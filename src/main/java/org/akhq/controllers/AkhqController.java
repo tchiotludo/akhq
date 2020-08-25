@@ -30,11 +30,9 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private ApplicationContext applicationContext;
-    @Inject
-    private List<LdapGroup> ldapAuths;
 
     @Inject
-    private List<LdapUser> ldapUsers;
+    private Ldap ldap;
 
     @Inject
     private List<BasicAuth> basicAuths;
@@ -68,7 +66,7 @@ public class AkhqController extends AbstractController {
 
         if (applicationContext.containsBean(SecurityService.class)) {
             authDefinition.loginEnabled = true;
-            authDefinition.formEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0;
+            authDefinition.formEnabled = basicAuths.size() > 0 || ldap.isEnabled();
         }
 
         if (oidc.isEnabled()) {

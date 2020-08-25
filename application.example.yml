@@ -184,16 +184,15 @@ akhq:
 
     # Ldap Groups configuration (when using ldap)
     ldap:
-      group:
-        group-ldap-1: # just a key, no matter will be override by name below
-          name: "group-ldap-1"
+      default-group: topic-reader
+      groups:
+        group-ldap-1:
           groups: # Akhq groups list
             - topic-reader
         group-ldap-2:
-          name: "group-ldap-2"
           groups:
             - admin
-      user:
+      users:
         riemann: # ldap user id
           groups: # Akhq groups list
             - topic-reader
@@ -201,11 +200,20 @@ akhq:
           groups:
             - admin
 
-    # OIDC groups configuration
+    # OIDC configuration
     oidc:
       enabled: true
       providers:
         oidc:
           label: "Login with OIDC"
           username-field: preferred_username
-          roles-field: roles
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            oidc-admin-group:
+              groups:
+                - admin
+          users:
+            einstein:
+              groups:
+                - admin

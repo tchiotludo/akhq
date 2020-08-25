@@ -6,21 +6,23 @@ import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfigur
 import io.micronaut.security.oauth2.endpoint.token.response.JWTOpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
+import org.akhq.configs.GroupMapping;
 import org.akhq.configs.Oidc;
+import org.akhq.configs.UserMapping;
 import org.akhq.utils.UserGroupUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,9 +30,11 @@ class OidcUserDetailsMapperTest {
     private static final String CLAIM_ROLES = "roles";
 
     private static final String USERNAME = "example";
-    private static final String ROLE_1 = "role1";
-    private static final String ROLE_2 = "role2";
-    private static final String DEFAULT_ROLE = "test";
+    private static final String GROUP_1 = "role1";
+    private static final String GROUP_2 = "role2";
+    private static final String USER_GROUP = "user-group";
+    private static final String DEFAULT_GROUP = "test";
+    private static final String INTERNAL_PREFIX = "internal/";
     private static final String TRANSLATED_PREFIX = "translated/";
     private static final String PROVIDER_NAME = "sample";
 
@@ -45,32 +49,57 @@ class OidcUserDetailsMapperTest {
     private OidcUserDetailsMapper subject;
 
     @BeforeEach
-    void setUp() throws IllegalAccessException {
-        FieldUtils.writeField(subject, "defaultGroups", DEFAULT_ROLE, true);
-
+    void setUp() {
         when(openIdAdditionalClaimsConfiguration.isAccessToken()).thenReturn(false);
         when(openIdAdditionalClaimsConfiguration.isJwt()).thenReturn(false);
         when(openIdAdditionalClaimsConfiguration.isRefreshToken()).thenReturn(false);
 
+        when(userGroupUtils.getUserRoles(anyList())).thenAnswer((Answer<List<String>>) invocation -> {
+            List<String> input = (List<String>) invocation.getArgument(0, List.class);
+            return input.stream().map(g -> TRANSLATED_PREFIX + g).collect(Collectors.toList());
+        });
+        when(userGroupUtils.getUserAttributes(anyList())).thenAnswer((Answer<Map<String, Object>>) invocation -> {
+            List<String> input = (List<String>) invocation.getArgument(0, List.class);
+            final Map<String, Object> attributes = new HashMap<>();
+            input.forEach(g -> attributes.put(g, true));
+            return attributes;
+        });
+
         Oidc.Provider provider = new Oidc.Provider();
+        provider.setGroups(
+                Map.of(
+                        GROUP_1, buildGroupMapping(GROUP_1, INTERNAL_PREFIX + GROUP_1),
+                        GROUP_2, buildGroupMapping(GROUP_2, INTERNAL_PREFIX + GROUP_2)
+                )
+        );
+        provider.setUsers(Map.of(USERNAME, buildUserMapping(USERNAME, "user-group")));
+        provider.setDefaultGroup(DEFAULT_GROUP);
         when(oidc.getProvider(PROVIDER_NAME)).thenReturn(provider);
     }
 
     @Test
     void createUserDetails() {
-        stubRoles();
-        JWTOpenIdClaims claims = buildClaims(Arrays.asList(ROLE_1, ROLE_2));
+        JWTOpenIdClaims claims = buildClaims(Arrays.asList(GROUP_1, GROUP_2));
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
-        assertEquals(userDetails.getUsername(), USERNAME);
-        assertEquals(userDetails.getRoles(), Arrays.asList("translated/role1", "translated/role2"));
+        assertEquals(USERNAME, userDetails.getUsername());
+        assertContainsInAnyOrder(
+                Arrays.asList(
+                        "translated/user-group",
+                        "translated/internal/role1",
+                        "translated/internal/role2",
+                        "translated/test"
+                ),
+                userDetails.getRoles()
+        );
         Map<String, Object> attributes = userDetails.getAttributes("roles", "username");
-        assertEquals(attributes.get("role1"), true);
-        assertEquals(attributes.get("role2"), true);
+        assertEquals(true, attributes.get("internal/role1"));
+        assertEquals(true, attributes.get("internal/role2"));
+        assertEquals(true, attributes.get("user-group"));
+        assertEquals(true, attributes.get("test"));
     }
 
     @Test
     void fieldMissing() {
-        stubDefaultRole();
         JWTOpenIdClaims claims = buildClaims(null);
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
         assertDefaultRole(userDetails);
@@ -78,28 +107,36 @@ class OidcUserDetailsMapperTest {
 
     @Test
     void fieldIncompatible() {
-        stubDefaultRole();
-        JWTOpenIdClaims claims = buildClaims(ROLE_1);
+        JWTOpenIdClaims claims = buildClaims(GROUP_1);
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
         assertDefaultRole(userDetails);
     }
 
-    private void stubRoles() {
-        when(userGroupUtils.getUserAttributes(Arrays.asList(ROLE_1, ROLE_2))).thenReturn(Map.of(ROLE_1, true, ROLE_2, true));
-        when(userGroupUtils.getUserRoles(Arrays.asList(ROLE_1, ROLE_2)))
-                .thenReturn(Arrays.asList(TRANSLATED_PREFIX + ROLE_1, TRANSLATED_PREFIX + ROLE_2));
+    private GroupMapping buildGroupMapping(String name, String mapped) {
+        GroupMapping groupMapping = new GroupMapping();
+        groupMapping.setName(name);
+        groupMapping.setGroups(Collections.singletonList(mapped));
+        return groupMapping;
     }
 
-    private void stubDefaultRole() {
-        when(userGroupUtils.getUserAttributes(Collections.singletonList(DEFAULT_ROLE))).thenReturn(Map.of(DEFAULT_ROLE, true));
-        when(userGroupUtils.getUserRoles(Collections.singletonList(DEFAULT_ROLE)))
-                .thenReturn(Collections.singletonList(TRANSLATED_PREFIX + DEFAULT_ROLE));
+    private UserMapping buildUserMapping(String name, String group) {
+        UserMapping userMapping = new UserMapping();
+        userMapping.setUsername(name);
+        userMapping.setGroups(Collections.singletonList(group));
+        return userMapping;
     }
 
     private void assertDefaultRole(UserDetails userDetails) {
-        assertEquals(userDetails.getRoles(), Collections.singletonList("translated/test"));
+        assertContainsInAnyOrder(Arrays.asList("translated/user-group", "translated/test"), userDetails.getRoles());
         Map<String, Object> attributes = userDetails.getAttributes("roles", "username");
-        assertEquals(attributes.get("test"), true);
+        assertEquals(true, attributes.get("user-group"));
+        assertEquals(true, attributes.get("test"));
+    }
+
+    private <T> void assertContainsInAnyOrder(Collection<T> expected, Collection<T> actual) {
+        Set<T> expectedSet = new HashSet<>(expected);
+        Set<T> actualSet = new HashSet<>(actual);
+        assertEquals(expectedSet, actualSet);
     }
 
     private JWTOpenIdClaims buildClaims(Object roles) {

@@ -2,16 +2,14 @@ package org.akhq.modules;
 
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
-import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdUserDetailsMapper;
-import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
-import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
+import io.micronaut.security.oauth2.endpoint.token.response.*;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.UserGroupUtils;
 
+import javax.annotation.Nonnull;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,12 +22,10 @@ import java.util.stream.Collectors;
 @Singleton
 @Replaces(DefaultOpenIdUserDetailsMapper.class)
 @Requires(property = "akhq.security.oidc.enabled", value = StringUtils.TRUE)
-public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
+public class OidcUserDetailsMapper implements OpenIdUserDetailsMapper {
+    private final OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration;
     private final UserGroupUtils userGroupUtils;
     private final Oidc oidc;
-
-    @Value("${akhq.security.default-group}")
-    private String defaultGroups;
 
     /**
      * Default constructor.
@@ -43,7 +39,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
             Oidc oidc,
             UserGroupUtils userGroupUtils
     ) {
-        super(openIdAdditionalClaimsConfiguration);
+        this.openIdAdditionalClaimsConfiguration = openIdAdditionalClaimsConfiguration;
         this.oidc = oidc;
         this.userGroupUtils = userGroupUtils;
     }
@@ -55,24 +51,23 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      * @param openIdClaims The OpenID claims
      * @return The username to set in the {@link UserDetails}
      */
-    @Override
     protected String getUsername(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
         Oidc.Provider provider = oidc.getProvider(providerName);
         return Objects.toString(openIdClaims.get(provider.getUsernameField()));
     }
 
     /**
-     * Tries to read roles from the configured roles field and translates them using {@link UserGroupUtils}.
-     * If the configured field cannot be found or isn't some kind of collection, it will use the default group.
+     * Tries to read groups from the configured groups field and translates them using {@link UserGroupUtils}.
      *
      * @param providerName The OpenID provider name
-     * @param tokenResponse The token response
      * @param openIdClaims The OpenID claims
-     * @return The roles to set in the {@link UserDetails}
+     * @param username The username used for mapping
+     * @return The AKHQ internal groups
      */
-    @Override
-    protected List<String> getRoles(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
-        return userGroupUtils.getUserRoles(getOidcRoles(providerName, openIdClaims));
+    protected List<String> getAkhqGroups(String providerName, OpenIdClaims openIdClaims, String username) {
+        Oidc.Provider provider = oidc.getProvider(providerName);
+        Set<String> providerGroups = getOidcGroups(provider, openIdClaims);
+        return UserGroupUtils.mapToAkhqGroups(username, providerGroups, provider.getGroups(), provider.getUsers(), provider.getDefaultGroup());
     }
     /**
      * Adds the configured attributes for the user roles to the user attributes.
@@ -82,34 +77,62 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      * @param openIdClaims The OpenID claims
      * @return The attributes to set in the {@link UserDetails}
      */
-    @Override
-    protected Map<String, Object> buildAttributes(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
-        Map<String, Object> attributes = super.buildAttributes(providerName, tokenResponse, openIdClaims);
-        userGroupUtils.getUserAttributes(getOidcRoles(providerName, openIdClaims)).forEach(attributes::put);
-        attributes.remove("roles");
+    protected Map<String, Object> buildAttributes(
+            String providerName,
+            OpenIdTokenResponse tokenResponse,
+            OpenIdClaims openIdClaims,
+            List<String> akhqGroups
+    ) {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put(OauthUserDetailsMapper.PROVIDER_KEY, providerName);
+        if (openIdAdditionalClaimsConfiguration.isJwt()) {
+            attributes.put(OpenIdUserDetailsMapper.OPENID_TOKEN_KEY, tokenResponse.getIdToken());
+        }
+        if (openIdAdditionalClaimsConfiguration.isAccessToken()) {
+            attributes.put(OauthUserDetailsMapper.ACCESS_TOKEN_KEY, tokenResponse.getAccessToken());
+        }
+        if (openIdAdditionalClaimsConfiguration.isRefreshToken() && tokenResponse.getRefreshToken() != null) {
+            attributes.put(OauthUserDetailsMapper.REFRESH_TOKEN_KEY, tokenResponse.getRefreshToken());
+        }
+        userGroupUtils.getUserAttributes(akhqGroups).forEach(attributes::put);
         return attributes;
     }
 
     /**
-     * Tries to read roles from the configured roles field.
-     * If the configured field cannot be found or isn't some kind of collection, it will return the default group.
+     * Tries to read groups from the configured groups field.
+     * If the configured field cannot be found or isn't some kind of collection, it will return an empty set.
      *
-     * @param providerName The OpenID provider name
+     * @param provider The OpenID provider configuration
      * @param openIdClaims The OpenID claims
-     * @return The roles from oidc
+     * @return The groups from oidc
      */
-    protected List<String> getOidcRoles(String providerName, OpenIdClaims openIdClaims) {
-        Oidc.Provider provider = oidc.getProvider(providerName);
-        List<String> roles = Collections.singletonList(defaultGroups);
-        if (openIdClaims.contains(provider.getRolesField())) {
-            Object rolesField = openIdClaims.get(provider.getRolesField());
-            if (rolesField instanceof Collection) {
-                roles = ((Collection<Object>) rolesField)
+    protected Set<String> getOidcGroups(Oidc.Provider provider, OpenIdClaims openIdClaims) {
+        Set<String> groups = new HashSet<>();
+        if (openIdClaims.contains(provider.getGroupsField())) {
+            Object groupsField = openIdClaims.get(provider.getGroupsField());
+            if (groupsField instanceof Collection) {
+                groups = ((Collection<Object>) groupsField)
                         .stream()
                         .map(Objects::toString)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
             }
         }
-        return roles;
+        return groups;
+    }
+
+    /**
+     * @param providerName  The OpenID provider name
+     * @param tokenResponse The token response
+     * @param openIdClaims  The OpenID claims
+     * @return A user details object
+     */
+    @Nonnull
+    @Override
+    public UserDetails createUserDetails(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
+        String username = getUsername(providerName, tokenResponse, openIdClaims);
+        List<String> akhqGroups = getAkhqGroups(providerName, openIdClaims, username);
+        List<String> roles = userGroupUtils.getUserRoles(akhqGroups);
+        Map<String, Object> attributes = buildAttributes(providerName, tokenResponse, openIdClaims, akhqGroups);
+        return new UserDetails(username, roles, attributes);
     }
 }

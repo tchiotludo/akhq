@@ -1,11 +1,15 @@
 package org.akhq.utils;
 
+import io.micronaut.core.util.StringUtils;
 import org.akhq.configs.Group;
+import org.akhq.configs.GroupMapping;
+import org.akhq.configs.UserMapping;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class UserGroupUtils {
@@ -54,5 +58,52 @@ public class UserGroupUtils {
                     ((List) e1).addAll((List) e2); return e1;
                 }
             ));
+    }
+
+    /**
+     * Maps the provider username and a set of provider groups to AKHQ groups using group and user mappings.
+     *
+     * @param username the username to use
+     * @param providerGroups the groups from the provider side
+     * @param groupMappings the group mappings configured for the provider
+     * @param userMappings the user mappings configured for the provider
+     * @param defaultGroup a default group for the provider
+     * @return the mapped AKHQ groups
+     */
+    public static List<String> mapToAkhqGroups(
+            String username,
+            Set<String> providerGroups,
+            List<GroupMapping> groupMappings,
+            List<UserMapping> userMappings,
+            String defaultGroup
+    ) {
+        Stream<String> defaultGroupStream = StringUtils.hasText(defaultGroup) ? Stream.of(defaultGroup) : Stream.empty();
+        return Stream.concat(
+                Stream.concat(
+                        userMappings.stream()
+                                .filter(mapping -> username.equalsIgnoreCase(mapping.getUsername()))
+                                .flatMap(mapping -> mapping.getGroups().stream()),
+                        groupMappings.stream()
+                                .filter(mapping -> providerGroups.stream().anyMatch(s -> s.equalsIgnoreCase(mapping.getName())))
+                                .flatMap(mapping -> mapping.getGroups().stream())
+                ),
+                defaultGroupStream
+        ).distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * Finalizes a mappings map by setting the keys on to the objects.
+     * @param mappings the mappings to finalize
+     */
+    public static void finalizeUserMappings(Map<String, UserMapping> mappings) {
+        mappings.forEach((key, value) -> value.setUsername(key));
+    }
+
+    /**
+     * Finalizes a mappings map by setting the keys on to the objects.
+     * @param mappings the mappings to finalize
+     */
+    public static void finalizeGroupMappings(Map<String, GroupMapping> mappings) {
+        mappings.forEach((key, value) -> value.setName(key));
     }
 }
