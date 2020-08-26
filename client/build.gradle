@@ -14,8 +14,8 @@ frontend {
 
 tasks.register('copyClientResources', Copy) {
     dependsOn = [
-            'installFrontend',
-            'assembleFrontend'
+        'installFrontend',
+        'assembleFrontend'
     ]
 
     group = 'frontend'
