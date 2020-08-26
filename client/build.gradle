@@ -1,0 +1,29 @@
+plugins {
+    id 'org.siouan.frontend' version '1.4.1'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+frontend {
+    nodeVersion = '12.14.0'
+    assembleScript = 'run build'
+}
+
+task copyClientResources(type: Copy) {
+    dependsOn = [
+        'installFrontend',
+        'assembleFrontend'
+    ]
+
+    group = 'frontend'
+    description = 'Copy client resources into server'
+
+    from "build"
+    into "../src/main/resources/ui/"
+}
+
+checkFrontend.enabled = false
+assembleFrontend.shouldRunAfter installFrontend

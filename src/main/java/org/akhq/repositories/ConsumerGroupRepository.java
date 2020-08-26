@@ -59,7 +59,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .map(group -> {
                 try {
                     return new AbstractMap.SimpleEntry<>(group, kafkaWrapper.consumerGroupsOffsets(clusterId, group));
-                } catch (ExecutionException | InterruptedException e) {
+                } catch (ExecutionException e) {
                     throw new RuntimeException(e);
                 }
             })
@@ -82,6 +82,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
                     .distinct()
                     .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
             ))
+            .sorted(Comparator.comparing(ConsumerGroup::getId))
             .collect(Collectors.toList());
     }
 
