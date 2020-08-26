@@ -104,69 +104,69 @@ dependencies {
     annotationProcessor "io.micronaut:micronaut-validation"
     annotationProcessor "io.micronaut:micronaut-security"
     annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.3"
-    compile "io.micronaut:micronaut-inject"
-    compile "io.micronaut:micronaut-validation"
-    compile "io.micronaut:micronaut-runtime"
-    compile "io.micronaut:micronaut-http-client"
-    compile "io.micronaut:micronaut-http-server-netty"
-    compile "io.swagger.core.v3:swagger-annotations"
-    runtime "ch.qos.logback:logback-classic:1.2.3"
-    compile "io.micronaut:micronaut-security"
-    compile "io.micronaut:micronaut-security-session"
-    compile "io.micronaut:micronaut-management"
-    compile 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
-    compile "io.micronaut.configuration:micronaut-security-ldap"
+    implementation "io.micronaut:micronaut-inject"
+    implementation "io.micronaut:micronaut-validation"
+    implementation "io.micronaut:micronaut-runtime"
+    implementation "io.micronaut:micronaut-http-client"
+    implementation "io.micronaut:micronaut-http-server-netty"
+    implementation "io.swagger.core.v3:swagger-annotations"
+    runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+    implementation "io.micronaut:micronaut-security"
+    implementation "io.micronaut:micronaut-security-session"
+    implementation "io.micronaut:micronaut-management"
+    implementation 'io.micronaut.configuration:micronaut-micrometer-registry-prometheus'
+    implementation "io.micronaut.configuration:micronaut-security-ldap"
 
     // kafka
-    compile group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
-    compile group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
-    compile group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
-    compile group: 'org.apache.avro', name: 'avro', version: '1.9.2'
-    compile group: 'org.sourcelab', name: 'kafka-connect-client', version: '3.0.0'
+    implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
+    implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
+    implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.9.2'
+    implementation group: 'org.sourcelab', name: 'kafka-connect-client', version: '3.0.0'
 
     // log
-    compile group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
-    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.8.+'
+    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.8.+'
 
     // utils
-    compile group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    compile group: 'com.google.guava', name: 'guava', version: '28.2-jre'
-    compile group: "com.google.code.gson", name: "gson", version: "2.8.+"
+    implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
+    implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+    implementation group: "com.google.code.gson", name: "gson", version: "2.8.+"
 
     // api
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.10.0'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.10.0'
 
     // client
-    compile project(":client")
+    implementation project(":client")
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
     testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
 
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
-    testCompile "org.junit.jupiter:junit-jupiter-api"
-    testCompile "io.micronaut.test:micronaut-test-junit5"
-    testRuntime "org.junit.jupiter:junit-jupiter-engine"
-    testCompile "org.mockito:mockito-junit-jupiter:3.3.3"
+    testImplementation "org.junit.jupiter:junit-jupiter-api"
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    testImplementation "org.mockito:mockito-junit-jupiter:3.3.3"
 
     // test
-    testCompile "com.salesforce.kafka.test:kafka-junit5:3.2.1"
-    testCompile "org.apache.kafka:kafka_2.12:" + kafkaVersion
+    testImplementation "com.salesforce.kafka.test:kafka-junit5:3.2.1"
+    testImplementation "org.apache.kafka:kafka_2.12:" + kafkaVersion
     // force jackson version compatible with kafka
-    testCompile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.0'
-    testCompile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.0'
-    testCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.0'
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.0'
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
 
-    testCompile "io.confluent:kafka-schema-registry:" + confluentVersion
-    testCompile "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
-    testCompile "org.apache.kafka:connect-runtime:" + kafkaVersion
-    testCompile "org.apache.kafka:connect-file:" + kafkaVersion
+    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion
+    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
+    testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
+    testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
 
-    testCompile group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
-    testCompile group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
-    testCompile "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testCompile group: 'commons-codec', name: 'commons-codec', version: '1.14'
-    testCompile group: 'org.codehaus.jackson', name: 'jackson-mapper-lgpl', version: '1.9.3'
+    testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
+    testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
+    testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
+    testImplementation group: 'org.codehaus.jackson', name: 'jackson-mapper-lgpl', version: '1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
 }
