@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
-@Controller("${akhq.server.base-path:}/")
+@Controller
 public class AkhqController extends AbstractController {
     @Inject
     private List<Connection> connections;

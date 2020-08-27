@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_REGISTRY_READ)
-@Controller("${akhq.server.base-path:}/")
+@Controller
 public class SchemaController extends AbstractController {
     private final SchemaRegistryRepository schemaRepository;
 

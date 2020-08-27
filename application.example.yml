@@ -14,11 +14,12 @@ micronaut:
           enabled: true
           base: "dc=example,dc=com"
 
+  server:
+    context-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
+                     # behind a reverse proxy with url http://my-server/akhq, set base-path: "/akhq".
+                     # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
 akhq:
   server:
-    base-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
-                  # behind a reverse proxy with url http://my-server/akhq, set base-path: "/akhq".
-                  # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
     access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.akhq.log.access # Logger name

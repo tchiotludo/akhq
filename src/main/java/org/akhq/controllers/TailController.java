@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_TOPIC_READ)
-@Controller("${akhq.server.base-path:}/")
+@Controller
 public class TailController extends AbstractController {
     private final RecordRepository recordRepository;
 

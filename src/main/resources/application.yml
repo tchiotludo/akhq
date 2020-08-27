@@ -9,36 +9,36 @@ micronaut:
     static-resources:
       react:
         paths: classpath:ui
-        mapping: "${akhq.server.base-path:}/ui/**"
+        mapping: "/ui/**"
       static:
         paths: classpath:static
-        mapping: "${akhq.server.base-path:}/static/**"
+        mapping: "/static/**"
       swagger:
         paths: classpath:META-INF/swagger
-        mapping: "${akhq.server.base-path:}/swagger/**"
+        mapping: "/swagger/**"
   security:
     enabled: true
     endpoints:
       login:
         enabled: true
-        path: "${akhq.server.base-path:}/login"
+        path: "/login"
       logout:
         enabled: true
-        path: "${akhq.server.base-path:}/logout"
+        path: "/logout"
         get-allowed: true
     session:
       enabled: true
-      login-success-target-url: "${akhq.server.base-path:}/"
-      logout-target-url: "${akhq.server.base-path:}/"
-      forbidden-target-url: "${akhq.server.base-path:}/login/forbidden"
-      unauthorized-target-url: "${akhq.server.base-path:}/login/unauthorized"
-      login-failure-target-url: "${akhq.server.base-path:}/login/failed"
+      login-success-target-url: "/"
+      logout-target-url: "/"
+      forbidden-target-url: "/login/forbidden"
+      unauthorized-target-url: "/login/unauthorized"
+      login-failure-target-url: "/login/failed"
     intercept-url-map:
-      - pattern: "${akhq.server.base-path:}/ui/**"
+      - pattern: "${micronaut.server.context-path:}/ui/**"
         access: "isAnonymous()"
-      - pattern: "${akhq.server.base-path:}/static/**"
+      - pattern: "${micronaut.server.context-path:}/static/**"
         access: "isAnonymous()"
-      - pattern: "${akhq.server.base-path:}/swagger/**"
+      - pattern: "${micronaut.server.context-path:}/swagger/**"
         access: "isAnonymous()"
   caches:
     kafka-wrapper:
@@ -50,8 +50,6 @@ jackson:
     writeDatesAsTimestamps: false
 
 endpoints:
-  all:
-    path: "${akhq.server.base-path:}"
   health:
     enabled: true
     sensitive: false
@@ -76,7 +74,6 @@ endpoints:
 
 akhq:
   server:
-    base-path: ""
     access-log:
       enabled: true
       name: org.akhq.log.access

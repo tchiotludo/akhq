@@ -37,7 +37,7 @@ import javax.inject.Inject;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
-@Controller("${akhq.server.base-path:}/")
+@Controller
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
     public static final String KEY_SUFFIX = "-key";

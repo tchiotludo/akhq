@@ -1,8 +1,8 @@
 {
-  "name": "kafkahq-front-end",
+  "name": "akhq-front-end",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/ui",
+  "homepage": "./ui",
   "dependencies": {
     "@date-io/moment": "^2.8.0",
     "@material-ui/core": "^4.9.5",
