@@ -141,11 +141,10 @@ class TopicList extends Component {
     if (consumerGroups) {
       return consumerGroups.map(consumerGroup => {
         let className = 'btn btn-sm mb-1 mr-1 btn-';
-        let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets);
+        let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
 
-        if (consumerGroup.activeTopics) {
-          const activeTopic = consumerGroup.activeTopics.find(
-            activeTopic => activeTopic === topicId
+          const activeTopic = consumerGroup.activeTopics && consumerGroup.activeTopics.find(
+              activeTopic => activeTopic === topicId
           );
           activeTopic ? (className += 'success') : (className += 'warning');
 
@@ -161,8 +160,6 @@ class TopicList extends Component {
               {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
             </a>
           );
-        }
-        return null;
       });
     }
 
