@@ -282,10 +282,16 @@ class TopicList extends Component {
               internal: row.internal
             });
           }}
+          onConfig={(id, row) => {
+            history.push({
+              pathname: `/ui/${selectedCluster}/topic/${id}/configs`,
+              internal: row.internal
+            });
+          }}
           actions={
             roles.topic && roles.topic['topic/delete']
-              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
-              : [constants.TABLE_DETAILS]
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]
+              : [constants.TABLE_DETAILS, constants.TABLE_CONFIG]
           }
         />
 

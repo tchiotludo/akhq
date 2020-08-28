@@ -267,7 +267,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onDelete, onEdit, onRestart } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart } = this.props;
 
     return (
       <>
@@ -292,6 +292,18 @@ class Table extends Component {
               }}
             >
               <i className="fa fa-search" />
+            </span>
+          </td>
+        )}
+        {actions.find(el => el === constants.TABLE_CONFIG) && (
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              id="config"
+              onClick={() => {
+                onConfig && onConfig(row.id, row);
+              }}
+            >
+              <i className="fa fa-gear" />
             </span>
           </td>
         )}
@@ -411,6 +423,7 @@ Table.propTypes = {
   ),
   actions: PropTypes.array,
   onDetails: PropTypes.func,
+  onConfig: PropTypes.func,
   onDelete: PropTypes.func,
   toPresent: PropTypes.array,
   noContent: PropTypes.any,
