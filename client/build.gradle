@@ -12,7 +12,7 @@ frontend {
     assembleScript = 'run build'
 }
 
-task copyClientResources(type: Copy) {
+tasks.register('copyClientResources', Copy) {
     dependsOn = [
         'installFrontend',
         'assembleFrontend'
@@ -25,5 +25,18 @@ task copyClientResources(type: Copy) {
     into "../src/main/resources/ui/"
 }
 
-checkFrontend.enabled = false
-assembleFrontend.shouldRunAfter installFrontend
+tasks.named('installFrontend') {
+    inputs.files('package.json', 'package-lock.json')
+}
+
+tasks.named('assembleFrontend') {
+    shouldRunAfter installFrontend
+
+    inputs.dir('src')
+    inputs.dir('public')
+    outputs.dir('build')
+}
+
+tasks.named('checkFrontend') {
+    enabled = false
+}
