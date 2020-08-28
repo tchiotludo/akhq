@@ -37,6 +37,10 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
       {{- end }}
+      {{- if .Values.securityContext }}
+      securityContext:
+        {{ toYaml .Values.securityContext | indent 8 }}
+      {{- end }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- range $key, $value := .Values.initContainers }}
