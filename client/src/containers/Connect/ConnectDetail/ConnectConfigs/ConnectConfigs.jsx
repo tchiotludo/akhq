@@ -73,7 +73,7 @@ class ConnectConfigs extends Form {
       formData[definition.name] = this.getConfigValue(definition.name);
       this.schema[definition.name] = this.handleDefinition(definition);
       if (definition.name === 'transforms') {
-        formData['transformsprops'] = '{}';
+        formData['transformsprops'] = this.getTransformAdditionalProperties() || '{}';
         this.schema['transformsprops'] = Joi.object().required();
       }
     });
@@ -86,6 +86,17 @@ class ConnectConfigs extends Form {
 
     return existingConfig ? configs[existingConfig] : '';
   };
+
+  getTransformAdditionalProperties() {
+    const { configs } = this.state;
+    const filtered = Object.keys(configs).filter(configKey => configKey.startsWith('transforms.'))
+        .reduce((obj, configKey) => {
+          obj[configKey] = configs[configKey];
+          return obj;
+        }, {});
+    return JSON.stringify(filtered, null, 2);
+  };
+
 
   handleDefinition = definition => {
     let def = '';
