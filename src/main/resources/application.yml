@@ -5,6 +5,8 @@ micronaut:
     watch:
       paths: src/main
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
+  server:
+    thread-selection: AUTO
   router:
     static-resources:
       react:
@@ -18,21 +20,21 @@ micronaut:
         mapping: "/swagger/**"
   security:
     enabled: true
+    authentication: session
     endpoints:
       login:
-        enabled: true
         path: "/login"
       logout:
-        enabled: true
         path: "/logout"
         get-allowed: true
-    session:
-      enabled: true
-      login-success-target-url: "/"
-      logout-target-url: "/"
-      forbidden-target-url: "/login/forbidden"
-      unauthorized-target-url: "/login/unauthorized"
-      login-failure-target-url: "/login/failed"
+    redirect:
+      login-success: "/ui"
+      forbidden:
+        url: "${micronaut.server.context-path:}/ui/login/forbidden"
+      unauthorized:
+        url: "${micronaut.server.context-path:}/ui/login/unauthorized"
+      login-failure: "${micronaut.server.context-path:}/ui/login/failed"
+      logout:  "${micronaut.server.context-path:}/ui"
     intercept-url-map:
       - pattern: "${micronaut.server.context-path:}/ui/**"
         access: "isAnonymous()"

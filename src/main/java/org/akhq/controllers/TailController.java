@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.sse.Event;
@@ -32,7 +33,7 @@ public class TailController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @Get("api/{cluster}/tail/sse")
+    @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Tail for data on multiple topic")
     public Publisher<Event<TailRecord>> sse(
         String cluster,
