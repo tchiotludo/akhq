@@ -1,2 +1,3 @@
 rootProject.name = 'akhq'
 
+include 'client'

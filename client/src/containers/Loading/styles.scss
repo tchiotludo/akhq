@@ -1,0 +1,46 @@
+.loading {
+  position: fixed;
+  top: 45%;
+  left: 45%;
+  transform: translate(-50%, -50%);
+	transform: scale(1);
+	animation: pulse 3s infinite;
+	z-index: 999;
+	height: 2em;
+	width: 2em;
+	overflow: visible;
+	margin: auto;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0
+}
+
+.loading-container {
+	width: 100%;
+	z-index: 25;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.loading-none {
+	display: none;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(0.75);
+	}
+
+	70% {
+		transform: scale(1);
+	}
+
+	100% {
+		transform: scale(0.75);
+	}
+}

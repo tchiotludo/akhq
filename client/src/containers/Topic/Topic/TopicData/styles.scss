@@ -1,0 +1,162 @@
+.headers {
+    border-radius: 1rem;
+    font-size: 0.8rem;
+}
+
+.btn.headers:active:focus {
+    outline: none;
+}
+
+.value {
+    overflow: hidden;
+}
+
+.value-span {
+    height: 100%;
+    width: 60%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.value-button {
+    float: right;
+    display: block;
+    width: 40%;
+}
+
+.headers-span {
+    height: 100%;
+    width: 15%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-button {
+    float: right;
+    display: block;
+    width: 85%;
+}
+
+.headers-detail-value {
+    height: 100%;
+    width: 80%;
+    display: inline-block;
+    padding: 0.3rem;
+}
+
+.headers-detail-button {
+    float: right;
+    display: block;
+    width: 20%;
+}
+
+.headers-modal {
+    background-color: #171819;
+    padding-bottom: 1rem;
+    position: relative;
+    top: 30%;
+    bottom: 30%;
+    left: 35%;
+    right: 35%;
+    width: 30%;
+    .close {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+        margin-top: 0.5rem;
+        margin-right: 50%;
+    }
+}
+
+.headers-modal table {
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 80%;
+}
+
+.pagination-data .before-button {
+    display: none;
+}
+
+.dropdown-toggle, .dropdown-toggle:hover, .dropdown-toggle:focus {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.datetime-picker-div {
+    position: relative;
+    left: 3%;
+    right: 0;
+}
+
+Datepicker div.form-group.row {
+    width: 100%;
+    margin-bottom: 0;
+    margin-right: 0;
+}
+
+#datetime-picker {
+    height: 2.3rem;
+}
+
+.offsets-ok {
+    border-top-left-radius: 0.25rem !important;
+    border-bottom-left-radius: 0.25rem !important;
+}
+
+@media(min-width: 930px){
+    .resize-datepicker{
+        min-width: 200px;
+        min-height: 50px;
+    }
+}
+
+.loader {
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+.clickable {
+    cursor: pointer;
+}
+
+
+.input-group > .btn-border > button {
+    border-radius: 4px;
+}
+
+.justify-items > span + span {
+    margin-left: 8px;
+}
+
+code{
+    word-break: break-word;
+}
+
+.inline-block{
+    display: inline;
+}
+
+@media (max-width: 991.98px) {
+    .khq-nav button.btn.btn-primary.inline-block {
+        width: calc(49%);
+    }
+    .search{
+        margin-right: 2%;
+    }
+}
+
+@media (max-width: 968px) {
+    .schema-value {
+        margin-left: 0 !important;
+    }
+}

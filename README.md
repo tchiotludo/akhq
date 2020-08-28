@@ -10,7 +10,7 @@
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
 <p align="center">
-  <img width="460" src="assets/img/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
+  <img width="460" src="client/src/images/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
   <img width="720" src="docs/assets/images/video.gif"  alt="AKHQ for Kafka preview" />
 </p>
 
@@ -92,6 +92,13 @@
   - User groups configuration  
   - Filter topics with regexp for current groups
   - Ldap configuration to match AKHQ groups/roles
+
+## New React UI
+Release `0.15.0` introduce a new UI based on React. This is the default one when you reach AKHQ.
+
+The old one is still available on path `/{cluster}/topic` but will be remove on release `0.16.0`.
+
+Since this is a major rework, the new UI can have some issue, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks ! 
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/akhq/master/docker-compose.yml) file
@@ -412,7 +419,7 @@ akhq:
 ```
 
 ### Server 
-* `akhq.server.base-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
+* `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
   akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
   behind a reverse proxy with subdomain <http://akhq.my-server/>
 

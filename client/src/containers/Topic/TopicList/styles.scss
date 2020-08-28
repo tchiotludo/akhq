@@ -1,0 +1,12 @@
+.col-xs-10{
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+
+  @media (min-width: 576px){
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
+.align-right{
+  float: right;
+}

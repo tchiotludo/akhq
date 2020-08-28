@@ -102,6 +102,8 @@ public class RecordRepository extends AbstractRepository {
 
         consumer.close();
 
+        list.sort(Comparator.comparing(Record::getTimestamp));
+
         return list;
     }
 
@@ -240,6 +242,7 @@ public class RecordRepository extends AbstractRepository {
                 return Stream.of(list);
             })
             .flatMap(List::stream)
+            .sorted(Comparator.comparing(Record::getTimestamp).reversed())
             .collect(Collectors.toList());
     }
 
