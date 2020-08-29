@@ -1,5 +1,6 @@
 package org.akhq.modules;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
@@ -11,12 +12,11 @@ import io.micronaut.web.router.MethodBasedRouteMatch;
 import io.micronaut.web.router.RouteMatch;
 import org.akhq.utils.UserGroupUtils;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @Replaces(SecuredAnnotationRule.class)
@@ -42,7 +42,7 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
     }
 
     @Override
-    public SecurityRuleResult check(HttpRequest request, @Nullable RouteMatch routeMatch, @Nullable  Map<String, Object> claims) {
+    public SecurityRuleResult check(HttpRequest<?> request, @Nullable RouteMatch<?> routeMatch, @Nullable Map<String, Object> claims) {
         if (!(routeMatch instanceof MethodBasedRouteMatch)) {
             return SecurityRuleResult.UNKNOWN;
         }

@@ -4,17 +4,16 @@ import io.confluent.kafka.schemaregistry.client.SchemaMetadata;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 
-import javax.inject.Singleton;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.inject.Singleton;
 
 /**
  * Converts an avro payload to the kafka avro wire format (https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
@@ -36,7 +35,7 @@ public class AvroWireFormatConverter {
         Iterator<Header> contentTypeIter = record.headers().headers("contentType").iterator();
         byte[] value = record.value();
         if (contentTypeIter.hasNext() &&
-                ArrayUtils.isNotEmpty(value) &&
+                value.length > 0 &&
                 ByteBuffer.wrap(value).get() != MAGIC_BYTE) {
             String headerValue = new String(contentTypeIter.next().value());
             Matcher matcher = AVRO_CONTENT_TYPE_PATTERN.matcher(headerValue);
