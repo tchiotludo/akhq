@@ -1,5 +1,5 @@
 plugins {
-    id 'org.siouan.frontend' version '1.4.1'
+    id 'org.siouan.frontend' version '3.0.1'
 }
 
 repositories {
@@ -8,7 +8,7 @@ repositories {
 }
 
 frontend {
-    nodeVersion = '12.14.0'
+    nodeVersion = '14.8.0'
     assembleScript = 'run build'
 }
 

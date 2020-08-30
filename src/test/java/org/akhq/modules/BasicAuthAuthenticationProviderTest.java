@@ -4,13 +4,12 @@ import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.reactivex.Flowable;
-import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
+import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import javax.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -23,7 +22,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     @Test
     public void success() {
         AuthenticationResponse response = Flowable
-            .fromPublisher(auth.authenticate(new UsernamePasswordCredentials(
+            .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"
             ))).blockingFirst();
@@ -47,7 +46,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     @Test
     public void failed() {
         AuthenticationResponse response = Flowable
-            .fromPublisher(auth.authenticate(new UsernamePasswordCredentials(
+            .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user2",
                 "pass2"
             ))).blockingFirst();
