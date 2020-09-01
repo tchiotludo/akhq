@@ -137,6 +137,7 @@ public class RecordRepositoryTest extends AbstractTest {
         assertEquals(0, consumeAll(options) );
     }
 
+    @Disabled("Method not ready yet")
     @Test
     public void emptyTopicByTimestamp() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_TOBE_EMPTIED);

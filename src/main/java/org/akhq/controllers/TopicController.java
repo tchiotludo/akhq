@@ -241,22 +241,6 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
-    @Get("{cluster}/topic/{topicName}/emptyTopic")
-    public HttpResponse emptyTopic(String cluster, String topicName){
-        MutableHttpResponse<Void> response = HttpResponse.ok();
-
-        this.toast(response, RequestHelper.runnableToToast(() -> this.recordRepository.emptyTopic(
-                cluster,
-                topicName
-        ),
-                String.format("Topic %s will be clean", topicName),
-                String.format("Failed to clean topic %s", topicName)
-        ));
-
-        return response;
-    }
-
-    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
     public void emptyTopicApi(String cluster, String topicName) throws ExecutionException, InterruptedException{

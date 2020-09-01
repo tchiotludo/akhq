@@ -272,6 +272,10 @@ export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
 };
 
+export const uriTopicDataEmpty = (clusterId, topicName) => {
+  return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
+}
+
 export default {
   apiUrl,
   uriClusters,

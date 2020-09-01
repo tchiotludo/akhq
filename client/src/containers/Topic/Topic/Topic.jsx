@@ -6,8 +6,10 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import { get } from '../../../utils/api';
-import { uriTopicsConfigs } from '../../../utils/endpoints';
+import { get, remove } from '../../../utils/api';
+import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import { toast } from 'react-toastify';
 
 class Topic extends Component {
   state = {
@@ -15,6 +17,9 @@ class Topic extends Component {
     topicId: '',
     topic: {},
     selectedTab: '',
+    showDeleteModal: false,
+    deleteMessage: '',
+    compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
     selectedCluster: this.props.clusterId,
@@ -43,6 +48,41 @@ class Topic extends Component {
       }
     );
   }
+
+  handleOnEmpty() {
+    this.setState(() => {
+      this.showDeleteModal(
+          <React.Fragment>
+            Do you want to empty the Topic: {<code>{this.state.topicId}</code>} ?
+          </React.Fragment>
+      );
+    });
+  }
+
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
+  };
+
+  closeDeleteModal = () => {
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
+  };
+
+  emptyTopic = () => {
+    const { clusterId, topicId } = this.state;
+
+    remove(
+        uriTopicDataEmpty(clusterId, topicId)
+    )
+        .then(() => {
+          toast.success(`Topic '${topicId}' will be emptied`);
+          this.setState({ showDeleteModal: false }, () => {
+            this.getMessages();
+          });
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false });
+        });
+  };
 
   async getTopicsConfig() {
     const { clusterId, topicId } = this.state;
@@ -206,9 +246,22 @@ class Topic extends Component {
                 className="btn btn-primary">
                 <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
               </div>
+
+              <div
+                onClick={() => {
+                  this.handleOnEmpty();
+                }}
+                className="btn btn-secondary mr-2">
+                <i className="fas fa-erase" aria-hidden={true} /> Empty Topic
+              </div>
             </li>
           </aside>
         )}
+        <ConfirmModal show={this.state.showDeleteModal}
+                      handleCancel={this.closeDeleteModal}
+                      handleConfirm={this.emptyTopic}
+                      message={this.state.deleteMessage}
+        />
       </div>
     );
   }
