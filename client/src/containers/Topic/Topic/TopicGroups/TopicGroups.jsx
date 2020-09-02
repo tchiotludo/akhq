@@ -50,7 +50,7 @@ class TopicGroups extends Component {
     if (!topics) return {};
     return topics.reduce(function(a, e) {
       let key = e.topic;
-      a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag);
+      a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag || 0);
       return a;
     }, {});
   }
