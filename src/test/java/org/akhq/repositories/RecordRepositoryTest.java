@@ -122,7 +122,7 @@ public class RecordRepositoryTest extends AbstractTest {
             .findFirst();
 
         avroRecord.orElseThrow(() -> new NoSuchElementException("Unable to find key 1"));
-        avroRecord.ifPresent(record -> assertEquals("{\"id\": 1, \"name\": \"WaWa\", \"breed\": \"ABYSSINIAN\"}", record.getValue()));
+        avroRecord.ifPresent(record -> assertEquals("{\"id\":1,\"name\":\"WaWa\",\"breed\":\"ABYSSINIAN\"}", record.getValue()));
     }
 
     private List<Record> consumeAllRecord(RecordRepository.Options options) throws ExecutionException, InterruptedException {

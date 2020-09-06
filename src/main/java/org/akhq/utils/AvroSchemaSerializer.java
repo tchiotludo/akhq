@@ -8,7 +8,7 @@ import org.apache.avro.Schema;
 
 import java.io.IOException;
 
-public class AvroSerializer extends JsonSerializer<Schema> {
+public class AvroSchemaSerializer extends JsonSerializer<Schema> {
     @Override
     public void serialize(
         Schema value,
