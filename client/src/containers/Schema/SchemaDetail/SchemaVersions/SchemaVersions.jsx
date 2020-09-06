@@ -28,8 +28,6 @@ class SchemaVersions extends Component {
   }
 
   handleData(schemas) {
-    const { selectedCluster, selectedSchema } = this.state;
-    const { history } = this.props;
 
     if (schemas) {
       let data = schemas.map(schema => {
@@ -40,9 +38,6 @@ class SchemaVersions extends Component {
         };
       });
       this.setState({ data });
-      history.replace({
-        pathname: `/ui/${selectedCluster}/schema/details/${selectedSchema}/versions`
-      });
     } else {
       this.setState({ data: [] });
     }

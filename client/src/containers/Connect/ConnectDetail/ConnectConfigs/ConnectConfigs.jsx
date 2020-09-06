@@ -39,15 +39,11 @@ class ConnectConfigs extends Form {
   async getConfigs() {
     const { connectId, clusterId, definitionId } = this.state;
     let configs = [];
-    const { history } = this.props;
 
     configs = await get(uriConnectDefinitionConfigs(clusterId, connectId, definitionId));
     this.setState({ configs: configs.data }, () => {
       const pluginId = this.state.configs['connector.class'];
       this.getPlugin(pluginId);
-    });
-    history.replace({
-      pathname: `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`
     });
   }
 
