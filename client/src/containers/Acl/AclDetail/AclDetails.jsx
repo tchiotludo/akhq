@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
+import {getSelectedTab} from "../../../utils/functions";
 
 class AclDetails extends Component {
   state = {
@@ -10,10 +11,32 @@ class AclDetails extends Component {
     selectedTab: 'topics'
   };
 
-  componentDidMount() {}
+  tabs = ['topics', 'groups'];
+
+  componentDidMount() {
+    const { clusterId, principalEncoded } = this.props.match.params;
+    const tabSelected = getSelectedTab(this.props, this.tabs);
+    this.setState(
+        {
+          selectedTab: (tabSelected)? tabSelected : 'topics'
+        },
+        () => {
+          this.props.history.replace(`/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`);
+        }
+    );
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      const tabSelected = getSelectedTab(this.props, this.tabs);
+      this.setState({ selectedTab: tabSelected });
+    }
+  }
 
   selectTab = tab => {
+    const { principalEncoded, clusterId } = this.state;
     this.setState({ selectedTab: tab });
+    this.props.history.push(`/ui/${clusterId}/acls/${principalEncoded}/${tab}`);
   };
 
   tabClassName = tab => {
