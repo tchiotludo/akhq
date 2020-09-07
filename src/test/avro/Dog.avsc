@@ -1,0 +1,10 @@
+{
+    "name": "Dog",
+    "namespace": "org.akhq",
+    "type": "record",
+    "fields" : [
+        {"name": "id", "type": "int"},
+        {"name": "name", "type": "string"},
+        {"name": "weight", "type" : { "type" : "bytes", "logicalType" : "decimal", "precision" : 4, "scale" : 2}}
+    ]
+}

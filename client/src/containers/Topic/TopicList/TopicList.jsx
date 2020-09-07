@@ -115,7 +115,9 @@ class TopicList extends Component {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page });
+      this.setState({ selectedCluster, totalPageNumber: data.page }, () =>
+          this.props.history.replace(`/ui/${selectedCluster}/topic`)
+      )
     }
   }
 

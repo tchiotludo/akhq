@@ -10,11 +10,12 @@ import { get, remove } from '../../../utils/api';
 import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
+import {getSelectedTab} from "../../../utils/functions";
 
 class Topic extends Component {
   state = {
-    clusterId: '',
-    topicId: '',
+    clusterId: this.props.clusterId,
+    topicId: this.props.topicId,
     topic: {},
     selectedTab: '',
     showDeleteModal: false,
@@ -22,10 +23,10 @@ class Topic extends Component {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topicId,
     configs: {}
   };
+
+  tabs = ['data','partitions','groups','configs','acls','logs'];
 
   static getDerivedStateFromProps(props, state) {
     return state;
@@ -34,8 +35,7 @@ class Topic extends Component {
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
     const roles = this.state.roles || {};
-    const url = this.props.location.pathname.split('/');
-    const tabSelected = this.props.location.pathname.split('/')[url.length - 1];
+    const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
       {
         clusterId,
@@ -45,6 +45,7 @@ class Topic extends Component {
       },
       () => {
         this.getTopicsConfig();
+        this.props.history.replace(`/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`);
       }
     );
   }
@@ -84,6 +85,13 @@ class Topic extends Component {
         });
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      const tabSelected = getSelectedTab(this.props, this.tabs);
+      this.setState({ selectedTab: tabSelected });
+    }
+  }
+
   async getTopicsConfig() {
     const { clusterId, topicId } = this.state;
     let configs = [];
@@ -96,7 +104,11 @@ class Topic extends Component {
   }
 
   selectTab = tab => {
+    const { topicId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
+    this.props.history.push({
+      pathname: `/ui/${clusterId}/topic/${topicId}/${tab}`
+    });
   };
 
   tabClassName = tab => {
