@@ -68,7 +68,7 @@ class Topic extends Component {
   };
 
   emptyTopic = () => {
-    const { clusterId, topicId } = this.state;
+    const { clusterId, topicId } = this.props.match.params;
 
     remove(
         uriTopicDataEmpty(clusterId, topicId)
