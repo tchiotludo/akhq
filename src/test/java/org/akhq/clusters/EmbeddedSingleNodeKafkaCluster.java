@@ -72,6 +72,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect1Properties.put("config.storage.replication.factor", 1);
         connect1Properties.put("status.storage.topic", "__connect-1-status");
         connect1Properties.put("status.storage.replication.factor", 1);
+        connect1Properties.put("plugin.path", "null");
 
         // connect-2
         Properties connect2Properties = new Properties();
@@ -88,6 +89,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect2Properties.put("config.storage.replication.factor", 1);
         connect2Properties.put("status.storage.topic", "__connect-2-status");
         connect2Properties.put("status.storage.replication.factor", 1);
+        connect2Properties.put("plugin.path", "null");
 
         connect1 = new ConnectEmbedded(connect1Properties);
         log.debug("Kafka Connect-1 is running at {}", connect1Url());

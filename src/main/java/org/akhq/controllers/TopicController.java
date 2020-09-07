@@ -7,6 +7,7 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -97,7 +98,8 @@ public class TopicController extends AbstractController {
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
-            search
+            search,
+            skipConsumerGroups
         ));
     }
 
@@ -200,7 +202,7 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
-        return this.topicRepository.findByName(cluster, topicName, false).getConsumerGroups();
+        return this.topicRepository.findByName(cluster, topicName, skipConsumerGroups).getConsumerGroups();
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")
@@ -277,7 +279,7 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @Get("api/{cluster}/topic/{topicName}/data/search/{search}")
+    @Get(value = "api/{cluster}/topic/{topicName}/data/search/{search}", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
     public Publisher<Event<SearchRecord>> sse(
         String cluster,
@@ -288,8 +290,6 @@ public class TopicController extends AbstractController {
         Optional<String> timestamp,
         Optional<String> search
     ) throws ExecutionException, InterruptedException {
-        Topic topic = topicRepository.findByName(cluster, topicName);
-
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
