@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Schema {
     @JsonIgnore
-    private final Parser parser = new Parser();
+    private final Parser parser = new Parser().setValidateDefaults(false);
 
     private Integer id;
     private String subject;
