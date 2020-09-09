@@ -4,12 +4,14 @@ import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.UserDetails;
+import io.micronaut.security.config.AuthenticationModeConfiguration;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
 import io.micronaut.security.oauth2.endpoint.token.response.*;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.UserGroupUtils;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 @Singleton
 @Replaces(DefaultOpenIdUserDetailsMapper.class)
 @Requires(property = "akhq.security.oidc.enabled", value = StringUtils.TRUE)
-public class OidcUserDetailsMapper implements OpenIdUserDetailsMapper {
+public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     private final OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration;
     private final UserGroupUtils userGroupUtils;
     private final Oidc oidc;
@@ -34,11 +36,14 @@ public class OidcUserDetailsMapper implements OpenIdUserDetailsMapper {
      * @param oidc the OIDC configuration
      * @param userGroupUtils the utils class to translate user groups
      */
+    @Inject
     public OidcUserDetailsMapper(
             OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration,
+            AuthenticationModeConfiguration authenticationModeConfiguration,
             Oidc oidc,
             UserGroupUtils userGroupUtils
     ) {
+        super(openIdAdditionalClaimsConfiguration, authenticationModeConfiguration);
         this.openIdAdditionalClaimsConfiguration = openIdAdditionalClaimsConfiguration;
         this.oidc = oidc;
         this.userGroupUtils = userGroupUtils;
@@ -83,17 +88,7 @@ public class OidcUserDetailsMapper implements OpenIdUserDetailsMapper {
             OpenIdClaims openIdClaims,
             List<String> akhqGroups
     ) {
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put(OauthUserDetailsMapper.PROVIDER_KEY, providerName);
-        if (openIdAdditionalClaimsConfiguration.isJwt()) {
-            attributes.put(OpenIdUserDetailsMapper.OPENID_TOKEN_KEY, tokenResponse.getIdToken());
-        }
-        if (openIdAdditionalClaimsConfiguration.isAccessToken()) {
-            attributes.put(OauthUserDetailsMapper.ACCESS_TOKEN_KEY, tokenResponse.getAccessToken());
-        }
-        if (openIdAdditionalClaimsConfiguration.isRefreshToken() && tokenResponse.getRefreshToken() != null) {
-            attributes.put(OauthUserDetailsMapper.REFRESH_TOKEN_KEY, tokenResponse.getRefreshToken());
-        }
+        Map<String, Object> attributes = super.buildAttributes(providerName, tokenResponse, openIdClaims);
         userGroupUtils.getUserAttributes(akhqGroups).forEach(attributes::put);
         return attributes;
     }

@@ -1,7 +1,9 @@
 package org.akhq.modules;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import io.micronaut.security.authentication.AuthenticationMode;
 import io.micronaut.security.authentication.UserDetails;
+import io.micronaut.security.config.AuthenticationModeConfiguration;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
 import io.micronaut.security.oauth2.endpoint.token.response.JWTOpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
@@ -44,6 +46,8 @@ class OidcUserDetailsMapperTest {
     private UserGroupUtils userGroupUtils;
     @Mock
     private OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration;
+    @Mock
+    private AuthenticationModeConfiguration authenticationModeConfiguration;
 
     @InjectMocks
     private OidcUserDetailsMapper subject;
@@ -53,6 +57,7 @@ class OidcUserDetailsMapperTest {
         when(openIdAdditionalClaimsConfiguration.isAccessToken()).thenReturn(false);
         when(openIdAdditionalClaimsConfiguration.isJwt()).thenReturn(false);
         when(openIdAdditionalClaimsConfiguration.isRefreshToken()).thenReturn(false);
+        when(authenticationModeConfiguration.getAuthentication()).thenReturn(AuthenticationMode.COOKIE);
 
         when(userGroupUtils.getUserRoles(anyList())).thenAnswer((Answer<List<String>>) invocation -> {
             List<String> input = (List<String>) invocation.getArgument(0, List.class);

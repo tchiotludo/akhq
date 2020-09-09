@@ -20,13 +20,18 @@ micronaut:
         mapping: "/swagger/**"
   security:
     enabled: true
-    authentication: session
+    authentication: cookie
     endpoints:
       login:
         path: "/login"
       logout:
         path: "/logout"
         get-allowed: true
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
     redirect:
       login-success: "/ui"
       forbidden:

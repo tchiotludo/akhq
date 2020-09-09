@@ -96,7 +96,11 @@ public class UserGroupUtils {
      * @param mappings the mappings to finalize
      */
     public static void finalizeUserMappings(Map<String, UserMapping> mappings) {
-        mappings.forEach((key, value) -> value.setUsername(key));
+        mappings.forEach((key, value) -> {
+            if (StringUtils.isEmpty(value.getUsername())) {
+                value.setUsername(key);
+            }
+        });
     }
 
     /**
@@ -104,6 +108,10 @@ public class UserGroupUtils {
      * @param mappings the mappings to finalize
      */
     public static void finalizeGroupMappings(Map<String, GroupMapping> mappings) {
-        mappings.forEach((key, value) -> value.setName(key));
+        mappings.forEach((key, value) -> {
+            if (StringUtils.isEmpty(value.getName())) {
+                value.setName(key);
+            }
+        });
     }
 }
