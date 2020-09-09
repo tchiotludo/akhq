@@ -139,6 +139,7 @@ class Routes extends Component {
               {roles && roles.topic && roles.topic['topic/read'] && (
                 <Route exact path="/ui/:clusterId/topic" component={TopicList} />
               )}
+
               {roles && roles.topic && roles.topic['topic/insert'] && (
                 <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
               )}
@@ -150,21 +151,27 @@ class Routes extends Component {
                 />
               )}
               {roles && roles.topic && roles.topic['topic/read'] && (
-                <Route exact path="/ui/:clusterId/topic/:topicId/:data?" component={Topic} />
+                <Route exact path="/ui/:clusterId/topic/:topicId/:tab?" component={Topic} />
               )}
+
+              {roles && roles.topic && roles.topic['topic/data/read'] && (
+                  <Route exact path="/ui/:clusterId/tail" component={Tail} />
+              )}
+
               {roles && roles.node && roles.node['node/read'] && (
                 <Route exact path="/ui/:clusterId/node" component={NodesList} />
               )}
               {roles && roles.node && roles.node['node/read'] && (
                 <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" component={NodeDetails} />
               )}
+
               {roles && roles.group && roles.group['group/read'] && (
                 <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
               )}
               {roles && roles.group && roles.group['group/read'] && (
                 <Route
                   exact
-                  path="/ui/:clusterId/group/:consumerGroupId"
+                  path="/ui/:clusterId/group/:consumerGroupId/:tab?"
                   component={ConsumerGroup}
                 />
               )}
@@ -175,15 +182,14 @@ class Routes extends Component {
                   component={ConsumerGroupUpdate}
                 />
               )}
-              {roles && roles.topic && roles.topic['topic/data/read'] && (
-                <Route exact path="/ui/:clusterId/tail" component={Tail} />
-              )}
+
               {roles && roles.acls && roles.acls['acls/read'] && (
                 <Route exact path="/ui/:clusterId/acls" component={Acls} />
               )}
               {roles && roles.acls && roles.acls['acls/read'] && (
-                <Route exact path="/ui/:clusterId/acls/:principalEncoded" component={AclDetails} />
+                <Route exact path="/ui/:clusterId/acls/:principalEncoded/:tab?" component={AclDetails} />
               )}
+
               {roles && roles.registry && roles.registry['registry/read'] && (
                 <Route exact path="/ui/:clusterId/schema" component={SchemaList} />
               )}
@@ -197,6 +203,7 @@ class Routes extends Component {
                   component={Schema}
                 />
               )}
+
               {roles && roles.connect && roles.connect['connect/insert'] && (
                 <Route
                   exact

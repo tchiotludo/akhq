@@ -2,12 +2,12 @@ import _ from 'lodash';
 import moment from 'moment';
 import { ROLE_TYPE } from './constants';
 
-export function calculateTopicOffsetLag(topicOffsets) {
+export function calculateTopicOffsetLag(topicOffsets, topicId) {
   let offsetLag = 0;
   let offset = 0;
   let lastOffset = 0;
 
-  topicOffsets.forEach(topicOffset => {
+  topicOffsets.filter(topicOffset => topicOffset.topic === topicId).forEach(topicOffset => {
     offset = topicOffset.offset || 0;
     lastOffset = topicOffset.lastOffset || 0;
     offsetLag += lastOffset - offset;

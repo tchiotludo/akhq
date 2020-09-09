@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_NODE_READ)
-@Controller("${akhq.server.base-path:}/")
+@Controller
 public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
     private final ConfigRepository configRepository;

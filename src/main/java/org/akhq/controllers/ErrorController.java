@@ -1,7 +1,6 @@
 package org.akhq.controllers;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -26,9 +25,6 @@ import java.net.URISyntaxException;
 @Slf4j
 @Controller("/errors")
 public class ErrorController extends AbstractController {
-    @Value("${akhq.server.base-path}")
-    protected String basePath;
-
     // Kafka
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ApiException e) {

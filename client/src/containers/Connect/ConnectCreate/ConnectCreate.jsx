@@ -317,9 +317,8 @@ class ConnectCreate extends Component {
   }
 
   renderForm() {
-    let { plugin } = this.state;
+    let plugin = this.getPlugin();
     if(plugin.definitions){
-      plugin = this.getPlugin();
       this.setState({ plugin }, () => {
         this.handleShema(
           _(plugin.definitions)
@@ -365,6 +364,7 @@ class ConnectCreate extends Component {
     return (
       <Select
         name={'selectedType'}
+        selectClass={'col-sm-10'}
         value={this.state.selectedType}
         label={label}
         items={items}
@@ -468,10 +468,13 @@ class ConnectCreate extends Component {
                   <tbody>{this.state.display}</tbody>
                 </table>
               </div>
-              <div className="khq-submit button-footer" style={{ marginRight: 0, left: 0 }}>
-                <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
-                  Create
-                </button>
+
+              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+                <aside>
+                  <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
+                    Create
+                  </button>
+                </aside>
               </div>
             </React.Fragment>
           )}

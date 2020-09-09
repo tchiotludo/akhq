@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.*;
-import org.akhq.utils.AvroDeserializer;
-import org.akhq.utils.AvroSerializer;
+import org.akhq.utils.AvroSchemaDeserializer;
+import org.akhq.utils.AvroSchemaSerializer;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
 
@@ -21,15 +21,15 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Schema {
     @JsonIgnore
-    private final Parser parser = new Parser();
+    private final Parser parser = new Parser().setValidateDefaults(false);
 
     private Integer id;
     private String subject;
     private Integer version;
     private Config.CompatibilityLevelConfig compatibilityLevel;
 
-    @JsonSerialize(using = AvroSerializer.class)
-    @JsonDeserialize(using = AvroDeserializer.class)
+    @JsonSerialize(using = AvroSchemaSerializer.class)
+    @JsonDeserialize(using = AvroSchemaDeserializer.class)
     private org.apache.avro.Schema schema;
 
     private String exception;

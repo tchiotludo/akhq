@@ -1,18 +1,18 @@
-// Please, comment the localhost one before PR to dev
+import prefix from './../prefix';
 
-export const baseUrl = process.env.REACT_APP_BASE_URL ||
-     `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+const baseUrl = process.env.REACT_APP_BASE_URL ||
+  `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 
-//export const baseUrl = 'http://localhost:8081';
+export const basePath = prefix()
 
-export const apiUrl = `${baseUrl}/api`;
+export const apiUrl = baseUrl + prefix() + '/api'
 
 export const uriLogin = () => {
-  return `${baseUrl}/login`;
+  return `${basePath}/login`;
 };
 
 export const uriLogout = () => {
-  return `${baseUrl}/logout`;
+  return `${basePath}/logout`;
 };
 
 export const uriCurrentUser = () => {
@@ -47,7 +47,7 @@ export const uriTopicData = (
   nextPage = ''
 ) => {
   if (nextPage !== '') {
-    return baseUrl + nextPage;
+    return basePath + nextPage;
   }
 
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;

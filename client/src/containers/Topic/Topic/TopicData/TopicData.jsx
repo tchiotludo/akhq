@@ -467,7 +467,11 @@ class TopicData extends React.Component {
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
                       <strong>Partition:</strong> ({sessionStorage.getItem('partitionFilter') || partition})
                     </Dropdown.Toggle>
-                    {!loading && <Dropdown.Menu>{this.renderPartitionOptions()}</Dropdown.Menu>}
+                    {!loading && <Dropdown.Menu>
+                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                      {this.renderPartitionOptions()}
+                      </div>
+                    </Dropdown.Menu>}
                   </Dropdown>
                 </li>
                 <li className="nav-item dropdown">

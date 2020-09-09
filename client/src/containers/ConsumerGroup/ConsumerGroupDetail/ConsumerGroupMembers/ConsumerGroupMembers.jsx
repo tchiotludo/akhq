@@ -43,14 +43,16 @@ class ConsumerGroupMembers extends Component {
   }
 
   handleAssignments(assignments) {
-    const { history } = this.props;
+    const {history} = this.props;
     let topics = [];
 
-    assignments.forEach(assignment => {
-      if (!topics.find(topic => topic === assignment.topic)) {
-        topics.push(assignment.topic);
-      }
-    });
+    if (assignments) {
+      assignments.forEach(assignment => {
+        if (!topics.find(topic => topic === assignment.topic)) {
+          topics.push(assignment.topic);
+        }
+      });
+    }
     return topics.map(topic => {
       let partitions = [];
       assignments.forEach(assignment => {
