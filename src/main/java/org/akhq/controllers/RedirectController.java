@@ -1,6 +1,5 @@
 package org.akhq.controllers;
 
-import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -14,16 +13,8 @@ import java.net.URISyntaxException;
 @Controller
 @Hidden
 public class RedirectController extends AbstractController {
-    @Value("${akhq.server.base-path}")
-    protected String basePath;
-
     @Get
     public HttpResponse<?> slash() throws URISyntaxException {
         return HttpResponse.temporaryRedirect(this.uri("/ui"));
-    }
-
-    @Get("${akhq.server.base-path:}")
-    public HttpResponse<?> home() throws URISyntaxException {
-        return this.slash();
     }
 }

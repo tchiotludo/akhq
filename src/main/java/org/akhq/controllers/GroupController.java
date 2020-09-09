@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_GROUP_READ)
-@Controller("${akhq.server.base-path:}/api/{cluster}/group")
+@Controller("/api/{cluster}/group")
 public class GroupController extends AbstractController {
     private final AbstractKafkaWrapper kafkaWrapper;
     private final ConsumerGroupRepository consumerGroupRepository;

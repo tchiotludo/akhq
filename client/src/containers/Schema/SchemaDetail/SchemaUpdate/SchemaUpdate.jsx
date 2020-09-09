@@ -66,7 +66,6 @@ class SchemaUpdate extends Form {
   }
 
   async getLatestSchemaVersion() {
-    const { history } = this.props;
     const { clusterId, schemaId } = this.state;
     let data = await get(uriLatestSchemaVersion(clusterId, schemaId));
 
@@ -74,8 +73,6 @@ class SchemaUpdate extends Form {
     if (data) {
       this.handleLatestSchemaVersion(data);
     }
-
-    history.replace({ pathname: `/ui/${clusterId}/schema/details/${schemaId}/update`});
   }
 
   handleLatestSchemaVersion = latestSchemaVersion => {

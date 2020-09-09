@@ -109,7 +109,7 @@ class ConsumerGroupList extends Component {
     const noPropagation = e => e.stopPropagation();
     return Object.keys(groupedTopicOffset).map(topicId => {
       const topicOffsets = groupedTopicOffset[topicId];
-      const offsetLag = calculateTopicOffsetLag(topicOffsets);
+      const offsetLag = calculateTopicOffsetLag(topicOffsets, topicId);
 
       return (
         <a

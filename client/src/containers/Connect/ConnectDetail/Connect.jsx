@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
+import {getSelectedTab} from "../../../utils/functions";
 
 class Connect extends Component {
   state = {
@@ -12,14 +13,28 @@ class Connect extends Component {
     selectedTab: 'tasks'
   };
 
+  tabs = ['tasks', 'configs'];
+
   componentDidMount() {
-    const url = this.props.location.pathname.split('/');
-    const tabSelected = url[url.length - 1];
-    this.setState({ selectedTab: tabSelected === 'configs' ? tabSelected : 'tasks' });
+    const { clusterId, connectId, definitionId } = this.props.match.params;
+    const tabSelected = getSelectedTab(this.props, this.tabs);
+    this.setState({ selectedTab: (tabSelected)? tabSelected : 'tasks' },
+        () => {
+          this.props.history.replace(`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${this.state.selectedTab}`);
+        });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      const tabSelected = getSelectedTab(this.props, this.tabs);
+      this.setState({ selectedTab: tabSelected });
+    }
   }
 
   selectTab = tab => {
+    const { clusterId, connectId, definitionId } = this.props.match.params;
     this.setState({ selectedTab: tab });
+    this.props.history.push(`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${tab}`);
   };
 
   tabClassName = tab => {

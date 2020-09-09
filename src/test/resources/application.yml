@@ -30,7 +30,6 @@ micronaut:
 
 akhq:
   server:
-    base-path: ""
     access-log:
       enabled: false
 

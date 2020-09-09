@@ -3,7 +3,7 @@ import React from 'react';
 import Enzyme, { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Table from './Table';
-import { TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_EDIT } from '../../utils/constants';
+import { TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_CONFIG, TABLE_EDIT } from '../../utils/constants';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -57,7 +57,7 @@ describe('Table', () => {
       test_3: 'test3'
     }
   ];
-  const actions = [TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_EDIT];
+  const actions = [TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_CONFIG, TABLE_EDIT];
   const header = [
     { colName: 'MockHead1', colSpan: 1 },
     { colName: 'MockHead2', colSpan: 2 }
@@ -80,6 +80,9 @@ describe('Table', () => {
       }}
       onDetails={() => {
         mockFunction(TABLE_DETAILS);
+      }}
+      onConfig={() => {
+        mockFunction(TABLE_CONFIG);
       }}
       onEdit={() => {
         mockFunction(TABLE_EDIT);
@@ -125,6 +128,12 @@ describe('Table', () => {
     let details = rows.first().find(`#${TABLE_DETAILS}`);
     details.simulate('click');
     expect(value).toEqual(TABLE_DETAILS);
+  });
+
+  it('does config logic', () => {
+    let details = rows.first().find(`#${TABLE_CONFIG}`);
+    details.simulate('click');
+    expect(value).toEqual(TABLE_CONFIG);
   });
 
   it('does delete logic', () => {

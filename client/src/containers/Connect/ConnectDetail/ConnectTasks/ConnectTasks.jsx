@@ -58,13 +58,9 @@ class ConnectTasks extends Component {
   async getDefinition() {
     let definition = {};
     const { clusterId, connectId, definitionId } = this.state;
-    const { history } = this.props;
 
     definition = await get(uriGetDefinition(clusterId, connectId, definitionId));
     this.setState({ definition: definition.data }, () => this.handleTasks());
-    history.replace({
-      pathname: `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/tasks`
-    });
   }
 
   modifyDefinitionState = () => {

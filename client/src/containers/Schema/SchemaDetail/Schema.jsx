@@ -4,6 +4,7 @@ import SchemaVersions from './SchemaVersions';
 import SchemaUpdate from './SchemaUpdate';
 import { get } from '../../../utils/api';
 import endpoints from '../../../utils/endpoints';
+import {getSelectedTab} from "../../../utils/functions";
 
 class Schema extends Component {
   state = {
@@ -14,12 +15,23 @@ class Schema extends Component {
     schemaVersions: []
   };
 
+  tabs = ['update', 'versions'];
+
   componentDidMount() {
     this.getSchemaVersions();
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      const tabSelected = getSelectedTab(this.props, this.tabs);
+      this.setState({ selectedTab: tabSelected });
+    }
+  }
+
   selectTab = tab => {
+    const { schemaId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
+    this.props.history.push(`/ui/${clusterId}/schema/details/${schemaId}/${tab}`);
   };
 
   tabClassName = tab => {
@@ -30,15 +42,17 @@ class Schema extends Component {
   async getSchemaVersions() {
     let schemas = [];
     const { clusterId, schemaId } = this.state;
-    const url = this.props.location.pathname.split('/');
-    const tabSelected = this.props.location.pathname.split('/')[url.length - 1];
+    const tabSelected = getSelectedTab(this.props, this.tabs);
 
     schemas = await get(endpoints.uriSchemaVersions(clusterId, schemaId));
     this.setState({
       schemaVersions: schemas.data,
       totalVersions: schemas.data.length,
       selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
-    });
+    },
+      () => {
+        this.props.history.replace(`/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`);
+      });
   }
 
   renderSelectedTab() {

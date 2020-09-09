@@ -1,18 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="/ui/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#33b5e5" />
+<head>
+    <meta charset="utf-8"/>
+    <base href="%PUBLIC_URL%/">
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico"/>
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#33b5e5"/>
+
+    <!--
+      The AKHQ_PREFIX_PATH placeholder magic value is replaced during serving by server
+      and set to ${micronaut.server.context-path:} external URL path. It gets prepended to all links back
+      to Prometheus, both for asset loading as well as API accesses.
+    -->
+    <script>
+      const AKHQ_PREFIX_UI = '%PUBLIC_URL%';
+
+      const AKHQ_PREFIX_PATH = function() {
+        const split = AKHQ_PREFIX_UI.split('/');
+        split.pop();
+        return split.join('/');
+      }();
+    </script>
+
     <meta
-      name="description"
-      content="Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more..."
+        name="description"
+        content="Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more..."
     />
-    <title>akhq.io</title>
-  </head>
-  <body>
+    <title>AKHQ</title>
+</head>
+<body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-  </body>
+</body>
 </html>

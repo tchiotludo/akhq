@@ -182,17 +182,19 @@ class Sidebar extends Component {
         className={pathname.includes(tab) ? 'active' : ''}
         onClick={() => {
           this.setState({ selectedTab: tab });
+          this.props.history.push({
+            pathname: `/ui/${selectedCluster}/${tab}`
+          });
+
         }}
       >
         <NavIcon>
           {' '}
-          <Link to={`/ui/${selectedCluster}/${tab}`}>
-            <i className={iconClassName} aria-hidden="true" />
-          </Link>
+          <i className={iconClassName} aria-hidden="true" />
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/ui/${selectedCluster}/${tab}`}>{label}</Link>
+         {label}
         </NavText>
       </NavItem>
     );

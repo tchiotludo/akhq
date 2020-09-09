@@ -1,14 +1,14 @@
 package org.akhq.repositories;
 
+import io.confluent.kafka.schemaregistry.avro.AvroSchema;
+import io.confluent.kafka.schemaregistry.avro.AvroSchemaUtils;
 import io.confluent.kafka.schemaregistry.client.SchemaMetadata;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.serializers.AvroSchemaUtils;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.akhq.repositories.AvroWireFormatConverter;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.io.DatumWriter;
@@ -47,10 +47,12 @@ public class AvroWireFormatConverterTest {
         avroWireFormatConverter = new AvroWireFormatConverter();
         schemaRegistryClient = mock(SchemaRegistryClient.class);
 
+
         ReflectData reflectData = ReflectData.get();
         Schema schema = reflectData.getSchema(MyRecord.class);
         int id = 100;
         when(schemaRegistryClient.getById(id)).thenReturn(schema);
+        when(schemaRegistryClient.getSchemaById(id)).thenReturn(new AvroSchema(schema, id));
         when(schemaRegistryClient.getSchemaMetadata("mySubject", 1)).thenReturn(new SchemaMetadata(id, 1, ""));
     }
 
@@ -91,8 +93,8 @@ public class AvroWireFormatConverterTest {
 
         KafkaAvroDeserializer kafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient);
         GenericData.Record deserializedRecord = (GenericData.Record) kafkaAvroDeserializer.deserialize(null, convertedValue);
-        assertEquals(record.getAnInt(), deserializedRecord.get(0));
-        assertEquals(record.getAString(), deserializedRecord.get(1).toString());
+        assertEquals(record.getAnInt(), deserializedRecord.get(1));
+        assertEquals(record.getAString(), deserializedRecord.get(0).toString());
     }
 
     @SneakyThrows
