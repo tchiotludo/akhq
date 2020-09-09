@@ -309,6 +309,22 @@ akhq:
 
 #### Auth
 
+##### JWT
+
+AKHQ uses JWT tokens to perform authentication.
+Please generate a secret that is at least 256 bits and change the config like this:
+
+```yaml
+micronaut:
+  security:
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: <Your secret here>
+```
+
 ##### Groups
 
 Groups allow you to limit user 
@@ -432,15 +448,6 @@ micronaut:
           client-secret: "<client-secret>"
           openid:
             issuer: "<issuer-url>"
-    token:
-      jwt:
-        enabled: true
-        cookie:
-          enabled: true
-        signatures:
-          secret:
-            generator:
-              secret: pleasechangeme
 ```
 
 To further tell AKHQ to display OIDC options on the login page and customize claim mapping, configure OIDC in the AKHQ config:
