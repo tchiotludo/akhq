@@ -83,16 +83,18 @@ class SchemaList extends Component {
     this.setState({ selectedCluster, totalPageNumber: response.page });
   }
 
-  handleSchemaRegistry(SchemaRegistry) {
+  handleSchemaRegistry(schemas) {
     let tableSchemaRegistry = [];
-    SchemaRegistry.forEach(SchemaRegistry => {
-      SchemaRegistry.size = 0;
-      SchemaRegistry.logDirSize = 0;
+    schemas.forEach(schema => {
+      schema.size = 0;
+      schema.logDirSize = 0;
+
       tableSchemaRegistry.push({
-        id: SchemaRegistry.id,
-        subject: SchemaRegistry.subject,
-        version: SchemaRegistry.version,
-        schema: JSON.stringify(JSON.parse(SchemaRegistry.schema), null, 2)
+        id: schema.id,
+        subject: schema.subject,
+        version: schema.version,
+        exception: schema.exception,
+        schema: schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry });
@@ -212,13 +214,21 @@ class SchemaList extends Component {
                 );
               },
               cell: (obj, col) => {
-                return (
-                  <pre className="mb-0 khq-data-highlight">
-                    <code>
-                      {JSON.stringify(JSON.parse(obj[col.accessor]))}
-                    </code>
-                  </pre>
-                );
+                if (obj[col.accessor]) {
+                  return (
+                    <pre className="mb-0 khq-data-highlight">
+                      <code>
+                        {JSON.stringify(JSON.parse(obj[col.accessor]))}
+                      </code>
+                    </pre>
+                  );
+                } else if (obj.exception) {
+                  return (
+                    <div className="alert alert-warning mb-0" role="alert">
+                      {obj.exception}
+                    </div>
+                  );
+                }
               }
             }
           ]}
@@ -245,42 +255,6 @@ class SchemaList extends Component {
           }
           extraRow
           noStripes
-          onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
-              return (
-                <tr
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    width: '100%'
-                  }}
-                >
-                  <td
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      borderStyle: 'dashed',
-                      borderWidth: '1px',
-                      backgroundColor: '#171819'
-                    }}
-                  >
-                    {header}
-                  </td>
-                  <td
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      borderStyle: 'dashed',
-                      borderWidth: '1px',
-                      backgroundColor: '#171819'
-                    }}
-                  >
-                    {obj.headers[header]}
-                  </td>
-                </tr>
-              );
-            });
-          }}
           handleExtraExpand={(extraExpanded, el) => {
             const currentExpandedRows = extraExpanded;
             const isRowCurrentlyExpanded = currentExpandedRows.includes(el.subject);

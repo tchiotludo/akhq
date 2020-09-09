@@ -474,7 +474,7 @@ akhq:
 The username field can be any string field, the roles field has to be a JSON array.
 
 ### Server 
-* `akhq.server.base-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
+* `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
   akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
   behind a reverse proxy with subdomain <http://akhq.my-server/>
 

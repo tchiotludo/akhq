@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 abstract public class AbstractController {
-    @Value("${akhq.server.base-path}")
+    @Value("${micronaut.server.context-path:}")
     protected String basePath;
 
     @Inject

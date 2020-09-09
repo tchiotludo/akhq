@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_CONNECT_READ)
-@Controller("${akhq.server.base-path:}/api/{cluster}/connect/{connectId}")
+@Controller("/api/{cluster}/connect/{connectId}")
 public class ConnectController extends AbstractController {
     private final ConnectRepository connectRepository;
 

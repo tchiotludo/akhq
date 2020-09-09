@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_ACLS_READ)
-@Controller("${akhq.server.base-path:}/api/{cluster}/acls")
+@Controller("/api/{cluster}/acls")
 public class AclsController extends AbstractController {
     private final AccessControlListRepository aclRepository;
 

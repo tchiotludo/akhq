@@ -14,6 +14,7 @@ import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDe
 import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
+import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,7 +28,10 @@ public class ConnectRepository extends AbstractRepository {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
+    @Retryable(includes = {
+        ConcurrentConfigModificationException.class,
+        ResourceNotFoundException.class
+    }, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
         return new ConnectDefinition(
             this.kafkaModule
@@ -41,7 +45,10 @@ public class ConnectRepository extends AbstractRepository {
         );
     }
 
-    @Retryable(includes = ConcurrentConfigModificationException.class, delay = "3s", attempts = "5")
+    @Retryable(includes = {
+        ConcurrentConfigModificationException.class,
+        ResourceNotFoundException.class
+    }, delay = "3s", attempts = "5")
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)

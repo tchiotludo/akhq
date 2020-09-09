@@ -4,24 +4,43 @@ import ConsumerGroupTopics from './ConsumerGroupTopics/ConsumerGroupTopics';
 import ConsumerGroupMembers from './ConsumerGroupMembers/ConsumerGroupMembers';
 import { Link } from 'react-router-dom';
 import ConsumerGroupAcls from './ConsumerGroupAcls/ConsumerGroupAcls';
+import {getSelectedTab} from "../../../utils/functions";
 
 class ConsumerGroup extends Component {
   state = {
-    clusterId: '',
-    consumerGroupId: '',
+    clusterId: this.props.match.params.clusterId,
+    consumerGroupId: this.props.match.params.consumerGroupId,
     consumerGroup: {},
     selectedTab: 'topics',
     roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
+  tabs = ['topics','members','acls'];
+
   componentDidMount() {
     const { clusterId, consumerGroupId } = this.props.match.params;
+    const tabSelected = getSelectedTab(this.props, this.tabs);
+    this.setState(
+        {
+          selectedTab: (tabSelected)? tabSelected : 'topics'
+        },
+        () => {
+          this.props.history.replace(`/ui/${clusterId}/group/${consumerGroupId}/${this.state.selectedTab}`);
+        }
+    );
+  }
 
-    this.setState({ clusterId, consumerGroupId });
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      const tabSelected = getSelectedTab(this.props, this.tabs);
+      this.setState({ selectedTab: tabSelected });
+    }
   }
 
   selectTab = tab => {
+    const { consumerGroupId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
+    this.props.history.push(`/ui/${clusterId}/group/${consumerGroupId}/${tab}`);
   };
 
   tabClassName = tab => {

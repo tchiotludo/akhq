@@ -90,6 +90,8 @@ $fa-font-path: "../fonts";
       width: 98% !important;
       top: 1% !important;
       right: 1% !important;
+      overflow: auto;
+      cursor: default;
 
       > div {
         overflow: auto;
