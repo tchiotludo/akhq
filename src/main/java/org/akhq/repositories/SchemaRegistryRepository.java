@@ -1,8 +1,10 @@
 package org.akhq.repositories;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.akhq.models.Schema;
 import org.akhq.modules.AvroSerializer;
@@ -216,5 +218,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
             this.avroSerializer = new AvroSerializer(this.kafkaModule.getRegistryClient(clusterId));
         }
         return this.avroSerializer;
+    }
+
+    static {
+        JacksonMapper.INSTANCE.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 }
