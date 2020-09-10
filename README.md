@@ -317,6 +317,7 @@ Please generate a secret that is at least 256 bits and change the config like th
 ```yaml
 micronaut:
   security:
+    enabled: true
     token:
       jwt:
         signatures:
@@ -333,7 +334,7 @@ Define groups with specific roles for your users
 * `akhq.security.default-group`: Default group for all the user even unlogged user
 
 * `akhq.security.groups`: Groups list definition
-  * `group-name`: Group identifier
+  * `- name: group-name` Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
 
@@ -345,7 +346,7 @@ Define groups with specific roles for your users
 
 ##### Basic Auth
 * `akhq.security.basic-auth`: List user & password with affected roles 
-  * `actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
+  * `- username: actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
     * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
     * `groups`: Groups for current user
 
@@ -357,8 +358,8 @@ Define groups with specific roles for your users
 
 ##### LDAP
 Configure how the ldap groups will be matched in AKHQ groups 
-* `akhq.security.ldap.group`: Ldap groups list
-  * `ldap-group-name`: Ldap group name (same name as in ldap)
+* `akhq.security.ldap.groups`: Ldap groups list
+  * `- name: ldap-group-name`: Ldap group name (same name as in ldap)
     * `groups`: AKHQ group list to be used for current ldap group
 
 Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
@@ -400,15 +401,13 @@ Configure AKHQ groups and Ldap groups and users
 akhq:
   security:
     groups:
-      topic-reader: # just a key, no matter will be override by name below
-        name: "topic-reader" # Group name
+      - name: topic-reader # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
-      topic-writer: # just a key, no matter will be override by name below
-        name: "topic-writer" # Group name
+      - name: topic-writer # Group name
         roles:
           - topic/read
           - topic/insert
@@ -418,15 +417,15 @@ akhq:
           topics-filter-regexp: "test.*"
     ldap:
       groups:
-        mathematicians:
+        - name: mathematicians
           groups:
             - topic-reader
-        scientists:
+        - name: scientists
           groups:
             - topic-reader
             - topic-writer
       users:
-        franz:
+        - username: franz
           groups:
             - topic-reader
             - topic-writer
@@ -439,7 +438,6 @@ To enable OIDC in the application, you'll first have to enable OIDC in micronaut
 ```yaml
 micronaut:
   security:
-    enabled: true
     oauth2:
       enabled: true
       clients:
@@ -464,15 +462,15 @@ akhq:
           groups-field: roles
           default-group: topic-reader
           groups:
-            mathematicians:
+            - name: mathematicians
               groups:
                 - topic-reader
-            scientists:
+            - name: scientists
               groups:
                 - topic-reader
                 - topic-writer
           users:
-            franz:
+            - username: franz
               groups:
                 - topic-reader
                 - topic-writer

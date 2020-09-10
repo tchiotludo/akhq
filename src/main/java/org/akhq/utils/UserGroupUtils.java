@@ -1,8 +1,8 @@
 package org.akhq.utils;
 
 import io.micronaut.core.util.StringUtils;
-import org.akhq.configs.Group;
 import org.akhq.configs.GroupMapping;
+import org.akhq.configs.SecurityProperties;
 import org.akhq.configs.UserMapping;
 
 import javax.inject.Inject;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public class UserGroupUtils {
 
     @Inject
-    private List<Group> akhqGroups;
+    private SecurityProperties securityProperties;
 
     /**
      * Get all distinct roles for the list of groups
@@ -24,11 +24,11 @@ public class UserGroupUtils {
      * @return list of roles
      */
     public List<String> getUserRoles(List<String> groups) {
-        if (this.akhqGroups == null || groups == null) {
+        if (securityProperties.getGroups() == null || groups == null) {
             return new ArrayList<>();
         }
 
-        return this.akhqGroups.stream()
+        return securityProperties.getGroups().stream()
             .filter(group -> groups.contains(group.getName()))
             .filter(group -> group.getRoles() != null)
             .flatMap(group -> group.getRoles().stream())
@@ -44,11 +44,11 @@ public class UserGroupUtils {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getUserAttributes(List<String> groups) {
-        if (this.akhqGroups == null || groups == null) {
+        if (securityProperties.getGroups() == null || groups == null) {
             return null;
         }
 
-        return this.akhqGroups.stream()
+        return securityProperties.getGroups().stream()
             .filter(group -> groups.contains(group.getName()))
             .flatMap(group -> (group.getAttributes() != null) ? group.getAttributes().entrySet().stream() : null)
             .collect(Collectors.toMap(
@@ -89,29 +89,5 @@ public class UserGroupUtils {
                 ),
                 defaultGroupStream
         ).distinct().collect(Collectors.toList());
-    }
-
-    /**
-     * Finalizes a mappings map by setting the keys on to the objects.
-     * @param mappings the mappings to finalize
-     */
-    public static void finalizeUserMappings(Map<String, UserMapping> mappings) {
-        mappings.forEach((key, value) -> {
-            if (StringUtils.isEmpty(value.getUsername())) {
-                value.setUsername(key);
-            }
-        });
-    }
-
-    /**
-     * Finalizes a mappings map by setting the keys on to the objects.
-     * @param mappings the mappings to finalize
-     */
-    public static void finalizeGroupMappings(Map<String, GroupMapping> mappings) {
-        mappings.forEach((key, value) -> {
-            if (StringUtils.isEmpty(value.getName())) {
-                value.setName(key);
-            }
-        });
     }
 }

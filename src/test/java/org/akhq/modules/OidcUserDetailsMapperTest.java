@@ -72,12 +72,12 @@ class OidcUserDetailsMapperTest {
 
         Oidc.Provider provider = new Oidc.Provider();
         provider.setGroups(
-                Map.of(
-                        GROUP_1, buildGroupMapping(GROUP_1, INTERNAL_PREFIX + GROUP_1),
-                        GROUP_2, buildGroupMapping(GROUP_2, INTERNAL_PREFIX + GROUP_2)
+                Arrays.asList(
+                        buildGroupMapping(GROUP_1, INTERNAL_PREFIX + GROUP_1),
+                        buildGroupMapping(GROUP_2, INTERNAL_PREFIX + GROUP_2)
                 )
         );
-        provider.setUsers(Map.of(USERNAME, buildUserMapping(USERNAME, "user-group")));
+        provider.setUsers(Collections.singletonList(buildUserMapping(USERNAME, "user-group")));
         provider.setDefaultGroup(DEFAULT_GROUP);
         when(oidc.getProvider(PROVIDER_NAME)).thenReturn(provider);
     }

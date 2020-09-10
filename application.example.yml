@@ -25,15 +25,10 @@ micronaut:
             issuer: "<issuer-url>"
     token:
       jwt:
-        enabled: true
-        cookie:
-          enabled: true
         signatures:
           secret:
             generator:
               secret: pleasechangeme
-    session:
-      enabled: false
 
   server:
     context-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
@@ -141,7 +136,7 @@ akhq:
     default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
-      admin: # Group name
+      - name: admin # Group name
         roles:  # roles for the group
           - topic/read
           - topic/insert
@@ -169,7 +164,7 @@ akhq:
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test.*"
-      topic-reader: # Other group
+      - name: topic-reader # Other group
         roles:
           - topic/read
         attributes:
@@ -177,7 +172,7 @@ akhq:
 
     # Basic auth configuration
     basic-auth:
-      user: # Username
+      - username: user # Username
         password: pass # Password in sha256
         groups: # Groups for the user
           - admin
@@ -187,17 +182,17 @@ akhq:
     ldap:
       default-group: topic-reader
       groups:
-        group-ldap-1:
+        - name: group-ldap-1
           groups: # Akhq groups list
             - topic-reader
-        group-ldap-2:
+        - name: group-ldap-2
           groups:
             - admin
       users:
-        riemann: # ldap user id
+        - username: riemann # ldap user id
           groups: # Akhq groups list
             - topic-reader
-        einstein:
+        - username: einstein
           groups:
             - admin
 
@@ -211,10 +206,10 @@ akhq:
           groups-field: roles
           default-group: topic-reader
           groups:
-            oidc-admin-group:
+            - name: oidc-admin-group
               groups:
                 - admin
           users:
-            einstein:
+            - username: einstein
               groups:
                 - admin
