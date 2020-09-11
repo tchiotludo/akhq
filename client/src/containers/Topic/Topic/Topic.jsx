@@ -29,8 +29,11 @@ class Topic extends Component {
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
+    const searchParams = this.props.location.search;
+
     const roles = this.state.roles || {};
     const tabSelected = getSelectedTab(this.props, this.tabs);
+
     this.setState(
       {
         clusterId,
@@ -40,7 +43,11 @@ class Topic extends Component {
       },
       () => {
         this.getTopicsConfig();
-        this.props.history.replace(`/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`);
+        let uri = `/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`;
+        if(searchParams) {
+          uri = uri + searchParams;
+        }
+        this.props.history.replace(uri);
       }
     );
   }
@@ -78,11 +85,11 @@ class Topic extends Component {
 
   renderSelectedTab = () => {
     const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
-    const { history, match } = this.props;
+    const { history, match, location } = this.props;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData history={history} match={match} />;
+        return <TopicData history={history} match={match} location={location} />;
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
@@ -111,7 +118,7 @@ class Topic extends Component {
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
         return roles.topic && roles.topic['topic/data/read'] ? (
-          <TopicData history={history} match={match} />
+          <TopicData history={history} match={match} location={location}/>
         ) : (
           <TopicPartitions history={history} />
         );
