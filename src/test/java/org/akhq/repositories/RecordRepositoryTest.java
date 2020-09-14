@@ -3,7 +3,9 @@ package org.akhq.repositories;
 import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -123,6 +126,25 @@ public class RecordRepositoryTest extends AbstractTest {
 
         avroRecord.orElseThrow(() -> new NoSuchElementException("Unable to find key 1"));
         avroRecord.ifPresent(record -> assertEquals("{\"id\":1,\"name\":\"WaWa\",\"breed\":\"ABYSSINIAN\"}", record.getValue()));
+    }
+
+    @Test
+    public void emptyTopic() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_TOBE_EMPTIED);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        repository.emptyTopic(options.clusterId, options.getTopic());
+        assertEquals(0, consumeAll(options) );
+    }
+
+    @Disabled("Method not ready yet")
+    @Test
+    public void emptyTopicByTimestamp() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_TOBE_EMPTIED);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        repository.emptyTopicByTimestamp(options.clusterId, options.getTopic(), System.currentTimeMillis());
+        assertEquals(0, consumeAll(options) );
     }
 
     private List<Record> consumeAllRecord(RecordRepository.Options options) throws ExecutionException, InterruptedException {

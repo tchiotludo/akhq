@@ -6,6 +6,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
@@ -13,6 +14,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -241,9 +243,19 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @Delete("api/{cluster}/topic/{topicName}/data/empty")
+    @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
+    public void emptyTopicApi(String cluster, String topicName) throws ExecutionException, InterruptedException{
+        this.recordRepository.emptyTopic(
+                cluster,
+                topicName
+        );
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
-    public Record deleteRecord(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+    public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
         return new Record(
             this.recordRepository.delete(
                 cluster,

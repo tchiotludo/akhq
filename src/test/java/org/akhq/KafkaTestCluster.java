@@ -46,6 +46,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String CLUSTER_ID = "test";
 
     public static final String TOPIC_RANDOM = "random";
+    public static final String TOPIC_TOBE_EMPTIED = "emptied";
     public static final String TOPIC_COMPACTED = "compacted";
     public static final String TOPIC_EMPTY = "empty";
     public static final String TOPIC_HUGE = "huge";
@@ -54,10 +55,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_COUNT = "stream-count";
     public static final String TOPIC_CONNECT = "connect-sink";
 
-    public static final int TOPIC_ALL_COUNT = 18;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 10;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 8;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 16;
+    public static final int TOPIC_ALL_COUNT = 19;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 11;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 9;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 17;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
 
@@ -274,6 +275,13 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(100, 0), TOPIC_RANDOM, partition);
         }
         log.debug("Random topic created");
+
+        // random data to be emptied
+        testUtils.createTopic(TOPIC_TOBE_EMPTIED, 3, (short) 1);
+        for (int partition = 0; partition < 3; partition++) {
+            testUtils.produceRecords(randomDatas(100, 0), TOPIC_TOBE_EMPTIED, partition);
+        }
+        log.debug("Random topic to be emptied created");
 
         // huge data
         testUtils.createTopic(TOPIC_HUGE, 3, (short) 1);

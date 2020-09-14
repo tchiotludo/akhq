@@ -57,6 +57,7 @@
   - Configurations view
   - Logs view
   - Delete a record
+  - Empty a Topic (Delete all the record from one topic)
   - Sort view
   - Filter per partitions
   - Filter with a starting time
