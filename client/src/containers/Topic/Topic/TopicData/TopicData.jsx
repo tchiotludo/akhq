@@ -9,7 +9,7 @@ import {
   uriSchemaRegistry,
   uriTopicData,
   uriTopicDataDelete,
-  uriTopicDataSearch,
+  uriTopicDataSearch, uriTopicDataSingleRecord,
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
@@ -83,7 +83,11 @@ class TopicData extends React.Component {
           canAccessSchema: roles.registry && roles.registry['registry/read']
         },
         () => {
-          this.getMessages(this.buildFilters());
+          if(query.get('single')) {
+            this.getSingleMessage(this.buildFilters())
+          } else {
+            this.getMessages(this.buildFilters());
+          }
         }
     );
   };
@@ -135,14 +139,12 @@ class TopicData extends React.Component {
       currentSearch
     } = this.state;
 
-    let filters = `sort=${sortBy}`;
+    const filters = [];
 
-    if (offsetsSearch) {
-      filters += `&after=${offsetsSearch}`;
-    }
-    if (partition) {
-      filters += `&partition=${partition}`;
-    }
+    if (sortBy) filters.push(`sort=${sortBy}`);
+    if (offsetsSearch) filters.push(`after=${offsetsSearch}`);
+    if (partition) filters.push(`partition=${partition}`);
+
     if (datetime) {
       let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
       timestamp = formatDateTime(
@@ -158,12 +160,12 @@ class TopicData extends React.Component {
             'YYYY-MM-DDThh:mm:ss.SSS',
             true
           ) + 'Z';
-      filters += `&timestamp=${timestamp}`;
+      filters.push(`timestamp=${timestamp}`);
     }
-    if (currentSearch) {
-      filters += `&search=${currentSearch}`;
-    }
-    return filters;
+
+    if (currentSearch) filters.push(`search=${currentSearch}`);
+
+    return filters.join('&');
   }
 
   async getMessages(filters = null, changePage = false) {
@@ -176,21 +178,69 @@ class TopicData extends React.Component {
     let data,
         partitionData = {};
 
-    data = await get(
-        uriTopicData(
-            selectedCluster,
-            selectedTopic,
-            filters,
-            changePage ? nextPage : undefined
-        )
-    );
+
+    const requests = [ get(uriTopicData(selectedCluster, selectedTopic, filters,changePage ? nextPage : undefined)),
+                       get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+
+    if (canAccessSchema) {
+      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+    }
+
+    Promise.all(requests)
+      .then(data => {
+          console.log(data);
+          let tableMessages,
+              schemas = [];
+
+          const messagesData = data[0].data;
+          const partitionData = data[1].data;
+          if(data.size === 3) {
+            const schemasData = data[2].data;
+            schemas = schemasData.results || [];
+          }
+
+          if (messagesData.results) {
+            tableMessages = this.handleMessages(messagesData.results);
+          } else {
+            this.setState({ pageNumber: 1 });
+          }
+          if (partitionData) {
+            if (changePage) {
+              this.getNextPageOffsets();
+            }
+            this.setState({
+              partitionCount: partitionData.length,
+              nextPage: messagesData.after,
+              recordCount: messagesData.size
+            });
+          }
+
+          this.setState({ messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas });
+
+      });
 
     if(changePage) {
       this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length ));
     } else {
       this.setUrlHistory(filters);
     }
+  }
 
+  async getSingleMessage(filters) {
+    const {
+      selectedCluster,
+      selectedTopic,
+      canAccessSchema
+    } = this.state;
+    let data,
+        partitionData = {};
+
+    data = await get(
+        uriTopicDataSingleRecord(
+            selectedCluster,
+            selectedTopic,
+            filters)
+    );
 
     data = data.data;
     this.setState({ canDeleteRecords: data.canDeleteRecords });
@@ -209,9 +259,6 @@ class TopicData extends React.Component {
       this.setState({ messages: [], pageNumber: 1 });
     }
     if (partitionData) {
-      if (changePage) {
-        this.getNextPageOffsets();
-      }
       this.setState({
         partitionCount: partitionData.length,
         nextPage: data.after,
@@ -219,6 +266,7 @@ class TopicData extends React.Component {
       });
     }
   }
+
 
   handleOnDelete(message) {
     this.setState({ compactMessageToDelete: message }, () => {
@@ -229,6 +277,17 @@ class TopicData extends React.Component {
       );
     });
   }
+
+  async handleOnShare(row) {
+    try {
+      await navigator.clipboard.writeText(`${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset}&partition=${row.partition}` );
+      toast.info(`Copied message url to clipboard!`);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  }
+
+
 
   showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
@@ -272,7 +331,8 @@ class TopicData extends React.Component {
       };
       tableMessages.push(messageToPush);
     });
-    this.setState({ messages: tableMessages });
+    return tableMessages;
+    //this.setState({ messages: tableMessages });
   };
 
   getNextPageOffsets = () => {
@@ -793,7 +853,10 @@ class TopicData extends React.Component {
                 onDelete={row => {
                   this.handleOnDelete(row);
                 }}
-                actions={canDeleteRecords ? [constants.TABLE_DELETE] : []}
+                onShare={row => {
+                  this.handleOnShare(row);
+                }}
+                actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
                 onExpand={obj => {
                   return Object.keys(obj.headers).map(header => {
                     return (

@@ -267,7 +267,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare } = this.props;
 
     return (
       <>
@@ -342,6 +342,18 @@ class Table extends Component {
               <i className="fa fa-refresh" />
             </span>
           </td>
+        )}
+        {actions.find(el => el === constants.TABLE_SHARE) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+                id="share"
+                onClick={() => {
+                  onShare && onShare(row);
+                }}
+            >
+              <i className="fa fa-share" />
+            </span>
+            </td>
         )}
       </>
     );
