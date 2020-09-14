@@ -18,10 +18,10 @@ import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 import org.akhq.modules.HasAnyPermission;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
 
 @Controller
 public class AkhqController extends AbstractController {
@@ -30,14 +30,15 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private ApplicationContext applicationContext;
-    @Inject
-    private List<LdapGroup> ldapAuths;
 
     @Inject
-    private List<LdapUser> ldapUsers;
+    private Ldap ldap;
 
     @Inject
-    private List<BasicAuth> basicAuths;
+    private SecurityProperties securityProperties;
+
+    @Inject
+    private Oidc oidc;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -64,9 +65,15 @@ public class AkhqController extends AbstractController {
         AuthDefinition authDefinition = new AuthDefinition();
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            authDefinition.loginEnabled = basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0;
-        } else {
-            authDefinition.loginEnabled = false;
+            authDefinition.loginEnabled = true;
+            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 || ldap.isEnabled();
+        }
+
+        if (oidc.isEnabled()) {
+            authDefinition.oidcAuths = oidc.getProviders().entrySet()
+                    .stream()
+                    .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
+                    .collect(Collectors.toList());
         }
 
         return authDefinition;
@@ -144,6 +151,16 @@ public class AkhqController extends AbstractController {
     @Getter
     public static class AuthDefinition {
         private boolean loginEnabled;
+        private boolean formEnabled;
+        private List<OidcAuth> oidcAuths;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class OidcAuth {
+        private String key;
+        private String label;
     }
 
     @AllArgsConstructor

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logo from '../../images/logo.svg';
-import { uriCurrentUser, uriLogin } from '../../utils/endpoints';
+import {uriAuths, uriCurrentUser, uriLogin, uriOidc} from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { get, login } from '../../utils/api';
 import Form from '../../components/Form/Form';
@@ -16,7 +16,11 @@ class Login extends Form {
       username: '',
       password: ''
     },
-    errors: {}
+    errors: {},
+    config: {
+      formEnabled: true,
+      oidcAuths: []
+    }
   };
 
   schema = {
@@ -64,8 +68,101 @@ class Login extends Form {
     }
   }
 
-  render() {
+  async componentDidMount() {
+    try {
+      const response = await get(uriAuths());
+      if (response.status === 200) {
+        const {loginEnabled, ...config} = response.data;
+        if (!loginEnabled) {
+          this.props.history.push({
+            pathname: '/ui',
+          });
+          return;
+        }
+        this.setState({config});
+      }
+    } catch (e) {
+      // cannot load auth config, use default
+    }
+  }
+
+  _renderForm() {
     const { errors } = this.state;
+    return (
+      <>
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+              <span className="input-group-text">
+                <i className="fa fa-user" />
+              </span>
+          </div>
+          <input
+            type="text"
+            name="username"
+            className="form-control"
+            placeholder="Username"
+            aria-label="Username"
+            required=""
+            autoFocus=""
+            onChange={this.handleChange}
+          />
+          {errors.username && (
+            <div id="input-error" className="alert alert-danger mt-1 p-1">
+              {errors.username}
+            </div>
+          )}
+        </div>
+
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span className="input-group-text">
+              <i className="fa fa-lock" />
+            </span>
+          </div>
+          <input
+            type="password"
+            name="password"
+            className="form-control"
+            placeholder="Password"
+            aria-label="Password"
+            required=""
+            onChange={this.handleChange}
+          />
+          {errors.password && (
+            <div id="input-error" className="alert alert-danger mt-1 p-1">
+              {errors.password}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group text-right">
+          <input
+            type="submit"
+            value="Login"
+            className="btn btn-primary btn-lg"
+            disabled={this.validate()}
+          />
+        </div>
+      </>
+    );
+  }
+
+  _renderSeparator() {
+    return (
+      <div className="khq-login-separator">
+        <span>or</span>
+      </div>
+    );
+  }
+
+  _renderOidc(oidcsAuths) {
+    return oidcsAuths.map(auth => (
+      <a href={uriOidc(auth.key)} className="btn btn-primary btn-block">{auth.label}</a>
+    ));
+  }
+
+  render() {
+    const { formEnabled, oidcAuths } = this.state.config;
 
     return (
       <div>
@@ -82,60 +179,9 @@ class Login extends Form {
                 <img src={logo} alt="" />
               </h3>
             </div>
-
-            <div className="input-group mb-3">
-              <div className="input-group-prepend">
-                <span className="input-group-text">
-                  <i className="fa fa-user" />
-                </span>
-              </div>
-              <input
-                type="text"
-                name="username"
-                className="form-control"
-                placeholder="Username"
-                aria-label="Username"
-                required=""
-                autoFocus=""
-                onChange={this.handleChange}
-              />
-              {errors.username && (
-                <div id="input-error" className="alert alert-danger mt-1 p-1">
-                  {errors.username}
-                </div>
-              )}
-            </div>
-
-            <div className="input-group mb-3">
-              <div className="input-group-prepend">
-                <span className="input-group-text">
-                  <i className="fa fa-lock" />
-                </span>
-              </div>
-              <input
-                type="password"
-                name="password"
-                className="form-control"
-                placeholder="Password"
-                aria-label="Password"
-                required=""
-                onChange={this.handleChange}
-              />
-              {errors.password && (
-                <div id="input-error" className="alert alert-danger mt-1 p-1">
-                  {errors.password}
-                </div>
-              )}
-            </div>
-
-            <div className="form-group text-right">
-              <input
-                type="submit"
-                value="Login"
-                className="btn btn-primary btn-lg"
-                disabled={this.validate()}
-              />
-            </div>
+            {formEnabled && this._renderForm()}
+            {formEnabled && oidcAuths && this._renderSeparator()}
+            {oidcAuths && this._renderOidc(oidcAuths)}
           </form>
         </main>
       </div>

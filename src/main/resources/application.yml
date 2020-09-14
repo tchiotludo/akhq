@@ -19,14 +19,20 @@ micronaut:
         paths: classpath:META-INF/swagger
         mapping: "/swagger/**"
   security:
-    enabled: true
-    authentication: session
+    enabled: false
+    authentication: cookie
     endpoints:
       login:
         path: "/login"
       logout:
         path: "/logout"
         get-allowed: true
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+          cookie-same-site: strict
     redirect:
       login-success: "/ui"
       forbidden:
@@ -121,39 +127,39 @@ akhq:
   security:
     default-group: admin
     groups:
-      admin:
-        roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
-      reader:
-        roles:
-          - topic/read
-          - node/read
-          - topic/data/read
-          - group/read
-          - registry/read
-          - acls/read
-          - connect/read
-      no-roles:
-        roles: []
+    - name: admin
+      roles:
+      - topic/read
+      - topic/insert
+      - topic/delete
+      - topic/config/update
+      - node/read
+      - node/config/update
+      - topic/data/read
+      - topic/data/insert
+      - topic/data/delete
+      - group/read
+      - group/delete
+      - group/offsets/update
+      - registry/read
+      - registry/insert
+      - registry/update
+      - registry/delete
+      - registry/version/delete
+      - acls/read
+      - connect/read
+      - connect/insert
+      - connect/update
+      - connect/delete
+      - connect/state/update
+    - name: reader
+      roles:
+      - topic/read
+      - node/read
+      - topic/data/read
+      - group/read
+      - registry/read
+      - acls/read
+      - connect/read
+    - name: no-roles
+      roles: []
