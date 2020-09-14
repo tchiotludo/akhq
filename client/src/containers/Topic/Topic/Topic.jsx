@@ -28,6 +28,11 @@ class Topic extends Component {
 
   tabs = ['data','partitions','groups','configs','acls','logs'];
 
+  constructor(props) {
+    super(props);
+    this.topicData = React.createRef();
+  }
+
   static getDerivedStateFromProps(props, state) {
     return state;
   }
@@ -84,7 +89,7 @@ class Topic extends Component {
         .then(() => {
           toast.success(`Topic '${topicId}' will be emptied`);
           this.setState({ showDeleteModal: false }, () => {
-            this.getMessages();
+            this.topicData.current.getMessages();
           });
         })
         .catch(() => {
@@ -129,7 +134,7 @@ class Topic extends Component {
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData history={history} match={match} location={location} />;
+        return <TopicData ref={this.topicData} history={history} match={match} location={location} />;
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
@@ -251,6 +256,14 @@ class Topic extends Component {
             <li className="aside-button">
               <div
                 onClick={() => {
+                  this.handleOnEmpty();
+                }}
+                className="btn btn-secondary mr-2">
+                <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+              </div>
+
+              <div
+                onClick={() => {
                   this.props.history.push({ pathname: `/ui/${clusterId}/tail`, topicId: topicId });
                 }}
                 className="btn btn-secondary mr-2"
@@ -264,14 +277,6 @@ class Topic extends Component {
                 }}
                 className="btn btn-primary">
                 <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
-              </div>
-
-              <div
-                onClick={() => {
-                  this.handleOnEmpty();
-                }}
-                className="btn btn-secondary mr-2">
-                <i className="fas fa-erase" aria-hidden={true} /> Empty Topic
               </div>
             </li>
           </aside>

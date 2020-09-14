@@ -245,11 +245,13 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
-    public void emptyTopicApi(String cluster, String topicName) throws ExecutionException, InterruptedException{
+    public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
         this.recordRepository.emptyTopic(
                 cluster,
                 topicName
         );
+
+        return HttpResponse.noContent();
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
