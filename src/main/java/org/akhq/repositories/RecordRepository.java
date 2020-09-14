@@ -83,7 +83,10 @@ public class RecordRepository extends AbstractRepository {
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
             for (ConsumerRecord<byte[], byte[]> record : records) {
-                list.add(newRecord(record, options));
+                Record current = newRecord(record, options);
+                if (searchFilter(options, current)) {
+                    list.add(current);
+                }
             }
         }
 
@@ -216,8 +219,10 @@ public class RecordRepository extends AbstractRepository {
                             emptyPoll = 2;
                             break;
                         }
-
-                        list.add(newRecord(record, options));
+                        Record current = newRecord(record, options);
+                        if (searchFilter(options, current)) {
+                            list.add(current);
+                        }
                     }
                 }
                 while (emptyPoll < 1);

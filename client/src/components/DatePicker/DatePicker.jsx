@@ -17,7 +17,7 @@ class DatePicker extends React.Component {
 
   componentDidMount = () => {
     this.setState({
-      value: this.props.value && this.props.value.length > 0 ? this.props.value : new Date()
+      value: (this.props.value) ? this.props.value : new Date()
     });
   };
 

@@ -39,29 +39,21 @@ export const uriDeleteTopics = (clusterId, topicId) => {
 export const uriTopicData = (
   clusterId,
   topicId,
-  offset,
-  partition,
-  sort,
-  timestamp,
-  search,
+  filters,
   nextPage = ''
 ) => {
   if (nextPage !== '') {
     return basePath + nextPage;
   }
 
-  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;
-  if (offset !== undefined) {
-    uri += `&after=${offset}`;
-  }
-  if (partition !== undefined) {
-    uri += `&partition=${partition}`;
-  }
-  if (timestamp !== undefined) {
-    uri += `&timestamp=${timestamp}`;
-  }
-  if (search !== undefined) {
-    uri += `&search=${search}`;
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?${filters}`;
+  return uri;
+};
+
+export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+  if(filters) {
+    uri = uri + `?${filters}`
   }
   return uri;
 };
@@ -264,9 +256,6 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   }${size.length > 0 ? sizeUrl : ''}`;
 };
 
-export const uriTopicDataSearch = (clusterId, topicId, search) => {
-  return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
-};
 
 export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;

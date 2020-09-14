@@ -3,7 +3,6 @@ import React from 'react';
 import logo from '../../images/logo.svg';
 import { uriCurrentUser, uriLogin } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
-import history from '../../utils/history';
 import { get, login } from '../../utils/api';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
@@ -43,9 +42,7 @@ class Login extends Form {
           this.getData();
         });
     } catch (err) {
-      history.replace({
-        pathname: '/ui/login',
-      });
+      toast.error('Wrong Username or Password!');
     }
   }
 
@@ -62,7 +59,8 @@ class Login extends Form {
         pathname: '/ui',
       });
       window.location.reload(true);
-      toast.success(`User '${currentUserData.username}' logged in successfully`);
+    } else {
+      toast.error('Wrong Username or Password!');
     }
   }
 
