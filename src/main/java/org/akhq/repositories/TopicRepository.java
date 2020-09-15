@@ -4,6 +4,7 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
+import org.akhq.configs.SecurityProperties;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.akhq.models.Partition;
@@ -45,8 +46,8 @@ public class TopicRepository extends AbstractRepository {
     @Value("${akhq.topic.stream-regexps}")
     protected List<String> streamRegexps;
 
-    @Value("${akhq.security.default-group}")
-    private String defaultGroups;
+    @Inject
+    private SecurityProperties securityProperties;
 
     public enum TopicListView {
         ALL,
@@ -175,7 +176,7 @@ public class TopicRepository extends AbstractRepository {
         }
         // get topic filter regex for default groups
         topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
-            userGroupUtils.getUserAttributes(Collections.singletonList(this.defaultGroups))
+            userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
         ));
 
         return Optional.of(topicFilterRegex);

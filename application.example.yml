@@ -1,5 +1,6 @@
 micronaut:
   security:
+    enabled: true
     # Ldap authentificaton configuration
     ldap:
       default:
@@ -13,6 +14,21 @@ micronaut:
         groups:
           enabled: true
           base: "dc=example,dc=com"
+    # OIDC authentification configuration
+    oauth2:
+      enabled: true
+      clients:
+        oidc:
+          client-id: "<client-id>"
+          client-secret: "<client-secret>"
+          openid:
+            issuer: "<issuer-url>"
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: pleasechangeme
 
   server:
     context-path: "" # if behind a reverse proxy, path to akhq without trailing slash (optional). Example: akhq is
@@ -120,7 +136,7 @@ akhq:
     default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
-      admin: # Group name
+      - name: admin # Group name
         roles:  # roles for the group
           - topic/read
           - topic/insert
@@ -148,7 +164,7 @@ akhq:
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test.*"
-      topic-reader: # Other group
+      - name: topic-reader # Other group
         roles:
           - topic/read
         attributes:
@@ -156,7 +172,7 @@ akhq:
 
     # Basic auth configuration
     basic-auth:
-      user: # Username
+      - username: user # Username
         password: pass # Password in sha256
         groups: # Groups for the user
           - admin
@@ -164,19 +180,36 @@ akhq:
 
     # Ldap Groups configuration (when using ldap)
     ldap:
-      group:
-        group-ldap-1: # just a key, no matter will be override by name below
-          name: "group-ldap-1"
+      default-group: topic-reader
+      groups:
+        - name: group-ldap-1
           groups: # Akhq groups list
             - topic-reader
-        group-ldap-2:
-          name: "group-ldap-2"
+        - name: group-ldap-2
           groups:
             - admin
-      user:
-        riemann: # ldap user id
+      users:
+        - username: riemann # ldap user id
           groups: # Akhq groups list
             - topic-reader
-        einstein:
+        - username: einstein
           groups:
             - admin
+
+    # OIDC configuration
+    oidc:
+      enabled: true
+      providers:
+        oidc:
+          label: "Login with OIDC"
+          username-field: preferred_username
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            - name: oidc-admin-group
+              groups:
+                - admin
+          users:
+            - username: einstein
+              groups:
+                - admin

@@ -11,6 +11,14 @@ export const uriLogin = () => {
   return `${basePath}/login`;
 };
 
+export const uriAuths = () => {
+  return `${baseUrl}/api/auths`;
+};
+
+export const uriOidc = (provider) => {
+  return `${baseUrl}/oauth/login/${provider}`;
+};
+
 export const uriLogout = () => {
   return `${basePath}/logout`;
 };
@@ -260,6 +268,10 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
 export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
 };
+
+export const uriTopicDataEmpty = (clusterId, topicName) => {
+  return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
+}
 
 export default {
   apiUrl,
