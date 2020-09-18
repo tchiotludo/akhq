@@ -66,6 +66,11 @@ export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
   return uri;
 };
 
+export const uriTopicDataSingleRecord = (clusterId, topicId, filters) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/record?${filters}`;
+  return uri;
+};
+
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/partitions`;
 };

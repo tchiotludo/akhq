@@ -83,11 +83,7 @@ class TopicData extends React.Component {
           canAccessSchema: roles.registry && roles.registry['registry/read']
         },
         () => {
-          if(query.get('single')) {
-            this.getSingleMessage(this.buildFilters())
-          } else {
-            this.getMessages(this.buildFilters());
-          }
+            this.getMessages(this.buildFilters(), false, query.get('single') !== null);
         }
     );
   };
@@ -168,33 +164,38 @@ class TopicData extends React.Component {
     return filters.join('&');
   }
 
-  async getMessages(filters = null, changePage = false) {
+  getMessages(filters = null, changePage = false, singleSearch = false) {
     const {
       selectedCluster,
       selectedTopic,
       canAccessSchema,
-      nextPage
+      nextPage,
+      pageNumber,
+      partitionCount,
+      recordCount,
+      offsets
     } = this.state;
-    let data,
-        partitionData = {};
 
+    const requests = [get(uriTopicsPartitions(selectedCluster, selectedTopic))];
 
-    const requests = [ get(uriTopicData(selectedCluster, selectedTopic, filters,changePage ? nextPage : undefined)),
-                       get(uriTopicsPartitions(selectedCluster, selectedTopic))];
-
+    if(singleSearch) {
+        requests.push(get(uriTopicDataSingleRecord(selectedCluster, selectedTopic,filters)));
+    } else {
+        requests.push(get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)));
+    }
     if (canAccessSchema) {
       requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
     }
 
     Promise.all(requests)
-      .then(data => {
-          console.log(data);
-          let tableMessages,
-              schemas = [];
+        .then(data => {
+          let tableMessages = [],
+              schemas = [],
+              pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
 
-          const messagesData = data[0].data;
-          const partitionData = data[1].data;
-          if(data.size === 3) {
+          const partitionData = data[0].data;
+          const messagesData = data[1].data;
+          if (data.size === 3) {
             const schemasData = data[2].data;
             schemas = schemasData.results || [];
           }
@@ -202,71 +203,34 @@ class TopicData extends React.Component {
           if (messagesData.results) {
             tableMessages = this.handleMessages(messagesData.results);
           } else {
-            this.setState({ pageNumber: 1 });
+            pageNumberTemp = 1;
           }
           if (partitionData) {
             if (changePage) {
-              this.getNextPageOffsets();
+              offsetsTemp = this.getNextPageOffsets();
             }
-            this.setState({
-              partitionCount: partitionData.length,
-              nextPage: messagesData.after,
-              recordCount: messagesData.size
-            });
+            partitionCountTemp = partitionData.length;
+            nextPageTemp = messagesData.after;
+            recordCountTemp = messagesData.size;
           }
+          this.setState({
+            messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
+            pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
+            partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
+            nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
+            recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
+            offsets: (offsetsTemp) ? offsetsTemp : offsets
+          });
+        });
 
-          this.setState({ messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas });
-
-      });
-
-    if(changePage) {
-      this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length ));
-    } else {
-      this.setUrlHistory(filters);
+    if (!singleSearch) {
+      if (changePage) {
+        this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length));
+      } else {
+        this.setUrlHistory(filters);
+      }
     }
   }
-
-  async getSingleMessage(filters) {
-    const {
-      selectedCluster,
-      selectedTopic,
-      canAccessSchema
-    } = this.state;
-    let data,
-        partitionData = {};
-
-    data = await get(
-        uriTopicDataSingleRecord(
-            selectedCluster,
-            selectedTopic,
-            filters)
-    );
-
-    data = data.data;
-    this.setState({ canDeleteRecords: data.canDeleteRecords });
-
-    let schemas = [];
-    if (canAccessSchema) {
-      schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-      schemas = schemas.data.results || [];
-    }
-    this.setState({ schemas });
-    partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
-    partitionData = partitionData.data;
-    if (data.results) {
-      this.handleMessages(data.results);
-    } else {
-      this.setState({ messages: [], pageNumber: 1 });
-    }
-    if (partitionData) {
-      this.setState({
-        partitionCount: partitionData.length,
-        nextPage: data.after,
-        recordCount: data.size
-      });
-    }
-  }
-
 
   handleOnDelete(message) {
     this.setState({ compactMessageToDelete: message }, () => {
@@ -280,7 +244,8 @@ class TopicData extends React.Component {
 
   async handleOnShare(row) {
     try {
-      await navigator.clipboard.writeText(`${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset}&partition=${row.partition}` );
+      await navigator.clipboard.writeText(
+          `${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset -1}&partition=${row.partition}` );
       toast.info(`Copied message url to clipboard!`);
     } catch (err) {
       console.error('Failed to copy: ', err);
@@ -332,16 +297,12 @@ class TopicData extends React.Component {
       tableMessages.push(messageToPush);
     });
     return tableMessages;
-    //this.setState({ messages: tableMessages });
   };
 
-  getNextPageOffsets = () => {
-    const { nextPage } = this.state;
-
+  getNextPageOffsets = (nextPage) => {
     let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
     let afterString = aux.substring(0, aux.indexOf('&'));
-
-    this.setState({ offsets: this.getOffsetsByAfterString(afterString) });
+    return this.getOffsetsByAfterString(afterString);
   };
 
   getOffsetsByAfterString = (afterString) => {
