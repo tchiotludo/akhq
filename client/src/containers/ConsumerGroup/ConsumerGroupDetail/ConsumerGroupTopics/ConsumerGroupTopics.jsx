@@ -8,7 +8,8 @@ class ConsumerGroupTopics extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedConsumerGroup: this.props.consumerGroupId
+    selectedConsumerGroup: this.props.consumerGroupId,
+    loading: true
   };
 
   componentDidMount() {
@@ -34,7 +35,7 @@ class ConsumerGroupTopics extends Component {
         lag: offset.offsetLag
       };
     });
-    this.setState({ data });
+    this.setState({ data, loading: false });
   }
 
   handleOptional(optional) {
@@ -46,10 +47,11 @@ class ConsumerGroupTopics extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'name',

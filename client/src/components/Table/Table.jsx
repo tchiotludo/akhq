@@ -347,6 +347,19 @@ class Table extends Component {
     );
   }
 
+  renderLoading() {
+      const { columns } = this.props;
+      return (
+          <tr>
+            <td colSpan={columns.length}>
+              <div className="alert alert-warning mb-0" role="alert">
+                Loading...
+              </div>
+            </td>
+          </tr>
+      );
+  }
+
   renderNoContent() {
     const { noContent, columns } = this.props;
     if (noContent) {
@@ -376,7 +389,7 @@ class Table extends Component {
   }
 
   render() {
-    const { noStripes } = this.props;
+    const { noStripes, loading } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 
@@ -391,13 +404,16 @@ class Table extends Component {
     let classNames = 'table table-bordered table-hover mb-0';
     if (!noStripes) classNames += ' table-striped';
     if (noStripes) classNames += ' no-stripes';
+
     return (
-      <div className="table-responsive">
-        <table className={classNames}>
-          {this.renderHeader()}
-          <tbody>{data && data.length > 0 ? allItemRows : this.renderNoContent()}</tbody>
-        </table>
-      </div>
+        <div className="table-responsive">
+          <table className={classNames}>
+            {this.renderHeader()}
+            <tbody>
+                {loading? this.renderLoading() : ((data && data.length > 0) ? allItemRows : this.renderNoContent())}
+            </tbody>
+          </table>
+        </div>
     );
   }
 }
@@ -428,7 +444,8 @@ Table.propTypes = {
   toPresent: PropTypes.array,
   noContent: PropTypes.any,
   handleExtraExpand: PropTypes.func,
-  handleExtraCollapse: PropTypes.func
+  handleExtraCollapse: PropTypes.func,
+  loading: PropTypes.bool
 };
 
 export default Table;

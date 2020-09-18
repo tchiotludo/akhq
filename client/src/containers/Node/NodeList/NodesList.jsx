@@ -8,7 +8,8 @@ import { uriNodes } from '../../../utils/endpoints';
 class NodesList extends Component {
   state = {
     data: [],
-    selectedCluster: ''
+    selectedCluster: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -32,17 +33,18 @@ class NodesList extends Component {
         rack: node.rack || ''
       };
     });
-    this.setState({ data: tableNodes });
+    this.setState({ data: tableNodes, loading: false });
     return tableNodes;
   }
 
   render() {
     const { history } = this.props;
-    const { data, selectedCluster } = this.state;
+    const { data, selectedCluster, loading } = this.state;
     return (
       <div>
         <Header title="Nodes" history={history} />
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',

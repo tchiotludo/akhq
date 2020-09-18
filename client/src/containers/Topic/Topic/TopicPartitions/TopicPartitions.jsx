@@ -8,7 +8,8 @@ class TopicPartitions extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topic
+    selectedTopic: this.props.topic,
+    loading: true
   };
   componentDidMount() {
     this.getTopicsPartitions();
@@ -35,7 +36,7 @@ class TopicPartitions extends Component {
         size: partition
       };
     });
-    this.setState({ data: tablePartitions });
+    this.setState({ data: tablePartitions, loading: false });
   }
 
   handleLeader(leader) {
@@ -65,10 +66,11 @@ class TopicPartitions extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',

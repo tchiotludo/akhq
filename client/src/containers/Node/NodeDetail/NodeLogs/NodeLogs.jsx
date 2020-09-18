@@ -11,7 +11,8 @@ class NodeLogs extends Component {
     port: '',
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedNode: this.props.nodeId
+    selectedNode: this.props.nodeId,
+    loading: true
   };
 
   componentDidMount() {
@@ -38,14 +39,15 @@ class NodeLogs extends Component {
         offsetLag: log.offsetLag
       };
     });
-    this.setState({ data: tableNodes });
+    this.setState({ data: tableNodes, loading: false });
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'broker',

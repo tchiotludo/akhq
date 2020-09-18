@@ -56,7 +56,8 @@ class TopicData extends React.Component {
     schemas: [],
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
-    percent: 0
+    percent: 0,
+    loading: true
   };
 
   eventSource;
@@ -176,6 +177,8 @@ class TopicData extends React.Component {
     let data,
         partitionData = {};
 
+    this.setState({ loading: true });
+
     data = await get(
         uriTopicData(
             selectedCluster,
@@ -206,7 +209,7 @@ class TopicData extends React.Component {
     if (data.results) {
       this.handleMessages(data.results);
     } else {
-      this.setState({ messages: [], pageNumber: 1 });
+      this.setState({ messages: [], pageNumber: 1, loading: false });
     }
     if (partitionData) {
       if (changePage) {
@@ -272,7 +275,7 @@ class TopicData extends React.Component {
       };
       tableMessages.push(messageToPush);
     });
-    this.setState({ messages: tableMessages });
+    this.setState({ messages: tableMessages, loading: false });
   };
 
   getNextPageOffsets = () => {
@@ -430,11 +433,11 @@ class TopicData extends React.Component {
       datetime,
       isSearching,
       canDeleteRecords,
-      percent
+      percent,
+      loading
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
-    const { loading } = this.props.history.location;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -645,6 +648,7 @@ class TopicData extends React.Component {
           {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
           <div className="table-responsive">
             <Table
+                loading={loading}
                 reduce={true}
                 firstHeader={firstColumns}
                 columns={[

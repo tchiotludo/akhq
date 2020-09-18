@@ -10,7 +10,8 @@ class TopicGroups extends Component {
     topicId: this.props.topicId,
     showDeleteModal: false,
     selectedCluster: this.props.clusterId,
-    deleteMessage: ''
+    deleteMessage: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -21,14 +22,10 @@ class TopicGroups extends Component {
     const { selectedCluster, topicId } = this.state;
 
     let data  = await api.get(uriTopicsGroups(selectedCluster, topicId));
-    data = data.data;
-    if (data) {
-      if (data) {
-        this.handleGroups(data);
-      } else {
-        this.setState({ consumerGroup: [] });
-      }
-      this.setState({ selectedCluster });
+    if (data && data.data) {
+      this.handleGroups(data.data);
+    } else {
+      this.setState({ consumerGroup: [], loading: false });
     }
   }
 
@@ -43,7 +40,7 @@ class TopicGroups extends Component {
           topics: this.groupTopics(consumerGroup.offsets)
         };
       }) || [];
-    this.setState({ consumerGroups: tableConsumerGroups });
+    this.setState({ consumerGroups: tableConsumerGroups, loading: false });
   }
 
   groupTopics(topics) {
@@ -85,12 +82,13 @@ class TopicGroups extends Component {
   }
 
   render() {
-    const { selectedCluster } = this.state;
+    const { selectedCluster, loading } = this.state;
     const { history } = this.props;
 
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',
