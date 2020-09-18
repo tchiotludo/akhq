@@ -50,7 +50,7 @@ class ConnectList extends Component {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;
 
-    this.setState({ loading: false });
+    this.setState({ loading: true });
 
     connectDefinitions = await get(uriConnectDefinitions(clusterId, connectId));
     this.handleData(connectDefinitions.data);

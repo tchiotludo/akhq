@@ -23,6 +23,8 @@ class AclTopics extends Component {
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);
+    } else {
+      this.setState({ tableData: [], loading: false });
     }
   }
 

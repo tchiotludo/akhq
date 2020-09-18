@@ -19,7 +19,8 @@ class TopicConfigs extends Form {
     changedConfigs: {},
     errors: {},
     configs: [],
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   schema = {};
@@ -53,7 +54,7 @@ class TopicConfigs extends Form {
         sensitive: config.sensitive
       };
     });
-    this.setState({ data: tableTopics, configs });
+    this.setState({ data: tableTopics, configs, loading: false });
   }
   getConfigDataType = configName => {
     switch (configName.substring(configName.lastIndexOf('.'))) {
@@ -210,7 +211,7 @@ class TopicConfigs extends Form {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <form
@@ -220,6 +221,7 @@ class TopicConfigs extends Form {
       >
         <div>
           <Table
+            loading={loading}
             columns={[
               {
                 id: 'nameAndDescription',
