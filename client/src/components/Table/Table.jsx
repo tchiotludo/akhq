@@ -351,9 +351,13 @@ class Table extends Component {
       const { columns } = this.props;
       return (
           <tr>
-            <td colSpan={columns.length}>
-              <div className="alert alert-warning mb-0" role="alert">
-                Loading...
+            <td colSpan={columns.length} className="loading-rows">
+              <div className="line-spinner">
+                <div className="rect1"/>
+                <div className="rect2"/>
+                <div className="rect3"/>
+                <div className="rect4"/>
+                <div className="rect5"/>
               </div>
             </td>
           </tr>
