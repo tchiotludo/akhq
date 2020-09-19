@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import history from './history';
+import _merge from 'lodash/merge';
 
 const configs = {
   withCredentials: true
@@ -46,15 +47,17 @@ const handleError = err => {
   }
 };
 
-export const get = url =>
+export const get = (url, config) =>
   new Promise((resolve, reject) => {
     axios
-      .get(url, configs)
+      .get(url, _merge(configs, config))
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -66,7 +69,9 @@ export const put = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -78,7 +83,9 @@ export const post = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -90,7 +97,9 @@ export const remove = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
