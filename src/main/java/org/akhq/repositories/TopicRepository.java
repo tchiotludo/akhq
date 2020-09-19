@@ -126,7 +126,6 @@ public class TopicRepository extends AbstractRepository {
                 list.add(
                     new Topic(
                         description.getValue(),
-                        skipConsumerGroups ? Collections.emptyList() : consumerGroupRepository.findByTopic(clusterId, description.getValue().name()),
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
                         isInternal(description.getValue().name()),
