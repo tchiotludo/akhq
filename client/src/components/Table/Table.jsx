@@ -354,7 +354,6 @@ class Table extends Component {
   }
 
   renderLoading() {
-      const { columns } = this.props;
       return (
           <tr>
             <td colSpan={this.colspan()} className="loading-rows">
@@ -365,7 +364,7 @@ class Table extends Component {
   }
 
   renderNoContent() {
-    const { noContent, columns } = this.props;
+    const { noContent } = this.props;
     if (noContent) {
       if (typeof noContent === 'string') {
         return (
