@@ -321,17 +321,23 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @Get("api/{cluster}/topic/{topicName}/data/record")
+    @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
     @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
     public ResultNextList<Record> record(
             HttpRequest<?> request,
             String cluster,
             String topicName,
-            Optional<String> after,
-            Optional<Integer> partition
+            Integer partition,
+            Integer offset
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
-        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, Optional.empty(), Optional.empty(), Optional.empty());
+        RecordRepository.Options options = dataSearchOptions(cluster,
+                topicName,
+                Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset))),
+                Optional.of(partition),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
 
         Optional<Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
         List<Record> data =  singleRecord.map(record -> Collections.singletonList(record)).orElse(Collections.emptyList());

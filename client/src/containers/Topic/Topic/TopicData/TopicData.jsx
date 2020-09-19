@@ -79,11 +79,16 @@ class TopicData extends React.Component {
           datetime: (query.get('timestamp'))? new Date(query.get('timestamp')) : this.state.datetime,
           offsetsSearch: (query.get('after'))? query.get('after') : this.state.offsetsSearch,
           currentSearch: (query.get('search'))? query.get('search') : this.state.currentSearch,
-          offsets: (query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets,
+          offsets: (query.get('offset'))? this.getOffsetsByOffset(query.get('partition'), query.get('offset')) :
+              ((query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets),
           canAccessSchema: roles.registry && roles.registry['registry/read']
         },
         () => {
-            this.getMessages(this.buildFilters(), false, query.get('single') !== null);
+            if(query.get('single') !== null) {
+              this.getSingleMessage(query.get('partition'), query.get('offset'));
+            } else {
+              this.getMessages(this.buildFilters());
+            }
         }
     );
   };
@@ -164,11 +169,48 @@ class TopicData extends React.Component {
     return filters.join('&');
   }
 
-  getMessages(filters = null, changePage = false, singleSearch = false) {
+  getSingleMessage(partition, offset) {
+    const {
+      selectedCluster,
+      selectedTopic,
+      canAccessSchema
+    } = this.state;
+
+    const requests = [get(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    if (canAccessSchema) {
+      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+    }
+
+    this._fetchMessages(requests);
+  }
+
+
+  getMessages(filters = null, changePage = false) {
     const {
       selectedCluster,
       selectedTopic,
       canAccessSchema,
+      nextPage
+    } = this.state;
+
+    const requests = [get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    if (canAccessSchema) {
+      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+    }
+
+    this._fetchMessages(requests, changePage);
+
+    if (changePage) {
+      this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length));
+    } else {
+      this.setUrlHistory(filters);
+    }
+  }
+
+  _fetchMessages(requests, changePage = false) {
+    const {
       nextPage,
       pageNumber,
       partitionCount,
@@ -176,60 +218,41 @@ class TopicData extends React.Component {
       offsets
     } = this.state;
 
-    const requests = [get(uriTopicsPartitions(selectedCluster, selectedTopic))];
-
-    if(singleSearch) {
-        requests.push(get(uriTopicDataSingleRecord(selectedCluster, selectedTopic,filters)));
-    } else {
-        requests.push(get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)));
-    }
-    if (canAccessSchema) {
-      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
-    }
-
     Promise.all(requests)
-        .then(data => {
-          let tableMessages = [],
-              schemas = [],
-              pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
+      .then(data => {
+        let tableMessages = [],
+            schemas = [],
+            pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
 
-          const partitionData = data[0].data;
-          const messagesData = data[1].data;
-          if (data.size === 3) {
-            const schemasData = data[2].data;
-            schemas = schemasData.results || [];
-          }
+        const messagesData = data[0].data;
+        const partitionData = data[1].data;
+        if (data.size === 3) {
+          const schemasData = data[2].data;
+          schemas = schemasData.results || [];
+        }
 
-          if (messagesData.results) {
-            tableMessages = this.handleMessages(messagesData.results);
-          } else {
-            pageNumberTemp = 1;
+        if (messagesData.results) {
+          tableMessages = this.handleMessages(messagesData.results);
+        } else {
+          pageNumberTemp = 1;
+        }
+        if (partitionData) {
+          if (changePage) {
+            offsetsTemp = this.getNextPageOffsets();
           }
-          if (partitionData) {
-            if (changePage) {
-              offsetsTemp = this.getNextPageOffsets();
-            }
-            partitionCountTemp = partitionData.length;
-            nextPageTemp = messagesData.after;
-            recordCountTemp = messagesData.size;
-          }
-          this.setState({
-            messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
-            pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
-            partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
-            nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
-            recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
-            offsets: (offsetsTemp) ? offsetsTemp : offsets
-          });
+          partitionCountTemp = partitionData.length;
+          nextPageTemp = messagesData.after;
+          recordCountTemp = messagesData.size;
+        }
+        this.setState({
+          messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
+          pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
+          partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
+          nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
+          recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
+          offsets: (offsetsTemp) ? offsetsTemp : offsets
         });
-
-    if (!singleSearch) {
-      if (changePage) {
-        this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length));
-      } else {
-        this.setUrlHistory(filters);
-      }
-    }
+    });
   }
 
   handleOnDelete(message) {
@@ -242,17 +265,14 @@ class TopicData extends React.Component {
     });
   }
 
-  async handleOnShare(row) {
-    try {
-      await navigator.clipboard.writeText(
-          `${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset -1}&partition=${row.partition}` );
-      toast.info(`Copied message url to clipboard!`);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
+  handleOnShare(row) {
+    const {
+      selectedCluster,
+      selectedTopic
+    } = this.state;
+
+    window.open(`/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`)
   }
-
-
 
   showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
@@ -313,6 +333,12 @@ class TopicData extends React.Component {
       const offset = offsetByPartition.split('-');
       offsets[`partition${offset[0]}`] = offset[1];
     });
+    return offsets;
+  }
+
+  getOffsetsByOffset = (partition, offset) => {
+    let offsets = [];
+    offsets[`partition${partition}`] = offset;
     return offsets;
   }
 
