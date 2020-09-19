@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
+import Spinner from '../Spinner';
 
 class Table extends Component {
   state = {
@@ -159,10 +160,11 @@ class Table extends Component {
                 }}
                 id={`row_${column.id}_${colIndex}`}
               >
-                {column.cell(row, column)}
+                {this.renderContent(column.cell(row, column))}
               </td>
             );
           }
+
           return (
             <td
               key={`tableCol${index}${colIndex}`}
@@ -180,7 +182,7 @@ class Table extends Component {
               }}
               id={`row_${column.id}_${colIndex}`}
             >
-              {row[column.accessor]}
+              {this.renderContent(row[column.accessor])}
             </td>
           );
         })}
@@ -198,7 +200,7 @@ class Table extends Component {
         <tr key={'row-expandable-' + row.id}>
           <td
             key={'col-expandable-' + row.id}
-            colSpan={columns.length + (actions && actions.length ? actions.length : 0)}
+            colSpan={this.colspan()}
             style={{ padding: 0 }}
           >
             {onExpand(row)}
@@ -224,7 +226,7 @@ class Table extends Component {
         >
           <td
             style={{ backgroundColor: '#171819' }}
-            colSpan={columns.length + (actions && actions.length ? actions.length : 0)}
+            colSpan={this.colspan()}
           >
             {' '}
             {extraExpanded &&
@@ -264,6 +266,10 @@ class Table extends Component {
     }
 
     return items;
+  }
+
+  renderContent(content) {
+    return content !== undefined ? content : <Spinner />
   }
 
   renderActions(row) {
@@ -351,14 +357,8 @@ class Table extends Component {
       const { columns } = this.props;
       return (
           <tr>
-            <td colSpan={columns.length} className="loading-rows">
-              <div className="line-spinner">
-                <div className="rect1"/>
-                <div className="rect2"/>
-                <div className="rect3"/>
-                <div className="rect4"/>
-                <div className="rect5"/>
-              </div>
+            <td colSpan={this.colspan()} className="loading-rows">
+              <Spinner />
             </td>
           </tr>
       );
@@ -370,7 +370,7 @@ class Table extends Component {
       if (typeof noContent === 'string') {
         return (
           <tr>
-            <td colSpan={columns.length}>
+            <td colSpan={this.colspan()}>
               <div className="alert alert-warning mb-0" role="alert">
                 {noContent}
               </div>
@@ -383,13 +383,19 @@ class Table extends Component {
     }
     return (
       <tr>
-        <td colSpan={columns.length}>
+        <td colSpan={this.colspan()}>
           <div className="alert alert-warning mb-0" role="alert">
             No data available
           </div>
         </td>
       </tr>
     );
+  }
+
+  colspan() {
+    const { actions, columns } = this.props;
+
+    return columns.length + (actions && actions.length ? actions.length : 0)
   }
 
   render() {
