@@ -8,7 +8,8 @@ class TopicLogs extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topic
+    selectedTopic: this.props.topic,
+    loading: true
   };
 
   componentDidMount() {
@@ -32,17 +33,18 @@ class TopicLogs extends Component {
         offsetLag: log.offsetLag
       };
     });
-    this.setState({ data: tableLogs });
+    this.setState({ data: tableLogs, loading: false });
   }
 
   handleSize(size) {
     return <label>{converters.showBytes(size, 0)}</label>;
   }
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'broker',

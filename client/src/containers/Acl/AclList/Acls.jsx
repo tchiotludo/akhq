@@ -12,7 +12,8 @@ class Acls extends Component {
     selectedCluster: '',
     searchData: {
       search: ''
-    }
+    },
+    loading: true
   };
 
   componentDidMount() {
@@ -35,19 +36,19 @@ class Acls extends Component {
         user: acl.principal || ''
       };
     });
-    this.setState({ data: tableAcls });
+    this.setState({ data: tableAcls, loading: false });
     return tableAcls;
   }
 
   handleSearch = data => {
     const { searchData } = data;
-    this.setState({ searchData }, () => {
+    this.setState({ searchData, loading: true }, () => {
       this.getAcls();
     });
   };
 
   render() {
-    const { data, searchData } = this.state;
+    const { data, searchData, loading } = this.state;
     const { clusterId } = this.props.match.params;
     return (
       <div>
@@ -67,6 +68,7 @@ class Acls extends Component {
           />
         </nav>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'user',

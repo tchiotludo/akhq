@@ -19,7 +19,8 @@ class NodeConfigs extends Form {
     changedConfigs: {},
     errors: {},
     configs: [],
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   schema = {};
@@ -51,7 +52,7 @@ class NodeConfigs extends Form {
         sensitive: config.sensitive
       };
     });
-    this.setState({ data: tableNodes, configs });
+    this.setState({ data: tableNodes, configs, loading: false });
   }
 
   handleDataType(dataType, value) {
@@ -214,7 +215,7 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <form
@@ -224,6 +225,7 @@ class NodeConfigs extends Form {
       >
         <div>
           <Table
+            loading={loading}
             columns={[
               {
                 id: 'nameAndDescription',

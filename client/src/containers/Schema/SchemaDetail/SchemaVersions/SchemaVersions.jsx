@@ -20,7 +20,8 @@ class SchemaVersions extends Component {
     deleteMessage: '',
     schemaToDelete: {},
     deleteData: { clusterId: '', subject: '', versionId: 1 },
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
@@ -37,9 +38,9 @@ class SchemaVersions extends Component {
           schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
         };
       });
-      this.setState({ data });
+      this.setState({ data, loading: false });
     } else {
-      this.setState({ data: [] });
+      this.setState({ data: [], loading: false });
     }
   }
 
@@ -94,9 +95,11 @@ class SchemaVersions extends Component {
 
   render() {
     const roles = this.state.roles || {};
+    const { loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',

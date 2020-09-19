@@ -9,7 +9,8 @@ class ConsumerGroupMembers extends Component {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedConsumerGroup: this.props.consumerGroupId
+    selectedConsumerGroup: this.props.consumerGroupId,
+    loading: true
   };
 
   componentDidMount() {
@@ -33,7 +34,7 @@ class ConsumerGroupMembers extends Component {
         assignments: member.assignments
       };
     });
-    this.setState({ data });
+    this.setState({ data, loading: false });
   }
 
   handlePartitions(partitions) {
@@ -86,10 +87,11 @@ class ConsumerGroupMembers extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'clientId',
