@@ -147,7 +147,7 @@ class Table extends Component {
               <td
                 key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
-                onClick={() => {
+                onDoubleClick={() => {
                   if (
                     actions &&
                     actions.find(action => action === constants.TABLE_DETAILS) &&
@@ -169,7 +169,7 @@ class Table extends Component {
             <td
               key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
-              onClick={() => {
+              onDoubleClick={() => {
                 if (
                   actions &&
                   actions.find(action => action === constants.TABLE_DETAILS) &&
