@@ -265,13 +265,21 @@ class TopicData extends React.Component {
     });
   }
 
-  handleOnShare(row) {
+  async handleOnShare(row) {
     const {
       selectedCluster,
       selectedTopic
     } = this.state;
 
-    window.open(`/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`)
+    try {
+      await navigator.clipboard.writeText(`${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset}&partition=${row.partition}` );
+      toast.info('Message url is copied to your clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+
+    this.props.history.push(`/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`)
+    this.checkProps()
   }
 
   showDeleteModal = deleteMessage => {
