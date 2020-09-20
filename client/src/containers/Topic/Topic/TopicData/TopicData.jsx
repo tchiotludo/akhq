@@ -56,7 +56,8 @@ class TopicData extends React.Component {
     schemas: [],
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
-    percent: 0
+    percent: 0,
+    loading: true
   };
 
   eventSource;
@@ -485,11 +486,11 @@ class TopicData extends React.Component {
       datetime,
       isSearching,
       canDeleteRecords,
-      percent
+      percent,
+      loading
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
-    const { loading } = this.props.history.location;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -700,6 +701,7 @@ class TopicData extends React.Component {
           {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
           <div className="table-responsive">
             <Table
+                loading={loading}
                 reduce={true}
                 firstHeader={firstColumns}
                 columns={[

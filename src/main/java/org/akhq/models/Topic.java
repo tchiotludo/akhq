@@ -29,11 +29,9 @@ public class Topic {
     @JsonIgnore
     private boolean configStream;
     private final List<Partition> partitions = new ArrayList<>();
-    private List<ConsumerGroup> consumerGroups;
 
     public Topic(
         TopicDescription description,
-        List<ConsumerGroup> consumerGroup,
         List<LogDir> logDirs,
         List<Partition.Offsets> offsets,
         boolean configInternal,
@@ -41,7 +39,6 @@ public class Topic {
     ) {
         this.name = description.name();
         this.internal = description.isInternal();
-        this.consumerGroups = consumerGroup;
 
         this.configInternal = configInternal;
         this.configStream = configStream;

@@ -6,7 +6,8 @@ import { uriConsumerGroupAcls } from '../../../../utils/endpoints';
 class TopicAcls extends Component {
   state = {
     data: [],
-    selectedCluster: ''
+    selectedCluster: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -33,15 +34,16 @@ class TopicAcls extends Component {
         });
       })
     );
-    this.setState({ data: tableAcls });
+    this.setState({ data: tableAcls, loading: false });
     return tableAcls;
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
           columns={[
             {
               id: 'group',

@@ -6,7 +6,7 @@ import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import api, { remove } from '../../../utils/api';
-import { uriDeleteTopics, uriTopics } from '../../../utils/endpoints';
+import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
@@ -33,7 +33,8 @@ class TopicList extends Component {
       cleanup: 'delete',
       retention: 86400000
     },
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
@@ -105,6 +106,7 @@ class TopicList extends Component {
   async getTopics() {
     const { selectedCluster, pageNumber } = this.state;
     const { search, topicListView } = this.state.searchData;
+    this.setState({ loading: true } );
 
     let data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
     data = data.data;
@@ -115,16 +117,25 @@ class TopicList extends Component {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page }, () =>
+      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }, () =>
           this.props.history.replace(`/ui/${selectedCluster}/topic`)
       )
+    } else {
+      this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
   }
 
   handleTopics(topics) {
-    let tableTopics = [];
+    let tableTopics = {};
+
+    const { selectedCluster } = this.state;
+
+    const setState = () =>  {
+      this.setState({ topics: Object.values(tableTopics) });
+    }
+
     topics.forEach(topic => {
-      tableTopics.push({
+      tableTopics[topic.name] = {
         id: topic.name,
         name: topic.name,
         count: topic.size,
@@ -132,11 +143,18 @@ class TopicList extends Component {
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
-        groupComponent: topic.consumerGroups,
+        groupComponent: undefined,
         internal: topic.internal
-      });
+      }
+
+      api.get(uriTopicsGroups(selectedCluster, topic.name))
+        .then(value => {
+          tableTopics[topic.name].groupComponent = value.data
+          setState()
+        })
     });
-    this.setState({ topics: tableTopics });
+
+    setState()
   }
 
   handleConsumerGroups = (consumerGroups, topicId) => {
@@ -169,7 +187,7 @@ class TopicList extends Component {
   };
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
@@ -211,6 +229,7 @@ class TopicList extends Component {
         </nav>
 
         <Table
+          loading={loading}
           has2Headers
           firstHeader={firstColumns}
           columns={[
@@ -264,6 +283,8 @@ class TopicList extends Component {
               cell: obj => {
                 if (obj.groupComponent) {
                   return this.handleConsumerGroups(obj.groupComponent, obj.id);
+                } else {
+
                 }
               }
             }
