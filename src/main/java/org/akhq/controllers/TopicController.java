@@ -321,16 +321,20 @@ public class TopicController extends AbstractController {
             Integer offset
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
-        RecordRepository.Options options = dataSearchOptions(cluster,
-                topicName,
-                Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset))),
-                Optional.of(partition),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
+
+        // after wait for next offset, so add - 1 to allow to have the current offset
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
+            Optional.of(partition),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
 
         Optional<Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
-        List<Record> data =  singleRecord.map(record -> Collections.singletonList(record)).orElse(Collections.emptyList());
+        List<Record> data = singleRecord.map(Collections::singletonList).orElse(Collections.emptyList());
 
         return TopicDataResultNextList.of(
                 data,
