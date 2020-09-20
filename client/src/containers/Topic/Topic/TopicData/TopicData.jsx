@@ -251,7 +251,8 @@ class TopicData extends React.Component {
           partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
           nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
           recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
-          offsets: (offsetsTemp) ? offsetsTemp : offsets
+          offsets: (offsetsTemp) ? offsetsTemp : offsets,
+          loading: false
         });
     });
   }
@@ -272,14 +273,16 @@ class TopicData extends React.Component {
       selectedTopic
     } = this.state;
 
+    const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
+
     try {
-      await navigator.clipboard.writeText(`${window.location.host}${window.location.pathname}?single=true&after=${row.partition}-${row.offset}&partition=${row.partition}` );
+      await navigator.clipboard.writeText(`${window.location.host}${pathToShare}` );
       toast.info('Message url is copied to your clipboard!');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
 
-    this.props.history.push(`/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`)
+    this.props.history.push(pathToShare)
     this.checkProps()
   }
 
