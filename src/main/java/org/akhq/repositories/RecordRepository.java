@@ -140,6 +140,28 @@ public class RecordRepository extends AbstractRepository {
         }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
     }
 
+    public Optional<Record> consumeSingleRecord(String clusterId, Topic topic, Options options) throws ExecutionException, InterruptedException {
+        return Debug.call(() -> {
+            Optional<Record> singleRecord = Optional.empty();
+            KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, Integer.valueOf(1));
+            }});
+
+            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            if(!records.isEmpty()) {
+                singleRecord = Optional.of(newRecord(records.iterator().next(), options));
+            }
+
+            consumer.close();
+            return singleRecord;
+
+        }, "Consume with options {}", Collections.singletonList(options.toString()));
+    }
+
     @ToString
     @EqualsAndHashCode
     @Getter
@@ -290,7 +312,7 @@ public class RecordRepository extends AbstractRepository {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
                 if (options.after.size() > 0 && options.after.containsKey(partition.getId())) {
-                    first = options.after.get(partition.getId()) + 1;
+                    first = options.after.get(partition.getId());
                 }
 
                 if (first > partition.getLastOffset()) {

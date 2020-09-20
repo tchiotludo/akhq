@@ -273,13 +273,13 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare } = this.props;
 
     return (
       <>
         {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Add"
               id="add"
               onClick={() => {
                 onAdd && onAdd();
@@ -291,7 +291,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Details"
               id="details"
               onClick={() => {
                 onDetails && onDetails(row.id, row);
@@ -303,7 +303,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Config"
               id="config"
               onClick={() => {
                 onConfig && onConfig(row.id, row);
@@ -315,7 +315,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Delete"
               id="delete"
               onClick={() => {
                 onDelete && onDelete(row);
@@ -327,7 +327,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Edit"
               id="edit"
               onClick={() => {
                 onEdit && onEdit();
@@ -339,7 +339,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_RESTART) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Restart"
               id="restart"
               onClick={() => {
                 onRestart && onRestart(row);
@@ -348,6 +348,18 @@ class Table extends Component {
               <i className="fa fa-refresh" />
             </span>
           </td>
+        )}
+        {actions.find(el => el === constants.TABLE_SHARE) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Share"
+                id="share"
+                onClick={() => {
+                  onShare && onShare(row);
+                }}
+            >
+              <i className="fa fa-share" />
+            </span>
+            </td>
         )}
       </>
     );
