@@ -3,7 +3,6 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import history from './history';
-import _merge from 'lodash/merge';
 
 const configs = {
   withCredentials: true
@@ -50,7 +49,7 @@ const handleError = err => {
 export const get = (url, config) =>
   new Promise((resolve, reject) => {
     axios
-      .get(url, _merge(configs, config))
+      .get(url, {...configs, ...config})
       .then(res => {
         resolve(res);
       })
