@@ -25,24 +25,17 @@ class BigDecimalFriendlySpecificDatumReader<T> extends SpecificDatumReader<T> {
 
     @Override
     protected void readField(Object record, Schema.Field f, Object oldDatum, ResolvingDecoder resolver, Object state) throws IOException {
-        if (record instanceof GenericData.Record) {
-            Object datum = convert(f, oldDatum, resolver);
+        Schema schema = f.schema();
+        LogicalType logicalType = schema.getLogicalType();
+
+        if (record instanceof GenericData.Record &&
+                schema.getType() == Schema.Type.BYTES &&
+                logicalType instanceof LogicalTypes.Decimal) {
+            String value = ((ByteBuffer) readBytes(oldDatum, schema, resolver)).toString();
+            Object datum = DECIMAL_CONVERSION.toBytes(new BigDecimal(value), schema, logicalType);
             getData().setField(record, f.name(), f.pos(), datum);
         } else {
             super.readField(record, f, oldDatum, resolver, state);
         }
     }
-
-    private Object convert(Schema.Field f, Object oldDatum, ResolvingDecoder resolver) throws IOException {
-        Schema schema = f.schema();
-        LogicalType logicalType = schema.getLogicalType();
-
-        if (schema.getType() == Schema.Type.BYTES && logicalType instanceof LogicalTypes.Decimal) {
-            String value = ((ByteBuffer) readBytes(oldDatum, schema, resolver)).toString();
-            return DECIMAL_CONVERSION.toBytes(new BigDecimal(value), schema, logicalType);
-        } else {
-            return readWithoutConversion(oldDatum, schema, resolver);
-        }
-    }
-
 }
