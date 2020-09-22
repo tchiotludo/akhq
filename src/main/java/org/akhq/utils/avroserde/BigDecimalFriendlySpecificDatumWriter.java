@@ -23,13 +23,11 @@ class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
 
     @Override
     protected void writeField(Object datum, Schema.Field f, Encoder out, Object state) throws IOException {
-        if (datum instanceof GenericData.Record) {
-            Schema fieldSchema = f.schema();
-            LogicalType logicalType = fieldSchema.getLogicalType();
-            Object value = getData().getField(datum, f.name(), f.pos());
-            if (logicalType instanceof LogicalTypes.Decimal) {
-                value = convert(DECIMAL_CONVERSION, fieldSchema, logicalType, value);
-            }
+        Schema fieldSchema = f.schema();
+        LogicalType logicalType = fieldSchema.getLogicalType();
+
+        if (datum instanceof GenericData.Record && logicalType instanceof LogicalTypes.Decimal) {
+            Object value = convert(DECIMAL_CONVERSION, fieldSchema, logicalType, getData().getField(datum, f.name(), f.pos()));
             writeWithoutConversion(fieldSchema, value, out);
         } else {
             super.writeField(datum, f, out, state);
