@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
+import io.confluent.kafka.schemaregistry.ParsedSchema;
 import lombok.*;
 import org.akhq.utils.AvroSchemaDeserializer;
 import org.akhq.utils.AvroSchemaSerializer;
@@ -43,14 +44,17 @@ public class Schema {
         this.compatibilityLevel = config.getCompatibilityLevel();
     }
 
-    public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, Schema.Config config) {
+    public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, ParsedSchema parsedSchema, Schema.Config config) {
         this.id = schema.getId();
         this.subject = schema.getSubject();
         this.version = schema.getVersion();
         this.compatibilityLevel = config.getCompatibilityLevel();
 
         try {
-            this.schema = parser.parse(schema.getSchema());
+            if (parsedSchema == null) {
+                throw new AvroTypeException("Failed to parse schema " + schema.getSubject());
+            }
+            this.schema = parser.parse(parsedSchema.rawSchema().toString());
         } catch (AvroTypeException e) {
             this.schema = null;
             this.exception = e.getMessage();

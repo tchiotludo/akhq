@@ -2,6 +2,7 @@ package org.akhq.modules;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
@@ -139,6 +140,14 @@ public class KafkaModule {
         return this.producers.get(clusterId);
     }
 
+    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) {
+        AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
+        avroSchemaProvider.configure(Collections.singletonMap(
+          "schemaVersionFetcher",
+          new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+        ));
+        return avroSchemaProvider;
+    }
 
     public RestService getRegistryRestClient(String clusterId) {
         Connection connection = this.getConnection(clusterId);
