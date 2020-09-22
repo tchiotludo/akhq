@@ -37,9 +37,7 @@ class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
     private Object convert(Conversion<?> conversion, Schema fieldSchema, LogicalType logicalType, Object value) {
         if (conversion instanceof Conversions.DecimalConversion && value instanceof ByteBuffer) {
             // convert decimal value to a string
-            byte[] byteValue = new byte[((ByteBuffer) value).remaining()];
-            ((ByteBuffer) value).get(byteValue);
-            BigDecimal number = (BigDecimal) conversion.fromBytes(ByteBuffer.wrap(byteValue), fieldSchema, logicalType);
+            BigDecimal number = (BigDecimal) conversion.fromBytes((ByteBuffer) value, fieldSchema, logicalType);
             return (ByteBuffer.wrap(number.toPlainString().getBytes()));
         } else {
             return convert(fieldSchema, logicalType, conversion, value);
