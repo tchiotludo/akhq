@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.*;
-import org.akhq.utils.AvroSchemaDeserializer;
-import org.akhq.utils.AvroSchemaSerializer;
+import org.akhq.utils.avroserde.AvroSchemaDeserializer;
+import org.akhq.utils.avroserde.AvroSchemaSerializer;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
 
