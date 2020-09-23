@@ -1,4 +1,4 @@
-package org.akhq.utils.avroserde;
+package org.akhq.utils.avroserdes;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

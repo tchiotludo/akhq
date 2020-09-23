@@ -1,4 +1,4 @@
-package org.akhq.utils.avroserde;
+package org.akhq.utils.avroserdes;
 
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;

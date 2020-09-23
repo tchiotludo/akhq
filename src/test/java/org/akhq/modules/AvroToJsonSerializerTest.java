@@ -3,7 +3,7 @@ package org.akhq.modules;
 import org.akhq.Breed;
 import org.akhq.Cat;
 import org.akhq.Dog;
-import org.akhq.utils.avroserde.AvroToJsonSerializer;
+import org.akhq.utils.avroserdes.AvroToJsonSerializer;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.Schema;

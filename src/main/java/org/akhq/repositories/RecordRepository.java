@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
-import org.akhq.utils.avroserde.AvroSerializer;
+import org.akhq.utils.avroserdes.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
 import org.apache.kafka.clients.consumer.*;

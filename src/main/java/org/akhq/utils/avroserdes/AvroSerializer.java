@@ -1,4 +1,4 @@
-package org.akhq.utils.avroserde;
+package org.akhq.utils.avroserdes;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;

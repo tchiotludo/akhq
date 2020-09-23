@@ -3,7 +3,7 @@ package org.akhq.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
-import org.akhq.utils.avroserde.AvroToJsonSerializer;
+import org.akhq.utils.avroserdes.AvroToJsonSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;

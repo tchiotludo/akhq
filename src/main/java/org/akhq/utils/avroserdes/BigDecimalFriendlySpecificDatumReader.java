@@ -1,4 +1,4 @@
-package org.akhq.utils.avroserde;
+package org.akhq.utils.avroserdes;
 
 import java.io.IOException;
 import java.math.BigDecimal;
