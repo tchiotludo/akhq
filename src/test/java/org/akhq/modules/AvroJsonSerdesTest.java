@@ -37,34 +37,24 @@ public class AvroJsonSerdesTest {
 
     private static final Conversion<BigDecimal> DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
-    private static int breedSchemaId;
-    private static int dogSchemaId;
-    private static int catSchemaId;
-    private static int petOwnerSchemaId;
-
-    private static final Schema dogSchema = Dog.SCHEMA$;
-
     @BeforeAll
     private static void setUp() throws IOException, RestClientException {
-        breedSchemaId = registryClient.register(Breed.SCHEMA$.getName(), Breed.SCHEMA$);
-        dogSchemaId = registryClient.register(Dog.SCHEMA$.getName(), Dog.SCHEMA$);
-        catSchemaId = registryClient.register(Cat.SCHEMA$.getName(), Cat.SCHEMA$);
-        petOwnerSchemaId = registryClient.register(PetOwner.SCHEMA$.getName(), PetOwner.SCHEMA$);
+        registryClient.register(Breed.SCHEMA$.getName(), Breed.SCHEMA$);
+        registryClient.register(Dog.SCHEMA$.getName(), Dog.SCHEMA$);
+        registryClient.register(Cat.SCHEMA$.getName(), Cat.SCHEMA$);
+        registryClient.register(PetOwner.SCHEMA$.getName(), PetOwner.SCHEMA$);
     }
 
     @Test
-    public void serdesWithDecimal() throws IOException {
+    public void serdesWithDecimal() throws IOException, RestClientException {
         String expectedString = "{\"id\":10,\"name\":\"Tiger\",\"weight\":\"10.40\"}";
         GenericRecord dogExample = aDogExample(10, "Tiger", 10.40);
 
-        assertEquals(AvroToJsonSerializer.toJson(dogExample), expectedString);
-        assertArrayEquals(
-                avroSerializer.toAvro(expectedString, dogSchemaId),
-                fromGenericRecordToEncodedBytes(dogExample, dogSchemaId));
+        testJsonSerialisationAndBack(dogExample, expectedString);
     }
 
     @Test
-    public void serdesWithDecimalAndUnions() throws IOException {
+    public void serdesWithDecimalAndUnions() throws IOException, RestClientException {
         GenericRecord dogExample1 = aDogExample(10, "Alfie", 10.40);
         GenericRecord dogExample2 = aDogExample(11, "Bella", 32.89);
         GenericRecord catExample1 = aCatExample(12, "Charlie", Breed.ABYSSINIAN);
@@ -72,24 +62,25 @@ public class AvroJsonSerdesTest {
 
         GenericRecord petOwnerExample = aPetOwnerExample(1, "Omega",
                 List.of(dogExample1, dogExample2, catExample1, catExample2));
-
         String expectedString = "{\"id\":1,\"name\":\"Omega\",\"pets\":[{\"org.akhq.Dog\":{\"id\":10,\"name\":\"Alfie\",\"weight\":\"10.40\"}},{\"org.akhq.Dog\":{\"id\":11,\"name\":\"Bella\",\"weight\":\"32.89\"}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Charlie\",\"breed\":\"ABYSSINIAN\"}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Daisy\",\"breed\":\"AMERICAN_SHORTHAIR\"}}]}";
 
-        assertEquals(AvroToJsonSerializer.toJson(petOwnerExample), expectedString);
-        assertArrayEquals(
-                avroSerializer.toAvro(expectedString, petOwnerSchemaId),
-                fromGenericRecordToEncodedBytes(petOwnerExample, petOwnerSchemaId));
+        testJsonSerialisationAndBack(petOwnerExample, expectedString);
     }
 
     @Test
-    public void serdesWithoutDecimal() throws IOException {
+    public void serdesWithoutDecimal() throws IOException, RestClientException {
         String expectedString = "{\"id\":10,\"name\":\"Tom\",\"breed\":\"SPHYNX\"}";
         GenericRecord catExample = aCatExample(10, "Tom", Breed.SPHYNX);
 
-        assertEquals(AvroToJsonSerializer.toJson(catExample), expectedString);
+        testJsonSerialisationAndBack(catExample, expectedString);
+    }
+
+    private void testJsonSerialisationAndBack(GenericRecord record, String expectedString) throws IOException, RestClientException {
+        int schemaId = registryClient.getId(record.getSchema().getName(), record.getSchema());
+        assertEquals(AvroToJsonSerializer.toJson(record), expectedString);
         assertArrayEquals(
-                avroSerializer.toAvro(expectedString, catSchemaId),
-                fromGenericRecordToEncodedBytes(catExample, catSchemaId));
+                avroSerializer.toAvro(expectedString, schemaId),
+                fromGenericRecordToEncodedBytes(record, schemaId));
     }
 
     private GenericRecord aCatExample(int id, String name, Breed breed) {
