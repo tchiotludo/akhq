@@ -4,7 +4,6 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
@@ -50,7 +49,7 @@ public class AvroSerializer {
 
         Decoder decoder = DecoderFactory.get().jsonDecoder(schema, din);
 
-        DatumReader<Object> reader = new GenericDatumReader<>(schema);
+        DatumReader<Object> reader = new BigDecimalFriendlySpecificDatumReader<>(schema);
         Object datum = reader.read(null, decoder);
 
         GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema);
