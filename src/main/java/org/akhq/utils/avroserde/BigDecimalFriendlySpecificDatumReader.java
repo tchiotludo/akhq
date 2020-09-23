@@ -10,13 +10,13 @@ import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.ResolvingDecoder;
-import org.apache.avro.specific.SpecificDatumReader;
 
 /**
  * DatumReader which reads BigDecimals from a readable String.
  */
-class BigDecimalFriendlySpecificDatumReader<T> extends SpecificDatumReader<T> {
+class BigDecimalFriendlySpecificDatumReader<T> extends GenericDatumReader<T> {
     private static final Conversion<BigDecimal> DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
     public BigDecimalFriendlySpecificDatumReader(Schema schema) {
@@ -31,7 +31,7 @@ class BigDecimalFriendlySpecificDatumReader<T> extends SpecificDatumReader<T> {
         if (record instanceof GenericData.Record &&
                 schema.getType() == Schema.Type.BYTES &&
                 logicalType instanceof LogicalTypes.Decimal) {
-            String value = ((ByteBuffer) readBytes(oldDatum, schema, resolver)).toString();
+            String value = new String(((ByteBuffer) readBytes(oldDatum, schema, resolver)).array());
             Object datum = DECIMAL_CONVERSION.toBytes(new BigDecimal(value), schema, logicalType);
             getData().setField(record, f.name(), f.pos(), datum);
         } else {
