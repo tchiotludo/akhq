@@ -1,0 +1,16 @@
+{
+    "name": "PetOwner",
+    "namespace": "org.akhq",
+    "type": "record",
+    "fields" : [
+        {"name": "id", "type": "int"},
+        {"name": "name", "type": "string"},
+        {"name": "pets",
+            "type" : {
+                "type": "array",
+                "items": [ "Cat", "Dog" ],
+                "default": []
+            }
+        }
+    ]
+}
