@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
+import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
@@ -157,10 +158,10 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .testCompatibility(schema.toString(), subject, String.valueOf(version));
     }
 
-    public Schema register(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
+    public Schema register(String clusterId, String subject, String schema, List<SchemaReference> references) throws IOException, RestClientException {
         int id = this.kafkaModule
             .getRegistryRestClient(clusterId)
-            .registerSchema(schema.toString(), subject);
+            .registerSchema(schema, "AVRO", references, subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
 
