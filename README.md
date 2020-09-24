@@ -417,19 +417,19 @@ akhq:
          roles: []
         1:
          name: topic-reader # Group name
-        roles:  # roles for the group
+         roles:  # roles for the group
           - topic/read
-        attributes:
+         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
         2:
          name: topic-writer # Group name
-        roles:
+         roles:
           - topic/read
           - topic/insert
           - topic/delete
           - topic/config/update
-        attributes:
+         attributes:
           topics-filter-regexp: "test.*"
     ldap:
       group:
