@@ -41,6 +41,7 @@ connects-plugins/
 
 ### Docs
 docs/contributors.html
+node_modules
 
 ## Docker
 .env

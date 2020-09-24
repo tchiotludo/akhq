@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "dependencies": {
+    "inflection": "^1.12.0",
+    "markdown-it": "^11.0.1",
+    "markdown-it-mark": "^3.0.0",
+    "markdown-it-meta": "0.0.1",
+    "markdown-it-title": "^3.0.0"
+  }
+}
