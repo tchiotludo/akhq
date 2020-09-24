@@ -359,8 +359,9 @@ Define groups with specific roles for your users
 
 ##### LDAP
 Configure how the ldap groups will be matched in AKHQ groups 
-* `akhq.security.ldap.groups`: Ldap groups list
-  * `- name: ldap-group-name`: Ldap group name (same name as in ldap)
+* `akhq.security.ldap.group`: Ldap group yaml section
+  * `0:` yaml subsection name. Arbitrary uniq value
+    * `name: ldap-group-name`: Ldap group name (same name as in ldap)
     * `groups`: AKHQ group list to be used for current ldap group
 
 Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
@@ -383,6 +384,13 @@ micronaut:
           base: "dc=example,dc=com"
 ```
 
+If you use MS ActiveDirectory it is necessary  to override default implicit user and group filters with this ones: 
+```yaml
+search:
+  filter: "(sAMAccountName={0})"
+groups:
+  filter: "(member:1.2.840.113556.1.4.1941:={0})" #AD LDAP extension for recursive membeship search
+```
 If you want to enable anonymous auth to your LDAP server you can pass : 
 ```yaml
 managerDn: ''
@@ -401,14 +409,21 @@ Configure AKHQ groups and Ldap groups and users
 ```yaml
 akhq:
   security:
+    default-group: nothing # Default group for all users including unlogged ones
+    # Groups definition
     groups:
-      - name: topic-reader # Group name
+        0: #Arbitrary uniq section name
+         name: nothing
+         roles: []
+        1:
+         name: topic-reader # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
-      - name: topic-writer # Group name
+        2:
+         name: topic-writer # Group name
         roles:
           - topic/read
           - topic/insert
@@ -417,17 +432,20 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
     ldap:
-      groups:
-        - name: mathematicians
-          groups:
+      group:
+         0:
+          name: mathematicians
+          groups: # Akhq groups list
             - topic-reader
-        - name: scientists
+         1:
+          name: scientists
           groups:
             - topic-reader
             - topic-writer
-      users:
-        - username: franz
-          groups:
+      user:
+        0:
+         username: franz
+         groups: # Akhq groups list
             - topic-reader
             - topic-writer
 
