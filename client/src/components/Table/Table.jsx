@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
+import Spinner from '../Spinner';
 
 class Table extends Component {
   state = {
@@ -146,7 +147,7 @@ class Table extends Component {
               <td
                 key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
-                onClick={() => {
+                onDoubleClick={() => {
                   if (
                     actions &&
                     actions.find(action => action === constants.TABLE_DETAILS) &&
@@ -159,15 +160,16 @@ class Table extends Component {
                 }}
                 id={`row_${column.id}_${colIndex}`}
               >
-                {column.cell(row, column)}
+                {this.renderContent(column.cell(row, column))}
               </td>
             );
           }
+
           return (
             <td
               key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
-              onClick={() => {
+              onDoubleClick={() => {
                 if (
                   actions &&
                   actions.find(action => action === constants.TABLE_DETAILS) &&
@@ -180,7 +182,7 @@ class Table extends Component {
               }}
               id={`row_${column.id}_${colIndex}`}
             >
-              {row[column.accessor]}
+              {this.renderContent(row[column.accessor])}
             </td>
           );
         })}
@@ -198,7 +200,7 @@ class Table extends Component {
         <tr key={'row-expandable-' + row.id}>
           <td
             key={'col-expandable-' + row.id}
-            colSpan={columns.length + (actions && actions.length ? actions.length : 0)}
+            colSpan={this.colspan()}
             style={{ padding: 0 }}
           >
             {onExpand(row)}
@@ -224,7 +226,7 @@ class Table extends Component {
         >
           <td
             style={{ backgroundColor: '#171819' }}
-            colSpan={columns.length + (actions && actions.length ? actions.length : 0)}
+            colSpan={this.colspan()}
           >
             {' '}
             {extraExpanded &&
@@ -266,14 +268,18 @@ class Table extends Component {
     return items;
   }
 
+  renderContent(content) {
+    return content !== undefined ? content : <Spinner />
+  }
+
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare } = this.props;
 
     return (
       <>
         {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Add"
               id="add"
               onClick={() => {
                 onAdd && onAdd();
@@ -285,7 +291,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Details"
               id="details"
               onClick={() => {
                 onDetails && onDetails(row.id, row);
@@ -297,7 +303,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Config"
               id="config"
               onClick={() => {
                 onConfig && onConfig(row.id, row);
@@ -309,7 +315,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Delete"
               id="delete"
               onClick={() => {
                 onDelete && onDelete(row);
@@ -321,7 +327,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Edit"
               id="edit"
               onClick={() => {
                 onEdit && onEdit();
@@ -333,7 +339,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_RESTART) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Restart"
               id="restart"
               onClick={() => {
                 onRestart && onRestart(row);
@@ -343,17 +349,39 @@ class Table extends Component {
             </span>
           </td>
         )}
+        {actions.find(el => el === constants.TABLE_SHARE) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Share"
+                id="share"
+                onClick={() => {
+                  onShare && onShare(row);
+                }}
+            >
+              <i className="fa fa-share" />
+            </span>
+            </td>
+        )}
       </>
     );
   }
 
+  renderLoading() {
+      return (
+          <tr>
+            <td colSpan={this.colspan()} className="loading-rows">
+              <Spinner />
+            </td>
+          </tr>
+      );
+  }
+
   renderNoContent() {
-    const { noContent, columns } = this.props;
+    const { noContent } = this.props;
     if (noContent) {
       if (typeof noContent === 'string') {
         return (
           <tr>
-            <td colSpan={columns.length}>
+            <td colSpan={this.colspan()}>
               <div className="alert alert-warning mb-0" role="alert">
                 {noContent}
               </div>
@@ -366,7 +394,7 @@ class Table extends Component {
     }
     return (
       <tr>
-        <td colSpan={columns.length}>
+        <td colSpan={this.colspan()}>
           <div className="alert alert-warning mb-0" role="alert">
             No data available
           </div>
@@ -375,8 +403,14 @@ class Table extends Component {
     );
   }
 
+  colspan() {
+    const { actions, columns } = this.props;
+
+    return columns.length + (actions && actions.length ? actions.length : 0)
+  }
+
   render() {
-    const { noStripes } = this.props;
+    const { noStripes, loading } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 
@@ -391,13 +425,16 @@ class Table extends Component {
     let classNames = 'table table-bordered table-hover mb-0';
     if (!noStripes) classNames += ' table-striped';
     if (noStripes) classNames += ' no-stripes';
+
     return (
-      <div className="table-responsive">
-        <table className={classNames}>
-          {this.renderHeader()}
-          <tbody>{data && data.length > 0 ? allItemRows : this.renderNoContent()}</tbody>
-        </table>
-      </div>
+        <div className="table-responsive">
+          <table className={classNames}>
+            {this.renderHeader()}
+            <tbody>
+                {loading? this.renderLoading() : ((data && data.length > 0) ? allItemRows : this.renderNoContent())}
+            </tbody>
+          </table>
+        </div>
     );
   }
 }
@@ -428,7 +465,8 @@ Table.propTypes = {
   toPresent: PropTypes.array,
   noContent: PropTypes.any,
   handleExtraExpand: PropTypes.func,
-  handleExtraCollapse: PropTypes.func
+  handleExtraCollapse: PropTypes.func,
+  loading: PropTypes.bool
 };
 
 export default Table;

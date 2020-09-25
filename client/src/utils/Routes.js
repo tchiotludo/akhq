@@ -23,7 +23,6 @@ import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 
-import history from './history';
 import api, { get } from './api';
 import { organizeRoles } from './converters';
 import { uriClusters, uriCurrentUser } from './endpoints';
@@ -48,12 +47,7 @@ class Routes extends Component {
       .get(uriClusters())
       .then(res => {
         this.setState(
-          { clusters: res.data, clusterId: res.data ? res.data[0].id : '', loading: false },
-          () => {
-            history.replace({
-              loading: false
-            });
-          }
+          { clusters: res.data, clusterId: res.data ? res.data[0].id : '', loading: false }
         );
       })
       .catch(err => {
@@ -168,18 +162,20 @@ class Routes extends Component {
               {roles && roles.group && roles.group['group/read'] && (
                 <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
               )}
+
+              {roles && roles.group && roles.group['group/offsets/update'] && (
+                  <Route
+                      exact
+                      path="/ui/:clusterId/group/:consumerGroupId/offsets"
+                      component={ConsumerGroupUpdate}
+                  />
+              )}
+
               {roles && roles.group && roles.group['group/read'] && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/:tab?"
                   component={ConsumerGroup}
-                />
-              )}
-              {roles && roles.group && roles.group['group/offsets/update'] && (
-                <Route
-                  exact
-                  path="/ui/:clusterId/group/:consumerGroupId/offsets"
-                  component={ConsumerGroupUpdate}
                 />
               )}
 

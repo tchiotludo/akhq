@@ -22,7 +22,8 @@ class ConnectList extends Component {
     showDeleteModal: false,
     definitionToDelete: '',
     deleteMessage: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -48,6 +49,8 @@ class ConnectList extends Component {
   async getConnectDefinitions() {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;
+
+    this.setState({ loading: true });
 
     connectDefinitions = await get(uriConnectDefinitions(clusterId, connectId));
     this.handleData(connectDefinitions.data);
@@ -84,7 +87,7 @@ class ConnectList extends Component {
       };
     });
 
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   };
 
   showDeleteModal = deleteMessage => {
@@ -151,7 +154,7 @@ class ConnectList extends Component {
   };
 
   render() {
-    const { clusterId, connectId, tableData } = this.state;
+    const { clusterId, connectId, tableData, loading } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
@@ -159,6 +162,7 @@ class ConnectList extends Component {
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',

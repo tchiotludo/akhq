@@ -8,7 +8,8 @@ class AclTopics extends Component {
   state = {
     selectedCluster: this.props.clusterId,
     principalEncoded: this.props.principalEncoded,
-    tableData: []
+    tableData: [],
+    loading: true
   };
 
   componentDidMount() {
@@ -22,6 +23,8 @@ class AclTopics extends Component {
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);
+    } else {
+      this.setState({ tableData: [], loading: false });
     }
   }
 
@@ -34,7 +37,7 @@ class AclTopics extends Component {
       };
     });
 
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   };
 
   handlePermission = permission => {
@@ -47,8 +50,10 @@ class AclTopics extends Component {
   };
 
   render() {
+    const { loading } = this.state;
     return (
       <Table
+        loading={loading}
         columns={[
           {
             id: 'topic',

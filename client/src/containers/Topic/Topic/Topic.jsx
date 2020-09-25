@@ -6,8 +6,10 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import { get } from '../../../utils/api';
-import { uriTopicsConfigs } from '../../../utils/endpoints';
+import { get, remove } from '../../../utils/api';
+import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import { toast } from 'react-toastify';
 import {getSelectedTab} from "../../../utils/functions";
 
 class Topic extends Component {
@@ -16,6 +18,9 @@ class Topic extends Component {
     topicId: this.props.topicId,
     topic: {},
     selectedTab: '',
+    showDeleteModal: false,
+    deleteMessage: '',
+    compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
     configs: {}
@@ -23,14 +28,22 @@ class Topic extends Component {
 
   tabs = ['data','partitions','groups','configs','acls','logs'];
 
+  constructor(props) {
+    super(props);
+    this.topicData = React.createRef();
+  }
+
   static getDerivedStateFromProps(props, state) {
     return state;
   }
 
   componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
+    const searchParams = this.props.location.search;
+
     const roles = this.state.roles || {};
     const tabSelected = getSelectedTab(this.props, this.tabs);
+
     this.setState(
       {
         clusterId,
@@ -40,10 +53,49 @@ class Topic extends Component {
       },
       () => {
         this.getTopicsConfig();
-        this.props.history.replace(`/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`);
+        let uri = `/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`;
+        if(searchParams) {
+          uri = uri + searchParams;
+        }
+        this.props.history.replace(uri);
       }
     );
   }
+
+  handleOnEmpty() {
+    this.setState(() => {
+      this.showDeleteModal(
+          <React.Fragment>
+            Do you want to empty the Topic: {<code>{this.state.topicId}</code>} ?
+          </React.Fragment>
+      );
+    });
+  }
+
+  showDeleteModal = deleteMessage => {
+    this.setState({ showDeleteModal: true, deleteMessage });
+  };
+
+  closeDeleteModal = () => {
+    this.setState({ showDeleteModal: false, deleteMessage: '' });
+  };
+
+  emptyTopic = () => {
+    const { clusterId, topicId } = this.props.match.params;
+
+    remove(
+        uriTopicDataEmpty(clusterId, topicId)
+    )
+        .then(() => {
+          toast.success(`Topic '${topicId}' will be emptied`);
+          this.setState({ showDeleteModal: false }, () => {
+            this.topicData.current.getMessages();
+          });
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false });
+        });
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
@@ -78,11 +130,11 @@ class Topic extends Component {
 
   renderSelectedTab = () => {
     const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
-    const { history, match } = this.props;
+    const { history, match, location } = this.props;
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData history={history} match={match} />;
+        return <TopicData ref={this.topicData} history={history} match={match} location={location} />;
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
@@ -111,7 +163,7 @@ class Topic extends Component {
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
         return roles.topic && roles.topic['topic/data/read'] ? (
-          <TopicData history={history} match={match} />
+          <TopicData history={history} match={match} location={location}/>
         ) : (
           <TopicPartitions history={history} />
         );
@@ -204,6 +256,14 @@ class Topic extends Component {
             <li className="aside-button">
               <div
                 onClick={() => {
+                  this.handleOnEmpty();
+                }}
+                className="btn btn-secondary mr-2">
+                <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+              </div>
+
+              <div
+                onClick={() => {
                   this.props.history.push({ pathname: `/ui/${clusterId}/tail`, topicId: topicId });
                 }}
                 className="btn btn-secondary mr-2"
@@ -221,6 +281,11 @@ class Topic extends Component {
             </li>
           </aside>
         )}
+        <ConfirmModal show={this.state.showDeleteModal}
+                      handleCancel={this.closeDeleteModal}
+                      handleConfirm={this.emptyTopic}
+                      message={this.state.deleteMessage}
+        />
       </div>
     );
   }

@@ -11,4 +11,22 @@
     > div:first-child {
         margin-bottom: 40px;
     }
+
+    .form-separator {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1rem 0;
+
+        span {
+            padding: 0 10px;
+        }
+
+        &:before, &:after {
+            content: " ";
+            height: 1px;
+            background: currentColor;
+            flex: 1 1 auto;
+        }
+    }
 }

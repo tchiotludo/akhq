@@ -27,7 +27,8 @@ class ConnectTasks extends Component {
     tableData: [],
     showActionModal: false,
     actionMessage: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   definitionState = {
@@ -52,13 +53,14 @@ class ConnectTasks extends Component {
         trace: task.trace
       });
     });
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   }
 
   async getDefinition() {
     let definition = {};
     const { clusterId, connectId, definitionId } = this.state;
 
+    this.setState({ loading: true });
     definition = await get(uriGetDefinition(clusterId, connectId, definitionId));
     this.setState({ definition: definition.data }, () => this.handleTasks());
   }
@@ -173,12 +175,13 @@ class ConnectTasks extends Component {
   };
 
   render() {
-    const { tableData, definition } = this.state;
+    const { tableData, definition, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <div className="tab-pane active" role="tabpanel">
         <div className="table-responsive">
           <Table
+            loading={loading}
             columns={[
               {
                 id: 'id',

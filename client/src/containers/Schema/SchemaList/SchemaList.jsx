@@ -35,7 +35,8 @@ class SchemaList extends Component {
       compatibilityLevel: '',
       schema: ''
     },
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
@@ -74,6 +75,8 @@ class SchemaList extends Component {
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
+    this.setState({ loading: true });
+
     let response = await api.get(
       endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
@@ -97,7 +100,7 @@ class SchemaList extends Component {
         schema: schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null
       });
     });
-    this.setState({ schemasRegistry: tableSchemaRegistry });
+    this.setState({ schemasRegistry: tableSchemaRegistry, loading: false });
   }
 
   handleVersion(version) {
@@ -141,6 +144,7 @@ class SchemaList extends Component {
       searchData,
       pageNumber,
       totalPageNumber,
+      loading
     } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
@@ -173,6 +177,7 @@ class SchemaList extends Component {
         </nav>
 
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',

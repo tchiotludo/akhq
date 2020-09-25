@@ -46,15 +46,17 @@ const handleError = err => {
   }
 };
 
-export const get = url =>
+export const get = (url, config) =>
   new Promise((resolve, reject) => {
     axios
-      .get(url, configs)
+      .get(url, {...configs, ...config})
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -66,7 +68,9 @@ export const put = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -78,7 +82,9 @@ export const post = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
@@ -90,7 +96,9 @@ export const remove = (url, body) =>
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 

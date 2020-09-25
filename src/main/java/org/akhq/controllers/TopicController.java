@@ -6,6 +6,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
@@ -13,6 +14,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -42,12 +44,20 @@ import javax.inject.Inject;
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
     public static final String KEY_SUFFIX = "-key";
-    private final AbstractKafkaWrapper kafkaWrapper;
-    private final TopicRepository topicRepository;
-    private final ConfigRepository configRepository;
-    private final RecordRepository recordRepository;
-    private final Environment environment;
-    private final AccessControlListRepository aclRepository;
+    @Inject
+    private AbstractKafkaWrapper kafkaWrapper;
+    @Inject
+    private TopicRepository topicRepository;
+    @Inject
+    private ConfigRepository configRepository;
+    @Inject
+    private RecordRepository recordRepository;
+    @Inject
+    private ConsumerGroupRepository consumerGroupRepository;
+    @Inject
+    private Environment environment;
+    @Inject
+    private AccessControlListRepository aclRepository;
 
     @Value("${akhq.topic.default-view}")
     private String defaultView;
@@ -61,24 +71,6 @@ public class TopicController extends AbstractController {
     protected Boolean skipConsumerGroups;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
-
-    @Inject
-    public TopicController(
-        AbstractKafkaWrapper kafkaWrapper,
-        TopicRepository topicRepository,
-        ConfigRepository configRepository,
-        RecordRepository recordRepository,
-        Environment environment,
-        AccessControlListRepository aclRepository,
-        SchemaRegistryRepository schemaRegistryRepository
-    ) {
-        this.kafkaWrapper = kafkaWrapper;
-        this.topicRepository = topicRepository;
-        this.configRepository = configRepository;
-        this.recordRepository = recordRepository;
-        this.environment = environment;
-        this.aclRepository = aclRepository;
-    }
 
     @Get("api/{cluster}/topic")
     @Operation(tags = {"topic"}, summary = "List all topics")
@@ -200,7 +192,7 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
-        return this.topicRepository.findByName(cluster, topicName, skipConsumerGroups).getConsumerGroups();
+        return this.consumerGroupRepository.findByTopic(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")
@@ -241,9 +233,21 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @Delete("api/{cluster}/topic/{topicName}/data/empty")
+    @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
+    public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
+        this.recordRepository.emptyTopic(
+                cluster,
+                topicName
+        );
+
+        return HttpResponse.noContent();
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
-    public Record deleteRecord(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+    public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
         return new Record(
             this.recordRepository.delete(
                 cluster,
@@ -304,6 +308,40 @@ public class TopicController extends AbstractController {
                     .of(searchRecord)
                     .name(event.getName());
             });
+    }
+
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
+    @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
+    public ResultNextList<Record> record(
+            HttpRequest<?> request,
+            String cluster,
+            String topicName,
+            Integer partition,
+            Integer offset
+    ) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+
+        // after wait for next offset, so add - 1 to allow to have the current offset
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
+            Optional.of(partition),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        Optional<Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
+        List<Record> data = singleRecord.map(Collections::singletonList).orElse(Collections.emptyList());
+
+        return TopicDataResultNextList.of(
+                data,
+                URIBuilder.empty(),
+                data.size(),
+                topic.canDeleteRecords(cluster, configRepository)
+        );
     }
 
     private RecordRepository.Options dataSearchOptions(

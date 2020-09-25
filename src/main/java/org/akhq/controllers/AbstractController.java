@@ -4,19 +4,19 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.BasicAuth;
-import org.akhq.configs.LdapGroup;
-import org.akhq.configs.LdapUser;
+import org.akhq.configs.Ldap;
+import org.akhq.configs.Oidc;
+import org.akhq.configs.SecurityProperties;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.UserGroupUtils;
 import org.akhq.utils.VersionProvider;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
 
 abstract public class AbstractController {
     @Value("${micronaut.server.context-path:}")
@@ -34,17 +34,14 @@ abstract public class AbstractController {
     @Inject
     private UserGroupUtils userGroupUtils;
 
-    @Value("${akhq.security.default-group}")
-    private String defaultGroups;
+    @Inject
+    private SecurityProperties securityProperties;
 
     @Inject
-    private List<BasicAuth> basicAuths;
+    private Ldap ldap;
 
     @Inject
-    private List<LdapGroup> ldapAuths;
-
-    @Inject
-    private List<LdapUser> ldapUsers;
+    private Oidc oidc;
 
     @SuppressWarnings("unchecked")
     protected Map<String, Object> templateData(Optional<String> cluster, Object... values) {
@@ -67,7 +64,7 @@ abstract public class AbstractController {
         });
 
         if (applicationContext.containsBean(SecurityService.class)) {
-            datas.put("loginEnabled", basicAuths.size() > 0 || ldapAuths.size() > 0 || ldapUsers.size() > 0);
+            datas.put("loginEnabled", securityProperties.getBasicAuth().size() > 0 || ldap.isEnabled() || oidc.isEnabled());
 
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
             securityService
@@ -117,7 +114,7 @@ abstract public class AbstractController {
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)));
+            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())));
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -126,7 +123,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(this.defaultGroups)))
+                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())))
         );
     }
 }

@@ -22,7 +22,8 @@ class ConsumerGroupList extends Component {
     totalPageNumber: 1,
     history: this.props,
     search: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
@@ -57,6 +58,7 @@ class ConsumerGroupList extends Component {
 
   async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
+    this.setState({ loading: true });
 
     let response = await api.get(uriConsumerGroups(selectedCluster, search, pageNumber));
     response = response.data;
@@ -64,7 +66,7 @@ class ConsumerGroupList extends Component {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page });
     } else {
-      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
+      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0, loading: false });
     }
   }
 
@@ -80,7 +82,7 @@ class ConsumerGroupList extends Component {
       });
     });
 
-    this.setState({ consumerGroups: tableConsumerGroup });
+    this.setState({ consumerGroups: tableConsumerGroup, loading: false });
   }
 
   handleState(state) {
@@ -149,7 +151,6 @@ class ConsumerGroupList extends Component {
 
     remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(() => {
-
         toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
@@ -158,7 +159,7 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const { selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const { selectedCluster, search, pageNumber, totalPageNumber, loading} = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
@@ -189,6 +190,7 @@ class ConsumerGroupList extends Component {
         </nav>
 
         <Table
+          loading={loading}
           columns={[
             {
               id: 'id',
