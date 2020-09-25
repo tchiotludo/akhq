@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { uriTopicsPartitions } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
+import Root from "../../../../components/Root";
 
-class TopicPartitions extends Component {
+class TopicPartitions extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
@@ -18,7 +18,7 @@ class TopicPartitions extends Component {
   async getTopicsPartitions() {
     const { selectedCluster, selectedTopic } = this.state;
 
-    let partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
+    let partitions = await this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic));
     this.handleData(partitions.data);
   }
 

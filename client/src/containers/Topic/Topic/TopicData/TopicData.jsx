@@ -3,7 +3,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get, remove } from '../../../../utils/api';
+import { remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriSchemaRegistry,
@@ -25,9 +25,10 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../../../components/Root";
 // Adaptation of data.ftl
 
-class TopicData extends React.Component {
+class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
@@ -90,6 +91,7 @@ class TopicData extends React.Component {
   };
 
   componentWillUnmount = () => {
+    super.componentWillUnmount();
     this.onStop();
   };
 
@@ -179,7 +181,7 @@ class TopicData extends React.Component {
 
     this.setState({ loading: true });
 
-    data = await get(
+    data = await this.getApi(
         uriTopicData(
             selectedCluster,
             selectedTopic,
@@ -200,11 +202,11 @@ class TopicData extends React.Component {
 
     let schemas = [];
     if (canAccessSchema) {
-      schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
+      schemas = await this.getApi(uriSchemaRegistry(selectedCluster, '', ''));
       schemas = schemas.data.results || [];
     }
     this.setState({ schemas });
-    partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
+    partitionData = await this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic));
     partitionData = partitionData.data;
     if (data.results) {
       this.handleMessages(data.results);

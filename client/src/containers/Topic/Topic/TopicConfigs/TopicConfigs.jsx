@@ -1,5 +1,5 @@
 import React from 'react';
-import { get, post } from '../../../../utils/api';
+import { post } from '../../../../utils/api';
 import { uriTopicsConfigs, uriTopicsUpdateConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
@@ -33,7 +33,7 @@ class TopicConfigs extends Form {
     let configs = [];
     const { selectedCluster, selectedTopic } = this.state;
 
-    configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+    configs = await this.getApi(uriTopicsConfigs(selectedCluster, selectedTopic));
     this.handleData(configs.data);
   }
 

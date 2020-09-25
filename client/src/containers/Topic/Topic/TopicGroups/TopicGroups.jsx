@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import api from '../../../../utils/api';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
+import Root from "../../../../components/Root";
 
-class TopicGroups extends Component {
+class TopicGroups extends Root {
   state = {
     consumerGroups: [],
     topicId: this.props.topicId,
@@ -21,7 +21,7 @@ class TopicGroups extends Component {
   async getConsumerGroup() {
     const { selectedCluster, topicId } = this.state;
 
-    let data  = await api.get(uriTopicsGroups(selectedCluster, topicId));
+    let data  = await this.getApi(uriTopicsGroups(selectedCluster, topicId));
     if (data && data.data) {
       this.handleGroups(data.data);
     } else {

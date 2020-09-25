@@ -5,16 +5,16 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import api, { remove } from '../../../utils/api';
+import { remove } from '../../../utils/api';
 import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import Root from '../../../components/Root';
 
-class TopicList extends Component {
+class TopicList extends Root {
   state = {
     topics: [],
     showDeleteModal: false,
@@ -36,8 +36,7 @@ class TopicList extends Component {
       retention: 86400000
     },
     roles: JSON.parse(sessionStorage.getItem('roles')),
-    loading: true,
-    cancel: undefined
+    loading: true
   };
 
   componentDidMount() {
@@ -45,13 +44,13 @@ class TopicList extends Component {
     this.setState({ selectedCluster: clusterId }, this.getTopics);
   }
 
-  componentWillUnmount() {
-    const { cancel } = this.state;
-
-    if (cancel !== undefined) {
-      cancel.cancel('cancel all');
-    }
-  }
+  // componentWillUnmount() {
+  //   const { cancel } = this.state;
+  //
+  //   if (cancel !== undefined) {
+  //     cancel.cancel('cancel all');
+  //   }
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
@@ -119,7 +118,7 @@ class TopicList extends Component {
     const { search, topicListView } = this.state.searchData;
     this.setState({ loading: true } );
 
-    let data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let data = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
     data = data.data;
 
     if (data) {
@@ -145,9 +144,9 @@ class TopicList extends Component {
       this.setState({ topics: Object.values(tableTopics) });
     }
 
-
-    let source = axios.CancelToken.source();
-    this.setState({cancel: source});
+    //
+    // let source = axios.CancelToken.source();
+    // this.setState({cancel: source});
 
     topics.forEach(topic => {
       tableTopics[topic.name] = {
@@ -162,7 +161,7 @@ class TopicList extends Component {
         internal: topic.internal
       }
 
-      api.get(uriTopicsGroups(selectedCluster, topic.name), {cancelToken: source.token})
+      this.getApi(uriTopicsGroups(selectedCluster, topic.name))
         .then(value => {
           tableTopics[topic.name].groupComponent = value.data
           setState()
