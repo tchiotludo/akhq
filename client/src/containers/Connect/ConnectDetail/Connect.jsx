@@ -4,6 +4,7 @@ import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
 import {getSelectedTab} from "../../../utils/functions";
+import {Link} from "react-router-dom";
 
 class Connect extends Component {
   state = {
@@ -30,12 +31,6 @@ class Connect extends Component {
       this.setState({ selectedTab: tabSelected });
     }
   }
-
-  selectTab = tab => {
-    const { clusterId, connectId, definitionId } = this.props.match.params;
-    this.setState({ selectedTab: tab });
-    this.props.history.push(`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${tab}`);
-  };
 
   tabClassName = tab => {
     const { selectedTab } = this.state;
@@ -81,7 +76,7 @@ class Connect extends Component {
   }
 
   render() {
-    const { definitionId } = this.state;
+    const { clusterId, connectId, definitionId } = this.state;
 
     return (
       <div>
@@ -89,22 +84,18 @@ class Connect extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/tasks`}
                 className={this.tabClassName('tasks')}
-                onClick={() => this.selectTab('tasks')}
-                role="tab"
               >
                 Tasks
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`}
                 className={this.tabClassName('configs')}
-                onClick={() => this.selectTab('configs')}
-                role="tab"
               >
                 Configs
-              </div>
+              </Link>
             </li>
           </ul>
 

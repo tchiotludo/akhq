@@ -3,6 +3,7 @@ import Header from '../../Header';
 import NodeConfigs from './/NodeConfigs/NodeConfigs';
 import NodeLogs from './/NodeLogs/NodeLogs';
 import {getSelectedTab} from "../../../utils/functions";
+import {Link} from "react-router-dom";
 
 class Node extends Component {
   state = {
@@ -35,12 +36,6 @@ class Node extends Component {
       this.setState({ selectedTab: tabSelected });
     }
   }
-
-  selectTab = tab => {
-    const { selectedNode, clusterId } = this.state;
-    this.setState({ selectedTab: tab });
-    this.props.history.push(`/ui/${clusterId}/node/${selectedNode}/${tab}`);
-  };
 
   tabClassName = tab => {
     const { selectedTab } = this.state;
@@ -79,29 +74,25 @@ class Node extends Component {
   }
 
   render() {
-    const { selectedNode: nodeId } = this.state;
+    const { selectedNode, clusterId } = this.state;
     return (
       <div>
-        <Header title={`Node ${nodeId}`} history={this.props.history} />
+        <Header title={`Node ${selectedNode}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/node/${selectedNode}/configs`}
                 className={this.tabClassName('configs')}
-                onClick={() => this.selectTab('configs')}
-                role="tab"
               >
                 Configs
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/node/${selectedNode}/logs`}
                 className={this.tabClassName('logs')}
-                onClick={() => this.selectTab('logs')}
-                role="tab"
               >
                 Logs
-              </div>
+              </Link>
             </li>
           </ul>
 
