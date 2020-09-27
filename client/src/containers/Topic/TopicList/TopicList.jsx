@@ -12,6 +12,8 @@ import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+
 class TopicList extends Component {
   state = {
     topics: [],
@@ -34,12 +36,21 @@ class TopicList extends Component {
       retention: 86400000
     },
     roles: JSON.parse(sessionStorage.getItem('roles')),
-    loading: true
+    loading: true,
+    cancel: undefined
   };
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
     this.setState({ selectedCluster: clusterId }, this.getTopics);
+  }
+
+  componentWillUnmount() {
+    const { cancel } = this.state;
+
+    if (cancel !== undefined) {
+      cancel.cancel('cancel all');
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -134,6 +145,10 @@ class TopicList extends Component {
       this.setState({ topics: Object.values(tableTopics) });
     }
 
+
+    let source = axios.CancelToken.source();
+    this.setState({cancel: source});
+
     topics.forEach(topic => {
       tableTopics[topic.name] = {
         id: topic.name,
@@ -147,7 +162,7 @@ class TopicList extends Component {
         internal: topic.internal
       }
 
-      api.get(uriTopicsGroups(selectedCluster, topic.name))
+      api.get(uriTopicsGroups(selectedCluster, topic.name), {cancelToken: source.token})
         .then(value => {
           tableTopics[topic.name].groupComponent = value.data
           setState()
@@ -156,6 +171,8 @@ class TopicList extends Component {
 
     setState()
   }
+
+
 
   handleConsumerGroups = (consumerGroups, topicId) => {
     if (consumerGroups) {

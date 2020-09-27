@@ -9,7 +9,7 @@ import {
   uriSchemaRegistry,
   uriTopicData,
   uriTopicDataDelete,
-  uriTopicDataSearch,
+  uriTopicDataSearch, uriTopicDataSingleRecord,
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
@@ -80,11 +80,16 @@ class TopicData extends React.Component {
           datetime: (query.get('timestamp'))? new Date(query.get('timestamp')) : this.state.datetime,
           offsetsSearch: (query.get('after'))? query.get('after') : this.state.offsetsSearch,
           currentSearch: (query.get('search'))? query.get('search') : this.state.currentSearch,
-          offsets: (query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets,
+          offsets: (query.get('offset'))? this.getOffsetsByOffset(query.get('partition'), query.get('offset')) :
+              ((query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets),
           canAccessSchema: roles.registry && roles.registry['registry/read']
         },
         () => {
-          this.getMessages(this.buildFilters());
+            if(query.get('single') !== null) {
+              this.getSingleMessage(query.get('partition'), query.get('offset'));
+            } else {
+              this.getMessages(this.buildFilters());
+            }
         }
     );
   };
@@ -136,14 +141,12 @@ class TopicData extends React.Component {
       currentSearch
     } = this.state;
 
-    let filters = `sort=${sortBy}`;
+    const filters = [];
 
-    if (offsetsSearch) {
-      filters += `&after=${offsetsSearch}`;
-    }
-    if (partition) {
-      filters += `&partition=${partition}`;
-    }
+    if (sortBy) filters.push(`sort=${sortBy}`);
+    if (offsetsSearch) filters.push(`after=${offsetsSearch}`);
+    if (partition) filters.push(`partition=${partition}`);
+
     if (datetime) {
       let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
       timestamp = formatDateTime(
@@ -159,68 +162,99 @@ class TopicData extends React.Component {
             'YYYY-MM-DDThh:mm:ss.SSS',
             true
           ) + 'Z';
-      filters += `&timestamp=${timestamp}`;
+      filters.push(`timestamp=${timestamp}`);
     }
-    if (currentSearch) {
-      filters += `&search=${currentSearch}`;
-    }
-    return filters;
+
+    if (currentSearch) filters.push(`search=${currentSearch}`);
+
+    return filters.join('&');
   }
 
-  async getMessages(filters = null, changePage = false) {
+  getSingleMessage(partition, offset) {
+    const {
+      selectedCluster,
+      selectedTopic,
+      canAccessSchema
+    } = this.state;
+
+    const requests = [get(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    if (canAccessSchema) {
+      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+    }
+
+    this._fetchMessages(requests);
+  }
+
+
+  getMessages(filters = null, changePage = false) {
     const {
       selectedCluster,
       selectedTopic,
       canAccessSchema,
       nextPage
     } = this.state;
-    let data,
-        partitionData = {};
 
-    this.setState({ loading: true });
+    const requests = [get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    if (canAccessSchema) {
+      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+    }
 
-    data = await get(
-        uriTopicData(
-            selectedCluster,
-            selectedTopic,
-            filters,
-            changePage ? nextPage : undefined
-        )
-    );
+    this._fetchMessages(requests, changePage);
 
-    if(changePage) {
-      this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length ));
+    if (changePage) {
+      this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length));
     } else {
       this.setUrlHistory(filters);
     }
+  }
 
+  _fetchMessages(requests, changePage = false) {
+    const {
+      nextPage,
+      pageNumber,
+      partitionCount,
+      recordCount,
+      offsets
+    } = this.state;
 
-    data = data.data;
-    this.setState({ canDeleteRecords: data.canDeleteRecords });
+    Promise.all(requests)
+      .then(data => {
+        let tableMessages = [],
+            schemas = [],
+            pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
 
-    let schemas = [];
-    if (canAccessSchema) {
-      schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-      schemas = schemas.data.results || [];
-    }
-    this.setState({ schemas });
-    partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
-    partitionData = partitionData.data;
-    if (data.results) {
-      this.handleMessages(data.results);
-    } else {
-      this.setState({ messages: [], pageNumber: 1, loading: false });
-    }
-    if (partitionData) {
-      if (changePage) {
-        this.getNextPageOffsets();
-      }
-      this.setState({
-        partitionCount: partitionData.length,
-        nextPage: data.after,
-        recordCount: data.size
-      });
-    }
+        const messagesData = data[0].data;
+        const partitionData = data[1].data;
+        if (data.size === 3) {
+          const schemasData = data[2].data;
+          schemas = schemasData.results || [];
+        }
+
+        if (messagesData.results) {
+          tableMessages = this.handleMessages(messagesData.results);
+        } else {
+          pageNumberTemp = 1;
+        }
+        if (partitionData) {
+          if (changePage) {
+            offsetsTemp = this.getNextPageOffsets();
+          }
+          partitionCountTemp = partitionData.length;
+          nextPageTemp = messagesData.after;
+          recordCountTemp = messagesData.size;
+        }
+        this.setState({
+          messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
+          pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
+          partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
+          nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
+          recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
+          offsets: (offsetsTemp) ? offsetsTemp : offsets,
+          loading: false
+        });
+    });
   }
 
   handleOnDelete(message) {
@@ -231,6 +265,25 @@ class TopicData extends React.Component {
           </React.Fragment>
       );
     });
+  }
+
+  async handleOnShare(row) {
+    const {
+      selectedCluster,
+      selectedTopic
+    } = this.state;
+
+    const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
+
+    try {
+      await navigator.clipboard.writeText(`${window.location.host}${pathToShare}` );
+      toast.info('Message url is copied to your clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+
+    this.props.history.push(pathToShare)
+    this.checkProps()
   }
 
   showDeleteModal = deleteMessage => {
@@ -275,16 +328,13 @@ class TopicData extends React.Component {
       };
       tableMessages.push(messageToPush);
     });
-    this.setState({ messages: tableMessages, loading: false });
+    return tableMessages;
   };
 
-  getNextPageOffsets = () => {
-    const { nextPage } = this.state;
-
+  getNextPageOffsets = (nextPage) => {
     let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
     let afterString = aux.substring(0, aux.indexOf('&'));
-
-    this.setState({ offsets: this.getOffsetsByAfterString(afterString) });
+    return this.getOffsetsByAfterString(afterString);
   };
 
   getOffsetsByAfterString = (afterString) => {
@@ -295,6 +345,12 @@ class TopicData extends React.Component {
       const offset = offsetByPartition.split('-');
       offsets[`partition${offset[0]}`] = offset[1];
     });
+    return offsets;
+  }
+
+  getOffsetsByOffset = (partition, offset) => {
+    let offsets = [];
+    offsets[`partition${partition}`] = offset;
     return offsets;
   }
 
@@ -797,7 +853,10 @@ class TopicData extends React.Component {
                 onDelete={row => {
                   this.handleOnDelete(row);
                 }}
-                actions={canDeleteRecords ? [constants.TABLE_DELETE] : []}
+                onShare={row => {
+                  this.handleOnShare(row);
+                }}
+                actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
                 onExpand={obj => {
                   return Object.keys(obj.headers).map(header => {
                     return (
