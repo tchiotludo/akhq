@@ -248,10 +248,7 @@ class SchemaList extends Component {
             let schema = this.state.schemasRegistry.find(schema => {
               return schema.id === schemaId;
             });
-            history.push({
-              pathname: `/ui/${selectedCluster}/schema/details/${schema.subject}`,
-              schemaId: schema.subject
-            });
+            return `/ui/${selectedCluster}/schema/details/${schema.subject}`;
           }}
           actions={
             roles.registry && roles.registry['registry/delete']

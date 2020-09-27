@@ -93,12 +93,7 @@ class Acls extends Component {
               </td>
             </tr>
           }
-          onDetails={acl => {
-            this.props.history.push({
-              pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`,
-              principal: acl.user
-            });
-          }}
+          onDetails={acl => `/ui/${clusterId}/acls/${acl.principalEncoded}`}
         />
       </div>
     );

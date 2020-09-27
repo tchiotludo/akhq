@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
 import Spinner from '../Spinner';
+import {Link} from "react-router-dom";
 
 class Table extends Component {
   state = {
@@ -291,26 +292,20 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <Link to={onDetails && onDetails(row.id, row)}
               id="details"
-              onClick={() => {
-                onDetails && onDetails(row.id, row);
-              }}
             >
               <i className="fa fa-search" />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <Link  to={onConfig && onConfig(row.id, row)}
               id="config"
-              onClick={() => {
-                onConfig && onConfig(row.id, row);
-              }}
             >
               <i className="fa fa-gear" />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (

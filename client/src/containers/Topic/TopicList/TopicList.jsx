@@ -296,18 +296,8 @@ class TopicList extends Component {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={(id, row) => {
-            history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}/data`,
-              internal: row.internal
-            });
-          }}
-          onConfig={(id, row) => {
-            history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}/configs`,
-              internal: row.internal
-            });
-          }}
+          onDetails={(id, row) => `/ui/${selectedCluster}/topic/${id}/data`}
+          onConfig={(id, row) => `/ui/${selectedCluster}/topic/${id}/configs`}
           actions={
             roles.topic && roles.topic['topic/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]

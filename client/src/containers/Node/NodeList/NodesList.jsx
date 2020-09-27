@@ -76,9 +76,7 @@ class NodesList extends Component {
             this.setState({ data });
           }}
           actions={[constants.TABLE_DETAILS]}
-          onDetails={id => {
-            history.push(`/ui/${selectedCluster}/node/${id}`);
-          }}
+          onDetails={id => `/ui/${selectedCluster}/node/${id}`}
         />
       </div>
     );
