@@ -294,6 +294,7 @@ class Table extends Component {
           <td className="khq-row-action khq-row-action-main action-hover">
             <Link to={onDetails && onDetails(row.id, row)}
               id="details"
+              title="Details"
             >
               <i className="fa fa-search" />
             </Link>
@@ -301,8 +302,9 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link  to={onConfig && onConfig(row.id, row)}
+            <Link to={onConfig && onConfig(row.id, row)}
               id="config"
+              title="Config"
             >
               <i className="fa fa-gear" />
             </Link>
