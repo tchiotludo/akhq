@@ -199,7 +199,7 @@ export const uriNodesLogs = (clusterId, nodeId) => {
 
 export const uriConsumerGroups = (clusterId, search, pageNumber) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/${clusterId}/group?search=${search}&pageNumber=${pageNumber}`;
+  return `${apiUrl}/${clusterId}/group?search=${search}&page=${pageNumber}`;
 };
 
 export const uriConsumerGroup = (clusterId, groupId) => {
