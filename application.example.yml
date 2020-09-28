@@ -39,7 +39,7 @@ akhq:
     access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.akhq.log.access # Logger name
-      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [Length: {}] [Port: {}]" # Logger format
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
 
   # default kafka properties for each clients, available for admin / producer / consumer (optional)
   clients-defaults:
