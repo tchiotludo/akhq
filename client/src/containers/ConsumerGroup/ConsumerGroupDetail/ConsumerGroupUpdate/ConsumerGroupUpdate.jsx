@@ -139,16 +139,21 @@ class ConsumerGroupUpdate extends Form {
     let topic = '';
     let partition = '';
 
+    console.log(formData)
+
     Object.keys(formData).forEach(name => {
       splitName = name.split('-');
-      topic = splitName[0];
-      partition = splitName[1];
+      partition = splitName.pop();
+      topic = splitName.join('-');
+
       body.push({
         topic,
         partition,
         offset: formData[name]
       });
     });
+
+    console.log(body)
 
     return body;
   };
