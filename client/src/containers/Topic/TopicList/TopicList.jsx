@@ -13,6 +13,7 @@ import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import {Collapse} from 'react-bootstrap';
 
 class TopicList extends Component {
   state = {
@@ -37,7 +38,8 @@ class TopicList extends Component {
     },
     roles: JSON.parse(sessionStorage.getItem('roles')),
     loading: true,
-    cancel: undefined
+    cancel: undefined,
+    collapseConsumerGroups: {}
   };
 
   componentDidMount() {
@@ -138,6 +140,7 @@ class TopicList extends Component {
 
   handleTopics(topics) {
     let tableTopics = {};
+    const collapseConsumerGroups = {};
 
     const { selectedCluster } = this.state;
 
@@ -162,20 +165,22 @@ class TopicList extends Component {
         internal: topic.internal
       }
 
+      collapseConsumerGroups[topic.name] = false;
+
       api.get(uriTopicsGroups(selectedCluster, topic.name), {cancelToken: source.token})
         .then(value => {
           tableTopics[topic.name].groupComponent = value.data
           setState()
         })
     });
-
+    this.setState({collapseConsumerGroups});
     setState()
   }
 
 
 
   handleConsumerGroups = (consumerGroups, topicId) => {
-    if (consumerGroups) {
+    if (consumerGroups && consumerGroups.length > 0) {
       return consumerGroups.map(consumerGroup => {
         let className = 'btn btn-sm mb-1 mr-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
@@ -203,8 +208,19 @@ class TopicList extends Component {
     return '';
   };
 
+
+  handleCollapseConsumerGroups(id) {
+    const tmpGroups = {};
+
+    Object.keys(this.state.collapseConsumerGroups).forEach(key => {
+      tmpGroups[key] = (key === id)?  !this.state.collapseConsumerGroups[key] : this.state.collapseConsumerGroups[key];
+     });
+     this.setState({collapseConsumerGroups : tmpGroups});
+   }
+
+
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
@@ -214,6 +230,7 @@ class TopicList extends Component {
       { colName: 'Replications', colSpan: 2 },
       { colName: 'Consumer Groups', colSpan: 1 }
     ];
+
 
     return (
       <div>
@@ -298,10 +315,35 @@ class TopicList extends Component {
               colName: 'Consumer Groups',
               type: 'text',
               cell: obj => {
-                if (obj.groupComponent) {
-                  return this.handleConsumerGroups(obj.groupComponent, obj.id);
-                } else {
-
+                if (obj.groupComponent && obj.groupComponent.length > 0) {
+                  const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
+                  let i=0;
+                  return (
+                      <>
+                        {consumerGroups[0]}
+                        {consumerGroups.length > 1 &&
+                        <span>
+                          <span
+                            onClick={() => this.handleCollapseConsumerGroups(obj.id)}
+                            aria-expanded={collapseConsumerGroups[obj.id]}
+                          >
+                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
+                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
+                          </span>
+                          <span className="badge badge-secondary">{consumerGroups.length}</span>
+                          <Collapse in={collapseConsumerGroups[obj.id]}>
+                            <div>
+                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
+                                return (<div key={i++}>{group}</div>);
+                              })}
+                            </div>
+                          </Collapse>
+                        </span>
+                          }
+                      </>
+                  );
+                } else if (obj.groupComponent) {
+                    return <div className="empty-consumergroups"/>
                 }
               }
             }
