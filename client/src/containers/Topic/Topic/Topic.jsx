@@ -11,6 +11,7 @@ import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import {getSelectedTab} from "../../../utils/functions";
+import { Link } from 'react-router-dom';
 
 class Topic extends Component {
   state = {
@@ -116,11 +117,9 @@ class Topic extends Component {
   }
 
   selectTab = tab => {
-    const { topicId, clusterId } = this.state;
+    //const { topicId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
-    this.props.history.push({
-      pathname: `/ui/${clusterId}/topic/${topicId}/${tab}`
-    });
+
   };
 
   tabClassName = tab => {
@@ -140,9 +139,6 @@ class Topic extends Component {
       case 'groups':
         return (
           <TopicGroups
-            changeTab={tab => {
-              this.selectTab(tab);
-            }}
             clusterId={clusterId}
             topicId={topicId}
             history={history}
@@ -181,67 +177,49 @@ class Topic extends Component {
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">
-                <div
+                <Link to={`/ui/${clusterId}/topic/${topicId}/data`}
                   className={this.tabClassName('data')}
-                  onClick={() => this.selectTab('data')}
-                  //to="#"
-                  role="tab"
                 >
                   Data
-                </div>
+                </Link>
               </li>
             )}
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/partitions`}
                 className={this.tabClassName('partitions')}
-                onClick={() => this.selectTab('partitions')}
-                //to="#"
-                role="tab"
               >
                 Partitions
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/groups`}
                 className={this.tabClassName('groups')}
-                onClick={() => this.selectTab('groups')}
-                //to="#"
-                role="tab"
               >
                 Consumer Groups
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/configs`}
                 className={this.tabClassName('configs')}
-                onClick={() => this.selectTab('configs')}
-                //to="#"
-                role="tab"
               >
                 Configs
-              </div>
+              </Link>
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <div
+                <Link to={`/ui/${clusterId}/topic/${topicId}/acls`}
                   className={this.tabClassName('acls')}
-                  onClick={() => this.selectTab('acls')}
-                  //to="#"
-                  role="tab"
                 >
                   ACLS
-                </div>
+                </Link>
               </li>
             )}
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/logs`}
                 className={this.tabClassName('logs')}
-                onClick={() => this.selectTab('logs')}
-                //to="#"
-                role="tab"
               >
                 Logs
-              </div>
+              </Link>
             </li>
           </ul>
 
@@ -262,22 +240,21 @@ class Topic extends Component {
                 <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
               </div>
 
-              <div
-                onClick={() => {
-                  this.props.history.push({ pathname: `/ui/${clusterId}/tail`, topicId: topicId });
+              <Link to={{
+                pathname: `/ui/${clusterId}/tail`,
+                state: {
+                  topicId: topicId
+                }
                 }}
                 className="btn btn-secondary mr-2"
               >
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-              </div>
+              </Link>
 
-              <div
-                onClick={() => {
-                  this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
-                }}
+              <Link to={ `/ui/${clusterId}/topic/${topicId}/produce`}
                 className="btn btn-primary">
                 <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
-              </div>
+              </Link>
             </li>
           </aside>
         )}

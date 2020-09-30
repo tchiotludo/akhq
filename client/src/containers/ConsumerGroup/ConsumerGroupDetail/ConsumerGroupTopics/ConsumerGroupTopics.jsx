@@ -52,6 +52,7 @@ class ConsumerGroupTopics extends Component {
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'name',

@@ -100,6 +100,7 @@ class SchemaVersions extends Component {
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',

@@ -35,26 +35,26 @@ class Tail extends Component {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
-    const { location } = this.props.history;
+    const { state } = this.props.location;
 
     let data = await get(uriTopics(clusterId, '', 'ALL', ''));
     data = data.data;
     let topics = [];
-    if (location.topicId && location.topicId.length > 0) {
-      topics = [{ name: location.topicId }];
+    if (state && state.topicId && state.topicId.length > 0) {
+      topics = [{ name: state.topicId }];
     }
 
     if (data) {
       if (data.results) {
         this.setState({ topics: data.results, selectedTopics: topics }, () => {
-          if (location.topicId && location.topicId.length > 0) {
+          if (state && state.topicId && state.topicId.length > 0) {
             this.setState({ selectedStatus: STATUS.STARTED });
             this.startEventSource();
           }
         });
       } else {
         this.setState({ topics: [], selectedTopics: topics }, () => {
-          if (location.topicId && location.topicId.length > 0) {
+          if (state && state.topicId && state.topicId.length > 0) {
             this.setState({ selectedStatus: STATUS.STARTED });
             this.startEventSource();
           }
@@ -366,6 +366,7 @@ class Tail extends Component {
         </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
+            history={this.props.history}
             columns={[
               {
                 id: 'topic',

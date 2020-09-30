@@ -45,6 +45,7 @@ class TopicLogs extends Component {
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'broker',

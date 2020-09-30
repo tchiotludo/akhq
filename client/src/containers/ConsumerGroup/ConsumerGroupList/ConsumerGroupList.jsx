@@ -191,6 +191,7 @@ class ConsumerGroupList extends Component {
 
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -237,9 +238,7 @@ class ConsumerGroupList extends Component {
           onDelete={group => {
             this.handleOnDelete(group);
           }}
-          onDetails={id => {
-            history.push(`/ui/${selectedCluster}/group/${id}`);
-          }}
+          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
           actions={
             roles.group && roles.group['group/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]

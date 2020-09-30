@@ -83,12 +83,12 @@ class TopicGroups extends Component {
 
   render() {
     const { selectedCluster, loading } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -133,9 +133,7 @@ class TopicGroups extends Component {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => {
-            history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
-          }}
+          onDetails={id => `/ui/${selectedCluster}/group/${id}` }
           actions={[constants.TABLE_DETAILS]}
         />
       </div>

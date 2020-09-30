@@ -222,6 +222,7 @@ class TopicConfigs extends Form {
         <div>
           <Table
             loading={loading}
+            history={this.props.history}
             columns={[
               {
                 id: 'nameAndDescription',

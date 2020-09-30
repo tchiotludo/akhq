@@ -494,6 +494,7 @@ class TopicData extends React.Component {
     } = this.state;
     let date = moment(datetime);
     let { clusterId } = this.props.match.params;
+    const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -705,6 +706,7 @@ class TopicData extends React.Component {
           <div className="table-responsive">
             <Table
                 loading={loading}
+                history={history}
                 reduce={true}
                 firstHeader={firstColumns}
                 columns={[
