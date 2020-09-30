@@ -117,6 +117,20 @@ class Table extends Component {
     );
   }
 
+  onDoubleClick(onDetails, row) {
+    const { history } = this.props;
+
+    if (onDetails) {
+      let url = onDetails(row.id, row);
+      if (url) {
+        history.push({
+          pathname: url,
+          internal: row.internal
+        });
+      }
+    }
+  }
+
   renderRow(row, index) {
     const { actions, columns, extraRow, onExpand, noRowBackgroundChange, onDetails, handleExtraExpand, handleExtraCollapse, reduce } = this.props;
     const { extraExpanded } = this.state;
@@ -154,7 +168,7 @@ class Table extends Component {
                     actions.find(action => action === constants.TABLE_DETAILS) &&
                     !column.expand
                   ) {
-                    onDetails && onDetails(row.id, row);
+                    this.onDoubleClick(onDetails, row);
                   }
 
                   column.expand && this.handleExpand(row);
@@ -176,7 +190,7 @@ class Table extends Component {
                   actions.find(action => action === constants.TABLE_DETAILS) &&
                   !column.expand
                 ) {
-                  onDetails && onDetails(row.id, row);
+                  this.onDoubleClick(onDetails, row);
                 }
 
                 column.expand && this.handleExpand(row);
@@ -463,7 +477,8 @@ Table.propTypes = {
   noContent: PropTypes.any,
   handleExtraExpand: PropTypes.func,
   handleExtraCollapse: PropTypes.func,
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
+  history: PropTypes.object
 };
 
 export default Table;

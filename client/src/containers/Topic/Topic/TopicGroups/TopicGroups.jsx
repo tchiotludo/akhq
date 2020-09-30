@@ -83,12 +83,12 @@ class TopicGroups extends Component {
 
   render() {
     const { selectedCluster, loading } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',

@@ -54,6 +54,7 @@ class AclTopics extends Component {
     return (
       <Table
         loading={loading}
+        history={this.props.history}
         columns={[
           {
             id: 'group',

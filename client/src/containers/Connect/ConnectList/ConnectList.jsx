@@ -163,6 +163,7 @@ class ConnectList extends Component {
         <Header title={`Connect: ${connectId}`} history={history} />
         <Table
           loading={loading}
+          history={history}
           columns={[
             {
               id: 'id',

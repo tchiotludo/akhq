@@ -45,6 +45,7 @@ class NodesList extends Component {
         <Header title="Nodes" history={history} />
         <Table
           loading={loading}
+          history={history}
           columns={[
             {
               id: 'id',

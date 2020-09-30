@@ -206,7 +206,6 @@ class TopicList extends Component {
   render() {
     const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
       { colName: 'Topics', colSpan: 3 },
@@ -247,6 +246,7 @@ class TopicList extends Component {
 
         <Table
           loading={loading}
+          history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
           columns={[
@@ -313,8 +313,8 @@ class TopicList extends Component {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={(id, row) => `/ui/${selectedCluster}/topic/${id}/data`}
-          onConfig={(id, row) => `/ui/${selectedCluster}/topic/${id}/configs`}
+          onDetails={(id) => `/ui/${selectedCluster}/topic/${id}/data`}
+          onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
           actions={
             roles.topic && roles.topic['topic/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]

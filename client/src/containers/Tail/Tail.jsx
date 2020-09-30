@@ -366,6 +366,7 @@ class Tail extends Component {
         </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
+            history={this.props.history}
             columns={[
               {
                 id: 'topic',

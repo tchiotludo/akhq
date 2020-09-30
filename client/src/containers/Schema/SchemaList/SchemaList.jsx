@@ -178,6 +178,7 @@ class SchemaList extends Component {
 
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
