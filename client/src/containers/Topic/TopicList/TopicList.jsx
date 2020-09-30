@@ -323,29 +323,27 @@ class TopicList extends Component {
                         {consumerGroups[0]}
                         {consumerGroups.length > 1 &&
                         <span>
-                        <span
+                          <span
                             onClick={() => this.handleCollapseConsumerGroups(obj.id)}
-                            aria-controls="example-collapse-text"
                             aria-expanded={collapseConsumerGroups[obj.id]}
-                        >
-                          {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"></i>}
-                          {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"></i>}
-
-                        </span>
+                          >
+                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
+                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
+                          </span>
+                          <span className="badge badge-secondary">{consumerGroups.length}</span>
                           <Collapse in={collapseConsumerGroups[obj.id]}>
-                          <div>
-                            {consumerGroups.splice(1, consumerGroups.length).map(group => {
-                              return (<div key={i++}>{group}</div>)
-                            }) }
-                          </div>
+                            <div>
+                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
+                                return (<div key={i++}>{group}</div>);
+                              })}
+                            </div>
                           </Collapse>
                         </span>
                           }
                       </>
                   );
-
-                } else {
-                    return <div className="empty-consumergroups"></div>
+                } else if (obj.groupComponent) {
+                    return <div className="empty-consumergroups"/>
                 }
               }
             }
