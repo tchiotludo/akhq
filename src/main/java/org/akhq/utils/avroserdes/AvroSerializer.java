@@ -49,7 +49,7 @@ public class AvroSerializer {
 
         Decoder decoder = DecoderFactory.get().jsonDecoder(schema, din);
 
-        DatumReader<Object> reader = new BigDecimalFriendlySpecificDatumReader<>(schema);
+        DatumReader<Object> reader = new BigDecimalFriendlyGenericDatumReader<>(schema);
         Object datum = reader.read(null, decoder);
 
         GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema);

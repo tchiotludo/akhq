@@ -16,10 +16,10 @@ import org.apache.avro.io.ResolvingDecoder;
 /**
  * DatumReader which reads BigDecimals from a readable String.
  */
-class BigDecimalFriendlySpecificDatumReader<T> extends GenericDatumReader<T> {
+class BigDecimalFriendlyGenericDatumReader<T> extends GenericDatumReader<T> {
     private static final Conversion<BigDecimal> DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
-    public BigDecimalFriendlySpecificDatumReader(Schema schema) {
+    public BigDecimalFriendlyGenericDatumReader(Schema schema) {
         super(schema);
     }
 

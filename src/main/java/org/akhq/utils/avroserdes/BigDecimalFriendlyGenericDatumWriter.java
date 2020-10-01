@@ -6,6 +6,7 @@ import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.specific.SpecificDatumWriter;
 
@@ -13,11 +14,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
-class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
+class BigDecimalFriendlyGenericDatumWriter<T> extends GenericDatumWriter<T> {
 
     private static final Conversion<BigDecimal> DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
-    public BigDecimalFriendlySpecificDatumWriter(Schema schema) {
+    public BigDecimalFriendlyGenericDatumWriter(Schema schema) {
         super(schema);
     }
 

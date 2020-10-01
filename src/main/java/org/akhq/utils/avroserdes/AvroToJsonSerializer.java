@@ -12,7 +12,7 @@ public class AvroToJsonSerializer {
     public static String toJson(GenericRecord record) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             JsonEncoder jsonEncoder = EncoderFactory.get().jsonEncoder(record.getSchema(), outputStream);
-            new BigDecimalFriendlySpecificDatumWriter<GenericRecord>(record.getSchema()).write(record, jsonEncoder);
+            new BigDecimalFriendlyGenericDatumWriter<GenericRecord>(record.getSchema()).write(record, jsonEncoder);
             jsonEncoder.flush();
             return new String(outputStream.toByteArray());
         }
