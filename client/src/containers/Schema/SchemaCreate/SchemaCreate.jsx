@@ -49,13 +49,13 @@ class SchemaCreate extends Form {
     const { clusterId } = this.props.match.params;
 
     const parsedSchemaData = JSON.parse(formData.schemaData);
-    const schemaData = parsedSchemaData.schema || formData.schemaData;
+    const schemaData = parsedSchemaData.schema ? JSON.stringify(parsedSchemaData.schema) : formData.schemaData;
     const references = parsedSchemaData.references || [];
 
     const schema = {
       cluster: clusterId,
       subject: formData.subject,
-      schema: JSON.stringify(schemaData),
+      schema: schemaData,
       references: references,
       compatibilityLevel: formData.compatibilityLevel
     };

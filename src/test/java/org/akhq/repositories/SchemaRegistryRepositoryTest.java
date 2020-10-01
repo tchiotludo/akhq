@@ -59,7 +59,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     public final static String SUBJECT_3 = "SCHEMA_3";
     public final static String SCHEMA_3 = "{\"type\":\"record\",\"name\":\"Schema3\",\"namespace\":\"org.akhq\",\"fields\":[{\"name\":\"name\",\"type\":[\"null\",\"string\"]}]}";
 
-    public final static String SUBJECT_4 = "SCHEMA_3";
+    public final static String SUBJECT_4 = "SCHEMA_4";
     public final static String SCHEMA_4 = "{\"name\":\"Schema4\",\"namespace\":\"org.akhq\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":[\"null\",\"string\"]},{\"name\":\"schema3\",\"type\":\"Schema3\"}]}";
 
     @BeforeEach
@@ -67,8 +67,8 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_2);
-            repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_3);
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_4);
+            repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_3);
         } catch (Exception ignored) {
         }
     }
