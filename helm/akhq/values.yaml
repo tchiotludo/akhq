@@ -1,22 +1,26 @@
-#imagePullSecrets:
+# imagePullSecrets:
 #  - name: my-repository-secret
 image:
   repository: tchiotludo/akhq
   tag: latest
-  annotations: {}
-    #prometheus.io/scrape: 'true'
-    #prometheus.io/port: '8080'
-    #prometheus.io/path: '/metrics'
-  extraEnv: []
-  ## You can put directly your configuration here...
-  # - name: AKHQ_CONFIGURATION
-  #   value: |
-  #       akhq:
-  #         secrets:
-  #           docker-kafka-server:
-  #             properties:
-  #               bootstrap.servers: "kafka:9092"
 
+# custom annotations (example: for prometheus)
+annotations: {}
+  #prometheus.io/scrape: 'true'
+  #prometheus.io/port: '8080'
+  #prometheus.io/path: '/prometheus'
+
+## You can put directly your configuration here... or add java opts or any other env vars
+extraEnv: []
+# - name: AKHQ_CONFIGURATION
+#   value: |
+#       akhq:
+#         secrets:
+#           docker-kafka-server:
+#             properties:
+#               bootstrap.servers: "kafka:9092"
+# - name: JAVA_OPTS
+#   value: "-Djavax.net.ssl.trustStore=/usr/local/openjdk-11/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=password"
 
 ## Or you can also use configmap for the configuration...
 configuration: |
