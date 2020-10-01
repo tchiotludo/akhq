@@ -5,6 +5,7 @@
     "fields" : [
         {"name": "id", "type": "int"},
         {"name": "name", "type": "string"},
-        {"name": "weight", "type" : { "type" : "bytes", "logicalType" : "decimal", "precision" : 4, "scale" : 2}}
+        {"name": "weight", "type" : { "type" : "bytes", "logicalType" : "decimal", "precision" : 4, "scale" : 2}},
+        {"name": "birthdate", "type" : { "type" : "int", "logicalType" : "date"}}
     ]
 }

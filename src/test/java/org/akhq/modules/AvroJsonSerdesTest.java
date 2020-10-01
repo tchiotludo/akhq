@@ -46,41 +46,44 @@ public class AvroJsonSerdesTest {
     }
 
     @Test
-    public void serdesWithDecimal() throws IOException, RestClientException {
-        String expectedString = "{\"id\":10,\"name\":\"Tiger\",\"weight\":\"10.40\"}";
-        GenericRecord dogExample = aDogExample(10, "Tiger", 10.40);
-
-        testJsonSerialisationAndBack(dogExample, expectedString);
-    }
-
-    @Test
-    public void serdesWithDecimalAndUnions() throws IOException, RestClientException {
-        GenericRecord dogExample1 = aDogExample(10, "Alfie", 10.40);
-        GenericRecord dogExample2 = aDogExample(11, "Bella", 32.89);
-        GenericRecord catExample1 = aCatExample(12, "Charlie", Breed.ABYSSINIAN);
-        GenericRecord catExample2 = aCatExample(12, "Daisy", Breed.AMERICAN_SHORTHAIR);
-
-        GenericRecord petOwnerExample = aPetOwnerExample(1, "Omega",
-                List.of(dogExample1, dogExample2, catExample1, catExample2));
-        String expectedString = "{\"id\":1,\"name\":\"Omega\",\"pets\":[{\"org.akhq.Dog\":{\"id\":10,\"name\":\"Alfie\",\"weight\":\"10.40\"}},{\"org.akhq.Dog\":{\"id\":11,\"name\":\"Bella\",\"weight\":\"32.89\"}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Charlie\",\"breed\":\"ABYSSINIAN\"}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Daisy\",\"breed\":\"AMERICAN_SHORTHAIR\"}}]}";
-
-        testJsonSerialisationAndBack(petOwnerExample, expectedString);
-    }
-
-    @Test
-    public void serdesWithoutDecimal() throws IOException, RestClientException {
+    public void serdesWithoutDate() throws IOException, RestClientException {
         String expectedString = "{\"id\":10,\"name\":\"Tom\",\"breed\":\"SPHYNX\"}";
         GenericRecord catExample = aCatExample(10, "Tom", Breed.SPHYNX);
 
         testJsonSerialisationAndBack(catExample, expectedString);
     }
 
+    @Test
+    public void serdesWithDecimalAndDate() throws IOException, RestClientException {
+        String expectedString = "{\"id\":10,\"name\":\"Tiger\",\"weight\":\"10.40\",\"birthdate\":1601337600}";
+        GenericRecord dogExample = aDogExample(10, "Tiger", 10.40, 1601337600);
+
+        testJsonSerialisationAndBack(dogExample, expectedString);
+    }
+
+    @Test
+    public void serdesWithDecimalAndDateAndUnions() throws IOException, RestClientException {
+        GenericRecord dogExample1 = aDogExample(10, "Alfie", 10.40, 1601510400);
+        GenericRecord dogExample2 = aDogExample(11, "Bella", 32.89, 1601424000);
+        GenericRecord catExample1 = aCatExample(12, "Charlie", Breed.ABYSSINIAN);
+        GenericRecord catExample2 = aCatExample(12, "Daisy", Breed.AMERICAN_SHORTHAIR);
+
+        GenericRecord petOwnerExample = aPetOwnerExample(1, "Omega",
+                List.of(dogExample1, dogExample2, catExample1, catExample2));
+        String expectedString = "{\"id\":1,\"name\":\"Omega\",\"pets\":[{\"org.akhq.Dog\":{\"id\":10,\"name\":\"Alfie\",\"weight\":\"10.40\",\"birthdate\":1601510400}},{\"org.akhq.Dog\":{\"id\":11,\"name\":\"Bella\",\"weight\":\"32.89\",\"birthdate\":1601424000}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Charlie\",\"breed\":\"ABYSSINIAN\"}},{\"org.akhq.Cat\":{\"id\":12,\"name\":\"Daisy\",\"breed\":\"AMERICAN_SHORTHAIR\"}}]}";
+
+        testJsonSerialisationAndBack(petOwnerExample, expectedString);
+    }
+
+
     private void testJsonSerialisationAndBack(GenericRecord record, String expectedString) throws IOException, RestClientException {
         int schemaId = registryClient.getId(record.getSchema().getName(), record.getSchema());
-        assertEquals(AvroToJsonSerializer.toJson(record), expectedString);
+        // Compare JSON
+        assertEquals(expectedString, AvroToJsonSerializer.toJson(record));
+        // Compare Avro bytes
         assertArrayEquals(
-                avroSerializer.toAvro(expectedString, schemaId),
-                fromGenericRecordToEncodedBytes(record, schemaId));
+                fromGenericRecordToEncodedBytes(record, schemaId),
+                avroSerializer.toAvro(expectedString, schemaId));
     }
 
     private GenericRecord aCatExample(int id, String name, Breed breed) {
@@ -91,12 +94,13 @@ public class AvroJsonSerdesTest {
                 .build();
     }
 
-    private GenericRecord aDogExample(int id, String name, double weight) {
+    private GenericRecord aDogExample(int id, String name, double weight, int birthdate) {
         Schema.Field weightField = Dog.SCHEMA$.getField("weight");
         return new GenericRecordBuilder(Dog.SCHEMA$)
                 .set("id", id)
                 .set("name", name)
                 .set("weight", DECIMAL_CONVERSION.toBytes(BigDecimal.valueOf(weight).setScale(2), weightField.schema(), weightField.schema().getLogicalType()))
+                .set("birthdate", birthdate)
                 .build();
     }
 
@@ -108,6 +112,7 @@ public class AvroJsonSerdesTest {
                 .build();
     }
 
+    // This is Avro's standard conversion from GenericRecord to bytes
     private static byte[] fromGenericRecordToEncodedBytes(GenericRecord datum, int schemaId) throws IOException {
         GenericDatumWriter<Object> w = new GenericDatumWriter<>(datum.getSchema());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
