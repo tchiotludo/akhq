@@ -47,10 +47,16 @@ class SchemaCreate extends Form {
   async doSubmit() {
     const { formData } = this.state;
     const { clusterId } = this.props.match.params;
+
+    const parsedSchemaData = JSON.parse(formData.schemaData);
+    const schemaData = parsedSchemaData.schema ? JSON.stringify(parsedSchemaData.schema) : formData.schemaData;
+    const references = parsedSchemaData.references || [];
+
     const schema = {
       cluster: clusterId,
       subject: formData.subject,
-      schema: formData.schemaData,
+      schema: schemaData,
+      references: references,
       compatibilityLevel: formData.compatibilityLevel
     };
 

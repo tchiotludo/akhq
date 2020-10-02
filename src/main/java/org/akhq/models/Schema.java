@@ -1,12 +1,10 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
+import io.confluent.kafka.schemaregistry.ParsedSchema;
+import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import lombok.*;
-import org.akhq.utils.AvroSchemaDeserializer;
-import org.akhq.utils.AvroSchemaSerializer;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
 
@@ -27,10 +25,11 @@ public class Schema {
     private String subject;
     private Integer version;
     private Config.CompatibilityLevelConfig compatibilityLevel;
+    private String schema;
+    private List<SchemaReference> references = new ArrayList<>();
 
-    @JsonSerialize(using = AvroSchemaSerializer.class)
-    @JsonDeserialize(using = AvroSchemaDeserializer.class)
-    private org.apache.avro.Schema schema;
+    @JsonIgnore
+    private org.apache.avro.Schema avroSchema;
 
     private String exception;
 
@@ -39,18 +38,24 @@ public class Schema {
         this.subject = schema.subject;
         this.version = schema.version;
         this.schema = schema.getSchema();
+        this.references = schema.getReferences();
         this.exception = schema.exception;
         this.compatibilityLevel = config.getCompatibilityLevel();
     }
 
-    public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, Schema.Config config) {
+    public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, ParsedSchema parsedSchema, Schema.Config config) {
         this.id = schema.getId();
         this.subject = schema.getSubject();
         this.version = schema.getVersion();
         this.compatibilityLevel = config.getCompatibilityLevel();
 
         try {
-            this.schema = parser.parse(schema.getSchema());
+            if (parsedSchema == null) {
+                throw new AvroTypeException("Failed to parse schema " + schema.getSubject());
+            }
+            this.references = parsedSchema.references();
+            this.schema = parsedSchema.rawSchema().toString();
+            this.avroSchema = parser.parse(this.schema);
         } catch (AvroTypeException e) {
             this.schema = null;
             this.exception = e.getMessage();
@@ -60,7 +65,8 @@ public class Schema {
     @VisibleForTesting
     public Schema(String subject, org.apache.avro.Schema schema, Config.CompatibilityLevelConfig compatibilityLevel) {
         this.subject = subject;
-        this.schema = schema;
+        this.avroSchema = schema;
+        this.schema = this.avroSchema.toString();
         this.compatibilityLevel = compatibilityLevel;
     }
 

@@ -1,22 +1,19 @@
 package org.akhq.modules;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
-import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.configs.AbstractProperties;
 import org.akhq.configs.Connection;
@@ -139,13 +136,21 @@ public class KafkaModule {
         return this.producers.get(clusterId);
     }
 
+    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) {
+        AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
+        avroSchemaProvider.configure(Collections.singletonMap(
+            "schemaVersionFetcher",
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+        ));
+        return avroSchemaProvider;
+    }
 
     public RestService getRegistryRestClient(String clusterId) {
         Connection connection = this.getConnection(clusterId);
 
         if (connection.getSchemaRegistry() != null) {
             RestService restService = new RestService(
-                connection.getSchemaRegistry().getUrl().toString()
+                connection.getSchemaRegistry().getUrl()
             );
 
             restService.setHttpHeaders(Collections.singletonMap("Accept", "application/json"));
