@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import {Component} from 'react';
 import axios from 'axios';
 import { get, put, post, remove } from '../../utils/api';
 
