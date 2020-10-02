@@ -24,7 +24,7 @@ class Topic extends Component {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: {}
+    configs: []
   };
 
   tabs = ['data','partitions','groups','configs','acls','logs'];
@@ -80,6 +80,13 @@ class Topic extends Component {
   closeDeleteModal = () => {
     this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
+
+  canEmptyTopic = () => {
+    const { configs } = this.state;
+    const res = configs.filter( config => config.name === 'cleanup.policy');
+    if(res && res.length === 1 && res[0].value === 'delete') return true;
+    return false;
+  }
 
   emptyTopic = () => {
     const { clusterId, topicId } = this.props.match.params;
@@ -232,13 +239,20 @@ class Topic extends Component {
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <li className="aside-button">
-              <div
-                onClick={() => {
-                  this.handleOnEmpty();
-                }}
-                className="btn btn-secondary mr-2">
-                <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-              </div>
+              { this.canEmptyTopic()?
+                  <div
+                      onClick={() => {
+                        this.handleOnEmpty();
+                      }}
+                      className="btn btn-secondary mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+                  :
+                  <div title="Only enabled for topics with Delete Cleanup Policy"
+                       className="btn disabled-black-button mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+              }
 
               <Link to={{
                 pathname: `/ui/${clusterId}/tail`,
