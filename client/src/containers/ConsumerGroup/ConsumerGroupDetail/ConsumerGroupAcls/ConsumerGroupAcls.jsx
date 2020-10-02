@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriConsumerGroupAcls } from '../../../../utils/endpoints';
+import Root from "../../../../components/Root";
 
-class TopicAcls extends Component {
+class TopicAcls extends Root {
   state = {
     data: [],
     selectedCluster: '',
@@ -18,7 +18,7 @@ class TopicAcls extends Component {
     let acls = [];
     const { clusterId, consumerGroupId } = this.props;
 
-    acls = await get(uriConsumerGroupAcls(clusterId, consumerGroupId));
+    acls = await this.getApi(uriConsumerGroupAcls(clusterId, consumerGroupId));
     this.handleData(acls.data);
   }
 

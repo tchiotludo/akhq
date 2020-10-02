@@ -2,10 +2,10 @@ import React from 'react';
 import Header from '../../Header';
 import Joi from 'joi-browser';
 import Form from '../../../components/Form/Form';
-import { post } from '../../../utils/api';
 import { uriSchemaCreate } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 class SchemaCreate extends Form {
   state = {
     formData: {
@@ -60,7 +60,7 @@ class SchemaCreate extends Form {
       compatibilityLevel: formData.compatibilityLevel
     };
 
-    post(uriSchemaCreate(clusterId), schema)
+    this.postApi(uriSchemaCreate(clusterId), schema)
       .then(() => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/schema`,

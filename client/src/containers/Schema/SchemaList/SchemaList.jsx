@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../components/Table';
 import endpoints, { uriDeleteSchema } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
@@ -7,7 +7,6 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import api, { remove } from '../../../utils/api';
 import './styles.scss';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
@@ -15,8 +14,9 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../../components/Root";
 
-class SchemaList extends Component {
+class SchemaList extends Root {
   state = {
     schemasRegistry: [],
     showDeleteModal: false,
@@ -77,7 +77,7 @@ class SchemaList extends Component {
 
     this.setState({ loading: true });
 
-    let response = await api.get(
+    let response = await this.getApi(
       endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
 
@@ -128,7 +128,7 @@ class SchemaList extends Component {
       subject: schemaToDelete.subject
     };
 
-    remove(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
+    this.removeApi(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
       .then(() => {
         toast.success(`Schema '${schemaToDelete.subject}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });

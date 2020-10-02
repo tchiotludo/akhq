@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -6,14 +6,14 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import { get, remove } from '../../../utils/api';
 import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import {getSelectedTab} from "../../../utils/functions";
 import { Link } from 'react-router-dom';
+import Root from "../../../components/Root";
 
-class Topic extends Component {
+class Topic extends Root {
   state = {
     clusterId: this.props.clusterId,
     topicId: this.props.topicId,
@@ -91,7 +91,7 @@ class Topic extends Component {
   emptyTopic = () => {
     const { clusterId, topicId } = this.props.match.params;
 
-    remove(
+    this.removeApi(
         uriTopicDataEmpty(clusterId, topicId)
     )
         .then(() => {
@@ -116,7 +116,7 @@ class Topic extends Component {
     const { clusterId, topicId } = this.state;
     let configs = [];
     try {
-      configs = await get(uriTopicsConfigs(clusterId, topicId));
+      configs = await this.getApi(uriTopicsConfigs(clusterId, topicId));
       this.setState({ configs: configs.data });
     } catch (err) {
       console.error('Error:', err);
@@ -124,7 +124,6 @@ class Topic extends Component {
   }
 
   selectTab = tab => {
-    //const { topicId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
 
   };

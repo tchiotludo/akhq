@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { uriTopicsLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
+import Root from "../../../../components/Root";
 
-class TopicLogs extends Component {
+class TopicLogs extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
@@ -19,7 +19,7 @@ class TopicLogs extends Component {
   async getTopicLogs() {
     const { selectedCluster, selectedTopic } = this.state;
 
-    let logs = await get(uriTopicsLogs(selectedCluster, selectedTopic));
+    let logs = await this.getApi(uriTopicsLogs(selectedCluster, selectedTopic));
     this.handleData(logs.data);
   }
 

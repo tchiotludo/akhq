@@ -3,7 +3,6 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get, remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriSchemaRegistry,
@@ -25,9 +24,10 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../../../components/Root";
 // Adaptation of data.ftl
 
-class TopicData extends React.Component {
+class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
@@ -95,6 +95,7 @@ class TopicData extends React.Component {
   };
 
   componentWillUnmount = () => {
+    super.componentWillUnmount();
     this.onStop();
   };
 
@@ -177,10 +178,10 @@ class TopicData extends React.Component {
       canAccessSchema
     } = this.state;
 
-    const requests = [get(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
-                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    const requests = [this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+                      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))];
     if (canAccessSchema) {
-      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+      requests.push(this.getApi(uriSchemaRegistry(selectedCluster, '', '')));
     }
 
     this._fetchMessages(requests);
@@ -195,10 +196,10 @@ class TopicData extends React.Component {
       nextPage
     } = this.state;
 
-    const requests = [get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
-                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    const requests = [this.getApi(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+                      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))];
     if (canAccessSchema) {
-      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
+      requests.push(this.getApi(uriSchemaRegistry(selectedCluster, '', '')));
     }
 
     this._fetchMessages(requests, changePage);
@@ -301,7 +302,7 @@ class TopicData extends React.Component {
 
     const encodedkey = new Buffer(message.key).toString('base64');
     const deleteData = { partition: parseInt(message.partition), key: encodedkey };
-    remove(
+    this.removeApi(
         uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
         deleteData
     )

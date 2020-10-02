@@ -5,7 +5,6 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
 import { formatDateTime } from '../../../../utils/converters';
 import Joi from 'joi-browser';
-import { get, post } from '../../../../utils/api';
 import {
   uriConsumerGroup,
   uriConsumerGroupOffsetsByTimestamp,
@@ -15,6 +14,7 @@ import moment from 'moment';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 class ConsumerGroupUpdate extends Form {
   state = {
     clusterId: '',
@@ -59,7 +59,7 @@ class ConsumerGroupUpdate extends Form {
 
     let data = {};
     if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
-      data = await get(uriConsumerGroup(clusterId, consumerGroupId));
+      data = await this.getApi(uriConsumerGroup(clusterId, consumerGroupId));
       data = data.data;
       if (data) {
         this.setState({ groupedTopicOffset: data.groupedTopicOffset }, () =>
@@ -69,7 +69,7 @@ class ConsumerGroupUpdate extends Form {
         this.setState({ groupedTopicOffset: {} });
       }
     } else if (date !== '') {
-      data = await get(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
+      data = await this.getApi(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
       data = data.data;
       this.handleOffsetsByTimestamp(data);
     } else {
@@ -139,8 +139,6 @@ class ConsumerGroupUpdate extends Form {
     let topic = '';
     let partition = '';
 
-    console.log(formData)
-
     Object.keys(formData).forEach(name => {
       splitName = name.split('-');
       partition = splitName.pop();
@@ -152,16 +150,13 @@ class ConsumerGroupUpdate extends Form {
         offset: formData[name]
       });
     });
-
-    console.log(body)
-
     return body;
   };
 
   async doSubmit() {
     const { clusterId, consumerGroupId, formData } = this.state;
 
-    await post(
+    await this.postApi(
       uriConsumerGroupUpdate(clusterId, consumerGroupId),
       this.createSubmitBody(formData)
     );
