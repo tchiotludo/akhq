@@ -163,6 +163,7 @@ class ConnectList extends Component {
         <Header title={`Connect: ${connectId}`} history={history} />
         <Table
           loading={loading}
+          history={history}
           columns={[
             {
               id: 'id',
@@ -240,14 +241,7 @@ class ConnectList extends Component {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => {
-            history.push({
-              pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`,
-              clusterId,
-              connectId,
-              definitionId: name
-            });
-          }}
+          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}` }
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}

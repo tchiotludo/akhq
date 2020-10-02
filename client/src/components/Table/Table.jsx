@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
 import Spinner from '../Spinner';
+import {Link} from "react-router-dom";
 
 class Table extends Component {
   state = {
@@ -116,6 +117,20 @@ class Table extends Component {
     );
   }
 
+  onDoubleClick(onDetails, row) {
+    const { history } = this.props;
+
+    if (onDetails) {
+      let url = onDetails(row.id, row);
+      if (url) {
+        history.push({
+          pathname: url,
+          internal: row.internal
+        });
+      }
+    }
+  }
+
   renderRow(row, index) {
     const { actions, columns, extraRow, onExpand, noRowBackgroundChange, onDetails, handleExtraExpand, handleExtraCollapse, reduce } = this.props;
     const { extraExpanded } = this.state;
@@ -147,13 +162,13 @@ class Table extends Component {
               <td
                 key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
-                onClick={() => {
+                onDoubleClick={() => {
                   if (
                     actions &&
                     actions.find(action => action === constants.TABLE_DETAILS) &&
                     !column.expand
                   ) {
-                    onDetails && onDetails(row.id, row);
+                    this.onDoubleClick(onDetails, row);
                   }
 
                   column.expand && this.handleExpand(row);
@@ -169,13 +184,13 @@ class Table extends Component {
             <td
               key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
-              onClick={() => {
+              onDoubleClick={() => {
                 if (
                   actions &&
                   actions.find(action => action === constants.TABLE_DETAILS) &&
                   !column.expand
                 ) {
-                  onDetails && onDetails(row.id, row);
+                  this.onDoubleClick(onDetails, row);
                 }
 
                 column.expand && this.handleExpand(row);
@@ -273,13 +288,13 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare } = this.props;
 
     return (
       <>
         {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Add"
               id="add"
               onClick={() => {
                 onAdd && onAdd();
@@ -291,31 +306,27 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <Link to={onDetails && onDetails(row.id, row)}
               id="details"
-              onClick={() => {
-                onDetails && onDetails(row.id, row);
-              }}
+              title="Details"
             >
               <i className="fa fa-search" />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <Link to={onConfig && onConfig(row.id, row)}
               id="config"
-              onClick={() => {
-                onConfig && onConfig(row.id, row);
-              }}
+              title="Config"
             >
               <i className="fa fa-gear" />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Delete"
               id="delete"
               onClick={() => {
                 onDelete && onDelete(row);
@@ -327,7 +338,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Edit"
               id="edit"
               onClick={() => {
                 onEdit && onEdit();
@@ -339,7 +350,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_RESTART) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
+            <span title="Restart"
               id="restart"
               onClick={() => {
                 onRestart && onRestart(row);
@@ -348,6 +359,18 @@ class Table extends Component {
               <i className="fa fa-refresh" />
             </span>
           </td>
+        )}
+        {actions.find(el => el === constants.TABLE_SHARE) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Share"
+                id="share"
+                onClick={() => {
+                  onShare && onShare(row);
+                }}
+            >
+              <i className="fa fa-share" />
+            </span>
+            </td>
         )}
       </>
     );
@@ -454,7 +477,8 @@ Table.propTypes = {
   noContent: PropTypes.any,
   handleExtraExpand: PropTypes.func,
   handleExtraCollapse: PropTypes.func,
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
+  history: PropTypes.object
 };
 
 export default Table;

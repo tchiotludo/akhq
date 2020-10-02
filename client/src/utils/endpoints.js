@@ -66,6 +66,11 @@ export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
   return uri;
 };
 
+export const uriTopicDataSingleRecord = (clusterId, topicId, partition, offset) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/record/${partition}/${offset}`;
+  return uri;
+};
+
 export const uriTopicsPartitions = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/partitions`;
 };
@@ -194,7 +199,7 @@ export const uriNodesLogs = (clusterId, nodeId) => {
 
 export const uriConsumerGroups = (clusterId, search, pageNumber) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/${clusterId}/group?search=${search}&pageNumber=${pageNumber}`;
+  return `${apiUrl}/${clusterId}/group?search=${search}&page=${pageNumber}`;
 };
 
 export const uriConsumerGroup = (clusterId, groupId) => {

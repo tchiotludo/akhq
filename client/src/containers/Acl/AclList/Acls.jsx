@@ -50,6 +50,7 @@ class Acls extends Component {
   render() {
     const { data, searchData, loading } = this.state;
     const { clusterId } = this.props.match.params;
+
     return (
       <div>
         <Header title="Acls" history={this.props.history} />
@@ -69,6 +70,7 @@ class Acls extends Component {
         </nav>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'user',
@@ -93,12 +95,7 @@ class Acls extends Component {
               </td>
             </tr>
           }
-          onDetails={acl => {
-            this.props.history.push({
-              pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`,
-              principal: acl.user
-            });
-          }}
+          onDetails={acl => `/ui/${clusterId}/acls/${acl.principalEncoded}`}
         />
       </div>
     );

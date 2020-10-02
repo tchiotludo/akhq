@@ -44,6 +44,7 @@ class TopicAcls extends Root {
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'topic',

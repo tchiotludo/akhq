@@ -310,6 +310,40 @@ public class TopicController extends AbstractController {
             });
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
+    @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
+    public ResultNextList<Record> record(
+            HttpRequest<?> request,
+            String cluster,
+            String topicName,
+            Integer partition,
+            Integer offset
+    ) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+
+        // after wait for next offset, so add - 1 to allow to have the current offset
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
+            Optional.of(partition),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        Optional<Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
+        List<Record> data = singleRecord.map(Collections::singletonList).orElse(Collections.emptyList());
+
+        return TopicDataResultNextList.of(
+                data,
+                URIBuilder.empty(),
+                data.size(),
+                topic.canDeleteRecords(cluster, configRepository)
+        );
+    }
+
     private RecordRepository.Options dataSearchOptions(
         String cluster,
         String topicName,

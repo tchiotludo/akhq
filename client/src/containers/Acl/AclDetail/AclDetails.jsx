@@ -3,6 +3,7 @@ import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
 import {getSelectedTab} from "../../../utils/functions";
+import { Link } from 'react-router-dom';
 
 class AclDetails extends Component {
   state = {
@@ -33,12 +34,6 @@ class AclDetails extends Component {
     }
   }
 
-  selectTab = tab => {
-    const { principalEncoded, clusterId } = this.state;
-    this.setState({ selectedTab: tab });
-    this.props.history.push(`/ui/${clusterId}/acls/${principalEncoded}/${tab}`);
-  };
-
   tabClassName = tab => {
     const { selectedTab } = this.state;
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
@@ -65,30 +60,27 @@ class AclDetails extends Component {
   }
 
   render() {
+    const { principalEncoded, clusterId } = this.state;
     const { history } = this.props;
-    const principal = atob(this.state.principalEncoded);
+    const principal = atob(principalEncoded);
     return (
       <div>
         <Header title={`Acl: ${principal}`} history={history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/topics`}
                 className={this.tabClassName('topics')}
-                onClick={() => this.selectTab('topics')}
-                role="tab"
               >
                 Topics
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/groups`}
                 className={this.tabClassName('groups')}
-                onClick={() => this.selectTab('groups')}
-                role="tab"
               >
                 Groups
-              </div>
+              </Link>
             </li>
           </ul>
 

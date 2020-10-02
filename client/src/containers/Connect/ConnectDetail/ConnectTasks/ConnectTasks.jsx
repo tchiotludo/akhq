@@ -182,6 +182,7 @@ class ConnectTasks extends Component {
         <div className="table-responsive">
           <Table
             loading={loading}
+            history={this.props.history}
             columns={[
               {
                 id: 'id',
