@@ -1,5 +1,4 @@
 import React from 'react';
-import { get, post } from '../../../../utils/api';
 import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
 import { BYTES, MILLI, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
@@ -32,7 +31,7 @@ class NodeConfigs extends Form {
   async getNodesConfig() {
     const { selectedCluster, selectedNode } = this.state;
 
-    let configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
+    let configs = await this.getApi(uriNodesConfigs(selectedCluster, selectedNode));
     this.handleData(configs.data);
   }
 
@@ -130,7 +129,7 @@ class NodeConfigs extends Form {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
     let { configs } = this.state;
 
-    await post(uriNodesUpdateConfigs(selectedCluster, selectedNode), {
+    await this.postApi(uriNodesUpdateConfigs(selectedCluster, selectedNode), {
       configs: changedConfigs
     });
 

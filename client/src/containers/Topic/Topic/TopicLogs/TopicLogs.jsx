@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { uriTopicsLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import converters from '../../../../utils/converters';

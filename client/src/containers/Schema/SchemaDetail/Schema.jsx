@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import SchemaVersions from './SchemaVersions';
 import SchemaUpdate from './SchemaUpdate';
-import { get } from '../../../utils/api';
 import endpoints from '../../../utils/endpoints';
 import {getSelectedTab} from "../../../utils/functions";
 import {Link} from "react-router-dom";
+import Root from "../../../components/Root";
 
-class Schema extends Component {
+class Schema extends Root {
   state = {
     clusterId: this.props.match.params.clusterId,
     schemaId: this.props.history.schemaId || this.props.match.params.schemaId,
@@ -39,7 +39,7 @@ class Schema extends Component {
     const { clusterId, schemaId } = this.state;
     const tabSelected = getSelectedTab(this.props, this.tabs);
 
-    schemas = await get(endpoints.uriSchemaVersions(clusterId, schemaId));
+    schemas = await this.getApi(endpoints.uriSchemaVersions(clusterId, schemaId));
     this.setState({
       schemaVersions: schemas.data,
       totalVersions: schemas.data.length,

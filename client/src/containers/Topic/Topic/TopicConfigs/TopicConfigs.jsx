@@ -1,5 +1,4 @@
 import React from 'react';
-import { post } from '../../../../utils/api';
 import { uriTopicsConfigs, uriTopicsUpdateConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
@@ -130,7 +129,7 @@ class TopicConfigs extends Form {
   async doSubmit() {
     const { selectedCluster, selectedTopic, changedConfigs } = this.state;
 
-    await post(uriTopicsUpdateConfigs(selectedCluster, selectedTopic), {
+    await this.postApi(uriTopicsUpdateConfigs(selectedCluster, selectedTopic), {
       clusterId: selectedCluster,
       topicId: selectedTopic,
       configs: changedConfigs

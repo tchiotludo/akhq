@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
 import './styles.scss';
-class ConsumerGroupMembers extends Component {
+import Root from "../../../../components/Root";
+
+class ConsumerGroupMembers extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
@@ -20,7 +21,7 @@ class ConsumerGroupMembers extends Component {
   async getConsumerGroupMembers() {
     const { selectedCluster, selectedConsumerGroup } = this.state;
 
-    const members = await get(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
+    const members = await this.getApi(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
 
     this.handleData(members.data);
   }

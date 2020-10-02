@@ -1,10 +1,10 @@
 import React from 'react';
 import Form from '../../../../components/Form/Form';
 import Joi from 'joi-browser';
-import { get, post } from '../../../../utils/api';
 import { uriLatestSchemaVersion, uriUpdateSchema } from '../../../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 class SchemaUpdate extends Form {
   state = {
     clusterId: '',
@@ -67,7 +67,7 @@ class SchemaUpdate extends Form {
 
   async getLatestSchemaVersion() {
     const { clusterId, schemaId } = this.state;
-    let data = await get(uriLatestSchemaVersion(clusterId, schemaId));
+    let data = await this.getApi(uriLatestSchemaVersion(clusterId, schemaId));
 
     data = data.data;
     if (data) {
@@ -94,7 +94,7 @@ class SchemaUpdate extends Form {
       schema: formData.schema
     };
 
-    post(uriUpdateSchema(clusterId, formData.subject), body)
+    this.postApi(uriUpdateSchema(clusterId, formData.subject), body)
       .then(() => {
         toast.success(`Schema '${formData.subject}' is updated`);
         this.props.getSchemaVersions();

@@ -7,8 +7,6 @@ class Root extends Component {
   cancel = axios.CancelToken.source();
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
-
     if (this.cancel !== undefined) {
       this.cancel.cancel('cancel all');
     }
@@ -16,6 +14,15 @@ class Root extends Component {
 
   getApi(url) {
     return get(url, {cancelToken: this.cancel.token})
+  }
+  postApi(url, body) {
+    return post(url, body,{cancelToken: this.cancel.token})
+  }
+  putApi(url, body) {
+    return put(url, body,{cancelToken: this.cancel.token})
+  }
+  removeApi(url, body) {
+    return remove(url, body, {cancelToken: this.cancel.token})
   }
 
 }

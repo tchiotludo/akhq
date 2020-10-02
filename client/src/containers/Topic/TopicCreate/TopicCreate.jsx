@@ -3,7 +3,6 @@ import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
-import { post } from '../../../utils/api';
 import { uriTopicsCreate } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
 
@@ -56,7 +55,7 @@ class TopicCreate extends Form {
       }
     };
 
-    post(uriTopicsCreate(clusterId), topic)
+    this.postApi(uriTopicsCreate(clusterId), topic)
       .then(() => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/topic`,

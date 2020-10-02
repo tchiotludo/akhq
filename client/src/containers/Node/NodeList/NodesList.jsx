@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
-import { get } from '../../../utils/api';
 import { uriNodes } from '../../../utils/endpoints';
+import Root from "../../../components/Root";
 
-class NodesList extends Component {
+class NodesList extends Root {
   state = {
     data: [],
     selectedCluster: '',
@@ -20,7 +20,7 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
 
-    nodes = await get(uriNodes(clusterId));
+    nodes = await this.getApi(uriNodes(clusterId));
     this.handleData(nodes.data);
     this.setState({ selectedCluster: clusterId });
   }

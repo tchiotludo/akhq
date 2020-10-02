@@ -1,7 +1,6 @@
 import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, post } from '../../../../utils/api';
 import {
   uriConnectDefinitionConfigs,
   uriConnectPlugin,
@@ -40,7 +39,7 @@ class ConnectConfigs extends Form {
     const { connectId, clusterId, definitionId } = this.state;
     let configs = [];
 
-    configs = await get(uriConnectDefinitionConfigs(clusterId, connectId, definitionId));
+    configs = await this.getApi(uriConnectDefinitionConfigs(clusterId, connectId, definitionId));
     this.setState({ configs: configs.data }, () => {
       const pluginId = this.state.configs['connector.class'];
       this.getPlugin(pluginId);
@@ -51,7 +50,7 @@ class ConnectConfigs extends Form {
     const { connectId, clusterId } = this.state;
     let plugin = {};
 
-    plugin = await get(uriConnectPlugin(clusterId, connectId, pluginId));
+    plugin = await this.getApi(uriConnectPlugin(clusterId, connectId, pluginId));
     this.setState({ plugin: plugin.data }, () => {
       this.renderForm();
     });
@@ -357,7 +356,7 @@ class ConnectConfigs extends Form {
 
     const { history } = this.props;
 
-    await post(uriUpdateDefinition(clusterId, connectId, definitionId), body);
+    await this.postApi(uriUpdateDefinition(clusterId, connectId, definitionId), body);
 
     history.push({
       pathname: `/ui/${clusterId}/connect/${connectId}`,
