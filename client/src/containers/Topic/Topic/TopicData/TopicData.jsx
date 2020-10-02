@@ -246,7 +246,9 @@ class TopicData extends React.Component {
           recordCountTemp = messagesData.size;
         }
         this.setState({
-          messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
+          messages: tableMessages,
+          canDeleteRecords: messagesData.canDeleteRecords,
+          schemas: schemas,
           pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
           partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
           nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
