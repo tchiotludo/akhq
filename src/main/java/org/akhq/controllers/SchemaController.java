@@ -121,6 +121,16 @@ public class SchemaController extends AbstractController {
         return register;
     }
 
+    @Get("api/{cluster}/schema/id/{id}")
+    @Operation(tags = {"schema registry"}, summary = "Find a schema by id")
+    public Schema redirectId(
+        HttpRequest<?> request,
+        String cluster,
+        Integer id
+    ) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        return this.schemaRepository.getById(cluster, id);
+    }
+
     @Get("api/{cluster}/schema/{subject}/version")
     @Operation(tags = {"schema registry"}, summary = "List all version for a schema")
     public List<Schema> versions(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
