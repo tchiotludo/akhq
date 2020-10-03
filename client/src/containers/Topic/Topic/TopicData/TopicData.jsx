@@ -24,8 +24,7 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../../components/Root";
-// Adaptation of data.ftl
+import Root from '../../../../components/Root';
 
 class TopicData extends Root {
   state = {
@@ -270,6 +269,15 @@ class TopicData extends Root {
     });
   }
 
+  copyToClipboard(code) {
+    const textField = document.createElement('textarea')
+    textField.innerText = code
+    document.body.appendChild(textField)
+    textField.select()
+    document.execCommand('copy')
+    textField.remove()
+  }
+
   async handleOnShare(row) {
     const {
       selectedCluster,
@@ -279,14 +287,14 @@ class TopicData extends Root {
     const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
 
     try {
-      await navigator.clipboard.writeText(`${window.location.host}${pathToShare}` );
+      this.copyToClipboard(`${window.location.host}${pathToShare}`)
       toast.info('Message url is copied to your clipboard!');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
 
     this.props.history.push(pathToShare)
-    this.checkProps()
+    this.getSingleMessage(row.partition, row.offset);
   }
 
   showDeleteModal = deleteMessage => {
