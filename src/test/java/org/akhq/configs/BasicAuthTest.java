@@ -25,6 +25,7 @@ class BasicAuthTest {
     @Test
     void isValidPasswordBCryptInvalid() {
         BasicAuth basicAuth = new BasicAuth();
+        basicAuth.passwordHash = BasicAuth.PasswordHash.BCRYPT;
         basicAuth.password = "$2a$10$AtmQQDDSWnqsskzRxX1vGO0k6txZcJv.XlWRWA13.QOPq1wGB0DjS";
         assertFalse(basicAuth.isValidPassword("Bad"));
     }
@@ -32,6 +33,7 @@ class BasicAuthTest {
     @Test
     void isValidPasswordBCryptValid() {
         BasicAuth basicAuth = new BasicAuth();
+        basicAuth.passwordHash = BasicAuth.PasswordHash.BCRYPT;
         basicAuth.password = "$2a$10$AtmQQDDSWnqsskzRxX1vGO0k6txZcJv.XlWRWA13.QOPq1wGB0DjS";
         assertTrue(basicAuth.isValidPassword("TestAKHQ"));
     }
