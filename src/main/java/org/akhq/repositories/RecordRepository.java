@@ -7,14 +7,28 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.With;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.models.Partition;
+import org.akhq.models.Record;
+import org.akhq.models.Topic;
+import org.akhq.modules.AvroSerializer;
+import org.akhq.modules.KafkaModule;
+import org.akhq.utils.Debug;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -22,26 +36,23 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.akhq.models.Partition;
-import org.akhq.models.Record;
-import org.akhq.models.Topic;
-import org.akhq.modules.AvroSerializer;
-import org.akhq.modules.KafkaModule;
-import org.akhq.utils.Debug;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.codehaus.httpcache4j.uri.URIBuilder;
 
-import java.util.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 @Singleton
 @Slf4j
@@ -60,6 +71,34 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
+
+
+    public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+
+        Topic topic = topicRepository.findByName(clusterId, topicName);
+        Set<TopicPartition> topicPartitions = topic
+                .getPartitions()
+                .stream()
+                .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
+                .collect(Collectors.toSet());
+
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
+        Map<TopicPartition, OffsetAndMetadata> map = consumer.committed(topicPartitions);
+        ConsumerRecord<byte[], byte[]> lastRecord = null;
+        map.forEach(consumer::seek);
+        ConsumerRecords<byte[], byte[]> consumerRecords = this.poll(consumer);
+        if (!consumerRecords.isEmpty()) {
+            while (consumerRecords.iterator().hasNext()) {
+                ConsumerRecord<byte[], byte[]> consumerRecord = consumerRecords.iterator().next();
+                lastRecord = Optional
+                        .ofNullable(lastRecord)
+                        .filter(record -> record.timestamp() > consumerRecord.timestamp())
+                        .orElse(consumerRecord);
+            }
+        }
+        consumer.close();
+        return Optional.ofNullable(lastRecord).map(record -> newRecord(record, clusterId));
+    }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
@@ -377,21 +416,29 @@ public class RecordRepository extends AbstractRepository {
         */
     }
 
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
+        return new Record(
+                record,
+                this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId))
+        );
+    }
+
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
         return new Record(
-            record,
-            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+                record,
+                this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
         );
     }
 
     private RecordMetadata produce(
-        String clusterId,
-        String topic, byte[] value,
-        Map<String, String> headers,
-        byte[] key,
-        Optional<Integer> partition,
-        Optional<Long> timestamp
+            String clusterId,
+            String topic, byte[] value,
+            Map<String, String> headers,
+            byte[] key,
+            Optional<Integer> partition,
+            Optional<Long> timestamp
     ) throws ExecutionException, InterruptedException {
         return kafkaModule
             .getProducer(clusterId)
