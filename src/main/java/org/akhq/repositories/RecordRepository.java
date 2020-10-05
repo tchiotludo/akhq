@@ -85,6 +85,7 @@ public class RecordRepository extends AbstractRepository {
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
         Map<TopicPartition, OffsetAndMetadata> map = consumer.committed(topicPartitions);
         ConsumerRecord<byte[], byte[]> lastRecord = null;
+        consumer.assign(map.keySet());
         map.forEach(consumer::seek);
         ConsumerRecords<byte[], byte[]> consumerRecords = this.poll(consumer);
         if (!consumerRecords.isEmpty()) {
