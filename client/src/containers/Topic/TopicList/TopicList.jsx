@@ -1,15 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import Table from '../../../components/Table';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
+import {uriDeleteTopics, uriTopicLastRecord, uriTopics, uriTopicsGroups} from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
+import {calculateTopicOffsetLag, showBytes} from '../../../utils/converters';
 import './styles.scss';
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
@@ -211,10 +211,10 @@ class TopicList extends Root {
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     const firstColumns = [
-      { colName: 'Topics', colSpan: 3 },
-      { colName: 'Partitions', colSpan: 1 },
-      { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 }
+      {colName: 'Topics', colSpan: 4},
+      {colName: 'Partitions', colSpan: 1},
+      {colName: 'Replications', colSpan: 2},
+      {colName: 'Consumer Groups', colSpan: 1}
     ];
 
 
@@ -274,6 +274,22 @@ class TopicList extends Root {
               accessor: 'size',
               colName: 'Size',
               type: 'text'
+            },
+            {
+              id: 'lastWrite',
+              accessor: 'name',
+              colName: 'Last Record Write',
+              type: 'text',
+              cell: (obj, col) => {
+                return this.getApi(uriTopicLastRecord(selectedCluster, obj[col.accessor]))
+                    .then(result => {
+                      let record = result.data;
+                      if (record) {
+                        return <p>{record.timestamp}</p>;
+                      }
+                      return <p/>;
+                    })
+              }
             },
             {
               id: 'partitionsTotal',
