@@ -12,11 +12,11 @@ export const uriLogin = () => {
 };
 
 export const uriAuths = () => {
-  return `${baseUrl}/api/auths`;
+  return `${apiUrl}/auths`;
 };
 
 export const uriOidc = (provider) => {
-  return `${baseUrl}/oauth/login/${provider}`;
+  return `${baseUrl}${basePath}/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {
@@ -149,6 +149,11 @@ export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
 export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
+
+export const uriSchemaId = (clusterId, id) => {
+  return `${apiUrl}/${clusterId}/schema/id/${id}`;
+};
+
 export const uriSchemaVersions = (clusterId, subject) => {
   return `${apiUrl}/${clusterId}/schema/${subject}/version`;
 };

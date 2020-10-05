@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
+import Root from "../../../../components/Root";
 
-class ConsumerGroupTopics extends Component {
+class ConsumerGroupTopics extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
@@ -20,7 +20,7 @@ class ConsumerGroupTopics extends Component {
     let offsets = [];
     const { selectedCluster, selectedConsumerGroup } = this.state;
 
-    offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
+    offsets = await this.getApi(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
     offsets = offsets.data;
     this.handleData(offsets);
   }

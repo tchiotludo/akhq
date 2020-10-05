@@ -48,6 +48,9 @@ micronaut:
         access: "isAnonymous()"
       - pattern: "${micronaut.server.context-path:}/swagger/**"
         access: "isAnonymous()"
+    oauth2:
+      login-uri: "${micronaut.server.context-path:}/oauth/login{/provider}"
+      callback-uri: "${micronaut.server.context-path:}/oauth/callback{/provider}"
   caches:
     kafka-wrapper:
       record-stats: true

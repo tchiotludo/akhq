@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
-import { get } from '../../../utils/api';
 import { uriAclsList } from '../../../utils/endpoints';
 import SearchBar from '../../../components/SearchBar';
+import Root from "../../../components/Root";
 
-class Acls extends Component {
+class Acls extends Root {
   state = {
     data: [],
     selectedCluster: '',
@@ -24,7 +24,7 @@ class Acls extends Component {
     let acls = [];
     const { clusterId } = this.props.match.params;
 
-    acls = await get(uriAclsList(clusterId, this.state.searchData.search));
+    acls = await this.getApi(uriAclsList(clusterId, this.state.searchData.search));
     this.handleData(acls.data);
   }
 

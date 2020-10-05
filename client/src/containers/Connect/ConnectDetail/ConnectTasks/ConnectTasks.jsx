@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './styles.scss';
-
 import Table from '../../../../components/Table/Table';
 import constants from '../../../../utils/constants';
 import {
@@ -10,13 +9,14 @@ import {
   uriRestartDefinition,
   uriRestartTask
 } from '../../../../utils/endpoints';
-import { get } from '../../../../utils/api';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
-class ConnectTasks extends Component {
+import Root from "../../../../components/Root";
+
+class ConnectTasks extends Root {
   state = {
     clusterId: this.props.clusterId || this.props.match.params.clusterId,
     connectId: this.props.connectId || this.props.match.params.connectId,
@@ -61,7 +61,7 @@ class ConnectTasks extends Component {
     const { clusterId, connectId, definitionId } = this.state;
 
     this.setState({ loading: true });
-    definition = await get(uriGetDefinition(clusterId, connectId, definitionId));
+    definition = await this.getApi(uriGetDefinition(clusterId, connectId, definitionId));
     this.setState({ definition: definition.data }, () => this.handleTasks());
   }
 
@@ -69,7 +69,7 @@ class ConnectTasks extends Component {
     const { definitionId } = this.state;
     const { uri, action, taskId } = this.state.definitionModifyData;
 
-    get(uri)
+    this.getApi(uri)
       .then(() => this.getDefinition())
       .then(() => {
         toast.success(

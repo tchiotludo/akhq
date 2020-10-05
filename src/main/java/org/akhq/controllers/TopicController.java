@@ -326,7 +326,7 @@ public class TopicController extends AbstractController {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
-            Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
+            offset - 1 < 0 ? Optional.empty() : Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
             Optional.of(partition),
             Optional.empty(),
             Optional.empty(),

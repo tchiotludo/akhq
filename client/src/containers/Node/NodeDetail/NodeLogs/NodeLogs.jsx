@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import { get } from '../../../../utils/api';
+import React from 'react';
 import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { showBytes } from '../../../../utils/converters';
 import { sortBy } from '../../../../utils/constants';
+import Root from "../../../../components/Root";
 
-class NodeLogs extends Component {
+class NodeLogs extends Root {
   state = {
     host: '',
     port: '',
@@ -23,7 +23,7 @@ class NodeLogs extends Component {
     let logs = [];
     const { selectedCluster, selectedNode } = this.state;
 
-    logs = await get(uriNodesLogs(selectedCluster, selectedNode));
+    logs = await this.getApi(uriNodesLogs(selectedCluster, selectedNode));
     logs = logs.data.sort(sortBy('partition', false))
                     .sort(sortBy('topic', false));
     this.handleData(logs);

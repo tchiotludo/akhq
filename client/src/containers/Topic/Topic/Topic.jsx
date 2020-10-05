@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -6,14 +6,14 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import { get, remove } from '../../../utils/api';
 import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import {getSelectedTab} from "../../../utils/functions";
 import { Link } from 'react-router-dom';
+import Root from "../../../components/Root";
 
-class Topic extends Component {
+class Topic extends Root {
   state = {
     clusterId: this.props.clusterId,
     topicId: this.props.topicId,
@@ -24,7 +24,7 @@ class Topic extends Component {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: {}
+    configs: []
   };
 
   tabs = ['data','partitions','groups','configs','acls','logs'];
@@ -81,10 +81,17 @@ class Topic extends Component {
     this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
 
+  canEmptyTopic = () => {
+    const { configs } = this.state;
+    const res = configs.filter( config => config.name === 'cleanup.policy');
+    if(res && res.length === 1 && res[0].value === 'delete') return true;
+    return false;
+  }
+
   emptyTopic = () => {
     const { clusterId, topicId } = this.props.match.params;
 
-    remove(
+    this.removeApi(
         uriTopicDataEmpty(clusterId, topicId)
     )
         .then(() => {
@@ -109,7 +116,7 @@ class Topic extends Component {
     const { clusterId, topicId } = this.state;
     let configs = [];
     try {
-      configs = await get(uriTopicsConfigs(clusterId, topicId));
+      configs = await this.getApi(uriTopicsConfigs(clusterId, topicId));
       this.setState({ configs: configs.data });
     } catch (err) {
       console.error('Error:', err);
@@ -117,7 +124,6 @@ class Topic extends Component {
   }
 
   selectTab = tab => {
-    //const { topicId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
 
   };
@@ -232,13 +238,20 @@ class Topic extends Component {
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <li className="aside-button">
-              <div
-                onClick={() => {
-                  this.handleOnEmpty();
-                }}
-                className="btn btn-secondary mr-2">
-                <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-              </div>
+              { this.canEmptyTopic()?
+                  <div
+                      onClick={() => {
+                        this.handleOnEmpty();
+                      }}
+                      className="btn btn-secondary mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+                  :
+                  <div title="Only enabled for topics with Delete Cleanup Policy"
+                       className="btn disabled-black-button mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+              }
 
               <Link to={{
                 pathname: `/ui/${clusterId}/tail`,

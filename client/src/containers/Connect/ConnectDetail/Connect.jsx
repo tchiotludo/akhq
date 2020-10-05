@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';

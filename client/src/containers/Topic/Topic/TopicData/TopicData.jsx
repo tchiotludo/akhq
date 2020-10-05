@@ -3,10 +3,9 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get, remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
-  uriSchemaRegistry,
+  uriSchemaId,
   uriTopicData,
   uriTopicDataDelete,
   uriTopicDataSearch, uriTopicDataSingleRecord,
@@ -25,9 +24,9 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// Adaptation of data.ftl
+import Root from '../../../../components/Root';
 
-class TopicData extends React.Component {
+class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
@@ -53,7 +52,6 @@ class TopicData extends React.Component {
     selectedTopic: this.props.topicId,
     cleanupPolicy: '',
     datetime: '',
-    schemas: [],
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0,
@@ -70,7 +68,6 @@ class TopicData extends React.Component {
     const { clusterId, topicId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
 
-    const roles = this.state.roles || {};
     this.setState(
         {
           selectedCluster: clusterId,
@@ -82,7 +79,6 @@ class TopicData extends React.Component {
           currentSearch: (query.get('search'))? query.get('search') : this.state.currentSearch,
           offsets: (query.get('offset'))? this.getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets),
-          canAccessSchema: roles.registry && roles.registry['registry/read']
         },
         () => {
             if(query.get('single') !== null) {
@@ -95,6 +91,7 @@ class TopicData extends React.Component {
   };
 
   componentWillUnmount = () => {
+    super.componentWillUnmount();
     this.onStop();
   };
 
@@ -174,37 +171,29 @@ class TopicData extends React.Component {
     const {
       selectedCluster,
       selectedTopic,
-      canAccessSchema
     } = this.state;
 
-    const requests = [get(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
-                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
-    if (canAccessSchema) {
-      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
-    }
+    const requests = [this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+                      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))];
 
     this._fetchMessages(requests);
   }
-
 
   getMessages(filters = null, changePage = false) {
     const {
       selectedCluster,
       selectedTopic,
-      canAccessSchema,
       nextPage
     } = this.state;
-
-    const requests = [get(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
-                      get(uriTopicsPartitions(selectedCluster, selectedTopic))];
-    if (canAccessSchema) {
-      requests.push(get(uriSchemaRegistry(selectedCluster, '', '')));
-    }
+    const requests = [
+      this.getApi(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))
+    ];
 
     this._fetchMessages(requests, changePage);
 
     if (changePage) {
-      this.setUrlHistory(nextPage.substring(nextPage.indexOf("?") + 1, nextPage.length));
+      this.setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
     } else {
       this.setUrlHistory(filters);
     }
@@ -222,15 +211,10 @@ class TopicData extends React.Component {
     Promise.all(requests)
       .then(data => {
         let tableMessages = [],
-            schemas = [],
             pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
 
         const messagesData = data[0].data;
         const partitionData = data[1].data;
-        if (data.size === 3) {
-          const schemasData = data[2].data;
-          schemas = schemasData.results || [];
-        }
 
         if (messagesData.results) {
           tableMessages = this.handleMessages(messagesData.results);
@@ -246,7 +230,8 @@ class TopicData extends React.Component {
           recordCountTemp = messagesData.size;
         }
         this.setState({
-          messages: tableMessages, canDeleteRecords: data.canDeleteRecords, schemas,
+          messages: tableMessages,
+          canDeleteRecords: messagesData.canDeleteRecords,
           pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
           partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
           nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
@@ -267,6 +252,15 @@ class TopicData extends React.Component {
     });
   }
 
+  copyToClipboard(code) {
+    const textField = document.createElement('textarea')
+    textField.innerText = code
+    document.body.appendChild(textField)
+    textField.select()
+    document.execCommand('copy')
+    textField.remove()
+  }
+
   async handleOnShare(row) {
     const {
       selectedCluster,
@@ -276,14 +270,14 @@ class TopicData extends React.Component {
     const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
 
     try {
-      await navigator.clipboard.writeText(`${window.location.host}${pathToShare}` );
+      this.copyToClipboard(`${window.location.host}${pathToShare}`)
       toast.info('Message url is copied to your clipboard!');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
 
     this.props.history.push(pathToShare)
-    this.checkProps()
+    this.getSingleMessage(row.partition, row.offset);
   }
 
   showDeleteModal = deleteMessage => {
@@ -299,7 +293,7 @@ class TopicData extends React.Component {
 
     const encodedkey = new Buffer(message.key).toString('base64');
     const deleteData = { partition: parseInt(message.partition), key: encodedkey };
-    remove(
+    this.removeApi(
         uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
         deleteData
     )
@@ -389,6 +383,21 @@ class TopicData extends React.Component {
     });
   }
 
+  redirectToSchema(id) {
+    const { selectedCluster } = this.state;
+
+    this.getApi(uriSchemaId(selectedCluster, id))
+      .then(response => {
+        if (response.data) {
+          this.props.history.push({
+            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+            schemaId: response.data.subject
+          });
+        } else {
+          toast.warn(`Unable to find the registry schema with id  ${id} !`);
+        }
+      })
+  }
 
   renderSortOptions() {
     const { sortOptions } = this.state;
@@ -493,7 +502,6 @@ class TopicData extends React.Component {
       loading
     } = this.state;
     let date = moment(datetime);
-    let { clusterId } = this.props.match.params;
     const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
@@ -808,15 +816,7 @@ class TopicData extends React.Component {
                                 <span
                                     className="badge badge-primary clickable"
                                     onClick={() => {
-                                      let schema = this.state.schemas.find(el => {
-                                        return el.id === obj.schema.key;
-                                      });
-                                      if (schema) {
-                                        this.props.history.push({
-                                          pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                          schemaId: schema.subject
-                                        });
-                                      }
+                                      this.redirectToSchema(obj.schema.key);
                                     }}
                                 >
                           Key: {obj[col.accessor].key}
@@ -827,15 +827,7 @@ class TopicData extends React.Component {
                                 <span
                                     className="badge badge-primary clickable schema-value"
                                     onClick={() => {
-                                      let schema = this.state.schemas.find(el => {
-                                        return el.id === obj.schema.value;
-                                      });
-                                      if (schema) {
-                                        this.props.history.push({
-                                          pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                          schemaId: schema.subject
-                                        });
-                                      }
+                                      this.redirectToSchema(obj.schema.key);
                                     }}
                                 >
                           Value: {obj[col.accessor].value}

@@ -1,13 +1,14 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import { Link, withRouter } from 'react-router-dom';
 import { organizeRoles } from '../../utils/converters';
-import { get, logout } from '../../utils/api';
+import { logout } from '../../utils/api';
 import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../components/Root";
 
-class Header extends Component {
+class Header extends Root {
   state = {
     login: sessionStorage.getItem('login'),
     goBack: true
@@ -31,7 +32,7 @@ class Header extends Component {
 
   async logout() {
     await logout(uriLogout());
-    await get(uriCurrentUser()).then(res => {
+    await this.getApi(uriCurrentUser()).then(res => {
       let currentUserData = res.data;
       sessionStorage.setItem('login', currentUserData.logged);
       sessionStorage.setItem('user', 'default');

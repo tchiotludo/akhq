@@ -199,3 +199,9 @@ form.khq-form div.khq-submit,
         width: calc(100vw - #{$menu-width} - 15px);
     }
 }
+
+.btn.disabled-black-button {
+    color: #b3b3b3;
+    background-color: #222;
+    border-color: #333;
+}
