@@ -1,15 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import Table from '../../../components/Table';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopics} from '../../../utils/endpoints';
+import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopicLastRecord, uriTopics} from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
+import {calculateTopicOffsetLag, showBytes} from '../../../utils/converters';
 import './styles.scss';
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
@@ -174,6 +174,7 @@ class TopicList extends Root {
         id: topic.name,
         name: topic.name,
         count: topic.size,
+        lastWrite: undefined,
         size: showBytes(topic.logDirSize, 0),
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
@@ -182,6 +183,12 @@ class TopicList extends Root {
         internal: topic.internal
       }
       collapseConsumerGroups[topic.name] = false;
+
+      this.getApi(uriTopicLastRecord(selectedCluster, topic.name))
+          .then(value => {
+            tableTopics[topic.name].lastWrite = value.data.timestamp || ''
+            setState()
+          })
     });
     this.setState({collapseConsumerGroups});
     setState()
@@ -254,10 +261,10 @@ class TopicList extends Root {
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     const firstColumns = [
-      { colName: 'Topics', colSpan: 3 },
-      { colName: 'Partitions', colSpan: 1 },
-      { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 }
+      {colName: 'Topics', colSpan: 4},
+      {colName: 'Partitions', colSpan: 1},
+      {colName: 'Replications', colSpan: 2},
+      {colName: 'Consumer Groups', colSpan: 1}
     ];
 
     return (
@@ -319,6 +326,12 @@ class TopicList extends Root {
               id: 'size',
               accessor: 'size',
               colName: 'Size',
+              type: 'text'
+            },
+            {
+              id: 'lastWrite',
+              accessor: 'lastWrite',
+              colName: 'Last Record',
               type: 'text'
             },
             {

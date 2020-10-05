@@ -211,6 +211,12 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, topicName);
     }
 
+    @Get("api/{cluster}/topic/{topicName}/last-record")
+    @Operation(tags = {"topic"}, summary = "Retrieve the last record of a topic")
+    public Record lastRecord(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        return this.recordRepository.getLastRecord(cluster, topicName).orElse(new Record());
+    }
+
     @Get("api/{cluster}/topic/{topicName}/partitions")
     @Operation(tags = {"topic"}, summary = "List all partition from a topic")
     public List<Partition> partitions(String cluster, String topicName) throws ExecutionException, InterruptedException {

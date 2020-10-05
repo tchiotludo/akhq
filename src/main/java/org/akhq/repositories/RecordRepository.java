@@ -10,13 +10,15 @@ import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.controllers.TopicController;
+import org.akhq.models.Partition;
+import org.akhq.models.Record;
+import org.akhq.models.Topic;
+import org.akhq.modules.AvroSerializer;
+import org.akhq.modules.KafkaModule;
+import org.akhq.utils.Debug;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -24,17 +26,12 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.akhq.models.Partition;
-import org.akhq.models.Record;
-import org.akhq.models.Topic;
-import org.akhq.modules.AvroSerializer;
-import org.akhq.modules.KafkaModule;
-import org.akhq.utils.Debug;
-
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -63,6 +60,41 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
+
+    public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
+        Topic topic = topicRepository.findByName(clusterId, topicName);
+
+        List<TopicPartition> topicPartitions = topic
+            .getPartitions()
+            .stream()
+            .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
+            .collect(Collectors.toList());
+
+        consumer.assign(topicPartitions);
+        Optional<ConsumerRecord<byte[], byte[]>> latestRecord =
+            getLatestRecordFromOffsetDifference(consumer, 1)
+                .or(() -> getLatestRecordFromOffsetDifference(consumer, 2));
+
+        consumer.close();
+        return latestRecord.map(record -> newRecord(record, clusterId));
+    }
+
+    private Optional<ConsumerRecord<byte[], byte[]>> getLatestRecordFromOffsetDifference(KafkaConsumer<byte[], byte[]> consumer, int offsetDifference) {
+        AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
+        consumer
+            .endOffsets(consumer.assignment())
+            .forEach((topicPartition, offset) -> consumer.seek(topicPartition, Math.max(0, offset - offsetDifference)));
+
+        AtomicLong maxTimestamp = new AtomicLong();
+        this.poll(consumer).forEach(record -> {
+            if (record.timestamp() > maxTimestamp.get()) {
+                maxTimestamp.set(record.timestamp());
+                latestRecord.set(record);
+            }
+        });
+        return Optional.ofNullable(latestRecord.get());
+    }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
@@ -378,6 +410,14 @@ public class RecordRepository extends AbstractRepository {
 
         return consumer.poll(Duration.ofMillis(2000));
         */
+    }
+
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
+        return new Record(
+                record,
+                this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId))
+        );
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
