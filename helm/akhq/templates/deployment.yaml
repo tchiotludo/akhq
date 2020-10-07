@@ -37,6 +37,8 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
       {{- end }}
+      securityContext:
+        {{ toYaml .Values.podSecurityContext }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- range $key, $value := .Values.initContainers }}
@@ -48,6 +50,8 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
+          securityContext:
+            {{ toYaml .Values.containerSecurityContext }}
           env:
           {{- if .Values.secrets }}
           - name: MICRONAUT_ENVIRONMENTS

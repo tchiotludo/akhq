@@ -17,13 +17,12 @@ image:
   #             properties:
   #               bootstrap.servers: "kafka:9092"
 
-
 ## Or you can also use configmap for the configuration...
 configuration: |
   akhq:
     server:
-      access-log: 
-        enabled: false 
+      access-log:
+        enabled: false
         name: org.akhq.log.access
 ##... and secret for connection information
 secrets: |
@@ -47,7 +46,7 @@ extraVolumes: []
 extraVolumeMounts: []
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
-#   create-keystore: 
+#   create-keystore:
 #     image: "openjdk:11-slim"
 #     command: ['sh', '-c', 'keytool']
 #     volumeMounts:
@@ -66,7 +65,8 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  paths: []
+  paths: ["/"]
+  pathType: ImplementationSpecific
   hosts:
     - akhq.demo.com
   tls: []
@@ -87,3 +87,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+podSecurityContext: {}
+
+containerSecurityContext: {}
