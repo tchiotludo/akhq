@@ -81,8 +81,8 @@ public class RecordRepository extends AbstractRepository {
                 .stream()
                 .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
                 .collect(Collectors.toSet());
-
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
+        consumer.assign(topicPartitions);
         Map<TopicPartition, OffsetAndMetadata> map = consumer.committed(topicPartitions);
         ConsumerRecord<byte[], byte[]> lastRecord = null;
         consumer.assign(map.keySet());
@@ -427,19 +427,19 @@ public class RecordRepository extends AbstractRepository {
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
         return new Record(
-                record,
-                this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+            record,
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
         );
     }
 
     private RecordMetadata produce(
-            String clusterId,
-            String topic, byte[] value,
-            Map<String, String> headers,
-            byte[] key,
-            Optional<Integer> partition,
-            Optional<Long> timestamp
+        String clusterId,
+        String topic, byte[] value,
+        Map<String, String> headers,
+        byte[] key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp
     ) throws ExecutionException, InterruptedException {
         return kafkaModule
             .getProducer(clusterId)

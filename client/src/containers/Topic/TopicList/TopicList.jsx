@@ -144,6 +144,7 @@ class TopicList extends Root {
         id: topic.name,
         name: topic.name,
         count: topic.size,
+        lastWrite: undefined,
         size: showBytes(topic.logDirSize, 0),
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
@@ -155,11 +156,16 @@ class TopicList extends Root {
       collapseConsumerGroups[topic.name] = false;
 
       this.getApi(uriTopicsGroups(selectedCluster, topic.name))
-        .then(value => {
-          tableTopics[topic.name].groupComponent = value.data
-          setState()
-        })
-    });
+          .then(value => {
+            tableTopics[topic.name].groupComponent = value.data
+            setState()
+          });
+      this.getApi(uriTopicLastRecord(selectedCluster, topic.name))
+          .then(value => {
+            tableTopics[topic.name].lastWrite = value.data.timestamp
+            setState()
+          })
+    })
     this.setState({collapseConsumerGroups});
     setState()
   }
@@ -277,19 +283,9 @@ class TopicList extends Root {
             },
             {
               id: 'lastWrite',
-              accessor: 'name',
+              accessor: 'lastWrite',
               colName: 'Last Record Write',
-              type: 'text',
-              cell: (obj, col) => {
-                return this.getApi(uriTopicLastRecord(selectedCluster, obj[col.accessor]))
-                    .then(result => {
-                      let record = result.data;
-                      if (record) {
-                        return <p>{record.timestamp}</p>;
-                      }
-                      return <p/>;
-                    })
-              }
+              type: 'text'
             },
             {
               id: 'partitionsTotal',
