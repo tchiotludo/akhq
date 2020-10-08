@@ -34,7 +34,7 @@ micronaut:
           enabled: true
           cookie-same-site: strict
     redirect:
-      login-success: "/ui"
+      login-success: "${micronaut.server.context-path:}/ui"
       forbidden:
         url: "${micronaut.server.context-path:}/ui/login/forbidden"
       unauthorized:
