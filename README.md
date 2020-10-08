@@ -349,14 +349,28 @@ Define groups with specific roles for your users
 ##### Basic Auth
 * `akhq.security.basic-auth`: List user & password with affected roles 
   * `- username: actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
-    * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
+    * `password`: Password in sha256 (default) or bcrypt. The password can be converted 
+      * For default SHA256, with command `echo -n "password" | sha256sum` or Ansible filter `{{ 'password' | hash('sha256') }}`
+      * For BCrypt, with Ansible filter `{{ 'password' | password_hash('blowfish') }}`
+    * `passwordHash`: Password hashing algorithm, either `SHA256` or `BCRYPT`
     * `groups`: Groups for current user
 
 > Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
 > [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
 
-
+Configure basic-auth connection in AKHQ
+```yaml
+akhq.security:
+  basic-auth:
+    admin:
+      password: "$2a$<hashed password>"
+      passwordHash: BCRYPT
+      groups: admin
+    reader:
+      password: "<SHA-256 hashed password>"
+      groups: reader
+```
 
 ##### LDAP
 Configure how the ldap groups will be matched in AKHQ groups 
