@@ -124,14 +124,11 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
-  unCheckAll = ()  => {
+  unCheckAll = (value)  => {
     const {checked} = this.state;
-    let toCheck;
 
     Object.keys(checked).forEach(name => {
-      toCheck = toCheck === undefined ? !checked[name] : toCheck;
-
-      checked[name] = toCheck;
+      checked[name] = value;
     });
 
     this.setState({ checked});
@@ -194,7 +191,7 @@ class ConsumerGroupUpdate extends Form {
             <input
               type="checkbox"
               value={topicId}
-              defaultChecked={checked[topicId]}
+              checked={checked[topicId] || false}
               onChange={this.checkedGroupedTopicOffset}/> {topicId}
           </legend>
           {this.renderPartitionInputs(groupedTopicOffset[topicId], topicId, !checked[topicId])}
@@ -252,9 +249,17 @@ class ConsumerGroupUpdate extends Form {
           className="btn btn-secondary"
           type="button"
           style={{ marginRight: '0.5rem' }}
-          onClick={() => this.unCheckAll()}
+          onClick={() => this.unCheckAll(true)}
         >
-          Uncheck / Check all
+          Check all
+        </div>
+        <div
+            className="btn btn-secondary"
+            type="button"
+            style={{ marginRight: '0.5rem' }}
+            onClick={() => this.unCheckAll(false)}
+        >
+          Uncheck all
         </div>
         <div
           className="btn btn-secondary"
