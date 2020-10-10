@@ -223,7 +223,7 @@ class TopicData extends Root {
         }
         if (partitionData) {
           if (changePage) {
-            offsetsTemp = this.getNextPageOffsets();
+            offsetsTemp = this.getNextPageOffsets(nextPage);
           }
           partitionCountTemp = partitionData.length;
           nextPageTemp = messagesData.after;
@@ -234,7 +234,7 @@ class TopicData extends Root {
           canDeleteRecords: messagesData.canDeleteRecords,
           pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
           partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
-          nextPageInt: (nextPageTemp) ? nextPageTemp : nextPage,
+          nextPage: (nextPageTemp) ? nextPageTemp : nextPage,
           recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
           offsets: (offsetsTemp) ? offsetsTemp : offsets,
           loading: false
