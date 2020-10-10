@@ -67,10 +67,10 @@ jobs:
           ./gradlew classes testClasses --parallel --no-daemon
           ./gradlew check --no-daemon
 
-      # Shadow Jar
-      - name: Build jars
+      # Shadow Jar, Tar and Zip
+      - name: Build jars and distribution archives
         if: success() && matrix.java == '11'
-        run: ./gradlew shadowJar --no-daemon
+        run: ./gradlew shadowJar distTar distZip --no-daemon
 
       # Upload artifacts
       - name: Copy jar to docker
@@ -107,6 +107,31 @@ jobs:
           asset_path: ./docker/app/akhq.jar
           asset_name: akhq.jar
           asset_content_type: application/java-archive
+
+      # Upload Tar
+      - name: Upload Release Tar
+        id: upload-release-tar
+        uses: actions/upload-release-asset@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/akhq-${{ project.version }}.tar
+          asset_name: akhq.tar
+          asset_content_type: application/x-tar
+      # Upload Zip
+      - name: Upload Release Zip
+        id: upload-release-zip
+        uses: actions/upload-release-asset@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/akhq-${{ project.version }}.zip
+          asset_name: akhq.zip
+          asset_content_type: application/zip
 
       # Docker
       - name: Publish to Docker Hub
