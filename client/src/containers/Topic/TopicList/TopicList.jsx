@@ -43,16 +43,31 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    let {searchData, keepSearch} = this.state;
+    const { clusterId } = this.props.match.params;
+    const query =  new URLSearchParams(this.props.location.search);
+    const {searchData, keepSearch} = this.state;
+
+    let searchDataTmp;
+    let keepSearchTmp = keepSearch;
 
     const topicListSearch = localStorage.getItem('topicListSearch');
     if(topicListSearch) {
-      searchData = JSON.parse(topicListSearch);
-      keepSearch = true;
+      searchDataTmp = JSON.parse(topicListSearch);
+      keepSearchTmp = true;
+    } else {
+      searchDataTmp = {
+        search: (query.get('search'))? query.get('search') : searchData.search,
+        topicListView: (query.get('topicListView'))? query.get('topicListView') : searchData.topicListView,
+      }
     }
 
-    this.setState({selectedCluster: clusterId, searchData, keepSearch}, this.getTopics);
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp}, () => {
+      this.getTopics();
+      this.props.history.replace({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: this.props.location.search
+      });
+    });
 
   }
 
@@ -94,9 +109,15 @@ class TopicList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
+
+
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${searchData.search}&topicListView=${searchData.topicListView}`
+      });
     });
   };
 
@@ -132,9 +153,7 @@ class TopicList extends Root {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }, () =>
-          this.props.history.replace(`/ui/${selectedCluster}/topic`)
-      )
+      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }  )
     } else {
       this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
