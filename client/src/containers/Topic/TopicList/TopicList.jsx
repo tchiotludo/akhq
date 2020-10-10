@@ -28,6 +28,7 @@ class TopicList extends Root {
       search: '',
       topicListView: 'HIDE_INTERNAL'
     },
+    keepSearch: false,
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -43,7 +44,16 @@ class TopicList extends Root {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, this.getTopics);
+    let {searchData, keepSearch} = this.state;
+
+    const topicListSearch = localStorage.getItem('topicListSearch');
+    if(topicListSearch) {
+      searchData = JSON.parse(topicListSearch);
+      keepSearch = true;
+    }
+
+    this.setState({selectedCluster: clusterId, searchData, keepSearch}, this.getTopics);
+
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -86,6 +96,7 @@ class TopicList extends Root {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
+      this.handleKeepSearchChange(data.keepSearch);
     });
   };
 
@@ -205,9 +216,18 @@ class TopicList extends Root {
      this.setState({collapseConsumerGroups : tmpGroups});
    }
 
+  handleKeepSearchChange(value){
+    const { searchData } = this.state;
+    if(value) {
+      localStorage.setItem('topicListSearch', JSON.stringify(searchData));
+    } else {
+      localStorage.removeItem('topicListSearch');
+    }
+
+  }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -216,7 +236,6 @@ class TopicList extends Root {
       { colName: 'Replications', colSpan: 2 },
       { colName: 'Consumer Groups', colSpan: 1 }
     ];
-
 
     return (
       <div>
@@ -232,14 +251,18 @@ class TopicList extends Root {
             pagination={pageNumber}
             showTopicListView={true}
             topicListView={searchData.topicListView}
+            showKeepSearch={true}
+            keepSearch={keepSearch}
             onTopicListViewChange={value => {
               let { searchData } = { ...this.state };
               searchData.topicListView = value;
               this.setState(searchData);
             }}
+            onKeepSearchChange={value => {
+                this.handleKeepSearchChange(value);
+            }}
             doSubmit={this.handleSearch}
           />
-
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
