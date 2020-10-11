@@ -24,6 +24,7 @@ class ConsumerGroupUpdate extends Form {
     firstOffsets: {},
     lastOffsets: {},
     formData: {},
+    checked: {},
     errors: {}
   };
 
@@ -38,7 +39,7 @@ class ConsumerGroupUpdate extends Form {
   }
 
   async getGroupedTopicOffset() {
-    const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
+    const { clusterId, consumerGroupId, groupedTopicOffset, timestamp} = this.state;
     const momentValue = moment(timestamp);
 
     const date =
@@ -78,12 +79,13 @@ class ConsumerGroupUpdate extends Form {
   }
 
   createValidationSchema = groupedTopicOffset => {
-    let { formData } = this.state;
+    let { formData, checked} = this.state;
     let firstOffsets = {};
     let lastOffsets = {};
     let name = '';
 
     Object.keys(groupedTopicOffset).forEach(topidId => {
+      checked[topidId] = true;
       groupedTopicOffset[topidId].forEach(offset => {
         name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
@@ -97,7 +99,7 @@ class ConsumerGroupUpdate extends Form {
       });
     });
 
-    this.setState({ formData, firstOffsets, lastOffsets });
+    this.setState({ formData, firstOffsets, lastOffsets, checked});
   };
 
   handleOffsetsByTimestamp = offsets => {
@@ -122,6 +124,16 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
+  unCheckAll = (value)  => {
+    const {checked} = this.state;
+
+    Object.keys(checked).forEach(name => {
+      checked[name] = value;
+    });
+
+    this.setState({ checked});
+  }
+
   resetToLastOffsets = () => {
     const { lastOffsets } = this.state;
     let { formData } = this.state;
@@ -133,32 +145,35 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
-  createSubmitBody = formData => {
+  createSubmitBody = (formData, checked) => {
     let body = [];
     let splitName = [];
     let topic = '';
     let partition = '';
 
     Object.keys(formData).forEach(name => {
-      splitName = name.split('-');
-      partition = splitName.pop();
-      topic = splitName.join('-');
+        splitName = name.split('-');
+        partition = splitName.pop();
+        topic = splitName.join('-');
 
-      body.push({
-        topic,
-        partition,
-        offset: formData[name]
-      });
+      if (checked[topic] === true) {
+        body.push({
+          topic,
+          partition,
+          offset: formData[name]
+        });
+      }
     });
+
     return body;
   };
 
   async doSubmit() {
-    const { clusterId, consumerGroupId, formData } = this.state;
+    const { clusterId, consumerGroupId, formData, checked } = this.state;
 
     await this.postApi(
       uriConsumerGroupUpdate(clusterId, consumerGroupId),
-      this.createSubmitBody(formData)
+      this.createSubmitBody(formData, checked)
     );
 
     this.setState({ state: this.state });
@@ -166,14 +181,20 @@ class ConsumerGroupUpdate extends Form {
   }
 
   renderGroupedTopicOffset = () => {
-    const { groupedTopicOffset } = this.state;
+    const { groupedTopicOffset, checked } = this.state;
     const renderedItems = [];
 
-    Object.keys(groupedTopicOffset).forEach(topidId => {
+    Object.keys(groupedTopicOffset).forEach(topicId => {
       renderedItems.push(
-        <fieldset id={`fieldset-${topidId}`} key={topidId}>
-          <legend id={`legend-${topidId}`}>{topidId}</legend>
-          {this.renderPartitionInputs(groupedTopicOffset[topidId], topidId)}
+        <fieldset id={`fieldset-${topicId}`} key={topicId}>
+          <legend id={`legend-${topicId}`}>
+            <input
+              type="checkbox"
+              value={topicId}
+              checked={checked[topicId] || false}
+              onChange={this.checkedGroupedTopicOffset}/> {topicId}
+          </legend>
+          {this.renderPartitionInputs(groupedTopicOffset[topicId], topicId, !checked[topicId])}
         </fieldset>
       );
     });
@@ -181,7 +202,14 @@ class ConsumerGroupUpdate extends Form {
     return renderedItems;
   };
 
-  renderPartitionInputs = (offsets, topicId) => {
+  checkedGroupedTopicOffset = (event) => {
+    const { checked } = this.state;
+    checked[event.target.value] = event.target.checked;
+
+    this.setState({ checked: checked });
+  }
+
+  renderPartitionInputs = (offsets, topicId, disabled) => {
     const renderedInputs = [];
 
     offsets.forEach(offset => {
@@ -199,7 +227,8 @@ class ConsumerGroupUpdate extends Form {
                 undefined,
                 true,
                 'partition-input-div',
-                `partition-input ${name}-input`
+                `partition-input ${name}-input`,
+                { disabled: disabled }
               )}
             </span>
           </div>
@@ -216,6 +245,22 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <span>
+        <div
+          className="btn btn-secondary"
+          type="button"
+          style={{ marginRight: '0.5rem' }}
+          onClick={() => this.unCheckAll(true)}
+        >
+          Check all
+        </div>
+        <div
+            className="btn btn-secondary"
+            type="button"
+            style={{ marginRight: '0.5rem' }}
+            onClick={() => this.unCheckAll(false)}
+        >
+          Uncheck all
+        </div>
         <div
           className="btn btn-secondary"
           type="button"
