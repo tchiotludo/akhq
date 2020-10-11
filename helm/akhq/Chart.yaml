@@ -7,6 +7,8 @@ keywords:
   - kafka
   - confluent
   - gui
+  - schema-registry
+  - kafka-connect
 home: https://akhq.io
 icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/assets/img/logo_black.png
 sources:
