@@ -28,6 +28,7 @@ class TopicList extends Root {
       search: '',
       topicListView: 'HIDE_INTERNAL'
     },
+    keepSearch: false,
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -42,8 +43,32 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, this.getTopics);
+    const { clusterId } = this.props.match.params;
+    const query =  new URLSearchParams(this.props.location.search);
+    const {searchData, keepSearch} = this.state;
+
+    let searchDataTmp;
+    let keepSearchTmp = keepSearch;
+
+    const topicListSearch = localStorage.getItem('topicListSearch');
+    if(topicListSearch) {
+      searchDataTmp = JSON.parse(topicListSearch);
+      keepSearchTmp = true;
+    } else {
+      searchDataTmp = {
+        search: (query.get('search'))? query.get('search') : searchData.search,
+        topicListView: (query.get('topicListView'))? query.get('topicListView') : searchData.topicListView,
+      }
+    }
+
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp}, () => {
+      this.getTopics();
+      this.props.history.replace({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: this.props.location.search
+      });
+    });
+
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -84,8 +109,15 @@ class TopicList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
+
+
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
+      this.handleKeepSearchChange(data.keepSearch);
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${searchData.search}&topicListView=${searchData.topicListView}`
+      });
     });
   };
 
@@ -121,9 +153,7 @@ class TopicList extends Root {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }, () =>
-          this.props.history.replace(`/ui/${selectedCluster}/topic`)
-      )
+      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }  )
     } else {
       this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
@@ -205,9 +235,18 @@ class TopicList extends Root {
      this.setState({collapseConsumerGroups : tmpGroups});
    }
 
+  handleKeepSearchChange(value){
+    const { searchData } = this.state;
+    if(value) {
+      localStorage.setItem('topicListSearch', JSON.stringify(searchData));
+    } else {
+      localStorage.removeItem('topicListSearch');
+    }
+
+  }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     const firstColumns = [
@@ -216,7 +255,6 @@ class TopicList extends Root {
       { colName: 'Replications', colSpan: 2 },
       { colName: 'Consumer Groups', colSpan: 1 }
     ];
-
 
     return (
       <div>
@@ -232,14 +270,18 @@ class TopicList extends Root {
             pagination={pageNumber}
             showTopicListView={true}
             topicListView={searchData.topicListView}
+            showKeepSearch={true}
+            keepSearch={keepSearch}
             onTopicListViewChange={value => {
               let { searchData } = { ...this.state };
               searchData.topicListView = value;
               this.setState(searchData);
             }}
+            onKeepSearchChange={value => {
+                this.handleKeepSearchChange(value);
+            }}
             doSubmit={this.handleSearch}
           />
-
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}

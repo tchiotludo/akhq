@@ -28,8 +28,11 @@ class ConsumerGroupList extends Root {
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
+    const { clusterId } = this.props.match.params;
+    const { search } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+
+    this.setState({ selectedCluster: clusterId, search: (query.get('search'))? query.get('search') : search }, () => {
       this.getConsumerGroup();
     });
   }
@@ -37,6 +40,10 @@ class ConsumerGroupList extends Root {
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/group`,
+        search: `search=${data.searchData.search}`
+      });
     });
   };
 
