@@ -2,12 +2,13 @@ apiVersion: v1
 appVersion: "1.0"
 description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
 name: akhq
-version: 0.1.2
+version: 0.1.3
 keywords:
   - kafka
   - confluent
-  - timeseries
-  - influxdata
+  - gui
+  - schema-registry
+  - kafka-connect
 home: https://akhq.io
 icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
 sources:

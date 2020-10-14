@@ -13,18 +13,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Web site
+      - name: Add some files
+        run: |
+          echo "akhq.io" > docs/CNAME
+          cp LICENSE docs/LICENSE
+          cp README.md docs/README.md
+          cp README.md docs/README
+          cp artifacthub-repo.yml docs/artifacthub-repo.yml
+
       # Helm charts
       - uses: J12934/helm-gh-pages-action@master
         with:
           access-token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
           charts-folder: "helm"
           deploy-branch: helm
-
-      # Web site
-      - name: Contributor
-        run: |
-          npm i github-contributors-list
-          node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > docs/contributors.html
 
       # Clone helm charts
       - name: Clone helm charts
@@ -33,12 +36,17 @@ jobs:
           ref: helm
           path: tmp-helm
 
-      # Web site
+      # Add helm charts
       - name: Add helm charts
         run: |
           rm -rf tmp-helm/.git
           cp -R tmp-helm/* docs/
-          echo "akhq.io" > docs/CNAME
+
+      # Contributors
+      - name: Contributor
+        run: |
+          npm i github-contributors-list
+          node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > docs/contributors.html
 
       # Deploy
       - name: Deploy

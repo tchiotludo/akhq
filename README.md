@@ -6,6 +6,7 @@
 ![Github Downloads](https://img.shields.io/github/downloads/tchiotludo/akhq/total)
 ![Github Start](https://img.shields.io/github/stars/tchiotludo/akhq.svg)
 ![Main](https://github.com/tchiotludo/akhq/workflows/Main/badge.svg)
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/akhq)](https://artifacthub.io/packages/search?repo=akhq)
 
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
