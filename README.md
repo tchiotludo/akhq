@@ -11,7 +11,7 @@
 > Kafka GUI for [Apache Kafka](http://kafka.apache.org/) to manage topics, topics data, consumers group, schema registry, connect and more...
 
 <p align="center">
-  <img width="460" src="assets/img/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
+  <img width="460" src="client/src/images/logo_black.svg"  alt="AKHQ for Kafka logo" /><br /><br />
   <img width="720" src="docs/assets/images/video.gif"  alt="AKHQ for Kafka preview" />
 </p>
 
@@ -33,6 +33,7 @@
 - [Api](#api)
 - [Monitoring Endpoint](#monitoring-endpoint)
 - [Development Environment](#development-environment)
+- [Schema references](#schema-references)
 - [Who's using AKHQ](#whos-using-akhq)
 
 
@@ -58,6 +59,7 @@
   - Configurations view
   - Logs view
   - Delete a record
+  - Empty a Topic (Delete all the record from one topic)
   - Sort view
   - Filter per partitions
   - Filter with a starting time
@@ -310,6 +312,23 @@ akhq:
 
 #### Auth
 
+##### JWT
+
+AKHQ uses JWT tokens to perform authentication.
+Please generate a secret that is at least 256 bits and change the config like this:
+
+```yaml
+micronaut:
+  security:
+    enabled: true
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: <Your secret here>
+```
+
 ##### Groups
 
 Groups allow you to limit user 
@@ -318,7 +337,7 @@ Define groups with specific roles for your users
 * `akhq.security.default-group`: Default group for all the user even unlogged user
 
 * `akhq.security.groups`: Groups list definition
-  * `group-name`: Group identifier
+  * `- name: group-name` Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
 
@@ -330,20 +349,34 @@ Define groups with specific roles for your users
 
 ##### Basic Auth
 * `akhq.security.basic-auth`: List user & password with affected roles 
-  * `actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
-    * `password`: Password in sha256, can be converted with command `echo -n "password" | sha256sum`
+  * `- username: actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
+    * `password`: Password in sha256 (default) or bcrypt. The password can be converted 
+      * For default SHA256, with command `echo -n "password" | sha256sum` or Ansible filter `{{ 'password' | hash('sha256') }}`
+      * For BCrypt, with Ansible filter `{{ 'password' | password_hash('blowfish') }}`
+    * `passwordHash`: Password hashing algorithm, either `SHA256` or `BCRYPT`
     * `groups`: Groups for current user
 
 > Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
 > [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
 
-
+Configure basic-auth connection in AKHQ
+```yaml
+akhq.security:
+  basic-auth:
+    admin:
+      password: "$2a$<hashed password>"
+      passwordHash: BCRYPT
+      groups: admin
+    reader:
+      password: "<SHA-256 hashed password>"
+      groups: reader
+```
 
 ##### LDAP
 Configure how the ldap groups will be matched in AKHQ groups 
-* `akhq.security.ldap.group`: Ldap groups list
-  * `ldap-group-name`: Ldap group name (same name as in ldap)
+* `akhq.security.ldap.groups`: Ldap groups list
+  * `- name: ldap-group-name`: Ldap group name (same name as in ldap)
     * `groups`: AKHQ group list to be used for current ldap group
 
 Example using [online ldap test server](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/)
@@ -385,15 +418,13 @@ Configure AKHQ groups and Ldap groups and users
 akhq:
   security:
     groups:
-      topic-reader: # just a key, no matter will be override by name below
-        name: "topic-reader" # Group name
+      - name: topic-reader # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
-      topic-writer: # just a key, no matter will be override by name below
-        name: "topic-writer" # Group name
+      - name: topic-writer # Group name
         roles:
           - topic/read
           - topic/insert
@@ -402,24 +433,70 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
     ldap:
-      group:
-        mathematicians:
+      groups:
+        - name: mathematicians
           groups:
             - topic-reader
-        scientists:
+        - name: scientists
           groups:
             - topic-reader
             - topic-writer
-      user:
-        franz:
+      users:
+        - username: franz
           groups:
             - topic-reader
             - topic-writer
 
 ```
 
+### OIDC
+To enable OIDC in the application, you'll first have to enable OIDC in micronaut:
+
+```yaml
+micronaut:
+  security:
+    oauth2:
+      enabled: true
+      clients:
+        google:
+          client-id: "<client-id>"
+          client-secret: "<client-secret>"
+          openid:
+            issuer: "<issuer-url>"
+```
+
+To further tell AKHQ to display OIDC options on the login page and customize claim mapping, configure OIDC in the AKHQ config:
+
+```yaml
+akhq:
+  security:
+    oidc:
+      enabled: true
+      providers:
+        google:
+          label: "Login with Google"
+          username-field: preferred_username
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            - name: mathematicians
+              groups:
+                - topic-reader
+            - name: scientists
+              groups:
+                - topic-reader
+                - topic-writer
+          users:
+            - username: franz
+              groups:
+                - topic-reader
+                - topic-writer
+```
+
+The username field can be any string field, the roles field has to be a JSON array.
+
 ### Server 
-* `akhq.server.base-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
+* `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
   akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
   behind a reverse proxy with subdomain <http://akhq.my-server/>
 
@@ -514,6 +591,59 @@ A docker-compose is provide to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
+
+## Schema references
+
+Since Confluent 5.5.0, Avro schemas can now be reused by others schemas through schema references. This feature allows to define a schema once and use it as a record type inside one or more schemas.
+
+When registering new Avro schemas with AKHQ UI, it is now possible to pass a slightly more complex object with a `schema` and a `references` field.
+
+To register a new schema without references, no need to change anything:
+
+```json
+{
+    "name": "Schema1",
+    "namespace": "org.akhq",
+    "type": "record",
+    "fields": [
+        {
+            "name": "description",
+            "type": "string"
+        }
+    ]
+}
+```
+
+To register a new schema with a reference to an already registered schema:
+
+```json
+{
+    "schema": {
+        "name": "Schema2",
+        "namespace": "org.akhq",
+        "type": "record",
+        "fields": [
+            {
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "name": "schema1",
+                "type": "Schema1"
+            }
+        ]
+    },
+    "references": [
+        {
+            "name": "Schema1",
+            "subject": "SCHEMA_1",
+            "version": 1
+        }
+    ]
+}
+````
+
+Documentation on Confluent 5.5 and schema references can be found [here](https://docs.confluent.io/5.5.0/schema-registry/serdes-develop/index.html).
 
 
 ## Who's using AKHQ 

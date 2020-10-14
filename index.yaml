@@ -3,12 +3,12 @@ entries:
   akhq:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-10-12T20:45:14.284389225Z"
+    created: "2020-10-14T19:43:33.795708849Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
-    digest: d6d34d43adb235532fb7aed045915dfbc84daaceb83a15ec32a9accca5c60fa7
+    digest: bf98bed3db1ad868c8dfe02428395106eea3294d064a0bd7ed995792c8388486
     home: https://akhq.io
-    icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/assets/img/logo_black.png
+    icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
     keywords:
     - kafka
     - confluent
@@ -26,7 +26,7 @@ entries:
     version: 0.1.3
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-10-12T20:45:14.2837396Z"
+    created: "2020-10-14T19:43:33.794898049Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 004ec4f314a076b51532d6124867dc2f2947e2e9595fa8879386a06690c7de8c
@@ -48,7 +48,7 @@ entries:
     version: 0.1.2
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-10-12T20:45:14.282843166Z"
+    created: "2020-10-14T19:43:33.794371048Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 9b327a2adfb91219e4ce2d176dff26eb74d59de29332912e034b37ea60b02645
@@ -70,7 +70,7 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-10-12T20:45:14.282190742Z"
+    created: "2020-10-14T19:43:33.793873548Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 25a5a2c7d0d4e4ba7080e0193435c3dad0035bdaee2379885a42cfe4fceb144d
@@ -90,4 +90,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2020-10-12T20:45:14.281116401Z"
+generated: "2020-10-14T19:43:33.792784847Z"
