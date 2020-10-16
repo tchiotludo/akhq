@@ -16,6 +16,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaFuture;
@@ -28,6 +29,7 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
+
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -717,6 +719,45 @@ public class RecordRepository extends AbstractRepository {
             state.tailEvent = tailEvent;
             return state;
         });
+    }
+
+    public void copy(Topic topic, String toClusterId, String toTopicName, RecordRepository.Options options) {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
+
+        if (partitions.size() > 0) {
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+
+            if (log.isTraceEnabled()) {
+                partitions.forEach((topicPartition, first) ->
+                        log.trace(
+                                "Consume [topic: {}] [partition: {}] [start: {}]",
+                                topicPartition.topic(),
+                                topicPartition.partition(),
+                                first
+                        )
+                );
+            }
+
+            KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+            ConsumerRecords<byte[], byte[]> records;
+            do {
+                records = this.poll(consumer);
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    producer.send(new ProducerRecord<>(
+                            toTopicName,
+                            record.partition(),
+                            record.timestamp(),
+                            record.key(),
+                            record.value(),
+                            record.headers()
+                    ));
+                }
+
+            } while(records != null && !records.isEmpty());
+        }
+        consumer.close();
     }
 
     @ToString

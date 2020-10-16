@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
+import io.micronaut.core.util.CollectionUtils;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -24,8 +27,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
@@ -101,6 +107,17 @@ public class TopicController extends AbstractController {
             search
         ));
     }
+
+    @Get("api/{cluster}/topic/name")
+    @Operation(tags = {"topic"}, summary = "List all topics name")
+    public List<String> listTopicNames(
+            HttpRequest<?> request,
+            String cluster,
+            Optional<TopicRepository.TopicListView> show
+    ) throws ExecutionException, InterruptedException {
+        return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.valueOf(defaultView)), Optional.empty());
+    }
+
 
     @Secured(Role.ROLE_TOPIC_INSERT)
     @Post(value = "api/{cluster}/topic")
@@ -353,6 +370,45 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
+    @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
+    public HttpResponse<?> copy(
+            HttpRequest<?> request,
+            String fromCluster,
+            String fromTopicName,
+            String toCluster,
+            String toTopicName,
+            @Body List<OffsetCopy> offsets
+    ) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(fromCluster, fromTopicName);
+
+        String offsetsList = null;
+
+        if (CollectionUtils.isNotEmpty(offsets)) {
+            // after wait for next offset, so add - 1 to allow to have the current offset
+            offsetsList = offsets.stream()
+                    .filter(offsetCopy -> offsetCopy.offset - 1 >= 0)
+                    .map(offsetCopy ->
+                            String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
+                    .collect(Collectors.joining("_"));
+         }
+
+        RecordRepository.Options options = dataSearchOptions(
+                fromCluster,
+                fromTopicName,
+                Optional.ofNullable(StringUtils.isNotEmpty(offsetsList)? offsetsList : null),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
+
+        this.recordRepository.copy(topic, toCluster, toTopicName, options);
+
+        return HttpResponse.noContent();
+    }
+
     private RecordRepository.Options dataSearchOptions(
         String cluster,
         String topicName,
@@ -391,5 +447,13 @@ public class TopicController extends AbstractController {
 
         @JsonProperty("after")
         private final String after;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    public static class OffsetCopy {
+        private int partition;
+        private long offset;
     }
 }
