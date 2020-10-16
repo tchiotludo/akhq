@@ -28,7 +28,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -48,9 +47,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,32 +73,23 @@ public class RecordRepository extends AbstractRepository {
     protected int pollTimeout;
 
 
-    public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+    public Optional<Record> getLastRecord(String clusterId, String topicName) {
 
-        Topic topic = topicRepository.findByName(clusterId, topicName);
-        Set<TopicPartition> topicPartitions = topic
-                .getPartitions()
-                .stream()
-                .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
-                .collect(Collectors.toSet());
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-        consumer.assign(topicPartitions);
-        Map<TopicPartition, OffsetAndMetadata> map = consumer.committed(topicPartitions);
-        ConsumerRecord<byte[], byte[]> lastRecord = null;
-        consumer.assign(map.keySet());
-        map.forEach(consumer::seek);
-        ConsumerRecords<byte[], byte[]> consumerRecords = this.poll(consumer);
-        if (!consumerRecords.isEmpty()) {
-            while (consumerRecords.iterator().hasNext()) {
-                ConsumerRecord<byte[], byte[]> consumerRecord = consumerRecords.iterator().next();
-                lastRecord = Optional
-                        .ofNullable(lastRecord)
-                        .filter(record -> record.timestamp() > consumerRecord.timestamp())
-                        .orElse(consumerRecord);
-            }
-        }
+        consumer.subscribe(Collections.singletonList(topicName));
+        AtomicLong maxTimestamp = new AtomicLong();
+        AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
+        consumer.endOffsets(consumer.assignment()).forEach((topicPartition, offset) -> {
+            consumer.seek(topicPartition, (offset == 0) ? offset : offset - 1);
+            this.poll(consumer).forEach(record -> {
+                if (record.timestamp() > maxTimestamp.get()) {
+                    maxTimestamp.set(record.timestamp());
+                    latestRecord.set(record);
+                }
+            });
+        });
         consumer.close();
-        return Optional.ofNullable(lastRecord).map(record -> newRecord(record, clusterId));
+        return Optional.ofNullable(latestRecord.get()).map(record -> newRecord(record, clusterId));
     }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
