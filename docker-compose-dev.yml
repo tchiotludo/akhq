@@ -116,6 +116,4 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
-    volumes:
-      - ./connects-plugins:/usr/share/java/connects-plugins:Z
 
