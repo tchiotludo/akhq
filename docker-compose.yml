@@ -23,7 +23,9 @@ services:
               schema-registry:
                 url: "http://schema-registry:8085"
               connect:
-                url: "http://connect:8083"
+                - name: "connect"
+                  url: "http://connect:8083"
+
     ports:
       - 8080:8080
     links:
