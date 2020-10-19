@@ -44,6 +44,7 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka:Z
     environment:
+      KAFKA_BROKER_ID: '0'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_NUM_PARTITIONS: '12'
       KAFKA_COMPRESSION_TYPE: 'gzip'
