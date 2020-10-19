@@ -47,6 +47,7 @@ services:
       - zookeeper-log-0:/var/lib/zookeeper/log:Z
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
   kafka-0:
     image: confluentinc/cp-kafka
     volumes:
@@ -150,6 +151,7 @@ services:
       - zookeeper-log-1:/var/lib/zookeeper/log:Z
     environment:
       ZOOKEEPER_CLIENT_PORT: 2171
+      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
   kafka-1:
     image: confluentinc/cp-kafka
     volumes:
