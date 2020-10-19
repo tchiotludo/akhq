@@ -60,7 +60,7 @@ class Routes extends Root {
       });
   };
 
-  getCurrentUser(callback = () => {}) {
+  getCurrentUser() {
     sessionStorage.setItem('user', '');
     this.getApi(uriCurrentUser())
       .then(res => {
@@ -83,7 +83,6 @@ class Routes extends Root {
           }
         }
         this.setState({ loading: false });
-        callback();
       })
       .catch(err => {
         console.error('Error:', err);
