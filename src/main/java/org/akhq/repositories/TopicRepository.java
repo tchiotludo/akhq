@@ -25,9 +25,6 @@ public class TopicRepository extends AbstractRepository {
     private AbstractKafkaWrapper kafkaWrapper;
 
     @Inject
-    private ConsumerGroupRepository consumerGroupRepository;
-
-    @Inject
     private LogDirRepository logDirRepository;
 
     @Inject
