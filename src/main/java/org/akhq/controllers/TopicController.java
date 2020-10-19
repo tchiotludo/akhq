@@ -79,8 +79,6 @@ public class TopicController extends AbstractController {
     private Integer retentionPeriod;
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
-    @Value("${akhq.topic.skip-consumer-groups}")
-    protected Boolean skipConsumerGroups;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
@@ -100,8 +98,7 @@ public class TopicController extends AbstractController {
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
-            search,
-            skipConsumerGroups
+            search
         ));
     }
 

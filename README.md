@@ -274,7 +274,6 @@ akhq:
 * `akhq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `akhq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `akhq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
-* `akhq.topic.skip-consumer-groups` disable loading of consumer group information when showing topics (`true`), default is to load the information
 
 #### Topic creation default values
 
