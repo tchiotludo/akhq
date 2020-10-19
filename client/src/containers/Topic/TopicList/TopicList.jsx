@@ -5,13 +5,12 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
+import { uriDeleteTopics, uriTopics } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
 
 class TopicList extends Root {
@@ -39,7 +38,6 @@ class TopicList extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     loading: true,
     cancel: undefined,
-    collapseConsumerGroups: {}
   };
 
   componentDidMount() {
@@ -161,13 +159,6 @@ class TopicList extends Root {
 
   handleTopics(topics) {
     let tableTopics = {};
-    const collapseConsumerGroups = {};
-
-    const { selectedCluster } = this.state;
-
-    const setState = () =>  {
-      this.setState({ topics: Object.values(tableTopics) });
-    }
 
     topics.forEach(topic => {
       tableTopics[topic.name] = {
@@ -181,20 +172,9 @@ class TopicList extends Root {
         groupComponent: undefined,
         internal: topic.internal
       }
-
-      collapseConsumerGroups[topic.name] = false;
-
-      this.getApi(uriTopicsGroups(selectedCluster, topic.name))
-        .then(value => {
-          tableTopics[topic.name].groupComponent = value.data
-          setState()
-        })
     });
-    this.setState({collapseConsumerGroups});
-    setState()
+    this.setState({topics: Object.values(tableTopics)});
   }
-
-
 
   handleConsumerGroups = (consumerGroups, topicId) => {
     if (consumerGroups && consumerGroups.length > 0) {
@@ -225,16 +205,6 @@ class TopicList extends Root {
     return '';
   };
 
-
-  handleCollapseConsumerGroups(id) {
-    const tmpGroups = {};
-
-    Object.keys(this.state.collapseConsumerGroups).forEach(key => {
-      tmpGroups[key] = (key === id)?  !this.state.collapseConsumerGroups[key] : this.state.collapseConsumerGroups[key];
-     });
-     this.setState({collapseConsumerGroups : tmpGroups});
-   }
-
   handleKeepSearchChange(value){
     const { searchData } = this.state;
     if(value) {
@@ -246,14 +216,13 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, keepSearch } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     const firstColumns = [
       { colName: 'Topics', colSpan: 3 },
       { colName: 'Partitions', colSpan: 1 },
       { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 }
     ];
 
     return (
@@ -336,44 +305,6 @@ class TopicList extends Root {
               type: 'text',
               cell: (obj, col) => {
                 return <span>{obj[col.accessor]}</span>;
-              }
-            },
-            {
-              id: 'groupComponent',
-              accessor: 'groupComponent.id',
-              colName: 'Consumer Groups',
-              type: 'text',
-              cell: obj => {
-                if (obj.groupComponent && obj.groupComponent.length > 0) {
-                  const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
-                  let i=0;
-                  return (
-                      <>
-                        {consumerGroups[0]}
-                        {consumerGroups.length > 1 &&
-                        <span>
-                          <span
-                            onClick={() => this.handleCollapseConsumerGroups(obj.id)}
-                            aria-expanded={collapseConsumerGroups[obj.id]}
-                          >
-                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
-                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
-                          </span>
-                          <span className="badge badge-secondary">{consumerGroups.length}</span>
-                          <Collapse in={collapseConsumerGroups[obj.id]}>
-                            <div>
-                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
-                                return (<div key={i++}>{group}</div>);
-                              })}
-                            </div>
-                          </Collapse>
-                        </span>
-                          }
-                      </>
-                  );
-                } else if (obj.groupComponent) {
-                    return <div className="empty-consumergroups"/>
-                }
               }
             }
           ]}
