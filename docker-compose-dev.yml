@@ -29,17 +29,6 @@ services:
       - kafka
       - schema-registry
 
-  webpack:
-    image: node:12
-    command: "sh -c 'npm install && npm run dev'"
-    working_dir: /app
-    volumes:
-      - ./:/app:z
-    ports:
-      - 127.11.8.17:8081:8081
-    depends_on:
-      - akhq
-
   ui:
     image: node:12
     command: "sh -c 'npm install && npm start'"
