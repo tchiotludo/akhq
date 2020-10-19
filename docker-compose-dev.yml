@@ -22,7 +22,7 @@ services:
       - /app/.gradle:Z
       - ./gradle/gradle.properties:/root/.gradle/gradle.properties:Z
     ports:
-      - 127.11.8.17:8080:8080
+      - 8080:8080
     environment:
       MICRONAUT_IO_WATCH_RESTART: "true"
     depends_on:
@@ -39,7 +39,7 @@ services:
       - ui-modules:/app/client/node_modules:Z
       - ui-build:/app/client/build:Z
     ports:
-      - 127.11.8.17:3000:3000
+      - 3000:3000
     depends_on:
       - akhq
 
@@ -51,7 +51,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     ports:
-      - 127.11.8.17:2181:2181
+      - 2181:2181
 
   kafka:
     image: confluentinc/cp-kafka
@@ -73,8 +73,8 @@ services:
     links:
       - zookeeper
     ports:
-      - 127.11.8.17:9092:9092
-      - 127.11.8.17:9091:9091
+      - 9092:9092
+      - 9091:9091
 
   schema-registry:
     image: confluentinc/cp-schema-registry
@@ -86,12 +86,12 @@ services:
       SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8085"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
     ports:
-      - 127.11.8.17:8085:8085
+      - 8085:8085
 
   connect:
     image: confluentinc/cp-kafka-connect
     ports:
-      - 127.11.8.17:8083:8083
+      - 8083:8083
     depends_on:
       - kafka
       - schema-registry
