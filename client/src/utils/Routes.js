@@ -111,6 +111,7 @@ class Routes extends Root {
 
     if (this.state.user.length <= 0) {
       this.getCurrentUser();
+      return <></>;
     }
 
     if (
@@ -118,6 +119,7 @@ class Routes extends Root {
       (sessionStorage.getItem('login') === 'true' || this.state.user === 'default')
     ) {
       this.getClusters();
+      return <></>;
     }
 
     if (!clusters.find(el => el.id === this.state.clusterId) && clusterId !== '401') {
