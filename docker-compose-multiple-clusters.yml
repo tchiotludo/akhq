@@ -43,14 +43,14 @@ services:
   zookeeper-0:
     image: confluentinc/cp-zookeeper
     volumes:
-      - zookeeper-data-0:/var/lib/zookeeper/data
-      - zookeeper-log-0:/var/lib/zookeeper/log
+      - zookeeper-data-0:/var/lib/zookeeper/data:Z
+      - zookeeper-log-0:/var/lib/zookeeper/log:Z
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
   kafka-0:
     image: confluentinc/cp-kafka
     volumes:
-      - kafka-data-0:/var/lib/kafka
+      - kafka-data-0:/var/lib/kafka:Z
     ports:
       - 9092:9092
     environment:
@@ -146,14 +146,14 @@ services:
   zookeeper-1:
     image: confluentinc/cp-zookeeper
     volumes:
-      - zookeeper-data-1:/var/lib/zookeeper/data
-      - zookeeper-log-1:/var/lib/zookeeper/log
+      - zookeeper-data-1:/var/lib/zookeeper/data:Z
+      - zookeeper-log-1:/var/lib/zookeeper/log:Z
     environment:
       ZOOKEEPER_CLIENT_PORT: 2171
   kafka-1:
     image: confluentinc/cp-kafka
     volumes:
-      - kafka-data-1:/var/lib/kafka
+      - kafka-data-1:/var/lib/kafka:Z
     ports:
       - 9072:9072
     environment:
