@@ -1,0 +1,11 @@
+
+Õ
+
+film.protoorg.akhq.utils"‘
+Film
+name (	Rname
+producer (	Rproducer!
+release_year (RreleaseYear
+duration (Rduration
+starring (	RstarringB
+org.akhq.utilsB	FilmProtobproto3

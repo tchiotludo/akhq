@@ -28,12 +28,6 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +48,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+
+    @Inject
+    private CustomDeserializerRepository customDeserializerRepository;
 
     @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
@@ -381,6 +378,7 @@ public class RecordRepository extends AbstractRepository {
         return new Record(
             record,
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
         );
     }

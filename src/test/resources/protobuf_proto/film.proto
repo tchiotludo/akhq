@@ -1,0 +1,13 @@
+syntax = "proto3";
+package org.akhq.utils;
+
+option java_package = "org.akhq.utils";
+option java_outer_classname = "FilmProto";
+
+message Film {
+  string name = 1;
+  string producer = 2;
+  int32 release_year = 3;
+  int32 duration = 4;
+  repeated string starring = 5;
+}

@@ -112,6 +112,10 @@ dependencies {
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
 
+    // protobuf
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: "3.13.0"
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: "3.13.0"
+
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
