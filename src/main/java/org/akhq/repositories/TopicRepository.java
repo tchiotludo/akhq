@@ -25,9 +25,6 @@ public class TopicRepository extends AbstractRepository {
     private AbstractKafkaWrapper kafkaWrapper;
 
     @Inject
-    private ConsumerGroupRepository consumerGroupRepository;
-
-    @Inject
     private LogDirRepository logDirRepository;
 
     @Inject
@@ -57,13 +54,9 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        return this.list(clusterId, pagination, view, search, false);
-    }
-
-    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         List<String> all = all(clusterId, view, search);
 
-        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList, skipConsumerGroups));
+        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
@@ -97,23 +90,15 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
-        return this.findByName(clusterId, name, true);
-    }
-
-    public Topic findByName(String clusterId, String name, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         Optional<Topic> topic = Optional.empty();
         if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
-            topic = this.findByName(clusterId, Collections.singletonList(name), skipConsumerGroups).stream().findFirst();
+            topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
         }
 
         return topic.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
-        return this.findByName(clusterId, topics, false);
-    }
-
-    public List<Topic> findByName(String clusterId, List<String> topics, boolean skipConsumerGroups) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
 
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();

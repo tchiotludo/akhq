@@ -91,16 +91,13 @@
 - **Authentification and Roles**
   - Read only mode
   - BasicHttp with roles per user
-  - User groups configuration  
+  - User groups configuration
   - Filter topics with regexp for current groups
   - Ldap configuration to match AKHQ groups/roles
 
 ## New React UI
-Release `0.15.0` introduce a new UI based on React. This is the default one when you reach AKHQ.
 
-The old one is still available on path `/{cluster}/topic` but will be remove on release `0.16.0`.
-
-Since this is a major rework, the new UI can have some issue, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks ! 
+Since this is a major rework, the new UI can have some issues, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks!
 
 ## Quick preview
 * Download [docker-compose.yml](https://raw.githubusercontent.com/tchiotludo/akhq/master/docker-compose.yml) file
@@ -211,25 +208,25 @@ services:
       - /tmp/application.yml:/app/application.yml
 ```
 
-If you do not override the `JVM_OPTS_FILE`, the docker container will take the defaults one instead. 
+If you do not override the `JVM_OPTS_FILE`, the docker container will take the defaults one instead.
 
-### Kafka cluster configuration 
+### Kafka cluster configuration
 * `akhq.connections` is a key value configuration with :
   * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
-    * `url`: the schema registry url 
+    * `url`: the schema registry url
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
     * `properties`: all the configurations for registry client, especially ssl configuration
   * `connect`: *(optional list, define each connector as a element of a list)*
     * `name`: connect name
-    * `url`: connect url 
+    * `url`: connect url
     * `basic-auth-username`: connect basic auth username
     * `basic-auth-password`: connect basic auth password
     * `ssl-trust-store`: /app/truststore.jks
     * `ssl-trust-store-password`: trust-store-password
-    * `ssl-key-store`: /app/truststore.jks 
+    * `ssl-key-store`: /app/truststore.jks
     * `ssl-key-store-password`: key-store-password
 
 #### SSL Kafka Cluster with basic auth
@@ -241,7 +238,7 @@ openssl pkcs12 -export -inkey service.key -in service.cert -out client.keystore.
 keytool -import -file ca.pem -alias CA -keystore client.truststore.jks
 ```
 
-Configurations will look like this example: 
+Configurations will look like this example:
 
 ```yaml
 akhq:
@@ -268,16 +265,15 @@ akhq:
           basic-auth-password: {{password}}
 ```
 
-### AKHQ configuration 
+### AKHQ configuration
 
 #### Pagination
 * `akhq.pagination.page-size` number of topics per page (default : 25)
 
-#### Topic List 
+#### Topic List
 * `akhq.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
 * `akhq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `akhq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
-* `akhq.topic.skip-consumer-groups` disable loading of consumer group information when showing topics (`true`), default is to load the information
 
 #### Topic creation default values
 
@@ -293,7 +289,7 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
-    
+
 ### Security
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
 By default, the default group is `admin` and allow you all read / write access on the whole app.
@@ -301,7 +297,7 @@ By default, the default group is `admin` and allow you all read / write access o
 By default, security & roles is enabled by default but anonymous user have full access. You can completely disabled
 security with `micronaut.security.enabled: false`.
 
-If you need a read-only application, simply add this to your configuration files : 
+If you need a read-only application, simply add this to your configuration files :
 ```yaml
 akhq:
   security:
@@ -331,7 +327,7 @@ micronaut:
 
 ##### Groups
 
-Groups allow you to limit user 
+Groups allow you to limit user
 
 Define groups with specific roles for your users
 * `akhq.security.default-group`: Default group for all the user even unlogged user
@@ -345,12 +341,12 @@ Define groups with specific roles for your users
 3 defaults group are available :
 - `admin` with all right
 - `reader` with only read acces on all AKHQ
-- `no-roles` without any roles, that force user to login 
+- `no-roles` without any roles, that force user to login
 
 ##### Basic Auth
-* `akhq.security.basic-auth`: List user & password with affected roles 
+* `akhq.security.basic-auth`: List user & password with affected roles
   * `- username: actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
-    * `password`: Password in sha256 (default) or bcrypt. The password can be converted 
+    * `password`: Password in sha256 (default) or bcrypt. The password can be converted
       * For default SHA256, with command `echo -n "password" | sha256sum` or Ansible filter `{{ 'password' | hash('sha256') }}`
       * For BCrypt, with Ansible filter `{{ 'password' | password_hash('blowfish') }}`
     * `passwordHash`: Password hashing algorithm, either `SHA256` or `BCRYPT`
@@ -374,7 +370,7 @@ akhq.security:
 ```
 
 ##### LDAP
-Configure how the ldap groups will be matched in AKHQ groups 
+Configure how the ldap groups will be matched in AKHQ groups
 * `akhq.security.ldap.groups`: Ldap groups list
   * `- name: ldap-group-name`: Ldap group name (same name as in ldap)
     * `groups`: AKHQ group list to be used for current ldap group
@@ -399,13 +395,13 @@ micronaut:
           base: "dc=example,dc=com"
 ```
 
-If you want to enable anonymous auth to your LDAP server you can pass : 
+If you want to enable anonymous auth to your LDAP server you can pass :
 ```yaml
 managerDn: ''
 managerPassword: ''
 ```
 
-Debuging ldap connection can be done with 
+Debuging ldap connection can be done with
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
@@ -495,7 +491,7 @@ akhq:
 
 The username field can be any string field, the roles field has to be a JSON array.
 
-### Server 
+### Server
 * `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
   akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
   behind a reverse proxy with subdomain <http://akhq.my-server/>
@@ -504,7 +500,7 @@ The username field can be any string field, the roles field has to be a JSON arr
 * `akhq.clients-defaults.{{admin|producer|consumer}}.properties`: default configuration for admin producer or
   consumer. All properties from [Kafka documentation](https://kafka.apache.org/documentation/) is available.
 
-### Micronaut configuration 
+### Micronaut configuration
 > Since AKHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
@@ -529,23 +525,23 @@ volumeMounts:
   name: config
   readOnly: true
 
-``` 
+```
 
 ## Api
 An **experimental** api is available that allow you to fetch all the exposed on AKHQ through api.
 
-Take care that this api is **experimental** and **will** change in a future release. 
-Some endpoint expose too many datas and is slow to fetch, and we will remove 
+Take care that this api is **experimental** and **will** change in a future release.
+Some endpoint expose too many datas and is slow to fetch, and we will remove
 some properties in a future in order to be fast.
 
-Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all of theses 
+Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all of theses
 is slow for now and we will remove these in a future.
 
-You can discover the api endpoint here : 
+You can discover the api endpoint here :
 * `/api`: a [RapiDoc](https://mrin9.github.io/RapiDoc/) webpage that document all the endpoints.
-* `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files 
+* `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files
 
-## Monitoring endpoint 
+## Monitoring endpoint
 Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
 following micronaut configuration below.
 
@@ -556,7 +552,7 @@ following micronaut configuration below.
 * `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
 * `/prometheus` [Prometheus Endpoint](https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/)
 
-## Debugging AKHQ performance issues 
+## Debugging AKHQ performance issues
 
 You can debug all query duration from AKHQ with this commands
 ```bash
@@ -574,13 +570,13 @@ You can have access to last feature / bug fix with docker dev image automaticall
 docker pull tchiotludo/akhq:dev
 ```
 
-The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar : 
+The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar :
 
-Get it from docker image 
+Get it from docker image
 ```bash
 docker pull tchiotludo/akhq:dev
 docker run --rm --name=akhq -it tchiotludo/akhq:dev
-docker cp akhq:/app/akhq.jar . 
+docker cp akhq:/app/akhq.jar .
 ```
 Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/akhq-*.jar`
 
@@ -646,7 +642,7 @@ To register a new schema with a reference to an already registered schema:
 Documentation on Confluent 5.5 and schema references can be found [here](https://docs.confluent.io/5.5.0/schema-registry/serdes-develop/index.html).
 
 
-## Who's using AKHQ 
+## Who's using AKHQ
 * [Adeo](https://www.adeo.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
 * [Bell](https://www.bell.ca)
