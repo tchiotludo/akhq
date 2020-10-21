@@ -1,19 +1,24 @@
 .khq-multiple {
+    margin-left: 0;
     > div {
-        display: flex;
-        flex-direction: row;
+       display: flex;
         margin-bottom:  $form-group-margin-bottom;
 
-        &:last-child {
-            margin-bottom: 0;
+        &:first-child {
+            flex-grow: 1;
         }
 
-        > * {
-            margin-right:  $form-group-margin-bottom;
-
+        .row {
+            margin-bottom:  0;
             &:last-child {
+                margin-left: 0;
                 margin-right: 0;
+                padding-right: 0;
             }
+        }
+
+        .input-class {
+            width: 100%;
         }
     }
 }
