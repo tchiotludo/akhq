@@ -210,14 +210,14 @@ class TopicList extends Root {
           const noPropagation = e => e.stopPropagation();
 
           return (
-            <a
+            <Link
               key={consumerGroup.id}
-              href={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
+              to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
               className={className}
               onClick={noPropagation}
             >
               {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
-            </a>
+            </Link>
           );
       });
     }
