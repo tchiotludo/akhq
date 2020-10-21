@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
-import { get } from '../../../utils/api';
 import { uriNodes } from '../../../utils/endpoints';
+import Root from "../../../components/Root";
 
-class NodesList extends Component {
+class NodesList extends Root {
   state = {
     data: [],
-    selectedCluster: ''
+    selectedCluster: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -19,7 +20,7 @@ class NodesList extends Component {
     let nodes = [];
     const { clusterId } = this.props.match.params;
 
-    nodes = await get(uriNodes(clusterId));
+    nodes = await this.getApi(uriNodes(clusterId));
     this.handleData(nodes.data);
     this.setState({ selectedCluster: clusterId });
   }
@@ -32,17 +33,19 @@ class NodesList extends Component {
         rack: node.rack || ''
       };
     });
-    this.setState({ data: tableNodes });
+    this.setState({ data: tableNodes, loading: false });
     return tableNodes;
   }
 
   render() {
     const { history } = this.props;
-    const { data, selectedCluster } = this.state;
+    const { data, selectedCluster, loading } = this.state;
     return (
       <div>
         <Header title="Nodes" history={history} />
         <Table
+          loading={loading}
+          history={history}
           columns={[
             {
               id: 'id',
@@ -74,9 +77,7 @@ class NodesList extends Component {
             this.setState({ data });
           }}
           actions={[constants.TABLE_DETAILS]}
-          onDetails={id => {
-            history.push(`/ui/${selectedCluster}/node/${id}`);
-          }}
+          onDetails={id => `/ui/${selectedCluster}/node/${id}`}
         />
       </div>
     );

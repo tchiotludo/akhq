@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { uriTopicsPartitions } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
+import Root from "../../../../components/Root";
 
-class TopicPartitions extends Component {
+class TopicPartitions extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topic
+    selectedTopic: this.props.topic,
+    loading: true
   };
   componentDidMount() {
     this.getTopicsPartitions();
@@ -17,7 +18,7 @@ class TopicPartitions extends Component {
   async getTopicsPartitions() {
     const { selectedCluster, selectedTopic } = this.state;
 
-    let partitions = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
+    let partitions = await this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic));
     this.handleData(partitions.data);
   }
 
@@ -35,7 +36,7 @@ class TopicPartitions extends Component {
         size: partition
       };
     });
-    this.setState({ data: tablePartitions });
+    this.setState({ data: tablePartitions, loading: false });
   }
 
   handleLeader(leader) {
@@ -65,10 +66,12 @@ class TopicPartitions extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',

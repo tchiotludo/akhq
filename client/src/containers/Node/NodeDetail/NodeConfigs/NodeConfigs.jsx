@@ -1,5 +1,4 @@
 import React from 'react';
-import { get, post } from '../../../../utils/api';
 import { uriNodesConfigs, uriNodesUpdateConfigs } from '../../../../utils/endpoints';
 import { BYTES, MILLI, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
@@ -19,7 +18,8 @@ class NodeConfigs extends Form {
     changedConfigs: {},
     errors: {},
     configs: [],
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   schema = {};
@@ -31,7 +31,7 @@ class NodeConfigs extends Form {
   async getNodesConfig() {
     const { selectedCluster, selectedNode } = this.state;
 
-    let configs = await get(uriNodesConfigs(selectedCluster, selectedNode));
+    let configs = await this.getApi(uriNodesConfigs(selectedCluster, selectedNode));
     this.handleData(configs.data);
   }
 
@@ -51,7 +51,7 @@ class NodeConfigs extends Form {
         sensitive: config.sensitive
       };
     });
-    this.setState({ data: tableNodes, configs });
+    this.setState({ data: tableNodes, configs, loading: false });
   }
 
   handleDataType(dataType, value) {
@@ -129,7 +129,7 @@ class NodeConfigs extends Form {
     const { selectedCluster, selectedNode, changedConfigs } = this.state;
     let { configs } = this.state;
 
-    await post(uriNodesUpdateConfigs(selectedCluster, selectedNode), {
+    await this.postApi(uriNodesUpdateConfigs(selectedCluster, selectedNode), {
       configs: changedConfigs
     });
 
@@ -214,7 +214,7 @@ class NodeConfigs extends Form {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <form
@@ -224,6 +224,8 @@ class NodeConfigs extends Form {
       >
         <div>
           <Table
+            loading={loading}
+            history={this.props.history}
             columns={[
               {
                 id: 'nameAndDescription',

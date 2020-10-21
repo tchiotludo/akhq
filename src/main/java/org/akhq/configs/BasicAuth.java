@@ -1,31 +1,47 @@
 package org.akhq.configs;
 
 import com.google.common.hash.Hashing;
-import io.micronaut.context.annotation.EachProperty;
-import io.micronaut.context.annotation.Parameter;
-import lombok.Getter;
+import lombok.Data;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
-@EachProperty("akhq.security.basic-auth")
-@Getter
+@Data
 public class BasicAuth {
     String username;
     String password;
-    List<String> groups;
-
-    public BasicAuth(@Parameter String username) {
-        this.username = username;
-    }
+    PasswordHash passwordHash = PasswordHash.SHA256;
+    List<String> groups = new ArrayList<>();
 
     @SuppressWarnings("UnstableApiUsage")
     public boolean isValidPassword(String password) {
-        return this.password.equals(
-            Hashing.sha256()
-            .hashString(password, StandardCharsets.UTF_8)
-            .toString()
-        );
+        return passwordHash.checkPassword(password, this.password);
+    }
+
+    /**
+     * Password hashing algorithm
+     */
+    public enum PasswordHash {
+        SHA256 {
+            @Override
+            public boolean checkPassword(String plainPassword, String hashedPassword) {
+                return hashedPassword.equals(
+                        Hashing.sha256()
+                                .hashString(plainPassword, StandardCharsets.UTF_8)
+                                .toString());
+            }
+        },
+        BCRYPT {
+            @Override
+            public boolean checkPassword(String plainPassword, String hashedPassword) {
+                // See http://www.mindrot.org/projects/jBCrypt/
+                return BCrypt.checkpw(plainPassword, hashedPassword);
+            }
+        };
+
+        public abstract boolean checkPassword(String plainPassword, String hashedPassword);
     }
 }
 

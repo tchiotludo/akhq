@@ -4,6 +4,21 @@ micronaut:
 
   security:
     enabled: true
+    endpoints:
+      login:
+        path: "/login"
+      logout:
+        path: "/logout"
+        get-allowed: true
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
     ldap:
       default:
         enabled: true
@@ -65,7 +80,7 @@ akhq:
   security:
     default-group: no-filter
     groups:
-      admin:
+      - name: admin
         roles:
           - topic/read
           - topic/insert
@@ -90,7 +105,7 @@ akhq:
           - connect/update
           - connect/delete
           - connect/state/update
-      limited:
+      - name: limited
         roles:
           - topic/read
           - topic/insert
@@ -98,7 +113,7 @@ akhq:
           - registry/version/delete
         attributes:
           topics-filter-regexp: "test.*"
-      operator:
+      - name: operator
         roles:
           - topic/read
           - topic/data/read
@@ -106,31 +121,31 @@ akhq:
           - topic/data/delete
         attributes:
           topics-filter-regexp: "test-operator.*"
-      no-filter:
+      - name: no-filter
         roles:
           - topic/read
           - topic/insert
           - topic/delete
           - registry/version/delete
     basic-auth:
-      user:
+      - username: user
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
         groups:
           - limited
-      admin:
+      - username: admin
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
         groups:
           - admin
     ldap:
-      group:
-        ldap-admin:
+      groups:
+        - name: ldap-admin
           groups:
             - limited
-        ldap-operator:
+        - name: ldap-operator
           groups:
             - operator
-      user:
-        user2:
+      users:
+        - username: user2
           groups:
             - operator
 

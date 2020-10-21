@@ -11,6 +11,14 @@ export const uriLogin = () => {
   return `${basePath}/login`;
 };
 
+export const uriAuths = () => {
+  return `${apiUrl}/auths`;
+};
+
+export const uriOidc = (provider) => {
+  return `${baseUrl}${basePath}/oauth/login/${provider}`;
+};
+
 export const uriLogout = () => {
   return `${basePath}/logout`;
 };
@@ -39,30 +47,27 @@ export const uriDeleteTopics = (clusterId, topicId) => {
 export const uriTopicData = (
   clusterId,
   topicId,
-  offset,
-  partition,
-  sort,
-  timestamp,
-  search,
+  filters,
   nextPage = ''
 ) => {
   if (nextPage !== '') {
     return basePath + nextPage;
   }
 
-  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?sort=${sort}`;
-  if (offset !== undefined) {
-    uri += `&after=${offset}`;
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?${filters}`;
+  return uri;
+};
+
+export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+  if(filters) {
+    uri = uri + `?${filters}`
   }
-  if (partition !== undefined) {
-    uri += `&partition=${partition}`;
-  }
-  if (timestamp !== undefined) {
-    uri += `&timestamp=${timestamp}`;
-  }
-  if (search !== undefined) {
-    uri += `&search=${search}`;
-  }
+  return uri;
+};
+
+export const uriTopicDataSingleRecord = (clusterId, topicId, partition, offset) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/record/${partition}/${offset}`;
   return uri;
 };
 
@@ -144,6 +149,11 @@ export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
 export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
+
+export const uriSchemaId = (clusterId, id) => {
+  return `${apiUrl}/${clusterId}/schema/id/${id}`;
+};
+
 export const uriSchemaVersions = (clusterId, subject) => {
   return `${apiUrl}/${clusterId}/schema/${subject}/version`;
 };
@@ -194,7 +204,7 @@ export const uriNodesLogs = (clusterId, nodeId) => {
 
 export const uriConsumerGroups = (clusterId, search, pageNumber) => {
   // eslint-disable-next-line max-len
-  return `${apiUrl}/${clusterId}/group?search=${search}&pageNumber=${pageNumber}`;
+  return `${apiUrl}/${clusterId}/group?search=${search}&page=${pageNumber}`;
 };
 
 export const uriConsumerGroup = (clusterId, groupId) => {
@@ -264,13 +274,14 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   }${size.length > 0 ? sizeUrl : ''}`;
 };
 
-export const uriTopicDataSearch = (clusterId, topicId, search) => {
-  return `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
-};
 
 export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
 };
+
+export const uriTopicDataEmpty = (clusterId, topicName) => {
+  return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
+}
 
 export default {
   apiUrl,

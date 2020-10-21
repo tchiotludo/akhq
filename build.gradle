@@ -93,12 +93,12 @@ dependencies {
     implementation "io.swagger.core.v3:swagger-annotations"
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
     implementation "io.micronaut.security:micronaut-security-annotations"
-    implementation "io.micronaut.security:micronaut-security-session"
+    implementation "io.micronaut.security:micronaut-security-jwt"
     implementation "io.micronaut.security:micronaut-security-ldap"
+    implementation "io.micronaut.security:micronaut-security-oauth2"
     implementation "io.micronaut:micronaut-management"
     implementation 'io.micronaut.micrometer:micronaut-micrometer-registry-prometheus'
     implementation "io.micronaut.cache:micronaut-cache-core"
-
 
     // kafka
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
@@ -111,6 +111,9 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
+
+    // Password hashing
+    implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
     // api
 

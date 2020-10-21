@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
 import constants from '../../../../utils/constants';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-import { remove } from '../../../../utils/api';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
 import { toast } from 'react-toastify';
@@ -10,8 +9,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import Root from "../../../../components/Root";
 
-class SchemaVersions extends Component {
+class SchemaVersions extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
@@ -20,7 +20,8 @@ class SchemaVersions extends Component {
     deleteMessage: '',
     schemaToDelete: {},
     deleteData: { clusterId: '', subject: '', versionId: 1 },
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
@@ -37,9 +38,9 @@ class SchemaVersions extends Component {
           schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
         };
       });
-      this.setState({ data });
+      this.setState({ data, loading: false });
     } else {
-      this.setState({ data: [] });
+      this.setState({ data: [], loading: false });
     }
   }
 
@@ -76,7 +77,7 @@ class SchemaVersions extends Component {
       versionId: schemaToDelete.version
     };
 
-    remove(
+    this.removeApi(
       uriDeleteSchemaVersion(selectedCluster, selectedSchema, schemaToDelete.version),
       deleteData
     )
@@ -94,9 +95,12 @@ class SchemaVersions extends Component {
 
   render() {
     const roles = this.state.roles || {};
+    const { loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',

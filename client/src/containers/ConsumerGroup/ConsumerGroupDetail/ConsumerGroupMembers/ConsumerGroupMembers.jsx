@@ -1,15 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
 import './styles.scss';
-class ConsumerGroupMembers extends Component {
+import Root from "../../../../components/Root";
+
+class ConsumerGroupMembers extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedConsumerGroup: this.props.consumerGroupId
+    selectedConsumerGroup: this.props.consumerGroupId,
+    loading: true
   };
 
   componentDidMount() {
@@ -19,7 +21,7 @@ class ConsumerGroupMembers extends Component {
   async getConsumerGroupMembers() {
     const { selectedCluster, selectedConsumerGroup } = this.state;
 
-    const members = await get(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
+    const members = await this.getApi(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
 
     this.handleData(members.data);
   }
@@ -33,7 +35,7 @@ class ConsumerGroupMembers extends Component {
         assignments: member.assignments
       };
     });
-    this.setState({ data });
+    this.setState({ data, loading: false });
   }
 
   handlePartitions(partitions) {
@@ -86,10 +88,12 @@ class ConsumerGroupMembers extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'clientId',

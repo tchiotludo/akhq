@@ -1,15 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
-import { get } from '../../utils/api';
 import { uriLiveTail, uriTopics } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import Root from "../../components/Root";
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -19,7 +19,7 @@ const STATUS = {
 
 const MAX_RECORDS = [50, 100, 250, 500, 1000, 2500];
 
-class Tail extends Component {
+class Tail extends Root {
   state = {
     search: '',
     dropdownSearch: '',
@@ -35,26 +35,26 @@ class Tail extends Component {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
-    const { location } = this.props.history;
+    const { state } = this.props.location;
 
-    let data = await get(uriTopics(clusterId, '', 'ALL', ''));
+    let data = await this.getApi(uriTopics(clusterId, '', 'ALL', ''));
     data = data.data;
     let topics = [];
-    if (location.topicId && location.topicId.length > 0) {
-      topics = [{ name: location.topicId }];
+    if (state && state.topicId && state.topicId.length > 0) {
+      topics = [{ name: state.topicId }];
     }
 
     if (data) {
       if (data.results) {
         this.setState({ topics: data.results, selectedTopics: topics }, () => {
-          if (location.topicId && location.topicId.length > 0) {
+          if (state && state.topicId && state.topicId.length > 0) {
             this.setState({ selectedStatus: STATUS.STARTED });
             this.startEventSource();
           }
         });
       } else {
         this.setState({ topics: [], selectedTopics: topics }, () => {
-          if (location.topicId && location.topicId.length > 0) {
+          if (state && state.topicId && state.topicId.length > 0) {
             this.setState({ selectedStatus: STATUS.STARTED });
             this.startEventSource();
           }
@@ -64,6 +64,7 @@ class Tail extends Component {
   };
 
   componentWillUnmount = () => {
+    super.componentWillUnmount();
     this.onStop();
   };
 
@@ -366,6 +367,7 @@ class Tail extends Component {
         </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
+            history={this.props.history}
             columns={[
               {
                 id: 'topic',

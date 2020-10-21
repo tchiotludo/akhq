@@ -1,16 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import api from '../../../../utils/api';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
+import Root from "../../../../components/Root";
 
-class TopicGroups extends Component {
+class TopicGroups extends Root {
   state = {
     consumerGroups: [],
     topicId: this.props.topicId,
     showDeleteModal: false,
     selectedCluster: this.props.clusterId,
-    deleteMessage: ''
+    deleteMessage: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -20,15 +21,11 @@ class TopicGroups extends Component {
   async getConsumerGroup() {
     const { selectedCluster, topicId } = this.state;
 
-    let data  = await api.get(uriTopicsGroups(selectedCluster, topicId));
-    data = data.data;
-    if (data) {
-      if (data) {
-        this.handleGroups(data);
-      } else {
-        this.setState({ consumerGroup: [] });
-      }
-      this.setState({ selectedCluster });
+    let data  = await this.getApi(uriTopicsGroups(selectedCluster, topicId));
+    if (data && data.data) {
+      this.handleGroups(data.data);
+    } else {
+      this.setState({ consumerGroup: [], loading: false });
     }
   }
 
@@ -43,7 +40,7 @@ class TopicGroups extends Component {
           topics: this.groupTopics(consumerGroup.offsets)
         };
       }) || [];
-    this.setState({ consumerGroups: tableConsumerGroups });
+    this.setState({ consumerGroups: tableConsumerGroups, loading: false });
   }
 
   groupTopics(topics) {
@@ -85,12 +82,13 @@ class TopicGroups extends Component {
   }
 
   render() {
-    const { selectedCluster } = this.state;
-    const { history } = this.props;
+    const { selectedCluster, loading } = this.state;
 
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -135,9 +133,7 @@ class TopicGroups extends Component {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => {
-            history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
-          }}
+          onDetails={id => `/ui/${selectedCluster}/group/${id}` }
           actions={[constants.TABLE_DETAILS]}
         />
       </div>

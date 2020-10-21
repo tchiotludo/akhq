@@ -9,6 +9,19 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.DeletedRecords;
+import org.apache.kafka.clients.admin.RecordsToDelete;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaFuture;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
@@ -83,7 +96,10 @@ public class RecordRepository extends AbstractRepository {
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
             for (ConsumerRecord<byte[], byte[]> record : records) {
-                list.add(newRecord(record, options));
+                Record current = newRecord(record, options);
+                if (searchFilter(options, current)) {
+                    list.add(current);
+                }
             }
         }
 
@@ -122,6 +138,28 @@ public class RecordRepository extends AbstractRepository {
             return collect;
 
         }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
+    }
+
+    public Optional<Record> consumeSingleRecord(String clusterId, Topic topic, Options options) throws ExecutionException, InterruptedException {
+        return Debug.call(() -> {
+            Optional<Record> singleRecord = Optional.empty();
+            KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);
+            }});
+
+            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            if(!records.isEmpty()) {
+                singleRecord = Optional.of(newRecord(records.iterator().next(), options));
+            }
+
+            consumer.close();
+            return singleRecord;
+
+        }, "Consume with options {}", Collections.singletonList(options.toString()));
     }
 
     @ToString
@@ -216,8 +254,10 @@ public class RecordRepository extends AbstractRepository {
                             emptyPoll = 2;
                             break;
                         }
-
-                        list.add(newRecord(record, options));
+                        Record current = newRecord(record, options);
+                        if (searchFilter(options, current)) {
+                            list.add(current);
+                        }
                     }
                 }
                 while (emptyPoll < 1);
@@ -371,6 +411,42 @@ public class RecordRepository extends AbstractRepository {
                     .collect(Collectors.toList())
             ))
             .get();
+    }
+
+    public void emptyTopic(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, RecordsToDelete> recordsToDelete = new HashMap<>();
+        var topic = topicRepository.findByName(clusterId, topicName);
+        topic.getPartitions().forEach(partition -> {
+            recordsToDelete.put(new TopicPartition(partition.getTopic(), partition.getId()),
+                    RecordsToDelete.beforeOffset(partition.getLastOffset()));
+        });
+        deleteRecords(clusterId, recordsToDelete);
+    }
+
+    public void emptyTopicByTimestamp(String clusterId,
+                                      String topicName,
+                                      Long timestamp) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, Long> timestamps = new HashMap<>();
+        Map<TopicPartition, RecordsToDelete> recordsToDelete = new HashMap<>();
+        var topic = topicRepository.findByName(clusterId, topicName);
+        topic.getPartitions().forEach(partition -> {
+            timestamps.put(new TopicPartition(partition.getTopic(), partition.getId()),
+                            timestamp);
+        });
+        Map<TopicPartition, OffsetAndTimestamp> offsets = kafkaModule.getConsumer(clusterId).offsetsForTimes(timestamps);
+
+        offsets.forEach((topicPartition, offsetAndTimestamp) -> {
+            recordsToDelete.put(topicPartition, RecordsToDelete.beforeOffset(offsetAndTimestamp.offset()));
+        });
+        deleteRecords(clusterId, recordsToDelete);
+
+    }
+
+    private void deleteRecords(String clusterId, Map<TopicPartition, RecordsToDelete> recordsToDelete) throws InterruptedException, ExecutionException {
+        var deleted = kafkaModule.getAdminClient(clusterId).deleteRecords(recordsToDelete).lowWatermarks();
+        for (Map.Entry<TopicPartition, KafkaFuture<DeletedRecords>> entry : deleted.entrySet()){
+            log.debug(entry.getKey().topic() + " " + entry.getKey().partition() + " " + entry.getValue().get().lowWatermark());
+        }
     }
 
     public RecordMetadata produce(

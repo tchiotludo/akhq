@@ -1,5 +1,4 @@
 import React from 'react';
-import { get, post } from '../../../../utils/api';
 import { uriTopicsConfigs, uriTopicsUpdateConfigs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
@@ -19,7 +18,8 @@ class TopicConfigs extends Form {
     changedConfigs: {},
     errors: {},
     configs: [],
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   schema = {};
@@ -32,7 +32,7 @@ class TopicConfigs extends Form {
     let configs = [];
     const { selectedCluster, selectedTopic } = this.state;
 
-    configs = await get(uriTopicsConfigs(selectedCluster, selectedTopic));
+    configs = await this.getApi(uriTopicsConfigs(selectedCluster, selectedTopic));
     this.handleData(configs.data);
   }
 
@@ -53,7 +53,7 @@ class TopicConfigs extends Form {
         sensitive: config.sensitive
       };
     });
-    this.setState({ data: tableTopics, configs });
+    this.setState({ data: tableTopics, configs, loading: false });
   }
   getConfigDataType = configName => {
     switch (configName.substring(configName.lastIndexOf('.'))) {
@@ -129,7 +129,7 @@ class TopicConfigs extends Form {
   async doSubmit() {
     const { selectedCluster, selectedTopic, changedConfigs } = this.state;
 
-    await post(uriTopicsUpdateConfigs(selectedCluster, selectedTopic), {
+    await this.postApi(uriTopicsUpdateConfigs(selectedCluster, selectedTopic), {
       clusterId: selectedCluster,
       topicId: selectedTopic,
       configs: changedConfigs
@@ -210,7 +210,7 @@ class TopicConfigs extends Form {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <form
@@ -220,6 +220,8 @@ class TopicConfigs extends Form {
       >
         <div>
           <Table
+            loading={loading}
+            history={this.props.history}
             columns={[
               {
                 id: 'nameAndDescription',

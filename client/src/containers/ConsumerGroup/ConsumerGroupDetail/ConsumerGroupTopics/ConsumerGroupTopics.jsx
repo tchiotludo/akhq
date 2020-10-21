@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriConsumerGroupOffsets } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
+import Root from "../../../../components/Root";
 
-class ConsumerGroupTopics extends Component {
+class ConsumerGroupTopics extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedConsumerGroup: this.props.consumerGroupId
+    selectedConsumerGroup: this.props.consumerGroupId,
+    loading: true
   };
 
   componentDidMount() {
@@ -19,7 +20,7 @@ class ConsumerGroupTopics extends Component {
     let offsets = [];
     const { selectedCluster, selectedConsumerGroup } = this.state;
 
-    offsets = await get(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
+    offsets = await this.getApi(uriConsumerGroupOffsets(selectedCluster, selectedConsumerGroup));
     offsets = offsets.data;
     this.handleData(offsets);
   }
@@ -34,7 +35,7 @@ class ConsumerGroupTopics extends Component {
         lag: offset.offsetLag
       };
     });
-    this.setState({ data });
+    this.setState({ data, loading: false });
   }
 
   handleOptional(optional) {
@@ -46,10 +47,12 @@ class ConsumerGroupTopics extends Component {
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'name',

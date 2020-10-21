@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
@@ -7,10 +7,11 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import api, { remove } from '../../../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-class ConsumerGroupList extends Component {
+import Root from "../../../components/Root";
+
+class ConsumerGroupList extends Root {
   state = {
     consumerGroups: [],
     showDeleteModal: false,
@@ -22,12 +23,16 @@ class ConsumerGroupList extends Component {
     totalPageNumber: 1,
     history: this.props,
     search: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
+    const { clusterId } = this.props.match.params;
+    const { search } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+
+    this.setState({ selectedCluster: clusterId, search: (query.get('search'))? query.get('search') : search }, () => {
       this.getConsumerGroup();
     });
   }
@@ -35,6 +40,10 @@ class ConsumerGroupList extends Component {
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/group`,
+        search: `search=${data.searchData.search}`
+      });
     });
   };
 
@@ -57,14 +66,15 @@ class ConsumerGroupList extends Component {
 
   async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
+    this.setState({ loading: true });
 
-    let response = await api.get(uriConsumerGroups(selectedCluster, search, pageNumber));
+    let response = await this.getApi(uriConsumerGroups(selectedCluster, search, pageNumber));
     response = response.data;
     if (response.results) {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page });
     } else {
-      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0 });
+      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0, loading: false });
     }
   }
 
@@ -80,7 +90,7 @@ class ConsumerGroupList extends Component {
       });
     });
 
-    this.setState({ consumerGroups: tableConsumerGroup });
+    this.setState({ consumerGroups: tableConsumerGroup, loading: false });
   }
 
   handleState(state) {
@@ -147,9 +157,8 @@ class ConsumerGroupList extends Component {
   deleteConsumerGroup = () => {
     const { selectedCluster, groupToDelete } = this.state;
 
-    remove(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
+    this.removeApi(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
       .then(() => {
-
         toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
       })
@@ -158,7 +167,7 @@ class ConsumerGroupList extends Component {
       });
   };
   render() {
-    const { selectedCluster, search, pageNumber, totalPageNumber } = this.state;
+    const { selectedCluster, search, pageNumber, totalPageNumber, loading} = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
@@ -189,6 +198,8 @@ class ConsumerGroupList extends Component {
         </nav>
 
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -235,9 +246,7 @@ class ConsumerGroupList extends Component {
           onDelete={group => {
             this.handleOnDelete(group);
           }}
-          onDetails={id => {
-            history.push(`/ui/${selectedCluster}/group/${id}`);
-          }}
+          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
           actions={
             roles.group && roles.group['group/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]

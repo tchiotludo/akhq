@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
-
+import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table/Table';
 import constants from '../../../utils/constants';
 import { Link } from 'react-router-dom';
-import { get, remove } from '../../../utils/api';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
@@ -13,8 +11,9 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../../components/Root";
 
-class ConnectList extends Component {
+class ConnectList extends Root {
   state = {
     clusterId: '',
     connectId: '',
@@ -22,7 +21,8 @@ class ConnectList extends Component {
     showDeleteModal: false,
     definitionToDelete: '',
     deleteMessage: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -49,7 +49,9 @@ class ConnectList extends Component {
     let connectDefinitions = [];
     const { clusterId, connectId } = this.state;
 
-    connectDefinitions = await get(uriConnectDefinitions(clusterId, connectId));
+    this.setState({ loading: true });
+
+    connectDefinitions = await this.getApi(uriConnectDefinitions(clusterId, connectId));
     this.handleData(connectDefinitions.data);
     this.setState({ selectedCluster: clusterId });
   }
@@ -57,7 +59,7 @@ class ConnectList extends Component {
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
 
-    remove(uriDeleteDefinition(clusterId, connectId, definition))
+    this.removeApi(uriDeleteDefinition(clusterId, connectId, definition))
       .then(() => {
         toast.success(`Definition '${definition}' is deleted`);
         this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
@@ -84,7 +86,7 @@ class ConnectList extends Component {
       };
     });
 
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   };
 
   showDeleteModal = deleteMessage => {
@@ -151,7 +153,7 @@ class ConnectList extends Component {
   };
 
   render() {
-    const { clusterId, connectId, tableData } = this.state;
+    const { clusterId, connectId, tableData, loading } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
@@ -159,6 +161,8 @@ class ConnectList extends Component {
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
         <Table
+          loading={loading}
+          history={history}
           columns={[
             {
               id: 'id',
@@ -236,14 +240,7 @@ class ConnectList extends Component {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => {
-            history.push({
-              pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`,
-              clusterId,
-              connectId,
-              definitionId: name
-            });
-          }}
+          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}` }
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}

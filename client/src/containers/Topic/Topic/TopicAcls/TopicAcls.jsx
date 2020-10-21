@@ -1,12 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import { uriTopicsAcls } from '../../../../utils/endpoints';
+import Root from "../../../../components/Root";
 
-class TopicAcls extends Component {
+class TopicAcls extends Root {
   state = {
     data: [],
-    selectedCluster: ''
+    selectedCluster: '',
+    loading: true
   };
 
   componentDidMount() {
@@ -17,7 +18,7 @@ class TopicAcls extends Component {
     let acls = [];
     const { clusterId, topicId } = this.props;
 
-    acls = await get(uriTopicsAcls(clusterId, topicId));
+    acls = await this.getApi(uriTopicsAcls(clusterId, topicId));
     this.handleData(acls.data);
   }
 
@@ -33,15 +34,17 @@ class TopicAcls extends Component {
         });
       })
     );
-    this.setState({ data: tableAcls });
+    this.setState({ data: tableAcls, loading: false });
     return tableAcls;
   }
 
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'topic',

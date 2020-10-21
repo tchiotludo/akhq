@@ -1,18 +1,20 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Table from '../../../components/Table';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import api, { remove } from '../../../utils/api';
-import { uriDeleteTopics, uriTopics } from '../../../utils/endpoints';
+import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-class TopicList extends Component {
+import {Collapse} from 'react-bootstrap';
+import Root from '../../../components/Root';
+
+class TopicList extends Root {
   state = {
     topics: [],
     showDeleteModal: false,
@@ -26,6 +28,7 @@ class TopicList extends Component {
       search: '',
       topicListView: 'HIDE_INTERNAL'
     },
+    keepSearch: false,
     createTopicFormData: {
       name: '',
       partition: 1,
@@ -33,12 +36,39 @@ class TopicList extends Component {
       cleanup: 'delete',
       retention: 86400000
     },
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true,
+    cancel: undefined,
+    collapseConsumerGroups: {}
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, this.getTopics);
+    const { clusterId } = this.props.match.params;
+    const query =  new URLSearchParams(this.props.location.search);
+    const {searchData, keepSearch} = this.state;
+
+    let searchDataTmp;
+    let keepSearchTmp = keepSearch;
+
+    const topicListSearch = localStorage.getItem('topicListSearch');
+    if(topicListSearch) {
+      searchDataTmp = JSON.parse(topicListSearch);
+      keepSearchTmp = true;
+    } else {
+      searchDataTmp = {
+        search: (query.get('search'))? query.get('search') : searchData.search,
+        topicListView: (query.get('topicListView'))? query.get('topicListView') : searchData.topicListView,
+      }
+    }
+
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp}, () => {
+      this.getTopics();
+      this.props.history.replace({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: this.props.location.search
+      });
+    });
+
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -59,7 +89,7 @@ class TopicList extends Component {
   deleteTopic = () => {
     const { selectedCluster, topicToDelete } = this.state;
 
-    remove(uriDeleteTopics(selectedCluster, topicToDelete.id))
+    this.removeApi(uriDeleteTopics(selectedCluster, topicToDelete.id))
       .then(() => {
         toast.success(`Topic '${topicToDelete.name}' is deleted`);
         this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
@@ -79,8 +109,15 @@ class TopicList extends Component {
 
   handleSearch = data => {
     const { searchData } = data;
+
+
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
+      this.handleKeepSearchChange(data.keepSearch);
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${searchData.search}&topicListView=${searchData.topicListView}`
+      });
     });
   };
 
@@ -105,8 +142,9 @@ class TopicList extends Component {
   async getTopics() {
     const { selectedCluster, pageNumber } = this.state;
     const { search, topicListView } = this.state.searchData;
+    this.setState({ loading: true } );
 
-    let data = await api.get(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let data = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
     data = data.data;
 
     if (data) {
@@ -115,16 +153,24 @@ class TopicList extends Component {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page }, () =>
-          this.props.history.replace(`/ui/${selectedCluster}/topic`)
-      )
+      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }  )
+    } else {
+      this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
   }
 
   handleTopics(topics) {
-    let tableTopics = [];
+    let tableTopics = {};
+    const collapseConsumerGroups = {};
+
+    const { selectedCluster } = this.state;
+
+    const setState = () =>  {
+      this.setState({ topics: Object.values(tableTopics) });
+    }
+
     topics.forEach(topic => {
-      tableTopics.push({
+      tableTopics[topic.name] = {
         id: topic.name,
         name: topic.name,
         count: topic.size,
@@ -132,15 +178,26 @@ class TopicList extends Component {
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
-        groupComponent: topic.consumerGroups,
+        groupComponent: undefined,
         internal: topic.internal
-      });
+      }
+
+      collapseConsumerGroups[topic.name] = false;
+
+      this.getApi(uriTopicsGroups(selectedCluster, topic.name))
+        .then(value => {
+          tableTopics[topic.name].groupComponent = value.data
+          setState()
+        })
     });
-    this.setState({ topics: tableTopics });
+    this.setState({collapseConsumerGroups});
+    setState()
   }
 
+
+
   handleConsumerGroups = (consumerGroups, topicId) => {
-    if (consumerGroups) {
+    if (consumerGroups && consumerGroups.length > 0) {
       return consumerGroups.map(consumerGroup => {
         let className = 'btn btn-sm mb-1 mr-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
@@ -168,10 +225,29 @@ class TopicList extends Component {
     return '';
   };
 
+
+  handleCollapseConsumerGroups(id) {
+    const tmpGroups = {};
+
+    Object.keys(this.state.collapseConsumerGroups).forEach(key => {
+      tmpGroups[key] = (key === id)?  !this.state.collapseConsumerGroups[key] : this.state.collapseConsumerGroups[key];
+     });
+     this.setState({collapseConsumerGroups : tmpGroups});
+   }
+
+  handleKeepSearchChange(value){
+    const { searchData } = this.state;
+    if(value) {
+      localStorage.setItem('topicListSearch', JSON.stringify(searchData));
+    } else {
+      localStorage.removeItem('topicListSearch');
+    }
+
+  }
+
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
     const { clusterId } = this.props.match.params;
     const firstColumns = [
       { colName: 'Topics', colSpan: 3 },
@@ -194,14 +270,18 @@ class TopicList extends Component {
             pagination={pageNumber}
             showTopicListView={true}
             topicListView={searchData.topicListView}
+            showKeepSearch={true}
+            keepSearch={keepSearch}
             onTopicListViewChange={value => {
               let { searchData } = { ...this.state };
               searchData.topicListView = value;
               this.setState(searchData);
             }}
+            onKeepSearchChange={value => {
+                this.handleKeepSearchChange(value);
+            }}
             doSubmit={this.handleSearch}
           />
-
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
@@ -211,6 +291,8 @@ class TopicList extends Component {
         </nav>
 
         <Table
+          loading={loading}
+          history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
           columns={[
@@ -262,8 +344,35 @@ class TopicList extends Component {
               colName: 'Consumer Groups',
               type: 'text',
               cell: obj => {
-                if (obj.groupComponent) {
-                  return this.handleConsumerGroups(obj.groupComponent, obj.id);
+                if (obj.groupComponent && obj.groupComponent.length > 0) {
+                  const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
+                  let i=0;
+                  return (
+                      <>
+                        {consumerGroups[0]}
+                        {consumerGroups.length > 1 &&
+                        <span>
+                          <span
+                            onClick={() => this.handleCollapseConsumerGroups(obj.id)}
+                            aria-expanded={collapseConsumerGroups[obj.id]}
+                          >
+                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
+                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
+                          </span>
+                          <span className="badge badge-secondary">{consumerGroups.length}</span>
+                          <Collapse in={collapseConsumerGroups[obj.id]}>
+                            <div>
+                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
+                                return (<div key={i++}>{group}</div>);
+                              })}
+                            </div>
+                          </Collapse>
+                        </span>
+                          }
+                      </>
+                  );
+                } else if (obj.groupComponent) {
+                    return <div className="empty-consumergroups"/>
                 }
               }
             }
@@ -275,18 +384,8 @@ class TopicList extends Component {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={(id, row) => {
-            history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}/data`,
-              internal: row.internal
-            });
-          }}
-          onConfig={(id, row) => {
-            history.push({
-              pathname: `/ui/${selectedCluster}/topic/${id}/configs`,
-              internal: row.internal
-            });
-          }}
+          onDetails={(id) => `/ui/${selectedCluster}/topic/${id}/data`}
+          onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
           actions={
             roles.topic && roles.topic['topic/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]

@@ -116,12 +116,14 @@ class Sidebar extends Component {
       >
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
+          <Link to={`/ui/${cluster.id}/topic`}>
           <div
             className={selectedCluster === cluster.id ? ' active' : ''}
             style={{ color: '#759dac' }}
           >
             {cluster.id}
           </div>
+          </Link>
         </NavText>
       </NavItem>
     ));
@@ -132,12 +134,14 @@ class Sidebar extends Component {
         onClick={() => this.changeSelectedConnect(connect)}
       >
         <NavText>
+          <Link to={`/ui/${selectedCluster}/connect/${connect}`}>
           <div
             className={selectedConnect === connect ? ' active' : ''}
             style={{ color: '#759dac' }}
           >
             {connect}
           </div>
+          </Link>
         </NavText>
       </NavItem>
     ));
@@ -177,6 +181,7 @@ class Sidebar extends Component {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
+
       <NavItem
         eventKey={label}
         className={pathname.includes(tab) ? 'active' : ''}
@@ -185,16 +190,28 @@ class Sidebar extends Component {
           this.props.history.push({
             pathname: `/ui/${selectedCluster}/${tab}`
           });
-
+          return false;
         }}
       >
         <NavIcon>
           {' '}
-          <i className={iconClassName} aria-hidden="true" />
+           <Link to={`/ui/${selectedCluster}/${tab}`}
+                 onClick={(e) => {
+                   this.setState({ selectedTab: tab });
+                   e.preventDefault();
+           }}>
+               <i className={iconClassName} aria-hidden="true" />
+           </Link>
         </NavIcon>
         <NavText>
           {' '}
-         {label}
+          <Link to={`/ui/${selectedCluster}/${tab}`}
+                onClick={(e) => {
+                  this.setState({ selectedTab: tab });
+                  e.preventDefault();
+                }}>
+              {label}
+          </Link>
         </NavText>
       </NavItem>
     );

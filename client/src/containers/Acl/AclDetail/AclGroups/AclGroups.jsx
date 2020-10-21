@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-
+import React from 'react';
 import Table from '../../../../components/Table/Table';
-import { get } from '../../../../utils/api';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
+import Root from "../../../../components/Root";
 
-class AclTopics extends Component {
+class AclTopics extends Root {
   state = {
     selectedCluster: this.props.clusterId,
     principalEncoded: this.props.principalEncoded,
-    tableData: []
+    tableData: [],
+    loading: true
   };
 
   componentDidMount() {
@@ -18,10 +18,12 @@ class AclTopics extends Component {
   async getAcls() {
     const { selectedCluster, principalEncoded } = this.state;
 
-    const response = await get(uriAclsByPrincipal(selectedCluster, principalEncoded, 'GROUP'));
+    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'GROUP'));
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);
+    } else {
+      this.setState({ tableData: [], loading: false });
     }
   }
 
@@ -34,7 +36,7 @@ class AclTopics extends Component {
       };
     });
 
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   };
 
   handlePermission = permission => {
@@ -47,8 +49,11 @@ class AclTopics extends Component {
   };
 
   render() {
+    const { loading } = this.state;
     return (
       <Table
+        loading={loading}
+        history={this.props.history}
         columns={[
           {
             id: 'group',

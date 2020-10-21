@@ -106,7 +106,7 @@ public class SchemaController extends AbstractController {
     }
 
     private Schema registerSchema(String cluster, @Body Schema schema) throws IOException, RestClientException {
-        Schema register = this.schemaRepository.register(cluster, schema.getSubject(), schema.getSchema());
+        Schema register = this.schemaRepository.register(cluster, schema.getSubject(), schema.getSchema(), schema.getReferences());
 
         if (schema.getCompatibilityLevel() != null) {
             this.schemaRepository.updateConfig(
@@ -119,6 +119,16 @@ public class SchemaController extends AbstractController {
         }
 
         return register;
+    }
+
+    @Get("api/{cluster}/schema/id/{id}")
+    @Operation(tags = {"schema registry"}, summary = "Find a schema by id")
+    public Schema redirectId(
+        HttpRequest<?> request,
+        String cluster,
+        Integer id
+    ) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        return this.schemaRepository.getById(cluster, id);
     }
 
     @Get("api/{cluster}/schema/{subject}/version")
@@ -151,25 +161,5 @@ public class SchemaController extends AbstractController {
         this.schemaRepository.deleteVersion(cluster, subject, version);
 
         return HttpResponse.noContent();
-    }
-
-    private Schema registerSchema(
-        String cluster,
-        String subject,
-        String schema,
-        String compatibilityLevel
-    ) throws IOException, RestClientException {
-        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schema);
-
-        Schema register = this.schemaRepository.register(cluster, subject, avroSchema);
-
-        Schema.Config config = Schema.Config.builder()
-            .compatibilityLevel(Schema.Config.CompatibilityLevelConfig.valueOf(
-                compatibilityLevel
-            ))
-            .build();
-        this.schemaRepository.updateConfig(cluster, subject, config);
-
-        return register;
     }
 }

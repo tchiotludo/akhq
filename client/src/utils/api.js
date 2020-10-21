@@ -46,51 +46,59 @@ const handleError = err => {
   }
 };
 
-export const get = url =>
+export const get = (url, config) =>
   new Promise((resolve, reject) => {
     axios
-      .get(url, configs)
+      .get(url, {...configs, ...config})
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
-export const put = (url, body) =>
+export const put = (url, body, config) =>
   new Promise((resolve, reject) => {
     axios
-      .put(url, body, configs)
+      .put(url, body, {...configs, ...config})
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
-export const post = (url, body) =>
+export const post = (url, body, config) =>
   new Promise((resolve, reject) => {
     axios
-      .post(url, body, configs)
+      .post(url, body, {...configs, ...config})
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 
-export const remove = (url, body) =>
+export const remove = (url, body, config) =>
   new Promise((resolve, reject) => {
     axios
-      .delete(url, { ...configs, data: body })
+      .delete(url, { ...configs, ...config, data: body })
       .then(res => {
         resolve(res);
       })
       .catch(err => {
-        reject(handleError(err));
+        if (!axios.isCancel(err)) {
+          reject(handleError(err));
+        }
       });
   });
 

@@ -3,13 +3,12 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.scss';
 import Table from '../../../../components/Table/Table';
-import { get, remove } from '../../../../utils/api';
 import { formatDateTime } from '../../../../utils/converters';
 import {
-  uriSchemaRegistry,
+  uriSchemaId,
   uriTopicData,
   uriTopicDataDelete,
-  uriTopicDataSearch,
+  uriTopicDataSearch, uriTopicDataSingleRecord,
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
@@ -25,9 +24,10 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// Adaptation of data.ftl
+import Root from '../../../../components/Root';
+import { basePath } from '../../../../utils/endpoints';
 
-class TopicData extends React.Component {
+class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
     sortOptions: ['Oldest', 'Newest'],
@@ -53,10 +53,10 @@ class TopicData extends React.Component {
     selectedTopic: this.props.topicId,
     cleanupPolicy: '',
     datetime: '',
-    schemas: [],
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
-    percent: 0
+    percent: 0,
+    loading: true
   };
 
   eventSource;
@@ -66,22 +66,33 @@ class TopicData extends React.Component {
   };
 
   checkProps = () => {
-    let { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.match.params;
+    const query =  new URLSearchParams(this.props.location.search);
 
-    const roles = this.state.roles || {};
     this.setState(
         {
           selectedCluster: clusterId,
           selectedTopic: topicId,
-          canAccessSchema: roles.registry && roles.registry['registry/read']
+          sortBy: (query.get('sort'))? query.get('sort') : this.state.sortBy,
+          partition: (query.get('partition'))? query.get('partition') : this.state.partition,
+          datetime: (query.get('timestamp'))? new Date(query.get('timestamp')) : this.state.datetime,
+          offsetsSearch: (query.get('after'))? query.get('after') : this.state.offsetsSearch,
+          currentSearch: (query.get('search'))? query.get('search') : this.state.currentSearch,
+          offsets: (query.get('offset'))? this.getOffsetsByOffset(query.get('partition'), query.get('offset')) :
+              ((query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets),
         },
         () => {
-          this.getMessages();
+            if(query.get('single') !== null) {
+              this.getSingleMessage(query.get('partition'), query.get('offset'));
+            } else {
+              this.getMessages(this.buildFilters());
+            }
         }
     );
   };
 
   componentWillUnmount = () => {
+    super.componentWillUnmount();
     this.onStop();
   };
 
@@ -90,7 +101,7 @@ class TopicData extends React.Component {
     const { currentSearch } = this.state;
     let self = this;
     this.setState({ messages: [], pageNumber: 1 });
-    this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch));
+    this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch, this.buildFilters()));
     this.eventSource.addEventListener('searchBody', function(e) {
       let res = JSON.parse(e.data);
       self.setState({ isSearching: true, percent: res.percent.toFixed(2) }, () => {
@@ -112,90 +123,124 @@ class TopicData extends React.Component {
   };
 
   onStart = () => {
+    this.setUrlHistory(this.buildFilters());
+
     this.setState({ percent: 0, isSearching: true }, () => {
       this.startEventSource();
     });
   };
 
-  async getMessages(changePage = false) {
-    const { history } = this.props;
+  buildFilters() {
     const {
-      selectedCluster,
-      selectedTopic,
-      canAccessSchema,
       sortBy,
       partition,
       datetime,
-      currentSearch,
       offsetsSearch,
+      currentSearch
+    } = this.state;
+
+    const filters = [];
+
+    if (sortBy) filters.push(`sort=${sortBy}`);
+    if (offsetsSearch) filters.push(`after=${offsetsSearch}`);
+    if (partition) filters.push(`partition=${partition}`);
+
+    if (datetime) {
+      let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
+      timestamp = formatDateTime(
+            {
+              year: timestamp.year(),
+              monthValue: timestamp.month(),
+              dayOfMonth: timestamp.date(),
+              hour: timestamp.hour(),
+              minute: timestamp.minute(),
+              second: timestamp.second(),
+              milli: timestamp.millisecond()
+            },
+            'YYYY-MM-DDThh:mm:ss.SSS',
+            true
+          ) + 'Z';
+      filters.push(`timestamp=${timestamp}`);
+    }
+
+    if (currentSearch) filters.push(`search=${currentSearch}`);
+
+    return filters.join('&');
+  }
+
+  getSingleMessage(partition, offset) {
+    const {
+      selectedCluster,
+      selectedTopic,
+    } = this.state;
+
+    const requests = [this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+                      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))];
+
+    this._fetchMessages(requests);
+  }
+
+  getMessages(filters = null, changePage = false) {
+    const {
+      selectedCluster,
+      selectedTopic,
       nextPage
     } = this.state;
-    let data,
-        partitionData = {};
-    let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-    try {
-      data = await get(
-          uriTopicData(
-              selectedCluster,
-              selectedTopic,
-              offsetsSearch !== '' ? offsetsSearch : undefined,
-              partition,
-              sortBy,
-              timestamp !== ''
-                  ? formatDateTime(
-                  {
-                    year: timestamp.year(),
-                    monthValue: timestamp.month(),
-                    dayOfMonth: timestamp.date(),
-                    hour: timestamp.hour(),
-                    minute: timestamp.minute(),
-                    second: timestamp.second(),
-                    milli: timestamp.millisecond()
-                  },
-                  'YYYY-MM-DDThh:mm:ss.SSS',
-                  true
-              ) + 'Z'
-                  : undefined,
-              currentSearch !== '' ? currentSearch : undefined,
-              changePage ? nextPage : undefined
-          )
-      );
+    const requests = [
+      this.getApi(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))
+    ];
 
-      data = data.data;
-      this.setState({ canDeleteRecords: data.canDeleteRecords });
+    this._fetchMessages(requests, changePage);
 
-      let schemas = [];
-      if (canAccessSchema) {
-        schemas = await get(uriSchemaRegistry(selectedCluster, '', ''));
-        schemas = schemas.data.results || [];
-      }
-      this.setState({ schemas });
-      partitionData = await get(uriTopicsPartitions(selectedCluster, selectedTopic));
-      partitionData = partitionData.data;
-      if (data.results) {
-        this.handleMessages(data.results);
-      } else {
-        this.setState({ messages: [], pageNumber: 1 });
-      }
-      if (partitionData) {
-        if (changePage) {
-          this.getNextPageOffsets();
+    if (changePage) {
+      this.setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
+    } else {
+      this.setUrlHistory(filters);
+    }
+  }
+
+  _fetchMessages(requests, changePage = false) {
+    const {
+      nextPage,
+      pageNumber,
+      partitionCount,
+      recordCount,
+      offsets
+    } = this.state;
+
+    Promise.all(requests)
+      .then(data => {
+        let tableMessages = [],
+            pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
+
+        const messagesData = data[0].data;
+        const partitionData = data[1].data;
+
+        if (messagesData.results) {
+          tableMessages = this.handleMessages(messagesData.results);
+        } else {
+          pageNumberTemp = 1;
+        }
+        if (partitionData) {
+          if (changePage) {
+            offsetsTemp = this.getNextPageOffsets(nextPage);
+          }
+          partitionCountTemp = partitionData.length;
+          nextPageTemp = messagesData.after;
+          recordCountTemp = messagesData.size;
         }
         this.setState({
-          partitionCount: partitionData.length,
-          nextPage: data.after,
-          recordCount: data.size
+          messages: tableMessages,
+          canDeleteRecords: messagesData.canDeleteRecords,
+          pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
+          partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
+          nextPage: (nextPageTemp) ? nextPageTemp : nextPage,
+          recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
+          offsets: (offsetsTemp) ? offsetsTemp : offsets,
+          loading: false
         });
-      }
-    } finally {
-      if (data.after) {
-        let params = data.after.split('/data?')[1];
-        history.push({
-          pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
-          search: params
-        });
-      }
-    }
+    });
   }
 
   handleOnDelete(message) {
@@ -206,6 +251,35 @@ class TopicData extends React.Component {
           </React.Fragment>
       );
     });
+  }
+
+  copyToClipboard(code) {
+    const textField = document.createElement('textarea')
+    textField.innerText = code
+    document.body.appendChild(textField)
+    textField.select()
+    document.execCommand('copy')
+    textField.remove()
+  }
+
+  async handleOnShare(row) {
+    const {
+      selectedCluster,
+      selectedTopic
+    } = this.state;
+
+
+    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
+
+    try {
+      this.copyToClipboard(`${window.location.host}${pathToShare}`)
+      toast.info('Message url is copied to your clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+
+    this.props.history.push(pathToShare)
+    this.getSingleMessage(row.partition, row.offset);
   }
 
   showDeleteModal = deleteMessage => {
@@ -221,7 +295,7 @@ class TopicData extends React.Component {
 
     const encodedkey = new Buffer(message.key).toString('base64');
     const deleteData = { partition: parseInt(message.partition), key: encodedkey };
-    remove(
+    this.removeApi(
         uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
         deleteData
     )
@@ -250,24 +324,31 @@ class TopicData extends React.Component {
       };
       tableMessages.push(messageToPush);
     });
-    this.setState({ messages: tableMessages });
+    return tableMessages;
   };
 
-  getNextPageOffsets = () => {
-    const { nextPage } = this.state;
-    let { offsets } = this.state;
-
+  getNextPageOffsets = (nextPage) => {
     let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
     let afterString = aux.substring(0, aux.indexOf('&'));
+    return this.getOffsetsByAfterString(afterString);
+  };
+
+  getOffsetsByAfterString = (afterString) => {
+    let offsets = [];
     const offsetsByPartition = afterString.split('_');
 
     offsetsByPartition.forEach(offsetByPartition => {
       const offset = offsetByPartition.split('-');
       offsets[`partition${offset[0]}`] = offset[1];
     });
+    return offsets;
+  }
 
-    this.setState({ offsets });
-  };
+  getOffsetsByOffset = (partition, offset) => {
+    let offsets = [];
+    offsets[`partition${partition}`] = offset;
+    return offsets;
+  }
 
   createPartitionOptions = () => {
     const { partitionCount } = this.state;
@@ -287,8 +368,37 @@ class TopicData extends React.Component {
     return offsetsOptions;
   };
 
-  updateFilter(filter, value){
-    sessionStorage.setItem(filter, value);
+  searchMessages(changePage = false){
+    const filters = this.buildFilters();
+    this.getMessages(filters, changePage);
+  }
+
+  setUrlHistory(filters){
+    const {
+      selectedCluster,
+      selectedTopic
+    } = this.state;
+
+    this.props.history.push({
+      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+      search: filters
+    });
+  }
+
+  redirectToSchema(id) {
+    const { selectedCluster } = this.state;
+
+    this.getApi(uriSchemaId(selectedCluster, id))
+      .then(response => {
+        if (response.data) {
+          this.props.history.push({
+            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+            schemaId: response.data.subject
+          });
+        } else {
+          toast.warn(`Unable to find the registry schema with id  ${id} !`);
+        }
+      })
   }
 
   renderSortOptions() {
@@ -300,8 +410,7 @@ class TopicData extends React.Component {
           <Dropdown.Item
               key={option}
               onClick={() => this.setState({ sortBy: option }, () => {
-                this.updateFilter('sortFilter', option);
-                this.getMessages();
+                this.searchMessages();
               })}
           >
             <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
@@ -320,8 +429,7 @@ class TopicData extends React.Component {
           <Dropdown.Item
               key={option}
               onClick={() => this.setState({ partition: option }, () => {
-                this.updateFilter('partitionFilter', option);
-                this.getMessages();
+                this.searchMessages();
               })}
           >
             <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
@@ -336,7 +444,7 @@ class TopicData extends React.Component {
 
     let renderedOptions = [];
     let i;
-    let offsets = JSON.parse(sessionStorage.getItem('offsets')) || this.state.offsets;
+    let offsets = this.state.offsets;
     for (i = 0; i < offsetsOptions.length; i++) {
       const option = offsetsOptions[i];
       const camelcaseOption = _.camelCase(option);
@@ -360,7 +468,6 @@ class TopicData extends React.Component {
                     let { offsets } = this.state;
                     offsets[camelcaseOption] = input.value;
                     this.setState(offsets);
-                    this.updateFilter('offsets', JSON.stringify(offsets));
                   }}
               />
             </td>
@@ -378,6 +485,7 @@ class TopicData extends React.Component {
       this.setState({ showFilters: 'show' });
     }
   }
+
   render() {
     const {
       sortBy,
@@ -392,11 +500,11 @@ class TopicData extends React.Component {
       datetime,
       isSearching,
       canDeleteRecords,
-      percent
+      percent,
+      loading
     } = this.state;
     let date = moment(datetime);
-    let { clusterId } = this.props.match.params;
-    const { loading } = this.props.history.location;
+    const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -442,7 +550,7 @@ class TopicData extends React.Component {
                             pageNumber: pageNumber + 1
                           },
                           () => {
-                            this.getMessages(true);
+                            this.searchMessages(true);
                           }
                       );
                     }}
@@ -457,7 +565,7 @@ class TopicData extends React.Component {
                 <li className="nav-item dropdown">
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Sort:</strong> ({sessionStorage.getItem('sortFilter') || sortBy})
+                      <strong>Sort:</strong> ({sortBy})
                     </Dropdown.Toggle>
                     {!loading && <Dropdown.Menu>{this.renderSortOptions()}</Dropdown.Menu>}
                   </Dropdown>
@@ -465,7 +573,7 @@ class TopicData extends React.Component {
                 <li className="nav-item dropdown">
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Partition:</strong> ({sessionStorage.getItem('partitionFilter') || partition})
+                      <strong>Partition:</strong> ({partition})
                     </Dropdown.Toggle>
                     {!loading && <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
@@ -478,7 +586,7 @@ class TopicData extends React.Component {
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
                       <strong>Timestamp:</strong>
-                      {sessionStorage.getItem('datetimeFilter') || (datetime !== '' &&
+                      {(datetime !== '' &&
                       ' ' +
                       formatDateTime(
                           {
@@ -498,26 +606,13 @@ class TopicData extends React.Component {
                             <DatePicker
                                 onClear={() => {
                                   this.setState({ datetime: '' });
-                                  this.updateFilter('datetimeFilter', '');
                                 }}
                                 showDateTimeInput
                                 showTimeSelect
                                 value={datetime}
                                 onChange={value => {
                                   this.setState({ datetime: value }, () => {
-                                    const date= moment(value);
-                                    this.updateFilter('datetimeFilter', ' ' + formatDateTime(
-                                        {
-                                          year: date.year(),
-                                          monthValue: date.month(),
-                                          dayOfMonth: date.date(),
-                                          hour: date.hour(),
-                                          minute: date.minute(),
-                                          second: date.second()
-                                        },
-                                        'DD-MM-YYYY HH:mm'
-                                    ));
-                                    this.getMessages();
+                                    this.searchMessages();
                                   });
                                 }}
                             />
@@ -529,7 +624,7 @@ class TopicData extends React.Component {
                 <li className="nav-item dropdown">
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Search:</strong> {sessionStorage.getItem('searchFilter') || (currentSearch !== '' ? `(${currentSearch})` : '')}
+                      <strong>Search:</strong> {(currentSearch !== '' ? `(${currentSearch})` : '')}
                     </Dropdown.Toggle>
                     {!loading && (
                         <Dropdown.Menu>
@@ -549,9 +644,8 @@ class TopicData extends React.Component {
                                 type="button"
                                 onClick={() =>
                                     this.setState({ currentSearch: search }, () => {
-                                      this.updateFilter('searchFilter', search);
                                       if (this.state.currentSearch.length <= 0) {
-                                        this.getMessages();
+                                        this.searchMessages();
                                       } else {
                                         this.onStart();
                                       }
@@ -602,8 +696,7 @@ class TopicData extends React.Component {
                                         }
                                       }
                                       this.setState({ offsetsSearch }, () => {
-                                        this.updateFilter('offsetsSearch', offsetsSearch);
-                                        this.getMessages();
+                                        this.searchMessages();
                                       });
                                     }}
                                 >
@@ -622,6 +715,8 @@ class TopicData extends React.Component {
           {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
           <div className="table-responsive">
             <Table
+                loading={loading}
+                history={history}
                 reduce={true}
                 firstHeader={firstColumns}
                 columns={[
@@ -723,15 +818,7 @@ class TopicData extends React.Component {
                                 <span
                                     className="badge badge-primary clickable"
                                     onClick={() => {
-                                      let schema = this.state.schemas.find(el => {
-                                        return el.id === obj.schema.key;
-                                      });
-                                      if (schema) {
-                                        this.props.history.push({
-                                          pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                          schemaId: schema.subject
-                                        });
-                                      }
+                                      this.redirectToSchema(obj.schema.key);
                                     }}
                                 >
                           Key: {obj[col.accessor].key}
@@ -742,15 +829,7 @@ class TopicData extends React.Component {
                                 <span
                                     className="badge badge-primary clickable schema-value"
                                     onClick={() => {
-                                      let schema = this.state.schemas.find(el => {
-                                        return el.id === obj.schema.value;
-                                      });
-                                      if (schema) {
-                                        this.props.history.push({
-                                          pathname: `/ui/${clusterId}/schema/details/${schema.subject}`,
-                                          schemaId: schema.subject
-                                        });
-                                      }
+                                      this.redirectToSchema(obj.schema.key);
                                     }}
                                 >
                           Value: {obj[col.accessor].value}
@@ -770,7 +849,10 @@ class TopicData extends React.Component {
                 onDelete={row => {
                   this.handleOnDelete(row);
                 }}
-                actions={canDeleteRecords ? [constants.TABLE_DELETE] : []}
+                onShare={row => {
+                  this.handleOnShare(row);
+                }}
+                actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
                 onExpand={obj => {
                   return Object.keys(obj.headers).map(header => {
                     return (

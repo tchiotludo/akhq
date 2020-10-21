@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './styles.scss';
-
 import Table from '../../../../components/Table/Table';
 import constants from '../../../../utils/constants';
 import {
@@ -10,13 +9,14 @@ import {
   uriRestartDefinition,
   uriRestartTask
 } from '../../../../utils/endpoints';
-import { get } from '../../../../utils/api';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
-class ConnectTasks extends Component {
+import Root from "../../../../components/Root";
+
+class ConnectTasks extends Root {
   state = {
     clusterId: this.props.clusterId || this.props.match.params.clusterId,
     connectId: this.props.connectId || this.props.match.params.connectId,
@@ -27,7 +27,8 @@ class ConnectTasks extends Component {
     tableData: [],
     showActionModal: false,
     actionMessage: '',
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    loading: true
   };
 
   definitionState = {
@@ -52,14 +53,15 @@ class ConnectTasks extends Component {
         trace: task.trace
       });
     });
-    this.setState({ tableData });
+    this.setState({ tableData, loading: false });
   }
 
   async getDefinition() {
     let definition = {};
     const { clusterId, connectId, definitionId } = this.state;
 
-    definition = await get(uriGetDefinition(clusterId, connectId, definitionId));
+    this.setState({ loading: true });
+    definition = await this.getApi(uriGetDefinition(clusterId, connectId, definitionId));
     this.setState({ definition: definition.data }, () => this.handleTasks());
   }
 
@@ -67,7 +69,7 @@ class ConnectTasks extends Component {
     const { definitionId } = this.state;
     const { uri, action, taskId } = this.state.definitionModifyData;
 
-    get(uri)
+    this.getApi(uri)
       .then(() => this.getDefinition())
       .then(() => {
         toast.success(
@@ -173,12 +175,14 @@ class ConnectTasks extends Component {
   };
 
   render() {
-    const { tableData, definition } = this.state;
+    const { tableData, definition, loading } = this.state;
     const roles = this.state.roles || {};
     return (
       <div className="tab-pane active" role="tabpanel">
         <div className="table-responsive">
           <Table
+            loading={loading}
+            history={this.props.history}
             columns={[
               {
                 id: 'id',

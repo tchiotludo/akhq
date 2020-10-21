@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { uriTopicsLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
-import { get } from '../../../../utils/api';
 import converters from '../../../../utils/converters';
+import Root from "../../../../components/Root";
 
-class TopicLogs extends Component {
+class TopicLogs extends Root {
   state = {
     data: [],
     selectedCluster: this.props.clusterId,
-    selectedTopic: this.props.topic
+    selectedTopic: this.props.topic,
+    loading: true
   };
 
   componentDidMount() {
@@ -18,7 +19,7 @@ class TopicLogs extends Component {
   async getTopicLogs() {
     const { selectedCluster, selectedTopic } = this.state;
 
-    let logs = await get(uriTopicsLogs(selectedCluster, selectedTopic));
+    let logs = await this.getApi(uriTopicsLogs(selectedCluster, selectedTopic));
     this.handleData(logs.data);
   }
 
@@ -32,17 +33,19 @@ class TopicLogs extends Component {
         offsetLag: log.offsetLag
       };
     });
-    this.setState({ data: tableLogs });
+    this.setState({ data: tableLogs, loading: false });
   }
 
   handleSize(size) {
     return <label>{converters.showBytes(size, 0)}</label>;
   }
   render() {
-    const { data } = this.state;
+    const { data, loading } = this.state;
     return (
       <div>
         <Table
+          loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'broker',
