@@ -226,16 +226,6 @@ export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp
   return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
 };
 
-export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
-  let uri = `${apiUrl}/group/grouped-topic-offset?clusterId=${clusterId}&groupId=${groupId}`;
-
-  if (timestamp !== '') {
-    uri += `&timestamp=${timestamp}`;
-  }
-
-  return uri;
-};
-
 export const uriConsumerGroupDelete = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}`;
 };
@@ -315,7 +305,6 @@ export default {
   uriDeleteSchema,
   uriPreferredSchemaForTopic,
   uriSchemaCreate,
-  uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,
   uriTopicsConfigs,
   uriLatestSchemaVersion,

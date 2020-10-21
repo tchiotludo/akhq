@@ -2,7 +2,7 @@ import React from 'react';
 import Table from '../../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import { calculateTopicOffsetLag } from '../../../utils/converters';
+import {calculateTopicOffsetLag, groupedTopicOffset} from '../../../utils/converters';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
@@ -86,7 +86,7 @@ class ConsumerGroupList extends Root {
         state: consumerGroup.state,
         coordinator: consumerGroup.coordinator.id,
         members: consumerGroup.members ? consumerGroup.members.length : 0,
-        topics: consumerGroup.groupedTopicOffset ? consumerGroup.groupedTopicOffset : {}
+        topics: consumerGroup.offsets ? groupedTopicOffset(consumerGroup.offsets) : {}
       });
     });
 

@@ -53,20 +53,7 @@ public class ConsumerGroup {
             this.offsets.add(new TopicPartition.ConsumerGroupOffset(
                 offset.getKey(),
                 offset.getValue(),
-                topicOffsets,
-                this.members
-                    .stream()
-                    .filter(consumer -> consumer.getAssignments()
-                        .stream()
-                        .filter(topicPartition ->
-                            topicPartition.getPartition() == offset.getKey().partition() &&
-                                topicPartition.getTopic().equals(offset.getKey().topic())
-                        )
-                        .collect(Collectors.toList())
-                        .size() > 0
-                    )
-                    .findFirst()
-                    .orElse(null)
+                topicOffsets
             ));
         }
 
@@ -125,11 +112,5 @@ public class ConsumerGroup {
                 (a1, a2) -> a1 + a2.orElse(0L),
                 (a1, a2) -> a1 + a2
             );
-    }
-
-    public Map<String, List<TopicPartition.ConsumerGroupOffset>> getGroupedTopicOffset() {
-        return this.offsets
-            .stream()
-            .collect(Collectors.groupingBy(TopicPartition::getTopic));
     }
 }
