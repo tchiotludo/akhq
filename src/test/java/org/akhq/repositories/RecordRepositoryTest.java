@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -213,6 +214,12 @@ public class RecordRepositoryTest extends AbstractTest {
         options.setSearch("count");
 
         assertEquals(12, searchAll(options));
+    }
+
+    @Test
+    void lastRecordTest() throws ExecutionException, InterruptedException {
+        Optional<Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        assertTrue(record.isPresent());;
     }
 
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {

@@ -73,10 +73,16 @@ public class RecordRepository extends AbstractRepository {
     protected int pollTimeout;
 
 
-    public Optional<Record> getLastRecord(String clusterId, String topicName) {
+    public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
 
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-        consumer.subscribe(Collections.singletonList(topicName));
+        Topic topic = topicRepository.findByName(clusterId, topicName);
+        List<TopicPartition> topicPartitions = topic
+                .getPartitions()
+                .stream()
+                .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
+                .collect(Collectors.toList());
+        consumer.assign(topicPartitions);
         AtomicLong maxTimestamp = new AtomicLong();
         AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
         consumer.endOffsets(consumer.assignment()).forEach((topicPartition, offset) -> {

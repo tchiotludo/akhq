@@ -185,7 +185,7 @@ public class TopicController extends AbstractController {
 
     @Get("api/{cluster}/topic/{topicName}/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record of a topic")
-    public Record lastRecord(String cluster, String topicName) {
+    public Record lastRecord(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.recordRepository.getLastRecord(cluster, topicName).orElse(null);
     }
 
