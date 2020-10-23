@@ -17,14 +17,20 @@ class Acls extends Root {
   };
 
   componentDidMount() {
-    this.getAcls();
+    const { searchData } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+    const { clusterId } = this.props.match.params;
+
+    this.setState({ selectedCluster: clusterId, searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
+      this.getAcls();
+    });
   }
 
   async getAcls() {
     let acls = [];
-    const { clusterId } = this.props.match.params;
+    const { selectedCluster } = this.state;
 
-    acls = await this.getApi(uriAclsList(clusterId, this.state.searchData.search));
+    acls = await this.getApi(uriAclsList(selectedCluster, this.state.searchData.search));
     this.handleData(acls.data);
   }
 
@@ -44,6 +50,10 @@ class Acls extends Root {
     const { searchData } = data;
     this.setState({ searchData, loading: true }, () => {
       this.getAcls();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/acls`,
+        search: `search=${searchData.search}`
+      });
     });
   };
 

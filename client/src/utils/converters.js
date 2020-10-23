@@ -16,6 +16,20 @@ export function calculateTopicOffsetLag(topicOffsets, topicId) {
   return offsetLag;
 }
 
+export function groupedTopicOffset(offsets) {
+  return (offsets || [])
+      .reduce((accumulator, r)  => {
+        if (accumulator[r.topic] === undefined) {
+          accumulator[r.topic] = [];
+        }
+
+        accumulator[r.topic].push(r);
+
+        return accumulator;
+      }, Object.create(null));
+}
+
+
 export function formatDateTime(value, format, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(

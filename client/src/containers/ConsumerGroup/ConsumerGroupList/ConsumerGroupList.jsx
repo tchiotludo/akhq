@@ -2,7 +2,7 @@ import React from 'react';
 import Table from '../../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import { calculateTopicOffsetLag } from '../../../utils/converters';
+import {calculateTopicOffsetLag, groupedTopicOffset} from '../../../utils/converters';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
@@ -10,6 +10,7 @@ import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
+import {Link} from "react-router-dom";
 
 class ConsumerGroupList extends Root {
   state = {
@@ -28,8 +29,11 @@ class ConsumerGroupList extends Root {
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
-    this.setState({ selectedCluster: clusterId }, () => {
+    const { clusterId } = this.props.match.params;
+    const { search } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+
+    this.setState({ selectedCluster: clusterId, search: (query.get('search'))? query.get('search') : search }, () => {
       this.getConsumerGroup();
     });
   }
@@ -37,6 +41,10 @@ class ConsumerGroupList extends Root {
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/group`,
+        search: `search=${data.searchData.search}`
+      });
     });
   };
 
@@ -79,7 +87,7 @@ class ConsumerGroupList extends Root {
         state: consumerGroup.state,
         coordinator: consumerGroup.coordinator.id,
         members: consumerGroup.members ? consumerGroup.members.length : 0,
-        topics: consumerGroup.groupedTopicOffset ? consumerGroup.groupedTopicOffset : {}
+        topics: consumerGroup.offsets ? groupedTopicOffset(consumerGroup.offsets) : {}
       });
     });
 
@@ -115,8 +123,8 @@ class ConsumerGroupList extends Root {
       const offsetLag = calculateTopicOffsetLag(topicOffsets, topicId);
 
       return (
-        <a
-          href={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
+        <Link
+          to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
           className="btn btn-dark btn-sm mb-1 mr-1"
           onClick={noPropagation}
@@ -124,7 +132,7 @@ class ConsumerGroupList extends Root {
           {topicId + ' '}
 
           <div className="badge badge-secondary">Lag: {offsetLag}</div>
-        </a>
+        </Link>
       );
     });
   }

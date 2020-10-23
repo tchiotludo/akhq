@@ -151,28 +151,30 @@ class TopicProduce extends Form {
       <div className="row header-wrapper">
         <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div className="row col-sm-10 khq-multiple header-row">
-          {this.renderInput(
-            `hKey${position}`,
-            '',
-            'Key',
-            'text',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 col-5 key',
-            'input-class'
-          )}
+        <div className="row col-sm-10 khq-multiple">
+          <div>
+            {this.renderInput(
+              `hKey${position}`,
+              '',
+              'Key',
+              'text',
+              undefined,
+              true,
+              'col-sm-6',
+              'input-class'
+            )}
 
-          {this.renderInput(
-            `hValue${position}`,
-            '',
-            'Value',
-            'text',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 col-5',
-            'input-class'
-          )}
+            {this.renderInput(
+              `hValue${position}`,
+              '',
+              'Value',
+              'text',
+              undefined,
+              true,
+              'col-sm-6',
+              'input-class'
+            )}
+          </div>
           <div className="add-button">
             <button
               type="button"

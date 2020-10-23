@@ -3,7 +3,7 @@ import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
-import { formatDateTime } from '../../../../utils/converters';
+import {formatDateTime, groupedTopicOffset} from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import {
   uriConsumerGroup,
@@ -20,10 +20,11 @@ class ConsumerGroupUpdate extends Form {
     clusterId: '',
     consumerGroupId: '',
     timestamp: '',
-    groupedTopicOffset: this.props.groupedTopicOffset || {},
+    topicOffset: this.props.topicOffset || {},
     firstOffsets: {},
     lastOffsets: {},
     formData: {},
+    checked: {},
     errors: {}
   };
 
@@ -33,12 +34,12 @@ class ConsumerGroupUpdate extends Form {
     const { clusterId, consumerGroupId } = this.props.match.params;
 
     this.setState({ clusterId, consumerGroupId }, () => {
-      this.getGroupedTopicOffset();
+      this.getTopicOffset();
     });
   }
 
-  async getGroupedTopicOffset() {
-    const { clusterId, consumerGroupId, groupedTopicOffset, timestamp } = this.state;
+  async getTopicOffset() {
+    const { clusterId, consumerGroupId, topicOffset, timestamp} = this.state;
     const momentValue = moment(timestamp);
 
     const date =
@@ -58,33 +59,36 @@ class ConsumerGroupUpdate extends Form {
         : '';
 
     let data = {};
-    if (JSON.stringify(groupedTopicOffset) === JSON.stringify({})) {
+    if (JSON.stringify(topicOffset) === JSON.stringify({})) {
       data = await this.getApi(uriConsumerGroup(clusterId, consumerGroupId));
       data = data.data;
+      const topicOffset = groupedTopicOffset(data.offsets);
+
       if (data) {
-        this.setState({ groupedTopicOffset: data.groupedTopicOffset }, () =>
-          this.createValidationSchema(data.groupedTopicOffset)
+        this.setState({ topicOffset:  topicOffset}, () =>
+          this.createValidationSchema(topicOffset)
         );
       } else {
-        this.setState({ groupedTopicOffset: {} });
+        this.setState({ topicOffset: {} });
       }
     } else if (date !== '') {
       data = await this.getApi(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
       data = data.data;
       this.handleOffsetsByTimestamp(data);
     } else {
-      this.createValidationSchema(groupedTopicOffset);
+      this.createValidationSchema(topicOffset);
     }
   }
 
-  createValidationSchema = groupedTopicOffset => {
-    let { formData } = this.state;
+  createValidationSchema = topicOffset => {
+    let { formData, checked} = this.state;
     let firstOffsets = {};
     let lastOffsets = {};
     let name = '';
 
-    Object.keys(groupedTopicOffset).forEach(topidId => {
-      groupedTopicOffset[topidId].forEach(offset => {
+    Object.keys(topicOffset).forEach(topidId => {
+      checked[topidId] = true;
+      topicOffset[topidId].forEach(offset => {
         name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
           .min(offset.firstOffset || 0)
@@ -97,7 +101,7 @@ class ConsumerGroupUpdate extends Form {
       });
     });
 
-    this.setState({ formData, firstOffsets, lastOffsets });
+    this.setState({ formData, firstOffsets, lastOffsets, checked});
   };
 
   handleOffsetsByTimestamp = offsets => {
@@ -122,6 +126,16 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
+  unCheckAll = (value)  => {
+    const {checked} = this.state;
+
+    Object.keys(checked).forEach(name => {
+      checked[name] = value;
+    });
+
+    this.setState({ checked});
+  }
+
   resetToLastOffsets = () => {
     const { lastOffsets } = this.state;
     let { formData } = this.state;
@@ -133,47 +147,56 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
-  createSubmitBody = formData => {
+  createSubmitBody = (formData, checked) => {
     let body = [];
     let splitName = [];
     let topic = '';
     let partition = '';
 
     Object.keys(formData).forEach(name => {
-      splitName = name.split('-');
-      partition = splitName.pop();
-      topic = splitName.join('-');
+        splitName = name.split('-');
+        partition = splitName.pop();
+        topic = splitName.join('-');
 
-      body.push({
-        topic,
-        partition,
-        offset: formData[name]
-      });
+      if (checked[topic] === true) {
+        body.push({
+          topic,
+          partition,
+          offset: formData[name]
+        });
+      }
     });
+
     return body;
   };
 
   async doSubmit() {
-    const { clusterId, consumerGroupId, formData } = this.state;
+    const { clusterId, consumerGroupId, formData, checked } = this.state;
 
     await this.postApi(
       uriConsumerGroupUpdate(clusterId, consumerGroupId),
-      this.createSubmitBody(formData)
+      this.createSubmitBody(formData, checked)
     );
 
     this.setState({ state: this.state });
     toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
   }
 
-  renderGroupedTopicOffset = () => {
-    const { groupedTopicOffset } = this.state;
+  rendertopicOffset = () => {
+    const { topicOffset, checked } = this.state;
     const renderedItems = [];
 
-    Object.keys(groupedTopicOffset).forEach(topidId => {
+    Object.keys(topicOffset).forEach(topicId => {
       renderedItems.push(
-        <fieldset id={`fieldset-${topidId}`} key={topidId}>
-          <legend id={`legend-${topidId}`}>{topidId}</legend>
-          {this.renderPartitionInputs(groupedTopicOffset[topidId], topidId)}
+        <fieldset id={`fieldset-${topicId}`} key={topicId}>
+          <legend id={`legend-${topicId}`}>
+            <input
+              type="checkbox"
+              value={topicId}
+              checked={checked[topicId] || false}
+              onChange={this.checkedtopicOffset}/> {topicId}
+          </legend>
+          {this.renderPartitionInputs(topicOffset[topicId], topicId, !checked[topicId])}
         </fieldset>
       );
     });
@@ -181,7 +204,14 @@ class ConsumerGroupUpdate extends Form {
     return renderedItems;
   };
 
-  renderPartitionInputs = (offsets, topicId) => {
+  checkedtopicOffset = (event) => {
+    const { checked } = this.state;
+    checked[event.target.value] = event.target.checked;
+
+    this.setState({ checked: checked });
+  }
+
+  renderPartitionInputs = (offsets, topicId, disabled) => {
     const renderedInputs = [];
 
     offsets.forEach(offset => {
@@ -199,7 +229,8 @@ class ConsumerGroupUpdate extends Form {
                 undefined,
                 true,
                 'partition-input-div',
-                `partition-input ${name}-input`
+                `partition-input ${name}-input`,
+                { disabled: disabled }
               )}
             </span>
           </div>
@@ -216,6 +247,22 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <span>
+        <div
+          className="btn btn-secondary"
+          type="button"
+          style={{ marginRight: '0.5rem' }}
+          onClick={() => this.unCheckAll(true)}
+        >
+          Check all
+        </div>
+        <div
+            className="btn btn-secondary"
+            type="button"
+            style={{ marginRight: '0.5rem' }}
+            onClick={() => this.unCheckAll(false)}
+        >
+          Uncheck all
+        </div>
         <div
           className="btn btn-secondary"
           type="button"
@@ -248,7 +295,7 @@ class ConsumerGroupUpdate extends Form {
                     value={timestamp}
                     label={''}
                     onChange={value => {
-                      this.setState({ timestamp: value }, () => this.getGroupedTopicOffset());
+                      this.setState({ timestamp: value }, () => this.getTopicOffset());
                     }}
                   />
                 </div>
@@ -270,7 +317,7 @@ class ConsumerGroupUpdate extends Form {
           className="khq-form khq-update-consumer-group-offsets"
           onSubmit={() => this.handleSubmit()}
         >
-          {this.renderGroupedTopicOffset()}
+          {this.rendertopicOffset()}
           {this.renderButton(
             'Update',
             this.handleSubmit,

@@ -3,6 +3,7 @@ import Table from '../../../../components/Table';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Root from "../../../../components/Root";
+import {Link} from "react-router-dom";
 
 class TopicGroups extends Root {
   state = {
@@ -68,15 +69,15 @@ class TopicGroups extends Root {
     const noPropagation = e => e.stopPropagation();
     return Object.keys(topics).map(topic => {
       return (
-        <a
-          href={`/ui/${this.state.selectedCluster}/topic/${topic}`}
+        <Link
+          to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
           className="btn btn-dark btn-sm mb-1 mr-1"
           onClick={noPropagation}
         >
           {topic}
           <div className="badge badge-secondary">Lag: {topics[topic]}</div>
-        </a>
+        </Link>
       );
     });
   }

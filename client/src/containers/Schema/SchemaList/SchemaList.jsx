@@ -41,8 +41,10 @@ class SchemaList extends Root {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
+    const { searchData } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
 
-    this.setState({ selectedCluster: clusterId }, () => {
+    this.setState({ selectedCluster: clusterId, searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
       this.getSchemaRegistry();
     });
   }
@@ -51,6 +53,10 @@ class SchemaList extends Root {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getSchemaRegistry();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/schema`,
+        search: `search=${searchData.search}`
+      });
     });
   };
 

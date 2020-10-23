@@ -9,8 +9,8 @@ class SearchBar extends Form {
     showPagination: PropTypes.bool,
     showTopicListView: PropTypes.bool,
     showSearch: PropTypes.bool,
-    showConsumerGroup: PropTypes.bool,
-    showFilters: PropTypes.string
+    showFilters: PropTypes.string,
+    showKeepSearch: PropTypes.bool
   };
   state = {
     formData: {},
@@ -38,25 +38,35 @@ class SearchBar extends Form {
   schema = {};
 
   componentDidMount() {
-    const { showSearch, showTopicListView, showConsumerGroup } = this.props;
-    const { formData, errors } = this.state;
+    this.setState({ formData: this.setupProps() });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { search, topicListView, keepSearch } = this.props;
+
+    if(search !== prevProps.search || topicListView !== prevProps.topicListView || keepSearch !== prevProps.keepSearch) {
+      this.setupProps();
+    }
+  }
+
+  setupProps() {
+    const { showSearch, showTopicListView, showKeepSearch } = this.props;
+    const { formData } = this.state;
     if (showSearch) {
       const { search } = this.props;
       formData['search'] = search;
       this.schema['search'] = Joi.string().allow('');
     }
-
     if (showTopicListView) {
       const { topicListView } = this.props;
       formData['topicListView'] = topicListView;
       this.schema['topicListView'] = Joi.string().required();
-    } else if (showConsumerGroup) {
-      const { groupListView } = this.props;
-      formData['groupListView'] = groupListView;
-      this.schema['groupListView'] = Joi.string().required();
     }
-
-    this.setState({ formData, errors });
+    if(showKeepSearch) {
+      formData['keepSearch'] = this.props.keepSearch;
+      this.schema['keepSearch'] = Joi.boolean();
+    }
+    return formData;
   }
 
   setValue(value) {
@@ -72,13 +82,14 @@ class SearchBar extends Form {
   }
 
   doSubmit = () => {
-    const { pagination, search, topicListView } = this.state.formData;
+    const { pagination, search, topicListView, keepSearch } = this.state.formData;
     const data = {
       pagination: pagination,
       searchData: {
         search: search,
         topicListView: topicListView
-      }
+      },
+      keepSearch: keepSearch
     };
     this.props.doSubmit(data);
   };
@@ -90,9 +101,10 @@ class SearchBar extends Form {
       this.setState({ showFilters: 'show' });
     }
   }
+
   render() {
-    const { showSearch, showTopicListView } = this.props;
-    const { topicListViewOptions, showFilters } = this.state;
+    const { showSearch, showTopicListView, showKeepSearch } = this.props;
+    const { topicListViewOptions, showFilters, formData } = this.state;
 
     return (
       <React.Fragment>
@@ -143,6 +155,14 @@ class SearchBar extends Form {
               <span className="d-md-none">Search </span>
               <i className="fa fa-search" />
             </button>
+            {showKeepSearch && <span><input
+                type="checkbox"
+                name="keepSearch"
+                id="keepSearch"
+                onClick={(event) => this.props.onKeepSearchChange(event.target.checked)}
+                defaultChecked={formData['keepSearch']}
+              /> Keep search
+            </span>}
           </form>
         </div>
       </React.Fragment>

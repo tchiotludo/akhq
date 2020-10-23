@@ -123,7 +123,6 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-    skip-consumer-groups: false # Skip loading consumer group information when showing topics
 
   # Topic display data options (optional)
   topic-data:

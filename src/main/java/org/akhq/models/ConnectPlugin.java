@@ -50,6 +50,18 @@ public class ConnectPlugin {
                 .group("Schema Registry")
                 .displayName("Value schema registry Url")
                 .importance("MEDIUM")
+                .build(),
+            Definition.builder()
+                .name("value.converter.schemas.enable")
+                .group("Schema Registry")
+                .displayName("Enable value schemas")
+                .importance("MEDIUM")
+                .build(),
+            Definition.builder()
+                .name("key.converter.schemas.enable")
+                .group("Schema Registry")
+                .displayName("Enable key schemas")
+                .importance("MEDIUM")
                 .build()
         );
     }
