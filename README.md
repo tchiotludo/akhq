@@ -336,6 +336,7 @@ Define groups with specific roles for your users
   * `- name: group-name` Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
+    * `attributes.connects-filter-regexp`: Regexp to filter Connect tasks available for current group
 
 
 3 defaults group are available :
@@ -420,6 +421,7 @@ akhq:
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
+          connects-filter-regexp: "^test.*$"
       - name: topic-writer # Group name
         roles:
           - topic/read
@@ -428,6 +430,7 @@ akhq:
           - topic/config/update
         attributes:
           topics-filter-regexp: "test.*"
+          connects-filter-regexp: "^test.*$"
     ldap:
       groups:
         - name: mathematicians

@@ -65,7 +65,7 @@ public class TopicRepository extends AbstractRepository {
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(
+            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isMatchRegex(
                 getTopicFilterRegex(), item.name())) {
                 list.add(item.name());
             }
@@ -91,7 +91,7 @@ public class TopicRepository extends AbstractRepository {
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
         Optional<Topic> topic = Optional.empty();
-        if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
+        if(isMatchRegex(getTopicFilterRegex(),name)) {
             topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
         }
 
@@ -107,7 +107,7 @@ public class TopicRepository extends AbstractRepository {
         Optional<List<String>> topicRegex = getTopicFilterRegex();
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-            if(isTopicMatchRegex(topicRegex, description.getValue().name())){
+            if(isMatchRegex(topicRegex, description.getValue().name())){
                 list.add(
                     new Topic(
                         description.getValue(),
