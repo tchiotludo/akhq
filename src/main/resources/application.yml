@@ -33,6 +33,10 @@ micronaut:
         cookie:
           enabled: true
           cookie-same-site: strict
+        signatures:
+          secret:
+            generator:
+              secret: changeme
     redirect:
       login-success: "${micronaut.server.context-path:}/ui"
       forbidden:
