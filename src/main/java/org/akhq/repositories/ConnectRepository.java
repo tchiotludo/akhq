@@ -48,6 +48,9 @@ public class ConnectRepository extends AbstractRepository {
         ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
+        if (!isMatchRegex(getConnectFilterRegex(), name)) {
+            throw new IllegalArgumentException(String.format("Not allowed to view Connector %s", name));
+        }
         return new ConnectDefinition(
             this.kafkaModule
                 .getConnectRestClient(clusterId)
