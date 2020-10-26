@@ -192,7 +192,7 @@ class TopicList extends Root {
           });
       this.getApi(uriTopicLastRecord(selectedCluster, topic.name))
           .then(value => {
-            tableTopics[topic.name].lastWrite = value.data.timestamp
+            tableTopics[topic.name].lastWrite = value.data.timestamp || ''
             setState()
           })
     })
