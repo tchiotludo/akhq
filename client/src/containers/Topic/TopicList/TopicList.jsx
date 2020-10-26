@@ -326,7 +326,7 @@ class TopicList extends Root {
             {
               id: 'lastWrite',
               accessor: 'lastWrite',
-              colName: 'Last Record Write',
+              colName: 'Last Record',
               type: 'text'
             },
             {
