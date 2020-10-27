@@ -74,28 +74,38 @@ public class RecordRepository extends AbstractRepository {
 
 
     public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
-
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
         Topic topic = topicRepository.findByName(clusterId, topicName);
+
         List<TopicPartition> topicPartitions = topic
-                .getPartitions()
-                .stream()
-                .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
-                .collect(Collectors.toList());
+            .getPartitions()
+            .stream()
+            .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
+            .collect(Collectors.toList());
+
         consumer.assign(topicPartitions);
-        AtomicLong maxTimestamp = new AtomicLong();
-        AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
-        consumer.endOffsets(consumer.assignment()).forEach((topicPartition, offset) -> {
-            consumer.seek(topicPartition, (offset == 0) ? offset : offset - 1);
-            this.poll(consumer).forEach(record -> {
-                if (record.timestamp() > maxTimestamp.get()) {
-                    maxTimestamp.set(record.timestamp());
-                    latestRecord.set(record);
-                }
-            });
-        });
+        Optional<ConsumerRecord<byte[], byte[]>> latestRecord =
+            getLatestRecordFromOffsetDifference(consumer, 1)
+                .or(() -> getLatestRecordFromOffsetDifference(consumer, 2));
+
         consumer.close();
-        return Optional.ofNullable(latestRecord.get()).map(record -> newRecord(record, clusterId));
+        return latestRecord.map(record -> newRecord(record, clusterId));
+    }
+
+    private Optional<ConsumerRecord<byte[], byte[]>> getLatestRecordFromOffsetDifference(KafkaConsumer<byte[], byte[]> consumer, int offsetDifference) {
+        AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
+        consumer
+            .endOffsets(consumer.assignment())
+            .forEach((topicPartition, offset) -> consumer.seek(topicPartition, Math.max(0, offset - offsetDifference)));
+
+        AtomicLong maxTimestamp = new AtomicLong();
+        this.poll(consumer).forEach(record -> {
+            if (record.timestamp() > maxTimestamp.get()) {
+                maxTimestamp.set(record.timestamp());
+                latestRecord.set(record);
+            }
+        });
+        return Optional.ofNullable(latestRecord.get());
     }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
