@@ -587,6 +587,7 @@ A docker-compose is provide to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
+The configuration for the dev server is in `application.dev.yml`.
 
 ## Schema references
 

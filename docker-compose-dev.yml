@@ -15,118 +15,108 @@ volumes:
 services:
   akhq:
     image: gradle:6.6.1-jdk11
-    command: "gradle run --continuous"
+    command: 'gradle run --continuous'
     working_dir: /app
     volumes:
-      - ./:/app
-      - /app/.gradle
-      - ./gradle/gradle.properties:/root/.gradle/gradle.properties
+      - ./:/app:z
+      - /app/.gradle:Z
+      - ./gradle/gradle.properties:/root/.gradle/gradle.properties:Z
     ports:
-      - 127.11.8.17:8080:8080
+      - 8080:8080
     environment:
-      MICRONAUT_IO_WATCH_RESTART: "true"
+      MICRONAUT_IO_WATCH_RESTART: 'true'
+      MICRONAUT_CONFIG_FILES: '/app/application.dev.yml'
     depends_on:
       - kafka
       - schema-registry
 
-  webpack:
-    image: node:12
-    command: "sh -c 'npm install && npm run dev'"
-    working_dir: /app
-    volumes:
-      - ./:/app
-    ports:
-      - 127.11.8.17:8081:8081
-    depends_on:
-      - akhq
-
   ui:
     image: node:12
-    command: "sh -c 'npm install && npm start'"
+    command: 'sh -c "npm install && npm start"'
     working_dir: /app/client
     tty: true
     volumes:
-      - ./:/app
-      - ui-modules:/app/client/node_modules
-      - ui-build:/app/client/build
+      - ./:/app:z
+      - ui-modules:/app/client/node_modules:Z
+      - ui-build:/app/client/build:Z
     ports:
-      - 127.11.8.17:3000:3000
+      - 3000:3000
     depends_on:
       - akhq
 
   zookeeper:
     image: confluentinc/cp-zookeeper
     volumes:
-      - zookeeper-data:/var/lib/zookeeper/data
-      - zookeeper-log:/var/lib/zookeeper/log
+      - zookeeper-data:/var/lib/zookeeper/data:Z
+      - zookeeper-log:/var/lib/zookeeper/log:Z
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: '2181'
+      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
     ports:
-      - 127.11.8.17:2181:2181
+      - 2181:2181
 
   kafka:
     image: confluentinc/cp-kafka
     volumes:
-      - kafka-data:/var/lib/kafka/data
+      - kafka-data:/var/lib/kafka:Z
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_NUM_PARTITIONS: 12
-      KAFKA_COMPRESSION_TYPE: gzip
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: '0'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_NUM_PARTITIONS: '12'
+      KAFKA_COMPRESSION_TYPE: 'gzip'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
-      KAFKA_JMX_PORT: 9091
+      KAFKA_JMX_PORT: '9091'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.auth.SimpleAclAuthorizer'
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
     links:
       - zookeeper
     ports:
-      - 127.11.8.17:9092:9092
-      - 127.11.8.17:9091:9091
+      - 9092:9092
+      - 9091:9091
 
   schema-registry:
     image: confluentinc/cp-schema-registry
     depends_on:
       - kafka
     environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8085"
-      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'PLAINTEXT://kafka:9092'
+      SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
+      SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8085'
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: 'INFO'
     ports:
-      - 127.11.8.17:8085:8085
+      - 8085:8085
 
   connect:
     image: confluentinc/cp-kafka-connect
     ports:
-      - 127.11.8.17:8083:8083
+      - 8083:8083
     depends_on:
       - kafka
       - schema-registry
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
-      CONNECT_REST_PORT: 8083
-      CONNECT_REST_LISTENERS: http://0.0.0.0:8083
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
-      CONNECT_CONFIG_STORAGE_TOPIC: __connect-config
-      CONNECT_OFFSET_STORAGE_TOPIC: __connect-offsets
-      CONNECT_STATUS_STORAGE_TOPIC: __connect-status
-      CONNECT_GROUP_ID: "kafka-connect"
-      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
-      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
-      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8085
-      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONNECT_REST_PORT: '8083'
+      CONNECT_REST_LISTENERS: 'http://0.0.0.0:8083'
+      CONNECT_REST_ADVERTISED_HOST_NAME: 'connect'
+      CONNECT_CONFIG_STORAGE_TOPIC: '__connect-config'
+      CONNECT_OFFSET_STORAGE_TOPIC: '__connect-offsets'
+      CONNECT_STATUS_STORAGE_TOPIC: '__connect-status'
+      CONNECT_GROUP_ID: 'kafka-connect'
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: 'true'
+      CONNECT_KEY_CONVERTER: 'io.confluent.connect.avro.AvroConverter'
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8085'
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: 'true'
+      CONNECT_VALUE_CONVERTER: 'io.confluent.connect.avro.AvroConverter'
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8085'
+      CONNECT_INTERNAL_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+      CONNECT_INTERNAL_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: '1'
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: '1'
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
-    volumes:
-      - ./connects-plugins:/usr/share/java/connects-plugins
 
