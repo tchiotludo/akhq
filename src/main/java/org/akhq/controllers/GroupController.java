@@ -26,6 +26,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.time.Instant;
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -88,6 +89,21 @@ public class GroupController extends AbstractController {
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group acls")
     public List<AccessControl> acls(String cluster, String groupName) throws ExecutionException, InterruptedException {
         return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
+    }
+
+    @Get("topics")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group for list of topics")
+    public List filterByTopics(String cluster, Optional<List<String>> topics) {
+
+        return topics.map(
+                topicsName -> {
+                    try {
+                        return this.consumerGroupRepository.findByTopics(cluster, topicsName);
+                    } catch (ExecutionException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        ).orElse(Collections.EMPTY_LIST);
     }
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)

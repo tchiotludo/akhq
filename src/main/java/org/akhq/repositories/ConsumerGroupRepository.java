@@ -103,6 +103,23 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
+    public List<ConsumerGroup> findByTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+
+        List<String> groupName = this.all(clusterId, Optional.empty());
+        List<ConsumerGroup> list = this.findByName(clusterId, groupName);
+        return list
+                .stream()
+                .filter(consumerGroups ->
+                        consumerGroups.getActiveTopics()
+                                .stream()
+                                .anyMatch(s -> topics.contains(s) ) ||
+                                consumerGroups.getTopics()
+                                        .stream()
+                                        .anyMatch(s -> topics.contains(s))
+                )
+                .collect(Collectors.toList());
+    }
+
     public void updateOffsets(String clusterId, String name, Map<org.akhq.models.TopicPartition, Long> offset) {
         KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
             put(ConsumerConfig.GROUP_ID_CONFIG, name);
