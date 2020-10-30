@@ -243,6 +243,10 @@ export const uriConsumerGroupAcls = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
 };
 
+export const uriConsumerGroupByTopics = (clusterId, topicList) => {
+  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}`;
+};
+
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
   return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };

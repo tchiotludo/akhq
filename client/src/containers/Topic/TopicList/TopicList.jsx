@@ -5,7 +5,7 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
+import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopics} from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import './styles.scss';
@@ -181,17 +181,21 @@ class TopicList extends Root {
         groupComponent: undefined,
         internal: topic.internal
       }
-
       collapseConsumerGroups[topic.name] = false;
-
-      this.getApi(uriTopicsGroups(selectedCluster, topic.name))
-        .then(value => {
-          tableTopics[topic.name].groupComponent = value.data
-          setState()
-        })
     });
     this.setState({collapseConsumerGroups});
     setState()
+
+    const topicsName = topics.map(topic => topic.name).join(",");
+    this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName)))
+        .then(value => {
+            topics.forEach(topic => {
+              tableTopics[topic.name].groupComponent = (value && value.data)? value.data.filter(consumerGroup =>
+                  (consumerGroup.activeTopics && consumerGroup.activeTopics.includes(topic.name))
+                  || (consumerGroup.topics && consumerGroup.topics.includes(topic.name))): [];
+            });
+            setState();
+        });
   }
 
 
