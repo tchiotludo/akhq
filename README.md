@@ -140,17 +140,16 @@ docker run -d \
 ```sh
 helm repo add akhq https://akhq.io/
 ```
-* Install it:
+* Install or upgrade
 ```sh
-helm install --name akhq akhq/akhq
+helm upgrade --install akhq akhq/akhq
 ```
-
 #### Requirements
 
 * Chart version >=0.1.1 requires Kubernetes version >=1.14
 * Chart version 0.1.0 works on previous Kubernetes versions
 ```sh
-helm install --name akhq akhq/akhq --version 0.1.0
+helm install akhq akhq/akhq --version 0.1.0
 ```
 
 ### Using git
