@@ -361,13 +361,15 @@ Configure basic-auth connection in AKHQ
 ```yaml
 akhq.security:
   basic-auth:
-    admin:
+    - username: admin
       password: "$2a$<hashed password>"
       passwordHash: BCRYPT
-      groups: admin
-    reader:
+      groups: 
+      - admin
+    - username: reader
       password: "<SHA-256 hashed password>"
-      groups: reader
+      groups: 
+      - reader
 ```
 
 ##### LDAP
