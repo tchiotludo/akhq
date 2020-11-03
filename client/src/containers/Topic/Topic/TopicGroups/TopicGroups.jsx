@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Table from '../../../../components/Table';
-import api from '../../../../utils/api';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
+import Root from "../../../../components/Root";
+import {Link} from "react-router-dom";
 
-class TopicGroups extends Component {
+class TopicGroups extends Root {
   state = {
     consumerGroups: [],
     topicId: this.props.topicId,
@@ -21,7 +22,7 @@ class TopicGroups extends Component {
   async getConsumerGroup() {
     const { selectedCluster, topicId } = this.state;
 
-    let data  = await api.get(uriTopicsGroups(selectedCluster, topicId));
+    let data  = await this.getApi(uriTopicsGroups(selectedCluster, topicId));
     if (data && data.data) {
       this.handleGroups(data.data);
     } else {
@@ -68,27 +69,27 @@ class TopicGroups extends Component {
     const noPropagation = e => e.stopPropagation();
     return Object.keys(topics).map(topic => {
       return (
-        <a
-          href={`/ui/${this.state.selectedCluster}/topic/${topic}`}
+        <Link
+          to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
           className="btn btn-dark btn-sm mb-1 mr-1"
           onClick={noPropagation}
         >
           {topic}
           <div className="badge badge-secondary">Lag: {topics[topic]}</div>
-        </a>
+        </Link>
       );
     });
   }
 
   render() {
     const { selectedCluster, loading } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -133,9 +134,7 @@ class TopicGroups extends Component {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => {
-            history.push({ pathname: `/ui/${selectedCluster}/group/${id}`, tab: constants.GROUP });
-          }}
+          onDetails={id => `/ui/${selectedCluster}/group/${id}` }
           actions={[constants.TABLE_DETAILS]}
         />
       </div>

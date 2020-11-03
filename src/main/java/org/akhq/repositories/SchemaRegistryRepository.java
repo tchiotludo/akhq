@@ -1,7 +1,9 @@
 package org.akhq.repositories;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
+import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
@@ -98,7 +100,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .getLatestVersion(subject);
 
-        return new Schema(latestVersion, this.getConfig(clusterId, subject));
+        ParsedSchema parsedSchema = this.kafkaModule
+            .getAvroSchemaProvider(clusterId)
+            .parseSchema(latestVersion.getSchema(), latestVersion.getReferences())
+            .orElse(null);
+
+        return new Schema(latestVersion, parsedSchema, this.getConfig(clusterId, subject));
     }
 
     public List<Schema> getAllVersions(String clusterId, String subject) throws IOException, RestClientException {
@@ -115,7 +122,14 @@ public class SchemaRegistryRepository extends AbstractRepository {
                     throw new RuntimeException(e);
                 }
             })
-            .map(schema -> new Schema(schema, config))
+            .map(schema -> {
+                ParsedSchema parsedSchema = this.kafkaModule
+                    .getAvroSchemaProvider(clusterId)
+                    .parseSchema(schema.getSchema(), schema.getReferences())
+                    .orElse(null);
+
+                return new Schema(schema, parsedSchema, config);
+            })
             .collect(Collectors.toList());
     }
 
@@ -124,7 +138,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .lookUpSubjectVersion(schema.toString(), subject, deleted);
 
-        return new Schema(find, this.getConfig(clusterId, subject));
+        ParsedSchema parsedSchema = this.kafkaModule
+            .getAvroSchemaProvider(clusterId)
+            .parseSchema(find.getSchema(), find.getReferences())
+            .orElse(null);
+
+        return new Schema(find, parsedSchema, this.getConfig(clusterId, subject));
     }
 
     public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
@@ -139,10 +158,10 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .testCompatibility(schema.toString(), subject, String.valueOf(version));
     }
 
-    public Schema register(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
+    public Schema register(String clusterId, String subject, String schema, List<SchemaReference> references) throws IOException, RestClientException {
         int id = this.kafkaModule
             .getRegistryRestClient(clusterId)
-            .registerSchema(schema.toString(), subject);
+            .registerSchema(schema, "AVRO", references, subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
 

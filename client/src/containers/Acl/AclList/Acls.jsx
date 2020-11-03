@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
-import { get } from '../../../utils/api';
 import { uriAclsList } from '../../../utils/endpoints';
 import SearchBar from '../../../components/SearchBar';
+import Root from "../../../components/Root";
 
-class Acls extends Component {
+class Acls extends Root {
   state = {
     data: [],
     selectedCluster: '',
@@ -17,14 +17,20 @@ class Acls extends Component {
   };
 
   componentDidMount() {
-    this.getAcls();
+    const { searchData } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+    const { clusterId } = this.props.match.params;
+
+    this.setState({ selectedCluster: clusterId, searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
+      this.getAcls();
+    });
   }
 
   async getAcls() {
     let acls = [];
-    const { clusterId } = this.props.match.params;
+    const { selectedCluster } = this.state;
 
-    acls = await get(uriAclsList(clusterId, this.state.searchData.search));
+    acls = await this.getApi(uriAclsList(selectedCluster, this.state.searchData.search));
     this.handleData(acls.data);
   }
 
@@ -44,12 +50,17 @@ class Acls extends Component {
     const { searchData } = data;
     this.setState({ searchData, loading: true }, () => {
       this.getAcls();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/acls`,
+        search: `search=${searchData.search}`
+      });
     });
   };
 
   render() {
     const { data, searchData, loading } = this.state;
     const { clusterId } = this.props.match.params;
+
     return (
       <div>
         <Header title="Acls" history={this.props.history} />
@@ -69,6 +80,7 @@ class Acls extends Component {
         </nav>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'user',
@@ -93,12 +105,7 @@ class Acls extends Component {
               </td>
             </tr>
           }
-          onDetails={acl => {
-            this.props.history.push({
-              pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`,
-              principal: acl.user
-            });
-          }}
+          onDetails={acl => `/ui/${clusterId}/acls/${acl.principalEncoded}`}
         />
       </div>
     );

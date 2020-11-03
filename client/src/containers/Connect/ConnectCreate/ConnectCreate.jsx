@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
-import { get, post } from '../../../utils/api';
 import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
 import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
@@ -14,8 +13,9 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Root from "../../../components/Root";
 
-class ConnectCreate extends Component {
+class ConnectCreate extends Root {
   state = {
     clusterId: this.props.match.params.clusterId,
     connectId: this.props.match.params.connectId,
@@ -42,7 +42,7 @@ class ConnectCreate extends Component {
   async getPlugins() {
     const { connectId, clusterId } = this.state;
 
-    let plugins = await get(uriConnectPlugins(clusterId, connectId));
+    let plugins = await this.getApi(uriConnectPlugins(clusterId, connectId));
     this.setState({ clusterId, connectId, plugins: plugins.data });
   }
 
@@ -404,7 +404,7 @@ class ConnectCreate extends Component {
 
     body.configs = configs;
 
-    post(uriCreateConnect(clusterId, connectId), body)
+    this.postApi(uriCreateConnect(clusterId, connectId), body)
       .then(() => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/connect/${connectId}`,

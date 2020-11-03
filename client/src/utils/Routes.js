@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter, Switch, Route, Redirect } from 'react-router-dom';
 import TopicList from '../containers/Topic/TopicList';
@@ -22,11 +22,11 @@ import SchemaCreate from '../containers/Schema/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
-
-import api, { get } from './api';
 import { organizeRoles } from './converters';
 import { uriClusters, uriCurrentUser } from './endpoints';
-class Routes extends Component {
+import Root from "../components/Root";
+
+class Routes extends Root {
   state = {
     clusters: [],
     clusterId: '',
@@ -43,8 +43,8 @@ class Routes extends Component {
   getClusters = () => {
     const { clusterId } = this.state;
 
-    api
-      .get(uriClusters())
+    this
+      .getApi(uriClusters())
       .then(res => {
         this.setState(
           { clusters: res.data, clusterId: res.data ? res.data[0].id : '', loading: false }
@@ -60,9 +60,9 @@ class Routes extends Component {
       });
   };
 
-  getCurrentUser(callback = () => {}) {
+  getCurrentUser() {
     sessionStorage.setItem('user', '');
-    get(uriCurrentUser())
+    this.getApi(uriCurrentUser())
       .then(res => {
         let currentUserData = res.data;
         if (currentUserData.logged) {
@@ -83,7 +83,6 @@ class Routes extends Component {
           }
         }
         this.setState({ loading: false });
-        callback();
       })
       .catch(err => {
         console.error('Error:', err);
@@ -111,6 +110,7 @@ class Routes extends Component {
 
     if (this.state.user.length <= 0) {
       this.getCurrentUser();
+      return <></>;
     }
 
     if (
@@ -118,6 +118,7 @@ class Routes extends Component {
       (sessionStorage.getItem('login') === 'true' || this.state.user === 'default')
     ) {
       this.getClusters();
+      return <></>;
     }
 
     if (!clusters.find(el => el.id === this.state.clusterId) && clusterId !== '401') {

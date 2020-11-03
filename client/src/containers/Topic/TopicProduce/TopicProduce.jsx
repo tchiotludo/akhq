@@ -3,7 +3,6 @@ import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { get, post } from '../../../utils/api';
 import { formatDateTime } from '../../../utils/converters';
 import {
   uriPreferredSchemaForTopic,
@@ -66,7 +65,7 @@ class TopicProduce extends Form {
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
 
-    let response = await get(uriTopicsPartitions(clusterId, topicId));
+    let response = await this.getApi(uriTopicsPartitions(clusterId, topicId));
     let partitions = response.data.map(item => {
       return { name: item.id, _id: Number(item.id) };
     });
@@ -78,13 +77,13 @@ class TopicProduce extends Form {
       }
     });
 
-    this.getPreferredSchemaForTopic();
+    await this.getPreferredSchemaForTopic();
     this.setState({ clusterId, topicId });
   }
 
   async getPreferredSchemaForTopic() {
     const { clusterId, topicId } = this.props.match.params;
-    let schema = await get(uriPreferredSchemaForTopic(clusterId, topicId));
+    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, topicId));
     let keySchema = [];
     let valueSchema = [];
     schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
@@ -126,7 +125,7 @@ class TopicProduce extends Form {
 
     topic.headers = headers;
 
-    post(uriTopicsProduce(clusterId, topicId), topic)
+    this.postApi(uriTopicsProduce(clusterId, topicId), topic)
       .then(() => {
         this.props.history.push({
           pathname: `/ui/${clusterId}/topic/${topicId}`,
@@ -152,28 +151,30 @@ class TopicProduce extends Form {
       <div className="row header-wrapper">
         <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div className="row col-sm-10 khq-multiple header-row">
-          {this.renderInput(
-            `hKey${position}`,
-            '',
-            'Key',
-            'text',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 col-5 key',
-            'input-class'
-          )}
+        <div className="row col-sm-10 khq-multiple">
+          <div>
+            {this.renderInput(
+              `hKey${position}`,
+              '',
+              'Key',
+              'text',
+              undefined,
+              true,
+              'col-sm-6',
+              'input-class'
+            )}
 
-          {this.renderInput(
-            `hValue${position}`,
-            '',
-            'Value',
-            'text',
-            undefined,
-            true,
-            'wrapper-class col-sm-6 col-5',
-            'input-class'
-          )}
+            {this.renderInput(
+              `hValue${position}`,
+              '',
+              'Value',
+              'text',
+              undefined,
+              true,
+              'col-sm-6',
+              'input-class'
+            )}
+          </div>
           <div className="add-button">
             <button
               type="button"

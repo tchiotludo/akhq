@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Header from '../../Header';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
@@ -6,13 +6,14 @@ import TopicGroups from './TopicGroups';
 import TopicConfigs from './TopicConfigs';
 import TopicAcls from './TopicAcls';
 import TopicLogs from './TopicLogs';
-import { get, remove } from '../../../utils/api';
 import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import {getSelectedTab} from "../../../utils/functions";
+import { Link } from 'react-router-dom';
+import Root from "../../../components/Root";
 
-class Topic extends Component {
+class Topic extends Root {
   state = {
     clusterId: this.props.clusterId,
     topicId: this.props.topicId,
@@ -23,7 +24,7 @@ class Topic extends Component {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: {}
+    configs: []
   };
 
   tabs = ['data','partitions','groups','configs','acls','logs'];
@@ -80,10 +81,17 @@ class Topic extends Component {
     this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
 
+  canEmptyTopic = () => {
+    const { configs } = this.state;
+    const res = configs.filter( config => config.name === 'cleanup.policy');
+    if(res && res.length === 1 && res[0].value === 'delete') return true;
+    return false;
+  }
+
   emptyTopic = () => {
     const { clusterId, topicId } = this.props.match.params;
 
-    remove(
+    this.removeApi(
         uriTopicDataEmpty(clusterId, topicId)
     )
         .then(() => {
@@ -108,7 +116,7 @@ class Topic extends Component {
     const { clusterId, topicId } = this.state;
     let configs = [];
     try {
-      configs = await get(uriTopicsConfigs(clusterId, topicId));
+      configs = await this.getApi(uriTopicsConfigs(clusterId, topicId));
       this.setState({ configs: configs.data });
     } catch (err) {
       console.error('Error:', err);
@@ -116,11 +124,8 @@ class Topic extends Component {
   }
 
   selectTab = tab => {
-    const { topicId, clusterId } = this.state;
     this.setState({ selectedTab: tab });
-    this.props.history.push({
-      pathname: `/ui/${clusterId}/topic/${topicId}/${tab}`
-    });
+
   };
 
   tabClassName = tab => {
@@ -140,9 +145,6 @@ class Topic extends Component {
       case 'groups':
         return (
           <TopicGroups
-            changeTab={tab => {
-              this.selectTab(tab);
-            }}
             clusterId={clusterId}
             topicId={topicId}
             history={history}
@@ -181,67 +183,49 @@ class Topic extends Component {
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">
-                <div
+                <Link to={`/ui/${clusterId}/topic/${topicId}/data`}
                   className={this.tabClassName('data')}
-                  onClick={() => this.selectTab('data')}
-                  //to="#"
-                  role="tab"
                 >
                   Data
-                </div>
+                </Link>
               </li>
             )}
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/partitions`}
                 className={this.tabClassName('partitions')}
-                onClick={() => this.selectTab('partitions')}
-                //to="#"
-                role="tab"
               >
                 Partitions
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/groups`}
                 className={this.tabClassName('groups')}
-                onClick={() => this.selectTab('groups')}
-                //to="#"
-                role="tab"
               >
                 Consumer Groups
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/configs`}
                 className={this.tabClassName('configs')}
-                onClick={() => this.selectTab('configs')}
-                //to="#"
-                role="tab"
               >
                 Configs
-              </div>
+              </Link>
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <div
+                <Link to={`/ui/${clusterId}/topic/${topicId}/acls`}
                   className={this.tabClassName('acls')}
-                  onClick={() => this.selectTab('acls')}
-                  //to="#"
-                  role="tab"
                 >
                   ACLS
-                </div>
+                </Link>
               </li>
             )}
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/topic/${topicId}/logs`}
                 className={this.tabClassName('logs')}
-                onClick={() => this.selectTab('logs')}
-                //to="#"
-                role="tab"
               >
                 Logs
-              </div>
+              </Link>
             </li>
           </ul>
 
@@ -254,30 +238,36 @@ class Topic extends Component {
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <li className="aside-button">
-              <div
-                onClick={() => {
-                  this.handleOnEmpty();
-                }}
-                className="btn btn-secondary mr-2">
-                <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-              </div>
+              { this.canEmptyTopic()?
+                  <div
+                      onClick={() => {
+                        this.handleOnEmpty();
+                      }}
+                      className="btn btn-secondary mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+                  :
+                  <div title="Only enabled for topics with Delete Cleanup Policy"
+                       className="btn disabled-black-button mr-2">
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+              }
 
-              <div
-                onClick={() => {
-                  this.props.history.push({ pathname: `/ui/${clusterId}/tail`, topicId: topicId });
+              <Link to={{
+                pathname: `/ui/${clusterId}/tail`,
+                state: {
+                  topicId: topicId
+                }
                 }}
                 className="btn btn-secondary mr-2"
               >
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-              </div>
+              </Link>
 
-              <div
-                onClick={() => {
-                  this.props.history.push({ pathname: `/ui/${clusterId}/topic/${topicId}/produce` });
-                }}
+              <Link to={ `/ui/${clusterId}/topic/${topicId}/produce`}
                 className="btn btn-primary">
                 <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
-              </div>
+              </Link>
             </li>
           </aside>
         )}

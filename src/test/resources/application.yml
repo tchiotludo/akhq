@@ -69,7 +69,6 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-    skip-consumer-groups: false
 
   topic-data:
     poll-timeout: 5000

@@ -67,14 +67,18 @@ jobs:
           ./gradlew classes testClasses --parallel --no-daemon
           ./gradlew check --no-daemon
 
-      # Shadow Jar
-      - name: Build jars
+      # Shadow Jar, Tar and Zip
+      - name: Build jars and distribution archives
         if: success() && matrix.java == '11'
-        run: ./gradlew shadowJar --no-daemon
+        run: ./gradlew shadowJar distTar distZip --no-daemon
 
       # Upload artifacts
       - name: Copy jar to docker
-        run: cp build/libs/* docker/app/akhq.jar
+        run: |
+          cp build/libs/*-all.jar docker/app/akhq.jar
+          cp build/distributions/akhq-*.tar build/distributions/akhq.tar
+          cp build/distributions/akhq-*.zip build/distributions/akhq.zip
+
       - name: Upload jar
         uses: actions/upload-artifact@v1
         if: success() && matrix.java == '11'
@@ -83,6 +87,15 @@ jobs:
           path: build/libs/
 
       # Release
+      - name: Changelog
+        id: changelog
+        uses: scottbrenner/generate-changelog-action@master
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          REPO: ${{ github.repository }}
+        with:
+          package-dir: 'client/package.json'
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
@@ -94,8 +107,10 @@ jobs:
           release_name: ${{ github.ref }}
           draft: true
           prerelease: true
+          body: |
+            ${{ steps.changelog.outputs.changelog }}
 
-      # Upload Jar
+      # Upload Jar / Tar / Zip
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -107,6 +122,30 @@ jobs:
           asset_path: ./docker/app/akhq.jar
           asset_name: akhq.jar
           asset_content_type: application/java-archive
+
+      - name: Upload Release Tar
+        id: upload-release-tar
+        uses: actions/upload-release-asset@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/akhq.tar
+          asset_name: akhq.tar
+          asset_content_type: application/x-tar
+
+      - name: Upload Release Zip
+        id: upload-release-zip
+        uses: actions/upload-release-asset@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/akhq.zip
+          asset_name: akhq.zip
+          asset_content_type: application/zip
 
       # Docker
       - name: Publish to Docker Hub

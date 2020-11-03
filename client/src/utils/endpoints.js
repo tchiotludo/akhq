@@ -12,11 +12,11 @@ export const uriLogin = () => {
 };
 
 export const uriAuths = () => {
-  return `${baseUrl}/api/auths`;
+  return `${apiUrl}/auths`;
 };
 
 export const uriOidc = (provider) => {
-  return `${baseUrl}/oauth/login/${provider}`;
+  return `${baseUrl}${basePath}/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {
@@ -149,6 +149,11 @@ export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
 export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
+
+export const uriSchemaId = (clusterId, id) => {
+  return `${apiUrl}/${clusterId}/schema/id/${id}`;
+};
+
 export const uriSchemaVersions = (clusterId, subject) => {
   return `${apiUrl}/${clusterId}/schema/${subject}/version`;
 };
@@ -221,16 +226,6 @@ export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp
   return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
 };
 
-export const uriConsumerGroupGroupedTopicOffset = (clusterId, groupId, timestamp) => {
-  let uri = `${apiUrl}/group/grouped-topic-offset?clusterId=${clusterId}&groupId=${groupId}`;
-
-  if (timestamp !== '') {
-    uri += `&timestamp=${timestamp}`;
-  }
-
-  return uri;
-};
-
 export const uriConsumerGroupDelete = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}`;
 };
@@ -246,6 +241,10 @@ export const uriAclsList = (clusterId, search) => {
 
 export const uriConsumerGroupAcls = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
+};
+
+export const uriConsumerGroupByTopics = (clusterId, topicList) => {
+  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}`;
 };
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
@@ -310,7 +309,6 @@ export default {
   uriDeleteSchema,
   uriPreferredSchemaForTopic,
   uriSchemaCreate,
-  uriConsumerGroupGroupedTopicOffset,
   uriConsumerGroupUpdate,
   uriTopicsConfigs,
   uriLatestSchemaVersion,

@@ -34,7 +34,7 @@ micronaut:
           enabled: true
           cookie-same-site: strict
     redirect:
-      login-success: "/ui"
+      login-success: "${micronaut.server.context-path:}/ui"
       forbidden:
         url: "${micronaut.server.context-path:}/ui/login/forbidden"
       unauthorized:
@@ -48,6 +48,9 @@ micronaut:
         access: "isAnonymous()"
       - pattern: "${micronaut.server.context-path:}/swagger/**"
         access: "isAnonymous()"
+    oauth2:
+      login-uri: "${micronaut.server.context-path:}/oauth/login{/provider}"
+      callback-uri: "${micronaut.server.context-path:}/oauth/callback{/provider}"
   caches:
     kafka-wrapper:
       record-stats: true
@@ -117,7 +120,6 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-    skip-consumer-groups: false
 
   topic-data:
     sort: OLDEST

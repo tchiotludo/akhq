@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import Joi from 'joi-browser';
 import _ from 'lodash';
@@ -12,8 +12,9 @@ import Dropdown from 'react-bootstrap/Dropdown';
 
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import Root from '../Root';
 
-class Form extends Component {
+class Form extends Root {
   state = {
     formData: {},
     errors: {}

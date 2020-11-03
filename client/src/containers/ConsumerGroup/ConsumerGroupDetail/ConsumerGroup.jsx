@@ -37,12 +37,6 @@ class ConsumerGroup extends Component {
     }
   }
 
-  selectTab = tab => {
-    const { consumerGroupId, clusterId } = this.state;
-    this.setState({ selectedTab: tab });
-    this.props.history.push(`/ui/${clusterId}/group/${consumerGroupId}/${tab}`);
-  };
-
   tabClassName = tab => {
     const { selectedTab } = this.state;
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
@@ -98,32 +92,26 @@ class ConsumerGroup extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/group/${consumerGroupId}/topics`}
                 className={this.tabClassName('topics')}
-                onClick={() => this.selectTab('topics')}
-                role="tab"
               >
                 Topics
-              </div>
+              </Link>
             </li>
             <li className="nav-item">
-              <div
+              <Link to={`/ui/${clusterId}/group/${consumerGroupId}/members`}
                 className={this.tabClassName('members')}
-                onClick={() => this.selectTab('members')}
-                role="tab"
               >
                 Members
-              </div>
+              </Link>
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <div
+                <Link to={`/ui/${clusterId}/group/${consumerGroupId}/acls`}
                   className={this.tabClassName('acls')}
-                  onClick={() => this.selectTab('acls')}
-                  role="tab"
                 >
                   ACLS
-                </div>
+                </Link>
               </li>
             )}
           </ul>

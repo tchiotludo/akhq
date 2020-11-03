@@ -6,7 +6,6 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
@@ -14,16 +13,35 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
-import org.akhq.models.*;
+import org.akhq.models.AccessControl;
+import org.akhq.models.Config;
+import org.akhq.models.ConsumerGroup;
+import org.akhq.models.LogDir;
+import org.akhq.models.Partition;
+import org.akhq.models.Record;
+import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
-import org.akhq.repositories.*;
+import org.akhq.repositories.AccessControlListRepository;
+import org.akhq.repositories.ConfigRepository;
+import org.akhq.repositories.ConsumerGroupRepository;
+import org.akhq.repositories.RecordRepository;
+import org.akhq.repositories.TopicRepository;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
@@ -31,12 +49,6 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
@@ -67,8 +79,6 @@ public class TopicController extends AbstractController {
     private Integer retentionPeriod;
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
-    @Value("${akhq.topic.skip-consumer-groups}")
-    protected Boolean skipConsumerGroups;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
@@ -88,8 +98,7 @@ public class TopicController extends AbstractController {
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
-            search,
-            skipConsumerGroups
+            search
         ));
     }
 
@@ -326,7 +335,7 @@ public class TopicController extends AbstractController {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
-            Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
+            offset - 1 < 0 ? Optional.empty() : Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
             Optional.of(partition),
             Optional.empty(),
             Optional.empty(),

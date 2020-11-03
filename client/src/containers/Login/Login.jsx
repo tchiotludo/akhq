@@ -3,7 +3,7 @@ import React from 'react';
 import logo from '../../images/logo.svg';
 import {uriAuths, uriCurrentUser, uriLogin, uriOidc} from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
-import { get, login } from '../../utils/api';
+import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
@@ -51,7 +51,7 @@ class Login extends Form {
   }
 
   async getData() {
-    const res = await get(uriCurrentUser());
+    const res = await this.getApi(uriCurrentUser());
     const currentUserData = res.data;
 
     if (currentUserData.logged) {
@@ -70,7 +70,7 @@ class Login extends Form {
 
   async componentDidMount() {
     try {
-      const response = await get(uriAuths());
+      const response = await this.getApi(uriAuths());
       if (response.status === 200) {
         const {loginEnabled, ...config} = response.data;
         if (!loginEnabled) {
