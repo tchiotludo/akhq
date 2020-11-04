@@ -661,6 +661,7 @@ Documentation on Confluent 5.5 and schema references can be found [here](https:/
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
 * [BARMER](https://www.barmer.de/)
+* [TVG](https://www.tvg.com)
 
 
 ## Credits
