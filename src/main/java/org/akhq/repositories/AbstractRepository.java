@@ -19,13 +19,13 @@ abstract public class AbstractRepository {
         return count == split.length;
     }
 
-    public static boolean isTopicMatchRegex(Optional<List<String>> regex, String topic) {
+    public static boolean isMatchRegex(Optional<List<String>> regex, String item) {
         if (regex.isEmpty() || regex.get().isEmpty()) {
             return true;
         }
 
         for (String strRegex : regex.get()) {
-            if (topic.matches(strRegex)) {
+            if (item.matches(strRegex)) {
                 return true;
             }
         }

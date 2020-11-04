@@ -120,7 +120,6 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-    skip-consumer-groups: false
 
   topic-data:
     sort: OLDEST

@@ -829,7 +829,7 @@ class TopicData extends Root {
                                 <span
                                     className="badge badge-primary clickable schema-value"
                                     onClick={() => {
-                                      this.redirectToSchema(obj.schema.key);
+                                      this.redirectToSchema(obj.schema.value);
                                     }}
                                 >
                           Value: {obj[col.accessor].value}

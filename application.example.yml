@@ -123,7 +123,6 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
-    skip-consumer-groups: false # Skip loading consumer group information when showing topics
 
   # Topic display data options (optional)
   topic-data:
@@ -164,6 +163,8 @@ akhq:
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test.*"
+          # Regexp to filter connect configs visible for group
+          connects-filter-regexp: "^test.*$"
       - name: topic-reader # Other group
         roles:
           - topic/read
