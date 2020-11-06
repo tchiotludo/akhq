@@ -142,7 +142,7 @@ class Form extends Root {
     );
   };
 
-  renderSelect = (name, label, items, onChange, selectClass, wrapperClass, rest) => {
+  renderSelect = (name, label, items, onChange, selectClass, wrapperClass, blankItem, rest) => {
     const { formData, errors } = this.state;
 
     return (
@@ -157,6 +157,7 @@ class Form extends Root {
         }}
         selectClass={selectClass}
         wrapperClass={wrapperClass}
+        blankItem={blankItem}
         {...rest}
       />
     );

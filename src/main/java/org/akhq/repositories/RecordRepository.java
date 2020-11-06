@@ -9,6 +9,7 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.controllers.TopicController;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -59,6 +60,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
+
+    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
+    protected int maxPollRecords;
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
@@ -721,41 +725,46 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    public void copy(Topic topic, String toClusterId, String toTopicName, RecordRepository.Options options) {
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+    public void copy(Topic topic, String toClusterId, String toTopicName, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options, Optional<Integer> copySize) {
+
+        KafkaConsumer<byte[], byte[]> consumer = copySize
+                .map(size -> (maxPollRecords > size )? this.kafkaModule.getConsumer(options.clusterId, new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, size); }}) :
+                                this.kafkaModule.getConsumer(options.clusterId)
+                    )
+                .orElse(this.kafkaModule.getConsumer(options.clusterId));
+
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
-        if (partitions.size() > 0) {
-            consumer.assign(partitions.keySet());
-            partitions.forEach(consumer::seek);
+        //Exclude partitions
+        Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
+                .filter(topicPartitionLongEntry -> offsets.stream().anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            if (log.isTraceEnabled()) {
-                partitions.forEach((topicPartition, first) ->
-                        log.trace(
-                                "Consume [topic: {}] [partition: {}] [start: {}]",
-                                topicPartition.topic(),
-                                topicPartition.partition(),
-                                first
-                        )
-                );
-            }
+        if (filteredPartitions.size() > 0) {
 
-            KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
-            ConsumerRecords<byte[], byte[]> records;
-            do {
-                records = this.poll(consumer);
-                for (ConsumerRecord<byte[], byte[]> record : records) {
-                    producer.send(new ProducerRecord<>(
-                            toTopicName,
-                            record.partition(),
-                            record.timestamp(),
-                            record.key(),
-                            record.value(),
-                            record.headers()
-                    ));
-                }
+            filteredPartitions.forEach((topicPartition, offset) -> {
+                consumer.assign(Collections.singletonList(topicPartition));
+                consumer.seek(topicPartition, offset);
+                KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+                ConsumerRecords<byte[], byte[]> records;
+                int recordsCopied = 0;
+                do {
+                    records = this.poll(consumer);
+                    for (ConsumerRecord<byte[], byte[]> record : records) {
+                        producer.send(new ProducerRecord<>(
+                                toTopicName,
+                                record.partition(),
+                                record.timestamp(),
+                                record.key(),
+                                record.value(),
+                                record.headers()
+                        ));
+                        recordsCopied++;
+                        if(copySize.isPresent() && copySize.get() <= recordsCopied) break;
+                    }
+                } while (records != null && !records.isEmpty() && (copySize.isEmpty() || copySize.get() > recordsCopied));
+            });
 
-            } while(records != null && !records.isEmpty());
         }
         consumer.close();
     }

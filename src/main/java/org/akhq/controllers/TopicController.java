@@ -14,6 +14,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.QueryValue;
 import io.micronaut.http.sse.Event;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +43,7 @@ import org.akhq.models.LogDir;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
+import org.akhq.models.TopicPartition;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.AccessControlListRepository;
 import org.akhq.repositories.ConfigRepository;
@@ -370,6 +372,23 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/offsets/start")
+    @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
+    public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+
+        return recordRepository.getOffsetForTime(
+                cluster,
+                topic.getPartitions()
+                        .stream()
+                        .map(r -> new TopicPartition(r.getTopic(), r.getId()))
+                        .collect(Collectors.toList()),
+                timestamp.orElse(Instant.now()).toEpochMilli()
+        );
+    }
+
+
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
@@ -379,6 +398,7 @@ public class TopicController extends AbstractController {
             String fromTopicName,
             String toCluster,
             String toTopicName,
+            @QueryValue Optional<Integer> copySize,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(fromCluster, fromTopicName);
@@ -392,19 +412,20 @@ public class TopicController extends AbstractController {
                     .map(offsetCopy ->
                             String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
                     .collect(Collectors.joining("_"));
-         }
 
-        RecordRepository.Options options = dataSearchOptions(
-                fromCluster,
-                fromTopicName,
-                Optional.ofNullable(StringUtils.isNotEmpty(offsetsList)? offsetsList : null),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty()
-        );
 
-        this.recordRepository.copy(topic, toCluster, toTopicName, options);
+            RecordRepository.Options options = dataSearchOptions(
+                    fromCluster,
+                    fromTopicName,
+                    Optional.ofNullable(StringUtils.isNotEmpty(offsetsList) ? offsetsList : null),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty()
+            );
+
+            this.recordRepository.copy(topic, toCluster, toTopicName, offsets, options, copySize);
+        }
 
         return HttpResponse.noContent();
     }
