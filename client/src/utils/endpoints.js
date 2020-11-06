@@ -100,8 +100,8 @@ export const uriTopicsOffsetsByTimestamp = (clusterId, topicId, timestamp) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/offsets/start?timestamp=${timestamp}`;
 };
 
-export const uriTopicsCopy = (fromClusterId, fromTopicId, toClusterId, toTopicId, nrToCopy) => {
-  return `${apiUrl}/${fromClusterId}/topic/${fromTopicId}/copy/${toClusterId}/topic/${toTopicId}${nrToCopy ? '?copySize=' + nrToCopy : '' }`;
+export const uriTopicsCopy = (fromClusterId, fromTopicId, toClusterId, toTopicId) => {
+  return `${apiUrl}/${fromClusterId}/topic/${fromTopicId}/copy/${toClusterId}/topic/${toTopicId}`;
 }
 
 

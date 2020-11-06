@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Dropdown from "react-bootstrap/Dropdown";
 import DatePicker from "../../../components/DatePicker";
 import moment from "moment";
+import Input from "../../../components/Form/Input";
 
 class TopicCopy extends Form {
   state = {
@@ -40,9 +41,9 @@ class TopicCopy extends Form {
 
     this.schema['clusterListView'] = Joi.string().required();
     this.schema['topicListView'] = Joi.string().required();
-    this.schema['nrToCopy'] = Joi.string().allow('');
+    this.schema['lastMessagesNr'] = Joi.string().allow('');
 
-    this.setState({ clusterId, topicId, formData: { clusterListView: clusterId, nrToCopy: ''} }, () => {
+    this.setState({ clusterId, topicId, formData: { clusterListView: clusterId, lastMessagesNr: ''} }, () => {
       this.setupInitialData(clusterId, topicId);
     });
   }
@@ -59,7 +60,6 @@ class TopicCopy extends Form {
 
     Promise.all(requests)
         .then(data => {
-          console.log(data);
           data[2].data.partitions.forEach(partition => {
                 const name = `partition-${partition.id}`;
                 const checkName = `check-${name}`;
@@ -107,17 +107,6 @@ class TopicCopy extends Form {
     this
         .getApi(uriTopicsInfo(formData.clusterListView, formData.topicListView))
         .then(res => {
-          //   res.data.partitions.forEach(partition => {
-          //   const name = `partition-${partition.id}`;
-          //   this.schema[name] = Joi.number()
-          //       .min(partition.firstOffset || 0)
-          //       .max(partition.lastOffset || 0)
-          //       .required()
-          //       .label(`Partition ${partition.id} offset`);
-          //
-          //   formData[name] = partition.firstOffset || '0';
-          // })
-
           this.setState(
               { selectedTopic: res.data, loading: false }
           );
@@ -155,19 +144,11 @@ class TopicCopy extends Form {
 
   async doSubmit() {
     const { clusterId, topicId, formData, checked } = this.state;
-
-    console.log(formData);
-      console.log(checked);
-
-    console.log(this.createSubmitBody(formData, checked));
-
     await this.postApi(
-        uriTopicsCopy(clusterId, topicId, formData.clusterListView, formData.topicListView, formData.nrToCopy),
+        uriTopicsCopy(clusterId, topicId, formData.clusterListView, formData.topicListView),
         this.createSubmitBody(formData, checked)
     );
-
-   // this.setState({ state: this.state });
-    toast.success(`Copied topic '${topicId}' successfully.`);
+    toast.success(`Copied to topic '${formData.topicListView}' successfully.`);
   }
 
   checkedTopicOffset = (event) => {
@@ -264,6 +245,19 @@ class TopicCopy extends Form {
     this.setState({ formData });
   };
 
+  resetToCalculatedOffsets = ({ currentTarget: input }) => {
+    const { selectedTopic, formData } = this.state;
+
+    selectedTopic.partitions.forEach(partition => {
+        const name = `partition-${partition.id}`;
+        const calculatedOffset = (partition.lastOffset || 0) - input.value;
+        formData[name] = (!calculatedOffset || calculatedOffset < 0 )? '0' : calculatedOffset;
+    });
+
+    formData['lastMessagesNr'] = input.value;
+    this.setState({ formData });
+  };
+
   async getTopicOffset() {
     const { clusterId, topicId, timestamp} = this.state;
     const momentValue = moment(timestamp);
@@ -302,12 +296,11 @@ class TopicCopy extends Form {
   };
 
   renderResetButton = () => {
-    const { timestamp, formData } = this.state;
+    const { timestamp, formData} = this.state;
     const { loading } = this.props.history.location;
 
     return (
         <span>
-
 
     <div
         className="btn btn-secondary"
@@ -373,19 +366,22 @@ class TopicCopy extends Form {
         style={{ marginRight: '0.5rem', padding: 0 }}
     >
       <Dropdown>
-        <Dropdown.Toggle>Copy {formData['nrToCopy'] == ''? 'All': formData['nrToCopy']} messages per partition</Dropdown.Toggle>
+        <Dropdown.Toggle>Last x messages per partition</Dropdown.Toggle>
           {!loading && (
               <Dropdown.Menu>
                   <div>
-                      {this.renderInput(
-                          'nrToCopy',
-                          '',
-                          'Number of messages',
-                          'number',
-                          true,
-                          '',
-                          'input-nr-messages'
-                      )}
+                      <Input
+                          type='number'
+                          name='lastMessagesNr'
+                          id='lastMessagesNr'
+                          value={formData['lastMessagesNr'] || ''}
+                          label=''
+                          placeholder='Last x messages'
+                          onChange={this.resetToCalculatedOffsets}
+                          noStyle=''
+                          wrapperClass='input-nr-messages'
+                          inputClass=''
+                      />
                   </div>
               </Dropdown.Menu>
           )}

@@ -398,7 +398,6 @@ public class TopicController extends AbstractController {
             String fromTopicName,
             String toCluster,
             String toTopicName,
-            @QueryValue Optional<Integer> copySize,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(fromCluster, fromTopicName);
@@ -421,7 +420,7 @@ public class TopicController extends AbstractController {
                     Optional.empty()
             );
 
-            this.recordRepository.copy(topic, toCluster, toTopicName, offsets, options, copySize);
+            this.recordRepository.copy(topic, toCluster, toTopicName, offsets, options);
         }
 
         return HttpResponse.noContent();

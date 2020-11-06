@@ -725,14 +725,10 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    public void copy(Topic topic, String toClusterId, String toTopicName, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options, Optional<Integer> copySize) {
+    public void copy(Topic topic, String toClusterId, String toTopicName, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
 
-        KafkaConsumer<byte[], byte[]> consumer = copySize
-                .map(size -> (maxPollRecords > size )?
-                        this.kafkaModule.getConsumer(options.clusterId, new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, size); }}) :
-                        this.kafkaModule.getConsumer(options.clusterId)
-                    )
-                .orElse(this.kafkaModule.getConsumer(options.clusterId));
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId,
+                new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500); }});
 
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
@@ -742,29 +738,36 @@ public class RecordRepository extends AbstractRepository {
 
         if (filteredPartitions.size() > 0) {
 
-            filteredPartitions.forEach((topicPartition, offset) -> {
-                consumer.assign(Collections.singletonList(topicPartition));
-                consumer.seek(topicPartition, offset);
-                KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
-                ConsumerRecords<byte[], byte[]> records;
-                int recordsCopied = 0;
-                do {
-                    records = this.poll(consumer);
-                    for (ConsumerRecord<byte[], byte[]> record : records) {
-                        producer.send(new ProducerRecord<>(
-                                toTopicName,
-                                record.partition(),
-                                record.timestamp(),
-                                record.key(),
-                                record.value(),
-                                record.headers()
-                        ));
-                        recordsCopied++;
-                        if(copySize.isPresent() && copySize.get() <= recordsCopied) break;
-                    }
-                } while (records != null && !records.isEmpty() && (copySize.isEmpty() || copySize.get() > recordsCopied));
-            });
+            consumer.assign(filteredPartitions.keySet());
+            filteredPartitions.forEach(consumer::seek);
 
+            if (log.isTraceEnabled()) {
+                filteredPartitions.forEach((topicPartition, first) ->
+                        log.trace(
+                                "Consume [topic: {}] [partition: {}] [start: {}]",
+                                topicPartition.topic(),
+                                topicPartition.partition(),
+                                first
+                        )
+                );
+            }
+
+            KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+            ConsumerRecords<byte[], byte[]> records;
+            do {
+                records = this.poll(consumer);
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    producer.send(new ProducerRecord<>(
+                            toTopicName,
+                            record.partition(),
+                            record.timestamp(),
+                            record.key(),
+                            record.value(),
+                            record.headers()
+                    ));
+                }
+
+            } while(records != null && !records.isEmpty());
         }
         consumer.close();
     }
