@@ -403,16 +403,13 @@ public class TopicController extends AbstractController {
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(fromCluster, fromTopicName);
 
-        String offsetsList = null;
-
         if (CollectionUtils.isNotEmpty(offsets)) {
             // after wait for next offset, so add - 1 to allow to have the current offset
-            offsetsList = offsets.stream()
+            String offsetsList = offsets.stream()
                     .filter(offsetCopy -> offsetCopy.offset - 1 >= 0)
                     .map(offsetCopy ->
                             String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
                     .collect(Collectors.joining("_"));
-
 
             RecordRepository.Options options = dataSearchOptions(
                     fromCluster,

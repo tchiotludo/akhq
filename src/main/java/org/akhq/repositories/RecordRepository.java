@@ -728,14 +728,14 @@ public class RecordRepository extends AbstractRepository {
     public void copy(Topic topic, String toClusterId, String toTopicName, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options, Optional<Integer> copySize) {
 
         KafkaConsumer<byte[], byte[]> consumer = copySize
-                .map(size -> (maxPollRecords > size )? this.kafkaModule.getConsumer(options.clusterId, new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, size); }}) :
-                                this.kafkaModule.getConsumer(options.clusterId)
+                .map(size -> (maxPollRecords > size )?
+                        this.kafkaModule.getConsumer(options.clusterId, new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, size); }}) :
+                        this.kafkaModule.getConsumer(options.clusterId)
                     )
                 .orElse(this.kafkaModule.getConsumer(options.clusterId));
 
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
-        //Exclude partitions
         Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
                 .filter(topicPartitionLongEntry -> offsets.stream().anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
