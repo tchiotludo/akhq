@@ -45,9 +45,8 @@ class TopicProduce extends Form {
 
   schema = {
     partition: Joi.number()
-      .min(0)
-      .label('Partition')
-      .required(),
+      .allow(null)
+      .label('Partition'),
     key: Joi.string()
       .allow('')
       .label('Key'),
@@ -69,6 +68,7 @@ class TopicProduce extends Form {
     let partitions = response.data.map(item => {
       return { name: item.id, _id: Number(item.id) };
     });
+    partitions.unshift({name: "auto assign", _id: null});
     this.setState({
       partitions,
       formData: {
