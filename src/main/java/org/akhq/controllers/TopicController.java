@@ -392,7 +392,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
-    public HttpResponse<?> copy(
+    public RecordRepository.CopyResult copy(
             HttpRequest<?> request,
             String fromCluster,
             String fromTopicName,
@@ -400,30 +400,38 @@ public class TopicController extends AbstractController {
             String toTopicName,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
-        Topic topic = this.topicRepository.findByName(fromCluster, fromTopicName);
+        Topic fromTopic = this.topicRepository.findByName(fromCluster, fromTopicName);
+        Topic toTopic = this.topicRepository.findByName(toCluster, toTopicName);
 
-        if (CollectionUtils.isNotEmpty(offsets)) {
-            // after wait for next offset, so add - 1 to allow to have the current offset
-            String offsetsList = offsets.stream()
-                    .filter(offsetCopy -> offsetCopy.offset - 1 >= 0)
-                    .map(offsetCopy ->
-                            String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
-                    .collect(Collectors.joining("_"));
-
-            RecordRepository.Options options = dataSearchOptions(
-                    fromCluster,
-                    fromTopicName,
-                    Optional.ofNullable(StringUtils.isNotEmpty(offsetsList) ? offsetsList : null),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty()
-            );
-
-            this.recordRepository.copy(topic, toCluster, toTopicName, offsets, options);
+        if (!CollectionUtils.isNotEmpty(offsets)) {
+            throw new IllegalArgumentException("Empty collections");
         }
 
-        return HttpResponse.noContent();
+        // after wait for next offset, so add - 1 to allow to have the current offset
+        String offsetsList = offsets.stream()
+            .filter(offsetCopy -> offsetCopy.offset - 1 >= 0)
+            .map(offsetCopy ->
+                String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
+            .collect(Collectors.joining("_"));
+
+        RecordRepository.Options options = dataSearchOptions(
+            fromCluster,
+            fromTopicName,
+            Optional.ofNullable(StringUtils.isNotEmpty(offsetsList) ? offsetsList : null),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        return this.recordRepository.copy(fromTopic, toCluster, toTopic, offsets, options);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class CopyResponse {
+        int records;
     }
 
     private RecordRepository.Options dataSearchOptions(

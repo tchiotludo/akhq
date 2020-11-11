@@ -144,11 +144,12 @@ class TopicCopy extends Form {
 
   async doSubmit() {
     const { clusterId, topicId, formData, checked } = this.state;
-    await this.postApi(
+    const result = await this.postApi(
         uriTopicsCopy(clusterId, topicId, formData.clusterListView, formData.topicListView),
         this.createSubmitBody(formData, checked)
     );
-    toast.success(`Copied to topic '${formData.topicListView}' successfully.`);
+
+    toast.success(`Copied ${result.data.records} records to topic '${formData.topicListView}' successfully.`);
   }
 
   checkedTopicOffset = (event) => {

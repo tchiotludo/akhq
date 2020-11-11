@@ -725,51 +725,73 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    public void copy(Topic topic, String toClusterId, String toTopicName, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
+    public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
+            options.clusterId,
+            new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+            }}
+        );
 
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId,
-                new Properties() {{ put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500); }});
-
-        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(fromTopic, options, consumer);
 
         Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
-                .filter(topicPartitionLongEntry -> offsets.stream().anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .filter(topicPartitionLongEntry -> offsets.stream()
+                .anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        int counter = 0;
 
         if (filteredPartitions.size() > 0) {
-
             consumer.assign(filteredPartitions.keySet());
             filteredPartitions.forEach(consumer::seek);
 
             if (log.isTraceEnabled()) {
                 filteredPartitions.forEach((topicPartition, first) ->
-                        log.trace(
-                                "Consume [topic: {}] [partition: {}] [start: {}]",
-                                topicPartition.topic(),
-                                topicPartition.partition(),
-                                first
-                        )
+                    log.trace(
+                        "Consume [topic: {}] [partition: {}] [start: {}]",
+                        topicPartition.topic(),
+                        topicPartition.partition(),
+                        first
+                    )
                 );
             }
+
+            boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
 
             KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
             ConsumerRecords<byte[], byte[]> records;
             do {
                 records = this.poll(consumer);
                 for (ConsumerRecord<byte[], byte[]> record : records) {
+                    System.out.println(record.offset() + "-" + record.partition());
+
+                    counter++;
                     producer.send(new ProducerRecord<>(
-                            toTopicName,
-                            record.partition(),
-                            record.timestamp(),
-                            record.key(),
-                            record.value(),
-                            record.headers()
+                        toTopic.getName(),
+                        samePartition ? record.partition() : null,
+                        record.timestamp(),
+                        record.key(),
+                        record.value(),
+                        record.headers()
                     ));
                 }
 
-            } while(records != null && !records.isEmpty());
+            } while (!records.isEmpty());
+
+            producer.flush();
         }
         consumer.close();
+
+        return new CopyResult(counter);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @AllArgsConstructor
+    @Getter
+    public static class CopyResult {
+        int records;
     }
 
     @ToString
