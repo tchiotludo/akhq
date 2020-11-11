@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
 import org.akhq.utils.AvroToJsonSerializer;
+import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -34,6 +35,7 @@ public class Record {
     private Map<String, String> headers = new HashMap<>();
     @JsonIgnore
     private KafkaAvroDeserializer kafkaAvroDeserializer;
+    private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
     private byte[] bytesKey;
@@ -59,7 +61,8 @@ public class Record {
         this.headers = headers;
     }
 
-    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer, byte[] bytesValue) {
+    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer,
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -74,11 +77,12 @@ public class Record {
         }
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
+        this.protobufToJsonDeserializer = protobufToJsonDeserializer;
     }
 
     public String getKey() {
         if (this.key == null) {
-            this.key = convertToString(bytesKey, keySchemaId);
+            this.key = convertToString(bytesKey, keySchemaId, true);
         }
 
         return this.key;
@@ -95,16 +99,16 @@ public class Record {
 
     public String getValue() {
         if (this.value == null) {
-            this.value = convertToString(bytesValue, valueSchemaId);
+            this.value = convertToString(bytesValue, valueSchemaId, false);
         }
 
         return this.value;
     }
 
-    private String convertToString(byte[] payload, Integer keySchemaId) {
+    private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
         if (payload == null) {
             return null;
-        } else  if (keySchemaId != null) {
+        } else if (schemaId != null) {
             try {
                 GenericRecord record = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
                 return AvroToJsonSerializer.toJson(record);
@@ -112,6 +116,12 @@ public class Record {
                 return new String(payload);
             }
         } else {
+            if (protobufToJsonDeserializer != null) {
+                String record = protobufToJsonDeserializer.deserialize(topic, payload, isKey);
+                if (record != null) {
+                    return record;
+                }
+            }
             return new String(payload);
         }
     }
