@@ -9,6 +9,7 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.controllers.TopicController;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -16,6 +17,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaFuture;
@@ -28,6 +30,7 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
+
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -57,6 +60,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
+
+    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
+    protected int maxPollRecords;
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
@@ -717,6 +723,75 @@ public class RecordRepository extends AbstractRepository {
             state.tailEvent = tailEvent;
             return state;
         });
+    }
+
+    public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
+            options.clusterId,
+            new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+            }}
+        );
+
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(fromTopic, options, consumer);
+
+        Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
+            .filter(topicPartitionLongEntry -> offsets.stream()
+                .anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        int counter = 0;
+
+        if (filteredPartitions.size() > 0) {
+            consumer.assign(filteredPartitions.keySet());
+            filteredPartitions.forEach(consumer::seek);
+
+            if (log.isTraceEnabled()) {
+                filteredPartitions.forEach((topicPartition, first) ->
+                    log.trace(
+                        "Consume [topic: {}] [partition: {}] [start: {}]",
+                        topicPartition.topic(),
+                        topicPartition.partition(),
+                        first
+                    )
+                );
+            }
+
+            boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
+
+            KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+            ConsumerRecords<byte[], byte[]> records;
+            do {
+                records = this.poll(consumer);
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    System.out.println(record.offset() + "-" + record.partition());
+
+                    counter++;
+                    producer.send(new ProducerRecord<>(
+                        toTopic.getName(),
+                        samePartition ? record.partition() : null,
+                        record.timestamp(),
+                        record.key(),
+                        record.value(),
+                        record.headers()
+                    ));
+                }
+
+            } while (!records.isEmpty());
+
+            producer.flush();
+        }
+        consumer.close();
+
+        return new CopyResult(counter);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @AllArgsConstructor
+    @Getter
+    public static class CopyResult {
+        int records;
     }
 
     @ToString

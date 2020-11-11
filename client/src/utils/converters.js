@@ -139,4 +139,22 @@ export function organizeRoles(roles) {
   return JSON.stringify(newRoles);
 }
 
+export function transformListObjsToViewOptions(list, id, name) {
+  return list.map(elem => {
+    return {
+      _id: elem[id],
+      name: elem[name]
+    };
+  });
+}
+
+export function transformStringArrayToViewOptions(list) {
+  return list.map(elem => {
+    return {
+      _id: elem,
+      name: elem
+    };
+  });
+}
+
 export default { showTime, showBytes };
