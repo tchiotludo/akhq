@@ -183,12 +183,6 @@ class TopicList extends Root {
         internal: topic.internal
       }
       collapseConsumerGroups[topic.name] = false;
-
-      this.getApi(uriTopicLastRecord(selectedCluster, topic.name))
-          .then(value => {
-            tableTopics[topic.name].lastWrite = value.data.timestamp || ''
-            setState()
-          })
     });
     this.setState({collapseConsumerGroups});
     setState()
@@ -202,6 +196,17 @@ class TopicList extends Root {
                   || (consumerGroup.topics && consumerGroup.topics.includes(topic.name))): [];
             });
             setState();
+        });
+
+    console.log(encodeURIComponent(topicsName))
+    this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
+        .then(value => {
+          topics.forEach((topic) => {
+            console.log(topic.name)
+            console.log(tableTopics[topic.name]);
+            tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
+          });
+          setState();
         });
   }
 

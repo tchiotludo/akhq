@@ -290,8 +290,8 @@ export const uriTopicDataEmpty = (clusterId, topicName) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
 }
 
-export const uriTopicLastRecord = (clusterId, topicName) => {
-  return `${apiUrl}/${clusterId}/topic/${topicName}/last-record`;
+export const uriTopicLastRecord = (clusterId, topicList) => {
+  return `${apiUrl}/${clusterId}/topic/last-record?topics=${topicList}`;
 }
 
 export default {

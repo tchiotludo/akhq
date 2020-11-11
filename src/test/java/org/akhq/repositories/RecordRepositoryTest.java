@@ -12,10 +12,7 @@ import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -218,8 +215,8 @@ public class RecordRepositoryTest extends AbstractTest {
 
     @Test
     void lastRecordTest() throws ExecutionException, InterruptedException {
-        Optional<Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
-        assertTrue(record.isPresent());;
+        Map<String, Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, Collections.singletonList(KafkaTestCluster.TOPIC_RANDOM));
+        assertTrue(record.containsKey(KafkaTestCluster.TOPIC_RANDOM));
     }
 
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {

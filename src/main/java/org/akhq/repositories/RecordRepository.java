@@ -28,6 +28,7 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,39 +62,43 @@ public class RecordRepository extends AbstractRepository {
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
 
-    public Optional<Record> getLastRecord(String clusterId, String topicName) throws ExecutionException, InterruptedException {
-        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-        Topic topic = topicRepository.findByName(clusterId, topicName);
+    public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
+        List<Topic> topics = topicRepository.findByName(clusterId, topicsName);
 
-        List<TopicPartition> topicPartitions = topic
-            .getPartitions()
+        List<TopicPartition> topicPartitions = topics
             .stream()
+            .flatMap(topic -> topic.getPartitions().stream())
             .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
             .collect(Collectors.toList());
 
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, topicPartitions.size() * 3);
+        }});
         consumer.assign(topicPartitions);
-        Optional<ConsumerRecord<byte[], byte[]>> latestRecord =
-            getLatestRecordFromOffsetDifference(consumer, 1)
-                .or(() -> getLatestRecordFromOffsetDifference(consumer, 2));
 
-        consumer.close();
-        return latestRecord.map(record -> newRecord(record, clusterId));
-    }
-
-    private Optional<ConsumerRecord<byte[], byte[]>> getLatestRecordFromOffsetDifference(KafkaConsumer<byte[], byte[]> consumer, int offsetDifference) {
-        AtomicReference<ConsumerRecord<byte[], byte[]>> latestRecord = new AtomicReference<>();
         consumer
             .endOffsets(consumer.assignment())
-            .forEach((topicPartition, offset) -> consumer.seek(topicPartition, Math.max(0, offset - offsetDifference)));
+            .forEach((topicPartition, offset) -> {
+                consumer.seek(topicPartition, Math.max(0, offset - 2));
+            });
 
-        AtomicLong maxTimestamp = new AtomicLong();
-        this.poll(consumer).forEach(record -> {
-            if (record.timestamp() > maxTimestamp.get()) {
-                maxTimestamp.set(record.timestamp());
-                latestRecord.set(record);
-            }
-        });
-        return Optional.ofNullable(latestRecord.get());
+        ConcurrentHashMap<String, Record> records = new ConcurrentHashMap<>();
+
+        this.poll(consumer)
+            .forEach(record -> {
+                if (!records.containsKey(record.topic())) {
+                    records.put(record.topic(), newRecord(record, clusterId));
+                } else {
+                    Record current = records.get(record.topic());
+                    if (current.getTimestamp().toInstant().toEpochMilli() < record.timestamp()) {
+                        records.put(record.topic(), newRecord(record, clusterId));
+                    }
+                }
+
+            });
+
+        consumer.close();
+        return records;
     }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
@@ -414,9 +419,10 @@ public class RecordRepository extends AbstractRepository {
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
         return new Record(
-                record,
-                this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
-                avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId))
+            record,
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId))
         );
     }
 
