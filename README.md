@@ -696,6 +696,7 @@ Documentation on Confluent 5.5 and schema references can be found [here](https:/
 * [Pipedrive](https://www.pipedrive.com)
 * [BARMER](https://www.barmer.de/)
 * [TVG](https://www.tvg.com)
+* [Depop](https://www.depop.com)
 
 
 ## Credits
