@@ -102,7 +102,7 @@ akhq:
       properties:
         max.poll.records: 50
         isolation.level: read_committed
-        group.id: Akhq
+        # group.id: Akhq
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
