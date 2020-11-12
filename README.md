@@ -437,6 +437,29 @@ managerDn: ''
 managerPassword: ''
 ```
 
+In Case your LDAP groups do not use the default UID for group membership, you can solve this using
+
+```yaml
+micronaut:
+  security:
+    ldap:
+      default:
+        search:
+          base: "OU=UserOU,dc=example,dc=com"
+          attributes:
+            - "cn"
+        groups:
+          enabled: true
+          base: "OU=GroupsOU,dc=example,dc=com"
+          filter: "member={0}"
+```
+Replace 
+```yaml
+attributes:
+  - "cn"
+```
+with your group membership attribute
+
 Debuging ldap connection can be done with
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
