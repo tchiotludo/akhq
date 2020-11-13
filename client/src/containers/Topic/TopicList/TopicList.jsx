@@ -271,6 +271,16 @@ class TopicList extends Root {
       {colName: 'Replications', colSpan: 2},
       {colName: 'Consumer Groups', colSpan: 1}
     ];
+    let onDetailsFunction = undefined;
+
+    const actions = [constants.TABLE_CONFIG];
+    if(roles.topic && roles.topic['topic/data/read']) {
+      actions.push(constants.TABLE_DETAILS);
+      onDetailsFunction = (id) => `/ui/${selectedCluster}/topic/${id}/data`;
+    }
+    if(roles.topic && roles.topic['topic/delete']) {
+      actions.push(constants.TABLE_DELETE);
+    }
 
     return (
       <div>
@@ -406,13 +416,9 @@ class TopicList extends Root {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={(id) => `/ui/${selectedCluster}/topic/${id}/data`}
+          onDetails={onDetailsFunction}
           onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
-          actions={
-            roles.topic && roles.topic['topic/delete']
-              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]
-              : [constants.TABLE_DETAILS, constants.TABLE_CONFIG]
-          }
+          actions={actions}
         />
 
         {roles.topic['topic/insert'] && (
