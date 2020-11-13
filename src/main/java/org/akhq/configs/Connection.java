@@ -17,6 +17,7 @@ public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
     ProtobufDeserializationTopicsMapping deserialization;
+    Options options;
 
     public Connection(@Parameter String name) {
         super(name);
@@ -38,6 +39,13 @@ public class Connection extends AbstractProperties {
     @ConfigurationProperties("deserialization.protobuf")
     public static class ProtobufDeserializationTopicsMapping {
         List<TopicsMapping> topicsMapping = new ArrayList<>();
+    }
+
+    @Getter
+    @Data
+    @ConfigurationProperties("options")
+    public static class Options {
+        Boolean skipConsumerGroups;
     }
 }
 

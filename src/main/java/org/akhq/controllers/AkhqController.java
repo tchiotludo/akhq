@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -39,6 +40,13 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private Oidc oidc;
+
+    @Value("${akhq.topic.default-view:HIDE_INTERNAL}")
+    private String topicDefaultView;
+    @Value("${akhq.topic-data.sort:OLDEST}")
+    private String topicDataSort;
+    @Value("${akhq.topic.skip-consumer-groups:false}")
+    private boolean skipConsumerGroups;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -146,6 +154,19 @@ public class AkhqController extends AbstractController {
             .body(doc);
     }
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("api/{cluster}/ui-options")
+    @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
+    public UIOptions options(String cluster) {
+        Connection.Options options = this.connections.stream().filter(connection -> cluster.equals(connection.getName()))
+                .map(connection -> connection.getOptions())
+                .findAny()
+                .orElse( new Connection.Options());
+
+        return new UIOptions(this.topicDefaultView, this.topicDataSort,
+                (options.getSkipConsumerGroups() != null)? options.getSkipConsumerGroups() : this.skipConsumerGroups);
+    }
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
@@ -181,5 +202,14 @@ public class AkhqController extends AbstractController {
         private String id;
         private boolean registry;
         private List<String> connects;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class UIOptions {
+        private String topicDefaultView;
+        private String topicDataSort;
+        private boolean skipConsumerGroups;
     }
 }
