@@ -41,6 +41,9 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | indent 8 }}
       {{- end }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- range $key, $value := .Values.initContainers }}

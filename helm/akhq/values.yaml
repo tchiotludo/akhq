@@ -53,6 +53,9 @@ extraVolumes: []
 # Any extra volume mounts to define for the akhq container
 extraVolumeMounts: []
 
+# Specify ServiceAccount for pod
+serviceAccountName: null
+
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
 #   create-keystore: 
