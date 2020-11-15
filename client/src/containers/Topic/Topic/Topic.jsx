@@ -49,7 +49,7 @@ class Topic extends Root {
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'partitions',
+        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
       },
       () => {
