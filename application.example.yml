@@ -94,7 +94,11 @@ akhq:
               key-message-type: "Row"
               value-message-type: "Envelope"
       options:
-        skip-consumer-groups: true
+        topic:
+          default-view: ALL
+          skip-consumer-groups: false
+        topic-data:
+          sort: NEWEST
 
     my-cluster-ssl:
       properties:

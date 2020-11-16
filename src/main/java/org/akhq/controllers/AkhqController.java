@@ -22,6 +22,7 @@ import org.akhq.modules.HasAnyPermission;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -41,12 +42,8 @@ public class AkhqController extends AbstractController {
     @Inject
     private Oidc oidc;
 
-    @Value("${akhq.topic.default-view:HIDE_INTERNAL}")
-    private String topicDefaultView;
-    @Value("${akhq.topic-data.sort:OLDEST}")
-    private String topicDataSort;
-    @Value("${akhq.topic.skip-consumer-groups:false}")
-    private boolean skipConsumerGroups;
+    @Inject
+    private UIOptions uIOptions;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -157,14 +154,11 @@ public class AkhqController extends AbstractController {
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/{cluster}/ui-options")
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
-    public UIOptions options(String cluster) {
-        Connection.Options options = this.connections.stream().filter(connection -> cluster.equals(connection.getName()))
-                .map(connection -> connection.getOptions())
+    public Connection.Options options(String cluster) {
+        return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
+                .map(conn -> conn.mergeOptions(this.uIOptions) )
                 .findAny()
-                .orElse( new Connection.Options());
-
-        return new UIOptions(this.topicDefaultView, this.topicDataSort,
-                (options.getSkipConsumerGroups() != null)? options.getSkipConsumerGroups() : this.skipConsumerGroups);
+                .orElseThrow(() -> new RuntimeException("No cluster found"));
     }
 
     @AllArgsConstructor
@@ -204,12 +198,4 @@ public class AkhqController extends AbstractController {
         private List<String> connects;
     }
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
-    public static class UIOptions {
-        private String topicDefaultView;
-        private String topicDataSort;
-        private boolean skipConsumerGroups;
-    }
 }
