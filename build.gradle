@@ -84,7 +84,7 @@ dependencies {
     // micronaut
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
-    annotationProcessor 'io.micronaut.configuration:micronaut-openapi:1.5.2'
+    annotationProcessor 'io.micronaut.openapi:micronaut-openapi'
     implementation "io.micronaut:micronaut-inject"
     implementation "io.micronaut:micronaut-validation"
     implementation "io.micronaut:micronaut-runtime"

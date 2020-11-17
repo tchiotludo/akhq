@@ -16,7 +16,10 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.QueryValue;
 import io.micronaut.http.sse.Event;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
+import io.reactivex.schedulers.Schedulers;
 import io.swagger.v3.oas.annotations.Operation;
 import java.time.Instant;
 import java.util.Base64;
@@ -305,6 +308,7 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @ExecuteOn(TaskExecutors.IO)
     @Get(value = "api/{cluster}/topic/{topicName}/data/search/{search}", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
     public Publisher<Event<SearchRecord>> sse(
@@ -315,7 +319,7 @@ public class TopicController extends AbstractController {
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
         Optional<String> search
-    ) throws ExecutionException, InterruptedException {
+    ) {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
@@ -328,6 +332,7 @@ public class TopicController extends AbstractController {
 
         return recordRepository
             .search(cluster, options)
+            .observeOn(Schedulers.io())
             .map(event -> {
                 SearchRecord searchRecord = new SearchRecord(
                     event.getData().getPercent(),

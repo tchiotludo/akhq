@@ -198,12 +198,9 @@ class TopicList extends Root {
             setState();
         });
 
-    console.log(encodeURIComponent(topicsName))
     this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
         .then(value => {
           topics.forEach((topic) => {
-            console.log(topic.name)
-            console.log(tableTopics[topic.name]);
             tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
           });
           setState();

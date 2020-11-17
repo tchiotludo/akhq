@@ -540,36 +540,44 @@ public class RecordRepository extends AbstractRepository {
         )).get();
     }
 
-    public Flowable<Event<SearchEvent>> search(String clusterId, Options options) throws ExecutionException, InterruptedException {
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-        Topic topic = topicRepository.findByName(clusterId, options.topic);
-        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
-
+    public Flowable<Event<SearchEvent>> search(String clusterId, Options options) {
         AtomicInteger matchesCount = new AtomicInteger();
 
-        if (partitions.size() == 0) {
-            return Flowable.just(new SearchEvent(topic).end());
-        }
+        return Flowable.generate(() -> {
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+            Topic topic = topicRepository.findByName(clusterId, options.topic);
+            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
-        consumer.assign(partitions.keySet());
-        partitions.forEach(consumer::seek);
+            if (partitions.size() == 0) {
+                return new SearchState(consumer, null);
+            }
 
-        partitions.forEach((topicPartition, first) ->
-            log.trace(
-                "Search [topic: {}] [partition: {}] [start: {}]",
-                topicPartition.topic(),
-                topicPartition.partition(),
-                first
-            )
-        );
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
 
-        return Flowable.generate(() -> new SearchEvent(topic), (searchEvent, emitter) -> {
+            partitions.forEach((topicPartition, first) ->
+                log.trace(
+                    "Search [topic: {}] [partition: {}] [start: {}]",
+                    topicPartition.topic(),
+                    topicPartition.partition(),
+                    first
+                )
+            );
+
+            return new SearchState(consumer, new SearchEvent(topic));
+        }, (searchState, emitter) -> {
+            SearchEvent searchEvent = searchState.getSearchEvent();
+            KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
+
             // end
-            if (searchEvent.emptyPoll == 666) {
+            if (searchEvent == null || searchEvent.emptyPoll == 666) {
+                Topic topic = topicRepository.findByName(clusterId, options.topic);
+
+                emitter.onNext(new SearchEvent(topic).end());
                 emitter.onComplete();
                 consumer.close();
 
-                return searchEvent;
+                return new SearchState(consumer, searchEvent);
             }
 
             SearchEvent currentEvent = new SearchEvent(searchEvent);
@@ -614,7 +622,7 @@ public class RecordRepository extends AbstractRepository {
                 emitter.onNext(currentEvent.progress(options));
             }
 
-            return currentEvent;
+            return new SearchState(consumer, currentEvent);
         });
     }
 
@@ -848,6 +856,16 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
         private TailEvent tailEvent;
     }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class SearchState {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private final SearchEvent searchEvent;
+    }
+
 
     @ToString
     @EqualsAndHashCode
