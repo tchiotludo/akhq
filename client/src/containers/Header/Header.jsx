@@ -11,6 +11,7 @@ import Root from "../../components/Root";
 class Header extends Root {
   state = {
     login: sessionStorage.getItem('login'),
+    username: sessionStorage.getItem('user'),
     goBack: true
   };
 
@@ -50,7 +51,7 @@ class Header extends Root {
 
   render() {
     const { title, children } = this.props;
-    const { login } = this.state;
+    const { login, username } = this.state;
     return (
       <React.Fragment>
         <div
@@ -78,7 +79,7 @@ class Header extends Root {
                 >
                   {' '}
                   <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Logout
+                  {username} (Logout)
                 </button>
               </Link>
             )}
