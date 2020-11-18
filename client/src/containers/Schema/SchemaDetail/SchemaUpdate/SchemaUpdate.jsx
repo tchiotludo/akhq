@@ -44,7 +44,8 @@ class SchemaUpdate extends Form {
       compatibility: '',
       schema: ''
     },
-    errors: {}
+    errors: {},
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {
@@ -103,7 +104,7 @@ class SchemaUpdate extends Form {
   }
 
   render() {
-    const { compatibilityOptions } = this.state;
+    const { compatibilityOptions, roles } = this.state;
 
     return (
         <form
@@ -141,7 +142,8 @@ class SchemaUpdate extends Form {
             },
             'col-sm-10'
           )}
-            {this.renderButton('Update', undefined, undefined, 'submit')}
+           {roles.registry['registry/update'] && (
+            this.renderButton('Update', undefined, undefined, 'submit'))}
           </fieldset>
         </form>
     );
