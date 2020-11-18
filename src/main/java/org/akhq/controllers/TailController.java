@@ -8,7 +8,6 @@ import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
-import io.reactivex.schedulers.Schedulers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,8 +35,8 @@ public class TailController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @ExecuteOn(TaskExecutors.IO)
     @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
+    @ExecuteOn(TaskExecutors.IO)
     @Operation(tags = {"topic data"}, summary = "Tail for data on multiple topic")
     public Publisher<Event<TailRecord>> sse(
         String cluster,
@@ -51,7 +50,6 @@ public class TailController extends AbstractController {
 
         return recordRepository
             .tail(cluster, options)
-            .observeOn(Schedulers.io())
             .map(event -> {
                 TailRecord tailRecord = new TailRecord();
                 tailRecord.offsets = getOffsets(event);
