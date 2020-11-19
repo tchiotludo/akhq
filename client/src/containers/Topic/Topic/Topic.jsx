@@ -261,14 +261,9 @@ class Topic extends Root {
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
               </Link>
 
-              <Link to={{
-                pathname: `/ui/${clusterId}/tail`,
-                state: {
-                  topicId: topicId
-                }
-                }}
-                className="btn btn-secondary mr-2"
-              >
+              <Link to={{  pathname: `/ui/${clusterId}/tail`,
+                search: `?topicId=${topicId}` }} className="btn btn-secondary mr-2">
+
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
               </Link>
 
