@@ -199,6 +199,15 @@ class Routes extends Root {
               {roles && roles.registry && roles.registry['registry/insert'] && (
                 <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
               )}
+
+              {roles && roles.registry && roles.registry['registry/update'] && (
+                  <Route
+                      exact
+                      path="/ui/:clusterId/schema/details/:schemaId/update"
+                      component={Schema}
+                  />
+              )}
+
               {roles && roles.registry && roles.registry['registry/read'] && (
                 <Route
                   exact
