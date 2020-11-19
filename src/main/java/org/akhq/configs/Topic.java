@@ -11,4 +11,5 @@ public class Topic {
 
     private String defaultView;
     private Boolean skipConsumerGroups;
+    private Boolean skipLastRecord;
 }

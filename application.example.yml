@@ -95,10 +95,11 @@ akhq:
               value-message-type: "Envelope"
       options:
         topic:
-          default-view: ALL
-          skip-consumer-groups: false
+          default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
+          skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
+          skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
         topic-data:
-          sort: NEWEST
+          sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
     my-cluster-ssl:
       properties:
@@ -143,6 +144,7 @@ akhq:
       - "^.*-repartition$"
       - "^.*-rekey$"
     skip-consumer-groups: false # Skip loading consumer group information when showing topics
+    skip-last-record: false # Skip loading last record date information when showing topics
 
   # Topic display data options (optional)
   topic-data:

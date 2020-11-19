@@ -25,10 +25,8 @@ import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from "../containers/Settings/Settings";
 import { organizeRoles } from './converters';
-import {uriClusters, uriCurrentUser, uriUIOptions} from './endpoints';
+import {uriClusters, uriCurrentUser} from './endpoints';
 import Root from "../components/Root";
-import {setUIOptions} from "./localstorage";
-import {setClusterUIOptions} from "./functions";
 
 class Routes extends Root {
   state = {
@@ -48,10 +46,6 @@ class Routes extends Root {
     const { clusterId } = this.state;
     try {
         const resClusters = await this.getApi(uriClusters());
-        if (resClusters.data && resClusters.data[0]) {
-            await setClusterUIOptions(resClusters.data[0].id);
-        }
-
         this.setState(
             {
                 clusters: resClusters.data,

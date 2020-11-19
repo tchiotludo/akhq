@@ -60,7 +60,8 @@ public class Connection extends AbstractProperties {
         Options options = new Options();
         options.topic = new Topic(
                 StringUtils.isNotEmpty(this.options.topic.getDefaultView())? this.options.topic.getDefaultView(): defaultOptions.getTopic().getDefaultView(),
-                (this.options.topic.getSkipConsumerGroups() != null)? this.options.topic.getSkipConsumerGroups() : defaultOptions.getTopic().getSkipConsumerGroups());
+                (this.options.topic.getSkipConsumerGroups() != null)? this.options.topic.getSkipConsumerGroups() : defaultOptions.getTopic().getSkipConsumerGroups(),
+                (this.options.topic.getSkipLastRecord() != null)? this.options.topic.getSkipLastRecord() : defaultOptions.getTopic().getSkipLastRecord());
         options.topicData = new TopicData(
                 StringUtils.isNotEmpty(this.options.topicData.getSort())? this.options.topicData.getSort(): defaultOptions.getTopicData().getSort());
         return options;

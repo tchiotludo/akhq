@@ -12,7 +12,8 @@ class Setttings extends Form {
     formData: {
       topicDefaultView: '',
       topicDataSort: '',
-      skipConsumerGroups: false
+      skipConsumerGroups: false,
+      skipLastRecord: false
     },
     errors: {}
   };
@@ -24,7 +25,8 @@ class Setttings extends Form {
   schema = {
     topicDefaultView: Joi.string().required(),
     topicDataSort: Joi.string().required(),
-    skipConsumerGroups: Joi.boolean().optional()
+    skipConsumerGroups: Joi.boolean().optional(),
+    skipLastRecord: Joi.boolean().optional()
   };
 
   componentDidMount() {
@@ -35,7 +37,8 @@ class Setttings extends Form {
     this.setState({ clusterId, formData: {
         topicDefaultView: (uiOptions && uiOptions.topic)? uiOptions.topic.defaultView : '',
         topicDataSort: (uiOptions && uiOptions.topicData)? uiOptions.topicData.sort : '',
-        skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false
+        skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false,
+        skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false
       }})
   }
 
@@ -45,10 +48,14 @@ class Setttings extends Form {
     this.setState({formData});
   }
 
+
+
   doSubmit() {
     const { clusterId, formData } = this.state;
     setUIOptions(clusterId,
-        { topic: { defaultView: formData.topicDefaultView, skipConsumerGroups: formData.skipConsumerGroups },
+        { topic: { defaultView: formData.topicDefaultView,
+                               skipConsumerGroups: formData.skipConsumerGroups,
+                               skipLastRecord: formData.skipLastRecord },
                       topicData: {sort: formData.topicDataSort} });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
   }
@@ -78,16 +85,30 @@ class Setttings extends Form {
               true,
               { className: 'form-control' }
           )}
-          <div className="select-wrapper settings-wrapper row">
-            <span className="col-sm-2 col-form-label">Skip Consumer Groups</span>
-            <span className="col-sm-10 row-checkbox-settings">
+            <div className="select-wrapper settings-wrapper row">
+              <span className="col-sm-2 col-form-label">Skip Consumer Groups</span>
+              <span className="col-sm-10 row-checkbox-settings">
+                <input
+                  type="checkbox"
+                  value="skipConsumerGroups"
+                  checked={this.state.formData.skipConsumerGroups || false}
+                  onChange={this.checkedSkipConsumerGroups}
+              /></span>
+            </div>
+            <div className="select-wrapper settings-wrapper row">
+              <span className="col-sm-2 col-form-label">Skip Last Record Date</span>
+              <span className="col-sm-10 row-checkbox-settings">
               <input
-                type="checkbox"
-                value="skipConsumerGroups"
-                checked={this.state.formData.skipConsumerGroups || false}
-                onChange={this.checkedSkipConsumerGroups}
-            /></span>
-          </div>
+                  type="checkbox"
+                  value="skipLastRecord"
+                  checked={this.state.formData.skipLastRecord || false}
+                  onChange={ event => {
+                    const { formData } = this.state;
+                    formData.skipLastRecord = event.target.checked;
+                    this.setState({formData});
+                  }}
+              /></span>
+            </div>
           </fieldset>
 
           <fieldset id="topicData" key="topicData">

@@ -6,7 +6,6 @@ import _ from 'lodash';
 import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
-import {setClusterUIOptions} from "../../utils/functions";
 
 class Sidebar extends Component {
   state = {
@@ -150,9 +149,7 @@ class Sidebar extends Component {
     return { listClusters, listConnects };
   };
 
-  async changeSelectedCluster(newSelectedCluster) {
-
-    await setClusterUIOptions(newSelectedCluster.id);
+  changeSelectedCluster(newSelectedCluster) {
 
     this.setState(
       {

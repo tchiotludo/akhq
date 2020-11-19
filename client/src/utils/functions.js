@@ -8,18 +8,23 @@ export const getSelectedTab = (props, tabs) => {
     return (tabs.includes(selectedTab))? selectedTab : tabs[0];
 }
 
-export async function setClusterUIOptions(clusterId) {
+export async function getClusterUIOptions(clusterId) {
 
     const uiOptions = getUIOptions(clusterId);
     if (!uiOptions && clusterId) {
         try {
             const resOptions = await get(uriUIOptions(clusterId));
             setUIOptions(clusterId, resOptions.data);
+            return resOptions.data;
         } catch(err) {
             console.error('Error:', err);
+            return {};
         }
+    } else {
+        return uiOptions;
     }
 }
 
-export default { getSelectedTab, setClusterUIOptions };
+
+export default { getSelectedTab, getClusterUIOptions };
 

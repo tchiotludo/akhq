@@ -26,7 +26,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import { basePath } from '../../../../utils/endpoints';
-import {getUIOptions} from "../../../../utils/localstorage";
+import {getClusterUIOptions} from "../../../../utils/functions";
 
 class TopicData extends Root {
   state = {
@@ -66,11 +66,11 @@ class TopicData extends Root {
     this.checkProps();
   };
 
-  checkProps = () => {
+  async checkProps() {
     const { clusterId, topicId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
 
-    const uiOptions = getUIOptions(clusterId);
+    const uiOptions = await getClusterUIOptions(clusterId);
 
     this.setState(
         {

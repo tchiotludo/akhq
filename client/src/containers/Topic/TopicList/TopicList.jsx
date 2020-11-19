@@ -13,7 +13,7 @@ import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
-import {getUIOptions} from "../../../utils/localstorage";
+import {getClusterUIOptions} from "../../../utils/functions";
 
 class TopicList extends Root {
   state = {
@@ -45,11 +45,30 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
+
+   this._initializeVars(() => {
+     this.getTopics();
+     this.props.history.replace({
+       pathname: `/ui/${this.state.selectedCluster}/topic`,
+       search: this.props.location.search
+     })});
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this._initializeVars(this.getTopics);
+    }
+  }
+
+  async _initializeVars(callBackFunction) {
     const { clusterId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
-
-    const uiOptions = getUIOptions(clusterId);
+    const uiOptions = await getClusterUIOptions(clusterId)
     let searchDataTmp;
     let keepSearchTmp = keepSearch;
 
@@ -64,22 +83,8 @@ class TopicList extends Root {
             (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
     }
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}}, callBackFunction);
 
-    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}}, () => {
-      this.getTopics();
-      this.props.history.replace({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      });
-    });
-
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
-      let { clusterId } = this.props.match.params;
-      this.setState({ selectedCluster: clusterId }, this.getTopics);
-    }
   }
 
   showDeleteModal = deleteMessage => {
@@ -113,7 +118,6 @@ class TopicList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
-
 
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
@@ -205,13 +209,15 @@ class TopicList extends Root {
           });
     }
 
-    this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
-        .then(value => {
-          topics.forEach((topic) => {
-            tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
+    if(!uiOptions.skipLastRecord) {
+      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
+          .then(value => {
+            topics.forEach((topic) => {
+              tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
+            });
+            setState();
           });
-          setState();
-        });
+    }
   }
 
 
@@ -274,18 +280,8 @@ class TopicList extends Root {
       {colName: 'Partitions', colSpan: 1},
       {colName: 'Replications', colSpan: 2}
     ];
-    let onDetailsFunction = undefined;
 
-    const actions = [constants.TABLE_CONFIG];
-    if(roles.topic && roles.topic['topic/data/read']) {
-      actions.push(constants.TABLE_DETAILS);
-      onDetailsFunction = (id) => `/ui/${selectedCluster}/topic/${id}/data`;
-    }
-    if(roles.topic && roles.topic['topic/delete']) {
-      actions.push(constants.TABLE_DELETE);
-    }
-
-    const columns =
+    const topicCols =
         [
           {
             id: 'name',
@@ -307,19 +303,28 @@ class TopicList extends Root {
             accessor: 'size',
             colName: 'Size',
             type: 'text'
-          },
-          {
-            id: 'lastWrite',
-            accessor: 'lastWrite',
-            colName: 'Last Record',
-            type: 'text'
-          },
+          }
+        ];
+
+    if(!uiOptions.skipLastRecord) {
+        topicCols.push({
+          id: 'lastWrite',
+          accessor: 'lastWrite',
+          colName: 'Last Record',
+          type: 'text'
+        });
+    }
+
+    const partitionCols =
+        [
           {
             id: 'partitionsTotal',
             accessor: 'partitionsTotal',
             colName: 'Total',
             type: 'text'
-          },
+          }];
+    const replicationCols =
+         [
           {
             id: 'replicationFactor',
             accessor: 'replicationFactor',
@@ -335,24 +340,23 @@ class TopicList extends Root {
               return <span>{obj[col.accessor]}</span>;
             }
           }];
-          if(!uiOptions.skipConsumerGroups) {
-            firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
 
-            columns.push(
-                {
-                  id: 'groupComponent',
-                  accessor: 'groupComponent.id',
-                  colName: 'Consumer Groups',
-                  type: 'text',
-                  cell: obj => {
-                    if (obj.groupComponent && obj.groupComponent.length > 0) {
-                      const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
-                      let i = 0;
-                      return (
-                          <>
-                            {consumerGroups[0]}
-                            {consumerGroups.length > 1 &&
-                            <span>
+    const consumerGprCols =
+        [
+          {
+            id: 'groupComponent',
+            accessor: 'groupComponent.id',
+            colName: 'Consumer Groups',
+            type: 'text',
+            cell: obj => {
+              if (obj.groupComponent && obj.groupComponent.length > 0) {
+                const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
+                let i = 0;
+                return (
+                    <>
+                      {consumerGroups[0]}
+                      {consumerGroups.length > 1 &&
+                      <span>
                                   <span
                                       onClick={() => this.handleCollapseConsumerGroups(obj.id)}
                                       aria-expanded={collapseConsumerGroups[obj.id]}
@@ -369,16 +373,25 @@ class TopicList extends Root {
                                     </div>
                                   </Collapse>
                                 </span>
-                            }
-                          </>
-                      );
-                    } else if (obj.groupComponent) {
-                      return <div className="empty-consumergroups"/>
-                    }
-                  }
-                });
+                      }
+                    </>
+                );
+              } else if (obj.groupComponent) {
+                return <div className="empty-consumergroups"/>
+              }
+            }
           }
+        ]
 
+    const firstColumns = [
+      {colName: 'Topics', colSpan: topicCols.length},
+      {colName: 'Partitions', colSpan: partitionCols.length},
+      {colName: 'Replications', colSpan: replicationCols.length}
+    ];
+
+    if(!uiOptions.skipConsumerGroups) {
+      firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
+    }
 
     return (
       <div>
@@ -419,7 +432,7 @@ class TopicList extends Root {
           history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
-          columns={columns}
+          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
           data={topics}
           updateData={data => {
             this.setState({ topics: data });
