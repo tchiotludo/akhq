@@ -11,10 +11,14 @@ body {
     position: relative;
     width: calc(100% + 40px);
     left: -20px;
-    top: -20px;
-    height: 74px;
+    top: -40px;
+    height: 94px;
     border-bottom: 4px solid $yellow;
-    padding: 17px 20px 0;
+    padding: 20px 20px 0;
+
+    .btn {
+        white-space: nowrap;
+    }
 }
 
 h1 {
