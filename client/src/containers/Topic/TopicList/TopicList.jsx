@@ -393,6 +393,16 @@ class TopicList extends Root {
       firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
     }
 
+    let onDetailsFunction = undefined;
+    const actions = [constants.TABLE_CONFIG];
+    if(roles.topic && roles.topic['topic/data/read']) {
+      actions.push(constants.TABLE_DETAILS);
+      onDetailsFunction = (id) => `/ui/${selectedCluster}/topic/${id}/data`;
+    }
+    if(roles.topic && roles.topic['topic/delete']) {
+      actions.push(constants.TABLE_DELETE);
+    }
+
     return (
       <div>
         <Header title="Topics" history={this.props.history} />
