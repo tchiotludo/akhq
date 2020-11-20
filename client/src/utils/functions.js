@@ -1,3 +1,6 @@
+import {uriUIOptions} from "./endpoints";
+import {getUIOptions, setUIOptions} from "./localstorage";
+import {get} from "./api";
 
 export const getSelectedTab = (props, tabs) => {
     const url = props.location.pathname.split('/');
@@ -5,4 +8,23 @@ export const getSelectedTab = (props, tabs) => {
     return (tabs.includes(selectedTab))? selectedTab : tabs[0];
 }
 
-export default { getSelectedTab };
+export async function getClusterUIOptions(clusterId) {
+
+    const uiOptions = getUIOptions(clusterId);
+    if (!uiOptions && clusterId) {
+        try {
+            const resOptions = await get(uriUIOptions(clusterId));
+            setUIOptions(clusterId, resOptions.data);
+            return resOptions.data;
+        } catch(err) {
+            console.error('Error:', err);
+            return {};
+        }
+    } else {
+        return uiOptions;
+    }
+}
+
+
+export default { getSelectedTab, getClusterUIOptions };
+

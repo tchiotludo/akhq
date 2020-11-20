@@ -7,9 +7,17 @@ class Root extends Component {
   cancel = axios.CancelToken.source();
 
   componentWillUnmount() {
+    this.cancelAxiosRequests();
+  }
+
+  cancelAxiosRequests() {
     if (this.cancel !== undefined) {
       this.cancel.cancel('cancel all');
     }
+  }
+
+  renewCancelToken() {
+    this.cancel = axios.CancelToken.source();
   }
 
   getApi(url) {

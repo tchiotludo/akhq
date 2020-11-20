@@ -111,7 +111,6 @@ akhq:
     threads: 16
 
   topic:
-    default-view: HIDE_INTERNAL
     replication: 1
     retention: 86400000
     partition: 1

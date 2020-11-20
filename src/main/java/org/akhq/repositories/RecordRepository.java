@@ -901,7 +901,7 @@ public class RecordRepository extends AbstractRepository {
         private Long timestamp;
 
         public Options(Environment environment, String clusterId, String topic) {
-            this.sort = environment.getProperty("akhq.topic-data.sort", Sort.class, Sort.OLDEST);
+            this.sort = Sort.OLDEST;
             //noinspection ConstantConditions
             this.size = environment.getProperty("akhq.topic-data.size", Integer.class, 50);
 

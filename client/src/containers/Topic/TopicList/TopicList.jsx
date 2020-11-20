@@ -13,6 +13,7 @@ import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
+import {getClusterUIOptions} from "../../../utils/functions";
 
 class TopicList extends Root {
   state = {
@@ -39,14 +40,35 @@ class TopicList extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     loading: true,
     cancel: undefined,
-    collapseConsumerGroups: {}
+    collapseConsumerGroups: {},
+    uiOptions: {}
   };
 
   componentDidMount() {
+
+   this._initializeVars(() => {
+     this.getTopics();
+     this.props.history.replace({
+       pathname: `/ui/${this.state.selectedCluster}/topic`,
+       search: this.props.location.search
+     })});
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this._initializeVars(this.getTopics);
+    }
+  }
+
+  async _initializeVars(callBackFunction) {
     const { clusterId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
-
+    const uiOptions = await getClusterUIOptions(clusterId)
     let searchDataTmp;
     let keepSearchTmp = keepSearch;
 
@@ -57,25 +79,12 @@ class TopicList extends Root {
     } else {
       searchDataTmp = {
         search: (query.get('search'))? query.get('search') : searchData.search,
-        topicListView: (query.get('topicListView'))? query.get('topicListView') : searchData.topicListView,
+        topicListView: (query.get('topicListView'))? query.get('topicListView') :
+            (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
     }
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}}, callBackFunction);
 
-    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp}, () => {
-      this.getTopics();
-      this.props.history.replace({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      });
-    });
-
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
-      let { clusterId } = this.props.match.params;
-      this.setState({ selectedCluster: clusterId }, this.getTopics);
-    }
   }
 
   showDeleteModal = deleteMessage => {
@@ -109,7 +118,6 @@ class TopicList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
-
 
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
@@ -163,7 +171,7 @@ class TopicList extends Root {
     let tableTopics = {};
     const collapseConsumerGroups = {};
 
-    const { selectedCluster } = this.state;
+    const { selectedCluster, uiOptions } = this.state;
 
     const setState = () =>  {
       this.setState({ topics: Object.values(tableTopics) });
@@ -188,23 +196,28 @@ class TopicList extends Root {
     setState()
 
     const topicsName = topics.map(topic => topic.name).join(",");
-    this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName)))
-        .then(value => {
+
+    if(!uiOptions.skipConsumerGroups) {
+      this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName)))
+          .then(value => {
             topics.forEach(topic => {
-              tableTopics[topic.name].groupComponent = (value && value.data)? value.data.filter(consumerGroup =>
+              tableTopics[topic.name].groupComponent = (value && value.data) ? value.data.filter(consumerGroup =>
                   (consumerGroup.activeTopics && consumerGroup.activeTopics.includes(topic.name))
-                  || (consumerGroup.topics && consumerGroup.topics.includes(topic.name))): [];
+                  || (consumerGroup.topics && consumerGroup.topics.includes(topic.name))) : [];
             });
             setState();
-        });
-
-    this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
-        .then(value => {
-          topics.forEach((topic) => {
-            tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
           });
-          setState();
-        });
+    }
+
+    if(!uiOptions.skipLastRecord) {
+      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
+          .then(value => {
+            topics.forEach((topic) => {
+              tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
+            });
+            setState();
+          });
+    }
   }
 
 
@@ -259,17 +272,123 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
-    const firstColumns = [
-      {colName: 'Topics', colSpan: 4},
-      {colName: 'Partitions', colSpan: 1},
-      {colName: 'Replications', colSpan: 2},
-      {colName: 'Consumer Groups', colSpan: 1}
-    ];
-    let onDetailsFunction = undefined;
 
+    const topicCols =
+        [
+          {
+            id: 'name',
+            accessor: 'name',
+            colName: 'Name',
+            type: 'text'
+          },
+          {
+            id: 'count',
+            accessor: 'count',
+            colName: 'Count',
+            type: 'text',
+            cell: (obj, col) => {
+              return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
+            }
+          },
+          {
+            id: 'size',
+            accessor: 'size',
+            colName: 'Size',
+            type: 'text'
+          }
+        ];
+
+    if(!uiOptions.skipLastRecord) {
+        topicCols.push({
+          id: 'lastWrite',
+          accessor: 'lastWrite',
+          colName: 'Last Record',
+          type: 'text'
+        });
+    }
+
+    const partitionCols =
+        [
+          {
+            id: 'partitionsTotal',
+            accessor: 'partitionsTotal',
+            colName: 'Total',
+            type: 'text'
+          }];
+    const replicationCols =
+         [
+          {
+            id: 'replicationFactor',
+            accessor: 'replicationFactor',
+            colName: 'Factor',
+            type: 'text'
+          },
+          {
+            id: 'replicationInSync',
+            accessor: 'replicationInSync',
+            colName: 'In Sync',
+            type: 'text',
+            cell: (obj, col) => {
+              return <span>{obj[col.accessor]}</span>;
+            }
+          }];
+
+    const consumerGprCols =
+        [
+          {
+            id: 'groupComponent',
+            accessor: 'groupComponent.id',
+            colName: 'Consumer Groups',
+            type: 'text',
+            cell: obj => {
+              if (obj.groupComponent && obj.groupComponent.length > 0) {
+                const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
+                let i = 0;
+                return (
+                    <>
+                      {consumerGroups[0]}
+                      {consumerGroups.length > 1 &&
+                      <span>
+                                  <span
+                                      onClick={() => this.handleCollapseConsumerGroups(obj.id)}
+                                      aria-expanded={collapseConsumerGroups[obj.id]}
+                                  >
+                                    {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
+                                    {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
+                                  </span>
+                                  <span className="badge badge-secondary">{consumerGroups.length}</span>
+                                  <Collapse in={collapseConsumerGroups[obj.id]}>
+                                    <div>
+                                      {consumerGroups.splice(1, consumerGroups.length).map(group => {
+                                        return (<div key={i++}>{group}</div>);
+                                      })}
+                                    </div>
+                                  </Collapse>
+                                </span>
+                      }
+                    </>
+                );
+              } else if (obj.groupComponent) {
+                return <div className="empty-consumergroups"/>
+              }
+            }
+          }
+        ]
+
+    const firstColumns = [
+      {colName: 'Topics', colSpan: topicCols.length},
+      {colName: 'Partitions', colSpan: partitionCols.length},
+      {colName: 'Replications', colSpan: replicationCols.length}
+    ];
+
+    if(!uiOptions.skipConsumerGroups) {
+      firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
+    }
+
+    let onDetailsFunction = undefined;
     const actions = [constants.TABLE_CONFIG];
     if(roles.topic && roles.topic['topic/data/read']) {
       actions.push(constants.TABLE_DETAILS);
@@ -318,94 +437,7 @@ class TopicList extends Root {
           history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
-          columns={[
-            {
-              id: 'name',
-              accessor: 'name',
-              colName: 'Name',
-              type: 'text'
-            },
-            {
-              id: 'count',
-              accessor: 'count',
-              colName: 'Count',
-              type: 'text',
-              cell: (obj, col) => {
-                return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
-              }
-            },
-            {
-              id: 'size',
-              accessor: 'size',
-              colName: 'Size',
-              type: 'text'
-            },
-            {
-              id: 'lastWrite',
-              accessor: 'lastWrite',
-              colName: 'Last Record',
-              type: 'text'
-            },
-            {
-              id: 'partitionsTotal',
-              accessor: 'partitionsTotal',
-              colName: 'Total',
-              type: 'text'
-            },
-            {
-              id: 'replicationFactor',
-              accessor: 'replicationFactor',
-              colName: 'Factor',
-              type: 'text'
-            },
-            {
-              id: 'replicationInSync',
-              accessor: 'replicationInSync',
-              colName: 'In Sync',
-              type: 'text',
-              cell: (obj, col) => {
-                return <span>{obj[col.accessor]}</span>;
-              }
-            },
-            {
-              id: 'groupComponent',
-              accessor: 'groupComponent.id',
-              colName: 'Consumer Groups',
-              type: 'text',
-              cell: obj => {
-                if (obj.groupComponent && obj.groupComponent.length > 0) {
-                  const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
-                  let i=0;
-                  return (
-                      <>
-                        {consumerGroups[0]}
-                        {consumerGroups.length > 1 &&
-                        <span>
-                          <span
-                            onClick={() => this.handleCollapseConsumerGroups(obj.id)}
-                            aria-expanded={collapseConsumerGroups[obj.id]}
-                          >
-                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
-                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
-                          </span>
-                          <span className="badge badge-secondary">{consumerGroups.length}</span>
-                          <Collapse in={collapseConsumerGroups[obj.id]}>
-                            <div>
-                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
-                                return (<div key={i++}>{group}</div>);
-                              })}
-                            </div>
-                          </Collapse>
-                        </span>
-                          }
-                      </>
-                  );
-                } else if (obj.groupComponent) {
-                    return <div className="empty-consumergroups"/>
-                }
-              }
-            }
-          ]}
+          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
           data={topics}
           updateData={data => {
             this.setState({ topics: data });

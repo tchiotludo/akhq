@@ -40,6 +40,9 @@ public class AkhqController extends AbstractController {
     @Inject
     private Oidc oidc;
 
+    @Inject
+    private UIOptions uIOptions;
+
     @HasAnyPermission()
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
@@ -146,6 +149,16 @@ public class AkhqController extends AbstractController {
             .body(doc);
     }
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("api/{cluster}/ui-options")
+    @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
+    public Connection.UiOptions options(String cluster) {
+        return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
+                .map(conn -> conn.mergeOptions(this.uIOptions) )
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("No cluster found"));
+    }
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
@@ -182,4 +195,5 @@ public class AkhqController extends AbstractController {
         private boolean registry;
         private List<String> connects;
     }
+
 }

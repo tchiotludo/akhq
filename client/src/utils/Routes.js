@@ -23,8 +23,9 @@ import SchemaCreate from '../containers/Schema/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
+import Settings from "../containers/Settings/Settings";
 import { organizeRoles } from './converters';
-import { uriClusters, uriCurrentUser } from './endpoints';
+import {uriClusters, uriCurrentUser} from './endpoints';
 import Root from "../components/Root";
 
 class Routes extends Root {
@@ -41,24 +42,26 @@ class Routes extends Root {
     clusters: PropTypes.array
   };
 
-  getClusters = () => {
+  async getClusters() {
     const { clusterId } = this.state;
-
-    this
-      .getApi(uriClusters())
-      .then(res => {
+    try {
+        const resClusters = await this.getApi(uriClusters());
         this.setState(
-          { clusters: res.data, clusterId: res.data ? res.data[0].id : '', loading: false }
+            {
+                clusters: resClusters.data,
+                clusterId: resClusters.data ? resClusters.data[0].id : '',
+                loading: false
+            }
         );
-      })
-      .catch(err => {
+
+    } catch(err) {
         if (err.status === 401) {
-          if (!clusterId || clusterId.length <= 0) {
-            this.setState({ clusterId: '401' });
-          }
+            if (!clusterId || clusterId.length <= 0) {
+                this.setState({ clusterId: '401' });
+            }
         }
         console.error('Error:', err);
-      });
+    }
   };
 
   getCurrentUser() {
@@ -233,6 +236,7 @@ class Routes extends Root {
                   component={Connect}
                 />
               )}
+              <Route exact path="/ui/:clusterId/settings" component={Settings} />
               <Redirect from="/" to={this.handleRedirect()} />
               <Redirect from="/ui" to={this.handleRedirect()} />
               <Redirect from="/ui/401" to={this.handleRedirect()} />
