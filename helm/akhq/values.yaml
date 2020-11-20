@@ -94,6 +94,9 @@ ingress:
   #    hosts:
   #      - akhq.demo.com
 
+readinessProbe:
+  prefix: "" # set same as `micronaut.server.context-path`
+
 resources: {}
   # limits:
   #  cpu: 100m
