@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TopicData {
+public class UiOptionsTopicData {
     private String sort;
 }

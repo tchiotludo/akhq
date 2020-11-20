@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Topic {
-
+public class UiOptionsTopic {
     private String defaultView;
     private Boolean skipConsumerGroups;
     private Boolean skipLastRecord;

@@ -19,7 +19,7 @@ public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
     ProtobufDeserializationTopicsMapping deserialization;
-    Options options = new Options();
+    UiOptions uiOptions = new UiOptions();
 
     public Connection(@Parameter String name) {
         super(name);
@@ -44,28 +44,29 @@ public class Connection extends AbstractProperties {
     }
 
     @Data
-    @ConfigurationProperties("options")
-    public static class Options {
-
+    @ConfigurationProperties("ui-options")
+    public static class UiOptions {
         @ConfigurationBuilder(configurationPrefix = "topic")
-        private Topic topic = new Topic();
+        private UiOptionsTopic topic = new UiOptionsTopic();
 
         @ConfigurationBuilder(configurationPrefix = "topic-data")
-        private TopicData topicData = new TopicData();
-
+        private UiOptionsTopicData topicData = new UiOptionsTopicData();
     }
 
-    public Connection.Options mergeOptions(UIOptions defaultOptions) {
+    public UiOptions mergeOptions(UIOptions defaultOptions) {
+        UiOptions options = new UiOptions();
 
-        Options options = new Options();
-        options.topic = new Topic(
-                StringUtils.isNotEmpty(this.options.topic.getDefaultView())? this.options.topic.getDefaultView(): defaultOptions.getTopic().getDefaultView(),
-                (this.options.topic.getSkipConsumerGroups() != null)? this.options.topic.getSkipConsumerGroups() : defaultOptions.getTopic().getSkipConsumerGroups(),
-                (this.options.topic.getSkipLastRecord() != null)? this.options.topic.getSkipLastRecord() : defaultOptions.getTopic().getSkipLastRecord());
-        options.topicData = new TopicData(
-                StringUtils.isNotEmpty(this.options.topicData.getSort())? this.options.topicData.getSort(): defaultOptions.getTopicData().getSort());
+        options.topic = new UiOptionsTopic(
+            StringUtils.isNotEmpty(this.uiOptions.topic.getDefaultView()) ? this.uiOptions.topic.getDefaultView() : defaultOptions.getTopic().getDefaultView(),
+            (this.uiOptions.topic.getSkipConsumerGroups() != null) ? this.uiOptions.topic.getSkipConsumerGroups() : defaultOptions.getTopic().getSkipConsumerGroups(),
+            (this.uiOptions.topic.getSkipLastRecord() != null) ? this.uiOptions.topic.getSkipLastRecord() : defaultOptions.getTopic().getSkipLastRecord()
+        );
+
+        options.topicData = new UiOptionsTopicData(
+            StringUtils.isNotEmpty(this.uiOptions.topicData.getSort()) ? this.uiOptions.topicData.getSort() : defaultOptions.getTopicData().getSort()
+        );
+
         return options;
     }
-
 }
 

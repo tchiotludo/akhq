@@ -56,12 +56,8 @@ public class TopicController extends AbstractController {
     @Inject
     private AccessControlListRepository aclRepository;
 
-    @Value("${akhq.topic.default-view}")
-    private String defaultView;
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
-    @Value("${akhq.topic.retention}")
-    private Integer retentionPeriod;
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
     @Value("${akhq.pagination.page-size}")
@@ -82,7 +78,7 @@ public class TopicController extends AbstractController {
         return ResultPagedList.of(this.topicRepository.list(
             cluster,
             pagination,
-            show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
+            show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search
         ));
     }
@@ -94,7 +90,7 @@ public class TopicController extends AbstractController {
             String cluster,
             Optional<TopicRepository.TopicListView> show
     ) throws ExecutionException, InterruptedException {
-        return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.valueOf(defaultView)), Optional.empty());
+        return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL), Optional.empty());
     }
 
 

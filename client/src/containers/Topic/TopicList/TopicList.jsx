@@ -275,11 +275,6 @@ class TopicList extends Root {
     const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
-    const firstColumns = [
-      {colName: 'Topics', colSpan: 4},
-      {colName: 'Partitions', colSpan: 1},
-      {colName: 'Replications', colSpan: 2}
-    ];
 
     const topicCols =
         [

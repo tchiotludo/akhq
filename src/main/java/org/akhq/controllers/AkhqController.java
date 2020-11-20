@@ -1,7 +1,6 @@
 package org.akhq.controllers;
 
 import io.micronaut.context.ApplicationContext;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -22,7 +21,6 @@ import org.akhq.modules.HasAnyPermission;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -154,7 +152,7 @@ public class AkhqController extends AbstractController {
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/{cluster}/ui-options")
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
-    public Connection.Options options(String cluster) {
+    public Connection.UiOptions options(String cluster) {
         return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
                 .map(conn -> conn.mergeOptions(this.uIOptions) )
                 .findAny()

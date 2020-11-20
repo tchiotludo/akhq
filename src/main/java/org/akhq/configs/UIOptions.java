@@ -5,12 +5,11 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 import lombok.Data;
 
 @Data
-@ConfigurationProperties("akhq")
+@ConfigurationProperties("akhq.ui-options")
 public class UIOptions {
-
     @ConfigurationBuilder(configurationPrefix = "topic")
-    private Topic topic = new Topic();
+    private UiOptionsTopic topic = new UiOptionsTopic();
 
     @ConfigurationBuilder(configurationPrefix = "topic-data")
-    private TopicData topicData = new TopicData();
+    private UiOptionsTopicData topicData = new UiOptionsTopicData();
 }
