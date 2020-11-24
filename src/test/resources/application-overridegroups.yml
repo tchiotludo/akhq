@@ -1,0 +1,13 @@
+akhq:
+  security:
+    groups:
+      - name: admin
+        roles:
+          - topic/read
+      - name: limited
+        roles:
+          - topic/read
+      - name: extra
+        roles:
+          - topic/read
+

@@ -77,7 +77,7 @@ akhq:
 
   security:
     default-group: no-filter
-    groups:
+    basic-groups:
       - name: admin
         roles:
           - topic/read

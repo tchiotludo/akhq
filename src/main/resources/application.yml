@@ -132,7 +132,7 @@ akhq:
 
   security:
     default-group: admin
-    groups:
+    basic-groups:
     - name: admin
       roles:
       - topic/read
