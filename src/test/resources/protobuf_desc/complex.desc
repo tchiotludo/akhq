@@ -1,0 +1,61 @@
+
+¼
+album.protoorg.akhq.utils"w
+Album
+title (	Rtitle
+artist (	Rartist!
+release_year (RreleaseYear
+
+song_title (	R	songTitleB
+org.akhq.utilsB
+AlbumProtobproto3
+Õ
+
+film.protoorg.akhq.utils"‘
+Film
+name (	Rname
+producer (	Rproducer!
+release_year (RreleaseYear
+duration (Rduration
+starring (	RstarringB
+org.akhq.utilsB	FilmProtobproto3
+þ
+google/protobuf/wrappers.protogoogle.protobuf"#
+DoubleValue
+value (Rvalue""
+
+FloatValue
+value (Rvalue""
+
+Int64Value
+value (Rvalue"#
+UInt64Value
+value (Rvalue""
+
+Int32Value
+value (Rvalue"#
+UInt32Value
+value (Rvalue"!
+	BoolValue
+value (Rvalue"#
+StringValue
+value (	Rvalue""
+
+BytesValue
+value (RvalueB|
+com.google.protobufBWrappersProtoPZ*github.com/golang/protobuf/ptypes/wrappersø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3
+Ý
+google/protobuf/any.protogoogle.protobuf"6
+Any
+type_url (	RtypeUrl
+value (RvalueBo
+com.google.protobufBAnyProtoPZ%github.com/golang/protobuf/ptypes/any¢GPBªGoogle.Protobuf.WellKnownTypesbproto3
+ô
+complex.protoorg.akhq.utilsalbum.proto
+film.protogoogle/protobuf/wrappers.protogoogle/protobuf/any.proto"Ö
+Complex+
+album (2.org.akhq.utils.AlbumRalbum(
+film (2.org.akhq.utils.FilmRfilmB
+stringWrapper (2.google.protobuf.StringValueRstringWrapper0
+anything (2.google.protobuf.AnyRanythingB
+org.akhq.utilsBComplexProtobproto3

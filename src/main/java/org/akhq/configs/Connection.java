@@ -40,6 +40,7 @@ public class Connection extends AbstractProperties {
     @Data
     @ConfigurationProperties("deserialization.protobuf")
     public static class ProtobufDeserializationTopicsMapping {
+        String descriptorsFolder;
         List<TopicsMapping> topicsMapping = new ArrayList<>();
     }
 

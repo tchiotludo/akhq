@@ -1,5 +1,8 @@
 package org.akhq.utils;
 
+import com.google.protobuf.Any;
+import com.google.protobuf.DoubleValue;
+import com.google.protobuf.StringValue;
 import org.akhq.configs.Connection.ProtobufDeserializationTopicsMapping;
 import org.akhq.configs.TopicsMapping;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,13 +20,13 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProtobufToJsonDeserializerTest {
     ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping;
     AlbumProto.Album albumProto;
     FilmProto.Film filmProto;
+    ComplexProto.Complex complexProtobufObject;
 
 
     @BeforeEach
@@ -31,15 +34,19 @@ public class ProtobufToJsonDeserializerTest {
         createTopicProtobufDeserializationMapping();
         createAlbumObject();
         createFilmObject();
+        createComplexObject();
     }
 
     private void createTopicProtobufDeserializationMapping() throws URISyntaxException, IOException {
         protobufDeserializationTopicsMapping = new ProtobufDeserializationTopicsMapping();
-        TopicsMapping albumTopicsMapping = new TopicsMapping();
 
+        URI uri = ClassLoader.getSystemResource("protobuf_desc").toURI();
+        String protobufDescriptorsFolder = Paths.get(uri).toString();
+        protobufDeserializationTopicsMapping.setDescriptorsFolder(protobufDescriptorsFolder);
+
+        TopicsMapping albumTopicsMapping = new TopicsMapping();
         albumTopicsMapping.setTopicRegex("album.*");
-        String base64AlbumDescriptor = encodeDescriptorFileToBase64("album.desc");
-        albumTopicsMapping.setDescriptorFileBase64(base64AlbumDescriptor);
+        albumTopicsMapping.setDescriptorFile("album.desc");
         albumTopicsMapping.setValueMessageType("Album");
 
         TopicsMapping filmTopicsMapping = new TopicsMapping();
@@ -48,7 +55,13 @@ public class ProtobufToJsonDeserializerTest {
         filmTopicsMapping.setDescriptorFileBase64(base64FilmDescriptor);
         filmTopicsMapping.setValueMessageType("Film");
 
-        protobufDeserializationTopicsMapping.setTopicsMapping(Arrays.asList(albumTopicsMapping, filmTopicsMapping));
+        TopicsMapping complexObjectTopicsMapping = new TopicsMapping();
+        complexObjectTopicsMapping.setTopicRegex("complex.*");
+        complexObjectTopicsMapping.setDescriptorFile("complex.desc");
+        complexObjectTopicsMapping.setValueMessageType("Complex");
+
+        protobufDeserializationTopicsMapping.setTopicsMapping(
+                Arrays.asList(albumTopicsMapping, filmTopicsMapping, complexObjectTopicsMapping));
     }
 
     private String encodeDescriptorFileToBase64(String descriptorFileName) throws URISyntaxException, IOException {
@@ -82,6 +95,19 @@ public class ProtobufToJsonDeserializerTest {
                 .setDuration(film.getDuration())
                 .addAllStarring(film.getStarring())
                 .build();
+    }
+
+    private void createComplexObject() {
+        BookProto.Book bookProto = BookProto.Book.newBuilder()
+                .setTitle("Les Miserables")
+                .setAuthor("Victor Hugo")
+                .setPrice(DoubleValue.newBuilder().setValue(123d))
+                .build();
+        complexProtobufObject = ComplexProto.Complex.newBuilder()
+                .setAlbum(albumProto)
+                .setFilm(filmProto)
+                .setAnything(Any.pack(bookProto))
+                .setStringWrapper(StringValue.newBuilder().setValue("stringvalue").build()).build();
     }
 
     @Test
@@ -125,7 +151,24 @@ public class ProtobufToJsonDeserializerTest {
     public void deserializeForKeyWhenItsTypeNotSet() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryFilm = filmProto.toByteArray();
-        String decodedFilm = protobufToJsonDeserializer.deserialize("film.topic.name", binaryFilm, true);
-        assertNull(decodedFilm);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            protobufToJsonDeserializer.deserialize("film.topic.name", binaryFilm, true);
+        });
+        String expectedMessage = "message type is not specified neither for a key, nor for a value";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void deserializeComplexObject() {
+        ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
+        final byte[] binaryComplexObject = complexProtobufObject.toByteArray();
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            protobufToJsonDeserializer.deserialize("complex.topic.name", binaryComplexObject, false);
+        });
+        String expectedMessage = "Cannot deserialize message with Protobuf deserializer";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 }
