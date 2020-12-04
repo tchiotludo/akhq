@@ -68,21 +68,15 @@ class Login extends Form {
     }
   }
 
-  async componentDidMount() {
-    try {
-      const response = await this.getApi(uriAuths());
-      if (response.status === 200) {
-        const {loginEnabled, ...config} = response.data;
-        if (!loginEnabled) {
-          this.props.history.push({
-            pathname: '/ui',
-          });
-          return;
-        }
-        this.setState({config});
-      }
-    } catch (e) {
-      // cannot load auth config, use default
+  componentDidMount() {
+    const auths = JSON.parse(sessionStorage.getItem('auths'));
+    if(auths && auths.loginEnabled) {
+      const {loginEnabled, ...config} = auths;
+      this.setState({config});
+    } else {
+      this.props.history.push({
+        pathname: '/ui',
+      });
     }
   }
 
