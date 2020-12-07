@@ -657,6 +657,53 @@ Dev server is a java server & webpack-dev-server with live reload.
 
 The configuration for the dev server is in `application.dev.yml`.
 
+### Setup local dev environment on Windows
+
+In case you want to develop for AKHQ on Windows with IntelliJ IDEA without Docker (for any reason) you can follow this
+brief guide. For the following steps please make sure that you meet this requirements:
+
+ * OS: Windows (10)
+ * Kafka (2.6.0) is downloaded and extracted, the install dir is referred to as $KAFKA_HOME in the latter
+ * Git is installed and configured
+ * IntelliJ IDEA (Community Edition 2020.2) with the following plugins installed:
+   * Gradle (bundled with IDEA)
+   * [Lombok](https://plugins.jetbrains.com/plugin/6317-lombok)
+ 
+First run a Kafka server locally. Therefore you need to start Zookeper first by opening a CMD and doing:
+```bash
+$KAFKA_HOME\bin\windows\zookeeper-server-start.bat config\zookeper.properties
+$KAFKA_HOME\bin\windows\kafka-server-start.bat config\server.properties
+```
+A zero-config Kafka server should be up and running locally on your machine now. For further details or troubleshooting
+see [Kafka Getting started guide](https://kafka.apache.org/quickstart). In the next step we're going to checkout AKHQ from GitHub:
+```bash
+git clone https://github.com/tchiotludo/akhq.git
+```
+
+Open the checked out directory in IntelliJ IDEA. The current version (0.16.0) of AKHQ is built with Java 11. If you
+don't have OpenJDK 11 installed already, do the following in IntelliJ IDEA: _File > Project Structure... > Platform Settings >
+SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 11), download + install. Make sure
+that JDK 11 is set under _Project Settings > Projekt SDK_ and language level is Java 11. Now tell Gradle to use Java 11
+as well: _File > Settings > Plugins > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM_: any JDK 11.
+
+To configure AKHQ for using the Kafka server you set up before, edit `application.yml` by adding the following under `akhq`:
+```yaml
+akhq:
+  connections:
+    kafka:
+      properties:
+        bootstrap.servers: "localhost:9092"
+``` 
+/!\ Do not commit this part of `application.yml`. A more secure way to configure your local development Kafka server is
+described in the Micronaut doc, chapter ["Application Configuration"](https://docs.micronaut.io/1.3.0.M1/guide/index.html#config).
+
+Now you should be able to build the project with Gradle. Therefore go to the Gradle view in IDEA, select _Tasks > build >
+build_. If an error occurs saying that any filename is too long: move your project directory to a root directory in your
+filesystem or as a fix (only for testing purposes) set the argument `-x test` to skip tests temporarily.
+
+To debug a running AKHQ instance, go to the Gradle tab in IntelliJ IDEA, _Tasks > application_ > right click `run` and click
+"_Debug(...)_". AKHQ should start up and hit the breakpoints you set in your IDE. Happy developing/debugging!
+
 ## Schema references
 
 Since Confluent 5.5.0, Avro schemas can now be reused by others schemas through schema references. This feature allows to define a schema once and use it as a record type inside one or more schemas.
