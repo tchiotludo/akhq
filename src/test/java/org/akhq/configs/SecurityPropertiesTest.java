@@ -4,7 +4,7 @@ import io.micronaut.context.ApplicationContext;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.CollectionUtils;
 
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,7 +17,7 @@ class SecurityPropertiesTest {
 
         assertEquals(
                 CollectionUtils.toSet(new String[] {"admin", "limited", "operator", "no-filter"}),
-                securityProperties.getBasicGroups().stream().map(g -> g.name).collect(Collectors.toSet())
+                securityProperties.getGroups().keySet()
         );
 
         ctx.close();
@@ -30,7 +30,7 @@ class SecurityPropertiesTest {
 
         assertEquals(
                 CollectionUtils.toSet(new String[] {"admin", "limited", "operator", "no-filter", "extra", "another"}),
-                securityProperties.getGroups().stream().map(g -> g.name).collect(Collectors.toSet())
+                securityProperties.getGroups().keySet()
         );
 
         ctx.close();
@@ -43,7 +43,11 @@ class SecurityPropertiesTest {
 
         assertEquals(
                 CollectionUtils.toSet(new String[] {"admin", "limited", "operator", "no-filter", "extra"}),
-                securityProperties.getGroups().stream().map(g -> g.name).collect(Collectors.toSet())
+                securityProperties.getGroups().keySet()
+        );
+        assertEquals(
+                Collections.singletonList("topic/read"),
+                securityProperties.getGroups().get("admin").roles
         );
 
         ctx.close();

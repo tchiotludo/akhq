@@ -28,7 +28,7 @@ public class UserGroupUtils {
             return new ArrayList<>();
         }
 
-        return securityProperties.getGroups().stream()
+        return securityProperties.getGroups().values().stream()
             .filter(group -> groups.contains(group.getName()))
             .filter(group -> group.getRoles() != null)
             .flatMap(group -> group.getRoles().stream())
@@ -48,7 +48,7 @@ public class UserGroupUtils {
             return null;
         }
 
-        return securityProperties.getGroups().stream()
+        return securityProperties.getGroups().values().stream()
             .filter(group -> groups.contains(group.getName()))
             .flatMap(group -> (group.getAttributes() != null) ? group.getAttributes().entrySet().stream() : null)
             .collect(Collectors.toMap(

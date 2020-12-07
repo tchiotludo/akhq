@@ -1,10 +1,10 @@
 akhq:
   security:
     groups:
-      - name: extra
+      extra:
         roles:
           - topic/read
-      - name: another
+      another:
         roles:
           - topic/read
 
