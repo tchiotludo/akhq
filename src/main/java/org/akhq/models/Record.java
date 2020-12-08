@@ -15,9 +15,7 @@ import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @ToString
 @EqualsAndHashCode
@@ -48,6 +46,8 @@ public class Record {
 
     @Getter(AccessLevel.NONE)
     private String value;
+
+    private final List<String> exceptions = new ArrayList<>();
 
     public Record(RecordMetadata record, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
         this.topic = record.topic();
@@ -113,6 +113,8 @@ public class Record {
                 GenericRecord record = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
                 return AvroToJsonSerializer.toJson(record);
             } catch (Exception exception) {
+                this.exceptions.add(exception.getMessage());
+
                 return new String(payload);
             }
         } else {

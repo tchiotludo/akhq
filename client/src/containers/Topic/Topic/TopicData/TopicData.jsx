@@ -324,7 +324,8 @@ class TopicData extends Root {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || {},
-        schema: { key: message.keySchemaId, value: message.valueSchemaId }
+        schema: { key: message.keySchemaId, value: message.valueSchemaId },
+        exceptions: message.exceptions || []
       };
       tableMessages.push(messageToPush);
     });
@@ -767,9 +768,18 @@ class TopicData extends Root {
                     },
                     cell: obj => {
                       return (
-                          <pre className="mb-0 khq-data-highlight">
-                      <code>{obj.value}</code>
-                    </pre>
+                          <div>
+                            {obj.exceptions.length > 0 && (
+                                <div
+                                    className="alert alert-warning"
+                                    role="alert"
+                                    dangerouslySetInnerHTML={{ __html: obj.exceptions.join('<br /><br />')}}>
+                                </div>
+                            )}
+                            <pre className="mb-0 khq-data-highlight">
+                              <code>{obj.value}</code>
+                            </pre>
+                          </div>
                       );
                     }
                   },
