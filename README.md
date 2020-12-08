@@ -372,8 +372,9 @@ Groups allow you to limit user
 Define groups with specific roles for your users
 * `akhq.security.default-group`: Default group for all the user even unlogged user
 
-* `akhq.security.groups`: Groups list definition
-  * `- name: group-name` Group identifier
+* `akhq.security.groups`: Groups map definition
+  * `key:` a uniq key used as name if not specified
+    * `  name: group-name` Group identifier
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
     * `attributes.connects-filter-regexp`: Regexp to filter Connect tasks available for current group
@@ -480,14 +481,16 @@ Configure AKHQ groups and Ldap groups and users
 akhq:
   security:
     groups:
-      - name: topic-reader # Group name
+      topic-reader:
+        name: topic-reader # Group name
         roles:  # roles for the group
           - topic/read
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
           connects-filter-regexp: "^test.*$"
-      - name: topic-writer # Group name
+      topic-writer:
+        name: topic-writer # Group name
         roles:
           - topic/read
           - topic/insert

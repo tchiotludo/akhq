@@ -165,7 +165,8 @@ akhq:
     default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
-      - name: admin # Group name
+      admin: # unique key
+        name: admin # Group name
         roles:  # roles for the group
           - topic/read
           - topic/insert
@@ -195,7 +196,8 @@ akhq:
           topics-filter-regexp: "test.*"
           # Regexp to filter connect configs visible for group
           connects-filter-regexp: "^test.*$"
-      - name: topic-reader # Other group
+      topic-reader: # unique key
+        name: topic-reader # Other group
         roles:
           - topic/read
         attributes:
