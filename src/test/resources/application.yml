@@ -78,7 +78,8 @@ akhq:
   security:
     default-group: no-filter
     groups:
-      - name: admin
+      admin:
+        name: admin
         roles:
           - topic/read
           - topic/insert
@@ -103,7 +104,8 @@ akhq:
           - connect/update
           - connect/delete
           - connect/state/update
-      - name: limited
+      limited:
+        name: limited
         roles:
           - topic/read
           - topic/insert
@@ -111,7 +113,8 @@ akhq:
           - registry/version/delete
         attributes:
           topics-filter-regexp: "test.*"
-      - name: operator
+      operator:
+        name: operator
         roles:
           - topic/read
           - topic/data/read
@@ -119,7 +122,8 @@ akhq:
           - topic/data/delete
         attributes:
           topics-filter-regexp: "test-operator.*"
-      - name: no-filter
+      no-filter:
+        name: no-filter
         roles:
           - topic/read
           - topic/insert

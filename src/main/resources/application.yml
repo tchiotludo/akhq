@@ -133,39 +133,42 @@ akhq:
   security:
     default-group: admin
     groups:
-    - name: admin
-      roles:
-      - topic/read
-      - topic/insert
-      - topic/delete
-      - topic/config/update
-      - node/read
-      - node/config/update
-      - topic/data/read
-      - topic/data/insert
-      - topic/data/delete
-      - group/read
-      - group/delete
-      - group/offsets/update
-      - registry/read
-      - registry/insert
-      - registry/update
-      - registry/delete
-      - registry/version/delete
-      - acls/read
-      - connect/read
-      - connect/insert
-      - connect/update
-      - connect/delete
-      - connect/state/update
-    - name: reader
-      roles:
-      - topic/read
-      - node/read
-      - topic/data/read
-      - group/read
-      - registry/read
-      - acls/read
-      - connect/read
-    - name: no-roles
-      roles: []
+      admin:
+        name: admin
+        roles:
+        - topic/read
+        - topic/insert
+        - topic/delete
+        - topic/config/update
+        - node/read
+        - node/config/update
+        - topic/data/read
+        - topic/data/insert
+        - topic/data/delete
+        - group/read
+        - group/delete
+        - group/offsets/update
+        - registry/read
+        - registry/insert
+        - registry/update
+        - registry/delete
+        - registry/version/delete
+        - acls/read
+        - connect/read
+        - connect/insert
+        - connect/update
+        - connect/delete
+        - connect/state/update
+      reader:
+        name: reader
+        roles:
+        - topic/read
+        - node/read
+        - topic/data/read
+        - group/read
+        - registry/read
+        - acls/read
+        - connect/read
+      no-roles:
+        name: no-roles
+        roles: []
