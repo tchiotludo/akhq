@@ -79,6 +79,7 @@ akhq:
     default-group: no-filter
     groups:
       admin:
+        name: admin
         roles:
           - topic/read
           - topic/insert
@@ -104,6 +105,7 @@ akhq:
           - connect/delete
           - connect/state/update
       limited:
+        name: limited
         roles:
           - topic/read
           - topic/insert
@@ -112,6 +114,7 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
       operator:
+        name: operator
         roles:
           - topic/read
           - topic/data/read
@@ -120,6 +123,7 @@ akhq:
         attributes:
           topics-filter-regexp: "test-operator.*"
       no-filter:
+        name: no-filter
         roles:
           - topic/read
           - topic/insert

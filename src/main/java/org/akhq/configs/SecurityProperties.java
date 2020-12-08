@@ -1,5 +1,6 @@
 package org.akhq.configs;
 
+import com.google.common.base.Strings;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.convert.format.MapFormat;
 import lombok.Data;
@@ -21,6 +22,10 @@ public class SecurityProperties {
 
     @PostConstruct
     public void init() {
-        groups.entrySet().forEach(entry -> entry.getValue().setName(entry.getKey()));
+        groups.forEach((key, group) -> {
+            if (Strings.isNullOrEmpty(group.getName())) {
+                group.setName(key);
+            }
+        });
     }
 }

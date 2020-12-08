@@ -134,6 +134,7 @@ akhq:
     default-group: admin
     groups:
       admin:
+        name: admin
         roles:
         - topic/read
         - topic/insert
@@ -159,6 +160,7 @@ akhq:
         - connect/delete
         - connect/state/update
       reader:
+        name: reader
         roles:
         - topic/read
         - node/read
@@ -168,4 +170,5 @@ akhq:
         - acls/read
         - connect/read
       no-roles:
+        name: no-roles
         roles: []
