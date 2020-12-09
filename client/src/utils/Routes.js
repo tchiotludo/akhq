@@ -25,7 +25,7 @@ import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from "../containers/Settings/Settings";
 import { organizeRoles } from './converters';
-import {uriAuths, uriClusters, uriCurrentUser, uriTopicDataSingleRecord, uriTopicsPartitions} from './endpoints';
+import {uriAuths, uriClusters, uriCurrentUser} from './endpoints';
 import Root from "../components/Root";
 
 class Routes extends Root {

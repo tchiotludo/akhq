@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logo from '../../images/logo.svg';
-import {uriAuths, uriCurrentUser, uriLogin, uriOidc} from '../../utils/endpoints';
+import {uriCurrentUser, uriLogin, uriOidc} from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
