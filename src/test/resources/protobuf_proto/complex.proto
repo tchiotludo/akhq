@@ -1,0 +1,17 @@
+syntax = "proto3";
+package org.akhq.utils;
+
+import "album.proto";
+import "film.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+
+option java_package = "org.akhq.utils";
+option java_outer_classname = "ComplexProto";
+
+message Complex {
+  Album album = 1;
+  Film film = 2;
+  google.protobuf.StringValue stringWrapper = 3;
+  google.protobuf.Any anything = 4;
+}

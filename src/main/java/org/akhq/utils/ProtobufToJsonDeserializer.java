@@ -10,8 +10,13 @@ import com.google.protobuf.util.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Connection;
 import org.akhq.configs.TopicsMapping;
+import org.apache.kafka.common.errors.SerializationException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,39 +25,61 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class ProtobufToJsonDeserializer {
-    private final Connection.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping;
     private final Map<String, List<Descriptor>> descriptors;
     private final List<TopicsMapping> topicsMapping;
+    private final String protobufDescriptorsFolder;
 
     public ProtobufToJsonDeserializer(Connection.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping) {
-        this.protobufDeserializationTopicsMapping = protobufDeserializationTopicsMapping;
         if (protobufDeserializationTopicsMapping == null) {
             this.descriptors = new HashMap<>();
             this.topicsMapping = new ArrayList<>();
+            this.protobufDescriptorsFolder = null;
         } else {
-            this.descriptors = buildAllDescriptors();
+            this.protobufDescriptorsFolder = protobufDeserializationTopicsMapping.getDescriptorsFolder();
             this.topicsMapping = protobufDeserializationTopicsMapping.getTopicsMapping();
+            this.descriptors = buildAllDescriptors();
         }
     }
 
     /**
-     * Check protobuf deserialization topics mapping config, get all protobuf descriptor files in Base64 format and convert to bytes
-     * For each descriptor file builds Descriptors list - full description with all dependencies
+     * Check Protobuf deserialization topics mapping config, get all Protobuf descriptor files
+     * from Protobuf descriptor folder or descriptor files in Base64 format and convert to bytes.
+     * For each descriptor file builds Descriptors list - full description with all dependencies.
      *
      * @return map where keys are topic regexes and values are Descriptors matching these regexes
      */
     private Map<String, List<Descriptor>> buildAllDescriptors() {
-        List<TopicsMapping> topicsMapping = protobufDeserializationTopicsMapping.getTopicsMapping();
         Map<String, List<Descriptor>> allDescriptors = new HashMap<>();
         for (TopicsMapping mapping : topicsMapping) {
-            byte[] decodedDescriptorFile = Base64.getDecoder().decode(mapping.getDescriptorFileBase64());
+            byte[] fileBytes = new byte[0];
             try {
-                allDescriptors.put(mapping.getTopicRegex(), buildAllDescriptorsForDescriptorFile(decodedDescriptorFile));
+                fileBytes = getDescriptorFileAsBytes(mapping);
+            } catch (IOException e) {
+                throw new RuntimeException(String.format("Cannot get a descriptor file for the topics regex [%s]", mapping.getTopicRegex()), e);
+            }
+            try {
+                allDescriptors.put(mapping.getTopicRegex(), buildAllDescriptorsForDescriptorFile(fileBytes));
             } catch (IOException | DescriptorValidationException e) {
-                log.error("Cannot build Protobuf descriptors for topics regex [{}]", mapping.getTopicRegex(), e);
+                throw new RuntimeException(String.format("Cannot build Protobuf descriptors for the topics regex [%s]", mapping.getTopicRegex()), e);
             }
         }
         return allDescriptors;
+    }
+
+    byte[] getDescriptorFileAsBytes(TopicsMapping mapping) throws IOException {
+        if (protobufDescriptorsFolder != null && Files.exists(Path.of(protobufDescriptorsFolder))) {
+            String descriptorFile = mapping.getDescriptorFile();
+            if (descriptorFile != null) {
+                String fullPath = protobufDescriptorsFolder + File.separator + descriptorFile;
+                return Files.readAllBytes(Path.of(fullPath));
+            }
+        }
+        String descriptorFileBase64 = mapping.getDescriptorFileBase64();
+        if (descriptorFileBase64 != null) {
+            return Base64.getDecoder().decode(descriptorFileBase64);
+        }
+        throw new FileNotFoundException("Protobuf descriptor file is not found for topic regex [" +
+                mapping.getTopicRegex() + "]. File name or Base64 file content is not specified.");
     }
 
     /**
@@ -87,6 +114,7 @@ public class ProtobufToJsonDeserializer {
     public String deserialize(String topic, byte[] buffer, boolean isKey) {
         TopicsMapping matchingConfig = findMatchingConfig(topic);
         if (matchingConfig == null) {
+            log.debug("Protobuf deserialization config is not found for topic [{}]", topic);
             return null;
         }
         String messageType = matchingConfig.getValueMessageType();
@@ -95,15 +123,16 @@ public class ProtobufToJsonDeserializer {
         }
 
         if (messageType == null) {
-            return null;
+            throw new SerializationException(String.format("Protobuf deserialization is configured for topic [%s], " +
+                    "but message type is not specified neither for a key, nor for a value.", topic));
         }
 
-        String result = null;
+        String result;
         try {
             result = tryToDeserializeWithMessageType(buffer, matchingConfig.getTopicRegex(), messageType);
         } catch (Exception e) {
-            log.error("Cannot deserialize message with Protobuf deserializer " +
-                    "for topic [{}] and message type [{}]", topic, messageType, e);
+            throw new SerializationException(String.format("Cannot deserialize message with Protobuf deserializer " +
+                    "for topic [%s] and message type [%s]", topic, messageType), e);
         }
         return result;
     }
@@ -111,7 +140,10 @@ public class ProtobufToJsonDeserializer {
     private TopicsMapping findMatchingConfig(String topic) {
         for (TopicsMapping mapping : topicsMapping) {
             if (topic.matches(mapping.getTopicRegex())) {
-                return new TopicsMapping(mapping.getTopicRegex(), mapping.getDescriptorFileBase64(), mapping.getKeyMessageType(), mapping.getValueMessageType());
+                return new TopicsMapping(
+                        mapping.getTopicRegex(),
+                        mapping.getDescriptorFile(), mapping.getDescriptorFileBase64(),
+                        mapping.getKeyMessageType(), mapping.getValueMessageType());
             }
         }
         return null;
@@ -124,6 +156,10 @@ public class ProtobufToJsonDeserializer {
                         .filter(mp -> messageType.equals(mp.getName()))
                         .collect(Collectors.toList());
 
+        if (descriptorsForConfiguredMessageTypes.isEmpty()) {
+            throw new SerializationException(String.format("Not found descriptors for topic regex [%s] " +
+                    "and message type [%s]", topicRegex, messageType));
+        }
         for (Descriptor descriptor : descriptorsForConfiguredMessageTypes) {
             String decodedMessage = tryToParseDataToJsonWithDescriptor(buffer, descriptor, descriptorsWithDependencies);
             if (!decodedMessage.isEmpty()) {

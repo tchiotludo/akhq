@@ -119,9 +119,15 @@ public class Record {
             }
         } else {
             if (protobufToJsonDeserializer != null) {
-                String record = protobufToJsonDeserializer.deserialize(topic, payload, isKey);
-                if (record != null) {
-                    return record;
+                try {
+                    String record = protobufToJsonDeserializer.deserialize(topic, payload, isKey);
+                    if (record != null) {
+                        return record;
+                    }
+                } catch (Exception exception) {
+                    this.exceptions.add(exception.getMessage());
+
+                    return new String(payload);
                 }
             }
             return new String(payload);

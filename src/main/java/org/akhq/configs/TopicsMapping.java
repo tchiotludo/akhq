@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TopicsMapping {
     String topicRegex;
+    String descriptorFile;
     String descriptorFileBase64;
     String keyMessageType;
     String valueMessageType;
