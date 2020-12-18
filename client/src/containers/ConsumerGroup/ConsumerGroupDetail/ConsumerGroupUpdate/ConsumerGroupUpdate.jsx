@@ -54,7 +54,7 @@ class ConsumerGroupUpdate extends Form {
               second: momentValue.second(),
               milli: momentValue.millisecond()
             },
-            'YYYY-MM-DDThh:mm:ss.SSS'
+            'YYYY-MM-DDTHH:mm:ss.SSS'
           ) + 'Z'
         : '';
 
