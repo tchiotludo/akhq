@@ -184,7 +184,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Disabled("is flakky on github")
     public void searchAll() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("key");
+        options.setSearchByKey("key_C");
 
         assertEquals(3000, searchAll(options));
     }
@@ -192,7 +192,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchKey() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("key_100");
+        options.setSearchByKey("key_100_C");
 
         assertEquals(3, searchAll(options));
     }
@@ -200,7 +200,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchValue() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("value_100");
+        options.setSearchByValue("value_100_C");
 
         assertEquals(3, searchAll(options));
     }
@@ -208,7 +208,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchAvro() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_COUNT);
-        options.setSearch("count");
+        options.setSearchByValue("count_C");
 
         assertEquals(12, searchAll(options));
     }

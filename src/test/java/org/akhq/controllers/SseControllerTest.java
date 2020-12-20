@@ -28,7 +28,7 @@ class SseControllerTest extends AbstractTest {
         RxSseClient sseClient = embeddedServer.getApplicationContext().createBean(RxSseClient.class, embeddedServer.getURL());
 
         List<Record> results = sseClient
-            .eventStream(BASE_URL + "/" + KafkaTestCluster.TOPIC_HUGE + "/data/search/key_100", TopicController.SearchRecord.class)
+            .eventStream(BASE_URL + "/" + KafkaTestCluster.TOPIC_HUGE + "/data/search?searchByKey=key_100_C", TopicController.SearchRecord.class)
             .toList()
             .blockingGet()
             .stream()

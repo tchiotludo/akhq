@@ -66,10 +66,13 @@ export const uriTopicData = (
   return uri;
 };
 
-export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
-  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search`;
   if(filters) {
     uri = uri + `?${filters}`
+  }
+  if(offsets) {
+    uri = uri + `&after=${offsets}`
   }
   return uri;
 };

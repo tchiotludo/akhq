@@ -160,3 +160,17 @@ code{
         margin-left: 0 !important;
     }
 }
+
+.search-input-fields {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+
+    label {
+        min-width: 100px;
+    }
+
+    input {
+        max-width: 150px;
+    }
+}
