@@ -161,7 +161,7 @@ class TopicData extends Root {
               second: timestamp.second(),
               milli: timestamp.millisecond()
             },
-            'YYYY-MM-DDThh:mm:ss.SSS',
+            'YYYY-MM-DDTHH:mm:ss.SSS',
             true
           ) + 'Z';
       filters.push(`timestamp=${timestamp}`);
