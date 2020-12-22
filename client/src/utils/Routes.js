@@ -25,7 +25,7 @@ import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from "../containers/Settings/Settings";
 import { organizeRoles } from './converters';
-import {uriClusters, uriCurrentUser} from './endpoints';
+import {uriAuths, uriClusters, uriCurrentUser} from './endpoints';
 import Root from "../components/Root";
 
 class Routes extends Root {
@@ -64,33 +64,44 @@ class Routes extends Root {
     }
   };
 
-  getCurrentUser() {
+  _initUserAndAuth() {
+    const requests = [this.getApi(uriCurrentUser()), this.getApi(uriAuths())];
+    Promise.all(requests)
+        .then(data => {
+            this._setAuths(data[1]);
+            this._setCurrentUser(data[0].data);
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+  }
+
+  _setAuths(response) {
+    if (response.status === 200) {
+        sessionStorage.setItem('auths', JSON.stringify(response.data));
+    }
+  }
+
+  _setCurrentUser(currentUserData) {
     sessionStorage.setItem('user', '');
-    this.getApi(uriCurrentUser())
-      .then(res => {
-        let currentUserData = res.data;
-        if (currentUserData.logged) {
-          sessionStorage.setItem('login', true);
-          sessionStorage.setItem('user', currentUserData.username);
-          sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
-          this.setState({ user: currentUserData.username });
-        } else {
-          sessionStorage.setItem('login', false);
-          if (currentUserData.roles) {
-            sessionStorage.setItem('user', 'default');
-            sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
-            this.setState({ user: 'default' });
-          } else {
-            sessionStorage.setItem('user', '');
-            sessionStorage.setItem('roles', JSON.stringify({}));
-            this.setState({ user: 'not_logged' });
-          }
-        }
-        this.setState({ loading: false });
-      })
-      .catch(err => {
-        console.error('Error:', err);
-      });
+    if (currentUserData.logged) {
+      sessionStorage.setItem('login', true);
+      sessionStorage.setItem('user', currentUserData.username);
+      sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      this.setState({ user: currentUserData.username });
+    } else {
+      sessionStorage.setItem('login', false);
+      if (currentUserData.roles) {
+        sessionStorage.setItem('user', 'default');
+        sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        this.setState({ user: 'default' });
+      } else {
+        sessionStorage.setItem('user', '');
+        sessionStorage.setItem('roles', JSON.stringify({}));
+        this.setState({ user: 'not_logged' });
+      }
+    }
+    this.setState({ loading: false });
   }
 
   handleRedirect() {
@@ -113,7 +124,7 @@ class Routes extends Root {
     let clusterId = this.state.clusterId;
 
     if (this.state.user.length <= 0) {
-      this.getCurrentUser();
+      this._initUserAndAuth();
       return <></>;
     }
 

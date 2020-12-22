@@ -12,6 +12,7 @@ class Header extends Root {
   state = {
     login: sessionStorage.getItem('login'),
     username: sessionStorage.getItem('user'),
+    auths: JSON.parse(sessionStorage.getItem('auths')),
     goBack: true
   };
 
@@ -49,9 +50,38 @@ class Header extends Root {
     });
   }
 
+  _renderLogin() {
+    const { login, username, auths } = this.state;
+    if(auths && auths.loginEnabled) {
+        return (login === 'false' || !login ? (
+            <Link to="/ui/login">
+              <button className="btn btn-primary">
+                {' '}
+                <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
+                Login
+              </button>
+            </Link>
+        ) : (
+            <Link to="#">
+              <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    this.logout();
+                  }}
+              >
+                {' '}
+                <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
+                {username} (Logout)
+              </button>
+            </Link>
+        ));
+    } else {
+      return (<></>);
+    }
+  }
+
   render() {
     const { title, children } = this.props;
-    const { login, username } = this.state;
     return (
       <React.Fragment>
         <div
@@ -61,28 +91,7 @@ class Header extends Root {
           {' '}
           <h1>{title}</h1>{' '}
           <div>
-            {login === 'false' || !login ? (
-              <Link to="/ui/login">
-                <button className="btn btn-primary">
-                  {' '}
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  Login
-                </button>
-              </Link>
-            ) : (
-              <Link to="#">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    this.logout();
-                  }}
-                >
-                  {' '}
-                  <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-                  {username} (Logout)
-                </button>
-              </Link>
-            )}
+            {this._renderLogin()}
             {children}
           </div>
         </div>
