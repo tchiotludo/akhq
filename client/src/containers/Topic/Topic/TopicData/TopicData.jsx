@@ -225,6 +225,7 @@ class TopicData extends Root {
   }
 
   _searchMessages(changePage = false){
+    this._stopEventSource();
     if (this._hasAnyFilterFilled()) {
       this._startEventSource(changePage);
     } else {
