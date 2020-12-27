@@ -26,7 +26,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import { basePath } from '../../../../utils/endpoints';
-import {getClusterUIOptions} from "../../../../utils/functions";
+import {capitalizeTxt, getClusterUIOptions} from "../../../../utils/functions";
+import Select from "../../../../components/Form/Select";
 
 class TopicData extends Root {
   state = {
@@ -37,8 +38,12 @@ class TopicData extends Root {
     partitionOptions: [],
     offsetsOptions: [],
     timestamp: '',
-    currentSearch: '',
-    search: '',
+    search: {
+      key: { text: '', type: 'C'},
+      value: { text: '', type: 'C'},
+      headerKey: { text: '', type: 'C'},
+      headerValue: { text: '', type: 'C'}
+    },
     offsets: {},
     offsetsSearch: '',
     openDateModal: false,
@@ -60,16 +65,34 @@ class TopicData extends Root {
     loading: true
   };
 
+  searchFilterTypes = [
+    {
+      _id: 'C',
+      name: 'Contains'
+    },
+    {
+      _id: 'N',
+      name: 'Not Contains'
+    },
+    {
+      _id: 'E',
+      name: 'Equals'
+    }];
+
   eventSource;
 
   componentDidMount = () => {
-    this.checkProps();
+    this._checkProps();
   };
 
-  async checkProps() {
+  componentWillUnmount = () => {
+    super.componentWillUnmount();
+    this._stopEventSource();
+  };
+
+  async _checkProps() {
     const { clusterId, topicId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
-
     const uiOptions = await getClusterUIOptions(clusterId);
 
     this.setState(
@@ -81,66 +104,93 @@ class TopicData extends Root {
           partition: (query.get('partition'))? query.get('partition') : this.state.partition,
           datetime: (query.get('timestamp'))? new Date(query.get('timestamp')) : this.state.datetime,
           offsetsSearch: (query.get('after'))? query.get('after') : this.state.offsetsSearch,
-          currentSearch: (query.get('search'))? query.get('search') : this.state.currentSearch,
-          offsets: (query.get('offset'))? this.getOffsetsByOffset(query.get('partition'), query.get('offset')) :
-              ((query.get('after'))? this.getOffsetsByAfterString(query.get('after')): this.state.offsets),
+          search: this._buildSearchFromQueryString(query),
+          offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
+              ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
         },
         () => {
             if(query.get('single') !== null) {
-              this.getSingleMessage(query.get('partition'), query.get('offset'));
+              this._getSingleMessage(query.get('partition'), query.get('offset'));
             } else {
-              this.getMessages(this.buildFilters());
+              this._getMessages();
             }
         }
     );
   };
 
-  componentWillUnmount = () => {
-    super.componentWillUnmount();
-    this.onStop();
-  };
+  _buildSearchFromQueryString(query) {
+    const { search } = this.state;
 
-  startEventSource = () => {
-    let { clusterId, topicId } = this.props.match.params;
-    const { currentSearch } = this.state;
+    Object.keys(search).forEach(value => {
+      const searchFilter = query.get(`searchBy${capitalizeTxt(value)}`);
+      if(searchFilter) {
+        const pos = searchFilter.lastIndexOf('_');
+        search[value].text = searchFilter.substr(0, pos);
+        search[value].type = searchFilter.substr(pos + 1);
+      }
+    });
+    return search;
+  }
+
+  _startEventSource = (changePage) => {
+    let { selectedCluster, selectedTopic, nextPage } = this.state;
+
     let self = this;
-    this.setState({ messages: [], pageNumber: 1 });
-    this.eventSource = new EventSource(uriTopicDataSearch(clusterId, topicId, currentSearch, this.buildFilters()));
-    this.eventSource.addEventListener('searchBody', function(e) {
-      let res = JSON.parse(e.data);
-      self.setState({ isSearching: true, percent: res.percent.toFixed(2) }, () => {
-        self.handleMessages(res.records || [], true);
+    this.setState({ sortBy: 'Oldest', messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
+      const filters = this._buildFilters();
+      if (changePage) {
+        this._setUrlHistory(filters + '&after=' + nextPage );
+      } else {
+        this._setUrlHistory(filters);
+      }
+      this.eventSource = new EventSource(uriTopicDataSearch(selectedCluster, selectedTopic, filters, (changePage)? nextPage: undefined));
+
+      this.eventSource.addEventListener('searchBody', function(e) {
+        const res = JSON.parse(e.data);
+        const records = res.records || [];
+        const nextPage = (res.after) ? res.after : self.state.nextPage;
+        self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) }, () => {
+          self._handleMessages(records, true);
+        });
+      });
+
+      this.eventSource.addEventListener('searchEnd', function(e) {
+        self.eventSource.close();
+        self.setState({ percent: 100, isSearching: false, loading: false });
       });
     });
-
-    this.eventSource.addEventListener('searchEnd', function(e) {
-      self.eventSource.close();
-      self.setState({ percent: 100, isSearching: false });
-    });
   };
 
-  onStop = () => {
+  _stopEventSource = () => {
     if (this.eventSource) {
       this.eventSource.close();
     }
     this.setState({ isSearching: false });
   };
 
-  onStart = () => {
-    this.setUrlHistory(this.buildFilters());
-
-    this.setState({ percent: 0, isSearching: true }, () => {
-      this.startEventSource();
+  _clearSearch = () => {
+    this.setState({ search: {
+        key: { text: '', type: 'C'},
+        value: { text: '', type: 'C'},
+        headerKey: { text: '', type: 'C'},
+        headerValue: { text: '', type: 'C'}
+      } }, () => {
+        this._searchMessages();
     });
-  };
+  }
 
-  buildFilters() {
+  _hasAnyFilterFilled() {
+    const { search } = this.state;
+    return Object.keys(search).find(value => search[value].text.length > 0) !== undefined;
+  }
+
+  _buildFilters() {
     const {
       sortBy,
       partition,
       datetime,
       offsetsSearch,
-      currentSearch
+      search
     } = this.state;
 
     const filters = [];
@@ -167,12 +217,23 @@ class TopicData extends Root {
       filters.push(`timestamp=${timestamp}`);
     }
 
-    if (currentSearch) filters.push(`search=${currentSearch}`);
-
+    Object.keys(search).filter(value => search[value].text.length > 0)
+               .forEach(value => {
+                    filters.push(`searchBy${capitalizeTxt(value)}=${encodeURIComponent(search[value].text)}_${search[value].type}`)
+                })
     return filters.join('&');
   }
 
-  getSingleMessage(partition, offset) {
+  _searchMessages(changePage = false){
+    this._stopEventSource();
+    if (this._hasAnyFilterFilled()) {
+      this._startEventSource(changePage);
+    } else {
+      this._getMessages(changePage);
+    }
+  }
+
+  _getSingleMessage(partition, offset) {
     const {
       selectedCluster,
       selectedTopic,
@@ -184,12 +245,14 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  getMessages(filters = null, changePage = false) {
+  _getMessages(changePage = false) {
     const {
       selectedCluster,
       selectedTopic,
       nextPage
     } = this.state;
+
+    const filters = this._buildFilters();
     const requests = [
       this.getApi(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
       this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))
@@ -198,9 +261,9 @@ class TopicData extends Root {
     this._fetchMessages(requests, changePage);
 
     if (changePage) {
-      this.setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
+      this._setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
     } else {
-      this.setUrlHistory(filters);
+      this._setUrlHistory(filters);
     }
   }
 
@@ -222,13 +285,13 @@ class TopicData extends Root {
         const partitionData = data[1].data;
 
         if (messagesData.results) {
-          tableMessages = this.handleMessages(messagesData.results);
+          tableMessages = this._handleMessages(messagesData.results);
         } else {
           pageNumberTemp = 1;
         }
         if (partitionData) {
           if (changePage) {
-            offsetsTemp = this.getNextPageOffsets(nextPage);
+            offsetsTemp = this._getNextPageOffsets(nextPage);
           }
           partitionCountTemp = partitionData.length;
           nextPageTemp = messagesData.after;
@@ -247,9 +310,9 @@ class TopicData extends Root {
     });
   }
 
-  handleOnDelete(message) {
+  _handleOnDelete(message) {
     this.setState({ compactMessageToDelete: message }, () => {
-      this.showDeleteModal(
+      this._showDeleteModal(
           <React.Fragment>
             Do you want to delete message: {<code>{message.key}</code>} ?
           </React.Fragment>
@@ -257,7 +320,7 @@ class TopicData extends Root {
     });
   }
 
-  copyToClipboard(code) {
+  _copyToClipboard(code) {
     const textField = document.createElement('textarea')
     textField.innerText = code
     document.body.appendChild(textField)
@@ -266,35 +329,34 @@ class TopicData extends Root {
     textField.remove()
   }
 
-  async handleOnShare(row) {
+  _handleOnShare(row) {
     const {
       selectedCluster,
       selectedTopic
     } = this.state;
 
-
     const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
 
     try {
-      this.copyToClipboard(`${window.location.host}${pathToShare}`)
+      this._copyToClipboard(`${window.location.host}${pathToShare}`)
       toast.info('Message url is copied to your clipboard!');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
 
     this.props.history.push(pathToShare)
-    this.getSingleMessage(row.partition, row.offset);
+    this._getSingleMessage(row.partition, row.offset);
   }
 
-  showDeleteModal = deleteMessage => {
+  _showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
   };
 
-  closeDeleteModal = () => {
+  _closeDeleteModal = () => {
     this.setState({ showDeleteModal: false, deleteMessage: '' });
   };
 
-  deleteCompactMessage = () => {
+  _deleteCompactMessage = () => {
     const { selectedCluster, selectedTopic, compactMessageToDelete: message } = this.state;
 
     const encodedkey = new Buffer(message.key).toString('base64');
@@ -304,9 +366,9 @@ class TopicData extends Root {
         deleteData
     )
         .then(() => {
-          toast.success(`Record '${message}' will be deleted on compaction`);
+          toast.success(`Record '${message.partition}-${message.offset}' will be deleted on compaction`);
           this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
-            this.getMessages();
+            this._getMessages();
           });
         })
         .catch(() => {
@@ -314,7 +376,7 @@ class TopicData extends Root {
         });
   };
 
-  handleMessages = (messages, append = false) => {
+  _handleMessages = (messages, append = false) => {
     let tableMessages = append ? this.state.messages : [];
     messages.forEach(message => {
       let messageToPush = {
@@ -332,13 +394,13 @@ class TopicData extends Root {
     return tableMessages;
   };
 
-  getNextPageOffsets = (nextPage) => {
+  _getNextPageOffsets = (nextPage) => {
     let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
     let afterString = aux.substring(0, aux.indexOf('&'));
-    return this.getOffsetsByAfterString(afterString);
+    return this._getOffsetsByAfterString(afterString);
   };
 
-  getOffsetsByAfterString = (afterString) => {
+  _getOffsetsByAfterString = (afterString) => {
     let offsets = [];
     const offsetsByPartition = afterString.split('_');
 
@@ -349,13 +411,13 @@ class TopicData extends Root {
     return offsets;
   }
 
-  getOffsetsByOffset = (partition, offset) => {
+  _getOffsetsByOffset = (partition, offset) => {
     let offsets = [];
     offsets[`partition${partition}`] = offset;
     return offsets;
   }
 
-  createPartitionOptions = () => {
+  _createPartitionOptions = () => {
     const { partitionCount } = this.state;
     let partitionOptions = ['All'];
     for (let i = 0; i < partitionCount; i++) {
@@ -364,7 +426,7 @@ class TopicData extends Root {
     return partitionOptions;
   };
 
-  createOffsetsOptions = () => {
+  _createOffsetsOptions = () => {
     const { partitionCount } = this.state;
     let offsetsOptions = [];
     for (let i = 0; i < partitionCount; i++) {
@@ -373,12 +435,7 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  searchMessages(changePage = false){
-    const filters = this.buildFilters();
-    this.getMessages(filters, changePage);
-  }
-
-  setUrlHistory(filters){
+  _setUrlHistory(filters){
     const {
       selectedCluster,
       selectedTopic
@@ -390,7 +447,7 @@ class TopicData extends Root {
     });
   }
 
-  redirectToSchema(id) {
+  _redirectToSchema(id) {
     const { selectedCluster } = this.state;
 
     this.getApi(uriSchemaId(selectedCluster, id))
@@ -406,7 +463,7 @@ class TopicData extends Root {
       })
   }
 
-  renderSortOptions() {
+  _renderSortOptions() {
     const { sortOptions } = this.state;
 
     let renderedOptions = [];
@@ -415,7 +472,7 @@ class TopicData extends Root {
           <Dropdown.Item
               key={option}
               onClick={() => this.setState({ sortBy: option }, () => {
-                this.searchMessages();
+                this._clearSearch();
               })}
           >
             <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
@@ -425,8 +482,8 @@ class TopicData extends Root {
     return renderedOptions;
   }
 
-  renderPartitionOptions = () => {
-    const partitionOptions = this.createPartitionOptions();
+  _renderPartitionOptions = () => {
+    const partitionOptions = this._createPartitionOptions();
 
     let renderedOptions = [];
     for (let option of partitionOptions) {
@@ -434,7 +491,7 @@ class TopicData extends Root {
           <Dropdown.Item
               key={option}
               onClick={() => this.setState({ partition: option }, () => {
-                this.searchMessages();
+                this._searchMessages();
               })}
           >
             <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
@@ -444,8 +501,8 @@ class TopicData extends Root {
     return renderedOptions;
   };
 
-  renderOffsetsOptions = () => {
-    const offsetsOptions = this.createOffsetsOptions();
+  _renderOffsetsOptions = () => {
+    const offsetsOptions = this._createOffsetsOptions();
 
     let renderedOptions = [];
     let i;
@@ -482,7 +539,7 @@ class TopicData extends Root {
     return renderedOptions;
   };
 
-  openAndCloseFilters() {
+  _openAndCloseFilters() {
     let { showFilters } = this.state;
     if (showFilters === 'show') {
       this.setState({ showFilters: '' });
@@ -491,12 +548,90 @@ class TopicData extends Root {
     }
   }
 
+  _renderSearchFilter(name, label) {
+    const { search } = this.state;
+
+    return (
+        <div className="search-input-fields">
+          <label>{label}</label>
+          <input
+              className="form-control"
+              name={`${name}_text`}
+              type="text"
+              value={search[name].text}
+              onChange={({ currentTarget: input }) => {
+                search[name].text = input.value;
+                this.setState({ search });
+              }}
+          />
+          <Select
+              name={`${name}_select`}
+              selectClass={'col-xs-2'}
+              value={search[name].type}
+              label=""
+              items={this.searchFilterTypes}
+              onChange={value => {
+                search[name].type = value.target.value;
+                this.setState({ search });
+              }}
+          />
+        </div>
+    );
+  }
+
+  _renderSearchGroup() {
+    const { isSearching } = this.state;
+
+    return (
+      <div style={{ minWidth: '400px' }} className="input-group">
+
+        {this._renderSearchFilter('key', 'Key')}
+        {this._renderSearchFilter('value','Value')}
+        {this._renderSearchFilter('headerKey', 'Header Key')}
+        {this._renderSearchFilter('headerValue', 'Header Value')}
+
+        <div style={{display: 'flex' }}>
+          <button
+              className="btn btn-primary inline-block search"
+              type="button"
+              onClick={() => this._searchMessages() }
+          >
+            {isSearching ? (
+                <i className="fa fa-spinner fa-spin"></i>
+            ) : (
+                <i className="fa fa-search"></i>
+            )}
+          </button>
+          <button
+              className="btn btn-primary btn-border inline-block"
+              type="button"
+              disabled={!isSearching}
+              onClick={() => this._stopEventSource()}
+          >
+            Stop
+          </button>
+          <button
+              className="btn btn-primary btn-border inline-block"
+              type="button"
+              disabled={isSearching}
+              onClick={() => this._clearSearch()}
+          >
+            Clear
+          </button>
+        </div>
+    </div>);
+  }
+
+  _renderCurrentSearchText() {
+    const { search } = this.state;
+    const filterKey = Object.keys(search).find(value => search[value].text.length > 0);
+    return (filterKey !== undefined)? search[filterKey].text : '';
+  }
+
   render() {
     const {
       sortBy,
       partition,
-      currentSearch,
-      search,
       offsets,
       messages,
       pageNumber,
@@ -517,7 +652,7 @@ class TopicData extends Root {
       { colName: 'Partition', colSpan: 1 },
       { colName: 'Offset', colSpan: 1 },
       { colName: 'Headers', colSpan: 1 },
-      { colname: 'Schema', colSpan: 1 }
+      { colName: 'Schema', colSpan: 1 }
     ];
     return (
         <React.Fragment>
@@ -534,7 +669,7 @@ class TopicData extends Root {
                 aria-expanded="false"
                 aria-label="Toggle navigation"
                 onClick={() => {
-                  this.openAndCloseFilters();
+                  this._openAndCloseFilters();
                 }}
             >
               <span className="navbar-toggler-icon" />
@@ -555,7 +690,7 @@ class TopicData extends Root {
                             pageNumber: pageNumber + 1
                           },
                           () => {
-                            this.searchMessages(true);
+                            this._searchMessages(true);
                           }
                       );
                     }}
@@ -572,7 +707,7 @@ class TopicData extends Root {
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
                       <strong>Sort:</strong> ({sortBy})
                     </Dropdown.Toggle>
-                    {!loading && <Dropdown.Menu>{this.renderSortOptions()}</Dropdown.Menu>}
+                    {!loading && <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>}
                   </Dropdown>
                 </li>
                 <li className="nav-item dropdown">
@@ -582,7 +717,7 @@ class TopicData extends Root {
                     </Dropdown.Toggle>
                     {!loading && <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      {this.renderPartitionOptions()}
+                      {this._renderPartitionOptions()}
                       </div>
                     </Dropdown.Menu>}
                   </Dropdown>
@@ -617,7 +752,7 @@ class TopicData extends Root {
                                 value={datetime}
                                 onChange={value => {
                                   this.setState({ datetime: value }, () => {
-                                    this.searchMessages();
+                                    this._searchMessages();
                                   });
                                 }}
                             />
@@ -629,49 +764,11 @@ class TopicData extends Root {
                 <li className="nav-item dropdown">
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Search:</strong> {(currentSearch !== '' ? `(${currentSearch})` : '')}
+                      <strong>Search:</strong> { this._renderCurrentSearchText() }
                     </Dropdown.Toggle>
                     {!loading && (
                         <Dropdown.Menu>
-                          <div style={{ minWidth: '300px' }} className="input-group">
-                            <input
-                                className="form-control"
-                                name="search"
-                                type="text"
-                                value={search}
-                                style={{ minWidth: '150px' }}
-                                onChange={({ currentTarget: input }) => {
-                                  this.setState({ search: input.value });
-                                }}
-                            />
-                            <button
-                                className="btn btn-primary inline-block search"
-                                type="button"
-                                onClick={() =>
-                                    this.setState({ currentSearch: search }, () => {
-                                      if (this.state.currentSearch.length <= 0) {
-                                        this.searchMessages();
-                                      } else {
-                                        this.onStart();
-                                      }
-                                    })
-                                }
-                            >
-                              {isSearching ? (
-                                  <i className="fa fa-spinner fa-spin"></i>
-                              ) : (
-                                  <i className="fa fa-search"></i>
-                              )}
-                            </button>
-                            <button
-                                className="btn btn-primary btn-border inline-block"
-                                type="button"
-                                disabled={!isSearching}
-                                onClick={() => this.onStop()}
-                            >
-                              Stop
-                            </button>
-                          </div>
+                          {this._renderSearchGroup()}
                         </Dropdown.Menu>
                     )}
                   </Dropdown>
@@ -685,7 +782,7 @@ class TopicData extends Root {
                         <Dropdown.Menu>
                           <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                             <div className="input-group">
-                              <table>{this.renderOffsetsOptions()}</table>
+                              <table>{this._renderOffsetsOptions()}</table>
                               <div className="input-group-append">
                                 <button
                                     className="btn btn-primary offsets-ok"
@@ -701,7 +798,7 @@ class TopicData extends Root {
                                         }
                                       }
                                       this.setState({ offsetsSearch }, () => {
-                                        this.searchMessages();
+                                        this._searchMessages();
                                       });
                                     }}
                                 >
@@ -832,7 +929,7 @@ class TopicData extends Root {
                                 <span
                                     className="badge badge-primary clickable"
                                     onClick={() => {
-                                      this.redirectToSchema(obj.schema.key);
+                                      this._redirectToSchema(obj.schema.key);
                                     }}
                                 >
                           Key: {obj[col.accessor].key}
@@ -843,7 +940,7 @@ class TopicData extends Root {
                                 <span
                                     className="badge badge-primary clickable schema-value"
                                     onClick={() => {
-                                      this.redirectToSchema(obj.schema.value);
+                                      this._redirectToSchema(obj.schema.value);
                                     }}
                                 >
                           Value: {obj[col.accessor].value}
@@ -861,10 +958,10 @@ class TopicData extends Root {
                   this.setState({ messages: data });
                 }}
                 onDelete={row => {
-                  this.handleOnDelete(row);
+                  this._handleOnDelete(row);
                 }}
                 onShare={row => {
-                  this.handleOnShare(row);
+                  this._handleOnShare(row);
                 }}
                 actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
                 onExpand={obj => {
@@ -909,8 +1006,8 @@ class TopicData extends Root {
 
           <ConfirmModal
               show={this.state.showDeleteModal}
-              handleCancel={this.closeDeleteModal}
-              handleConfirm={this.deleteCompactMessage}
+              handleCancel={this._closeDeleteModal}
+              handleConfirm={this._deleteCompactMessage}
               message={this.state.deleteMessage}
           />
         </React.Fragment>

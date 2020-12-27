@@ -626,28 +626,83 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    private boolean searchFilter(BaseOptions options, Record record) {
-        if (options.getSearch() == null) {
-            return true;
-        }
+    private static boolean searchFilter(BaseOptions options, Record record) {
 
-        if (record.getKey() != null && containsAll(options.getSearch(), record.getKey())) {
-            return true;
-        }
+        if (options.getSearch() != null) {
+            if(!search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()))) return false;
+        } else {
+            if (options.getSearchByKey() != null) {
+                if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) return false;
+            }
 
-        return record.getValue() != null && containsAll(options.getSearch(), record.getValue());
-    }
+            if (options.getSearchByValue() != null) {
+                if (!search(options.getSearchByValue(), Collections.singletonList(record.getValue()))) return false;
+            }
 
-    private static boolean containsAll(String search, String in) {
-        String[] split = search.toLowerCase().split("\\s");
-        in = in.toLowerCase();
+            if (options.getSearchByHeaderKey() != null) {
+                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) return false;
+            }
 
-        for (String k : split) {
-            if (!in.contains(k)) {
-                return false;
+            if (options.getSearchByHeaderValue() != null) {
+                if (!search(options.getSearchByHeaderValue(), record.getHeaders().values())) return false;
             }
         }
+        return true;
+    }
 
+    private static boolean search(Search searchFilter, Collection<String> stringsToSearch) {
+        switch (searchFilter.searchMatchType) {
+            case EQUALS:
+                return equalsAll(searchFilter.getText(), stringsToSearch);
+            case NOT_CONTAINS:
+                return notContainsAll(searchFilter.getText(), stringsToSearch);
+            default:
+                return containsAll(searchFilter.getText(), stringsToSearch);
+        }
+    }
+
+    private static boolean containsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.contains(k)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean equalsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.equals(k)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean notContainsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.contains(k)) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -878,10 +933,96 @@ public class RecordRepository extends AbstractRepository {
     @ToString
     @EqualsAndHashCode
     @Getter
+    public static class Search {
+
+        public enum SearchMatchType {
+            EQUALS("E"),
+            CONTAINS("C"),
+            NOT_CONTAINS("N");
+
+            private final String code;
+
+            SearchMatchType(String code) {
+                this.code = code;
+            }
+
+            public static SearchMatchType valueOfCode(String code) {
+                for (SearchMatchType e : values()) {
+                    if (e.code.equals(code)) {
+                        return e;
+                    }
+                }
+                return null;
+            }
+        }
+
+        protected String text;
+        protected SearchMatchType searchMatchType;
+
+        public Search(String text) {
+            this.setText(text);
+            this.searchMatchType = SearchMatchType.CONTAINS;
+        }
+
+        public Search(String text, String searchMatchType) {
+            this.setText(text);
+            this.setSearchMatchType(searchMatchType);
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public void setSearchMatchType(String type) {
+            this.searchMatchType = SearchMatchType.valueOfCode(type);
+        }
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
     @Setter
     abstract public static class BaseOptions {
+
         protected String clusterId;
-        protected String search;
+        protected Search search;
+        protected Search searchByKey;
+        protected Search searchByValue;
+        protected Search searchByHeaderKey;
+        protected Search searchByHeaderValue;
+
+        public BaseOptions() {
+        }
+
+        public void setSearchByKey(String searchByKey) {
+           this.searchByKey = this.buildSearch(searchByKey);
+        }
+
+        public void setSearchByValue(String searchByValue) {
+            this.searchByValue = this.buildSearch(searchByValue);
+        }
+
+        public void setSearchByHeaderKey(String searchByHeaderKey) {
+            this.searchByHeaderKey = this.buildSearch(searchByHeaderKey);
+        }
+
+        public void setSearchByHeaderValue(String searchByHeaderValue) {
+            this.searchByHeaderValue = this.buildSearch(searchByHeaderValue);
+        }
+
+        public void setSearch(String search) {
+            this.search = new Search(search);
+        }
+
+        private Search buildSearch(String searchByKey) {
+            int sepPos = searchByKey.lastIndexOf('_');
+            if(sepPos > 0) {
+                return new Search(searchByKey.substring(0, sepPos), searchByKey.substring(sepPos + 1));
+            } else {
+                return new Search(searchByKey);
+            }
+        }
+
     }
 
     @ToString
@@ -984,6 +1125,7 @@ public class RecordRepository extends AbstractRepository {
     public static class TailOptions extends BaseOptions {
         private List<String> topics;
         protected List<String> after;
+
 
         public TailOptions(String clusterId, List<String> topics) {
             this.clusterId = clusterId;

@@ -25,6 +25,10 @@ export async function getClusterUIOptions(clusterId) {
     }
 }
 
+export const capitalizeTxt = (text) => {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
 
-export default { getSelectedTab, getClusterUIOptions };
+
+export default { getSelectedTab, getClusterUIOptions, capitalizeTxt };
 

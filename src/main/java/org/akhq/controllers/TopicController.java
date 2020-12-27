@@ -163,10 +163,23 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
-        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
+        RecordRepository.Options options =
+                dataSearchOptions(cluster,
+                        topicName,
+                        after,
+                        partition,
+                        sort,
+                        timestamp,
+                        searchByKey,
+                        searchByValue,
+                        searchByHeaderKey,
+                        searchByHeaderValue);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
@@ -279,7 +292,7 @@ public class TopicController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @ExecuteOn(TaskExecutors.IO)
-    @Get(value = "api/{cluster}/topic/{topicName}/data/search/{search}", produces = MediaType.TEXT_EVENT_STREAM)
+    @Get(value = "api/{cluster}/topic/{topicName}/data/search", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
     public Publisher<Event<SearchRecord>> sse(
         String cluster,
@@ -288,7 +301,10 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
@@ -297,7 +313,10 @@ public class TopicController extends AbstractController {
             partition,
             sort,
             timestamp,
-            search
+            searchByKey,
+            searchByValue,
+            searchByHeaderKey,
+            searchByHeaderValue
         );
 
         return recordRepository
@@ -336,6 +355,9 @@ public class TopicController extends AbstractController {
             topicName,
             offset - 1 < 0 ? Optional.empty() : Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
             Optional.of(partition),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Optional.empty()
@@ -401,6 +423,9 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -421,7 +446,10 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) {
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
 
@@ -430,8 +458,10 @@ public class TopicController extends AbstractController {
         sort.ifPresent(options::setSort);
         timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
         after.ifPresent(options::setAfter);
-        search.ifPresent(options::setSearch);
-
+        searchByKey.ifPresent(options::setSearchByKey);
+        searchByValue.ifPresent(options::setSearchByValue);
+        searchByHeaderKey.ifPresent(options::setSearchByHeaderKey);
+        searchByHeaderValue.ifPresent(options::setSearchByHeaderValue);
         return options;
     }
 
