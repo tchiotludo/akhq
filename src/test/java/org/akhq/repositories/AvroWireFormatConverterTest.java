@@ -58,13 +58,13 @@ public class AvroWireFormatConverterTest {
 
     @Test
     public void convertValueToWireFormatNull() {
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient, "confluent");
         assertNull(convertedValue);
     }
 
     @Test
     public void convertValueToWireFormatEmptyValue() {
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient, "confluent");
         assertEquals(0, convertedValue.length);
     }
 
@@ -76,7 +76,7 @@ public class AvroWireFormatConverterTest {
 
         ConsumerRecord<byte[], byte[]> consumerRecord = new ConsumerRecord<>("topic", 1, 0, new byte[0], avroPayload);
         consumerRecord.headers().add(new RecordHeader("contentType", "mySubject.v1".getBytes()));
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient, "confluent");
 
         assertEquals(convertedValue, avroPayload);
     }
@@ -89,7 +89,7 @@ public class AvroWireFormatConverterTest {
 
         ConsumerRecord<byte[], byte[]> consumerRecord = new ConsumerRecord<>("topic", 1, 0, new byte[0], avroPayload);
         consumerRecord.headers().add(new RecordHeader("contentType", "application/vnd.mySubject.v1+avro".getBytes()));
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient, "confluent");
 
         KafkaAvroDeserializer kafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient);
         GenericData.Record deserializedRecord = (GenericData.Record) kafkaAvroDeserializer.deserialize(null, convertedValue);

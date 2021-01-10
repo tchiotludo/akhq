@@ -31,6 +31,7 @@ public class Connection extends AbstractProperties {
         String url;
         String basicAuthUsername;
         String basicAuthPassword;
+        String type;
 
         @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
         Map<String, String> properties;

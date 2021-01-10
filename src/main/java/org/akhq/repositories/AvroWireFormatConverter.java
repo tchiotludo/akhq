@@ -28,31 +28,34 @@ import javax.inject.Singleton;
 @Slf4j
 public class AvroWireFormatConverter {
 
-    private static final byte MAGIC_BYTE = 0;
     private static final Pattern AVRO_CONTENT_TYPE_PATTERN = Pattern.compile("\"?application/vnd\\.(.+)\\.v(\\d+)\\+avro\"?");
 
-    public byte[] convertValueToWireFormat(ConsumerRecord<byte[], byte[]> record, SchemaRegistryClient registryClient) {
+    public byte[] convertValueToWireFormat(ConsumerRecord<byte[], byte[]> record, SchemaRegistryClient registryClient, String wireFormat) {
+        byte magicByte = 0x0;
+        if ("tibco".equalsIgnoreCase(wireFormat)) {
+            magicByte = (byte) 0x80;
+        }
         Iterator<Header> contentTypeIter = record.headers().headers("contentType").iterator();
         byte[] value = record.value();
         if (contentTypeIter.hasNext() &&
                 value.length > 0 &&
-                ByteBuffer.wrap(value).get() != MAGIC_BYTE) {
+                ByteBuffer.wrap(value).get() != magicByte) {
             String headerValue = new String(contentTypeIter.next().value());
             Matcher matcher = AVRO_CONTENT_TYPE_PATTERN.matcher(headerValue);
             if (matcher.matches()) {
                 String subject = matcher.group(1);
                 int version = Integer.parseInt(matcher.group(2));
-                value = prependWireFormatHeader(value, registryClient, subject, version);
+                value = prependWireFormatHeader(value, registryClient, subject, version, magicByte);
             }
         }
         return value;
     }
 
-    private byte[] prependWireFormatHeader(byte[] value, SchemaRegistryClient registryClient, String subject, int version) {
+    private byte[] prependWireFormatHeader(byte[] value, SchemaRegistryClient registryClient, String subject, int version, byte magicByte) {
         try {
             SchemaMetadata schemaMetadata = registryClient.getSchemaMetadata(subject, version);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write(MAGIC_BYTE);
+            out.write(magicByte);
             out.write(ByteBuffer.allocate(4).putInt(schemaMetadata.getId()).array());
             out.write(value);
             value = out.toByteArray();

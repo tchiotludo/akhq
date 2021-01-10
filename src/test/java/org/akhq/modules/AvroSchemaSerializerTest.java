@@ -48,7 +48,7 @@ class AvroSchemaSerializerTest {
 
     @BeforeEach
     void setUp() throws IOException, RestClientException {
-        cut = new AvroSerializer(schemaRegistryClient);
+        cut = new AvroSerializer(schemaRegistryClient, "confluent");
         when(schemaRegistryClient.getById(anyInt())).thenReturn(SCHEMA);
     }
 

@@ -26,12 +26,18 @@ import java.nio.ByteBuffer;
 @Slf4j
 public class AvroSerializer {
 
-    public static final int MAGIC_BYTE = 0;
+    private final int MAGIC_BYTE;
+
     public static final int SCHEMA_ID_SIZE = 4;
     private SchemaRegistryClient registryClient;
 
-    public AvroSerializer(SchemaRegistryClient registryClient) {
+    public AvroSerializer(SchemaRegistryClient registryClient, String wireFormat) {
         this.registryClient = registryClient;
+        if ("tibco".equalsIgnoreCase(wireFormat)) {
+            MAGIC_BYTE = (byte) 0x80;
+        } else {
+            MAGIC_BYTE = 0x0;
+        }
     }
 
     public byte[] toAvro(String json, int schemaId) {
