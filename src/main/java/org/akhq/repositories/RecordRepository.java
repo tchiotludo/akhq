@@ -540,12 +540,14 @@ public class RecordRepository extends AbstractRepository {
         )).get();
     }
 
-    public Flowable<Event<SearchEvent>> search(String clusterId, Options options) {
+    public Flowable<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
         AtomicInteger matchesCount = new AtomicInteger();
 
+        Properties properties = new Properties();
+        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.getSize());
+
         return Flowable.generate(() -> {
-            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-            Topic topic = topicRepository.findByName(clusterId, options.topic);
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties);
             Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
             if (partitions.size() == 0) {
@@ -571,7 +573,6 @@ public class RecordRepository extends AbstractRepository {
 
             // end
             if (searchEvent == null || searchEvent.emptyPoll == 666) {
-                Topic topic = topicRepository.findByName(clusterId, options.topic);
 
                 emitter.onNext(new SearchEvent(topic).end());
                 emitter.onComplete();
@@ -629,7 +630,7 @@ public class RecordRepository extends AbstractRepository {
     private static boolean searchFilter(BaseOptions options, Record record) {
 
         if (options.getSearch() != null) {
-            if(!search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()))) return false;
+            return search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
         } else {
             if (options.getSearchByKey() != null) {
                 if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) return false;
@@ -644,7 +645,7 @@ public class RecordRepository extends AbstractRepository {
             }
 
             if (options.getSearchByHeaderValue() != null) {
-                if (!search(options.getSearchByHeaderValue(), record.getHeaders().values())) return false;
+                return search(options.getSearchByHeaderValue(), record.getHeaders().values());
             }
         }
         return true;

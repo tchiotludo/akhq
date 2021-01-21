@@ -305,7 +305,7 @@ public class TopicController extends AbstractController {
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue
-    ) {
+    ) throws ExecutionException, InterruptedException {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
@@ -319,8 +319,10 @@ public class TopicController extends AbstractController {
             searchByHeaderValue
         );
 
+        Topic topic = topicRepository.findByName(cluster, topicName);
+
         return recordRepository
-            .search(cluster, options)
+            .search(topic, options)
             .map(event -> {
                 SearchRecord searchRecord = new SearchRecord(
                     event.getData().getPercent(),
