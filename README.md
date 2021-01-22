@@ -48,14 +48,14 @@
   - Configurations view
   - Partitions view
   - ACLS view
-  - Consumers groups assignments view
+  - Consumer groups assignments view
   - Node leader & assignments view
   - Create a topic
   - Configure a topic
   - Delete a topic
 - **Browse Topic datas**
   - View data, offset, key, timestamp & headers
-  - Automatic deserializarion of avro message encoded with schema registry
+  - Automatic deserialization of avro message encoded with schema registry
   - Configurations view
   - Logs view
   - Delete a record
@@ -64,7 +64,7 @@
   - Filter per partitions
   - Filter with a starting time
   - Filter data with a search string
-- **Consumer Groups** (only with kafka internal storage, not with old Zookeeper)
+- **Consumer Groups** (only with kafka internal storage, not with the old Zookeeper one)
   - List with lag, topics assignments
   - Partitions view & lag
   - ACLS view
@@ -105,7 +105,7 @@ Since this is a major rework, the new UI can have some issues, so please [report
 * run `docker-compose up`
 * go to [http://localhost:8080](http://localhost:8080)
 
-It will start a Kafka node, a Zookeeper node, a Schema Registry, a Connect, fill with some sample data, start a consumer
+It will start a Kafka node, a Zookeeper node, a Schema Registry, a Kafka Connect, fill with some sample data, start a consumer
 group and a kafka stream & start AKHQ.
 
 ## Installation
@@ -211,14 +211,14 @@ If you do not override the `JVM_OPTS_FILE`, the docker container will take the d
 
 ### Kafka cluster configuration
 * `akhq.connections` is a key value configuration with :
-  * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string the identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
+  * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string to identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
     * `properties`: all the configurations for registry client, especially ssl configuration
-  * `connect`: *(optional list, define each connector as a element of a list)*
+  * `connect`: *(optional list, define each connector as an element of a list)*
     * `name`: connect name
     * `url`: connect url
     * `basic-auth-username`: connect basic auth username
@@ -330,15 +330,14 @@ akhq:
 ```
 
 More examples about Protobuf deserialization can be found in [tests](./src/test/java/org/akhq/utils).
-Info about descriptor files generation can be found in [test resources](./src/test/resources/protobuf_proto).
+Info about the descriptor files generation can be found in [test resources](./src/test/resources/protobuf_proto).
 
 
 ### Security
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
 By default, the default group is `admin` and allow you all read / write access on the whole app.
 
-By default, security & roles is enabled by default but anonymous user have full access. You can completely disabled
-security with `micronaut.security.enabled: false`.
+By default, security & roles is enabled by default but anonymous user have full access. You can completely disable security with `micronaut.security.enabled: false`.
 
 If you need a read-only application, simply add this to your configuration files :
 ```yaml
@@ -390,16 +389,16 @@ Define groups with specific roles for your users
 
 ##### Basic Auth
 * `akhq.security.basic-auth`: List user & password with affected roles
-  * `- username: actual-username`: Login of the current user as a yaml key (may be anything email, login, ...)
+  * `- username: actual-username`: Login of the current user as a yaml key (maybe anything email, login, ...)
     * `password`: Password in sha256 (default) or bcrypt. The password can be converted
       * For default SHA256, with command `echo -n "password" | sha256sum` or Ansible filter `{{ 'password' | hash('sha256') }}`
       * For BCrypt, with Ansible filter `{{ 'password' | password_hash('blowfish') }}`
     * `passwordHash`: Password hashing algorithm, either `SHA256` or `BCRYPT`
     * `groups`: Groups for current user
 
-> Take care that basic auth will use session store in server **memory**. If your instance is behind a reverse proxy or a
+> Take care that basic auth will use session store in the server **memory**. If your instance is behind a reverse proxy or a
 > loadbalancer, you will need to forward the session cookie named `SESSION` and / or use
-> [sesssion stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
+> [session stickiness](https://en.wikipedia.org/wiki/Load_balancing_(computing)#Persistence)
 
 Configure basic-auth connection in AKHQ
 ```yaml
@@ -475,7 +474,7 @@ Debuging ldap connection can be done with
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8080/loggers/io.micronaut.configuration.security
+       http://localhost:8081/loggers/io.micronaut.configuration.security
 ```
 
 
@@ -579,17 +578,17 @@ The username field can be any string field, the roles field has to be a JSON arr
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ### Docker
-AKHQ docker image support 3 environment variables to handle configuraiton :
+AKHQ docker image support 3 environment variables to handle configuration :
 * `AKHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
-  /app/configuration.yml on container.
+  /app/configuration.yml on the container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
-* `MICRONAUT_CONFIG_FILES`: a path to to a configuration file on container. Default path is `/app/application.yml`
+* `MICRONAUT_CONFIG_FILES`: a path to a configuration file on the container. Default path is `/app/application.yml`
 
 #### How to mount configuration file
 
 Take care when you mount configuration files to not remove akhq files located on /app.
-You need to explicitely mount the `/app/application.yml` and not mount the `/app` directory.
-This will remove the AKHQ binnaries and give you this error: `
+You need to explicitly mount the `/app/application.yml` and not mount the `/app` directory.
+This will remove the AKHQ binaries and give you this error: `
 /usr/local/bin/docker-entrypoint.sh: 9: exec: ./akhq: not found`
 
 ```yaml
@@ -605,22 +604,23 @@ volumeMounts:
 An **experimental** api is available that allow you to fetch all the exposed on AKHQ through api.
 
 Take care that this api is **experimental** and **will** change in a future release.
-Some endpoint expose too many datas and is slow to fetch, and we will remove
+Some endpoints expose too many datas and is slow to fetch, and we will remove
 some properties in a future in order to be fast.
 
-Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all of theses
-is slow for now and we will remove these in a future.
+Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all theses
+is slow for now, and we will remove these in a future.
 
 You can discover the api endpoint here :
 * `/api`: a [RapiDoc](https://mrin9.github.io/RapiDoc/) webpage that document all the endpoints.
 * `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files
 
 ## Monitoring endpoint
-Several monitoring endpoint is enabled by default. You can disabled it or restrict access only for authenticated users
-following micronaut configuration below.
+Several monitoring endpoint is enabled by default and available on port `8081` only.
 
-* `/info` [Info Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#infoEndpoint) with git status
-  informations.
+You can disable it, change the port or restrict access only for authenticated users following micronaut configuration below.
+
+
+* `/info` [Info Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#infoEndpoint) with git status information.
 * `/health` [Health Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#healthEndpoint)
 * `/loggers` [Loggers Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#loggersEndpoint)
 * `/metrics` [Metrics Endpoint](https://docs.micronaut.io/snapshot/guide/index.html#metricsEndpoint)
@@ -632,7 +632,7 @@ You can debug all query duration from AKHQ with this commands
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8080/loggers/org.akhq
+       http://localhost:8081/loggers/org.akhq
 ```
 
 ## Development Environment
@@ -657,7 +657,7 @@ Or build it with a `./gradlew shadowJar`, the jar will be located here `build/li
 
 ### Development Server
 
-A docker-compose is provide to start a development environnement.
+A docker-compose is provided to start a development environnement.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
@@ -675,7 +675,7 @@ brief guide. For the following steps please make sure that you meet this require
    * Gradle (bundled with IDEA)
    * [Lombok](https://plugins.jetbrains.com/plugin/6317-lombok)
  
-First run a Kafka server locally. Therefore you need to start Zookeper first by opening a CMD and doing:
+First run a Kafka server locally. Therefore, you need to start Zookeeper first by opening a CMD and doing:
 ```bash
 $KAFKA_HOME\bin\windows\zookeeper-server-start.bat config\zookeper.properties
 $KAFKA_HOME\bin\windows\kafka-server-start.bat config\server.properties
@@ -689,7 +689,7 @@ git clone https://github.com/tchiotludo/akhq.git
 Open the checked out directory in IntelliJ IDEA. The current version (0.16.0) of AKHQ is built with Java 11. If you
 don't have OpenJDK 11 installed already, do the following in IntelliJ IDEA: _File > Project Structure... > Platform Settings >
 SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 11), download + install. Make sure
-that JDK 11 is set under _Project Settings > Projekt SDK_ and language level is Java 11. Now tell Gradle to use Java 11
+that JDK 11 is set under _Project Settings > Project SDK_ and language level is Java 11. Now tell Gradle to use Java 11
 as well: _File > Settings > Plugins > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM_: any JDK 11.
 
 To configure AKHQ for using the Kafka server you set up before, edit `application.yml` by adding the following under `akhq`:
@@ -703,7 +703,7 @@ akhq:
 /!\ Do not commit this part of `application.yml`. A more secure way to configure your local development Kafka server is
 described in the Micronaut doc, chapter ["Application Configuration"](https://docs.micronaut.io/1.3.0.M1/guide/index.html#config).
 
-Now you should be able to build the project with Gradle. Therefore go to the Gradle view in IDEA, select _Tasks > build >
+Now you should be able to build the project with Gradle. Therefore, go to the Gradle view in IDEA, select _Tasks > build >
 build_. If an error occurs saying that any filename is too long: move your project directory to a root directory in your
 filesystem or as a fix (only for testing purposes) set the argument `-x test` to skip tests temporarily.
 

@@ -79,13 +79,16 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            - name: management
+              containerPort: 8081
+              protocol: TCP
           livenessProbe:
             tcpSocket:
-              port: http
+              port: management
           readinessProbe:
             httpGet:
               path: {{ .Values.readinessProbe.prefix | default "" }}/health
-              port: http
+              port: management
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
