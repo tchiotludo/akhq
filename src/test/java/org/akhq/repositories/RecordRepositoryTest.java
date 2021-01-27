@@ -2,6 +2,7 @@ package org.akhq.repositories;
 
 import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.models.Topic;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
@@ -26,7 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RecordRepositoryTest extends AbstractTest {
     @Inject
     private RecordRepository repository;
-    
+
+    @Inject
+    private TopicRepository topicRepository;
+
     @Inject
     private Environment environment;
     
@@ -223,8 +227,10 @@ public class RecordRepositoryTest extends AbstractTest {
         AtomicInteger size = new AtomicInteger();
         AtomicBoolean hasNext = new AtomicBoolean(true);
 
+        Topic topic = topicRepository.findByName(options.getClusterId(), options.getTopic());
+
         do {
-            repository.search(KafkaTestCluster.CLUSTER_ID, options).blockingSubscribe(event -> {
+            repository.search(topic, options).blockingSubscribe(event -> {
                 size.addAndGet(event.getData().getRecords().size());
 
                 assertTrue(event.getData().getPercent() >= 0);

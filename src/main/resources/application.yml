@@ -66,27 +66,14 @@ jackson:
     writeDatesAsTimestamps: false
 
 endpoints:
+  all:
+    port: 8081
+    enabled: true
+    sensitive: false
   health:
-    enabled: true
-    sensitive: false
-    details-visible: anonymous
-  info:
-    enabled: true
-    sensitive: false
-  metrics:
-    enabled: true
-    sensitive: false
-    export:
-      prometheus:
-        enabled: true
-        step: PT1M
-        descriptions: true
-  prometheus:
-    enabled: true
-    sensitive: false
-  caches:
-    enabled: true
-    sensitive: false
+    details-visible: ANONYMOUS
+  loggers:
+    write-sensitive: false
 
 akhq:
   server:
