@@ -4,6 +4,7 @@ import io.confluent.kafka.schemaregistry.client.SchemaMetadata;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.SchemaRegistryType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 
@@ -30,9 +31,9 @@ public class AvroWireFormatConverter {
 
     private static final Pattern AVRO_CONTENT_TYPE_PATTERN = Pattern.compile("\"?application/vnd\\.(.+)\\.v(\\d+)\\+avro\"?");
 
-    public byte[] convertValueToWireFormat(ConsumerRecord<byte[], byte[]> record, SchemaRegistryClient registryClient, String wireFormat) {
+    public byte[] convertValueToWireFormat(ConsumerRecord<byte[], byte[]> record, SchemaRegistryClient registryClient, SchemaRegistryType schemaRegistryType) {
         byte magicByte = 0x0;
-        if ("tibco".equalsIgnoreCase(wireFormat)) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             magicByte = (byte) 0x80;
         }
         Iterator<Header> contentTypeIter = record.headers().headers("contentType").iterator();

@@ -21,6 +21,8 @@ extraEnv: []
 #               bootstrap.servers: "kafka:9092"
 # - name: JAVA_OPTS
 #   value: "-Djavax.net.ssl.trustStore=/usr/local/openjdk-11/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=password"
+# - name: CLASSPATH
+#   value: "/any/additional/jars/desired.jar:/go/here.jar"
 
 ## Or you can also use configmap for the configuration...
 configuration: |
@@ -39,6 +41,7 @@ secrets: |
           bootstrap.servers: "kafka:9092"
         schema-registry:
           url: "http://schema-registry:8085"
+          type: "confluent"
           basic-auth-username: basic-auth-user
           basic-auth-password: basic-auth-pass
         connect:

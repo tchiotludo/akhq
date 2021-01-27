@@ -1,8 +1,8 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
@@ -52,8 +52,8 @@ public class Record {
 
     private byte MAGIC_BYTE;
 
-    public Record(RecordMetadata record, String schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
-        if ("tibco".equalsIgnoreCase(schemaRegistryType)) {
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
             this.MAGIC_BYTE = 0x0;
@@ -69,9 +69,9 @@ public class Record {
         this.headers = headers;
     }
 
-    public Record(ConsumerRecord<byte[], byte[]> record, String schemaRegistryType, Deserializer kafkaAvroDeserializer,
+    public Record(ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
-        if ("tibco".equalsIgnoreCase(schemaRegistryType)) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
             this.MAGIC_BYTE = 0x0;

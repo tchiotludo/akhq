@@ -7,4 +7,4 @@ do
   JAVA_OPTS="${JAVA_OPTS} ${JVM_OPT}"
 done
 
-/usr/local/openjdk-11/bin/java ${JAVA_OPTS} -jar /app/akhq.jar
+/usr/local/openjdk-11/bin/java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App

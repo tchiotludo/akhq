@@ -3,6 +3,7 @@ package org.akhq.modules;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -31,9 +32,9 @@ public class AvroSerializer {
     public static final int SCHEMA_ID_SIZE = 4;
     private SchemaRegistryClient registryClient;
 
-    public AvroSerializer(SchemaRegistryClient registryClient, String wireFormat) {
+    public AvroSerializer(SchemaRegistryClient registryClient, SchemaRegistryType schemaRegistryType) {
         this.registryClient = registryClient;
-        if ("tibco".equalsIgnoreCase(wireFormat)) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             MAGIC_BYTE = (byte) 0x80;
         } else {
             MAGIC_BYTE = 0x0;

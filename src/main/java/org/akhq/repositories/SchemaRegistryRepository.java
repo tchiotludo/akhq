@@ -9,6 +9,7 @@ import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpd
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.models.Schema;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
@@ -227,10 +228,10 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     public Deserializer getKafkaAvroDeserializer(String clusterId) {
         if (!this.kafkaAvroDeserializers.containsKey(clusterId)) {
-            String registryType = this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getType();
-            try {
-                Deserializer deserializer;
-                if ("tibco".equalsIgnoreCase(registryType)) {
+            Deserializer deserializer;
+            SchemaRegistryType schemaRegistryType = this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getType();
+            if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+                try {
                     deserializer = (Deserializer) Class.forName("com.tibco.messaging.kafka.avro.AvroDeserializer").getDeclaredConstructor().newInstance();
                     Map<String, String> config = new HashMap<>();
                     config.put("schema.registry.url", this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getUrl());
@@ -240,14 +241,14 @@ public class SchemaRegistryRepository extends AbstractRepository {
                     }
                     config.putAll(this.kafkaModule.getConnection(clusterId).getProperties());
                     deserializer.configure(config, false);
-                } else {
-                    deserializer = (Deserializer) Class.forName("io.confluent.kafka.serializers.KafkaAvroDeserializer").getDeclaredConstructor(SchemaRegistryClient.class).newInstance(this.kafkaModule.getRegistryClient(clusterId));
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+                    throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO Avro client library not found on classpath");
                 }
-                this.kafkaAvroDeserializers.put(clusterId, deserializer);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-                /* Failsafe in case dynamic class loading doesn't work. */
-                this.kafkaAvroDeserializers.put(clusterId, new KafkaAvroDeserializer(this.kafkaModule.getRegistryClient(clusterId)));
+            } else {
+                deserializer = new KafkaAvroDeserializer(this.kafkaModule.getRegistryClient(clusterId));
             }
+
+            this.kafkaAvroDeserializers.put(clusterId, deserializer);
         }
 
         return this.kafkaAvroDeserializers.get(clusterId);

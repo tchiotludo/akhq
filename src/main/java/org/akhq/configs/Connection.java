@@ -31,7 +31,7 @@ public class Connection extends AbstractProperties {
         String url;
         String basicAuthUsername;
         String basicAuthPassword;
-        String type;
+        SchemaRegistryType type = SchemaRegistryType.CONFLUENT;
 
         @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
         Map<String, String> properties;
