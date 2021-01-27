@@ -29,7 +29,7 @@ public class ConnectPlugin {
             results.getConfigs()
                 .stream()
                 .map(config -> new Definition(config.getDefinition())),
-            registryDefintion()
+            registryDefinition()
         )
             .sorted(Comparator.comparing(Definition::getGroup, (s1, s2) -> s1.equals("Others") ? 1 : s1.compareTo(s2))
                 .thenComparing(Definition::getOrder)
@@ -37,7 +37,7 @@ public class ConnectPlugin {
             .collect(Collectors.toList());
     }
 
-    public Stream<Definition> registryDefintion() {
+    public Stream<Definition> registryDefinition() {
         return Stream.of(
             Definition.builder()
                 .name("schema.registry.url")

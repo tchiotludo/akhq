@@ -54,6 +54,7 @@ akhq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
+        type: "confluent" # schema registry type (optional). Supported types are "confluent" (default) or "tibco"
         # Basic Auth user / pass
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass

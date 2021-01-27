@@ -2,6 +2,7 @@ package org.akhq.modules;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.SchemaBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ class AvroSchemaSerializerTest {
 
     @BeforeEach
     void setUp() throws IOException, RestClientException {
-        cut = new AvroSerializer(schemaRegistryClient);
+        cut = new AvroSerializer(schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         when(schemaRegistryClient.getById(anyInt())).thenReturn(SCHEMA);
     }
 

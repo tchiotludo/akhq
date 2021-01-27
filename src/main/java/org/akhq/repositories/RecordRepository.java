@@ -9,6 +9,7 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.Connection;
 import org.akhq.controllers.TopicController;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
@@ -55,6 +56,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
+
+    @Inject
+    private Connection.SchemaRegistry schemaRegistry;
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
@@ -420,18 +424,22 @@ public class RecordRepository extends AbstractRepository {
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
         return new Record(
             record,
+            this.schemaRegistry.getType(),
             this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId))
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId),
+                    this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getType())
         );
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
         return new Record(
             record,
+            this.schemaRegistry.getType(),
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
             this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId),
+                    this.kafkaModule.getConnection(options.clusterId).getSchemaRegistry().getType())
         );
     }
 

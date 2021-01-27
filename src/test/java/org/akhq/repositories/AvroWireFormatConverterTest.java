@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.io.DatumWriter;
@@ -58,13 +59,13 @@ public class AvroWireFormatConverterTest {
 
     @Test
     public void convertValueToWireFormatNull() {
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertNull(convertedValue);
     }
 
     @Test
     public void convertValueToWireFormatEmptyValue() {
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertEquals(0, convertedValue.length);
     }
 
@@ -76,7 +77,7 @@ public class AvroWireFormatConverterTest {
 
         ConsumerRecord<byte[], byte[]> consumerRecord = new ConsumerRecord<>("topic", 1, 0, new byte[0], avroPayload);
         consumerRecord.headers().add(new RecordHeader("contentType", "mySubject.v1".getBytes()));
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient, SchemaRegistryType.CONFLUENT);
 
         assertEquals(convertedValue, avroPayload);
     }
@@ -89,7 +90,7 @@ public class AvroWireFormatConverterTest {
 
         ConsumerRecord<byte[], byte[]> consumerRecord = new ConsumerRecord<>("topic", 1, 0, new byte[0], avroPayload);
         consumerRecord.headers().add(new RecordHeader("contentType", "application/vnd.mySubject.v1+avro".getBytes()));
-        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient);
+        byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(consumerRecord, schemaRegistryClient, SchemaRegistryType.CONFLUENT);
 
         KafkaAvroDeserializer kafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient);
         GenericData.Record deserializedRecord = (GenericData.Record) kafkaAvroDeserializer.deserialize(null, convertedValue);

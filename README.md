@@ -215,6 +215,7 @@ If you do not override the `JVM_OPTS_FILE`, the docker container will take the d
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url
+    * `type`: the type of schema registry used, either 'confluent' or 'tibco'
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
     * `properties`: all the configurations for registry client, especially ssl configuration
@@ -254,6 +255,7 @@ akhq:
         ssl.key.password: {{password}}
       schema-registry:
         url: "https://{{host}}.aivencloud.com:12838"
+        type: "confluent"
         basic-auth-username: avnadmin
         basic-auth-password: {{password}}
         properties: {}
@@ -578,11 +580,14 @@ The username field can be any string field, the roles field has to be a JSON arr
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
 ### Docker
-AKHQ docker image support 3 environment variables to handle configuration :
+
+The AKHQ docker image supports 4 environment variables to handle configuration :
 * `AKHQ_CONFIGURATION`: a string that contains the full configuration in yml that will be written on
   /app/configuration.yml on the container.
 * `MICRONAUT_APPLICATION_JSON`: a string that contains the full configuration in JSON format
-* `MICRONAUT_CONFIG_FILES`: a path to a configuration file on the container. Default path is `/app/application.yml`
+* `MICRONAUT_CONFIG_FILES`: a path to a configuration file in the container. Default path is `/app/application.yml`
+* `CLASSPATH`: additional Java classpath entries. Must be used to specify the location of the TIBCO Avro client library
+  jar if a 'tibco' schema registry type is used
 
 #### How to mount configuration file
 
@@ -598,6 +603,40 @@ volumeMounts:
   name: config
   readOnly: true
 
+```
+
+#### Using the TIBCO schema registry
+
+If you are using the TIBCO schema registry, you will also need to mount and use the TIBCO Avro client library and its
+dependencies. The akhq service in a docker compose file might look something like:
+
+```yaml
+  akhq:
+    # build:
+    #   context: .
+    image: tchiotludo/akhq
+    volumes:
+      - /opt/tibco/akd/repo/1.2/lib/tibftl-kafka-avro-1.2.0-thin.jar:/app/tibftl-kafka-avro-1.2.0-thin.jar
+      - /opt/tibco/akd/repo/1.2/lib/deps:/app/deps
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+              schema-registry:
+                type: "tibco"
+                url: "http://repo:8081"
+              connect:
+                - name: "connect"
+                  url: "http://connect:8083"
+      CLASSPATH: "/app/tibftl-kafka-avro-1.2.0-thin.jar:/app/deps/*"
+    ports:
+      - 8080:8080
+    links:
+      - kafka
+      - repo
 ```
 
 ## Api

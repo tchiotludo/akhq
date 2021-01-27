@@ -1,8 +1,8 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
+import org.apache.kafka.common.serialization.Deserializer;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -32,7 +33,7 @@ public class Record {
     private Integer valueSchemaId;
     private Map<String, String> headers = new HashMap<>();
     @JsonIgnore
-    private KafkaAvroDeserializer kafkaAvroDeserializer;
+    private Deserializer kafkaAvroDeserializer;
     private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
@@ -49,7 +50,14 @@ public class Record {
 
     private final List<String> exceptions = new ArrayList<>();
 
-    public Record(RecordMetadata record, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+    private byte MAGIC_BYTE;
+
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+            this.MAGIC_BYTE = (byte) 0x80;
+        } else {
+            this.MAGIC_BYTE = 0x0;
+        }
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -61,8 +69,13 @@ public class Record {
         this.headers = headers;
     }
 
-    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer,
+    public Record(ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+            this.MAGIC_BYTE = (byte) 0x80;
+        } else {
+            this.MAGIC_BYTE = 0x0;
+        }
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -134,13 +147,13 @@ public class Record {
         }
     }
 
-    private static Integer getAvroSchemaId(byte[] payload) {
+    private Integer getAvroSchemaId(byte[] payload) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
 
-            if (magicBytes == 0 && schemaId >= 0) {
+            if (magicBytes == MAGIC_BYTE && schemaId >= 0) {
                 return schemaId;
             }
         } catch (Exception ignore) {
