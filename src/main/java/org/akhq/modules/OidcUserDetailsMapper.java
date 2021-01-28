@@ -128,6 +128,16 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
         List<String> akhqGroups = getAkhqGroups(providerName, openIdClaims, username);
         List<String> roles = userGroupUtils.getUserRoles(akhqGroups);
         Map<String, Object> attributes = buildAttributes(providerName, tokenResponse, openIdClaims, akhqGroups);
+
+        /**
+        * In case of OIDC the user roles are not correctly mapped to corresponding roles in akhq,
+        * If we find a groups-field in the user attributes override it with the correctly mapped
+        * roles that match the associated akhq group
+        */
+        Oidc.Provider provider = oidc.getProvider(providerName);
+        if (attributes.containsKey(provider.getGroupsField())) {
+            attributes.put(provider.getGroupsField(), roles);
+        }
         return new UserDetails(username, roles, attributes);
     }
 }
