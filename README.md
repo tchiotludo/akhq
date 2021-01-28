@@ -547,7 +547,7 @@ akhq:
         google:
           label: "Login with Google"
           username-field: preferred_username
-          # specifies the field name in the oidc claim containig the use assigned group (eg. in keycloak this would be the Token Claim Name you set in your Client Role Mapper)
+          # specifies the field name in the oidc claim containig the use assigned role (eg. in keycloak this would be the Token Claim Name you set in your Client Role Mapper)
           groups-field: roles
           default-group: topic-reader
           groups:
