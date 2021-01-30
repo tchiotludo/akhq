@@ -17,7 +17,6 @@ import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.akhq.configs.Connection;
 import org.akhq.configs.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
@@ -57,7 +56,7 @@ public class TopicController extends AbstractController {
     @Inject
     private AccessControlListRepository aclRepository;
     @Inject
-    private Connection.SchemaRegistry schemaRegistry;
+    private SchemaRegistryRepository schemaRegistryRepository;
 
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
@@ -149,7 +148,7 @@ public class TopicController extends AbstractController {
                 keySchema,
                 valueSchema
             ),
-            schemaRegistry.getType(),
+            schemaRegistryRepository.getSchemaRegistryType(cluster),
             key.map(String::getBytes).orElse(null),
             value.getBytes(),
             headers
@@ -279,7 +278,7 @@ public class TopicController extends AbstractController {
                 partition,
                 Base64.getDecoder().decode(key)
             ),
-            schemaRegistry.getType(),
+            schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
             new HashMap<>()
