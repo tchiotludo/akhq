@@ -168,9 +168,9 @@ public class TopicRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("topics-filter-regexp") != null) {
-            if (attributes.get("topics-filter-regexp") instanceof List) {
-                return (List<String>)attributes.get("topics-filter-regexp");
+        if (attributes.get("topicsFilterRegexp") != null) {
+            if (attributes.get("topicsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("topicsFilterRegexp");
             }
         }
         return new ArrayList<>();
