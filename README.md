@@ -547,11 +547,14 @@ akhq:
         google:
           label: "Login with Google"
           username-field: preferred_username
+          # specifies the field name in the oidc claim containig the use assigned role (eg. in keycloak this would be the Token Claim Name you set in your Client Role Mapper)
           groups-field: roles
           default-group: topic-reader
           groups:
+            # the name of the user role set in your oidc provider and associated with your user (eg. in keycloak this would be a client role)
             - name: mathematicians
               groups:
+                # the corresponding akhq groups (eg. topic-reader/writer or akhq default groups like admin/reader/no-role)
                 - topic-reader
             - name: scientists
               groups:
