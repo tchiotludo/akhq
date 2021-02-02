@@ -256,9 +256,9 @@ public class ConnectRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getConnectFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("connects-filter-regexp") != null) {
-            if (attributes.get("connects-filter-regexp") instanceof List) {
-                return (List<String>)attributes.get("connects-filter-regexp");
+        if (attributes.get("connectsFilterRegexp") != null) {
+            if (attributes.get("connectsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("connectsFilterRegexp");
             }
         }
         return new ArrayList<>();

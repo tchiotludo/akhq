@@ -201,7 +201,7 @@ public class ConnectRepositoryTest extends AbstractTest {
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","not.Matching3");
     }
     private void mockApplicationContext() {
-        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("connects-filter-regexp", new ArrayList<>(Arrays.asList("^prefixed.*$"))));
+        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("connectsFilterRegexp", new ArrayList<>(Arrays.asList("^prefixed.*$"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
