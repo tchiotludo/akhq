@@ -14,9 +14,7 @@ import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.UserGroupUtils;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDefinition;
-import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
+import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
@@ -68,23 +66,23 @@ public class ConnectRepository extends AbstractRepository {
         ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId) {
-        Collection<String> unfiltered = this.kafkaModule
+        ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
-            .getConnectors();
+            .getConnectorsWithAllExpandedMetadata();
 
-        ArrayList<String> filtered = new ArrayList<String>();
-        for (String item : unfiltered) {
-            if (isMatchRegex(getConnectFilterRegex(), item)) {
-                filtered.add(item);
+        ArrayList<ConnectDefinition> filtered = new ArrayList<>();
+        for (ConnectorDefinition item : unfiltered.getAllDefinitions()) {
+            if (isMatchRegex(getConnectFilterRegex(), item.getName())) {
+                filtered.add(new ConnectDefinition(
+                    item,
+                    unfiltered.getStatusForConnector(item.getName())
+                ));
             }
         }
 
-        return filtered.stream()
-            .map(s -> getDefinition(clusterId, connectId, s))
-            .collect(Collectors.toList());
+        return filtered;
     }
-
 
     public Optional<ConnectPlugin> getPlugin(String clusterId, String connectId, String className) {
         return this.kafkaModule
