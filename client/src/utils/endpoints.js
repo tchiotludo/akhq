@@ -31,6 +31,10 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
+export const uriClusterTopicStats = (clusterId) => {
+  return `${apiUrl}/${clusterId}/topic/stats`
+}
+
 export const uriUIOptions = (clusterId) => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };

@@ -5,7 +5,7 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopicLastRecord, uriTopics} from '../../../utils/endpoints';
+import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopicLastRecord, uriTopics, uriClusterTopicStats} from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import {calculateTopicOffsetLag, showBytes} from '../../../utils/converters';
 import './styles.scss';
@@ -18,6 +18,7 @@ import {getClusterUIOptions} from "../../../utils/functions";
 class TopicList extends Root {
   state = {
     topics: [],
+    clusterTopicStats: [],
     showDeleteModal: false,
     topicToDelete: {},
     selectedCluster: '',
@@ -48,6 +49,7 @@ class TopicList extends Root {
 
    this._initializeVars(() => {
      this.getTopics();
+     this.getClusterTopicStats();
      this.props.history.replace({
        pathname: `/ui/${this.state.selectedCluster}/topic`,
        search: this.props.location.search
@@ -146,6 +148,12 @@ class TopicList extends Root {
     const { value } = input;
     this.setState({ pageNumber: value });
   };
+
+  async getClusterTopicStats() {
+    const { selectedCluster } = this.state;
+    this.setState({ loading: true } );
+    await this.getApi(uriClusterTopicStats(selectedCluster)).then( result => this.setState({selectedCluster, clusterTopicStats: [result.data], loading: false}));
+  }
 
   async getTopics() {
     const { selectedCluster, pageNumber } = this.state;
@@ -272,7 +280,7 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
+    const { clusterTopicStats, topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
 
@@ -309,7 +317,36 @@ class TopicList extends Root {
           type: 'text'
         });
     }
-
+    const clusterCols =
+        [
+          {
+            id: 'id',
+            accessor: 'id',
+            colName: 'Cluster',
+            type: 'text'
+          },
+          {
+            id: 'partitions',
+            accessor: 'partitions',
+            colName: 'Partitions Total',
+            type: 'text'
+          },
+          {
+            id: 'replicaCount',
+            accessor: 'replicaCount',
+            colName: 'Replications Total',
+            type: 'text'
+          },
+          {
+            id: 'inSyncReplicaCount',
+            accessor: 'inSyncReplicaCount',
+            colName: 'In Sync Replication Total',
+            type: 'text',
+            cell: (obj, col) => {
+              return <span>{obj[col.accessor]}</span>;
+            }
+          }
+        ];
     const partitionCols =
         [
           {
@@ -431,6 +468,24 @@ class TopicList extends Root {
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
+
+        <Table
+            loading={loading}
+            history={this.props.history}
+            has2Headers={false}
+            firstHeader={undefined}
+            columns={clusterCols}
+            data={clusterTopicStats}
+            updateData={data => {
+              this.setState({ clusterTopicStats: data });
+            }}
+            onDelete={topic => {
+              this.handleOnDelete(topic);
+            }}
+            onDetails={undefined}
+            onConfig={undefined}
+            actions={undefined}
+        />
 
         <Table
           loading={loading}

@@ -85,6 +85,26 @@ public class TopicController extends AbstractController {
         ));
     }
 
+    @Get("api/{cluster}/topic/stats")
+    @Operation(tags = {"topic"}, summary = "Summary of topics on cluster")
+    public ClusterStats clusterTopicStats(String cluster)
+            throws ExecutionException, InterruptedException
+    {
+        int partitions = 0;
+        long replicaCount = 0;
+        long inSyncReplicaCount = 0;
+        final List<String> topicList = this.topicRepository.all(cluster, TopicRepository.TopicListView.ALL, Optional.empty());
+        for (String t: topicList) {
+            final Topic name = this.topicRepository.findByName(cluster, t);
+            partitions += name.getPartitions().size();
+            replicaCount += name.getReplicaCount();
+            inSyncReplicaCount += name.getInSyncReplicaCount();
+        }
+        ClusterStats stats = new ClusterStats(cluster, partitions, replicaCount, inSyncReplicaCount);
+        log.info("Cluster Stats retrieved: {}", stats);
+        return stats;
+    }
+
     @Get("api/{cluster}/topic/name")
     @Operation(tags = {"topic"}, summary = "List all topics name")
     public List<String> listTopicNames(
