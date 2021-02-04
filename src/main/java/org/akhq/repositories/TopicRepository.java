@@ -5,6 +5,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.configs.SecurityProperties;
+import org.akhq.models.ClusterStats;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.akhq.models.Partition;
@@ -144,6 +145,25 @@ public class TopicRepository extends AbstractRepository {
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
         kafkaWrapper.deleteTopics(clusterId, name);
+    }
+
+    public ClusterStats.TopicStats getTopicStats(String clusterId)
+            throws ExecutionException, InterruptedException
+    {
+        Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
+        int topics = 0;
+        int partitions = 0;
+        int replicaCount = 0;
+        int inSyncReplicaCount = 0;
+
+        for (TopicListing item : listTopics) {
+            Topic topic = this.findByName(clusterId, item.name());
+            topics += 1;
+            partitions += topic.getPartitions().size();
+            replicaCount += topic.getReplicaCount();
+            inSyncReplicaCount += topic.getInSyncReplicaCount();
+        }
+        return new ClusterStats.TopicStats(topics, partitions, replicaCount, inSyncReplicaCount);
     }
 
     private Optional<List<String>> getTopicFilterRegex() {

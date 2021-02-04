@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.CollectionUtils;
@@ -29,6 +30,7 @@ import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +53,8 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
     @Inject
     private ConsumerGroupRepository consumerGroupRepository;
+    @Inject
+    private ConnectRepository connectRepository;
     @Inject
     private Environment environment;
     @Inject
@@ -88,21 +92,9 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/stats")
     @Operation(tags = {"topic"}, summary = "Summary of topics on cluster")
     public ClusterStats clusterTopicStats(String cluster)
-            throws ExecutionException, InterruptedException
+            throws ExecutionException, InterruptedException, IOException, RestClientException
     {
-        int partitions = 0;
-        long replicaCount = 0;
-        long inSyncReplicaCount = 0;
-        final List<String> topicList = this.topicRepository.all(cluster, TopicRepository.TopicListView.ALL, Optional.empty());
-        for (String t: topicList) {
-            final Topic name = this.topicRepository.findByName(cluster, t);
-            partitions += name.getPartitions().size();
-            replicaCount += name.getReplicaCount();
-            inSyncReplicaCount += name.getInSyncReplicaCount();
-        }
-        ClusterStats stats = new ClusterStats(cluster, partitions, replicaCount, inSyncReplicaCount);
-        log.info("Cluster Stats retrieved: {}", stats);
-        return stats;
+        return new ClusterStats(cluster, this.topicRepository, this.consumerGroupRepository, this.connectRepository, this.schemaRegistryRepository);
     }
 
     @Get("api/{cluster}/topic/name")

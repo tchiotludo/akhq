@@ -1,5 +1,6 @@
 package org.akhq.repositories;
 
+import org.akhq.models.ClusterStats;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -138,5 +139,15 @@ public class ConsumerGroupRepository extends AbstractRepository {
         consumer.close();
 
         kafkaWrapper.clearConsumerGroupsOffsets();
+    }
+
+    public ClusterStats.ConsumerGroupStats getConsumerGroupStats(String clusterId)
+            throws ExecutionException, InterruptedException
+    {
+// TODO: Define the rebalancing groups and empty groups
+        int rebalancingGroups = 0;
+        int emptyGroups = 0;
+        final Collection<ConsumerGroupListing> groupListings = kafkaWrapper.listConsumerGroups(clusterId);
+        return new ClusterStats.ConsumerGroupStats(groupListings.size(), rebalancingGroups, emptyGroups);
     }
 }

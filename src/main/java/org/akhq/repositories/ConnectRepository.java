@@ -10,12 +10,15 @@ import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.configs.SecurityProperties;
+import org.akhq.models.ClusterStats;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.UserGroupUtils;
+import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDefinition;
+import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus;
 import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -211,6 +214,25 @@ public class ConnectRepository extends AbstractRepository {
         }
 
         return list;
+    }
+
+    public List<ClusterStats.ConnectStats> getConnectStats(String clusterId) {
+        Map<String, KafkaConnectClient> clientList = this.kafkaModule.getConnectRestClient(clusterId);
+        List<ClusterStats.ConnectStats> stats = new ArrayList<>();
+        clientList.forEach((name,client) -> {
+            int connectorCount = 0;
+            int tasks = 0;
+            Collection<String> connectors = client.getConnectors();
+            connectorCount += connectors.size();
+            Map<String, Long> stateCount = new HashMap<>();
+            for (String c : connectors) {
+                tasks += client.getConnectorTasks(c).size();
+                List<ConnectorStatus.TaskStatus> statuses = client.getConnectorStatus(c).getTasks();
+                statuses.stream().collect(Collectors.groupingBy(ConnectorStatus.TaskStatus::getState, () -> stateCount, Collectors.counting()));
+            }
+            stats.add(new ClusterStats.ConnectStats(name,connectorCount, tasks, stateCount));
+        });
+        return stats;
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
