@@ -1,11 +1,11 @@
 package org.akhq.repositories;
 
+import com.google.common.collect.ImmutableMap;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.authentication.DefaultAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
-import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
@@ -20,7 +20,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.inject.Inject;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -219,9 +225,9 @@ public class ConnectRepositoryTest extends AbstractTest {
                 "topics", KafkaTestCluster.TOPIC_CONNECT
         ));
         repository.pause(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused");
+        Map<String, Integer> assertStats = Map.of("RUNNING", 2, "PAUSED", 1);
         assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getConnectors());
-        assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount().get("RUNNING"));
-        assertEquals(1, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount().get("PAUSED"));
+        assertEquals(assertStats, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount());
     }
 
     private void mockApplicationContext() {

@@ -18,7 +18,7 @@ import org.akhq.utils.UserGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigDefinition;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus;
+import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus;
 import org.sourcelab.kafka.connect.apiclient.request.dto.NewConnectorDefinition;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -26,9 +26,22 @@ import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundExc
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
@@ -218,30 +231,20 @@ public class ConnectRepository extends AbstractRepository {
 
     public ClusterStats.ConnectStats getConnectStats(String clusterId, String connectId) {
         KafkaConnectClient client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
-        int connectorCount = 0;
-        int tasks = 0;
-        Map<String, Integer> stateCount = new HashMap<>();
         Collection<String> connectors = client.getConnectors();
-        connectorCount += connectors.size();
-        for (String c : connectors) {
-            tasks += client.getConnectorTasks(c).size();
-            List<ConnectorStatus.TaskStatus> statuses = client.getConnectorStatus(c).getTasks();
-            statuses.stream()
-                    .map(ConnectorStatus.TaskStatus::getState)
-                    //  --> List("RUNNING","RUNNING","PAUSED")
-                    .collect(Collectors.groupingBy(w -> w))
-                    // --> Map("RUNNING": List("RUNNING","RUNNING"),
-                    //         "PAUSED": List("PAUSED")
-                    .forEach((k, v) -> {
-                        if (stateCount.containsKey(k)) {
-                            stateCount.computeIfPresent(k, (y,z) -> z + v.size());
-                        } else {
-                            stateCount.put(k, v.size());
-                        }
-                    });
-//            statuses.stream().collect(Collectors.groupingBy(ConnectorStatus.TaskStatus::getState, () -> stateCount, Collectors.counting()));
-        }
-        return new ClusterStats.ConnectStats(connectId, connectorCount, tasks, stateCount);
+        int connectorCount = connectors.size();
+        Map<String, Integer> collect = connectors
+                .stream()
+                .map(c -> client.getConnectorStatus(c).getTasks())
+                .flatMap(Collection::stream)
+                .map(TaskStatus::getState)
+                .collect(groupingBy(identity(), countingInt()));
+        int tasks = collect.values().stream().mapToInt(Integer::intValue).sum();
+        return new ClusterStats.ConnectStats(connectId, connectorCount, tasks, collect);
+    }
+
+    private static Collector<String, ?, Integer> countingInt() {
+        return reducing(0, e -> 1, Integer::sum);
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
