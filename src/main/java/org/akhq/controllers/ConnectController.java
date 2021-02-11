@@ -9,6 +9,7 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
+import org.akhq.models.ClusterStats;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.repositories.ConnectRepository;
@@ -82,6 +83,12 @@ public class ConnectController extends AbstractController {
     @Operation(tags = {"connect"}, summary = "Retrieve a connect task")
     public List<ConnectDefinition.TaskDefinition> tasks(HttpRequest<?> request, String cluster, String connectId, String name) {
         return this.connectRepository.getDefinition(cluster, connectId, name).getTasks();
+    }
+
+    @Get("/stats")
+    @Operation(tags = {"connect"}, summary = "Retrieve connect cluster statistics")
+    public ClusterStats.ConnectStats tasks(String cluster, String connectId) {
+        return this.connectRepository.getConnectStats(cluster, connectId);
     }
 
     @Get("/{name}/configs")

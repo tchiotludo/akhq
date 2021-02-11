@@ -200,6 +200,30 @@ public class ConnectRepositoryTest extends AbstractTest {
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching2");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","not.Matching3");
     }
+
+    @Test
+    public void getConnectStats() {
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-2", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.pause(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused");
+        assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getConnectors());
+        assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount().get("RUNNING"));
+        assertEquals(1, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount().get("PAUSED"));
+    }
+
     private void mockApplicationContext() {
         Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("connects-filter-regexp", new ArrayList<>(Arrays.asList("^prefixed.*$"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);

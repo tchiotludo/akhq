@@ -162,4 +162,10 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     public void getDefaultConfig() throws IOException, RestClientException {
         assertEquals(Schema.Config.CompatibilityLevelConfig.BACKWARD, repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID).getCompatibilityLevel());
     }
+
+    @Test
+    public void getSchemaStats() throws IOException, RestClientException
+    {
+        assertEquals(3, repository.schemaCount(KafkaTestCluster.CLUSTER_ID).getSchemas());
+    }
 }

@@ -216,23 +216,32 @@ public class ConnectRepository extends AbstractRepository {
         return list;
     }
 
-    public List<ClusterStats.ConnectStats> getConnectStats(String clusterId) {
-        Map<String, KafkaConnectClient> clientList = this.kafkaModule.getConnectRestClient(clusterId);
-        List<ClusterStats.ConnectStats> stats = new ArrayList<>();
-        clientList.forEach((name,client) -> {
-            int connectorCount = 0;
-            int tasks = 0;
-            Collection<String> connectors = client.getConnectors();
-            connectorCount += connectors.size();
-            Map<String, Long> stateCount = new HashMap<>();
-            for (String c : connectors) {
-                tasks += client.getConnectorTasks(c).size();
-                List<ConnectorStatus.TaskStatus> statuses = client.getConnectorStatus(c).getTasks();
-                statuses.stream().collect(Collectors.groupingBy(ConnectorStatus.TaskStatus::getState, () -> stateCount, Collectors.counting()));
-            }
-            stats.add(new ClusterStats.ConnectStats(name,connectorCount, tasks, stateCount));
-        });
-        return stats;
+    public ClusterStats.ConnectStats getConnectStats(String clusterId, String connectId) {
+        KafkaConnectClient client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
+        int connectorCount = 0;
+        int tasks = 0;
+        Map<String, Integer> stateCount = new HashMap<>();
+        Collection<String> connectors = client.getConnectors();
+        connectorCount += connectors.size();
+        for (String c : connectors) {
+            tasks += client.getConnectorTasks(c).size();
+            List<ConnectorStatus.TaskStatus> statuses = client.getConnectorStatus(c).getTasks();
+            statuses.stream()
+                    .map(ConnectorStatus.TaskStatus::getState)
+                    //  --> List("RUNNING","RUNNING","PAUSED")
+                    .collect(Collectors.groupingBy(w -> w))
+                    // --> Map("RUNNING": List("RUNNING","RUNNING"),
+                    //         "PAUSED": List("PAUSED")
+                    .forEach((k, v) -> {
+                        if (stateCount.containsKey(k)) {
+                            stateCount.computeIfPresent(k, (y,z) -> z + v.size());
+                        } else {
+                            stateCount.put(k, v.size());
+                        }
+                    });
+//            statuses.stream().collect(Collectors.groupingBy(ConnectorStatus.TaskStatus::getState, () -> stateCount, Collectors.counting()));
+        }
+        return new ClusterStats.ConnectStats(connectId, connectorCount, tasks, stateCount);
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {

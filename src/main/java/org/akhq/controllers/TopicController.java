@@ -89,12 +89,12 @@ public class TopicController extends AbstractController {
         ));
     }
 
-    @Get("api/{cluster}/topic/stats")
+    @Get("api/{cluster}/topic/globalstats")
     @Operation(tags = {"topic"}, summary = "Summary of topics on cluster")
-    public ClusterStats clusterTopicStats(String cluster)
+    public ClusterStats.TopicStats clusterTopicStats(String cluster)
             throws ExecutionException, InterruptedException, IOException, RestClientException
     {
-        return new ClusterStats(cluster, this.topicRepository, this.consumerGroupRepository, this.connectRepository, this.schemaRegistryRepository);
+        return this.topicRepository.getTopicStats(cluster);
     }
 
     @Get("api/{cluster}/topic/name")
