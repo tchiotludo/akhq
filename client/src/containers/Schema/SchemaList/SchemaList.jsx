@@ -251,11 +251,9 @@ class SchemaList extends Root {
           onDelete={schema => {
             this.handleOnDelete(schema);
           }}
-          onDetails={schemaId => {
-            let schema = this.state.schemasRegistry.find(schema => {
-              return schema.id === schemaId;
-            });
-            return `/ui/${selectedCluster}/schema/details/${schema.subject}`;
+          idCol="subject"
+          onDetails={subject => {
+            return `/ui/${selectedCluster}/schema/details/${subject}`;
           }}
           actions={
             roles.registry && roles.registry['registry/delete']
