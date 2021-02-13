@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import org.akhq.models.Record;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)

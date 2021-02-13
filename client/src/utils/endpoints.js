@@ -116,8 +116,8 @@ export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
-export const uriConnectDefinitions = (clusterId, connectId) => {
-  return `${apiUrl}/${clusterId}/connect/${connectId}`;
+export const uriConnectDefinitions = (clusterId, connectId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}?&search=${search}&page=${pageNumber}`;
 };
 
 export const uriConnectPlugins = (clusterId, connectId) => {

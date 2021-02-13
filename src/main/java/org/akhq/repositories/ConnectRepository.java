@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
@@ -13,6 +14,8 @@ import org.akhq.configs.SecurityProperties;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
+import org.akhq.utils.PagedList;
+import org.akhq.utils.Pagination;
 import org.akhq.utils.UserGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
@@ -21,7 +24,9 @@ import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundExc
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.regex.Pattern;
 
@@ -62,17 +67,34 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class
+            ConcurrentConfigModificationException.class,
+            ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId) {
+    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search)
+            throws IOException, RestClientException, ExecutionException, InterruptedException{
+        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search);
+
+        // I'm not sure of how to use the last parameter in this case
+        // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
+        return PagedList.of(definitions, pagination, list -> list);
+    }
+
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search
+    )
+    {
         ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
             .getConnectorsWithAllExpandedMetadata();
 
+        Collection<ConnectorDefinition> definitions = unfiltered.getAllDefinitions();
+
+        Collection<ConnectorDefinition> connectorsFilteredBySearch = search.map(
+                query -> definitions.stream().filter(connector -> connector.getName().contains(query))
+        ).orElse(definitions.stream()).collect(Collectors.toList());
+
         ArrayList<ConnectDefinition> filtered = new ArrayList<>();
-        for (ConnectorDefinition item : unfiltered.getAllDefinitions()) {
+        for (ConnectorDefinition item : connectorsFilteredBySearch) {
             if (isMatchRegex(getConnectFilterRegex(), item.getName())) {
                 filtered.add(new ConnectDefinition(
                     item,

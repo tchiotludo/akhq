@@ -1,5 +1,7 @@
 package org.akhq.controllers;
 
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
@@ -12,15 +14,26 @@ import org.akhq.configs.Role;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.repositories.ConnectRepository;
+import org.akhq.utils.PagedList;
+import org.akhq.utils.Pagination;
+import org.akhq.utils.ResultPagedList;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 
 @Secured(Role.ROLE_CONNECT_READ)
 @Controller("/api/{cluster}/connect/{connectId}")
 public class ConnectController extends AbstractController {
     private final ConnectRepository connectRepository;
+
+    // I used the same configuration as for the registry schema
+    @Value("${akhq.pagination.page-size}")
+    private Integer pageSize;
 
     @Inject
     public ConnectController(ConnectRepository connectRepository) {
@@ -29,8 +42,14 @@ public class ConnectController extends AbstractController {
 
     @Get
     @Operation(tags = {"connect"}, summary = "List all connect definitions")
-    public List<ConnectDefinition> list(String cluster, String connectId) {
-        return this.connectRepository.getDefinitions(cluster, connectId);
+    public ResultPagedList<ConnectDefinition> list(
+            HttpRequest<?> request, String cluster, String connectId,  Optional<String> search, Optional<Integer> page)
+            throws IOException, RestClientException, ExecutionException, InterruptedException
+    {
+        URIBuilder uri = URIBuilder.fromURI(request.getUri());
+        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+
+        return ResultPagedList.of(this.connectRepository.getPaginatedDefinitions(cluster, connectId, pagination, search));
     }
 
     @Get("/plugins")
