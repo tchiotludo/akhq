@@ -822,6 +822,8 @@ Documentation on Confluent 5.5 and schema references can be found [here](https:/
 * [BARMER](https://www.barmer.de/)
 * [TVG](https://www.tvg.com)
 * [Depop](https://www.depop.com)
+* [BPCE-IT](https://www.bpce-it.fr/)
+
 
 
 ## Credits
