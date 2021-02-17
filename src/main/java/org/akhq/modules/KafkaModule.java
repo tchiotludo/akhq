@@ -156,6 +156,7 @@ public class KafkaModule {
 
             if (connection.getSchemaRegistry().getProperties() != null
                     && !connection.getSchemaRegistry().getProperties().isEmpty()) {
+
                 Map<String, Object> sslConfigs =
                         (Map) connection.getSchemaRegistry().getProperties().entrySet().stream().filter((e) -> {
                     return ((String) e.getKey()).startsWith("schema.registry.");
