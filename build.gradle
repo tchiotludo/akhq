@@ -165,7 +165,14 @@ dependencies {
  * Test
  **********************************************************************************************************************/
 test {
-    useJUnitPlatform()
+
+    if(project.hasProperty('includeTags')) {
+        useJUnitPlatform {
+            includeTags project.property('includeTags')
+        }
+    } else {
+        useJUnitPlatform()
+    }
 
     testLogging {
         exceptionFormat = 'full'
