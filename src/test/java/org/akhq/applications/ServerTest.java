@@ -1,6 +1,7 @@
 package org.akhq.applications;
 
 import io.micronaut.runtime.server.EmbeddedServer;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 
@@ -13,6 +14,7 @@ public class ServerTest extends AbstractTest {
     EmbeddedServer embeddedServer;
 
     @Test
+    @Tag("verified")
     void testItWorks() {
         assertTrue(embeddedServer.isRunning());
     }

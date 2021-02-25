@@ -8,6 +8,7 @@ import org.akhq.models.Cluster;
 import org.akhq.models.Config;
 import org.akhq.models.LogDir;
 import org.akhq.models.Node;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NodeControllerTest extends AbstractTest {
     @Test
+    @Tag("verified")
     void listApi() {
         Cluster result = this.retrieve(
             HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node"),
@@ -28,6 +30,7 @@ class NodeControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void nodeApi() {
         Node result = this.retrieve(
             HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0"),
@@ -38,6 +41,7 @@ class NodeControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void nodeConfigApi() {
         List<Config> result = this.retrieveList(
             HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/configs"),
@@ -48,6 +52,7 @@ class NodeControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void nodeConfigUpdateApi() {
         String s = String.valueOf(new Random().nextInt((Integer.MAX_VALUE - Integer.MAX_VALUE/2) + 1) + Integer.MAX_VALUE/2);
 
@@ -63,6 +68,7 @@ class NodeControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void nodeLogApi() {
         List<LogDir> result = this.retrieveList(
             HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/logs"),

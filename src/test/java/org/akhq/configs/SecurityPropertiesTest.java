@@ -1,6 +1,7 @@
 package org.akhq.configs;
 
 import io.micronaut.context.ApplicationContext;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.CollectionUtils;
 
@@ -11,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SecurityPropertiesTest {
 
     @Test
+    @Tag("verified")
     void shouldReturnAllBasicGroups() {
         ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class);
         SecurityProperties securityProperties = ctx.getBean(SecurityProperties.class);
@@ -24,6 +26,7 @@ class SecurityPropertiesTest {
     }
 
     @Test
+    @Tag("verified")
     void shouldReturnAllBasicPlusConfiguredGroups() {
         ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class, "extragroups");
         SecurityProperties securityProperties = ctx.getBean(SecurityProperties.class);
@@ -37,6 +40,7 @@ class SecurityPropertiesTest {
     }
 
     @Test
+    @Tag("verified")
     void shouldOverrideBasicGroups() {
         ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class, "overridegroups");
         SecurityProperties securityProperties = ctx.getBean(SecurityProperties.class);

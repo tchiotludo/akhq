@@ -13,6 +13,7 @@ import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.ConsumerGroupState;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -32,6 +33,7 @@ class GroupControllerTest extends AbstractTest {
     private KafkaModule kafkaModule;
 
     @Test
+    @Tag("verified")
     void listApi() {
         ResultPagedList<ConsumerGroup> result;
 
@@ -44,12 +46,14 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void homeApi() {
         ConsumerGroup result = this.retrieve(HttpRequest.GET(GROUP_URL), ConsumerGroup.class);
         assertEquals("stream-test-example", result.getId());
     }
 
     @Test
+    @Tag("verified")
     void offsetsApi() {
         List<TopicPartition.ConsumerGroupOffset> result = this.retrieveList(
             HttpRequest.GET(GROUP_URL + "/offsets"),
@@ -59,12 +63,14 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void membersApi() {
         List<Consumer> result = this.retrieveList(HttpRequest.GET(GROUP_URL + "/members"), Consumer.class);
         assertEquals(1, result.size());
     }
 
     @Test
+    @Tag("verified")
     void offsetsStartApi() {
         List<RecordRepository.TimeOffset> result = this.retrieveList(
             HttpRequest.GET(GROUP_URL + "/offsets/start?timestamp=2020-03-28T11:40:10.123Z"),
@@ -76,6 +82,7 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void aclsApi() {
         List<AccessControl> result = this.retrieveList(
             HttpRequest.GET(BASE_URL + "/groupConsumer/acls"),
@@ -88,6 +95,7 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void consumer() {
         String name = UUID.randomUUID().toString();
         Properties properties = new Properties();

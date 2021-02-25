@@ -1,5 +1,6 @@
 package org.akhq.configs;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BasicAuthTest {
 
     @Test
+    @Tag("verified")
     void isValidPasswordSha256Invalid() {
         BasicAuth basicAuth = new BasicAuth();
         basicAuth.password = "ec04b8cb3cb42d6e28f4472c33efe93e41b138637e5223d7d758c5bceff11df8";
@@ -16,6 +18,7 @@ class BasicAuthTest {
 
 
     @Test
+    @Tag("verified")
     void isValidPasswordSha256Valid() {
         BasicAuth basicAuth = new BasicAuth();
         basicAuth.password = "ec04b8cb3cb42d6e28f4472c33efe93e41b138637e5223d7d758c5bceff11df8";
@@ -23,6 +26,7 @@ class BasicAuthTest {
     }
 
     @Test
+    @Tag("verified")
     void isValidPasswordBCryptInvalid() {
         BasicAuth basicAuth = new BasicAuth();
         basicAuth.passwordHash = BasicAuth.PasswordHash.BCRYPT;
@@ -31,6 +35,7 @@ class BasicAuthTest {
     }
 
     @Test
+    @Tag("verified")
     void isValidPasswordBCryptValid() {
         BasicAuth basicAuth = new BasicAuth();
         basicAuth.passwordHash = BasicAuth.PasswordHash.BCRYPT;

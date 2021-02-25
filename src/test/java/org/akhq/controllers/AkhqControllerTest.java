@@ -3,6 +3,7 @@ package org.akhq.controllers;
 import io.micronaut.http.HttpRequest;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AkhqControllerTest extends AbstractTest {
     @Test
+    @Tag("verified")
     void list() {
         List<AkhqController.ClusterDefinition> result = this.retrieveList(
             HttpRequest.GET("/api/cluster"),
@@ -25,6 +27,7 @@ class AkhqControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void auth() {
         AkhqController.AuthDefinition result = this.retrieve(
             HttpRequest.GET("/api/auths"),
@@ -35,6 +38,7 @@ class AkhqControllerTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     void user() {
         AkhqController.AuthUser result = this.retrieve(
             HttpRequest.GET("/api/me"),
