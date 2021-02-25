@@ -5,6 +5,7 @@ import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.reactivex.Flowable;
 import org.akhq.AbstractTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -20,6 +21,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     BasicAuthAuthenticationProvider auth;
 
     @Test
+    @Tag("verified")
     public void success() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
@@ -44,6 +46,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     }
 
     @Test
+    @Tag("verified")
     public void failed() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
