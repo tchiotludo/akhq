@@ -9,6 +9,7 @@ import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ public class AvroToJsonSerializerTest {
     private static final Conversion<BigDecimal> DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
     @Test
+    @Tag("verified")
     public void serializeAvroToJsonWithDecimal() throws IOException {
         String expectedString = "{\"id\":10,\"name\":\"Tiger\",\"weight\":\"10.40\"}";
         GenericRecord dogExample = aDogExample(10, "Tiger", 10.40);
@@ -28,6 +30,7 @@ public class AvroToJsonSerializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void serializeAvroToJsonWithoutDecimal() throws IOException {
         String expectedString = "{\"id\":10,\"name\":\"Tom\",\"breed\":\"SPHYNX\"}";
         GenericRecord catExample = aCatExample(10, "Tom", Breed.SPHYNX);

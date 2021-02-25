@@ -6,6 +6,7 @@ import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.SchemaBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -54,6 +55,7 @@ class AvroSchemaSerializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void shouldSerializeSchemaId() {
         int schemaId = 3;
         byte[] bytes = cut.toAvro(VALID_JSON, schemaId);
@@ -67,6 +69,7 @@ class AvroSchemaSerializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void shouldFailIfDoesntMatchSchemaId() {
         assertThrows(AvroTypeException.class, () -> {
             int schemaId = 3;

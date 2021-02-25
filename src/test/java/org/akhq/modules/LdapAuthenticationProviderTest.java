@@ -8,6 +8,7 @@ import io.micronaut.security.authentication.*;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.annotation.MockBean;
 import io.reactivex.Flowable;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -60,6 +61,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    @Tag("verified")
     public void success() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -95,6 +97,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    @Tag("verified")
     public void successWithMultipleLdapGroups() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -134,6 +137,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    @Tag("verified")
     public void successWithLdapGroupAndUserRole() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -173,6 +177,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    @Tag("verified")
     public void successWithoutRoles() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -203,6 +208,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
+    @Tag("verified")
     public void failure() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.empty();

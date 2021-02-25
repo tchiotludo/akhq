@@ -20,6 +20,7 @@ import org.apache.avro.reflect.ReflectDatumWriter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -58,18 +59,21 @@ public class AvroWireFormatConverterTest {
     }
 
     @Test
+    @Tag("verified")
     public void convertValueToWireFormatNull() {
         byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertNull(convertedValue);
     }
 
     @Test
+    @Tag("verified")
     public void convertValueToWireFormatEmptyValue() {
         byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertEquals(0, convertedValue.length);
     }
 
     @Test
+    @Tag("verified")
     @SneakyThrows
     public void convertValueToWireFormatWrongContentType() {
         MyRecord record = new MyRecord(42, "leet");
@@ -83,6 +87,7 @@ public class AvroWireFormatConverterTest {
     }
 
     @Test
+    @Tag("verified")
     @SneakyThrows
     public void convertValueToWireFormatWireFormat() {
         MyRecord record = new MyRecord(42, "leet");

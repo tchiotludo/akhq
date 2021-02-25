@@ -6,6 +6,7 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,6 +25,7 @@ class SseControllerTest extends AbstractTest {
     private EmbeddedServer embeddedServer;
 
     @Test
+    @Tag("verified")
     public void searchApi() {
         RxSseClient sseClient = embeddedServer.getApplicationContext().createBean(RxSseClient.class, embeddedServer.getURL());
 

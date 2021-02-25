@@ -6,6 +6,7 @@ import com.google.protobuf.StringValue;
 import org.akhq.configs.Connection.ProtobufDeserializationTopicsMapping;
 import org.akhq.configs.TopicsMapping;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -111,6 +112,7 @@ public class ProtobufToJsonDeserializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void deserializeAlbum() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryAlbum = albumProto.toByteArray();
@@ -125,6 +127,7 @@ public class ProtobufToJsonDeserializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void deserializeFilm() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryFilm = filmProto.toByteArray();
@@ -140,6 +143,7 @@ public class ProtobufToJsonDeserializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void deserializeForNotMatchingTopic() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryFilm = filmProto.toByteArray();
@@ -148,6 +152,7 @@ public class ProtobufToJsonDeserializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void deserializeForKeyWhenItsTypeNotSet() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryFilm = filmProto.toByteArray();
@@ -160,6 +165,7 @@ public class ProtobufToJsonDeserializerTest {
     }
 
     @Test
+    @Tag("verified")
     public void deserializeComplexObject() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryComplexObject = complexProtobufObject.toByteArray();

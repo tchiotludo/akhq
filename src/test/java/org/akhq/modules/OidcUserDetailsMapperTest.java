@@ -13,6 +13,7 @@ import org.akhq.configs.Oidc;
 import org.akhq.configs.UserMapping;
 import org.akhq.utils.UserGroupUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -83,6 +84,7 @@ class OidcUserDetailsMapperTest {
     }
 
     @Test
+    @Tag("verified")
     void createUserDetails() {
         JWTOpenIdClaims claims = buildClaims(Arrays.asList(GROUP_1, GROUP_2));
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
@@ -104,6 +106,7 @@ class OidcUserDetailsMapperTest {
     }
 
     @Test
+    @Tag("verified")
     void fieldMissing() {
         JWTOpenIdClaims claims = buildClaims(null);
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
@@ -111,6 +114,7 @@ class OidcUserDetailsMapperTest {
     }
 
     @Test
+    @Tag("verified")
     void fieldIncompatible() {
         JWTOpenIdClaims claims = buildClaims(GROUP_1);
         UserDetails userDetails = subject.createUserDetails(PROVIDER_NAME, new OpenIdTokenResponse(), claims);
