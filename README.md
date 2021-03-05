@@ -26,6 +26,7 @@
     - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
     - [AKHQ](#akhq-configuration)
+    - [AKHQ Configuration Bootstrap OAuth2](#akhq-configuration-bootstrap-oauth2)
     - [Security](#security)
     - [Server](#server)
     - [Micronaut](#micronaut-configuration)
@@ -290,7 +291,37 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the
   buffer (default: 1000).
 
+
+### AKHQ Configuration Bootstrap OAuth2
+
+#### Requirement
+  The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
+  
+  This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
+  
+#### Configuration Bootstrap
+
+  It is necessary to compile AKHQ to integrate the Strimzi libraries.
+  
+  First you have to clone the last version AKHQ.
+  
+  Then you have to modify the build.gradle file to add the dependencies in section dependencies with :
+    * implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
+    * implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
     
+  Now you can launch `gradlew shadowJar` to get an jar include librairie strimzi.
+
+  You must configure AKHQ through the application.yml file.
+
+```yaml
+bootstrap.servers: "<url broker kafka>:9094,<url broker kafka>:9094"
+sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required oauth.valid.issuer.uri="https://<url keycloak>/auth/realms/sandbox_kafka" oauth.jwks.endpoint.uri="https:/<url keycloak>//auth/realms/sandbox_kafka/protocol/openid-connect/certs" oauth.username.claim="preferred_username" oauth.client.id="kafka-producer-client" oauth.client.secret="" oauth.ssl.truststore.location="kafka.server.truststore.jks" oauth.ssl.truststore.password="xxxxx" oauth.ssl.truststore.type="jks" oauth.ssl.endpoint_identification_algorithm="" oauth.token.endpoint.uri="https:///auth/realms/sandbox_kafka/protocol/openid-connect/token";
+sasl.login.callback.handler.class: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+security.protocol: SASL_PLAINTEXT
+sasl.mechanism: OAUTHBEARER
+```
+I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certificates did not match the FQDN. In a production, you have to remove it.
+
 ### Security
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
 By default, the default group is `admin` and allow you all read / write access on the whole app.
