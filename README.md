@@ -295,23 +295,23 @@ These parameters are the default values used in the topic creation page.
 ### AKHQ Configuration Bootstrap OAuth2
 
 #### Requirement
-  The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
+The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
   
-  This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
+This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
   
 #### Configuration Bootstrap
 
-  It is necessary to compile AKHQ to integrate the Strimzi libraries.
+It is necessary to compile AKHQ to integrate the Strimzi libraries.
   
-  First you have to clone the last version AKHQ.
+First you have to clone the last version AKHQ.
   
-  Then you have to modify the build.gradle file to add the dependencies in section dependencies with :
-    * implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
-    * implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
+Then you have to modify the build.gradle file to add the dependencies in section dependencies with :
+* implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
+* implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
     
-  Now you can launch `gradlew shadowJar` to get an jar include librairie strimzi.
+ Now you can launch `gradlew shadowJar` to get an jar include librairie strimzi.
 
-  You must configure AKHQ through the application.yml file.
+ You must configure AKHQ through the application.yml file.
 
 ```yaml
 bootstrap.servers: "<url broker kafka>:9094,<url broker kafka>:9094"
