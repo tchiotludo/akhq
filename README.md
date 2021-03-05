@@ -308,6 +308,19 @@ First you have to clone the last version AKHQ.
 Then you have to modify the build.gradle file to add the dependencies in section dependencies with :
 * implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
 * implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
+
+```yaml
+/**********************************************************************************************************************\
+
+Dependencies
+**********************************************************************************************************************/
+dependencies {
+// strimzi
+// https://mvnrepository.com/artifact/io.strimzi/kafka-oauth-common
+implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
+// https://mvnrepository.com/artifact/io.strimzi/kafka-oauth-client
+implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
+```
     
  Now you can launch `gradlew shadowJar` to get an jar include librairie strimzi.
 
