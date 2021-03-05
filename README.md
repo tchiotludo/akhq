@@ -298,7 +298,7 @@ These parameters are the default values used in the topic creation page.
 
 > The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
   
-This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
+> This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
   
 #### Configuration Bootstrap
 
