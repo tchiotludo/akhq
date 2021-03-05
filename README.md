@@ -294,7 +294,7 @@ These parameters are the default values used in the topic creation page.
 
 ### AKHQ Configuration Bootstrap OAuth2
 
-#### Requirement
+#### Requirement Library Strimzi
 
 > The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
   
