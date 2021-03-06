@@ -77,6 +77,10 @@ tasks.withType(JavaCompile){
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
+    // strimzi
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
+    
     // lombok
     annotationProcessor "org.projectlombok:lombok:" + lombokVersion
     compileOnly 'org.projectlombok:lombok:' + lombokVersion
