@@ -27,6 +27,7 @@
     - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
     - [AKHQ](#akhq-configuration)
+    - [AKHQ Configuration Bootstrap OAuth2](#akhq-configuration-bootstrap-oauth2)
     - [Security](#security)
     - [Server](#server)
     - [Micronaut](#micronaut-configuration)
@@ -334,6 +335,32 @@ akhq:
 More examples about Protobuf deserialization can be found in [tests](./src/test/java/org/akhq/utils).
 Info about the descriptor files generation can be found in [test resources](./src/test/resources/protobuf_proto).
 
+### AKHQ Configuration Bootstrap OAuth2
+
+#### Requirement Library Strimzi
+
+> The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
+
+> This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
+
+#### Configuration Bootstrap
+
+> It's not necessary to compile AKHQ to integrate the Strimzi libraries since the libs will be included on the final image !
+
+ You must configure AKHQ through the application.yml file.
+
+```yaml
+akhq:
+  connections:
+    my-kafka-cluster:
+      properties:
+        bootstrap.servers: "<url broker kafka>:9094,<url broker kafka>:9094"
+        sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required auth.valid.issuer.uri="https://<url keycloak>/auth/realms/sandbox_kafka" oauth.jwks.endpoint.uri="https:/<url keycloak>//auth/realms/sandbox_kafka/protocol/openid-connect/certs" oauth.username.claim="preferred_username" oauth.client.id="kafka-producer-client" oauth.client.secret="" oauth.ssl.truststore.location="kafka.server.truststore.jks" oauth.ssl.truststore.password="xxxxx" oauth.ssl.truststore.type="jks" oauth.ssl.endpoint_identification_algorithm="" oauth.token.endpoint.uri="https:///auth/realms/sandbox_kafka/protocol/openid-connect/token";
+        sasl.login.callback.handler.class: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: OAUTHBEARER
+```
+I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certificates did not match the FQDN. In a production, you have to remove it.
 
 ### Security
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
