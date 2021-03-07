@@ -345,8 +345,7 @@ Info about the descriptor files generation can be found in [test resources](./sr
 
 #### Configuration Bootstrap
 
-> It's not necessary to compile AKHQ to integrate the Strimzi libraries.
-> Since the libs will be included on the final image !
+> It's not necessary to compile AKHQ to integrate the Strimzi libraries since the libs will be included on the final image !
 
  You must configure AKHQ through the application.yml file.
 
