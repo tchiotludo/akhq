@@ -93,17 +93,8 @@ akhq:
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
-  connections:
-    kafka-cluster:
-      properties:
-        bootstrap.servers: "10.32.130.190:9092"
-      schema-registry:
-        url: "http://main-schema-registry.prod.iadvize.io"
-      connect:
-        - name: "Kafka-Connect-A"
-          url: "http://main-automation-kafka-connect-tool.prod.iadvize.io"
   pagination:
-    page-size: 5
+    page-size: 25
     threads: 16
 
   topic:
