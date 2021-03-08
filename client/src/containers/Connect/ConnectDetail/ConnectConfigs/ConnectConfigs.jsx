@@ -27,7 +27,8 @@ class ConnectConfigs extends Form {
     plugin: {},
     config: {},
     selectedType: '',
-    display: ''
+    display: '',
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {};
@@ -368,7 +369,7 @@ class ConnectConfigs extends Form {
   render() {
     const { plugin, display } = this.state;
     const { name } = this.state.formData;
-
+    const roles = this.state.roles || {};
     return (
       <div>
         <form
@@ -410,16 +411,18 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              <div style={{ left: 0, width: '100%' }} className="khq-submit">
-                <button
-                  type={'submit'}
-                  className="btn btn-primary"
-                  style={{ marginRight: '2%' }}
-                  disabled={this.validate()}
-                >
-                  Update
-                </button>
-              </div>
+              {roles.connect && roles.connect['connect/update'] && (
+                <div style={{ left: 0, width: '100%' }} className="khq-submit">
+                  <button
+                    type={'submit'}
+                    className="btn btn-primary"
+                    style={{ marginRight: '2%' }}
+                    disabled={this.validate()}
+                  >
+                    Update
+                  </button>
+                </div>
+              )}
             </React.Fragment>
           )}
         </form>

@@ -240,7 +240,7 @@ class Routes extends Root {
               {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
               )}
-              {roles && roles.connect && roles.connect['connect/update'] && (
+              {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
