@@ -95,7 +95,8 @@
   - User groups configuration
   - Filter topics with regexp for current groups
   - Ldap configuration to match AKHQ groups/roles
-
+  - Filter consumer groups with regexp for current groups
+  
 ## New React UI
 
 Since this is a major rework, the new UI can have some issues, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks!
@@ -409,6 +410,7 @@ Define groups with specific roles for your users
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
     * `attributes.connects-filter-regexp`: Regexp to filter Connect tasks available for current group
+    * `attributes.consumer-groups-filter-regexp`: Regexp to filter Consumer Groups available for current group
 
 
 3 defaults group are available :
@@ -512,6 +514,7 @@ akhq:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
           connects-filter-regexp: "^test.*$"
+          consumer-groups-filter-regexp: "consumer.*"
       topic-writer:
         name: topic-writer # Group name
         roles:
@@ -522,6 +525,7 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
           connects-filter-regexp: "^test.*$"
+          consumer-groups-filter-regexp: "consumer.*"
     ldap:
       groups:
         - name: mathematicians
