@@ -32,9 +32,6 @@ public class ConsumerGroupRepositoryTest extends AbstractTest {
     @InjectMocks
     protected ConsumerGroupRepository consumerGroupRepository;
 
-    @Inject
-    protected ConfigRepository configRepository;
-
     @Mock
     ApplicationContext applicationContext;
 
