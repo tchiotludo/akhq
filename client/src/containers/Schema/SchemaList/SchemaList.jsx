@@ -87,9 +87,12 @@ class SchemaList extends Root {
       endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
 
-    let schemasRegistry = response.data ? response.data.results || [] : [];
-    this.handleSchemaRegistry(schemasRegistry);
-    this.setState({ selectedCluster, totalPageNumber: response.page });
+    if (response.data.results) {
+      this.handleSchemaRegistry(response.data.results);
+      this.setState({ selectedCluster, totalPageNumber: response.data.page });
+    } else {
+      this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
+    }
   }
 
   handleSchemaRegistry(schemas) {
