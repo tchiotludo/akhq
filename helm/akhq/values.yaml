@@ -80,6 +80,7 @@ service:
   enabled: true
   type: ClusterIP
   port: 80
+  labels: {}
   annotations:
     # cloud.google.com/load-balancer-type: "Internal"
 
