@@ -199,6 +199,8 @@ akhq:
           topics-filter-regexp: "test.*"
           # Regexp to filter connect configs visible for group
           connects-filter-regexp: "^test.*$"
+          # Regexp to filter consumer groups visible for group
+          consumer-groups-filter-regexp: "consumer.*"
       topic-reader: # unique key
         name: topic-reader # Other group
         roles:
