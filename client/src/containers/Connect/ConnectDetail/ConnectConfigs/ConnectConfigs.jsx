@@ -139,6 +139,7 @@ class ConnectConfigs extends Form {
     let title = '';
     let { formData } = this.state;
     const errors = [];
+    const roles = this.state.roles || {};
     const errorMessage = this.validateProperty({ name: plugin.name, value: formData[plugin.name] });
     if (errorMessage) {
       errors[plugin.name] = errorMessage;
@@ -200,7 +201,7 @@ class ConnectConfigs extends Form {
             className="form-control"
             value={formData[plugin.name]}
             name={plugin.name}
-            disabled={plugin.name === 'name' || plugin.name === 'connector.class'}
+            disabled={plugin.name === 'name' || plugin.name === 'connector.class' || !(roles.connect && roles.connect['connect/update']) }
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
@@ -261,6 +262,7 @@ class ConnectConfigs extends Form {
     group.forEach(element => {
       const rows = this.renderTableRows(element);
       const errors = [];
+      const roles = this.state.roles || {};
 
       groupDisplay.push(<tr>{rows}</tr>);
       if (element.name === 'transforms') {
@@ -305,6 +307,7 @@ class ConnectConfigs extends Form {
                   this.setState({ formData });
                 }}
                 name="UNIQUE_ID_OF_DIV"
+                readOnly={!(roles.connect && roles.connect['connect/update'])}
                 editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', minHeight: '25vh' }}
               />
