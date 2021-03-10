@@ -27,6 +27,7 @@
     - [JVM.options file](#run-with-another-jvmoptions-file)
     - [Kafka cluster](#kafka-cluster-configuration)
     - [AKHQ](#akhq-configuration)
+    - [AKHQ Configuration Bootstrap OAuth2](#akhq-configuration-bootstrap-oauth2)
     - [Security](#security)
     - [Server](#server)
     - [Micronaut](#micronaut-configuration)
@@ -94,7 +95,8 @@
   - User groups configuration
   - Filter topics with regexp for current groups
   - Ldap configuration to match AKHQ groups/roles
-
+  - Filter consumer groups with regexp for current groups
+  
 ## New React UI
 
 Since this is a major rework, the new UI can have some issues, so please [report any issue](https://github.com/tchiotludo/akhq/issues), thanks!
@@ -334,6 +336,32 @@ akhq:
 More examples about Protobuf deserialization can be found in [tests](./src/test/java/org/akhq/utils).
 Info about the descriptor files generation can be found in [test resources](./src/test/resources/protobuf_proto).
 
+### AKHQ Configuration Bootstrap OAuth2
+
+#### Requirement Library Strimzi
+
+> The kafka brokers must be configured with the Strimzi library and an OAuth2 provider (Keycloak example).
+
+> This ![repository](https://github.com/strimzi/strimzi-kafka-oauth) contains documentation and examples.
+
+#### Configuration Bootstrap
+
+> It's not necessary to compile AKHQ to integrate the Strimzi libraries since the libs will be included on the final image !
+
+ You must configure AKHQ through the application.yml file.
+
+```yaml
+akhq:
+  connections:
+    my-kafka-cluster:
+      properties:
+        bootstrap.servers: "<url broker kafka>:9094,<url broker kafka>:9094"
+        sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required auth.valid.issuer.uri="https://<url keycloak>/auth/realms/sandbox_kafka" oauth.jwks.endpoint.uri="https:/<url keycloak>//auth/realms/sandbox_kafka/protocol/openid-connect/certs" oauth.username.claim="preferred_username" oauth.client.id="kafka-producer-client" oauth.client.secret="" oauth.ssl.truststore.location="kafka.server.truststore.jks" oauth.ssl.truststore.password="xxxxx" oauth.ssl.truststore.type="jks" oauth.ssl.endpoint_identification_algorithm="" oauth.token.endpoint.uri="https:///auth/realms/sandbox_kafka/protocol/openid-connect/token";
+        sasl.login.callback.handler.class: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: OAUTHBEARER
+```
+I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certificates did not match the FQDN. In a production, you have to remove it.
 
 ### Security
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
@@ -382,6 +410,7 @@ Define groups with specific roles for your users
     * `roles`: Roles list for the group
     * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
     * `attributes.connects-filter-regexp`: Regexp to filter Connect tasks available for current group
+    * `attributes.consumer-groups-filter-regexp`: Regexp to filter Consumer Groups available for current group
 
 
 3 defaults group are available :
@@ -472,14 +501,6 @@ attributes:
 ```
 with your group membership attribute
 
-Debuging ldap connection can be done with
-```bash
-curl -i -X POST -H "Content-Type: application/json" \
-       -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8081/loggers/io.micronaut.configuration.security
-```
-
-
 Configure AKHQ groups and Ldap groups and users
 ```yaml
 akhq:
@@ -493,6 +514,7 @@ akhq:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test\\.reader.*"
           connects-filter-regexp: "^test.*$"
+          consumer-groups-filter-regexp: "consumer.*"
       topic-writer:
         name: topic-writer # Group name
         roles:
@@ -503,6 +525,7 @@ akhq:
         attributes:
           topics-filter-regexp: "test.*"
           connects-filter-regexp: "^test.*$"
+          consumer-groups-filter-regexp: "consumer.*"
     ldap:
       groups:
         - name: mathematicians
@@ -568,6 +591,20 @@ akhq:
 ```
 
 The username field can be any string field, the roles field has to be a JSON array.
+
+### Debugging authentification
+
+Debugging auth can be done increase log level on micronaut that handle most of the authentification part : 
+```bash
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8081/loggers/io.micronaut.security
+       
+       
+curl -i -X POST -H "Content-Type: application/json" \
+       -d '{ "configuredLevel": "TRACE" }' \
+       http://localhost:8081/loggers/org.akhq.configs
+```
 
 ### Server
 * `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
@@ -822,6 +859,8 @@ Documentation on Confluent 5.5 and schema references can be found [here](https:/
 * [BARMER](https://www.barmer.de/)
 * [TVG](https://www.tvg.com)
 * [Depop](https://www.depop.com)
+* [BPCE-IT](https://www.bpce-it.fr/)
+
 
 
 ## Credits

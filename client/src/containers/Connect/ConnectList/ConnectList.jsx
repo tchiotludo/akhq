@@ -12,6 +12,8 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
+import SearchBar from "../../../components/SearchBar";
+import Pagination from "../../../components/Pagination";
 
 class ConnectList extends Root {
   state = {
@@ -22,7 +24,13 @@ class ConnectList extends Root {
     definitionToDelete: '',
     deleteMessage: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
-    loading: true
+    loading: true,
+    pageNumber: 1,
+    totalPageNumber: 1,
+    history: this.props,
+    searchData: {
+      search: ''
+    },
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -36,24 +44,26 @@ class ConnectList extends Root {
   }
 
   componentDidMount() {
-    this.getConnectDefinitions();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    const { searchData } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+    this.setState({ searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
       this.getConnectDefinitions();
-    }
+    });
   }
 
   async getConnectDefinitions() {
-    let connectDefinitions = [];
-    const { clusterId, connectId } = this.state;
+    const { clusterId, connectId, pageNumber } = this.state;
+    const { search } = this.state.searchData;
 
     this.setState({ loading: true });
 
-    connectDefinitions = await this.getApi(uriConnectDefinitions(clusterId, connectId));
-    this.handleData(connectDefinitions.data);
-    this.setState({ selectedCluster: clusterId });
+    let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
+    if (response.data.results) {
+      this.handleData(response.data.results);
+      this.setState({ clusterId, totalPageNumber: response.data.page });
+    } else {
+      this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
+    }
   }
 
   deleteDefinition = () => {
@@ -121,6 +131,34 @@ class ConnectList extends Root {
     });
   }
 
+  handlePageChange = ({ currentTarget: input }) => {
+    const { value } = input;
+    this.setState({ pageNumber: value });
+  };
+
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ pageNumber: 1, searchData }, () => {
+      this.getConnectDefinitions();
+      this.props.history.push({
+        pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+        search: `search=${searchData.search}`
+      });
+    });
+  };
+
+  handlePageChangeSubmission = value => {
+    const { totalPageNumber } = this.state;
+    if (value <= 0) {
+      value = 1;
+    } else if (value > totalPageNumber) {
+      value = totalPageNumber;
+    }
+    this.setState({ pageNumber: value }, () => {
+      this.getConnectDefinitions();
+    });
+  };
+
   renderTasks = tasks => {
     let renderedTasks = [];
 
@@ -153,13 +191,33 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading } = this.state;
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
     return (
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
+        <nav
+            className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
+          <SearchBar
+              showSearch={true}
+              search={searchData.search}
+              showPagination={true}
+              pagination={pageNumber}
+              doSubmit={this.handleSearch}
+          />
+
+          <Pagination
+              pageNumber={pageNumber}
+              totalPageNumber={totalPageNumber}
+              onChange={this.handlePageChange}
+              onSubmit={this.handlePageChangeSubmission}
+          />
+        </nav>
+
         <Table
           loading={loading}
           history={history}
