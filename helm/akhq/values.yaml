@@ -50,6 +50,9 @@ secrets: |
             basic-auth-username: basic-auth-user
             basic-auth-password: basic-auth-pass
 
+kafkaSecrets: []
+#Provide extra base64 encoded kubernetes secrets (keystore/truststore)
+
 # Any extra volumes to define for the pod (like keystore/truststore)
 extraVolumes: []
 
@@ -80,6 +83,7 @@ service:
   enabled: true
   type: ClusterIP
   port: 80
+  labels: {}
   annotations:
     # cloud.google.com/load-balancer-type: "Internal"
 
