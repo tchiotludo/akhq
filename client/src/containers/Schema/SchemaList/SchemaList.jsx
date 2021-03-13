@@ -15,6 +15,8 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+
 
 class SchemaList extends Root {
   state = {
@@ -61,21 +63,11 @@ class SchemaList extends Root {
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let ageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({pageNumber: ageNumber}, () => {
       this.getSchemaRegistry();
-    });
-  };
-
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
+    })
+  }
 
   async getSchemaRegistry() {
     const { selectedCluster, pageNumber } = this.state;
@@ -87,9 +79,10 @@ class SchemaList extends Root {
       endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
 
-    if (response.data.results) {
-      this.handleSchemaRegistry(response.data.results);
-      this.setState({ selectedCluster, totalPageNumber: response.data.page });
+    let data = response.data;
+    if (data.results) {
+      this.handleSchemaRegistry(data.results);
+      this.setState({ selectedCluster, totalPageNumber: data.page });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
     }
@@ -180,7 +173,7 @@ class SchemaList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
