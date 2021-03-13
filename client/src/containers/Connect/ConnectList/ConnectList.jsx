@@ -61,8 +61,7 @@ class ConnectList extends Root {
     let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
     let data = response.data;
     if (data.results) {
-      this.handleData(data.results);
-      this.setState({ clusterId, totalPageNumber: data.page });
+      this.handleData(data);
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
     }
@@ -85,7 +84,7 @@ class ConnectList extends Root {
 
   handleData = data => {
     let tableData = [];
-    tableData = data.map(connectDefinition => {
+    tableData = data.results.map(connectDefinition => {
       return {
         id: connectDefinition.name || '',
         config: JSON.stringify(connectDefinition.configs) || '',
@@ -98,7 +97,7 @@ class ConnectList extends Root {
       };
     });
 
-    this.setState({ tableData, loading: false });
+    this.setState({ tableData, loading: false, totalPageNumber: data.page });
   };
 
   showDeleteModal = deleteMessage => {
