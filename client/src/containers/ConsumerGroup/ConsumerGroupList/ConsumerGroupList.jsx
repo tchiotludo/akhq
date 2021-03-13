@@ -50,8 +50,8 @@ class ConsumerGroupList extends Root {
   };
 
   handlePageChangeSubmission = value => {
-    let ageNumber = getPageNumber(value, this.state.totalPageNumber);
-    this.setState({ pageNumber: ageNumber }, () => {
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getConsumerGroup();
     });
   };
