@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
 import {Link} from "react-router-dom";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class ConsumerGroupList extends Root {
   state = {
@@ -49,21 +50,12 @@ class ConsumerGroupList extends Root {
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let ageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: ageNumber }, () => {
       this.getConsumerGroup();
     });
   };
 
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
 
   async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
@@ -193,7 +185,7 @@ class ConsumerGroupList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>

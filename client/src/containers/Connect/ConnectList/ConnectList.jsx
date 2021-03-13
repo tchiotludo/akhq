@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
 import SearchBar from "../../../components/SearchBar";
 import Pagination from "../../../components/Pagination";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class ConnectList extends Root {
   state = {
@@ -58,9 +59,10 @@ class ConnectList extends Root {
     this.setState({ loading: true });
 
     let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
-    if (response.data.results) {
-      this.handleData(response.data.results);
-      this.setState({ clusterId, totalPageNumber: response.data.page });
+    let data = response.data;
+    if (data.results) {
+      this.handleData(data.results);
+      this.setState({ clusterId, totalPageNumber: data.page });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
     }
@@ -131,11 +133,6 @@ class ConnectList extends Root {
     });
   }
 
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
-
   handleSearch = data => {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
@@ -148,13 +145,8 @@ class ConnectList extends Root {
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getConnectDefinitions();
     });
   };
@@ -213,7 +205,7 @@ class ConnectList extends Root {
           <Pagination
               pageNumber={pageNumber}
               totalPageNumber={totalPageNumber}
-              onChange={this.handlePageChange}
+              onChange={handlePageChange}
               onSubmit={this.handlePageChangeSubmission}
           />
         </nav>

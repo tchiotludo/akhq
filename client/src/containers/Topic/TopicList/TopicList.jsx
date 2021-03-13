@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
 import {getClusterUIOptions} from "../../../utils/functions";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class TopicList extends Root {
   state = {
@@ -130,21 +131,11 @@ class TopicList extends Root {
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
-    this.setState({ pageNumber: value }, () => {
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getTopics();
     });
-  };
-
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
   };
 
   async getTopics() {
@@ -427,7 +418,7 @@ class TopicList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
