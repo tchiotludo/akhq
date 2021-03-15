@@ -31,10 +31,13 @@ class ConsumerGroupList extends Root {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-    const { search } = this.state;
+    const { search, pageNumber} = this.state;
     const query =  new URLSearchParams(this.props.location.search);
 
-    this.setState({ selectedCluster: clusterId, search: (query.get('search'))? query.get('search') : search }, () => {
+    this.setState({ selectedCluster: clusterId,
+      search: (query.get('search'))? query.get('search') : search,
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getConsumerGroup();
     });
   }
@@ -42,10 +45,6 @@ class ConsumerGroupList extends Root {
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/group`,
-        search: `search=${data.searchData.search}`
-      });
     });
   };
 
@@ -65,7 +64,12 @@ class ConsumerGroupList extends Root {
     response = response.data;
     if (response.results) {
       this.handleConsumerGroup(response.results);
-      this.setState({ selectedCluster, totalPageNumber: response.page });
+      this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
+          this.props.history.push({
+            pathname: `/ui/${this.state.selectedCluster}/group`,
+            search: `search=${this.state.search}&page=${pageNumber}`
+          })
+      );
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0, loading: false });
     }
@@ -115,16 +119,16 @@ class ConsumerGroupList extends Root {
       const offsetLag = calculateTopicOffsetLag(topicOffsets, topicId);
 
       return (
-        <Link
-          to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
-          key={group + '-' + topicId}
-          className="btn btn-dark btn-sm mb-1 mr-1"
-          onClick={noPropagation}
-        >
-          {topicId + ' '}
+          <Link
+              to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
+              key={group + '-' + topicId}
+              className="btn btn-dark btn-sm mb-1 mr-1"
+              onClick={noPropagation}
+          >
+            {topicId + ' '}
 
-          <div className="badge badge-secondary">Lag: {offsetLag}</div>
-        </Link>
+            <div className="badge badge-secondary">Lag: {offsetLag}</div>
+          </Link>
       );
     });
   }
@@ -132,9 +136,9 @@ class ConsumerGroupList extends Root {
   handleOnDelete(group) {
     this.setState({ groupToDelete: group }, () => {
       this.showDeleteModal(
-        <React.Fragment>
-          Do you want to delete consumer group: {<code>{group.id}</code>} ?
-        </React.Fragment>
+          <React.Fragment>
+            Do you want to delete consumer group: {<code>{group.id}</code>} ?
+          </React.Fragment>
       );
     });
   }
@@ -151,13 +155,13 @@ class ConsumerGroupList extends Root {
     const { selectedCluster, groupToDelete } = this.state;
 
     this.removeApi(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
-      .then(() => {
-        toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
-        this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
-      })
-      .catch(() => {
-        this.setState({ showDeleteModal: false, groupToDelete: {} });
-      });
+        .then(() => {
+          toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
+          this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false, groupToDelete: {} });
+        });
   };
   render() {
     const { selectedCluster, search, pageNumber, totalPageNumber, loading} = this.state;
@@ -165,95 +169,95 @@ class ConsumerGroupList extends Root {
     const { history } = this.props;
 
     return (
-      <div>
-        <Header title="Consumer Groups" history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+        <div>
+          <Header title="Consumer Groups" history={history} />
+          <nav
+              className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
-        >
-          <SearchBar
-            showSearch={true}
-            search={search}
-            showPagination={true}
-            pagination={pageNumber}
-            showTopicListView={false}
-            showConsumerGroup
-            groupListView={'ALL'}
-            doSubmit={this.handleSearch}
-          />
+          >
+            <SearchBar
+                showSearch={true}
+                search={search}
+                showPagination={true}
+                pagination={pageNumber}
+                showTopicListView={false}
+                showConsumerGroup
+                groupListView={'ALL'}
+                doSubmit={this.handleSearch}
+            />
 
-          <Pagination
-            pageNumber={pageNumber}
-            totalPageNumber={totalPageNumber}
-            onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
-          />
-        </nav>
+            <Pagination
+                pageNumber={pageNumber}
+                totalPageNumber={totalPageNumber}
+                onChange={handlePageChange}
+                onSubmit={this.handlePageChangeSubmission}
+            />
+          </nav>
 
-        <Table
-          loading={loading}
-          history={this.props.history}
-          columns={[
-            {
-              id: 'id',
-              accessor: 'id',
-              colName: 'Id'
-            },
-            {
-              id: 'state',
-              accessor: 'state',
-              colName: 'State',
-              cell: obj => {
-                return this.handleState(obj.state);
-              }
-            },
-            {
-              id: 'coordinator',
-              accessor: 'coordinator',
-              colName: 'Coordinator',
-              cell: obj => {
-                return this.handleCoordinator(obj.coordinator);
-              }
-            },
-            {
-              id: 'members',
-              accessor: 'members',
-              colName: 'Members'
-            },
-            {
-              id: 'topics',
-              accessor: 'topics',
-              colName: 'Topics',
-              cell: obj => {
-                if (obj.topics) {
-                  return this.handleTopics(obj.id, obj.topics);
+          <Table
+              loading={loading}
+              history={this.props.history}
+              columns={[
+                {
+                  id: 'id',
+                  accessor: 'id',
+                  colName: 'Id'
+                },
+                {
+                  id: 'state',
+                  accessor: 'state',
+                  colName: 'State',
+                  cell: obj => {
+                    return this.handleState(obj.state);
+                  }
+                },
+                {
+                  id: 'coordinator',
+                  accessor: 'coordinator',
+                  colName: 'Coordinator',
+                  cell: obj => {
+                    return this.handleCoordinator(obj.coordinator);
+                  }
+                },
+                {
+                  id: 'members',
+                  accessor: 'members',
+                  colName: 'Members'
+                },
+                {
+                  id: 'topics',
+                  accessor: 'topics',
+                  colName: 'Topics',
+                  cell: obj => {
+                    if (obj.topics) {
+                      return this.handleTopics(obj.id, obj.topics);
+                    }
+                  }
                 }
+              ]}
+              data={this.state.consumerGroups}
+              updateData={data => {
+                this.setState({ consumerGroups: data });
+              }}
+              noContent={'No consumer group available'}
+              onDelete={group => {
+                this.handleOnDelete(group);
+              }}
+              onDetails={id => `/ui/${selectedCluster}/group/${id}`}
+              actions={
+                roles.group && roles.group['group/delete']
+                    ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+                    : [constants.TABLE_DETAILS]
               }
-            }
-          ]}
-          data={this.state.consumerGroups}
-          updateData={data => {
-            this.setState({ consumerGroups: data });
-          }}
-          noContent={'No consumer group available'}
-          onDelete={group => {
-            this.handleOnDelete(group);
-          }}
-          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
-          actions={
-            roles.group && roles.group['group/delete']
-              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
-              : [constants.TABLE_DETAILS]
-          }
-        />
+          />
 
-        <ConfirmModal
-          show={this.state.showDeleteModal}
-          handleCancel={this.closeDeleteModal}
-          handleConfirm={this.deleteConsumerGroup}
-          message={this.state.deleteMessage}
-        />
-      </div>
+          <ConfirmModal
+              show={this.state.showDeleteModal}
+              handleCancel={this.closeDeleteModal}
+              handleConfirm={this.deleteConsumerGroup}
+              message={this.state.deleteMessage}
+          />
+        </div>
     );
   }
 }

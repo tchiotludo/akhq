@@ -45,9 +45,12 @@ class ConnectList extends Root {
   }
 
   componentDidMount() {
-    const { searchData } = this.state;
+    const { searchData, pageNumber } = this.state;
     const query =  new URLSearchParams(this.props.location.search);
-    this.setState({ searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
+    this.setState({
+      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getConnectDefinitions();
     });
   }
@@ -62,6 +65,12 @@ class ConnectList extends Root {
     let data = response.data;
     if (data.results) {
       this.handleData(data);
+      this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
+        this.props.history.push({
+          pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+          search: `search=${this.state.searchData.search}&page=${pageNumber}`
+        })
+      });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
     }
@@ -71,15 +80,15 @@ class ConnectList extends Root {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
 
     this.removeApi(uriDeleteDefinition(clusterId, connectId, definition))
-      .then(() => {
-        toast.success(`Definition '${definition}' is deleted`);
-        this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
-          this.getConnectDefinitions();
+        .then(() => {
+          toast.success(`Definition '${definition}' is deleted`);
+          this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
+            this.getConnectDefinitions();
+          });
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false, topicToDelete: {} });
         });
-      })
-      .catch(() => {
-        this.setState({ showDeleteModal: false, topicToDelete: {} });
-      });
   };
 
   handleData = data => {
@@ -89,10 +98,10 @@ class ConnectList extends Root {
         id: connectDefinition.name || '',
         config: JSON.stringify(connectDefinition.configs) || '',
         type:
-          {
-            type: connectDefinition.type,
-            shortClassName: connectDefinition.shortClassName
-          } || '',
+            {
+              type: connectDefinition.type,
+              shortClassName: connectDefinition.shortClassName
+            } || '',
         tasks: connectDefinition.tasks || ''
       };
     });
@@ -125,9 +134,9 @@ class ConnectList extends Root {
   handleOnDelete(definition) {
     this.setState({ definitionToDelete: definition }, () => {
       this.showDeleteModal(
-        <React.Fragment>
-          Do you want to delete definition: {<code>{definition}</code>} ?
-        </React.Fragment>
+          <React.Fragment>
+            Do you want to delete definition: {<code>{definition}</code>} ?
+          </React.Fragment>
       );
     });
   }
@@ -136,10 +145,6 @@ class ConnectList extends Root {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getConnectDefinitions();
-      this.props.history.push({
-        pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-        search: `search=${searchData.search}`
-      });
     });
   };
 
@@ -168,13 +173,13 @@ class ConnectList extends Root {
       }
 
       renderedTasks.push(
-        <React.Fragment>
+          <React.Fragment>
           <span className={`btn btn-sm mb-1 ${className}`}>
             {`${task.workerId} (${task.id}) `}
             <span className="badge badge-light">{task.state}</span>
           </span>
-          <br />
-        </React.Fragment>
+            <br />
+          </React.Fragment>
       );
     }
 
@@ -187,166 +192,166 @@ class ConnectList extends Root {
     const { history } = this.props;
 
     return (
-      <div>
-        <Header title={`Connect: ${connectId}`} history={history} />
-        <nav
-            className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+        <div>
+          <Header title={`Connect: ${connectId}`} history={history} />
+          <nav
+              className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
-        >
-          <SearchBar
-              showSearch={true}
-              search={searchData.search}
-              showPagination={true}
-              pagination={pageNumber}
-              doSubmit={this.handleSearch}
-          />
+          >
+            <SearchBar
+                showSearch={true}
+                search={searchData.search}
+                showPagination={true}
+                pagination={pageNumber}
+                doSubmit={this.handleSearch}
+            />
 
-          <Pagination
-              pageNumber={pageNumber}
-              totalPageNumber={totalPageNumber}
-              onChange={handlePageChange}
-              onSubmit={this.handlePageChangeSubmission}
-          />
-        </nav>
+            <Pagination
+                pageNumber={pageNumber}
+                totalPageNumber={totalPageNumber}
+                onChange={handlePageChange}
+                onSubmit={this.handlePageChangeSubmission}
+            />
+          </nav>
 
-        <Table
-          loading={loading}
-          history={history}
-          columns={[
-            {
-              id: 'id',
-              name: 'id',
-              accessor: 'id',
-              colName: 'Name',
-              type: 'text',
-              sortable: true
-            },
-            {
-              id: 'config',
-              name: 'config',
-              accessor: 'config',
-              colName: 'Config',
-              type: 'text',
-              extraRow: true,
-              extraRowContent: (obj, col, index) => {
-                return (
-                  <AceEditor
-                    mode="json"
-                    id={'value' + index}
-                    theme="merbivore_soft"
-                    value={JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}
-                    readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
-                    style={{ width: '100%', minHeight: '25vh' }}
-                  />
-                );
-              },
-              cell: (obj, col) => {
-                return (
-                  <pre class="mb-0 khq-data-highlight">
+          <Table
+              loading={loading}
+              history={history}
+              columns={[
+                {
+                  id: 'id',
+                  name: 'id',
+                  accessor: 'id',
+                  colName: 'Name',
+                  type: 'text',
+                  sortable: true
+                },
+                {
+                  id: 'config',
+                  name: 'config',
+                  accessor: 'config',
+                  colName: 'Config',
+                  type: 'text',
+                  extraRow: true,
+                  extraRowContent: (obj, col, index) => {
+                    return (
+                        <AceEditor
+                            mode="json"
+                            id={'value' + index}
+                            theme="merbivore_soft"
+                            value={JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}
+                            readOnly
+                            name="UNIQUE_ID_OF_DIV"
+                            editorProps={{ $blockScrolling: true }}
+                            style={{ width: '100%', minHeight: '25vh' }}
+                        />
+                    );
+                  },
+                  cell: (obj, col) => {
+                    return (
+                        <pre class="mb-0 khq-data-highlight">
                     <code onClick={() => JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}>
                       {obj[col.accessor]}
                     </code>
                   </pre>
-                );
-              }
-            },
-            {
-              id: 'type',
-              accessor: 'type',
-              colName: 'Type',
-              type: 'text',
-              cell: (obj, col) => {
-                if (obj[col.accessor].type === 'source') {
-                  return (
-                    <React.Fragment>
-                      <i className="fa fa-forward" aria-hidden="true" />
-                      {` ${obj[col.accessor].shortClassName}`}
-                    </React.Fragment>
-                  );
+                    );
+                  }
+                },
+                {
+                  id: 'type',
+                  accessor: 'type',
+                  colName: 'Type',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    if (obj[col.accessor].type === 'source') {
+                      return (
+                          <React.Fragment>
+                            <i className="fa fa-forward" aria-hidden="true" />
+                            {` ${obj[col.accessor].shortClassName}`}
+                          </React.Fragment>
+                      );
+                    }
+                    return (
+                        <React.Fragment>
+                          <i className="fa fa-backward" aria-hidden="true" />
+                          {` ${obj[col.accessor].shortClassName}`}
+                        </React.Fragment>
+                    );
+                  }
+                },
+                {
+                  id: 'tasks',
+                  accessor: 'tasks',
+                  colName: 'Tasks',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return this.renderTasks(obj[col.accessor]);
+                  }
                 }
-                return (
-                  <React.Fragment>
-                    <i className="fa fa-backward" aria-hidden="true" />
-                    {` ${obj[col.accessor].shortClassName}`}
-                  </React.Fragment>
-                );
-              }
-            },
-            {
-              id: 'tasks',
-              accessor: 'tasks',
-              colName: 'Tasks',
-              type: 'text',
-              cell: (obj, col) => {
-                return this.renderTasks(obj[col.accessor]);
-              }
-            }
-          ]}
-          data={tableData}
-          updateData={data => {
-            this.setState({ tableData: data });
-          }}
-          actions={this.getTableActions()}
-          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}` }
-          onDelete={row => {
-            this.handleOnDelete(row.id);
-          }}
-          extraRow
-          noStripes
-          onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
-              return (
-                <tr
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    width: '100%'
-                  }}
-                >
-                  <td
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      borderStyle: 'dashed',
-                      borderWidth: '1px',
-                      backgroundColor: '#171819'
-                    }}
-                  >
-                    {header}
-                  </td>
-                  <td
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      borderStyle: 'dashed',
-                      borderWidth: '1px',
-                      backgroundColor: '#171819'
-                    }}
-                  >
-                    {obj.headers[header]}
-                  </td>
-                </tr>
-              );
-            });
-          }}
-          noContent={'No connectors available'}
-        />
-        {roles.connect && roles.connect['connect/insert'] && (
-          <aside>
-            <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
-              Create a definition
-            </Link>
-          </aside>
-        )}
-        <ConfirmModal
-          show={this.state.showDeleteModal}
-          handleCancel={this.closeDeleteModal}
-          handleConfirm={this.deleteDefinition}
-          message={this.state.deleteMessage}
-        />
-      </div>
+              ]}
+              data={tableData}
+              updateData={data => {
+                this.setState({ tableData: data });
+              }}
+              actions={this.getTableActions()}
+              onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}` }
+              onDelete={row => {
+                this.handleOnDelete(row.id);
+              }}
+              extraRow
+              noStripes
+              onExpand={obj => {
+                return Object.keys(obj.headers).map(header => {
+                  return (
+                      <tr
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            width: '100%'
+                          }}
+                      >
+                        <td
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              borderStyle: 'dashed',
+                              borderWidth: '1px',
+                              backgroundColor: '#171819'
+                            }}
+                        >
+                          {header}
+                        </td>
+                        <td
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              borderStyle: 'dashed',
+                              borderWidth: '1px',
+                              backgroundColor: '#171819'
+                            }}
+                        >
+                          {obj.headers[header]}
+                        </td>
+                      </tr>
+                  );
+                });
+              }}
+              noContent={'No connectors available'}
+          />
+          {roles.connect && roles.connect['connect/insert'] && (
+              <aside>
+                <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
+                  Create a definition
+                </Link>
+              </aside>
+          )}
+          <ConfirmModal
+              show={this.state.showDeleteModal}
+              handleCancel={this.closeDeleteModal}
+              handleConfirm={this.deleteDefinition}
+              message={this.state.deleteMessage}
+          />
+        </div>
     );
   }
 }
