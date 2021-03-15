@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
 import {getClusterUIOptions} from "../../../utils/functions";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class TopicList extends Root {
   state = {
@@ -45,17 +46,15 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
-
-   this._initializeVars(() => {
-     this.getTopics();
-     this.props.history.replace({
-       pathname: `/ui/${this.state.selectedCluster}/topic`,
-       search: this.props.location.search
-     })});
+    this._initializeVars(() => {
+      this.getTopics();
+      this.props.history.replace({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: this.props.location.search
+      })});
   }
 
   componentDidUpdate(prevProps, prevState) {
-
     if (this.props.location.pathname !== prevProps.location.pathname) {
       this.cancelAxiosRequests();
       this.renewCancelToken();
@@ -68,10 +67,11 @@ class TopicList extends Root {
     const { clusterId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
+    let { pageNumber } = this.state;
     const uiOptions = await getClusterUIOptions(clusterId)
+
     let searchDataTmp;
     let keepSearchTmp = keepSearch;
-
     const topicListSearch = localStorage.getItem('topicListSearch');
     if(topicListSearch) {
       searchDataTmp = JSON.parse(topicListSearch);
@@ -82,9 +82,10 @@ class TopicList extends Root {
         topicListView: (query.get('topicListView'))? query.get('topicListView') :
             (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
+      pageNumber = (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
     }
-    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}}, callBackFunction);
 
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}, pageNumber: pageNumber}, callBackFunction);
   }
 
   showDeleteModal = deleteMessage => {
@@ -99,19 +100,19 @@ class TopicList extends Root {
     const { selectedCluster, topicToDelete } = this.state;
 
     this.removeApi(uriDeleteTopics(selectedCluster, topicToDelete.id))
-      .then(() => {
-        toast.success(`Topic '${topicToDelete.name}' is deleted`);
-        this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
-      })
-      .catch(() => {
-        this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
-      });
+        .then(() => {
+          toast.success(`Topic '${topicToDelete.name}' is deleted`);
+          this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false, topicToDelete: {} }, () => this.getTopics());
+        });
   };
 
   handleOnDelete(topic) {
     this.setState({ topicToDelete: topic }, () => {
       this.showDeleteModal(
-        <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
+          <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
       );
     });
   }
@@ -124,27 +125,22 @@ class TopicList extends Root {
       this.handleKeepSearchChange(data.keepSearch);
       this.props.history.push({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${searchData.search}&topicListView=${searchData.topicListView}`
+        search: `search=${searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${this.state.pageNumber}`
       });
+
     });
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
-    this.setState({ pageNumber: value }, () => {
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getTopics();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${pageNumber}`
+      });
     });
-  };
-
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
   };
 
   async getTopics() {
@@ -152,8 +148,8 @@ class TopicList extends Root {
     const { search, topicListView } = this.state.searchData;
     this.setState({ loading: true } );
 
-    let data = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
-    data = data.data;
+    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let data = response.data;
 
     if (data) {
       if (data.results) {
@@ -228,23 +224,23 @@ class TopicList extends Root {
         let className = 'btn btn-sm mb-1 mr-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
 
-          const activeTopic = consumerGroup.activeTopics && consumerGroup.activeTopics.find(
-              activeTopic => activeTopic === topicId
-          );
-          activeTopic ? (className += 'success') : (className += 'warning');
+        const activeTopic = consumerGroup.activeTopics && consumerGroup.activeTopics.find(
+            activeTopic => activeTopic === topicId
+        );
+        activeTopic ? (className += 'success') : (className += 'warning');
 
-          const noPropagation = e => e.stopPropagation();
+        const noPropagation = e => e.stopPropagation();
 
-          return (
+        return (
             <Link
-              key={consumerGroup.id}
-              to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
-              className={className}
-              onClick={noPropagation}
+                key={consumerGroup.id}
+                to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
+                className={className}
+                onClick={noPropagation}
             >
               {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
             </Link>
-          );
+        );
       });
     }
 
@@ -257,9 +253,9 @@ class TopicList extends Root {
 
     Object.keys(this.state.collapseConsumerGroups).forEach(key => {
       tmpGroups[key] = (key === id)?  !this.state.collapseConsumerGroups[key] : this.state.collapseConsumerGroups[key];
-     });
-     this.setState({collapseConsumerGroups : tmpGroups});
-   }
+    });
+    this.setState({collapseConsumerGroups : tmpGroups});
+  }
 
   handleKeepSearchChange(value){
     const { searchData } = this.state;
@@ -302,12 +298,12 @@ class TopicList extends Root {
         ];
 
     if(!uiOptions.skipLastRecord) {
-        topicCols.push({
-          id: 'lastWrite',
-          accessor: 'lastWrite',
-          colName: 'Last Record',
-          type: 'text'
-        });
+      topicCols.push({
+        id: 'lastWrite',
+        accessor: 'lastWrite',
+        colName: 'Last Record',
+        type: 'text'
+      });
     }
 
     const partitionCols =
@@ -319,7 +315,7 @@ class TopicList extends Root {
             type: 'text'
           }];
     const replicationCols =
-         [
+        [
           {
             id: 'replicationFactor',
             accessor: 'replicationFactor',
@@ -399,78 +395,78 @@ class TopicList extends Root {
     }
 
     return (
-      <div>
-        <Header title="Topics" history={this.props.history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light
+        <div>
+          <Header title="Topics" history={this.props.history} />
+          <nav
+              className="navbar navbar-expand-lg navbar-light
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"
-        >
-          <SearchBar
-            showSearch={true}
-            search={searchData.search}
-            showPagination={true}
-            pagination={pageNumber}
-            showTopicListView={true}
-            topicListView={searchData.topicListView}
-            showKeepSearch={true}
-            keepSearch={keepSearch}
-            onTopicListViewChange={value => {
-              let { searchData } = { ...this.state };
-              searchData.topicListView = value;
-              this.setState(searchData);
-            }}
-            onKeepSearchChange={value => {
-                this.handleKeepSearchChange(value);
-            }}
-            doSubmit={this.handleSearch}
-          />
-          <Pagination
-            pageNumber={pageNumber}
-            totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
-          />
-        </nav>
+          >
+            <SearchBar
+                showSearch={true}
+                search={searchData.search}
+                showPagination={true}
+                pagination={pageNumber}
+                showTopicListView={true}
+                topicListView={searchData.topicListView}
+                showKeepSearch={true}
+                keepSearch={keepSearch}
+                onTopicListViewChange={value => {
+                  let { searchData } = { ...this.state };
+                  searchData.topicListView = value;
+                  this.setState(searchData);
+                }}
+                onKeepSearchChange={value => {
+                  this.handleKeepSearchChange(value);
+                }}
+                doSubmit={this.handleSearch}
+            />
+            <Pagination
+                pageNumber={pageNumber}
+                totalPageNumber={totalPageNumber}
+                onChange={handlePageChange}
+                onSubmit={this.handlePageChangeSubmission}
+            />
+          </nav>
 
-        <Table
-          loading={loading}
-          history={this.props.history}
-          has2Headers
-          firstHeader={firstColumns}
-          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
-          data={topics}
-          updateData={data => {
-            this.setState({ topics: data });
-          }}
-          onDelete={topic => {
-            this.handleOnDelete(topic);
-          }}
-          onDetails={onDetailsFunction}
-          onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
-          actions={actions}
-        />
-
-        {roles.topic['topic/insert'] && (
-          <aside>
-            <Link
-              to={{
-                pathname: `/ui/${clusterId}/topic/create`,
-                state: { formData: this.state.createTopicFormData }
+          <Table
+              loading={loading}
+              history={this.props.history}
+              has2Headers
+              firstHeader={firstColumns}
+              columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
+              data={topics}
+              updateData={data => {
+                this.setState({ topics: data });
               }}
-              className="btn btn-primary"
-            >
-              Create a topic
-            </Link>
-          </aside>
-        )}
+              onDelete={topic => {
+                this.handleOnDelete(topic);
+              }}
+              onDetails={onDetailsFunction}
+              onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
+              actions={actions}
+          />
 
-        <ConfirmModal
-          show={this.state.showDeleteModal}
-          handleCancel={this.closeDeleteModal}
-          handleConfirm={this.deleteTopic}
-          message={this.state.deleteMessage}
-        />
-      </div>
+          {roles.topic['topic/insert'] && (
+              <aside>
+                <Link
+                    to={{
+                      pathname: `/ui/${clusterId}/topic/create`,
+                      state: { formData: this.state.createTopicFormData }
+                    }}
+                    className="btn btn-primary"
+                >
+                  Create a topic
+                </Link>
+              </aside>
+          )}
+
+          <ConfirmModal
+              show={this.state.showDeleteModal}
+              handleCancel={this.closeDeleteModal}
+              handleConfirm={this.deleteTopic}
+              message={this.state.deleteMessage}
+          />
+        </div>
     );
   }
 }
