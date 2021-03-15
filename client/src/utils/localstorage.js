@@ -1,7 +1,7 @@
 
 export const getUIOptions = (cluster) => {
     const uiOptions = localStorage.getItem('uiOptions');
-    if(uiOptions != null) {
+    if(uiOptions !== null) {
         const objParsed = JSON.parse(uiOptions);
         return objParsed[cluster];
     } else {
@@ -12,7 +12,7 @@ export const getUIOptions = (cluster) => {
 export const setUIOptions = (cluster, newUIOptions) => {
 
     const uiOptions = localStorage.getItem('uiOptions');
-    if(uiOptions != null) {
+    if(uiOptions !== null) {
         const objParsed = JSON.parse(uiOptions);
         objParsed[cluster] = newUIOptions;
         localStorage.setItem('uiOptions', JSON.stringify(objParsed));
