@@ -28,27 +28,29 @@ extraEnv: []
 configuration: |
   akhq:
     server:
-      access-log: 
-        enabled: false 
+      access-log:
+        enabled: false
         name: org.akhq.log.access
 
 ##... and secret for connection information
-secrets: |
-  akhq:
-    connections:
-      my-cluster-plain-text:
-        properties:
-          bootstrap.servers: "kafka:9092"
-        schema-registry:
-          url: "http://schema-registry:8085"
-          type: "confluent"
-          basic-auth-username: basic-auth-user
-          basic-auth-password: basic-auth-pass
-        connect:
-          - name: "my-connect"
-            url: "http://connect:8083"
-            basic-auth-username: basic-auth-user
-            basic-auth-password: basic-auth-pass
+existingSecrets: ""
+# name of the existingSecret
+secrets: {}
+#  akhq:
+#    connections:
+#      my-cluster-plain-text:
+#        properties:
+#          bootstrap.servers: "kafka:9092"
+#        schema-registry:
+#          url: "http://schema-registry:8085"
+#          type: "confluent"
+#          basic-auth-username: basic-auth-user
+#          basic-auth-password: basic-auth-pass
+#        connect:
+#          - name: "my-connect"
+#            url: "http://connect:8083"
+#            basic-auth-username: basic-auth-user
+#            basic-auth-password: basic-auth-pass
 
 kafkaSecrets: []
 #Provide extra base64 encoded kubernetes secrets (keystore/truststore)
@@ -64,7 +66,7 @@ serviceAccountName: null
 
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
-#   create-keystore: 
+#   create-keystore:
 #     image: "openjdk:11-slim"
 #     command: ['sh', '-c', 'keytool']
 #     volumeMounts:
