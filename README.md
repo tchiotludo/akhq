@@ -260,7 +260,9 @@ akhq:
         type: "confluent"
         basic-auth-username: avnadmin
         basic-auth-password: {{password}}
-        properties: {}
+        properties:
+          schema.registry.ssl.truststore.location: {{path}}/avnadmin.truststore.jks
+          schema.registry.ssl.truststore.password: {{password}}
       connect:
         - name: connect-1
           url: "https://{{host}}.aivencloud.com:{{port}}"
