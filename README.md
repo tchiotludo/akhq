@@ -54,7 +54,7 @@
   - Create a topic
   - Configure a topic
   - Delete a topic
-- **Browse Topic datas**
+- **Browse Topic data**
   - View data, offset, key, timestamp & headers
   - Automatic deserialization of avro message encoded with schema registry
   - Configurations view
@@ -89,7 +89,7 @@
 - **ACLS**
   - List principals
   - List principals topic & group acls
-- **Authentification and Roles**
+- **Authentication and Roles**
   - Read only mode
   - BasicHttp with roles per user
   - User groups configuration
@@ -175,8 +175,8 @@ file example can be found here :[application.example.yml](application.example.ym
 
 ### Pass custom Java opts
 
-By default, the docker container will allow a custom jvn options setting the environnments vars `JAVA_OPTS`.
-For example, if you want to change the default timezome, just add `-e "JAVA_OPTS=-Duser.timezone=Europe/Paris"`
+By default, the docker container will allow a custom JVM options setting the environments vars `JAVA_OPTS`.
+For example, if you want to change the default timezone, just add `-e "JAVA_OPTS=-Duser.timezone=Europe/Paris"`
 
 ### Run with another jvm.options file
 
@@ -367,7 +367,8 @@ I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certifi
 * `akhq.security.default-group`: Default group for all the user even unlogged user.
 By default, the default group is `admin` and allow you all read / write access on the whole app.
 
-By default, security & roles is enabled by default but anonymous user have full access. You can completely disable security with `micronaut.security.enabled: false`.
+By default, security & roles is disabled and anonymous user have full access, i.e. `micronaut.security.enabled: false`.
+To enable security & roles set `micronaut.security.enabled: true` and configure desired type of authentication (basic auth, LDAP, etc.).
 
 If you need a read-only application, simply add this to your configuration files :
 ```yaml
@@ -415,7 +416,7 @@ Define groups with specific roles for your users
 
 3 defaults group are available :
 - `admin` with all right
-- `reader` with only read acces on all AKHQ
+- `reader` with only read access on all AKHQ
 - `no-roles` without any roles, that force user to login
 
 ##### Basic Auth
@@ -433,6 +434,9 @@ Define groups with specific roles for your users
 
 Configure basic-auth connection in AKHQ
 ```yaml
+micronaut:
+  security:
+    enabled: true
 akhq.security:
   basic-auth:
     - username: admin
@@ -458,6 +462,7 @@ Configure ldap connection in micronaut
 ```yaml
 micronaut:
   security:
+    enabled: true
     ldap:
       default:
         enabled: true
@@ -483,6 +488,7 @@ In Case your LDAP groups do not use the default UID for group membership, you ca
 ```yaml
 micronaut:
   security:
+    enabled: true
     ldap:
       default:
         search:
@@ -503,6 +509,9 @@ with your group membership attribute
 
 Configure AKHQ groups and Ldap groups and users
 ```yaml
+micronaut:
+  security:
+    enabled: true
 akhq:
   security:
     groups:
@@ -570,7 +579,7 @@ akhq:
         google:
           label: "Login with Google"
           username-field: preferred_username
-          # specifies the field name in the oidc claim containig the use assigned role (eg. in keycloak this would be the Token Claim Name you set in your Client Role Mapper)
+          # specifies the field name in the oidc claim containing the use assigned role (eg. in keycloak this would be the Token Claim Name you set in your Client Role Mapper)
           groups-field: roles
           default-group: topic-reader
           groups:
@@ -592,9 +601,9 @@ akhq:
 
 The username field can be any string field, the roles field has to be a JSON array.
 
-### Debugging authentification
+### Debugging authentication
 
-Debugging auth can be done increase log level on micronaut that handle most of the authentification part : 
+Debugging auth can be done by increasing log level on Micronaut that handle most of the authentication part : 
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
@@ -683,7 +692,7 @@ dependencies. The akhq service in a docker compose file might look something lik
 An **experimental** api is available that allow you to fetch all the exposed on AKHQ through api.
 
 Take care that this api is **experimental** and **will** change in a future release.
-Some endpoints expose too many datas and is slow to fetch, and we will remove
+Some endpoints expose too many data and is slow to fetch, and we will remove
 some properties in a future in order to be fast.
 
 Example: List topic endpoint expose log dir, consumer groups, offsets. Fetching all theses
@@ -736,7 +745,7 @@ Or build it with a `./gradlew shadowJar`, the jar will be located here `build/li
 
 ### Development Server
 
-A docker-compose is provided to start a development environnement.
+A docker-compose is provided to start a development environment.
 Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
@@ -745,10 +754,10 @@ The configuration for the dev server is in `application.dev.yml`.
 ### Setup local dev environment on Windows
 
 In case you want to develop for AKHQ on Windows with IntelliJ IDEA without Docker (for any reason) you can follow this
-brief guide. For the following steps please make sure that you meet this requirements:
+brief guide. For the following steps, please, make sure you meet these requirements:
 
  * OS: Windows (10)
- * Kafka (2.6.0) is downloaded and extracted, the install dir is referred to as $KAFKA_HOME in the latter
+ * Kafka (2.6.0) is downloaded and extracted, the installation directory is referred to as $KAFKA_HOME in the latter
  * Git is installed and configured
  * IntelliJ IDEA (Community Edition 2020.2) with the following plugins installed:
    * Gradle (bundled with IDEA)
