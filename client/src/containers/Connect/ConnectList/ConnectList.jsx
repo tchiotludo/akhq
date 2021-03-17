@@ -111,7 +111,7 @@ class ConnectList extends Root {
     const roles = this.state.roles || {};
     let actions = [];
 
-    if (roles.connect && roles.connect['connect/update']) {
+    if (roles.connect && roles.connect['connect/read']) {
       actions.push(constants.TABLE_DETAILS);
     }
     if (roles.connect && roles.connect['connect/delete']) {
