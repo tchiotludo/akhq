@@ -138,14 +138,14 @@ class SchemaList extends Root {
     };
 
     this.removeApi(uriDeleteSchema(selectedCluster, schemaToDelete.subject), deleteData)
-        .then(() => {
-          toast.success(`Schema '${schemaToDelete.subject}' is deleted`);
-          this.setState({ showDeleteModal: false, schemaToDelete: {} });
-          this.getSchemaRegistry();
-        })
-        .catch(() => {
-          this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        });
+      .then(() => {
+        toast.success(`Schema '${schemaToDelete.subject}' is deleted`);
+        this.setState({ showDeleteModal: false, schemaToDelete: {} });
+        this.getSchemaRegistry();
+      })
+      .catch(() => {
+        this.setState({ showDeleteModal: false, schemaToDelete: {} });
+      });
   };
   render() {
     const {
@@ -161,157 +161,157 @@ class SchemaList extends Root {
     const { clusterId } = this.props.match.params;
 
     return (
-        <div>
-          <Header title="Schema Registry" history={history} />
-          <nav
-              className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+      <div>
+        <Header title="Schema Registry" history={history} />
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
-          >
-            <SearchBar
-                showSearch={true}
-                search={searchData.search}
-                showPagination={true}
-                pagination={pageNumber}
-                showTopicListView={false}
-                showSchemaRegistry
-                schemaListView={'ALL'}
-                doSubmit={this.handleSearch}
-            />
+        >
+          <SearchBar
+            showSearch={true}
+            search={searchData.search}
+            showPagination={true}
+            pagination={pageNumber}
+            showTopicListView={false}
+            showSchemaRegistry
+            schemaListView={'ALL'}
+            doSubmit={this.handleSearch}
+          />
 
-            <Pagination
-                pageNumber={pageNumber}
-                totalPageNumber={totalPageNumber}
-                onChange={handlePageChange}
-                onSubmit={this.handlePageChangeSubmission}
-            />
-          </nav>
+          <Pagination
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
+          />
+        </nav>
 
-          <Table
-              loading={loading}
-              history={this.props.history}
-              columns={[
-                {
-                  id: 'id',
-                  accessor: 'id',
-                  colName: 'Id'
-                },
-                {
-                  id: 'subject',
-                  accessor: 'subject',
-                  colName: 'Subject'
-                },
-                {
-                  id: 'version',
-                  accessor: 'version',
-                  colName: 'Version',
-                  cell: obj => {
-                    return this.handleVersion(obj.version);
-                  }
-                },
-                {
-                  id: 'schema',
-                  name: 'schema',
-                  accessor: 'schema',
-                  colName: 'Schema',
-                  type: 'text',
-                  extraRow: true,
-                  extraRowContent: (obj, col, index) => {
-                    return (
-                        <AceEditor
-                            mode="json"
-                            id={'value' + index}
-                            theme="merbivore_soft"
-                            value={obj[col.accessor]}
-                            readOnly
-                            name="UNIQUE_ID_OF_DIV"
-                            editorProps={{ $blockScrolling: true }}
-                            style={{ width: '100%', minHeight: '25vh' }}
-                        />
-                    );
-                  },
-                  cell: (obj, col) => {
-                    if (obj[col.accessor]) {
-                      return (
-                          <pre className="mb-0 khq-data-highlight">
+        <Table
+          loading={loading}
+          history={this.props.history}
+          columns={[
+            {
+              id: 'id',
+              accessor: 'id',
+              colName: 'Id'
+            },
+            {
+              id: 'subject',
+              accessor: 'subject',
+              colName: 'Subject'
+            },
+            {
+              id: 'version',
+              accessor: 'version',
+              colName: 'Version',
+              cell: obj => {
+                return this.handleVersion(obj.version);
+              }
+            },
+            {
+              id: 'schema',
+              name: 'schema',
+              accessor: 'schema',
+              colName: 'Schema',
+              type: 'text',
+              extraRow: true,
+              extraRowContent: (obj, col, index) => {
+                return (
+                  <AceEditor
+                    mode="json"
+                    id={'value' + index}
+                    theme="merbivore_soft"
+                    value={obj[col.accessor]}
+                    readOnly
+                    name="UNIQUE_ID_OF_DIV"
+                    editorProps={{ $blockScrolling: true }}
+                    style={{ width: '100%', minHeight: '25vh' }}
+                  />
+                );
+              },
+              cell: (obj, col) => {
+                if (obj[col.accessor]) {
+                  return (
+                    <pre className="mb-0 khq-data-highlight">
                       <code>
                         {JSON.stringify(JSON.parse(obj[col.accessor]))}
                       </code>
                     </pre>
-                      );
-                    } else if (obj.exception) {
-                      return (
-                          <div className="alert alert-warning mb-0" role="alert">
-                            {obj.exception}
-                          </div>
-                      );
-                    }
-                  }
+                  );
+                } else if (obj.exception) {
+                  return (
+                    <div className="alert alert-warning mb-0" role="alert">
+                      {obj.exception}
+                    </div>
+                  );
                 }
-              ]}
-              data={this.state.schemasRegistry}
-              updateData={data => {
-                this.setState({ schemasRegistry: data });
-              }}
-              onDelete={schema => {
-                this.handleOnDelete(schema);
-              }}
-              idCol="subject"
-              onDetails={subject => {
-                return `/ui/${selectedCluster}/schema/details/${subject}`;
-              }}
-              actions={
-                roles.registry && roles.registry['registry/delete']
-                    ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
-                    : [constants.TABLE_DETAILS]
               }
-              extraRow
-              noStripes
-              handleExtraExpand={(extraExpanded, el) => {
-                const currentExpandedRows = extraExpanded;
-                const isRowCurrentlyExpanded = currentExpandedRows.includes(el.subject);
+            }
+          ]}
+          data={this.state.schemasRegistry}
+          updateData={data => {
+            this.setState({ schemasRegistry: data });
+          }}
+          onDelete={schema => {
+            this.handleOnDelete(schema);
+          }}
+          idCol="subject"
+          onDetails={subject => {
+            return `/ui/${selectedCluster}/schema/details/${subject}`;
+          }}
+          actions={
+            roles.registry && roles.registry['registry/delete']
+              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+              : [constants.TABLE_DETAILS]
+          }
+          extraRow
+          noStripes
+          handleExtraExpand={(extraExpanded, el) => {
+            const currentExpandedRows = extraExpanded;
+            const isRowCurrentlyExpanded = currentExpandedRows.includes(el.subject);
 
-                const newExpandedRows = isRowCurrentlyExpanded
-                    ? currentExpandedRows
-                    : currentExpandedRows.concat({ id: el.id, subject: el.subject });
-                return newExpandedRows;
-              }}
-              handleExtraCollapse={(extraExpanded, el) => {
-                const currentExpandedRows = extraExpanded;
-                const isRowCurrentlyExpanded = currentExpandedRows.some(
-                    obj => obj.subject === el.subject
+            const newExpandedRows = isRowCurrentlyExpanded
+              ? currentExpandedRows
+              : currentExpandedRows.concat({ id: el.id, subject: el.subject });
+            return newExpandedRows;
+          }}
+          handleExtraCollapse={(extraExpanded, el) => {
+            const currentExpandedRows = extraExpanded;
+            const isRowCurrentlyExpanded = currentExpandedRows.some(
+              obj => obj.subject === el.subject
+            );
+
+            const newExpandedRows = !isRowCurrentlyExpanded
+              ? currentExpandedRows
+              : currentExpandedRows.filter(
+                  obj => !(obj.id === el.id && obj.subject === el.subject)
                 );
-
-                const newExpandedRows = !isRowCurrentlyExpanded
-                    ? currentExpandedRows
-                    : currentExpandedRows.filter(
-                        obj => !(obj.id === el.id && obj.subject === el.subject)
-                    );
-                return newExpandedRows;
+            return newExpandedRows;
+          }}
+          noContent={'No schemas available'}
+        />
+        {roles.registry && roles.registry['registry/insert'] && (
+          <aside>
+            <Link
+              to={{
+                pathname: `/ui/${clusterId}/schema/create`,
+                state: { formData: this.state.createSubjectFormData }
               }}
-              noContent={'No schemas available'}
-          />
-          {roles.registry && roles.registry['registry/insert'] && (
-              <aside>
-                <Link
-                    to={{
-                      pathname: `/ui/${clusterId}/schema/create`,
-                      state: { formData: this.state.createSubjectFormData }
-                    }}
-                    className="btn btn-primary"
-                >
-                  Create a Subject
-                </Link>
-              </aside>
-          )}
+              className="btn btn-primary"
+            >
+              Create a Subject
+            </Link>
+          </aside>
+        )}
 
-          <ConfirmModal
-              show={this.state.showDeleteModal}
-              handleCancel={this.closeDeleteModal}
-              handleConfirm={this.deleteSchemaRegistry}
-              message={this.state.deleteMessage}
-          />
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteSchemaRegistry}
+          message={this.state.deleteMessage}
+        />
 
-        </div>
+      </div>
     );
   }
 }

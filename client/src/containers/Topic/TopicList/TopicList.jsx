@@ -46,15 +46,17 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
-    this._initializeVars(() => {
-      this.getTopics();
-      this.props.history.replace({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      })});
+
+   this._initializeVars(() => {
+     this.getTopics();
+     this.props.history.replace({
+       pathname: `/ui/${this.state.selectedCluster}/topic`,
+       search: this.props.location.search
+     })});
   }
 
   componentDidUpdate(prevProps, prevState) {
+
     if (this.props.location.pathname !== prevProps.location.pathname) {
       this.cancelAxiosRequests();
       this.renewCancelToken();
@@ -112,7 +114,7 @@ class TopicList extends Root {
   handleOnDelete(topic) {
     this.setState({ topicToDelete: topic }, () => {
       this.showDeleteModal(
-          <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
+        <React.Fragment>Do you want to delete topic: {<code>{topic.id}</code>} ?</React.Fragment>
       );
     });
   }
@@ -224,14 +226,14 @@ class TopicList extends Root {
         let className = 'btn btn-sm mb-1 mr-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
 
-        const activeTopic = consumerGroup.activeTopics && consumerGroup.activeTopics.find(
-            activeTopic => activeTopic === topicId
-        );
-        activeTopic ? (className += 'success') : (className += 'warning');
+          const activeTopic = consumerGroup.activeTopics && consumerGroup.activeTopics.find(
+              activeTopic => activeTopic === topicId
+          );
+          activeTopic ? (className += 'success') : (className += 'warning');
 
-        const noPropagation = e => e.stopPropagation();
+          const noPropagation = e => e.stopPropagation();
 
-        return (
+          return (
             <Link
               key={consumerGroup.id}
               to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
@@ -240,7 +242,7 @@ class TopicList extends Root {
             >
               {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
             </Link>
-        );
+          );
       });
     }
 
@@ -253,9 +255,9 @@ class TopicList extends Root {
 
     Object.keys(this.state.collapseConsumerGroups).forEach(key => {
       tmpGroups[key] = (key === id)?  !this.state.collapseConsumerGroups[key] : this.state.collapseConsumerGroups[key];
-    });
-    this.setState({collapseConsumerGroups : tmpGroups});
-  }
+     });
+     this.setState({collapseConsumerGroups : tmpGroups});
+   }
 
   handleKeepSearchChange(value){
     const { searchData } = this.state;
@@ -298,16 +300,16 @@ class TopicList extends Root {
         ];
 
     if(!uiOptions.skipLastRecord) {
-      topicCols.push({
+        topicCols.push({
           id: 'lastWrite',
           accessor: 'lastWrite',
           colName: 'Last Record',
           type: 'text'
-      });
+        });
     }
 
     const partitionCols =
-         [
+        [
           {
             id: 'partitionsTotal',
             accessor: 'partitionsTotal',
@@ -315,7 +317,7 @@ class TopicList extends Root {
             type: 'text'
           }];
     const replicationCols =
-        [
+         [
           {
             id: 'replicationFactor',
             accessor: 'replicationFactor',
@@ -398,73 +400,73 @@ class TopicList extends Root {
       <div>
         <Header title="Topics" history={this.props.history} />
         <nav
-            className="navbar navbar-expand-lg navbar-light
-      bg-light mr-auto khq-data-filter khq-sticky khq-nav"
+          className="navbar navbar-expand-lg navbar-light
+        bg-light mr-auto khq-data-filter khq-sticky khq-nav"
         >
           <SearchBar
-              showSearch={true}
-              search={searchData.search}
-              showPagination={true}
-              pagination={pageNumber}
-              showTopicListView={true}
-              topicListView={searchData.topicListView}
-              showKeepSearch={true}
-              keepSearch={keepSearch}
-              onTopicListViewChange={value => {
-                let { searchData } = { ...this.state };
-                searchData.topicListView = value;
-                this.setState(searchData);
-              }}
-              onKeepSearchChange={value => {
+            showSearch={true}
+            search={searchData.search}
+            showPagination={true}
+            pagination={pageNumber}
+            showTopicListView={true}
+            topicListView={searchData.topicListView}
+            showKeepSearch={true}
+            keepSearch={keepSearch}
+            onTopicListViewChange={value => {
+              let { searchData } = { ...this.state };
+              searchData.topicListView = value;
+              this.setState(searchData);
+            }}
+            onKeepSearchChange={value => {
                 this.handleKeepSearchChange(value);
               }}
               doSubmit={this.handleSearch}
           />
           <Pagination
-              pageNumber={pageNumber}
-              totalPageNumber={totalPageNumber}
-              onChange={handlePageChange}
-              onSubmit={this.handlePageChangeSubmission}
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
 
         <Table
-            loading={loading}
-            history={this.props.history}
-            has2Headers
-            firstHeader={firstColumns}
-            columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
-            data={topics}
-            updateData={data => {
-              this.setState({ topics: data });
-            }}
-            onDelete={topic => {
-              this.handleOnDelete(topic);
-            }}
-            onDetails={onDetailsFunction}
-            onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
-            actions={actions}
+          loading={loading}
+          history={this.props.history}
+          has2Headers
+          firstHeader={firstColumns}
+          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
+          data={topics}
+          updateData={data => {
+            this.setState({ topics: data });
+          }}
+          onDelete={topic => {
+            this.handleOnDelete(topic);
+          }}
+          onDetails={onDetailsFunction}
+          onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
+          actions={actions}
         />
 
         {roles.topic['topic/insert'] && (
-            <aside>
-              <Link
-                  to={{
-                    pathname: `/ui/${clusterId}/topic/create`,
-                    state: { formData: this.state.createTopicFormData }
-                  }}
-                  className="btn btn-primary"
-              >
-                Create a topic
-              </Link>
-            </aside>
+          <aside>
+            <Link
+              to={{
+                pathname: `/ui/${clusterId}/topic/create`,
+                state: { formData: this.state.createTopicFormData }
+              }}
+              className="btn btn-primary"
+            >
+              Create a topic
+            </Link>
+          </aside>
         )}
 
         <ConfirmModal
-            show={this.state.showDeleteModal}
-            handleCancel={this.closeDeleteModal}
-            handleConfirm={this.deleteTopic}
-            message={this.state.deleteMessage}
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.deleteTopic}
+          message={this.state.deleteMessage}
         />
       </div>
     );
