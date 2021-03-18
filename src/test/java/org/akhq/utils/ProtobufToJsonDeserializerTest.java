@@ -55,13 +55,19 @@ public class ProtobufToJsonDeserializerTest {
         filmTopicsMapping.setDescriptorFileBase64(base64FilmDescriptor);
         filmTopicsMapping.setValueMessageType("Film");
 
+        // Do not specify message type neither for a key, nor for a value
+        TopicsMapping incorrectTopicsMapping = new TopicsMapping();
+        incorrectTopicsMapping.setTopicRegex("incorrect.*");
+        String base64IncorrectDescriptor = encodeDescriptorFileToBase64("film.desc");
+        incorrectTopicsMapping.setDescriptorFileBase64(base64IncorrectDescriptor);
+
         TopicsMapping complexObjectTopicsMapping = new TopicsMapping();
         complexObjectTopicsMapping.setTopicRegex("complex.*");
         complexObjectTopicsMapping.setDescriptorFile("complex.desc");
         complexObjectTopicsMapping.setValueMessageType("Complex");
 
         protobufDeserializationTopicsMapping.setTopicsMapping(
-                Arrays.asList(albumTopicsMapping, filmTopicsMapping, complexObjectTopicsMapping));
+                Arrays.asList(albumTopicsMapping, filmTopicsMapping, complexObjectTopicsMapping, incorrectTopicsMapping));
     }
 
     private String encodeDescriptorFileToBase64(String descriptorFileName) throws URISyntaxException, IOException {
@@ -151,8 +157,16 @@ public class ProtobufToJsonDeserializerTest {
     public void deserializeForKeyWhenItsTypeNotSet() {
         ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
         final byte[] binaryFilm = filmProto.toByteArray();
+        String decodedFilm = protobufToJsonDeserializer.deserialize("film.topic.name", binaryFilm, true);
+        assertNull(decodedFilm);
+    }
+
+    @Test
+    public void deserializeWhenTypeNotSetForKeyAndValue() {
+        ProtobufToJsonDeserializer protobufToJsonDeserializer = new ProtobufToJsonDeserializer(protobufDeserializationTopicsMapping);
+        final byte[] binaryFilm = filmProto.toByteArray();
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            protobufToJsonDeserializer.deserialize("film.topic.name", binaryFilm, true);
+            protobufToJsonDeserializer.deserialize("incorrect.topic.name", binaryFilm, true);
         });
         String expectedMessage = "message type is not specified neither for a key, nor for a value";
         String actualMessage = exception.getMessage();
