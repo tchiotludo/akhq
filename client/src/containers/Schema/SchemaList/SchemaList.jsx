@@ -77,7 +77,7 @@ class SchemaList extends Root {
     this.setState({ loading: true });
 
     let response = await this.getApi(
-        endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
+      endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
 
     let data = response.data;
@@ -157,7 +157,6 @@ class SchemaList extends Root {
     } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
-
     const { clusterId } = this.props.match.params;
 
     return (

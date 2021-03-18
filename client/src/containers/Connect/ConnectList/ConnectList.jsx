@@ -186,10 +186,10 @@ class ConnectList extends Root {
     return renderedTasks;
   };
 
-    render() {
-        const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
-        const roles = this.state.roles || {};
-        const { history } = this.props;
+  render() {
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
+    const roles = this.state.roles || {};
+    const { history } = this.props;
 
     return (
       <div>
