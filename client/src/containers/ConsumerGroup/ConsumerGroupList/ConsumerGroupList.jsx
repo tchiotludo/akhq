@@ -119,13 +119,13 @@ class ConsumerGroupList extends Root {
       const offsetLag = calculateTopicOffsetLag(topicOffsets, topicId);
 
       return (
-        <Link
-            to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
-            key={group + '-' + topicId}
-            className="btn btn-dark btn-sm mb-1 mr-1"
-            onClick={noPropagation}
-        >
-          {topicId + ' '}
+          <Link
+              to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
+              key={group + '-' + topicId}
+              className="btn btn-dark btn-sm mb-1 mr-1"
+              onClick={noPropagation}
+          >
+            {topicId + ' '}
 
           <div className="badge badge-secondary">Lag: {offsetLag}</div>
         </Link>
@@ -169,95 +169,95 @@ class ConsumerGroupList extends Root {
     const { history } = this.props;
 
     return (
-      <div>
-        <Header title="Consumer Groups" history={history} />
-        <nav
-            className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-       khq-data-filter khq-sticky khq-nav"
-        >
-          <SearchBar
-              showSearch={true}
-              search={search}
-              showPagination={true}
-              pagination={pageNumber}
-              showTopicListView={false}
-              showConsumerGroup
-              groupListView={'ALL'}
-              doSubmit={this.handleSearch}
-          />
+        <div>
+          <Header title="Consumer Groups" history={history} />
+          <nav
+              className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+          >
+            <SearchBar
+                showSearch={true}
+                search={search}
+                showPagination={true}
+                pagination={pageNumber}
+                showTopicListView={false}
+                showConsumerGroup
+                groupListView={'ALL'}
+                doSubmit={this.handleSearch}
+            />
 
-          <Pagination
-              pageNumber={pageNumber}
-              totalPageNumber={totalPageNumber}
-              onChange={handlePageChange}
-              onSubmit={this.handlePageChangeSubmission}
-          />
+            <Pagination
+                pageNumber={pageNumber}
+                totalPageNumber={totalPageNumber}
+                onChange={handlePageChange}
+                onSubmit={this.handlePageChangeSubmission}
+            />
         </nav>
 
-        <Table
-            loading={loading}
-            history={this.props.history}
-            columns={[
-              {
-                id: 'id',
-                accessor: 'id',
-                colName: 'Id'
-              },
-              {
-                id: 'state',
-                accessor: 'state',
-                colName: 'State',
-                cell: obj => {
-                  return this.handleState(obj.state);
-                }
-              },
-              {
-                id: 'coordinator',
-                accessor: 'coordinator',
-                colName: 'Coordinator',
-                cell: obj => {
-                  return this.handleCoordinator(obj.coordinator);
-                }
-              },
-              {
-                id: 'members',
-                accessor: 'members',
-                colName: 'Members'
-              },
-              {
-                id: 'topics',
-                accessor: 'topics',
-                colName: 'Topics',
-                cell: obj => {
-                  if (obj.topics) {
-                    return this.handleTopics(obj.id, obj.topics);
+          <Table
+              loading={loading}
+              history={this.props.history}
+              columns={[
+                {
+                  id: 'id',
+                  accessor: 'id',
+                  colName: 'Id'
+                },
+                {
+                  id: 'state',
+                  accessor: 'state',
+                  colName: 'State',
+                  cell: obj => {
+                    return this.handleState(obj.state);
+                  }
+                },
+                {
+                  id: 'coordinator',
+                  accessor: 'coordinator',
+                  colName: 'Coordinator',
+                  cell: obj => {
+                    return this.handleCoordinator(obj.coordinator);
+                  }
+                },
+                {
+                  id: 'members',
+                  accessor: 'members',
+                  colName: 'Members'
+                },
+                {
+                  id: 'topics',
+                  accessor: 'topics',
+                  colName: 'Topics',
+                  cell: obj => {
+                    if (obj.topics) {
+                      return this.handleTopics(obj.id, obj.topics);
+                    }
                   }
                 }
+              ]}
+              data={this.state.consumerGroups}
+              updateData={data => {
+                this.setState({ consumerGroups: data });
+              }}
+              noContent={'No consumer group available'}
+              onDelete={group => {
+                this.handleOnDelete(group);
+              }}
+              onDetails={id => `/ui/${selectedCluster}/group/${id}`}
+              actions={
+                roles.group && roles.group['group/delete']
+                    ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
+                    : [constants.TABLE_DETAILS]
               }
-            ]}
-            data={this.state.consumerGroups}
-            updateData={data => {
-              this.setState({ consumerGroups: data });
-            }}
-            noContent={'No consumer group available'}
-            onDelete={group => {
-              this.handleOnDelete(group);
-            }}
-            onDetails={id => `/ui/${selectedCluster}/group/${id}`}
-            actions={
-              roles.group && roles.group['group/delete']
-                  ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
-                  : [constants.TABLE_DETAILS]
-            }
-        />
+          />
 
-        <ConfirmModal
-          show={this.state.showDeleteModal}
-          handleCancel={this.closeDeleteModal}
-          handleConfirm={this.deleteConsumerGroup}
-          message={this.state.deleteMessage}
-        />
-      </div>
+          <ConfirmModal
+              show={this.state.showDeleteModal}
+              handleCancel={this.closeDeleteModal}
+              handleConfirm={this.deleteConsumerGroup}
+              message={this.state.deleteMessage}
+          />
+        </div>
     );
   }
 }
