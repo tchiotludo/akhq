@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
 import {Link} from "react-router-dom";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class ConsumerGroupList extends Root {
   state = {
@@ -30,10 +31,13 @@ class ConsumerGroupList extends Root {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-    const { search } = this.state;
+    const { search, pageNumber} = this.state;
     const query =  new URLSearchParams(this.props.location.search);
 
-    this.setState({ selectedCluster: clusterId, search: (query.get('search'))? query.get('search') : search }, () => {
+    this.setState({ selectedCluster: clusterId,
+      search: (query.get('search'))? query.get('search') : search,
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getConsumerGroup();
     });
   }
@@ -41,29 +45,16 @@ class ConsumerGroupList extends Root {
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
       this.getConsumerGroup();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/group`,
-        search: `search=${data.searchData.search}`
-      });
     });
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getConsumerGroup();
     });
   };
 
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
 
   async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
@@ -73,7 +64,12 @@ class ConsumerGroupList extends Root {
     response = response.data;
     if (response.results) {
       this.handleConsumerGroup(response.results);
-      this.setState({ selectedCluster, totalPageNumber: response.page });
+      this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
+          this.props.history.push({
+            pathname: `/ui/${this.state.selectedCluster}/group`,
+            search: `search=${this.state.search}&page=${pageNumber}`
+          })
+      );
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0, loading: false });
     }
@@ -193,7 +189,7 @@ class ConsumerGroupList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>

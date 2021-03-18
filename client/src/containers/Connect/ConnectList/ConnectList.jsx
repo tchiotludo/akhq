@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
 import SearchBar from "../../../components/SearchBar";
 import Pagination from "../../../components/Pagination";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class ConnectList extends Root {
   state = {
@@ -44,9 +45,12 @@ class ConnectList extends Root {
   }
 
   componentDidMount() {
-    const { searchData } = this.state;
+    const { searchData, pageNumber } = this.state;
     const query =  new URLSearchParams(this.props.location.search);
-    this.setState({ searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
+    this.setState({
+      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getConnectDefinitions();
     });
   }
@@ -58,9 +62,15 @@ class ConnectList extends Root {
     this.setState({ loading: true });
 
     let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
-    if (response.data.results) {
-      this.handleData(response.data.results);
-      this.setState({ clusterId, totalPageNumber: response.data.page });
+    let data = response.data;
+    if (data.results) {
+      this.handleData(data);
+      this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
+        this.props.history.push({
+          pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+          search: `search=${this.state.searchData.search}&page=${pageNumber}`
+        })
+      });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
     }
@@ -70,20 +80,20 @@ class ConnectList extends Root {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
 
     this.removeApi(uriDeleteDefinition(clusterId, connectId, definition))
-      .then(() => {
-        toast.success(`Definition '${definition}' is deleted`);
-        this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
-          this.getConnectDefinitions();
+        .then(() => {
+          toast.success(`Definition '${definition}' is deleted`);
+          this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
+            this.getConnectDefinitions();
+          });
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false, topicToDelete: {} });
         });
-      })
-      .catch(() => {
-        this.setState({ showDeleteModal: false, topicToDelete: {} });
-      });
   };
 
   handleData = data => {
     let tableData = [];
-    tableData = data.map(connectDefinition => {
+    tableData = data.results.map(connectDefinition => {
       return {
         id: connectDefinition.name || '',
         config: JSON.stringify(connectDefinition.configs) || '',
@@ -96,7 +106,7 @@ class ConnectList extends Root {
       };
     });
 
-    this.setState({ tableData, loading: false });
+    this.setState({ tableData, loading: false, totalPageNumber: data.page });
   };
 
   showDeleteModal = deleteMessage => {
@@ -131,30 +141,16 @@ class ConnectList extends Root {
     });
   }
 
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
-
   handleSearch = data => {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getConnectDefinitions();
-      this.props.history.push({
-        pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-        search: `search=${searchData.search}`
-      });
     });
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getConnectDefinitions();
     });
   };
@@ -213,7 +209,7 @@ class ConnectList extends Root {
           <Pagination
               pageNumber={pageNumber}
               totalPageNumber={totalPageNumber}
-              onChange={this.handlePageChange}
+              onChange={handlePageChange}
               onSubmit={this.handlePageChangeSubmission}
           />
         </nav>

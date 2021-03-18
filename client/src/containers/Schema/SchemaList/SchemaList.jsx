@@ -15,6 +15,8 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+
 
 class SchemaList extends Root {
   state = {
@@ -41,10 +43,14 @@ class SchemaList extends Root {
 
   componentDidMount() {
     let { clusterId } = this.props.match.params;
-    const { searchData } = this.state;
+    const { searchData, pageNumber } = this.state;
     const query =  new URLSearchParams(this.props.location.search);
 
-    this.setState({ selectedCluster: clusterId, searchData: { search: (query.get('search'))? query.get('search') : searchData.search }}, () => {
+    this.setState({
+      selectedCluster: clusterId,
+      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getSchemaRegistry();
     });
   }
@@ -53,31 +59,18 @@ class SchemaList extends Root {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getSchemaRegistry();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/schema`,
-        search: `search=${searchData.search}`
-      });
     });
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
-    this.setState({ pageNumber: value }, () => {
+    let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
+    this.setState({pageNumber: pageNumber}, () => {
       this.getSchemaRegistry();
-    });
-  };
-
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
-  };
+    })
+  }
 
   async getSchemaRegistry() {
+
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -87,12 +80,19 @@ class SchemaList extends Root {
       endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
     );
 
-    if (response.data.results) {
-      this.handleSchemaRegistry(response.data.results);
-      this.setState({ selectedCluster, totalPageNumber: response.data.page });
+    let data = response.data;
+    if (data.results) {
+      this.handleSchemaRegistry(data.results);
+      this.setState({ selectedCluster, totalPageNumber: data.page }, () => {
+        this.props.history.push({
+          pathname: `/ui/${this.state.selectedCluster}/schema`,
+          search: `search=${this.state.searchData.search}&page=${pageNumber}`
+        })
+      });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
     }
+
   }
 
   handleSchemaRegistry(schemas) {
@@ -180,7 +180,7 @@ class SchemaList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
