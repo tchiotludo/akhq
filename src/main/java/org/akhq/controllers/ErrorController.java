@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.micrometer.core.instrument.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -96,7 +97,11 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(status = HttpStatus.NOT_FOUND, global = true)
-    public HttpResponse<?> notFound(HttpRequest<?> request) {
+    public HttpResponse<?> notFound(HttpRequest<?> request) throws URISyntaxException {
+        if (request.getPath().equals("/") && StringUtils.isNotEmpty(getBasePath())) {
+            return HttpResponse.temporaryRedirect(this.uri("/"));
+        }
+
         JsonError error = new JsonError("Page Not Found")
             .link(Link.SELF, Link.of(request.getUri()));
 
