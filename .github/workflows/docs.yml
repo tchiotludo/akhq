@@ -17,10 +17,8 @@ jobs:
       - name: Add some files
         run: |
           echo "akhq.io" > docs/CNAME
-          cp LICENSE docs/LICENSE
-          cp README.md docs/README.md
-          cp README.md docs/README
-          cp artifacthub-repo.yml docs/artifacthub-repo.yml
+          cp LICENSE helm/akhq/LICENSE
+          cp README.md helm/akhq/README.md
 
       # Helm charts
       - uses: J12934/helm-gh-pages-action@master

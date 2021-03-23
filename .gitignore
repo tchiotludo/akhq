@@ -46,3 +46,6 @@ docs/contributors.html
 .env
 docker-compose.override.yml
 
+## Helm
+helm/akhq/README.md
+helm/akhq/LICENSE
