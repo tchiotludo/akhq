@@ -3,7 +3,29 @@ entries:
   akhq:
   - apiVersion: v1
     appVersion: 0.17.0
-    created: "2021-03-09T12:44:20.026775839Z"
+    created: "2021-03-23T11:46:47.134045563Z"
+    description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
+    digest: 024a014e71b3b9f5d326fad497ead3e8db40928bcb3f3b330ae778c8eb781e56
+    home: https://akhq.io
+    icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
+    keywords:
+    - kafka
+    - confluent
+    - gui
+    - schema-registry
+    - kafka-connect
+    maintainers:
+    - email: hello@akhq.io
+      name: tchiotludo
+    name: akhq
+    sources:
+    - https://github.com/tchiotludo/akhq
+    urls:
+    - akhq-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: 0.17.0
+    created: "2021-03-23T11:46:47.132849858Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
     digest: b745495207a1dc5c5ec11a2d0e3428d5f31522b2553805539f1888f8a0063b43
     home: https://akhq.io
@@ -25,7 +47,7 @@ entries:
     version: 0.2.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-03-09T12:44:20.025974418Z"
+    created: "2021-03-23T11:46:47.126320626Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
     digest: 32fb69d515737b6250940edf1743b1bcfcf2425b531acda6084ee57ea79ec71f
     home: https://akhq.io
@@ -47,7 +69,7 @@ entries:
     version: 0.1.3
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-03-09T12:44:20.025099796Z"
+    created: "2021-03-23T11:46:47.125786823Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
     digest: 004ec4f314a076b51532d6124867dc2f2947e2e9595fa8879386a06690c7de8c
     home: https://akhq.io
@@ -68,7 +90,7 @@ entries:
     version: 0.1.2
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-03-09T12:44:20.024295976Z"
+    created: "2021-03-23T11:46:47.125336221Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
     digest: 9b327a2adfb91219e4ce2d176dff26eb74d59de29332912e034b37ea60b02645
     home: https://akhq.io
@@ -89,7 +111,7 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-03-09T12:44:20.023756862Z"
+    created: "2021-03-23T11:46:47.124869519Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
     digest: 25a5a2c7d0d4e4ba7080e0193435c3dad0035bdaee2379885a42cfe4fceb144d
     home: https://akhq.io
@@ -108,4 +130,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2021-03-09T12:44:20.022992843Z"
+generated: "2021-03-23T11:46:47.124248416Z"
