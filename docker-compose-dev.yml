@@ -19,7 +19,6 @@ services:
     working_dir: /app
     volumes:
       - ./:/app:z
-      - /app/.gradle:Z
       - ./gradle/gradle.properties:/root/.gradle/gradle.properties:Z
     ports:
       - 8080:8080
