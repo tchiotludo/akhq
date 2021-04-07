@@ -53,8 +53,13 @@ public class UserGroupUtils {
             .flatMap(group -> (group.getAttributes() != null) ? group.getAttributes().entrySet().stream() : null)
             .collect(Collectors.toMap(
                 Map.Entry::getKey,
-                item -> new ArrayList<>(Collections.singletonList(item.getValue())),
-                (e1, e2) -> {
+                item -> {
+                    if(item.getValue() instanceof Collection) {
+                        return new ArrayList<>((Collection)item.getValue());
+                    } else {
+                        return new ArrayList<>(Collections.singletonList(item.getValue()));
+                    }
+                }, (e1, e2) -> {
                     ((List) e1).addAll((List) e2); return e1;
                 }
             ));
