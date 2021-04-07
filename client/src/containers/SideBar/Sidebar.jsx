@@ -150,6 +150,7 @@ class Sidebar extends Component {
   };
 
   changeSelectedCluster(newSelectedCluster) {
+
     this.setState(
       {
         selectedCluster: newSelectedCluster.id,
@@ -324,6 +325,7 @@ class Sidebar extends Component {
               {listConnects}
             </NavItem>
           )}
+          {this.renderMenuItem('fa fa-fw fa-gear', constants.SETTINGS, 'Settings')}
         </SideNav.Nav>
       </SideNav>
     );

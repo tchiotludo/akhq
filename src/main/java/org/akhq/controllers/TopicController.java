@@ -4,44 +4,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
+import io.micronaut.core.util.CollectionUtils;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Delete;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.*;
 import io.micronaut.http.sse.Event;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
-import org.akhq.models.AccessControl;
-import org.akhq.models.Config;
-import org.akhq.models.ConsumerGroup;
-import org.akhq.models.LogDir;
-import org.akhq.models.Partition;
-import org.akhq.models.Record;
-import org.akhq.models.Topic;
+import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
-import org.akhq.repositories.AccessControlListRepository;
-import org.akhq.repositories.ConfigRepository;
-import org.akhq.repositories.ConsumerGroupRepository;
-import org.akhq.repositories.RecordRepository;
-import org.akhq.repositories.TopicRepository;
+import org.akhq.repositories.*;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
@@ -49,6 +28,13 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import org.akhq.models.Record;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
@@ -70,13 +56,11 @@ public class TopicController extends AbstractController {
     private Environment environment;
     @Inject
     private AccessControlListRepository aclRepository;
+    @Inject
+    private SchemaRegistryRepository schemaRegistryRepository;
 
-    @Value("${akhq.topic.default-view}")
-    private String defaultView;
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
-    @Value("${akhq.topic.retention}")
-    private Integer retentionPeriod;
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
     @Value("${akhq.pagination.page-size}")
@@ -97,10 +81,21 @@ public class TopicController extends AbstractController {
         return ResultPagedList.of(this.topicRepository.list(
             cluster,
             pagination,
-            show.orElse(TopicRepository.TopicListView.valueOf(defaultView)),
+            show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search
         ));
     }
+
+    @Get("api/{cluster}/topic/name")
+    @Operation(tags = {"topic"}, summary = "List all topics name")
+    public List<String> listTopicNames(
+            HttpRequest<?> request,
+            String cluster,
+            Optional<TopicRepository.TopicListView> show
+    ) throws ExecutionException, InterruptedException {
+        return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL), Optional.empty());
+    }
+
 
     @Secured(Role.ROLE_TOPIC_INSERT)
     @Post(value = "api/{cluster}/topic")
@@ -154,6 +149,7 @@ public class TopicController extends AbstractController {
                 keySchema,
                 valueSchema
             ),
+            schemaRegistryRepository.getSchemaRegistryType(cluster),
             key.map(String::getBytes).orElse(null),
             value.getBytes(),
             headers
@@ -171,10 +167,23 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
-        RecordRepository.Options options = dataSearchOptions(cluster, topicName, after, partition, sort, timestamp, search);
+        RecordRepository.Options options =
+                dataSearchOptions(cluster,
+                        topicName,
+                        after,
+                        partition,
+                        sort,
+                        timestamp,
+                        searchByKey,
+                        searchByValue,
+                        searchByHeaderKey,
+                        searchByHeaderValue);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
@@ -190,6 +199,12 @@ public class TopicController extends AbstractController {
     @Operation(tags = {"topic"}, summary = "Retrieve a topic")
     public Topic home(String cluster, String topicName) throws ExecutionException, InterruptedException {
         return this.topicRepository.findByName(cluster, topicName);
+    }
+
+    @Get("api/{cluster}/topic/last-record")
+    @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
+    public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
+        return this.recordRepository.getLastRecord(cluster, topics);
     }
 
     @Get("api/{cluster}/topic/{topicName}/partitions")
@@ -264,6 +279,7 @@ public class TopicController extends AbstractController {
                 partition,
                 Base64.getDecoder().decode(key)
             ),
+            schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
             new HashMap<>()
@@ -280,7 +296,8 @@ public class TopicController extends AbstractController {
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
-    @Get(value = "api/{cluster}/topic/{topicName}/data/search/{search}", produces = MediaType.TEXT_EVENT_STREAM)
+    @ExecuteOn(TaskExecutors.IO)
+    @Get(value = "api/{cluster}/topic/{topicName}/data/search", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
     public Publisher<Event<SearchRecord>> sse(
         String cluster,
@@ -289,7 +306,10 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
@@ -298,11 +318,16 @@ public class TopicController extends AbstractController {
             partition,
             sort,
             timestamp,
-            search
+            searchByKey,
+            searchByValue,
+            searchByHeaderKey,
+            searchByHeaderValue
         );
 
+        Topic topic = topicRepository.findByName(cluster, topicName);
+
         return recordRepository
-            .search(cluster, options)
+            .search(topic, options)
             .map(event -> {
                 SearchRecord searchRecord = new SearchRecord(
                     event.getData().getPercent(),
@@ -339,6 +364,9 @@ public class TopicController extends AbstractController {
             Optional.of(partition),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -353,6 +381,71 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @Get("api/{cluster}/topic/{topicName}/offsets/start")
+    @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
+    public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
+        Topic topic = this.topicRepository.findByName(cluster, topicName);
+
+        return recordRepository.getOffsetForTime(
+                cluster,
+                topic.getPartitions()
+                        .stream()
+                        .map(r -> new TopicPartition(r.getTopic(), r.getId()))
+                        .collect(Collectors.toList()),
+                timestamp.orElse(Instant.now()).toEpochMilli()
+        );
+    }
+
+
+    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
+    @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
+    public RecordRepository.CopyResult copy(
+            HttpRequest<?> request,
+            String fromCluster,
+            String fromTopicName,
+            String toCluster,
+            String toTopicName,
+            @Body List<OffsetCopy> offsets
+    ) throws ExecutionException, InterruptedException {
+        Topic fromTopic = this.topicRepository.findByName(fromCluster, fromTopicName);
+        Topic toTopic = this.topicRepository.findByName(toCluster, toTopicName);
+
+        if (!CollectionUtils.isNotEmpty(offsets)) {
+            throw new IllegalArgumentException("Empty collections");
+        }
+
+        // after wait for next offset, so add - 1 to allow to have the current offset
+        String offsetsList = offsets.stream()
+            .filter(offsetCopy -> offsetCopy.offset - 1 >= 0)
+            .map(offsetCopy ->
+                String.join("-", String.valueOf(offsetCopy.partition), String.valueOf(offsetCopy.offset - 1)))
+            .collect(Collectors.joining("_"));
+
+        RecordRepository.Options options = dataSearchOptions(
+            fromCluster,
+            fromTopicName,
+            Optional.ofNullable(StringUtils.isNotEmpty(offsetsList) ? offsetsList : null),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        return this.recordRepository.copy(fromTopic, toCluster, toTopic, offsets, options);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class CopyResponse {
+        int records;
+    }
+
     private RecordRepository.Options dataSearchOptions(
         String cluster,
         String topicName,
@@ -360,7 +453,10 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
-        Optional<String> search
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue
     ) {
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
 
@@ -369,8 +465,10 @@ public class TopicController extends AbstractController {
         sort.ifPresent(options::setSort);
         timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
         after.ifPresent(options::setAfter);
-        search.ifPresent(options::setSearch);
-
+        searchByKey.ifPresent(options::setSearchByKey);
+        searchByValue.ifPresent(options::setSearchByValue);
+        searchByHeaderKey.ifPresent(options::setSearchByHeaderKey);
+        searchByHeaderValue.ifPresent(options::setSearchByHeaderValue);
         return options;
     }
 
@@ -391,5 +489,13 @@ public class TopicController extends AbstractController {
 
         @JsonProperty("after")
         private final String after;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    public static class OffsetCopy {
+        private int partition;
+        private long offset;
     }
 }

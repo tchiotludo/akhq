@@ -1,22 +1,22 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.*;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonSerializer;
+import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
+import org.apache.kafka.common.serialization.Deserializer;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @ToString
 @EqualsAndHashCode
@@ -33,7 +33,8 @@ public class Record {
     private Integer valueSchemaId;
     private Map<String, String> headers = new HashMap<>();
     @JsonIgnore
-    private KafkaAvroDeserializer kafkaAvroDeserializer;
+    private Deserializer kafkaAvroDeserializer;
+    private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
     private byte[] bytesKey;
@@ -47,7 +48,16 @@ public class Record {
     @Getter(AccessLevel.NONE)
     private String value;
 
-    public Record(RecordMetadata record, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+    private final List<String> exceptions = new ArrayList<>();
+
+    private byte MAGIC_BYTE;
+
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+            this.MAGIC_BYTE = (byte) 0x80;
+        } else {
+            this.MAGIC_BYTE = 0x0;
+        }
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -59,7 +69,13 @@ public class Record {
         this.headers = headers;
     }
 
-    public Record(ConsumerRecord<byte[], byte[]> record, KafkaAvroDeserializer kafkaAvroDeserializer, byte[] bytesValue) {
+    public Record(ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
+        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+            this.MAGIC_BYTE = (byte) 0x80;
+        } else {
+            this.MAGIC_BYTE = 0x0;
+        }
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -74,11 +90,12 @@ public class Record {
         }
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
+        this.protobufToJsonDeserializer = protobufToJsonDeserializer;
     }
 
     public String getKey() {
         if (this.key == null) {
-            this.key = convertToString(bytesKey, keySchemaId);
+            this.key = convertToString(bytesKey, keySchemaId, true);
         }
 
         return this.key;
@@ -95,34 +112,48 @@ public class Record {
 
     public String getValue() {
         if (this.value == null) {
-            this.value = convertToString(bytesValue, valueSchemaId);
+            this.value = convertToString(bytesValue, valueSchemaId, false);
         }
 
         return this.value;
     }
 
-    private String convertToString(byte[] payload, Integer keySchemaId) {
+    private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
         if (payload == null) {
             return null;
-        } else  if (keySchemaId != null) {
+        } else if (schemaId != null) {
             try {
                 GenericRecord record = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
                 return AvroToJsonSerializer.toJson(record);
             } catch (Exception exception) {
+                this.exceptions.add(exception.getMessage());
+
                 return new String(payload);
             }
         } else {
+            if (protobufToJsonDeserializer != null) {
+                try {
+                    String record = protobufToJsonDeserializer.deserialize(topic, payload, isKey);
+                    if (record != null) {
+                        return record;
+                    }
+                } catch (Exception exception) {
+                    this.exceptions.add(exception.getMessage());
+
+                    return new String(payload);
+                }
+            }
             return new String(payload);
         }
     }
 
-    private static Integer getAvroSchemaId(byte[] payload) {
+    private Integer getAvroSchemaId(byte[] payload) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
 
-            if (magicBytes == 0 && schemaId >= 0) {
+            if (magicBytes == MAGIC_BYTE && schemaId >= 0) {
                 return schemaId;
             }
         } catch (Exception ignore) {

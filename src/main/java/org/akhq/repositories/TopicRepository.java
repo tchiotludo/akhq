@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
@@ -65,7 +66,7 @@ public class TopicRepository extends AbstractRepository {
         Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
 
         for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isTopicMatchRegex(
+            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isMatchRegex(
                 getTopicFilterRegex(), item.name())) {
                 list.add(item.name());
             }
@@ -91,7 +92,7 @@ public class TopicRepository extends AbstractRepository {
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
         Optional<Topic> topic = Optional.empty();
-        if(isTopicMatchRegex(getTopicFilterRegex(),name)) {
+        if(isMatchRegex(getTopicFilterRegex(),name)) {
             topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
         }
 
@@ -100,14 +101,15 @@ public class TopicRepository extends AbstractRepository {
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
-
-        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
-        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
-
         Optional<List<String>> topicRegex = getTopicFilterRegex();
 
+        List<String> filteredTopics = topics.stream()
+                .filter(t -> isMatchRegex(topicRegex, t))
+                .collect(Collectors.toList());
+        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, filteredTopics).entrySet();
+        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, filteredTopics);
+
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-            if(isTopicMatchRegex(topicRegex, description.getValue().name())){
                 list.add(
                     new Topic(
                         description.getValue(),
@@ -117,7 +119,6 @@ public class TopicRepository extends AbstractRepository {
                         isStream(description.getValue().name())
                     )
                 );
-            }
         }
 
         list.sort(Comparator.comparing(Topic::getName));
@@ -168,9 +169,9 @@ public class TopicRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("topics-filter-regexp") != null) {
-            if (attributes.get("topics-filter-regexp") instanceof List) {
-                return (List<String>)attributes.get("topics-filter-regexp");
+        if (attributes.get("topicsFilterRegexp") != null) {
+            if (attributes.get("topicsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("topicsFilterRegexp");
             }
         }
         return new ArrayList<>();

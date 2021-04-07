@@ -49,7 +49,7 @@ class Topic extends Root {
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'partitions',
+        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
       },
       () => {
@@ -254,13 +254,16 @@ class Topic extends Root {
               }
 
               <Link to={{
-                pathname: `/ui/${clusterId}/tail`,
-                state: {
-                  topicId: topicId
-                }
-                }}
-                className="btn btn-secondary mr-2"
+                pathname: `/ui/${clusterId}/topic/${topicId}/copy`
+              }}
+                    className="btn btn-secondary mr-2"
               >
+                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
+              </Link>
+
+              <Link to={{  pathname: `/ui/${clusterId}/tail`,
+                search: `?topicId=${topicId}` }} className="btn btn-secondary mr-2">
+
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
               </Link>
 

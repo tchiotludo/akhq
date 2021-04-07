@@ -34,6 +34,7 @@ export const GROUP = 'group';
 export const ACLS = 'acls';
 export const SCHEMA = 'schema';
 export const CONNECT = 'connect';
+export const SETTINGS = 'settings';
 export const TOPICS = {
   ALL: 'ALL',
   HIDE_INTERNAL: 'HIDE_INTERNAL',
@@ -75,7 +76,8 @@ export default {
   CONNECT,
   TYPES,
   ROLE_TYPE,
-  VERSION
+  VERSION,
+  SETTINGS
 };
 
 export const sortBy = (field, reverse, primer) => {

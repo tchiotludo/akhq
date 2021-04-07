@@ -44,7 +44,8 @@ class SchemaUpdate extends Form {
       compatibility: '',
       schema: ''
     },
-    errors: {}
+    errors: {},
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {
@@ -95,15 +96,15 @@ class SchemaUpdate extends Form {
     };
 
     this.postApi(uriUpdateSchema(clusterId, formData.subject), body)
-      .then(() => {
-        toast.success(`Schema '${formData.subject}' is updated`);
-        this.props.getSchemaVersions();
-        window.location.reload(false);
-      });
+        .then(() => {
+          toast.success(`Schema '${formData.subject}' is updated`);
+          this.props.getSchemaVersions();
+          window.location.reload(false);
+        });
   }
 
   render() {
-    const { compatibilityOptions } = this.state;
+    const { compatibilityOptions, roles } = this.state;
 
     return (
         <form
@@ -135,13 +136,14 @@ class SchemaUpdate extends Form {
                 'col-sm-10'
             )}
             {this.renderJSONInput('schema', 'Latest Schema', value => {
-              let { formData } = { ...this.state };
-              formData.schema = value;
-              this.setState({ formData });
-            },
-            'col-sm-10'
-          )}
-            {this.renderButton('Update', undefined, undefined, 'submit')}
+                  let { formData } = { ...this.state };
+                  formData.schema = value;
+                  this.setState({ formData });
+                },
+                'col-sm-10'
+            )}
+            {roles.registry['registry/update'] && (
+                this.renderButton('Update', undefined, undefined, 'submit'))}
           </fieldset>
         </form>
     );

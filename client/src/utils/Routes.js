@@ -13,6 +13,7 @@ import ConnectCreate from '../containers/Connect/ConnectCreate/ConnectCreate';
 import Connect from '../containers/Connect/ConnectDetail/Connect';
 import TopicCreate from '../containers/Topic/TopicCreate/TopicCreate';
 import TopicProduce from '../containers/Topic/TopicProduce';
+import TopicCopy from '../containers/Topic/TopicCopy';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroup/ConsumerGroupList';
 import ConsumerGroup from '../containers/ConsumerGroup/ConsumerGroupDetail';
@@ -22,9 +23,10 @@ import SchemaCreate from '../containers/Schema/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
+import Settings from '../containers/Settings/Settings';
 import { organizeRoles } from './converters';
-import { uriClusters, uriCurrentUser } from './endpoints';
-import Root from "../components/Root";
+import {uriAuths, uriClusters, uriCurrentUser} from './endpoints';
+import Root from '../components/Root';
 
 class Routes extends Root {
   state = {
@@ -40,53 +42,66 @@ class Routes extends Root {
     clusters: PropTypes.array
   };
 
-  getClusters = () => {
+  async getClusters() {
     const { clusterId } = this.state;
-
-    this
-      .getApi(uriClusters())
-      .then(res => {
+    try {
+        const resClusters = await this.getApi(uriClusters());
         this.setState(
-          { clusters: res.data, clusterId: res.data ? res.data[0].id : '', loading: false }
+            {
+                clusters: resClusters.data,
+                clusterId: resClusters.data ? resClusters.data[0].id : '',
+                loading: false
+            }
         );
-      })
-      .catch(err => {
-        if (err.status === 401) {
-          if (!clusterId || clusterId.length <= 0) {
-            this.setState({ clusterId: '401' });
-          }
-        }
-        console.error('Error:', err);
-      });
-  };
 
-  getCurrentUser() {
-    sessionStorage.setItem('user', '');
-    this.getApi(uriCurrentUser())
-      .then(res => {
-        let currentUserData = res.data;
-        if (currentUserData.logged) {
-          sessionStorage.setItem('login', true);
-          sessionStorage.setItem('user', currentUserData.username);
-          sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
-          this.setState({ user: currentUserData.username });
-        } else {
-          sessionStorage.setItem('login', false);
-          if (currentUserData.roles) {
-            sessionStorage.setItem('user', 'default');
-            sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
-            this.setState({ user: 'default' });
-          } else {
-            sessionStorage.setItem('user', '');
-            sessionStorage.setItem('roles', JSON.stringify({}));
-            this.setState({ user: 'not_logged' });
-          }
+    } catch(err) {
+        if (err.status === 401) {
+            if (!clusterId || clusterId.length <= 0) {
+                this.setState({ clusterId: '401' });
+            }
         }
-        this.setState({ loading: false });
-      })
-      .catch(err => {
         console.error('Error:', err);
-      });
+    }
+  }
+
+  _initUserAndAuth() {
+    const requests = [this.getApi(uriCurrentUser()), this.getApi(uriAuths())];
+    Promise.all(requests)
+        .then(data => {
+            this._setAuths(data[1]);
+            this._setCurrentUser(data[0].data);
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+  }
+
+  _setAuths(response) {
+    if (response.status === 200) {
+        sessionStorage.setItem('auths', JSON.stringify(response.data));
+    }
+  }
+
+  _setCurrentUser(currentUserData) {
+    sessionStorage.setItem('user', '');
+    if (currentUserData.logged) {
+      sessionStorage.setItem('login', true);
+      sessionStorage.setItem('user', currentUserData.username);
+      sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      this.setState({ user: currentUserData.username });
+    } else {
+      sessionStorage.setItem('login', false);
+      if (currentUserData.roles) {
+        sessionStorage.setItem('user', 'default');
+        sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+        this.setState({ user: 'default' });
+      } else {
+        sessionStorage.setItem('user', '');
+        sessionStorage.setItem('roles', JSON.stringify({}));
+        this.setState({ user: 'not_logged' });
+      }
+    }
+    this.setState({ loading: false });
   }
 
   handleRedirect() {
@@ -109,7 +124,7 @@ class Routes extends Root {
     let clusterId = this.state.clusterId;
 
     if (this.state.user.length <= 0) {
-      this.getCurrentUser();
+      this._initUserAndAuth();
       return <></>;
     }
 
@@ -145,6 +160,11 @@ class Routes extends Root {
                   component={TopicProduce}
                 />
               )}
+
+              {roles && roles.topic && roles.topic['topic/data/insert'] && (
+                  <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
+              )}
+
               {roles && roles.topic && roles.topic['topic/read'] && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/:tab?" component={Topic} />
               )}
@@ -193,6 +213,15 @@ class Routes extends Root {
               {roles && roles.registry && roles.registry['registry/insert'] && (
                 <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
               )}
+
+              {roles && roles.registry && roles.registry['registry/update'] && (
+                  <Route
+                      exact
+                      path="/ui/:clusterId/schema/details/:schemaId/update"
+                      component={Schema}
+                  />
+              )}
+
               {roles && roles.registry && roles.registry['registry/read'] && (
                 <Route
                   exact
@@ -211,13 +240,14 @@ class Routes extends Root {
               {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
               )}
-              {roles && roles.connect && roles.connect['connect/update'] && (
+              {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
                   component={Connect}
                 />
               )}
+              <Route exact path="/ui/:clusterId/settings" component={Settings} />
               <Redirect from="/" to={this.handleRedirect()} />
               <Redirect from="/ui" to={this.handleRedirect()} />
               <Redirect from="/ui/401" to={this.handleRedirect()} />

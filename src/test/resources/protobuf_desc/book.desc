@@ -1,0 +1,34 @@
+
+þ
+google/protobuf/wrappers.protogoogle.protobuf"#
+DoubleValue
+value (Rvalue""
+
+FloatValue
+value (Rvalue""
+
+Int64Value
+value (Rvalue"#
+UInt64Value
+value (Rvalue""
+
+Int32Value
+value (Rvalue"#
+UInt32Value
+value (Rvalue"!
+	BoolValue
+value (Rvalue"#
+StringValue
+value (	Rvalue""
+
+BytesValue
+value (RvalueB|
+com.google.protobufBWrappersProtoPZ*github.com/golang/protobuf/ptypes/wrappersø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3
+Ë
+
+book.protoorg.akhq.utilsgoogle/protobuf/wrappers.proto"h
+Book
+title (	Rtitle
+author (	Rauthor2
+price (2.google.protobuf.DoubleValueRpriceB
+org.akhq.utilsB	BookProtobproto3

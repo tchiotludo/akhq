@@ -54,6 +54,7 @@ akhq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
+        type: "confluent" # schema registry type (optional). Supported types are "confluent" (default) or "tibco"
         # Basic Auth user / pass
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass
@@ -80,6 +81,29 @@ akhq:
           ssl-trust-store-password: trust-store-password
           ssl-key-store: /app/truststore.jks
           ssl-key-store-password: key-store-password
+      deserialization:
+        protobuf:
+          # (optional) if descriptor-file properties are used
+          descriptors-folder: "/app/protobuf_desc"
+          topics-mapping:
+            - topic-regex: "album.*"
+              descriptor-file-base64: "Cs4BCgthbGJ1bS5wcm90bxIXY29tLm5ldGNyYWNrZXIucHJvdG9idWYidwoFQWxidW0SFAoFdGl0bGUYASABKAlSBXRpdGxlEhYKBmFydGlzdBgCIAMoCVIGYXJ0aXN0EiEKDHJlbGVhc2VfeWVhchgDIAEoBVILcmVsZWFzZVllYXISHQoKc29uZ190aXRsZRgEIAMoCVIJc29uZ1RpdGxlQiUKF2NvbS5uZXRjcmFja2VyLnByb3RvYnVmQgpBbGJ1bVByb3RvYgZwcm90bzM="
+              value-message-type: "Album"
+            - topic-regex: "film.*"
+              descriptor-file-base64: "CuEBCgpmaWxtLnByb3RvEhRjb20uY29tcGFueS5wcm90b2J1ZiKRAQoERmlsbRISCgRuYW1lGAEgASgJUgRuYW1lEhoKCHByb2R1Y2VyGAIgASgJUghwcm9kdWNlchIhCgxyZWxlYXNlX3llYXIYAyABKAVSC3JlbGVhc2VZZWFyEhoKCGR1cmF0aW9uGAQgASgFUghkdXJhdGlvbhIaCghzdGFycmluZxgFIAMoCVIIc3RhcnJpbmdCIQoUY29tLmNvbXBhbnkucHJvdG9idWZCCUZpbG1Qcm90b2IGcHJvdG8z"
+              value-message-type: "Film"
+            - topic-regex: "test.*"
+              descriptor-file: "other.desc"
+              key-message-type: "Row"
+              value-message-type: "Envelope"
+      # Ui Cluster Options (optional)
+      ui-options:
+        topic:
+          default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
+          skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
+          skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+        topic-data:
+          sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
     my-cluster-ssl:
       properties:
@@ -112,7 +136,6 @@ akhq:
     retention: 172800000 # default retention period when creating topic
     partition: 3 #  default number of partition when creating topic
     replication: 3 # default number of replicas when creating topic
-    default-view: HIDE_INTERNAL # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM)
     internal-regexps: # list of regexp to be considered as internal (internal topic can't be deleted or updated)
       - "^_.*$"
       - "^.*_schemas$"
@@ -123,19 +146,30 @@ akhq:
       - "^.*-changelog$"
       - "^.*-repartition$"
       - "^.*-rekey$"
+    skip-consumer-groups: false # Skip loading consumer group information when showing topics
+    skip-last-record: false # Skip loading last record date information when showing topics
 
   # Topic display data options (optional)
   topic-data:
-    sort: OLDEST # default sort order (OLDEST, NEWEST) (default: OLDEST)
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
+
+  # Ui Global Options (optional)
+  ui-options:
+    topic:
+      default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
+      skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
+      skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+    topic-data:
+      sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
   # Auth & Roles (optional)
   security:
     default-group: admin # Default groups for all the user even unlogged user
     # Groups definition
     groups:
-      - name: admin # Group name
+      admin: # unique key
+        name: admin # Group name
         roles:  # roles for the group
           - topic/read
           - topic/insert
@@ -163,7 +197,12 @@ akhq:
         attributes:
           # Regexp to filter topic available for group
           topics-filter-regexp: "test.*"
-      - name: topic-reader # Other group
+          # Regexp to filter connect configs visible for group
+          connects-filter-regexp: "^test.*$"
+          # Regexp to filter consumer groups visible for group
+          consumer-groups-filter-regexp: "consumer.*"
+      topic-reader: # unique key
+        name: topic-reader # Other group
         roles:
           - topic/read
         attributes:

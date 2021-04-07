@@ -33,6 +33,11 @@ micronaut:
         cookie:
           enabled: true
           cookie-same-site: strict
+        signatures:
+          secret:
+            generator:
+              secret: "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!"
+
     redirect:
       login-success: "${micronaut.server.context-path:}/ui"
       forbidden:
@@ -61,27 +66,14 @@ jackson:
     writeDatesAsTimestamps: false
 
 endpoints:
+  all:
+    port: 8081
+    enabled: true
+    sensitive: false
   health:
-    enabled: true
-    sensitive: false
-    details-visible: anonymous
-  info:
-    enabled: true
-    sensitive: false
-  metrics:
-    enabled: true
-    sensitive: false
-    export:
-      prometheus:
-        enabled: true
-        step: PT1M
-        descriptions: true
-  prometheus:
-    enabled: true
-    sensitive: false
-  caches:
-    enabled: true
-    sensitive: false
+    details-visible: ANONYMOUS
+  loggers:
+    write-sensitive: false
 
 akhq:
   server:
@@ -97,7 +89,7 @@ akhq:
       properties:
         max.poll.records: 50
         isolation.level: read_committed
-        group.id: Akhq
+        # group.id: Akhq
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
@@ -106,7 +98,6 @@ akhq:
     threads: 16
 
   topic:
-    default-view: HIDE_INTERNAL
     replication: 1
     retention: 86400000
     partition: 1
@@ -129,39 +120,42 @@ akhq:
   security:
     default-group: admin
     groups:
-    - name: admin
-      roles:
-      - topic/read
-      - topic/insert
-      - topic/delete
-      - topic/config/update
-      - node/read
-      - node/config/update
-      - topic/data/read
-      - topic/data/insert
-      - topic/data/delete
-      - group/read
-      - group/delete
-      - group/offsets/update
-      - registry/read
-      - registry/insert
-      - registry/update
-      - registry/delete
-      - registry/version/delete
-      - acls/read
-      - connect/read
-      - connect/insert
-      - connect/update
-      - connect/delete
-      - connect/state/update
-    - name: reader
-      roles:
-      - topic/read
-      - node/read
-      - topic/data/read
-      - group/read
-      - registry/read
-      - acls/read
-      - connect/read
-    - name: no-roles
-      roles: []
+      admin:
+        name: admin
+        roles:
+        - topic/read
+        - topic/insert
+        - topic/delete
+        - topic/config/update
+        - node/read
+        - node/config/update
+        - topic/data/read
+        - topic/data/insert
+        - topic/data/delete
+        - group/read
+        - group/delete
+        - group/offsets/update
+        - registry/read
+        - registry/insert
+        - registry/update
+        - registry/delete
+        - registry/version/delete
+        - acls/read
+        - connect/read
+        - connect/insert
+        - connect/update
+        - connect/delete
+        - connect/state/update
+      reader:
+        name: reader
+        roles:
+        - topic/read
+        - node/read
+        - topic/data/read
+        - group/read
+        - registry/read
+        - acls/read
+        - connect/read
+      no-roles:
+        name: no-roles
+        roles: []

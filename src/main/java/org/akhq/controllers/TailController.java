@@ -5,6 +5,8 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.sse.Event;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
@@ -34,6 +36,7 @@ public class TailController extends AbstractController {
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
+    @ExecuteOn(TaskExecutors.IO)
     @Operation(tags = {"topic data"}, summary = "Tail for data on multiple topic")
     public Publisher<Event<TailRecord>> sse(
         String cluster,

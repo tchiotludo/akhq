@@ -3,7 +3,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
-import { uriLiveTail, uriTopics } from '../../utils/endpoints';
+import {uriLiveTail, uriTopicsName} from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
@@ -35,33 +35,31 @@ class Tail extends Root {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
-    const { state } = this.props.location;
+    const query =  new URLSearchParams(this.props.location.search);
 
-    let data = await this.getApi(uriTopics(clusterId, '', 'ALL', ''));
+    let data = await this.getApi(uriTopicsName(clusterId));
     data = data.data;
     let topics = [];
-    if (state && state.topicId && state.topicId.length > 0) {
-      topics = [{ name: state.topicId }];
+    if (query && query.get('topicId')) {
+      topics = [ query.get('topicId') ];
     }
 
     if (data) {
-      if (data.results) {
-        this.setState({ topics: data.results, selectedTopics: topics }, () => {
-          if (state && state.topicId && state.topicId.length > 0) {
-            this.setState({ selectedStatus: STATUS.STARTED });
-            this.startEventSource();
-          }
-        });
-      } else {
-        this.setState({ topics: [], selectedTopics: topics }, () => {
-          if (state && state.topicId && state.topicId.length > 0) {
-            this.setState({ selectedStatus: STATUS.STARTED });
-            this.startEventSource();
-          }
-        });
-      }
+      this.setState({ topics: data, selectedTopics: topics }, () => {
+        if (query && query.get('topicId')) {
+          this.setState({ selectedStatus: STATUS.STARTED });
+          this.startEventSource();
+        }
+      });
+    } else {
+      this.setState({ topics: [], selectedTopics: topics }, () => {
+        if (query && query.get('topicId')) {
+          this.setState({ selectedStatus: STATUS.STARTED });
+          this.startEventSource();
+        }
+      });
     }
-  };
+  }
 
   componentWillUnmount = () => {
     super.componentWillUnmount();
@@ -71,11 +69,8 @@ class Tail extends Root {
   startEventSource = () => {
     const { clusterId } = this.props.match.params;
     const { search, selectedTopics, maxRecords } = this.state;
-    let topicsToCall = selectedTopics.map(topic => {
-      return topic.name;
-    });
     this.eventSource = new EventSource(
-      uriLiveTail(clusterId, search, topicsToCall, JSON.stringify(maxRecords))
+      uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords))
     );
     let self = this;
     this.eventSource.addEventListener('tailBody', function(e) {
@@ -112,11 +107,11 @@ class Tail extends Root {
     let selectedTopics = this.state.selectedTopics;
     if (
       selectedTopics.find(el => {
-        return el.name === topic.name;
+        return el === topic;
       })
     ) {
       let updatedSelected = _.remove(selectedTopics, el => {
-        return el.name !== topic.name;
+        return el !== topic;
       });
       this.setState({
         selectedTopics: updatedSelected
@@ -140,14 +135,14 @@ class Tail extends Root {
           {topics
             .filter(topic => {
               if (dropdownSearch.length > 0) {
-                return topic.name.includes(dropdownSearch);
+                return topic.includes(dropdownSearch);
               }
               return topic;
             })
             .map((topic, index) => {
-              let selected = selectedTopics.find(selected => selected.name === topic.name);
+              let selected = selectedTopics.find(selected => selected === topic);
               return (
-                <li key={`topic_${topic.name}_${index}`}>
+                <li key={`topic_${topic}_${index}`}>
                   <div
                     onClick={() => {
                       this.onStop();
@@ -159,7 +154,7 @@ class Tail extends Root {
                     id={`bs-select-${index}-0`}
                     aria-selected="false"
                   >
-                    <span className="text">{topic.name}</span>
+                    <span className="text">{topic}</span>
                   </div>
                 </li>
               );
@@ -231,7 +226,7 @@ class Tail extends Root {
                 {selectedTopics.length === 0
                   ? 'Topics'
                   : selectedTopics.length === 1
-                  ? selectedTopics[0].name
+                  ? selectedTopics[0]
                   : `${selectedTopics.length} Topics Selected`}
               </Dropdown.Toggle>
               <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
@@ -262,7 +257,7 @@ class Tail extends Root {
                           data: [],
                           selectedTopics: JSON.parse(JSON.stringify(topics)).filter(topic => {
                             if (dropdownSearch.length > 0) {
-                              return topic.name.includes(dropdownSearch);
+                              return topic.includes(dropdownSearch);
                             }
                             return topic;
                           })

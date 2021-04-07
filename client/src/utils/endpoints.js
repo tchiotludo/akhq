@@ -31,9 +31,17 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
+export const uriUIOptions = (clusterId) => {
+  return `${apiUrl}/${clusterId}/ui-options`;
+};
+
 export const uriTopics = (clusterId, search, show, page) => {
   return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
 };
+
+export const uriTopicsName = (clusterId) => `${apiUrl}/${clusterId}/topic/name`;
+
+export const uriTopicsInfo = (clusterId, topicId) => `${apiUrl}/${clusterId}/topic/${topicId}`;
 
 export const uriTopicsCreate = clusterId => `${apiUrl}/${clusterId}/topic`;
 
@@ -58,10 +66,13 @@ export const uriTopicData = (
   return uri;
 };
 
-export const uriTopicDataSearch = (clusterId, topicId, search, filters) => {
-  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search/${search}`;
+export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search`;
   if(filters) {
     uri = uri + `?${filters}`
+  }
+  if(offsets) {
+    uri = uri + `&after=${offsets}`
   }
   return uri;
 };
@@ -92,12 +103,21 @@ export const uriTopicsUpdateConfigs = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/configs`;
 };
 
+export const uriTopicsOffsetsByTimestamp = (clusterId, topicId, timestamp) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/offsets/start?timestamp=${timestamp}`;
+};
+
+export const uriTopicsCopy = (fromClusterId, fromTopicId, toClusterId, toTopicId) => {
+  return `${apiUrl}/${fromClusterId}/topic/${fromTopicId}/copy/${toClusterId}/topic/${toTopicId}`;
+}
+
+
 export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
-export const uriConnectDefinitions = (clusterId, connectId) => {
-  return `${apiUrl}/${clusterId}/connect/${connectId}`;
+export const uriConnectDefinitions = (clusterId, connectId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}?&search=${search}&page=${pageNumber}`;
 };
 
 export const uriConnectPlugins = (clusterId, connectId) => {
@@ -243,6 +263,10 @@ export const uriConsumerGroupAcls = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
 };
 
+export const uriConsumerGroupByTopics = (clusterId, topicList) => {
+  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}`;
+};
+
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
   return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
 };
@@ -271,6 +295,10 @@ export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
 
 export const uriTopicDataEmpty = (clusterId, topicName) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
+}
+
+export const uriTopicLastRecord = (clusterId, topicList) => {
+  return `${apiUrl}/${clusterId}/topic/last-record?topics=${topicList}`;
 }
 
 export default {

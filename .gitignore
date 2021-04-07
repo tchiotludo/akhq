@@ -36,7 +36,7 @@ out/*
 logs/*
 
 ### Kafka HQ ###
-src/**/*-*.yml
+src/main/*/*-*.yml
 connects-plugins/
 
 ### Docs

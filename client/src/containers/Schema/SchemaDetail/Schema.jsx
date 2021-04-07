@@ -13,7 +13,8 @@ class Schema extends Root {
     schemaId: this.props.history.schemaId || this.props.match.params.schemaId,
     selectedTab: 'update',
     totalVersions: 0,
-    schemaVersions: []
+    schemaVersions: [],
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   tabs = ['update', 'versions'];
@@ -36,18 +37,22 @@ class Schema extends Root {
 
   async getSchemaVersions() {
     let schemas = [];
-    const { clusterId, schemaId } = this.state;
-    const tabSelected = getSelectedTab(this.props, this.tabs);
+    const { clusterId, schemaId, roles } = this.state;
+    let tabSelected = getSelectedTab(this.props, this.tabs);
+
+    if(!roles.registry['registry/update'] && tabSelected === 'update') {
+      tabSelected = 'versions';
+    }
 
     schemas = await this.getApi(endpoints.uriSchemaVersions(clusterId, schemaId));
     this.setState({
-      schemaVersions: schemas.data,
-      totalVersions: schemas.data.length,
-      selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
-    },
-      () => {
-        this.props.history.replace(`/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`);
-      });
+          schemaVersions: schemas.data,
+          totalVersions: schemas.data.length,
+          selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
+        },
+        () => {
+          this.props.history.replace(`/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`);
+        });
   }
 
   renderSelectedTab() {
@@ -59,61 +64,68 @@ class Schema extends Root {
     switch (selectedTab) {
       case 'update':
         return (
-          <SchemaUpdate
-            getSchemaVersions={() => {
-              this.getSchemaVersions();
-            }}
-            schemaId={schemaId}
-            history={history}
-            match={match}
-          />
+            <SchemaUpdate
+                getSchemaVersions={() => {
+                  this.getSchemaVersions();
+                }}
+                schemaId={schemaId}
+                history={history}
+                match={match}
+            />
         );
       case 'versions':
         return (
-          <SchemaVersions
+            <SchemaVersions
+                schemaName={schemaId}
+                clusterId={clusterId}
+                schemas={schemaVersions}
+                history={history}
+                match={match}
+            />
+        );
+      default:
+        return <SchemaVersions
             schemaName={schemaId}
             clusterId={clusterId}
             schemas={schemaVersions}
             history={history}
             match={match}
-          />
-        );
-      default:
-        return <SchemaUpdate schemaId={schemaId} history={history} match={match} />;
+        />;
     }
   }
 
   render() {
-    const { clusterId, schemaId, totalVersions } = this.state;
+    const { clusterId, schemaId, totalVersions, roles } = this.state;
 
     return (
-      <div>
-        <Header title={`Schema: ${schemaId}`} history={this.props.history} />
-        <div className="tabs-container">
-          <ul className="nav nav-tabs" role="tablist">
-            <li className="nav-item">
-              <Link to={`/ui/${clusterId}/schema/details/${schemaId}/update`}
-                className={this.tabClassName('update')}
-              >
-                Update
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
-                className={this.tabClassName('versions')}
-              >
-                Versions <span className="badge badge-secondary">{totalVersions}</span>
-              </Link>
-            </li>
-          </ul>
+        <div>
+          <Header title={`Schema: ${schemaId}`} history={this.props.history} />
+          <div className="tabs-container">
+            <ul className="nav nav-tabs" role="tablist">
+              {roles.registry['registry/update'] && (
+                  <li className="nav-item">
+                    <Link to={`/ui/${clusterId}/schema/details/${schemaId}/update`}
+                          className={this.tabClassName('update')}
+                    >
+                      Update
+                    </Link>
+                  </li>)}
+              <li className="nav-item">
+                <Link to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
+                      className={this.tabClassName('versions')}
+                >
+                  Versions <span className="badge badge-secondary">{totalVersions}</span>
+                </Link>
+              </li>
+            </ul>
 
-          <div className="tab-content">
-            <div className="tab-pane active" role="tabpanel">
-              {this.renderSelectedTab()}
+            <div className="tab-content">
+              <div className="tab-pane active" role="tabpanel">
+                {this.renderSelectedTab()}
+              </div>
             </div>
           </div>
         </div>
-      </div>
     );
   }
 }

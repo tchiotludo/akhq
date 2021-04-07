@@ -9,33 +9,26 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.DeletedRecords;
-import org.apache.kafka.clients.admin.RecordsToDelete;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.KafkaFuture;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.akhq.controllers.TopicController;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.Debug;
+import org.apache.kafka.clients.admin.DeletedRecords;
+import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -56,10 +49,55 @@ public class RecordRepository extends AbstractRepository {
     private SchemaRegistryRepository schemaRegistryRepository;
 
     @Inject
+    private CustomDeserializerRepository customDeserializerRepository;
+
+    @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
+
+    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
+    protected int maxPollRecords;
+
+    public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
+        List<Topic> topics = topicRepository.findByName(clusterId, topicsName);
+
+        List<TopicPartition> topicPartitions = topics
+            .stream()
+            .flatMap(topic -> topic.getPartitions().stream())
+            .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
+            .collect(Collectors.toList());
+
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, topicPartitions.size() * 3);
+        }});
+        consumer.assign(topicPartitions);
+
+        consumer
+            .endOffsets(consumer.assignment())
+            .forEach((topicPartition, offset) -> {
+                consumer.seek(topicPartition, Math.max(0, offset - 2));
+            });
+
+        ConcurrentHashMap<String, Record> records = new ConcurrentHashMap<>();
+
+        this.poll(consumer)
+            .forEach(record -> {
+                if (!records.containsKey(record.topic())) {
+                    records.put(record.topic(), newRecord(record, clusterId));
+                } else {
+                    Record current = records.get(record.topic());
+                    if (current.getTimestamp().toInstant().toEpochMilli() < record.timestamp()) {
+                        records.put(record.topic(), newRecord(record, clusterId));
+                    }
+                }
+
+            });
+
+        consumer.close();
+        return records;
+    }
 
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
@@ -377,11 +415,25 @@ public class RecordRepository extends AbstractRepository {
         */
     }
 
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
+        return new Record(
+            record,
+            this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId),
+                    this.schemaRegistryRepository.getSchemaRegistryType(clusterId))
+        );
+    }
+
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
         return new Record(
             record,
+            this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId),
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId))
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId),
+                    this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId))
         );
     }
 
@@ -490,36 +542,45 @@ public class RecordRepository extends AbstractRepository {
         )).get();
     }
 
-    public Flowable<Event<SearchEvent>> search(String clusterId, Options options) throws ExecutionException, InterruptedException {
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-        Topic topic = topicRepository.findByName(clusterId, options.topic);
-        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
-
+    public Flowable<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
         AtomicInteger matchesCount = new AtomicInteger();
 
-        if (partitions.size() == 0) {
-            return Flowable.just(new SearchEvent(topic).end());
-        }
+        Properties properties = new Properties();
+        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.getSize());
 
-        consumer.assign(partitions.keySet());
-        partitions.forEach(consumer::seek);
+        return Flowable.generate(() -> {
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties);
+            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
-        partitions.forEach((topicPartition, first) ->
-            log.trace(
-                "Search [topic: {}] [partition: {}] [start: {}]",
-                topicPartition.topic(),
-                topicPartition.partition(),
-                first
-            )
-        );
+            if (partitions.size() == 0) {
+                return new SearchState(consumer, null);
+            }
 
-        return Flowable.generate(() -> new SearchEvent(topic), (searchEvent, emitter) -> {
+            consumer.assign(partitions.keySet());
+            partitions.forEach(consumer::seek);
+
+            partitions.forEach((topicPartition, first) ->
+                log.trace(
+                    "Search [topic: {}] [partition: {}] [start: {}]",
+                    topicPartition.topic(),
+                    topicPartition.partition(),
+                    first
+                )
+            );
+
+            return new SearchState(consumer, new SearchEvent(topic));
+        }, (searchState, emitter) -> {
+            SearchEvent searchEvent = searchState.getSearchEvent();
+            KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
+
             // end
-            if (searchEvent.emptyPoll == 666) {
+            if (searchEvent == null || searchEvent.emptyPoll == 666) {
+
+                emitter.onNext(new SearchEvent(topic).end());
                 emitter.onComplete();
                 consumer.close();
 
-                return searchEvent;
+                return new SearchState(consumer, searchEvent);
             }
 
             SearchEvent currentEvent = new SearchEvent(searchEvent);
@@ -564,32 +625,87 @@ public class RecordRepository extends AbstractRepository {
                 emitter.onNext(currentEvent.progress(options));
             }
 
-            return currentEvent;
+            return new SearchState(consumer, currentEvent);
         });
     }
 
-    private boolean searchFilter(BaseOptions options, Record record) {
-        if (options.getSearch() == null) {
-            return true;
-        }
+    private static boolean searchFilter(BaseOptions options, Record record) {
 
-        if (record.getKey() != null && containsAll(options.getSearch(), record.getKey())) {
-            return true;
-        }
+        if (options.getSearch() != null) {
+            return search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
+        } else {
+            if (options.getSearchByKey() != null) {
+                if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) return false;
+            }
 
-        return record.getValue() != null && containsAll(options.getSearch(), record.getValue());
-    }
+            if (options.getSearchByValue() != null) {
+                if (!search(options.getSearchByValue(), Collections.singletonList(record.getValue()))) return false;
+            }
 
-    private static boolean containsAll(String search, String in) {
-        String[] split = search.toLowerCase().split("\\s");
-        in = in.toLowerCase();
+            if (options.getSearchByHeaderKey() != null) {
+                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) return false;
+            }
 
-        for (String k : split) {
-            if (!in.contains(k)) {
-                return false;
+            if (options.getSearchByHeaderValue() != null) {
+                return search(options.getSearchByHeaderValue(), record.getHeaders().values());
             }
         }
+        return true;
+    }
 
+    private static boolean search(Search searchFilter, Collection<String> stringsToSearch) {
+        switch (searchFilter.searchMatchType) {
+            case EQUALS:
+                return equalsAll(searchFilter.getText(), stringsToSearch);
+            case NOT_CONTAINS:
+                return notContainsAll(searchFilter.getText(), stringsToSearch);
+            default:
+                return containsAll(searchFilter.getText(), stringsToSearch);
+        }
+    }
+
+    private static boolean containsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.contains(k)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean equalsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.equals(k)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean notContainsAll(String search, Collection<String> in) {
+        String[] split = search.toLowerCase().split("\\s");
+        for (String s : in) {
+            if(s != null) {
+                s = s.toLowerCase();
+                for (String k : split) {
+                    if (s.contains(k)) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -721,6 +837,75 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
+    public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
+        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
+            options.clusterId,
+            new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+            }}
+        );
+
+        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(fromTopic, options, consumer);
+
+        Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
+            .filter(topicPartitionLongEntry -> offsets.stream()
+                .anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        int counter = 0;
+
+        if (filteredPartitions.size() > 0) {
+            consumer.assign(filteredPartitions.keySet());
+            filteredPartitions.forEach(consumer::seek);
+
+            if (log.isTraceEnabled()) {
+                filteredPartitions.forEach((topicPartition, first) ->
+                    log.trace(
+                        "Consume [topic: {}] [partition: {}] [start: {}]",
+                        topicPartition.topic(),
+                        topicPartition.partition(),
+                        first
+                    )
+                );
+            }
+
+            boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
+
+            KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+            ConsumerRecords<byte[], byte[]> records;
+            do {
+                records = this.poll(consumer);
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    System.out.println(record.offset() + "-" + record.partition());
+
+                    counter++;
+                    producer.send(new ProducerRecord<>(
+                        toTopic.getName(),
+                        samePartition ? record.partition() : null,
+                        record.timestamp(),
+                        record.key(),
+                        record.value(),
+                        record.headers()
+                    ));
+                }
+
+            } while (!records.isEmpty());
+
+            producer.flush();
+        }
+        consumer.close();
+
+        return new CopyResult(counter);
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @AllArgsConstructor
+    @Getter
+    public static class CopyResult {
+        int records;
+    }
+
     @ToString
     @EqualsAndHashCode
     @Getter
@@ -733,6 +918,16 @@ public class RecordRepository extends AbstractRepository {
     @ToString
     @EqualsAndHashCode
     @Getter
+    @AllArgsConstructor
+    public static class SearchState {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private final SearchEvent searchEvent;
+    }
+
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
     public static class TailEvent {
         private List<Record> records = new ArrayList<>();
         private final Map<Map<String, Integer>, Long> offsets = new HashMap<>();
@@ -741,10 +936,96 @@ public class RecordRepository extends AbstractRepository {
     @ToString
     @EqualsAndHashCode
     @Getter
+    public static class Search {
+
+        public enum SearchMatchType {
+            EQUALS("E"),
+            CONTAINS("C"),
+            NOT_CONTAINS("N");
+
+            private final String code;
+
+            SearchMatchType(String code) {
+                this.code = code;
+            }
+
+            public static SearchMatchType valueOfCode(String code) {
+                for (SearchMatchType e : values()) {
+                    if (e.code.equals(code)) {
+                        return e;
+                    }
+                }
+                return null;
+            }
+        }
+
+        protected String text;
+        protected SearchMatchType searchMatchType;
+
+        public Search(String text) {
+            this.setText(text);
+            this.searchMatchType = SearchMatchType.CONTAINS;
+        }
+
+        public Search(String text, String searchMatchType) {
+            this.setText(text);
+            this.setSearchMatchType(searchMatchType);
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public void setSearchMatchType(String type) {
+            this.searchMatchType = SearchMatchType.valueOfCode(type);
+        }
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
     @Setter
     abstract public static class BaseOptions {
+
         protected String clusterId;
-        protected String search;
+        protected Search search;
+        protected Search searchByKey;
+        protected Search searchByValue;
+        protected Search searchByHeaderKey;
+        protected Search searchByHeaderValue;
+
+        public BaseOptions() {
+        }
+
+        public void setSearchByKey(String searchByKey) {
+           this.searchByKey = this.buildSearch(searchByKey);
+        }
+
+        public void setSearchByValue(String searchByValue) {
+            this.searchByValue = this.buildSearch(searchByValue);
+        }
+
+        public void setSearchByHeaderKey(String searchByHeaderKey) {
+            this.searchByHeaderKey = this.buildSearch(searchByHeaderKey);
+        }
+
+        public void setSearchByHeaderValue(String searchByHeaderValue) {
+            this.searchByHeaderValue = this.buildSearch(searchByHeaderValue);
+        }
+
+        public void setSearch(String search) {
+            this.search = new Search(search);
+        }
+
+        private Search buildSearch(String searchByKey) {
+            int sepPos = searchByKey.lastIndexOf('_');
+            if(sepPos > 0) {
+                return new Search(searchByKey.substring(0, sepPos), searchByKey.substring(sepPos + 1));
+            } else {
+                return new Search(searchByKey);
+            }
+        }
+
     }
 
     @ToString
@@ -764,7 +1045,7 @@ public class RecordRepository extends AbstractRepository {
         private Long timestamp;
 
         public Options(Environment environment, String clusterId, String topic) {
-            this.sort = environment.getProperty("akhq.topic-data.sort", Sort.class, Sort.OLDEST);
+            this.sort = Sort.OLDEST;
             //noinspection ConstantConditions
             this.size = environment.getProperty("akhq.topic-data.size", Integer.class, 50);
 
@@ -847,6 +1128,7 @@ public class RecordRepository extends AbstractRepository {
     public static class TailOptions extends BaseOptions {
         private List<String> topics;
         protected List<String> after;
+
 
         public TailOptions(String clusterId, List<String> topics) {
             this.clusterId = clusterId;

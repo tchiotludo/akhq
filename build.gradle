@@ -77,6 +77,10 @@ tasks.withType(JavaCompile){
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
+    // strimzi
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
+    
     // lombok
     annotationProcessor "org.projectlombok:lombok:" + lombokVersion
     compileOnly 'org.projectlombok:lombok:' + lombokVersion
@@ -84,7 +88,7 @@ dependencies {
     // micronaut
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
-    annotationProcessor 'io.micronaut.configuration:micronaut-openapi:1.5.2'
+    annotationProcessor 'io.micronaut.openapi:micronaut-openapi'
     implementation "io.micronaut:micronaut-inject"
     implementation "io.micronaut:micronaut-validation"
     implementation "io.micronaut:micronaut-runtime"
@@ -111,6 +115,10 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
+
+    // protobuf
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: "3.13.0"
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: "3.13.0"
 
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"

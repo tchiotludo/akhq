@@ -5,6 +5,7 @@ import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
+import io.confluent.kafka.schemaregistry.client.security.SslFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
@@ -48,7 +49,7 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
-    private Connection getConnection(String cluster) {
+    public Connection getConnection(String cluster) {
         return this.connections
             .stream()
             .filter(r -> r.getName().equals(cluster))
@@ -152,6 +153,22 @@ public class KafkaModule {
             RestService restService = new RestService(
                 connection.getSchemaRegistry().getUrl()
             );
+
+            if (connection.getSchemaRegistry().getProperties() != null
+                    && !connection.getSchemaRegistry().getProperties().isEmpty()) {
+
+                Map<String, Object> sslConfigs =
+                        (Map) connection.getSchemaRegistry().getProperties().entrySet().stream().filter((e) -> {
+                    return ((String) e.getKey()).startsWith("schema.registry.");
+                }).collect(Collectors.toMap((e) -> {
+                    return ((String) e.getKey()).substring("schema.registry.".length());
+                }, Map.Entry::getValue));
+
+                SslFactory sslFactory = new SslFactory(sslConfigs);
+                if (sslFactory != null && sslFactory.sslContext() != null) {
+                    restService.setSslSocketFactory(sslFactory.sslContext().getSocketFactory());
+                }
+            }
 
             restService.setHttpHeaders(Collections.singletonMap("Accept", "application/json"));
 

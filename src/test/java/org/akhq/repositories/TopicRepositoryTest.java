@@ -168,7 +168,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topics-filter-regexp", new ArrayList<>(Arrays.asList("rando.*"))));
+        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

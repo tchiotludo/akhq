@@ -2,6 +2,7 @@ package org.akhq.repositories;
 
 import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.models.Topic;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
@@ -12,23 +13,24 @@ import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class RecordRepositoryTest extends AbstractTest {
     @Inject
     private RecordRepository repository;
-    
+
+    @Inject
+    private TopicRepository topicRepository;
+
     @Inject
     private Environment environment;
     
@@ -186,7 +188,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Disabled("is flakky on github")
     public void searchAll() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("key");
+        options.setSearchByKey("key_C");
 
         assertEquals(3000, searchAll(options));
     }
@@ -194,7 +196,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchKey() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("key_100");
+        options.setSearchByKey("key_100_C");
 
         assertEquals(3, searchAll(options));
     }
@@ -202,7 +204,7 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchValue() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_HUGE);
-        options.setSearch("value_100");
+        options.setSearchByValue("value_100_C");
 
         assertEquals(3, searchAll(options));
     }
@@ -210,17 +212,25 @@ public class RecordRepositoryTest extends AbstractTest {
     @Test
     public void searchAvro() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_COUNT);
-        options.setSearch("count");
+        options.setSearchByValue("count_C");
 
         assertEquals(12, searchAll(options));
+    }
+
+    @Test
+    void lastRecordTest() throws ExecutionException, InterruptedException {
+        Map<String, Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, Collections.singletonList(KafkaTestCluster.TOPIC_RANDOM));
+        assertTrue(record.containsKey(KafkaTestCluster.TOPIC_RANDOM));
     }
 
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
         AtomicInteger size = new AtomicInteger();
         AtomicBoolean hasNext = new AtomicBoolean(true);
 
+        Topic topic = topicRepository.findByName(options.getClusterId(), options.getTopic());
+
         do {
-            repository.search(KafkaTestCluster.CLUSTER_ID, options).blockingSubscribe(event -> {
+            repository.search(topic, options).blockingSubscribe(event -> {
                 size.addAndGet(event.getData().getRecords().size());
 
                 assertTrue(event.getData().getPercent() >= 0);

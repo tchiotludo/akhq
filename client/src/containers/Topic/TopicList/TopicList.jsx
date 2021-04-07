@@ -1,18 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import Table from '../../../components/Table';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import { uriDeleteTopics, uriTopics, uriTopicsGroups } from '../../../utils/endpoints';
+import {uriConsumerGroupByTopics, uriDeleteTopics, uriTopicLastRecord, uriTopics} from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
+import {calculateTopicOffsetLag, showBytes} from '../../../utils/converters';
 import './styles.scss';
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
+import {getClusterUIOptions} from "../../../utils/functions";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class TopicList extends Root {
   state = {
@@ -39,17 +41,39 @@ class TopicList extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     loading: true,
     cancel: undefined,
-    collapseConsumerGroups: {}
+    collapseConsumerGroups: {},
+    uiOptions: {}
   };
 
   componentDidMount() {
+
+   this._initializeVars(() => {
+     this.getTopics();
+     this.props.history.replace({
+       pathname: `/ui/${this.state.selectedCluster}/topic`,
+       search: this.props.location.search
+     })});
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this._initializeVars(this.getTopics);
+    }
+  }
+
+  async _initializeVars(callBackFunction) {
     const { clusterId } = this.props.match.params;
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
+    let { pageNumber } = this.state;
+    const uiOptions = await getClusterUIOptions(clusterId)
 
     let searchDataTmp;
     let keepSearchTmp = keepSearch;
-
     const topicListSearch = localStorage.getItem('topicListSearch');
     if(topicListSearch) {
       searchDataTmp = JSON.parse(topicListSearch);
@@ -57,25 +81,13 @@ class TopicList extends Root {
     } else {
       searchDataTmp = {
         search: (query.get('search'))? query.get('search') : searchData.search,
-        topicListView: (query.get('topicListView'))? query.get('topicListView') : searchData.topicListView,
+        topicListView: (query.get('topicListView'))? query.get('topicListView') :
+            (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
+      pageNumber = (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
     }
 
-    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp}, () => {
-      this.getTopics();
-      this.props.history.replace({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      });
-    });
-
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
-      let { clusterId } = this.props.match.params;
-      this.setState({ selectedCluster: clusterId }, this.getTopics);
-    }
+    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}, pageNumber: pageNumber}, callBackFunction);
   }
 
   showDeleteModal = deleteMessage => {
@@ -110,33 +122,27 @@ class TopicList extends Root {
   handleSearch = data => {
     const { searchData } = data;
 
-
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
       this.props.history.push({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${searchData.search}&topicListView=${searchData.topicListView}`
+        search: `search=${searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${this.state.pageNumber}`
       });
+
     });
   };
 
   handlePageChangeSubmission = value => {
-    const { totalPageNumber } = this.state;
-    if (value <= 0) {
-      value = 1;
-    } else if (value > totalPageNumber) {
-      value = totalPageNumber;
-    }
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
-    this.setState({ pageNumber: value }, () => {
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getTopics();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${pageNumber}`
+      });
     });
-  };
-
-  handlePageChange = ({ currentTarget: input }) => {
-    const { value } = input;
-    this.setState({ pageNumber: value });
   };
 
   async getTopics() {
@@ -144,8 +150,8 @@ class TopicList extends Root {
     const { search, topicListView } = this.state.searchData;
     this.setState({ loading: true } );
 
-    let data = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
-    data = data.data;
+    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let data = response.data;
 
     if (data) {
       if (data.results) {
@@ -163,7 +169,7 @@ class TopicList extends Root {
     let tableTopics = {};
     const collapseConsumerGroups = {};
 
-    const { selectedCluster } = this.state;
+    const { selectedCluster, uiOptions } = this.state;
 
     const setState = () =>  {
       this.setState({ topics: Object.values(tableTopics) });
@@ -174,6 +180,7 @@ class TopicList extends Root {
         id: topic.name,
         name: topic.name,
         count: topic.size,
+        lastWrite: undefined,
         size: showBytes(topic.logDirSize, 0),
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
@@ -181,17 +188,34 @@ class TopicList extends Root {
         groupComponent: undefined,
         internal: topic.internal
       }
-
       collapseConsumerGroups[topic.name] = false;
-
-      this.getApi(uriTopicsGroups(selectedCluster, topic.name))
-        .then(value => {
-          tableTopics[topic.name].groupComponent = value.data
-          setState()
-        })
     });
     this.setState({collapseConsumerGroups});
     setState()
+
+    const topicsName = topics.map(topic => topic.name).join(",");
+
+    if(!uiOptions.skipConsumerGroups) {
+      this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName)))
+          .then(value => {
+            topics.forEach(topic => {
+              tableTopics[topic.name].groupComponent = (value && value.data) ? value.data.filter(consumerGroup =>
+                  (consumerGroup.activeTopics && consumerGroup.activeTopics.includes(topic.name))
+                  || (consumerGroup.topics && consumerGroup.topics.includes(topic.name))) : [];
+            });
+            setState();
+          });
+    }
+
+    if(!uiOptions.skipLastRecord) {
+      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
+          .then(value => {
+            topics.forEach((topic) => {
+              tableTopics[topic.name].lastWrite = value.data[topic.name] ? value.data[topic.name].timestamp : ''
+            });
+            setState();
+          });
+    }
   }
 
 
@@ -246,15 +270,131 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
+
+    const topicCols =
+        [
+          {
+            id: 'name',
+            accessor: 'name',
+            colName: 'Name',
+            type: 'text'
+          },
+          {
+            id: 'count',
+            accessor: 'count',
+            colName: 'Count',
+            type: 'text',
+            cell: (obj, col) => {
+              return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
+            }
+          },
+          {
+            id: 'size',
+            accessor: 'size',
+            colName: 'Size',
+            type: 'text'
+          }
+        ];
+
+    if(!uiOptions.skipLastRecord) {
+        topicCols.push({
+          id: 'lastWrite',
+          accessor: 'lastWrite',
+          colName: 'Last Record',
+          type: 'text'
+        });
+    }
+
+    const partitionCols =
+        [
+          {
+            id: 'partitionsTotal',
+            accessor: 'partitionsTotal',
+            colName: 'Total',
+            type: 'text'
+          }];
+    const replicationCols =
+         [
+          {
+            id: 'replicationFactor',
+            accessor: 'replicationFactor',
+            colName: 'Factor',
+            type: 'text'
+          },
+          {
+            id: 'replicationInSync',
+            accessor: 'replicationInSync',
+            colName: 'In Sync',
+            type: 'text',
+            cell: (obj, col) => {
+              return <span>{obj[col.accessor]}</span>;
+            }
+          }];
+
+    const consumerGprCols =
+        [
+          {
+            id: 'groupComponent',
+            accessor: 'groupComponent.id',
+            colName: 'Consumer Groups',
+            type: 'text',
+            cell: obj => {
+              if (obj.groupComponent && obj.groupComponent.length > 0) {
+                const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
+                let i = 0;
+                return (
+                    <>
+                      {consumerGroups[0]}
+                      {consumerGroups.length > 1 &&
+                      <span>
+                                  <span
+                                      onClick={() => this.handleCollapseConsumerGroups(obj.id)}
+                                      aria-expanded={collapseConsumerGroups[obj.id]}
+                                  >
+                                    {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
+                                    {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
+                                  </span>
+                                  <span className="badge badge-secondary">{consumerGroups.length}</span>
+                                  <Collapse in={collapseConsumerGroups[obj.id]}>
+                                    <div>
+                                      {consumerGroups.splice(1, consumerGroups.length).map(group => {
+                                        return (<div key={i++}>{group}</div>);
+                                      })}
+                                    </div>
+                                  </Collapse>
+                                </span>
+                      }
+                    </>
+                );
+              } else if (obj.groupComponent) {
+                return <div className="empty-consumergroups"/>
+              }
+            }
+          }
+        ]
+
     const firstColumns = [
-      { colName: 'Topics', colSpan: 3 },
-      { colName: 'Partitions', colSpan: 1 },
-      { colName: 'Replications', colSpan: 2 },
-      { colName: 'Consumer Groups', colSpan: 1 }
+      {colName: 'Topics', colSpan: topicCols.length},
+      {colName: 'Partitions', colSpan: partitionCols.length},
+      {colName: 'Replications', colSpan: replicationCols.length}
     ];
+
+    if(!uiOptions.skipConsumerGroups) {
+      firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
+    }
+
+    let onDetailsFunction = undefined;
+    const actions = [constants.TABLE_CONFIG];
+    if(roles.topic && roles.topic['topic/data/read']) {
+      actions.push(constants.TABLE_DETAILS);
+      onDetailsFunction = (id) => `/ui/${selectedCluster}/topic/${id}/data`;
+    }
+    if(roles.topic && roles.topic['topic/delete']) {
+      actions.push(constants.TABLE_DELETE);
+    }
 
     return (
       <div>
@@ -279,13 +419,13 @@ class TopicList extends Root {
             }}
             onKeepSearchChange={value => {
                 this.handleKeepSearchChange(value);
-            }}
-            doSubmit={this.handleSearch}
+              }}
+              doSubmit={this.handleSearch}
           />
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={this.handlePageChange}
+            onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
@@ -295,88 +435,7 @@ class TopicList extends Root {
           history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
-          columns={[
-            {
-              id: 'name',
-              accessor: 'name',
-              colName: 'Name',
-              type: 'text'
-            },
-            {
-              id: 'count',
-              accessor: 'count',
-              colName: 'Count',
-              type: 'text',
-              cell: (obj, col) => {
-                return <span className="text-nowrap">≈ {obj[col.accessor]}</span>;
-              }
-            },
-            {
-              id: 'size',
-              accessor: 'size',
-              colName: 'Size',
-              type: 'text'
-            },
-            {
-              id: 'partitionsTotal',
-              accessor: 'partitionsTotal',
-              colName: 'Total',
-              type: 'text'
-            },
-            {
-              id: 'replicationFactor',
-              accessor: 'replicationFactor',
-              colName: 'Factor',
-              type: 'text'
-            },
-            {
-              id: 'replicationInSync',
-              accessor: 'replicationInSync',
-              colName: 'In Sync',
-              type: 'text',
-              cell: (obj, col) => {
-                return <span>{obj[col.accessor]}</span>;
-              }
-            },
-            {
-              id: 'groupComponent',
-              accessor: 'groupComponent.id',
-              colName: 'Consumer Groups',
-              type: 'text',
-              cell: obj => {
-                if (obj.groupComponent && obj.groupComponent.length > 0) {
-                  const consumerGroups = this.handleConsumerGroups(obj.groupComponent, obj.id);
-                  let i=0;
-                  return (
-                      <>
-                        {consumerGroups[0]}
-                        {consumerGroups.length > 1 &&
-                        <span>
-                          <span
-                            onClick={() => this.handleCollapseConsumerGroups(obj.id)}
-                            aria-expanded={collapseConsumerGroups[obj.id]}
-                          >
-                            {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up"/>}
-                            {!collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-down"/>}
-                          </span>
-                          <span className="badge badge-secondary">{consumerGroups.length}</span>
-                          <Collapse in={collapseConsumerGroups[obj.id]}>
-                            <div>
-                              {consumerGroups.splice(1, consumerGroups.length).map(group => {
-                                return (<div key={i++}>{group}</div>);
-                              })}
-                            </div>
-                          </Collapse>
-                        </span>
-                          }
-                      </>
-                  );
-                } else if (obj.groupComponent) {
-                    return <div className="empty-consumergroups"/>
-                }
-              }
-            }
-          ]}
+          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
           data={topics}
           updateData={data => {
             this.setState({ topics: data });
@@ -384,13 +443,9 @@ class TopicList extends Root {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
-          onDetails={(id) => `/ui/${selectedCluster}/topic/${id}/data`}
+          onDetails={onDetailsFunction}
           onConfig={(id) => `/ui/${selectedCluster}/topic/${id}/configs`}
-          actions={
-            roles.topic && roles.topic['topic/delete']
-              ? [constants.TABLE_DELETE, constants.TABLE_DETAILS, constants.TABLE_CONFIG]
-              : [constants.TABLE_DETAILS, constants.TABLE_CONFIG]
-          }
+          actions={actions}
         />
 
         {roles.topic['topic/insert'] && (

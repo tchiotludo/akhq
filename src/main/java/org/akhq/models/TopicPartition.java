@@ -53,14 +53,14 @@ public class TopicPartition {
         public ConsumerGroupOffset(
             org.apache.kafka.common.TopicPartition topicPartition,
             OffsetAndMetadata offsetAndMetadata,
-            Partition.Offsets partiionOffsets
+            Partition.Offsets partitionOffsets
         ) {
             super(topicPartition);
 
             this.offset = offsetAndMetadata != null ? Optional.of(offsetAndMetadata.offset()) : Optional.empty();
             this.metadata = offsetAndMetadata != null ? Optional.of(offsetAndMetadata.metadata()) : Optional.empty();
-            this.firstOffset = partiionOffsets != null ? Optional.of(partiionOffsets.getFirstOffset()) : Optional.empty();
-            this.lastOffset = partiionOffsets != null ? Optional.of(partiionOffsets.getLastOffset()) : Optional.empty();
+            this.firstOffset = partitionOffsets != null ? Optional.of(partitionOffsets.getFirstOffset()) : Optional.empty();
+            this.lastOffset = partitionOffsets != null ? Optional.of(partitionOffsets.getLastOffset()) : Optional.empty();
         }
 
         public Optional<Long> getOffsetLag() {
