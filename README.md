@@ -411,9 +411,9 @@ Define groups with specific roles for your users
   * `key:` a uniq key used as name if not specified
     * `  name: group-name` Group identifier
     * `roles`: Roles list for the group
-    * `attributes.topics-filter-regexp`: Regexp to filter topics available for current group
-    * `attributes.connects-filter-regexp`: Regexp to filter Connect tasks available for current group
-    * `attributes.consumer-groups-filter-regexp`: Regexp to filter Consumer Groups available for current group
+    * `attributes.topics-filter-regexp`: Regexp list to filter topics available for current group
+    * `attributes.connects-filter-regexp`: Regexp list to filter Connect tasks available for current group
+    * `attributes.consumer-groups-filter-regexp`: Regexp list to filter Consumer Groups available for current group
 
 
 3 defaults group are available :
@@ -522,10 +522,16 @@ akhq:
         roles:  # roles for the group
           - topic/read
         attributes:
-          # Regexp to filter topic available for group
-          topics-filter-regexp: "test\\.reader.*"
-          connects-filter-regexp: "^test.*$"
-          consumer-groups-filter-regexp: "consumer.*"
+          # List of Regexp to filter topic available for group
+          # Single line String also allowed
+          # topics-filter-regexp: "^(projectA_topic|projectB_.*)$"
+          topics-filter-regexp:
+            - "^projectA_topic$" # Individual topic
+            - "^projectB_.*$" # Topic group
+          connects-filter-regexp: 
+            - "^test.*$"
+          consumer-groups-filter-regexp: 
+            - "consumer.*"
       topic-writer:
         name: topic-writer # Group name
         roles:
@@ -534,9 +540,12 @@ akhq:
           - topic/delete
           - topic/config/update
         attributes:
-          topics-filter-regexp: "test.*"
-          connects-filter-regexp: "^test.*$"
-          consumer-groups-filter-regexp: "consumer.*"
+          topics-filter-regexp: 
+            - "test.*"
+          connects-filter-regexp:
+            - "^test.*$"
+          consumer-groups-filter-regexp:
+            - "consumer.*"
     ldap:
       groups:
         - name: mathematicians
