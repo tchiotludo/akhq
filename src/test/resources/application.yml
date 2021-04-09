@@ -153,3 +153,6 @@ akhq:
           groups:
             - operator
 
+  retry:
+      topic-exists:
+          delay: "0.1s"
