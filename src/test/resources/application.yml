@@ -112,7 +112,8 @@ akhq:
           - topic/delete
           - registry/version/delete
         attributes:
-          topics-filter-regexp: "test.*"
+          topics-filter-regexp:
+            - "test.*"
       operator:
         name: operator
         roles:
@@ -121,7 +122,8 @@ akhq:
           - topic/data/insert
           - topic/data/delete
         attributes:
-          topics-filter-regexp: "test-operator.*"
+          topics-filter-regexp:
+            - "test-operator.*"
       no-filter:
         name: no-filter
         roles:
