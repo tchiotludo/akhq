@@ -148,6 +148,10 @@ akhq:
       - "^.*-rekey$"
     skip-consumer-groups: false # Skip loading consumer group information when showing topics
     skip-last-record: false # Skip loading last record date information when showing topics
+    # Retry options for topic operations
+    retry:
+      topic-exists: # Delay between retries when checking for existence of newly created topics. This is needed as it might take the kafka broker a few seconds to create new topics.
+        delay: "3s"
 
   # Topic display data options (optional)
   topic-data:

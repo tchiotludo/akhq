@@ -6,7 +6,6 @@ import io.micronaut.security.authentication.DefaultAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +26,7 @@ import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -126,7 +123,7 @@ public class TopicRepositoryTest extends AbstractTest {
     @Test
     public void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
-        assertThrows(NoSuchElementException.class, () -> {
+        Assertions.assertThrows(NoSuchElementException.class, () -> {
             topicRepository.findByName(KafkaTestCluster.CLUSTER_ID,"compacted");
         });
 
@@ -168,20 +165,6 @@ public class TopicRepositoryTest extends AbstractTest {
     @Test
     public void partition() throws ExecutionException, InterruptedException {
         assertEquals(3, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
-    }
-
-    @Test
-    public void shouldThrowIfTopicDoesNotExist() {
-        final String topicName = "unknownTopic";
-        assertThrows(UnknownTopicOrPartitionException.class, () -> topicRepository.checkIfTopicExists(KafkaTestCluster.CLUSTER_ID, topicName));
-    }
-
-    @Test
-    public void shouldNotThrowIfTopicExists() throws ExecutionException, InterruptedException {
-        final String topicName = "knownTopic";
-        topicRepository.create(KafkaTestCluster.CLUSTER_ID, topicName, 8, (short) 1, Collections.emptyList());
-        assertDoesNotThrow(() -> topicRepository.checkIfTopicExists(KafkaTestCluster.CLUSTER_ID, topicName));
-        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, topicName);
     }
 
     private void mockApplicationContext() {

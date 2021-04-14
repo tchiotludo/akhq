@@ -152,7 +152,3 @@ akhq:
         - username: user2
           groups:
             - operator
-
-  retry:
-      topic-exists:
-          delay: "0.1s"

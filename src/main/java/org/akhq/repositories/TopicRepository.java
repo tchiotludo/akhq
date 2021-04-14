@@ -153,7 +153,7 @@ public class TopicRepository extends AbstractRepository {
     @Retryable(
         includes = {
             UnknownTopicOrPartitionException.class
-        }, delay = "${akhq.retry.topic-exists.delay:3s}")
+        }, delay = "${akhq.topic.retry.topic-exists.delay:3s}")
     void checkIfTopicExists(String clusterId, String name) throws ExecutionException {
         kafkaWrapper.describeTopics(clusterId, Collections.singletonList(name));
     }
