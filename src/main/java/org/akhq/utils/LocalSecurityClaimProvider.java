@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,15 +25,15 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     Oidc oidcProperties;
 
     @Override
-    public AKHQClaimResponse generateClaim(ProviderType providerType, String providerName, String username, List<String> groups) {
+    public AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
         List<UserMapping> userMappings;
         List<GroupMapping> groupMappings;
         String defaultGroup;
         List<String> akhqGroups = new ArrayList<>();
-        switch (providerType) {
+        switch (request.getProviderType()) {
             case BASIC_AUTH:
                 // we already have target AKHQ groups
-                akhqGroups.addAll(groups);
+                akhqGroups.addAll(request.getGroups());
                 break;
             case LDAP:
                 // we need to convert from LDAP groups to AKHQ groups to find the roles and attributes
@@ -41,26 +42,27 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 userMappings = ldapProperties.getUsers();
                 groupMappings = ldapProperties.getGroups();
                 defaultGroup = ldapProperties.getDefaultGroup();
-                akhqGroups.addAll(mapToAkhqGroups(username, groups, groupMappings, userMappings, defaultGroup));
+                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
                 break;
             case OIDC:
                 // we need to convert from OIDC groups to AKHQ groups to find the roles and attributes
                 // using akhq.security.oidc.groups and akhq.security.oidc.users
                 // as well as akhq.security.oidc.default-group
-                userMappings = oidcProperties.getProvider(providerName).getUsers();
-                groupMappings = oidcProperties.getProvider(providerName).getGroups();
-                defaultGroup = oidcProperties.getProvider(providerName).getDefaultGroup();
-                akhqGroups.addAll(mapToAkhqGroups(username, groups, groupMappings, userMappings, defaultGroup));
+                Oidc.Provider provider = oidcProperties.getProvider(request.getProviderName());
+                userMappings = provider.getUsers();
+                groupMappings = provider.getGroups();
+                defaultGroup = provider.getDefaultGroup();
+                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
                 break;
             default:
                 break;
         }
         // add default group from akhq.security.default-group
-        if(StringUtils.hasText(securityProperties.getDefaultGroup())) {
+        if (StringUtils.hasText(securityProperties.getDefaultGroup())) {
             akhqGroups.add(securityProperties.getDefaultGroup());
         }
         // translate akhq groups into roles and attributes
-        return generateClaimFromAKHQGroups(username, akhqGroups);
+        return generateClaimFromAKHQGroups(request.getUsername(), akhqGroups);
     }
 
     /**
@@ -73,7 +75,7 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
      * @param defaultGroup   a default group for the provider
      * @return the mapped AKHQ groups
      */
-    public static List<String> mapToAkhqGroups(
+    public List<String> mapToAkhqGroups(
             String username,
             List<String> providerGroups,
             List<GroupMapping> groupMappings,
@@ -96,9 +98,13 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     public AKHQClaimResponse generateClaimFromAKHQGroups(String username, List<String> groups) {
         return AKHQClaimResponse.builder()
                 .roles(getUserRoles(groups))
-                .topicsFilterRegexp(getAttributeMergedList(groups, "topicsFilterRegexp"))
-                .connectsFilterRegexp(getAttributeMergedList(groups, "connectsFilterRegexp"))
-                .consumerGroupsFilterRegexp(getAttributeMergedList(groups, "consumerGroupsFilterRegexp"))
+                .attributes(
+                        Map.of(
+                                "topicsFilterRegexp", getAttributeMergedList(groups, "topicsFilterRegexp"),
+                                "connectsFilterRegexp", getAttributeMergedList(groups, "connectsFilterRegexp"),
+                                "consumerGroupsFilterRegexp", getAttributeMergedList(groups, "consumerGroupsFilterRegexp")
+                        )
+                )
                 .build();
     }
 
