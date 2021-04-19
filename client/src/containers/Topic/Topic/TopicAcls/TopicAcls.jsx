@@ -28,6 +28,7 @@ class TopicAcls extends Root {
       principal.acls.forEach((acl, index) => {
         tableAcls.push({
           id: index,
+          principal: principal.principal,
           topic: acl.resource.name || '',
           host: acl.host || '',
           permission: acl.operation || ''
@@ -47,9 +48,9 @@ class TopicAcls extends Root {
           history={this.props.history}
           columns={[
             {
-              id: 'topic',
-              accessor: 'topic',
-              colName: 'Topic',
+              id: 'principal',
+              accessor: 'principal',
+              colName: 'Principal',
               type: 'text',
               sortable: true
             },
