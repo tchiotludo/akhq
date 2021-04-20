@@ -3,20 +3,16 @@ package org.akhq.utils;
 import io.micronaut.context.annotation.Primary;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.http.client.annotation.Client;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-@Singleton
 @Primary
 @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
-public class RestApiClaimProvider implements ClaimProvider {
+@Client("${akhq.security.rest.url}")
+public interface RestApiClaimProvider extends ClaimProvider {
 
-    @Inject
-    RestApiClaimProviderClient client;
-
+    @Post
     @Override
-    public AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
-        return client.post(request);
-    }
+    AKHQClaimResponse generateClaim(@Body AKHQClaimRequest request);
 }
