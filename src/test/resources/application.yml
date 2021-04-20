@@ -152,4 +152,3 @@ akhq:
         - username: user2
           groups:
             - operator
-
