@@ -57,10 +57,7 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
             default:
                 break;
         }
-        // add default group from akhq.security.default-group
-        if (StringUtils.hasText(securityProperties.getDefaultGroup())) {
-            akhqGroups.add(securityProperties.getDefaultGroup());
-        }
+
         // translate akhq groups into roles and attributes
         return generateClaimFromAKHQGroups(request.getUsername(), akhqGroups);
     }
