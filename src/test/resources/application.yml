@@ -31,6 +31,14 @@ micronaut:
         groups:
           enabled: true
           base: ''
+    oauth2:
+      enabled: true
+      clients:
+        oidc:
+          grant-type: password
+          openid:
+            issuer: "http://no.url"
+            token: "fake-token"
   caches:
     kafka-wrapper:
       maximum-size: 0
@@ -152,4 +160,21 @@ akhq:
         - username: user2
           groups:
             - operator
-
+    oidc:
+      enabled: true
+      providers:
+        oidc:
+          username-field: preferred_username
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            - name: oidc-limited-group
+              groups:
+                - limited
+            - name: oidc-operator-group
+              groups:
+                - operator
+          users:
+            - username: user2
+              groups:
+                - operator

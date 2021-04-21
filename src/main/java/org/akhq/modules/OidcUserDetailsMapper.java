@@ -10,16 +10,18 @@ import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.config.AuthenticationModeConfiguration;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
 import io.micronaut.security.oauth2.endpoint.authorization.state.State;
-import io.micronaut.security.oauth2.endpoint.token.response.*;
+import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdUserDetailsMapper;
+import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
+import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.ClaimProvider;
-import org.akhq.utils.UserGroupUtils;
-import org.apache.http.annotation.Obsolete;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -30,11 +32,15 @@ import java.util.stream.Collectors;
 @Singleton
 @Replaces(DefaultOpenIdUserDetailsMapper.class)
 @Requires(property = "akhq.security.oidc.enabled", value = StringUtils.TRUE)
-public class OidcUserDetailsMapper implements OpenIdUserDetailsMapper {
+public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     @Inject
     private Oidc oidc;
     @Inject
     private ClaimProvider claimProvider;
+
+    public OidcUserDetailsMapper(OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration, AuthenticationModeConfiguration authenticationModeConfiguration) {
+        super(openIdAdditionalClaimsConfiguration, authenticationModeConfiguration);
+    }
 
 
     @NonNull
