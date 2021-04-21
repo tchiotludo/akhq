@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
@@ -456,6 +457,7 @@ public class RecordRepository extends AbstractRepository {
                 (headers == null ? ImmutableMap.<String, String>of() : headers)
                     .entrySet()
                     .stream()
+                    .filter(entry -> StringUtils.isNotEmpty(entry.getKey()))
                     .map(entry -> new RecordHeader(
                         entry.getKey(),
                         entry.getValue() == null ? null : entry.getValue().getBytes()

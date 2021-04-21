@@ -2,6 +2,7 @@ package org.akhq.repositories;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.configs.SecurityProperties;
@@ -19,6 +20,7 @@ import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
@@ -140,11 +142,20 @@ public class TopicRepository extends AbstractRepository {
 
     public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.akhq.models.Config> configs) throws ExecutionException, InterruptedException {
         kafkaWrapper.createTopics(clusterId, name, partitions, replicationFactor);
+        checkIfTopicExists(clusterId, name);
         configRepository.updateTopic(clusterId, name, configs);
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
         kafkaWrapper.deleteTopics(clusterId, name);
+    }
+
+    @Retryable(
+        includes = {
+            UnknownTopicOrPartitionException.class
+        }, delay = "${akhq.topic.retry.topic-exists.delay:3s}")
+    void checkIfTopicExists(String clusterId, String name) throws ExecutionException {
+        kafkaWrapper.describeTopics(clusterId, Collections.singletonList(name));
     }
 
     private Optional<List<String>> getTopicFilterRegex() {
