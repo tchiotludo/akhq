@@ -19,29 +19,14 @@ micronaut:
           secret:
             generator:
               secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
-    ldap:
-      default:
-        enabled: true
-        context:
-          server: ''
-          managerDn: ''
-          managerPassword: ''
-        search:
-          base: ''
-        groups:
-          enabled: true
-          base: ''
-  caches:
-    kafka-wrapper:
-      maximum-size: 0
-
-  server:
-    netty:
-      logLevel: TRACE
-
-  http:
-    client:
-      read-timeout: 30s
+    oauth2:
+      enabled: true
+      clients:
+        oidc:
+          grant-type: password
+          openid:
+            issuer: "http://no.url"
+            token: "fake-token"
 
 akhq:
   server:
@@ -131,24 +116,21 @@ akhq:
           - topic/insert
           - topic/delete
           - registry/version/delete
-    basic-auth:
-      - username: user
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        groups:
-          - limited
-      - username: admin
-        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
-        groups:
-          - admin
-    ldap:
-      groups:
-        - name: ldap-admin
+    oidc:
+      enabled: true
+      providers:
+        oidc:
+          username-field: preferred_username
+          groups-field: roles
+          default-group: topic-reader
           groups:
-            - limited
-        - name: ldap-operator
-          groups:
-            - operator
-      users:
-        - username: user2
-          groups:
-            - operator
+            - name: oidc-limited-group
+              groups:
+                - limited
+            - name: oidc-operator-group
+              groups:
+                - operator
+          users:
+            - username: user2
+              groups:
+                - operator

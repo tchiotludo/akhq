@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @Slf4j
-@MicronautTest(propertySources = "application.yml")
+@MicronautTest(environments = "oidc")
 public class OidcAuthenticationProviderTest {
 
     @Named("oidc")
