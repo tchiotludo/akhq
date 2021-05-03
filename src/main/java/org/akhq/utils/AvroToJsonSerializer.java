@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.time.temporal.ChronoUnit;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 public class AvroToJsonSerializer {
 
@@ -47,6 +48,9 @@ class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
             }
             if (logicalType instanceof LogicalTypes.TimestampMillis) { //to manage "logicalType": "timestamp-millis"
                 value= ChronoUnit.MICROS.between(Instant.EPOCH, (Instant)value);
+            }
+            if (logicalType instanceof LogicalTypes.Date) {
+                value= ((LocalDate)value).toEpochDay();
             }
             writeWithoutConversion(fieldSchema, value, out);
         } else {
