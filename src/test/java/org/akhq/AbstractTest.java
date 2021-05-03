@@ -1,11 +1,12 @@
 package org.akhq;
 
 import com.google.common.collect.ImmutableMap;
+import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.MutableHttpRequest;
 import io.micronaut.http.client.RxHttpClient;
 import io.micronaut.http.client.annotation.Client;
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 // https://github.com/micronaut-projects/micronaut-test/commit/0f32d13876decfc33f3f94238e280552422bf170#diff-985f52f80183621fbb0bc4f031044158R16
@@ -70,7 +70,7 @@ abstract public class AbstractTest implements TestPropertyProvider {
         );
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Map<String, String> getProperties() {
         KafkaTestCluster.ConnectionString connectionString = null;

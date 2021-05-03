@@ -1,21 +1,15 @@
-
-
 plugins {
     // micronaut
-    id "io.spring.dependency-management" version "1.0.10.RELEASE"
-    id "com.github.johnrengelman.shadow" version "6.0.0"
-    id "application"
-    id "java"
-    id "net.ltgt.apt-eclipse" version "0.21"
-    id "net.ltgt.apt-idea" version "0.21"
-    id "com.gorylenko.gradle-git-properties" version "2.2.3"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "io.micronaut.application" version "1.5.0"
 
     // akhq
-    id 'com.adarshr.test-logger' version '2.1.0'
-    id 'org.gradle.test-retry' version '1.1.9'
-    id 'com.github.psxpaul.execfork' version '0.1.13'
-    id "com.github.ben-manes.versions" version "0.28.0"
-    id "com.commercehub.gradle.plugin.avro" version "0.21.0"
+    id "com.gorylenko.gradle-git-properties" version "2.3.1"
+    id 'com.adarshr.test-logger' version '3.0.0'
+    id 'org.gradle.test-retry' version '1.2.1'
+    id 'com.github.psxpaul.execfork' version '0.1.15'
+    id "com.github.ben-manes.versions" version "0.38.0"
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.2.0"
 }
 
 group "org.akhq"
@@ -26,61 +20,40 @@ sourceCompatibility = 11
 repositories {
     mavenLocal()
     mavenCentral()
-    jcenter()
-    maven { url 'http://packages.confluent.io/maven/' }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url 'https://packages.confluent.io/maven/' }
     maven { url 'https://jitpack.io' }
 }
 
-idea {
-    module {
-        downloadJavadoc = false
-        downloadSources = true
-    }
-}
 
 configurations.all {
-    exclude  group: 'org.slf4j', module: 'slf4j-log4j12'
-    exclude  group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-    exclude  group: 'org.apache.logging.log4j', module: 'log4j-core'
-    exclude  group: 'org.apache.logging.log4j', module: 'log4j-api'
-}
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
 
+    resolutionStrategy {
+        force("org.apache.kafka:kafka-clients:" + kafkaVersion)
+        force("org.apache.kafka:kafka-streams:" + kafkaVersion)
+        force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
+    }
+}
 
 /**********************************************************************************************************************\
  * Micronaut
  **********************************************************************************************************************/
-dependencyManagement {
-    imports {
-        mavenBom "io.micronaut:micronaut-bom:$micronautVersion"
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("org.akhq.*")
     }
-}
-
-configurations {
-    developmentOnly
-}
-
-run.classpath += configurations.developmentOnly
-test.classpath += configurations.developmentOnly
-run.jvmArgs('-noverify',
-        '-XX:TieredStopAtLevel=1',
-        '-Dmicronaut.environments=dev',
-        '-Dmicronaut.io.watch.restart=true'
-)
-
-tasks.withType(JavaCompile){
-    options.encoding = "UTF-8"
-    options.compilerArgs.add('-parameters')
 }
 
 /**********************************************************************************************************************\
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
-    // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.0'
-    
     // lombok
     annotationProcessor "org.projectlombok:lombok:" + lombokVersion
     compileOnly 'org.projectlombok:lombok:' + lombokVersion
@@ -95,7 +68,7 @@ dependencies {
     implementation "io.micronaut:micronaut-http-client"
     implementation "io.micronaut:micronaut-http-server-netty"
     implementation "io.swagger.core.v3:swagger-annotations"
-    runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+    runtimeOnly 'ch.qos.logback:logback-classic:1.3.0-alpha5'
     implementation "io.micronaut.security:micronaut-security-annotations"
     implementation "io.micronaut.security:micronaut-security-jwt"
     implementation "io.micronaut.security:micronaut-security-ldap"
@@ -108,6 +81,11 @@ dependencies {
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
+    implementation 'org.sourcelab:kafka-connect-client:3.1.1'
+
+    // strimzi
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.2'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.2'
 
     // log
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
@@ -115,54 +93,24 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
+    implementation 'com.google.guava:guava:30.1.1-jre'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
+
+    // avro
+    implementation 'org.apache.avro:avro:1.10.2'
+
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: "3.13.0"
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: "3.13.0"
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: "3.15.8"
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: "3.15.8"
 
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    // api
 
     // client
     implementation project(":client")
-
-    // micronaut test
-    testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
-    testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
-
-    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
-    testImplementation "org.junit.jupiter:junit-jupiter-api"
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-
-    // test
-    testImplementation "org.apache.kafka:kafka_2.12:" + kafkaVersion
-    // force jackson version compatible with kafka
-
-    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion
-    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
-    testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
-    testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
-
-    testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
-    testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
-    testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    implementation 'org.apache.avro:avro:1.10.0'
-    implementation 'org.sourcelab:kafka-connect-client:3.1.0'
-    implementation 'com.google.guava:guava:29.0-jre'
-    implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.5.7'
-    testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.2'
-    testImplementation 'com.fasterxml.jackson.core:jackson-core:2.11.2'
-    testImplementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.2'
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
-    testImplementation 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.13'
 }
 
 /**********************************************************************************************************************\
@@ -179,6 +127,41 @@ test {
         maxRetries = 5
         maxFailures = 15
     }
+}
+
+dependencies {
+    testImplementation 'ch.qos.logback:logback-classic:1.3.0-alpha5'
+
+    // micronaut test
+    testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
+    testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
+
+    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+    testImplementation "org.junit.jupiter:junit-jupiter-api"
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    // test
+    testImplementation "org.apache.kafka:kafka-clients:" + kafkaVersion + ":test"
+    testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion
+    testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion + ":test"
+    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion
+    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
+    testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
+    testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
+
+    testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
+    testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
+    testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+    testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.2'
+    testImplementation 'com.fasterxml.jackson.core:jackson-core:2.12.3'
+    testImplementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.3'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    testImplementation 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.11'
 }
 
 testlogger {

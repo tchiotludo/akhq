@@ -100,7 +100,7 @@ public class AvroWireFormatConverterTest {
 
     @SneakyThrows
     private byte[] serializeAvro(MyRecord record) {
-        Schema schema = AvroSchemaUtils.getSchema(record, true);
+        Schema schema = AvroSchemaUtils.getSchema(record, true, true);
         DatumWriter<MyRecord> writer = new ReflectDatumWriter<>(schema);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Encoder encoder = EncoderFactory.get().binaryEncoder(stream, null);

@@ -5,7 +5,6 @@ import org.akhq.models.Config;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -87,7 +86,7 @@ public class ConfigRepository extends AbstractRepository {
     }
 
     public static List<Config> updatedConfigs(Map<String, String> request, List<Config> configs, boolean html) {
-        Function<Config, @Nullable String> configFn = html ?
+        Function<Config, String> configFn = html ?
             (Config config) -> "configs[" + config.getName() + "]" :
             Config::getName;
 

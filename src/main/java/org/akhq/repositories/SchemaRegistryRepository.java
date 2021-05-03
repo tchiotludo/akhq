@@ -150,13 +150,13 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return new Schema(find, parsedSchema, this.getConfig(clusterId, subject));
     }
 
-    public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
+    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, "latest");
     }
 
-    public boolean testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version) throws IOException, RestClientException {
+    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version) throws IOException, RestClientException {
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, String.valueOf(version));
