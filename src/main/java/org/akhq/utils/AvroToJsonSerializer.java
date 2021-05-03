@@ -12,6 +12,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.time.temporal.ChronoUnit;
+
+import java.time.Instant;
+import java.time.LocalDate;
 
 public class AvroToJsonSerializer {
 
@@ -42,6 +46,12 @@ class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
             if (logicalType instanceof LogicalTypes.Decimal) {
                 value = convert(DECIMAL_CONVERSION, fieldSchema, logicalType, value);
             }
+            if (logicalType instanceof LogicalTypes.TimestampMillis) { //to manage "logicalType": "timestamp-millis"
+                value= ChronoUnit.MICROS.between(Instant.EPOCH, (Instant)value);
+            }
+            if (logicalType instanceof LogicalTypes.Date) {
+                value= ((LocalDate)value).toEpochDay();
+            }
             writeWithoutConversion(fieldSchema, value, out);
         } else {
             super.writeField(datum, f, out, state);
@@ -60,4 +70,3 @@ class BigDecimalFriendlySpecificDatumWriter<T> extends SpecificDatumWriter<T> {
         }
     }
 }
-
