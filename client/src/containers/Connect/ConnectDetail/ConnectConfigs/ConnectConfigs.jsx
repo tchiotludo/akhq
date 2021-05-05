@@ -105,7 +105,7 @@ class ConnectConfigs extends Form {
           def = Joi.number().required();
           break;
         case constants.TYPES.PASSWORD:
-          def = Joi.password().required();
+          def = Joi.string().required();
           break;
         case constants.TYPES.BOOLEAN:
           def = Joi.boolean().required();

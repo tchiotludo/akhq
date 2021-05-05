@@ -4,12 +4,10 @@ import com.google.common.io.Files;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
-import kafka.server.KafkaServerStartable;
+import kafka.utils.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.network.ListenerName;
-import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.utils.Time;
-import scala.Option;
 
 import java.io.File;
 import java.util.Properties;
@@ -35,12 +33,7 @@ public class KafkaEmbedded {
             zookeeperConnect()
         );
 
-        kafka = new KafkaServer(
-            kafkaConfig,
-            Time.SYSTEM,
-            scala.Option.empty(),
-            scala.collection.immutable.List.empty()
-        );
+        kafka = TestUtils.createServer(kafkaConfig, Time.SYSTEM);
         kafka.startup();
 
         log.debug("Startup of embedded Kafka broker at {} completed (with ZK ensemble at {}) ...", brokerList(), zookeeperConnect());
