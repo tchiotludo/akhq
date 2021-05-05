@@ -23,7 +23,7 @@ public class GroovyClaimProvider implements ClaimProvider {
     private ClaimProvider groovyImpl;
 
     @Value("${akhq.security.groovy.file")
-    private File groovyFile;
+    private String groovyFile;
 
     @PostConstruct
     private void init() {
@@ -32,7 +32,7 @@ public class GroovyClaimProvider implements ClaimProvider {
             final Class<?> clazz = loader.parseClass(groovyFile);
             groovyImpl = ClaimProvider.class.cast(clazz.getDeclaredConstructors()[0].newInstance());
 
-        } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             log.error("Error", e);
         }
     }
