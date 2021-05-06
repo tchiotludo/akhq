@@ -16,7 +16,7 @@ akhq:
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
             AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
-                AKHQClaimResponse a;
+                AKHQClaimResponse a = AKHQClaimResponse.builder().build();
                 a.roles = ["topic/read"]
                 if (request.username == "admin") {
                     a.attributes = [

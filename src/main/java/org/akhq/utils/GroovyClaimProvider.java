@@ -22,7 +22,7 @@ public class GroovyClaimProvider implements ClaimProvider {
     final GroovyClassLoader loader = new GroovyClassLoader();
     private ClaimProvider groovyImpl;
 
-    @Value("${akhq.security.groovy.file")
+    @Value("${akhq.security.groovy.file}")
     private String groovyFile;
 
     @PostConstruct
