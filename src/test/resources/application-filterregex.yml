@@ -1,0 +1,15 @@
+akhq:
+  security:
+    groups:
+      as-string:
+        roles:
+          - topic/read
+        attributes:
+          topics-filter-regexp: "test.*"
+      as-list:
+        roles:
+          - topic/read
+        attributes:
+          topics-filter-regexp:
+            - "item1"
+            - "item2"

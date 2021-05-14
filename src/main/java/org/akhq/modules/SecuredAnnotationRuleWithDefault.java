@@ -1,7 +1,7 @@
 package org.akhq.modules;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import io.micronaut.context.annotation.Replaces;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.rules.SecuredAnnotationRule;
 import io.micronaut.security.rules.SecurityRule;

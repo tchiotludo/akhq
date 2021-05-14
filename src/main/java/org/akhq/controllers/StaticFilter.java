@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import com.google.common.io.CharStreams;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -19,7 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 @Filter("/ui/**")
 public class StaticFilter implements HttpServerFilter {
@@ -27,7 +27,6 @@ public class StaticFilter implements HttpServerFilter {
     @Value("${micronaut.server.context-path}")
     protected String basePath;
 
-    @SuppressWarnings("deprecation")
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         return Publishers

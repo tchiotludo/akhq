@@ -27,7 +27,8 @@ class ConnectConfigs extends Form {
     plugin: {},
     config: {},
     selectedType: '',
-    display: ''
+    display: '',
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {};
@@ -104,7 +105,7 @@ class ConnectConfigs extends Form {
           def = Joi.number().required();
           break;
         case constants.TYPES.PASSWORD:
-          def = Joi.password().required();
+          def = Joi.string().required();
           break;
         case constants.TYPES.BOOLEAN:
           def = Joi.boolean().required();
@@ -138,6 +139,7 @@ class ConnectConfigs extends Form {
     let title = '';
     let { formData } = this.state;
     const errors = [];
+    const roles = this.state.roles || {};
     const errorMessage = this.validateProperty({ name: plugin.name, value: formData[plugin.name] });
     if (errorMessage) {
       errors[plugin.name] = errorMessage;
@@ -199,7 +201,7 @@ class ConnectConfigs extends Form {
             className="form-control"
             value={formData[plugin.name]}
             name={plugin.name}
-            disabled={plugin.name === 'name' || plugin.name === 'connector.class'}
+            disabled={plugin.name === 'name' || plugin.name === 'connector.class' || !(roles.connect && roles.connect['connect/update']) }
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
@@ -260,6 +262,7 @@ class ConnectConfigs extends Form {
     group.forEach(element => {
       const rows = this.renderTableRows(element);
       const errors = [];
+      const roles = this.state.roles || {};
 
       groupDisplay.push(<tr>{rows}</tr>);
       if (element.name === 'transforms') {
@@ -304,6 +307,7 @@ class ConnectConfigs extends Form {
                   this.setState({ formData });
                 }}
                 name="UNIQUE_ID_OF_DIV"
+                readOnly={!(roles.connect && roles.connect['connect/update'])}
                 editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', minHeight: '25vh' }}
               />
@@ -368,7 +372,7 @@ class ConnectConfigs extends Form {
   render() {
     const { plugin, display } = this.state;
     const { name } = this.state.formData;
-
+    const roles = this.state.roles || {};
     return (
       <div>
         <form
@@ -410,16 +414,18 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              <div style={{ left: 0, width: '100%' }} className="khq-submit">
-                <button
-                  type={'submit'}
-                  className="btn btn-primary"
-                  style={{ marginRight: '2%' }}
-                  disabled={this.validate()}
-                >
-                  Update
-                </button>
-              </div>
+              {roles.connect && roles.connect['connect/update'] && (
+                <div style={{ left: 0, width: '100%' }} className="khq-submit">
+                  <button
+                    type={'submit'}
+                    className="btn btn-primary"
+                    style={{ marginRight: '2%' }}
+                    disabled={this.validate()}
+                  >
+                    Update
+                  </button>
+                </div>
+              )}
             </React.Fragment>
           )}
         </form>

@@ -118,10 +118,10 @@ class Table extends Component {
   }
 
   onDoubleClick(onDetails, row) {
-    const { history } = this.props;
+    const { history, idCol } = this.props;
 
     if (onDetails) {
-      let url = onDetails(row.id, row);
+      let url = onDetails(idCol ? row[this.props.idCol] : row.id, row);
       if (url) {
         history.push({
           pathname: url,
@@ -288,7 +288,9 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, idCol } = this.props;
+
+    let idColVal = idCol ? row[this.props.idCol] : row.id;
 
     return (
       <>
@@ -306,7 +308,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link to={onDetails && onDetails(row.id, row)}
+            <Link to={onDetails && onDetails(idColVal, row)}
               id="details"
               title="Details"
             >
@@ -316,7 +318,7 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link to={onConfig && onConfig(row.id, row)}
+            <Link to={onConfig && onConfig(idColVal, row)}
               id="config"
               title="Config"
             >
@@ -473,6 +475,7 @@ Table.propTypes = {
   onDetails: PropTypes.func,
   onConfig: PropTypes.func,
   onDelete: PropTypes.func,
+  idCol: PropTypes.string,
   toPresent: PropTypes.array,
   noContent: PropTypes.any,
   handleExtraExpand: PropTypes.func,

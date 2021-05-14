@@ -117,14 +117,19 @@ public class ProtobufToJsonDeserializer {
             log.debug("Protobuf deserialization config is not found for topic [{}]", topic);
             return null;
         }
+
+        if (matchingConfig.getValueMessageType() == null && matchingConfig.getKeyMessageType() == null) {
+            throw new SerializationException(String.format("Protobuf deserialization is configured for topic [%s], " +
+                    "but message type is not specified neither for a key, nor for a value.", topic));
+        }
+
         String messageType = matchingConfig.getValueMessageType();
         if (isKey) {
             messageType = matchingConfig.getKeyMessageType();
         }
 
         if (messageType == null) {
-            throw new SerializationException(String.format("Protobuf deserialization is configured for topic [%s], " +
-                    "but message type is not specified neither for a key, nor for a value.", topic));
+            return null;
         }
 
         String result;

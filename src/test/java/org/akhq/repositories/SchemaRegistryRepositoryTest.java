@@ -29,7 +29,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
 
     public final static String SUBJECT_1 = "SCHEMA_1";
     public final static org.apache.avro.Schema SCHEMA_1_V1 = SchemaBuilder
-        .record("schema1_v1").namespace("org.akhq")
+        .record("schema1").namespace("org.akhq")
         .fields()
         .name("clientHash").type().fixed("MD5").size(16).noDefault()
         .name("clientProtocol").type().nullable().stringType().noDefault()
@@ -38,7 +38,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         .endRecord();
 
     public final static org.apache.avro.Schema SCHEMA_1_V2 = SchemaBuilder
-        .record("schema1_v2").namespace("org.akhq")
+        .record("schema1").namespace("org.akhq")
         .fields()
         .name("clientHash").type().fixed("MD5").size(16).noDefault()
         .name("clientProtocol").type().nullable().stringType().noDefault()

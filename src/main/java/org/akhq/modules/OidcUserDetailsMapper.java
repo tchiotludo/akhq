@@ -2,19 +2,21 @@ package org.akhq.modules;
 
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.config.AuthenticationModeConfiguration;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
-import io.micronaut.security.oauth2.endpoint.token.response.*;
+import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdUserDetailsMapper;
+import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
+import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.UserGroupUtils;
 
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * An OpenID user details mapper that is configurable in the akhq config.
@@ -121,13 +123,23 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      * @param openIdClaims  The OpenID claims
      * @return A user details object
      */
-    @Nonnull
+    @NonNull
     @Override
     public UserDetails createUserDetails(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
         String username = getUsername(providerName, tokenResponse, openIdClaims);
         List<String> akhqGroups = getAkhqGroups(providerName, openIdClaims, username);
         List<String> roles = userGroupUtils.getUserRoles(akhqGroups);
         Map<String, Object> attributes = buildAttributes(providerName, tokenResponse, openIdClaims, akhqGroups);
+
+        /**
+        * In case of OIDC the user roles are not correctly mapped to corresponding roles in akhq,
+        * If we find a groups-field in the user attributes override it with the correctly mapped
+        * roles that match the associated akhq group
+        */
+        Oidc.Provider provider = oidc.getProvider(providerName);
+        if (attributes.containsKey(provider.getGroupsField())) {
+            attributes.put(provider.getGroupsField(), roles);
+        }
         return new UserDetails(username, roles, attributes);
     }
 }

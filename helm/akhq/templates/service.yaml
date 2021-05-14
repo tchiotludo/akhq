@@ -8,6 +8,9 @@ metadata:
     helm.sh/chart: {{ include "akhq.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $value := .Values.service.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
   annotations:
   {{- range $key, $value := .Values.service.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -19,6 +22,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+      {{- if and (eq "NodePort" .Values.service.type) .Values.service.httpNodePort }}
+      nodePort: {{ .Values.service.httpNodePort }}
+      {{- end }}
   selector:
     app.kubernetes.io/name: {{ include "akhq.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

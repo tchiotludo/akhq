@@ -19,7 +19,6 @@ services:
     working_dir: /app
     volumes:
       - ./:/app:z
-      - /app/.gradle:Z
       - ./gradle/gradle.properties:/root/.gradle/gradle.properties:Z
     ports:
       - 8080:8080
@@ -58,7 +57,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka
     volumes:
-      - kafka-data:/var/lib/kafka:Z
+      - kafka-data:/var/lib/kafka/data:Z
     environment:
       KAFKA_BROKER_ID: '0'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'

@@ -44,7 +44,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka
     volumes:
-      - kafka-data:/var/lib/kafka:Z
+      - kafka-data:/var/lib/kafka/data:Z
     environment:
       KAFKA_BROKER_ID: '0'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'

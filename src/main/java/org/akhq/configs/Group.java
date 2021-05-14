@@ -9,5 +9,5 @@ import java.util.Map;
 public class Group {
     String name;
     List<String> roles;
-    Map<String, Object> attributes;
+    Map<String, List<String>> attributes;
 }

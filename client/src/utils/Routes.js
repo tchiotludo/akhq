@@ -23,10 +23,10 @@ import SchemaCreate from '../containers/Schema/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate';
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
-import Settings from "../containers/Settings/Settings";
+import Settings from '../containers/Settings/Settings';
 import { organizeRoles } from './converters';
 import {uriAuths, uriClusters, uriCurrentUser} from './endpoints';
-import Root from "../components/Root";
+import Root from '../components/Root';
 
 class Routes extends Root {
   state = {
@@ -62,7 +62,7 @@ class Routes extends Root {
         }
         console.error('Error:', err);
     }
-  };
+  }
 
   _initUserAndAuth() {
     const requests = [this.getApi(uriCurrentUser()), this.getApi(uriAuths())];
@@ -240,7 +240,7 @@ class Routes extends Root {
               {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
               )}
-              {roles && roles.connect && roles.connect['connect/update'] && (
+              {roles && roles.connect && roles.connect['connect/read'] && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"

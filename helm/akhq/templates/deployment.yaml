@@ -23,7 +23,7 @@ spec:
         {{- if .Values.configuration }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
-        {{- if .Values.secrets }}
+        {{- if and (not .Values.existingSecret) (.Values.secrets) }}
         checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.image.annotations }}
@@ -57,7 +57,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           env:
             {{- if .Values.extraEnv }}{{ toYaml .Values.extraEnv | trim | nindent 12 }}{{ end }}
-            {{- if .Values.secrets }}
+            {{- if or (.Values.existingSecrets) (.Values.secrets) }}
             - name: MICRONAUT_ENVIRONMENTS
               value: secrets
             - name: MICRONAUT_CONFIG_FILES
@@ -70,7 +70,7 @@ spec:
               mountPath: /app/application.yml
               subPath: application.yml
           {{- end }}
-          {{- if .Values.secrets }}
+          {{- if or (.Values.existingSecrets) (.Values.secrets) }}
             - name: secrets
               mountPath: /app/application-secrets.yml
               subPath: application-secrets.yml
@@ -110,8 +110,12 @@ spec:
         configMap:
           name: {{ template "akhq.fullname" . }}
       {{- end }}
-      {{- if .Values.secrets }}
+      {{- if or (.Values.existingSecrets) (.Values.secrets) }}
       - name: secrets
         secret:
+          {{- if .Values.existingSecrets }}
+          secretName: {{ .Values.existingSecrets }}
+          {{- else }}
           secretName: {{ template "akhq.fullname" . }}-secrets
+          {{- end }}
       {{- end }}

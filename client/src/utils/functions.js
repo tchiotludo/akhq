@@ -1,6 +1,6 @@
-import {uriUIOptions} from "./endpoints";
-import {getUIOptions, setUIOptions} from "./localstorage";
-import {get} from "./api";
+import {uriUIOptions} from './endpoints';
+import {getUIOptions, setUIOptions} from './localstorage';
+import {get} from './api';
 
 export const getSelectedTab = (props, tabs) => {
     const url = props.location.pathname.split('/');

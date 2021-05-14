@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
@@ -14,32 +15,24 @@ import org.akhq.models.ClusterStats;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
+import org.akhq.utils.PagedList;
+import org.akhq.utils.Pagination;
 import org.akhq.utils.UserGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus;
+import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collector;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.reducing;
+import java.util.regex.Pattern;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
@@ -78,27 +71,44 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class
+            ConcurrentConfigModificationException.class,
+            ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId) {
-        Collection<String> unfiltered = this.kafkaModule
+    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search)
+            throws IOException, RestClientException, ExecutionException, InterruptedException{
+        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search);
+
+        // I'm not sure of how to use the last parameter in this case
+        // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
+        return PagedList.of(definitions, pagination, list -> list);
+    }
+
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search
+    )
+    {
+        ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
-            .getConnectors();
+            .getConnectorsWithAllExpandedMetadata();
 
-        ArrayList<String> filtered = new ArrayList<String>();
-        for (String item : unfiltered) {
-            if (isMatchRegex(getConnectFilterRegex(), item)) {
-                filtered.add(item);
+        Collection<ConnectorDefinition> definitions = unfiltered.getAllDefinitions();
+
+        Collection<ConnectorDefinition> connectorsFilteredBySearch = search.map(
+                query -> definitions.stream().filter(connector -> connector.getName().contains(query))
+        ).orElse(definitions.stream()).collect(Collectors.toList());
+
+        ArrayList<ConnectDefinition> filtered = new ArrayList<>();
+        for (ConnectorDefinition item : connectorsFilteredBySearch) {
+            if (isMatchRegex(getConnectFilterRegex(), item.getName())) {
+                filtered.add(new ConnectDefinition(
+                    item,
+                    unfiltered.getStatusForConnector(item.getName())
+                ));
             }
         }
 
-        return filtered.stream()
-            .map(s -> getDefinition(clusterId, connectId, s))
-            .collect(Collectors.toList());
+        return filtered;
     }
-
 
     public Optional<ConnectPlugin> getPlugin(String clusterId, String connectId, String className) {
         return this.kafkaModule
@@ -288,9 +298,9 @@ public class ConnectRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getConnectFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("connects-filter-regexp") != null) {
-            if (attributes.get("connects-filter-regexp") instanceof List) {
-                return (List<String>)attributes.get("connects-filter-regexp");
+        if (attributes.get("connectsFilterRegexp") != null) {
+            if (attributes.get("connectsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("connectsFilterRegexp");
             }
         }
         return new ArrayList<>();

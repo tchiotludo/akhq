@@ -12,6 +12,9 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from "../../../components/Root";
+import SearchBar from "../../../components/SearchBar";
+import Pagination from "../../../components/Pagination";
+import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
 
 class ConnectList extends Root {
   state = {
@@ -22,7 +25,13 @@ class ConnectList extends Root {
     definitionToDelete: '',
     deleteMessage: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
-    loading: true
+    loading: true,
+    pageNumber: 1,
+    totalPageNumber: 1,
+    history: this.props,
+    searchData: {
+      search: ''
+    },
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -36,44 +45,55 @@ class ConnectList extends Root {
   }
 
   componentDidMount() {
-    this.getConnectDefinitions();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    const { searchData, pageNumber } = this.state;
+    const query =  new URLSearchParams(this.props.location.search);
+    this.setState({
+      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
+      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+    }, () => {
       this.getConnectDefinitions();
-    }
+    });
   }
 
   async getConnectDefinitions() {
-    let connectDefinitions = [];
-    const { clusterId, connectId } = this.state;
+    const { clusterId, connectId, pageNumber } = this.state;
+    const { search } = this.state.searchData;
 
     this.setState({ loading: true });
 
-    connectDefinitions = await this.getApi(uriConnectDefinitions(clusterId, connectId));
-    this.handleData(connectDefinitions.data);
-    this.setState({ selectedCluster: clusterId });
+    let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
+    let data = response.data;
+    if (data.results) {
+      this.handleData(data);
+      this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
+        this.props.history.push({
+          pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+          search: `search=${this.state.searchData.search}&page=${pageNumber}`
+        })
+      });
+    } else {
+      this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
+    }
   }
 
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
 
     this.removeApi(uriDeleteDefinition(clusterId, connectId, definition))
-      .then(() => {
-        toast.success(`Definition '${definition}' is deleted`);
-        this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
-          this.getConnectDefinitions();
+        .then(() => {
+          toast.success(`Definition '${definition}' is deleted`);
+          this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
+            this.getConnectDefinitions();
+          });
+        })
+        .catch(() => {
+          this.setState({ showDeleteModal: false, topicToDelete: {} });
         });
-      })
-      .catch(() => {
-        this.setState({ showDeleteModal: false, topicToDelete: {} });
-      });
   };
 
   handleData = data => {
     let tableData = [];
-    tableData = data.map(connectDefinition => {
+    tableData = data.results.map(connectDefinition => {
       return {
         id: connectDefinition.name || '',
         config: JSON.stringify(connectDefinition.configs) || '',
@@ -86,7 +106,7 @@ class ConnectList extends Root {
       };
     });
 
-    this.setState({ tableData, loading: false });
+    this.setState({ tableData, loading: false, totalPageNumber: data.page });
   };
 
   showDeleteModal = deleteMessage => {
@@ -101,7 +121,7 @@ class ConnectList extends Root {
     const roles = this.state.roles || {};
     let actions = [];
 
-    if (roles.connect && roles.connect['connect/update']) {
+    if (roles.connect && roles.connect['connect/read']) {
       actions.push(constants.TABLE_DETAILS);
     }
     if (roles.connect && roles.connect['connect/delete']) {
@@ -120,6 +140,20 @@ class ConnectList extends Root {
       );
     });
   }
+
+  handleSearch = data => {
+    const { searchData } = data;
+    this.setState({ pageNumber: 1, searchData }, () => {
+      this.getConnectDefinitions();
+    });
+  };
+
+  handlePageChangeSubmission = value => {
+    let pageNumber = getPageNumber(value, this.state.totalPageNumber);
+    this.setState({ pageNumber: pageNumber }, () => {
+      this.getConnectDefinitions();
+    });
+  };
 
   renderTasks = tasks => {
     let renderedTasks = [];
@@ -153,13 +187,33 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading } = this.state;
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
     return (
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
+        <nav
+            className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+         khq-data-filter khq-sticky khq-nav"
+        >
+          <SearchBar
+              showSearch={true}
+              search={searchData.search}
+              showPagination={true}
+              pagination={pageNumber}
+              doSubmit={this.handleSearch}
+          />
+
+          <Pagination
+              pageNumber={pageNumber}
+              totalPageNumber={totalPageNumber}
+              onChange={handlePageChange}
+              onSubmit={this.handlePageChangeSubmission}
+          />
+        </nav>
+
         <Table
           loading={loading}
           history={history}

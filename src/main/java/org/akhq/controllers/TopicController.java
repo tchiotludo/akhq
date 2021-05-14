@@ -29,6 +29,7 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
+import org.akhq.models.Record;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import org.akhq.models.Record;
 
 @Slf4j
 @Secured(Role.ROLE_TOPIC_READ)

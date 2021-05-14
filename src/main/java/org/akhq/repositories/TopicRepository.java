@@ -2,6 +2,7 @@ package org.akhq.repositories;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.configs.SecurityProperties;
@@ -19,6 +20,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 
 @Singleton
 public class TopicRepository extends AbstractRepository {
@@ -101,14 +104,15 @@ public class TopicRepository extends AbstractRepository {
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
-
-        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
-        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
-
         Optional<List<String>> topicRegex = getTopicFilterRegex();
 
+        List<String> filteredTopics = topics.stream()
+                .filter(t -> isMatchRegex(topicRegex, t))
+                .collect(Collectors.toList());
+        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, filteredTopics).entrySet();
+        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, filteredTopics);
+
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-            if(isMatchRegex(topicRegex, description.getValue().name())){
                 list.add(
                     new Topic(
                         description.getValue(),
@@ -118,7 +122,6 @@ public class TopicRepository extends AbstractRepository {
                         isStream(description.getValue().name())
                     )
                 );
-            }
         }
 
         list.sort(Comparator.comparing(Topic::getName));
@@ -140,11 +143,20 @@ public class TopicRepository extends AbstractRepository {
 
     public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.akhq.models.Config> configs) throws ExecutionException, InterruptedException {
         kafkaWrapper.createTopics(clusterId, name, partitions, replicationFactor);
+        checkIfTopicExists(clusterId, name);
         configRepository.updateTopic(clusterId, name, configs);
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
         kafkaWrapper.deleteTopics(clusterId, name);
+    }
+
+    @Retryable(
+        includes = {
+            UnknownTopicOrPartitionException.class
+        }, delay = "${akhq.topic.retry.topic-exists.delay:3s}")
+    void checkIfTopicExists(String clusterId, String name) throws ExecutionException {
+        kafkaWrapper.describeTopics(clusterId, Collections.singletonList(name));
     }
 
     public ClusterStats.TopicStats getTopicStats(String clusterId)
@@ -188,9 +200,9 @@ public class TopicRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("topics-filter-regexp") != null) {
-            if (attributes.get("topics-filter-regexp") instanceof List) {
-                return (List<String>)attributes.get("topics-filter-regexp");
+        if (attributes.get("topicsFilterRegexp") != null) {
+            if (attributes.get("topicsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("topicsFilterRegexp");
             }
         }
         return new ArrayList<>();

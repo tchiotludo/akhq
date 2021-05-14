@@ -9,7 +9,7 @@ import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.config.TopicConfig;
 import org.junit.jupiter.api.*;
-
+import org.akhq.models.Record;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
