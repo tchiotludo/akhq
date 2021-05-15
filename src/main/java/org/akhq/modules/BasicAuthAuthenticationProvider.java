@@ -28,18 +28,20 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Publisher<AuthenticationResponse> authenticate(@Nullable HttpRequest<?> httpRequest, AuthenticationRequest<?, ?> authenticationRequest) {
-        for(BasicAuth auth : securityProperties.getBasicAuth()) {
-            if (authenticationRequest.getIdentity().equals(auth.getUsername()) &&
-                auth.isValidPassword((String) authenticationRequest.getSecret())) {
-
-                UserDetails userDetails = new UserDetails(auth.getUsername(),
-                        userGroupUtils.getUserRoles(auth.getGroups()),
-                        userGroupUtils.getUserAttributes(auth.getGroups()));
-
-                return Flowable.just(userDetails);
+        String username = String.valueOf(authenticationRequest.getIdentity());
+        for (BasicAuth auth : securityProperties.getBasicAuth()) {
+            if (!username.equals(auth.getUsername())) {
+                continue;
             }
+            if (!auth.isValidPassword((String) authenticationRequest.getSecret())) {
+                return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
+            }
+            UserDetails userDetails = new UserDetails(username,
+                    userGroupUtils.getUserRoles(auth.getGroups()),
+                    userGroupUtils.getUserAttributes(auth.getGroups()));
+            return Flowable.just(userDetails);
         }
 
-        return Flowable.just(new AuthenticationFailed());
+        return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
     }
 }
