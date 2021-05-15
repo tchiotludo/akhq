@@ -32,7 +32,7 @@ class SchemaControllerTest extends AbstractTest {
     @Test
     void listApi() {
         ResultPagedList<Schema> result = this.retrievePagedList(HttpRequest.GET(BASE_URL), Schema.class);
-        assertEquals(3, result.getResults().size());
+        assertEquals(5, result.getResults().size());
     }
 
     @Test
