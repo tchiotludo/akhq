@@ -25,29 +25,30 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Publisher<AuthenticationResponse> authenticate(@Nullable HttpRequest<?> httpRequest, AuthenticationRequest<?, ?> authenticationRequest) {
-        for(BasicAuth auth : securityProperties.getBasicAuth()) {
-            if (authenticationRequest.getIdentity().equals(auth.getUsername()) &&
-                auth.isValidPassword((String) authenticationRequest.getSecret())) {
-
-                ClaimProvider.AKHQClaimRequest request =
-                        ClaimProvider.AKHQClaimRequest.builder()
-                                .providerType(ClaimProvider.ProviderType.BASIC_AUTH)
-                                .providerName(null)
-                                .username(auth.getUsername())
-                                .groups(auth.getGroups())
-                                .build();
-
-                ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-
-                UserDetails userDetails = new UserDetails(
-                        auth.getUsername(),
-                        claim.getRoles(),
-                        claim.getAttributes());
-
-                return Flowable.just(userDetails);
+        String username = String.valueOf(authenticationRequest.getIdentity());
+        for (BasicAuth auth : securityProperties.getBasicAuth()) {
+            if (!username.equals(auth.getUsername())) {
+                continue;
             }
+            if (!auth.isValidPassword((String) authenticationRequest.getSecret())) {
+                return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
+            }
+            ClaimProvider.AKHQClaimRequest request =
+                    ClaimProvider.AKHQClaimRequest.builder()
+                            .providerType(ClaimProvider.ProviderType.BASIC_AUTH)
+                            .providerName(null)
+                            .username(auth.getUsername())
+                            .groups(auth.getGroups())
+                            .build();
+
+            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            UserDetails userDetails = new UserDetails(
+                    auth.getUsername(),
+                    claim.getRoles(),
+                    claim.getAttributes());
+            return Flowable.just(userDetails);
         }
 
-        return Flowable.just(new AuthenticationFailed());
+        return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
     }
 }
