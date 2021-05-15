@@ -52,19 +52,3 @@ public class RestApiClaimProviderTest {
         assertEquals(".*", ((List)userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
     }
 }
-@Controller("/external-role-api")
-class ExternalRoleApiController{
-
-    @Post
-    public String computeRolesAndAttributes(@Body ClaimProvider.AKHQClaimRequest claimRequest){
-        return  "{\n" +
-                "  \"roles\": [\"topic/read\", \"topic/write\"],\n" +
-                "  \"attributes\": \n" +
-                "  {\n" +
-                "    \"topics-filter-regexp\": [\".*\"],\n" +
-                "    \"connects-filter-regexp\": [\".*\"],\n" +
-                "    \"consumer-groups-filter-regexp\": [\".*\"]\n" +
-                "  }\n" +
-                "}";
-    }
-}
