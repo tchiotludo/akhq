@@ -10,7 +10,7 @@ import io.micronaut.security.token.RolesFinder;
 import io.micronaut.web.router.MethodBasedRouteMatch;
 import io.micronaut.web.router.RouteMatch;
 import org.akhq.configs.SecurityProperties;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -30,13 +30,13 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
     private SecurityProperties securityProperties;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
+    private DefaultGroupUtils defaultGroupUtils;
 
     @Override
     protected List<String> getRoles(Map<String, Object> claims) {
         List<String> roles = super.getRoles(claims);
 
-        roles.addAll(this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())));
+        roles.addAll(this.defaultGroupUtils.getDefaultRoles());
 
         return roles;
     }

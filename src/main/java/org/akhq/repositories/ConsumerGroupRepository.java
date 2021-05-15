@@ -10,7 +10,7 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -37,7 +37,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
+    private DefaultGroupUtils defaultGroupUtils;
 
     @Inject
     private SecurityProperties securityProperties;
@@ -175,7 +175,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
         }
         // get consumer group filter regex for default groups
         consumerGroupFilterRegex.addAll(getConsumerGroupFilterRegexFromAttributes(
-                userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
+                defaultGroupUtils.getDefaultAttributes()
         ));
 
         return Optional.of(consumerGroupFilterRegex);
