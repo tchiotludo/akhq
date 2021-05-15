@@ -5,16 +5,12 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.*;
 import io.reactivex.Flowable;
 import org.akhq.configs.BasicAuth;
-import org.akhq.configs.Ldap;
-import org.akhq.configs.Oidc;
 import org.akhq.configs.SecurityProperties;
 import org.akhq.utils.ClaimProvider;
-import org.akhq.utils.UserGroupUtils;
 import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Map;
 
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {

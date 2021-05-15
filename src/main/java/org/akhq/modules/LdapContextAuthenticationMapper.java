@@ -6,9 +6,7 @@ import io.micronaut.context.annotation.Replaces;
 import io.micronaut.core.convert.value.ConvertibleValues;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
-import org.akhq.configs.Ldap;
 import org.akhq.utils.ClaimProvider;
-import org.akhq.utils.UserGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
