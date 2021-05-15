@@ -415,7 +415,8 @@ Define groups with specific roles for your users
     * `attributes.connects-filter-regexp`: Regexp list to filter Connect tasks available for current group
     * `attributes.consumer-groups-filter-regexp`: Regexp list to filter Consumer Groups available for current group
 
-:warning: `topics-filter-regexp`, `connects-filter-regexp` and `consumer-groups-filter-regexp` are only used when listing resources. If you have topics/create or connect/create roles, resources **WILL** be created
+:warning: `topics-filter-regexp`, `connects-filter-regexp` and `consumer-groups-filter-regexp` are only used when listing resources.   
+If you have `topics/create` or `connect/create` roles and you try to create a resource that doesn't follow the regexp, that resource **WILL** be created.
 
 3 defaults group are available :
 - `admin` with all right
