@@ -25,6 +25,7 @@ import scala.None;
 import javax.inject.Inject;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -214,7 +215,8 @@ public class ConnectRepositoryTest extends AbstractTest {
 
 
     @Test
-    public void getFilteredBySearchList() {
+    public void getFilteredBySearchList()
+    {
 
         repository.create(
                 KafkaTestCluster.CLUSTER_ID,
@@ -247,8 +249,9 @@ public class ConnectRepositoryTest extends AbstractTest {
         List<ConnectDefinition> filteredAll = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching"));
         assertEquals(2, filteredAll.size());
 
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching1");
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching2");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
+    }
 
     @Test
     public void getConnectStats() {
@@ -269,16 +272,14 @@ public class ConnectRepositoryTest extends AbstractTest {
         ));
         repository.pause(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused");
         Map<String, Integer> assertStats = Map.of("RUNNING", 2, "PAUSED", 1);
+        try {
+            sleep(500);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getConnectors());
         assertEquals(assertStats, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount());
-    }
-
-    private void mockApplicationContext() {
-        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("connects-filter-regexp", new ArrayList<>(Arrays.asList("^prefixed.*$"))));
-        DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
-        when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
-        when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
-        when(applicationContext.getBean(SecurityService.class)).thenReturn(securityService);
     }
 
 }

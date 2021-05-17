@@ -21,7 +21,6 @@ import org.akhq.utils.UserGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus;
-import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
@@ -31,8 +30,12 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
