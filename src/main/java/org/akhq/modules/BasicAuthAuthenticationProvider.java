@@ -11,6 +11,7 @@ import org.reactivestreams.Publisher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Optional;
 
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
@@ -22,29 +23,35 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Publisher<AuthenticationResponse> authenticate(@Nullable HttpRequest<?> httpRequest, AuthenticationRequest<?, ?> authenticationRequest) {
         String username = String.valueOf(authenticationRequest.getIdentity());
-        for (BasicAuth auth : securityProperties.getBasicAuth()) {
-            if (!username.equals(auth.getUsername())) {
-                continue;
-            }
-            if (!auth.isValidPassword((String) authenticationRequest.getSecret())) {
-                return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
-            }
-            ClaimProvider.AKHQClaimRequest request =
-                    ClaimProvider.AKHQClaimRequest.builder()
-                            .providerType(ClaimProvider.ProviderType.BASIC_AUTH)
-                            .providerName(null)
-                            .username(auth.getUsername())
-                            .groups(auth.getGroups())
-                            .build();
+        Optional<BasicAuth> optionalBasicAuth = securityProperties.getBasicAuth()
+                .stream()
+                .filter(basicAuth -> basicAuth.getUsername().equals(username))
+                .findFirst();
 
-            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-            UserDetails userDetails = new UserDetails(
-                    auth.getUsername(),
-                    claim.getRoles(),
-                    claim.getAttributes());
-            return Flowable.just(userDetails);
+        // User not found
+        if(optionalBasicAuth.isEmpty()){
+            return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
+        }
+        BasicAuth auth = optionalBasicAuth.get();
+
+        // Invalid password
+        if (!auth.isValidPassword((String) authenticationRequest.getSecret())) {
+            return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
         }
 
-        return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
+        ClaimProvider.AKHQClaimRequest request =
+                ClaimProvider.AKHQClaimRequest.builder()
+                        .providerType(ClaimProvider.ProviderType.BASIC_AUTH)
+                        .providerName(null)
+                        .username(auth.getUsername())
+                        .groups(auth.getGroups())
+                        .build();
+        try {
+            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            return Flowable.just(new UserDetails(auth.getUsername(), claim.getRoles(), claim.getAttributes()));
+        } catch (Exception e) {
+            String claimProviderClass = claimProvider.getClass().getName();
+            return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
+        }
     }
 }

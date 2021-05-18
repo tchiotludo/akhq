@@ -1,8 +1,6 @@
 package org.akhq.modules;
 
-import io.micronaut.security.authentication.AuthenticationResponse;
-import io.micronaut.security.authentication.UserDetails;
-import io.micronaut.security.authentication.UsernamePasswordCredentials;
+import io.micronaut.security.authentication.*;
 import io.reactivex.Flowable;
 import org.akhq.AbstractTest;
 import org.junit.jupiter.api.Test;
@@ -44,7 +42,7 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
     }
 
     @Test
-    public void failed() {
+    public void failed_UserNotFound() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user2",
@@ -52,5 +50,19 @@ public class BasicAuthAuthenticationProviderTest extends AbstractTest {
             ))).blockingFirst();
 
         assertFalse(response.isAuthenticated());
+        AuthenticationFailed authenticationFailed = (AuthenticationFailed) response;
+        assertEquals(AuthenticationFailureReason.USER_NOT_FOUND, authenticationFailed.getReason());
+    }
+    @Test
+    public void failed_PasswordInvalid() {
+        AuthenticationResponse response = Flowable
+                .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+                        "user",
+                        "invalid-pass"
+                ))).blockingFirst();
+
+        assertFalse(response.isAuthenticated());
+        AuthenticationFailed authenticationFailed = (AuthenticationFailed) response;
+        assertEquals(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH, authenticationFailed.getReason());
     }
 }
