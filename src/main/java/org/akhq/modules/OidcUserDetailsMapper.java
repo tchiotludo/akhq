@@ -5,6 +5,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.security.authentication.AuthenticationFailed;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.config.AuthenticationModeConfiguration;
@@ -42,10 +43,9 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
         super(openIdAdditionalClaimsConfiguration, authenticationModeConfiguration);
     }
 
-
     @NonNull
     @Override
-    public UserDetails createUserDetails(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
+    public AuthenticationResponse createAuthenticationResponse(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims, @Nullable State state) {
         // get username and groups declared from OIDC system
         String oidcUsername = getUsername(providerName, tokenResponse, openIdClaims);
         List<String> oidcGroups = getOidcGroups(oidc.getProvider(providerName), openIdClaims);
@@ -57,15 +57,13 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
                 .groups(oidcGroups)
                 .build();
 
-        ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-
-        return new UserDetails(oidcUsername, claim.getRoles(), claim.getAttributes());
-    }
-
-    @NonNull
-    @Override
-    public AuthenticationResponse createAuthenticationResponse(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims, @Nullable State state) {
-        return createUserDetails(providerName, tokenResponse, openIdClaims);
+        try {
+            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            return new UserDetails(oidcUsername, claim.getRoles(), claim.getAttributes());
+        } catch (Exception e) {
+            String claimProviderClass = claimProvider.getClass().getName();
+            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+        }
     }
 
     /**

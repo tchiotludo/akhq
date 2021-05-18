@@ -4,6 +4,7 @@ import io.micronaut.configuration.security.ldap.ContextAuthenticationMapper;
 import io.micronaut.configuration.security.ldap.DefaultContextAuthenticationMapper;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.core.convert.value.ConvertibleValues;
+import io.micronaut.security.authentication.AuthenticationFailed;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
 import org.akhq.utils.ClaimProvider;
@@ -28,10 +29,13 @@ public class LdapContextAuthenticationMapper implements ContextAuthenticationMap
                 .username(username)
                 .groups(List.copyOf(groups))
                 .build();
-
-        ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-
-        return new UserDetails(username, claim.getRoles(), claim.getAttributes());
+        try {
+            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            return new UserDetails(username, claim.getRoles(), claim.getAttributes());
+        } catch (Exception e) {
+            String claimProviderClass = claimProvider.getClass().getName();
+            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+        }
     }
 
 
