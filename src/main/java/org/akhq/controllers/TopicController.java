@@ -352,7 +352,7 @@ public class TopicController extends AbstractController {
             String cluster,
             String topicName,
             Integer partition,
-            Integer offset
+            Long offset
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
