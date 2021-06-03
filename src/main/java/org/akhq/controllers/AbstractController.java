@@ -54,6 +54,12 @@ abstract public class AbstractController {
             .collect(Collectors.toList());
     }
 
+    protected boolean isAllowed(String role) {
+        return this.getRights()
+            .stream()
+            .anyMatch(s -> s.equals(role));
+    }
+
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
