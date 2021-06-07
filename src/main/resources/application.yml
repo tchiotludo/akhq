@@ -67,7 +67,7 @@ jackson:
 
 endpoints:
   all:
-    port: 8081
+    port: 28081
     enabled: true
     sensitive: false
   health:

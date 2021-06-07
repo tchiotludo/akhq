@@ -618,12 +618,12 @@ Debugging auth can be done by increasing log level on Micronaut that handle most
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8081/loggers/io.micronaut.security
+       http://localhost:28081/loggers/io.micronaut.security
        
        
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8081/loggers/org.akhq.configs
+       http://localhost:28081/loggers/org.akhq.configs
 ```
 
 ### Server
@@ -714,7 +714,7 @@ You can discover the api endpoint here :
 * `/swagger/akhq.yml`: a full [OpenApi](https://www.openapis.org/) specifications files
 
 ## Monitoring endpoint
-Several monitoring endpoint is enabled by default and available on port `8081` only.
+Several monitoring endpoint is enabled by default and available on port `28081` only.
 
 You can disable it, change the port or restrict access only for authenticated users following micronaut configuration below.
 
@@ -731,7 +731,7 @@ You can debug all query duration from AKHQ with this commands
 ```bash
 curl -i -X POST -H "Content-Type: application/json" \
        -d '{ "configuredLevel": "TRACE" }' \
-       http://localhost:8081/loggers/org.akhq
+       http://localhost:28081/loggers/org.akhq
 ```
 
 ## Development Environment

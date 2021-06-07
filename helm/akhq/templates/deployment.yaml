@@ -80,7 +80,7 @@ spec:
               containerPort: 8080
               protocol: TCP
             - name: management
-              containerPort: 8081
+              containerPort: 28081
               protocol: TCP
           livenessProbe:
             tcpSocket:
