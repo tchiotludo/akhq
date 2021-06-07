@@ -123,7 +123,14 @@ public class Record {
             return null;
         } else if (schemaId != null) {
             try {
-                GenericRecord record = (GenericRecord) kafkaAvroDeserializer.deserialize(topic, payload);
+                Object toType = kafkaAvroDeserializer.deserialize(topic, payload);
+                
+                //for primitive avro type
+                if (!(toType instanceof GenericRecord)){
+                    return String.valueOf(toType);
+                }
+
+                GenericRecord record = (GenericRecord) toType;
                 return AvroToJsonSerializer.toJson(record);
             } catch (Exception exception) {
                 this.exceptions.add(exception.getMessage());
