@@ -98,7 +98,7 @@ export function showTime(milliseconds) {
  * @param {*} decimals decimal size place
  * @returns 
  */
-export function showBytes(bytes, decimals = 4) {
+export function showBytes(bytes, decimals = 3) {
   if (bytes === 0) return '0 B';
 
   const kbytes = 1024;
