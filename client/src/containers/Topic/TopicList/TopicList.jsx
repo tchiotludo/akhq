@@ -181,7 +181,7 @@ class TopicList extends Root {
         name: topic.name,
         count: topic.size,
         lastWrite: undefined,
-        size: showBytes(topic.logDirSize, 0),
+        size: showBytes(topic.logDirSize),
         partitionsTotal: topic.partitions.length,
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
