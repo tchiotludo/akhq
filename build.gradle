@@ -111,6 +111,9 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
+    // https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.7'
+    // api
 
     // client
     implementation project(":client")

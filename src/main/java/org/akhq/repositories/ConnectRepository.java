@@ -16,7 +16,7 @@ import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
@@ -39,7 +38,7 @@ public class ConnectRepository extends AbstractRepository {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
+    private DefaultGroupUtils defaultGroupUtils;
 
     @Inject
     private SecurityProperties securityProperties;
@@ -268,7 +267,7 @@ public class ConnectRepository extends AbstractRepository {
         }
         // get Connect filter regex for default groups
         connectFilterRegex.addAll(getConnectFilterRegexFromAttributes(
-            userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
+            defaultGroupUtils.getDefaultAttributes()
         ));
 
         return Optional.of(connectFilterRegex);

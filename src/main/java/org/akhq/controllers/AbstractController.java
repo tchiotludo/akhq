@@ -4,7 +4,7 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.configs.SecurityProperties;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -20,7 +20,7 @@ abstract public class AbstractController {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
+    private DefaultGroupUtils defaultGroupUtils;
 
     @Inject
     private SecurityProperties securityProperties;
@@ -63,7 +63,7 @@ abstract public class AbstractController {
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())));
+            return expandRoles(this.defaultGroupUtils.getDefaultRoles());
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -72,7 +72,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())))
+                .orElseGet(() -> this.defaultGroupUtils.getDefaultRoles())
         );
     }
 }

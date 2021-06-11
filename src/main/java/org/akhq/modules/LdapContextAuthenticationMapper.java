@@ -4,10 +4,10 @@ import io.micronaut.configuration.security.ldap.ContextAuthenticationMapper;
 import io.micronaut.configuration.security.ldap.DefaultContextAuthenticationMapper;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.core.convert.value.ConvertibleValues;
+import io.micronaut.security.authentication.AuthenticationFailed;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UserDetails;
-import org.akhq.configs.Ldap;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.ClaimProvider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,23 +19,24 @@ import java.util.Set;
 public class LdapContextAuthenticationMapper implements ContextAuthenticationMapper {
 
     @Inject
-    private Ldap ldap;
-
-    @Inject
-    private UserGroupUtils userGroupUtils;
+    private ClaimProvider claimProvider;
 
     @Override
     public AuthenticationResponse map(ConvertibleValues<Object> attributes, String username, Set<String> groups) {
-        List<String> akhqGroups = getUserAkhqGroups(username, groups);
-        return new UserDetails(username, userGroupUtils.getUserRoles(akhqGroups), userGroupUtils.getUserAttributes(akhqGroups));
+        ClaimProvider.AKHQClaimRequest request = ClaimProvider.AKHQClaimRequest.builder()
+                .providerType(ClaimProvider.ProviderType.LDAP)
+                .providerName(null)
+                .username(username)
+                .groups(List.copyOf(groups))
+                .build();
+        try {
+            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            return new UserDetails(username, claim.getRoles(), claim.getAttributes());
+        } catch (Exception e) {
+            String claimProviderClass = claimProvider.getClass().getName();
+            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+        }
     }
 
-    /**
-     * Get Akhq Groups configured in Ldap groups
-     * @param ldapGroups  list of ldap groups associated to the user
-     * @return list of Akhq groups configured for the ldap groups. See in application.yml property akhq.security.ldap
-     */
-    private List<String> getUserAkhqGroups(String username, Set<String> ldapGroups) {
-        return UserGroupUtils.mapToAkhqGroups(username, ldapGroups, ldap.getGroups(), ldap.getUsers(), ldap.getDefaultGroup());
-    }
+
 }
