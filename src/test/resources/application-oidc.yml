@@ -19,6 +19,8 @@ micronaut:
           secret:
             generator:
               secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
+    ldap:
+      enabled: false
     oauth2:
       enabled: true
       clients:
@@ -62,6 +64,7 @@ akhq:
 
   security:
     default-group: no-filter
+    basic-auth: []
     groups:
       admin:
         name: admin
