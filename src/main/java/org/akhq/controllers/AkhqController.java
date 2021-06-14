@@ -1,5 +1,6 @@
 package org.akhq.controllers;
 
+import io.micronaut.configuration.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
@@ -30,9 +31,6 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private ApplicationContext applicationContext;
-
-    @Inject
-    private Ldap ldap;
 
     @Inject
     private SecurityProperties securityProperties;
@@ -69,7 +67,9 @@ public class AkhqController extends AbstractController {
 
         if (applicationContext.containsBean(SecurityService.class)) {
             authDefinition.loginEnabled = true;
-            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 || ldap.isEnabled();
+            // Display login form if there are LocalUsers OR Ldap is enabled
+            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
+                    applicationContext.containsBean(LdapConfiguration.class);
         }
 
         if (oidc.isEnabled()) {
