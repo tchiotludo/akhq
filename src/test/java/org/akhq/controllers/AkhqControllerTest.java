@@ -32,6 +32,7 @@ class AkhqControllerTest extends AbstractTest {
         );
 
         assertTrue(result.isLoginEnabled());
+        assertTrue(result.isFormEnabled());
     }
 
     @Test
