@@ -68,7 +68,7 @@ class AvroSchemaSerializerTest {
 
     @Test
     public void shouldFailIfDoesntMatchSchemaId() {
-        assertThrows(AvroTypeException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             int schemaId = 3;
             cut.toAvro(INVALID_JSON, schemaId);
         });

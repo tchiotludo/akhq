@@ -2,25 +2,23 @@ package org.akhq.repositories;
 
 import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
-import org.akhq.models.Topic;
-import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
+import org.akhq.models.Topic;
+import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.inject.Inject;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -33,7 +31,7 @@ public class RecordRepositoryTest extends AbstractTest {
 
     @Inject
     private Environment environment;
-    
+
     @Test
     public void consumeEmpty() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_EMPTY);
@@ -127,7 +125,11 @@ public class RecordRepositoryTest extends AbstractTest {
             .findFirst();
 
         avroRecord.orElseThrow(() -> new NoSuchElementException("Unable to find key 1"));
-        avroRecord.ifPresent(record -> assertEquals("{\"id\":1,\"name\":\"WaWa\",\"breed\":\"ABYSSINIAN\"}", record.getValue()));
+        avroRecord.ifPresent(record -> {
+            assertThat(record.getValue(), containsString("\"breed\":\"ABYSSINIAN\""));
+            assertThat(record.getValue(), containsString("\"name\":\"WaWa\""));
+            assertThat(record.getValue(), containsString("\"id\":1"));
+        });
     }
 
     @Test
