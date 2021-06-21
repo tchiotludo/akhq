@@ -59,8 +59,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final int TOPIC_HIDE_INTERNAL_COUNT = 11;
     public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 9;
     public static final int TOPIC_HIDE_STREAM_COUNT = 17;
-    // github actions says 11 ...
-    public static final int CONSUMER_GROUP_COUNT = 11;
+    public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
 

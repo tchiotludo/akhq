@@ -1,14 +1,14 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "7.0.0"
-    id "io.micronaut.application" version "1.5.0"
+    id "io.micronaut.application" version "1.5.2"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.3.1"
     id 'com.adarshr.test-logger' version '3.0.0'
     id 'org.gradle.test-retry' version '1.2.1'
     id 'com.github.psxpaul.execfork' version '0.1.15'
-    id "com.github.ben-manes.versions" version "0.38.0"
+    id "com.github.ben-manes.versions" version "0.39.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.2.0"
     id "com.palantir.git-version" version "0.12.3"
 }
@@ -87,8 +87,8 @@ dependencies {
     implementation 'org.sourcelab:kafka-connect-client:3.1.1'
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.7.2'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.7.2'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.8.1'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.8.1'
 
     // log
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.8.+'
@@ -97,7 +97,7 @@ dependencies {
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
     implementation 'com.google.guava:guava:30.1.1-jre'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
 
     // avro
@@ -105,14 +105,14 @@ dependencies {
 
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: "3.15.8"
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: "3.15.8"
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.17.3'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.17.3'
 
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
     // https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.7'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.8'
     // api
 
     // client
@@ -159,15 +159,15 @@ dependencies {
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.11.1'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.2'
     testImplementation 'com.fasterxml.jackson.core:jackson-core:2.12.3'
     testImplementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.3'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
-    testImplementation 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.11'
+    testImplementation 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.13'
 }
 
 testlogger {

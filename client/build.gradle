@@ -1,5 +1,5 @@
 plugins {
-    id 'org.siouan.frontend-jdk11' version '5.1.0'
+    id 'org.siouan.frontend-jdk11' version '5.2.0'
 }
 
 repositories {
