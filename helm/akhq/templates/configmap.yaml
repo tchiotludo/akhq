@@ -10,5 +10,5 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
   application.yml: |
-{{ .Values.configuration | indent 4}}
+{{ toYaml .Values.configuration | indent 4}}
 {{- end }}

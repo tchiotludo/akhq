@@ -25,7 +25,7 @@ extraEnv: []
 #   value: "/any/additional/jars/desired.jar:/go/here.jar"
 
 ## Or you can also use configmap for the configuration...
-configuration: |
+configuration:
   akhq:
     server:
       access-log:
@@ -35,7 +35,7 @@ configuration: |
 ##... and secret for connection information
 existingSecrets: ""
 # name of the existingSecret
-secrets: |
+secrets: {}
 #  akhq:
 #    connections:
 #      my-cluster-plain-text:
