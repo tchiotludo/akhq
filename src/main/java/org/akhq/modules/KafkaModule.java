@@ -28,7 +28,12 @@ import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Singleton
