@@ -25,4 +25,8 @@ public class AvroToJsonSerializer {
 
         return MAPPER.writeValueAsString(map);
     }
+
+    public static ObjectMapper getMapper() {
+        return MAPPER;
+    }
 }

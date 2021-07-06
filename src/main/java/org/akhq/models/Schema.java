@@ -1,9 +1,13 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
+import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
+import io.confluent.kafka.schemaregistry.json.JsonSchema;
+import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import lombok.*;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
@@ -26,10 +30,14 @@ public class Schema {
     private Integer version;
     private Config.CompatibilityLevelConfig compatibilityLevel;
     private String schema;
+    private String schemaType;
     private List<SchemaReference> references = new ArrayList<>();
 
     @JsonIgnore
     private org.apache.avro.Schema avroSchema;
+
+    @JsonIgnore
+    private JsonNode jsonSchema;
 
     private String exception;
 
@@ -55,7 +63,14 @@ public class Schema {
             }
             this.references = parsedSchema.references();
             this.schema = parsedSchema.rawSchema().toString();
-            this.avroSchema = parser.parse(this.schema);
+            this.schemaType = schema.getSchemaType();
+            if (schemaType.equals(AvroSchema.TYPE)) {
+                this.avroSchema = parser.parse(this.schema);
+            } else if ( schemaType.equals(JsonSchema.TYPE)) {
+                this.jsonSchema = ((JsonSchema)parsedSchema).toJsonNode();
+            } else if ( schemaType.equals(ProtobufSchema.TYPE)) {
+                this.schema = parsedSchema.canonicalString();
+            }
         } catch (AvroTypeException e) {
             this.schema = null;
             this.exception = e.getMessage();

@@ -11,6 +11,7 @@ import './styles.scss';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-protobuf';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -106,7 +107,8 @@ class SchemaList extends Root {
         subject: schema.subject,
         version: schema.version,
         exception: schema.exception,
-        schema: schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null
+        schemaType: schema.schemaType,
+        schema: schema.schemaType === "PROTOBUF" ? schema.schema : (schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null)
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry, loading: false });
@@ -217,7 +219,7 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    mode="json"
+                    mode={ obj.schemaType === "PROTOBUF"? "protobuf"  : "json"}
                     id={'value' + index}
                     theme="merbivore_soft"
                     value={obj[col.accessor]}
@@ -233,7 +235,7 @@ class SchemaList extends Root {
                   return (
                     <pre className="mb-0 khq-data-highlight">
                       <code>
-                        {JSON.stringify(JSON.parse(obj[col.accessor]))}
+                        { obj.schemaType === "PROTOBUF"? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
                       </code>
                     </pre>
                   );
