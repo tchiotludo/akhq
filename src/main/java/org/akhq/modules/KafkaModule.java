@@ -1,7 +1,9 @@
 package org.akhq.modules;
 
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.SchemaProvider;
 import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
+import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
@@ -9,6 +11,7 @@ import io.confluent.kafka.schemaregistry.client.security.SslFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
+import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -25,6 +28,7 @@ import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +150,26 @@ public class KafkaModule {
         return avroSchemaProvider;
     }
 
+    public JsonSchemaProvider getJsonSchemaProvider(String clusterId) {
+        JsonSchemaProvider jsonSchemaProvider = new JsonSchemaProvider();
+        jsonSchemaProvider.configure(Collections.singletonMap(
+            "schemaVersionFetcher",
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+        ));
+
+        return  jsonSchemaProvider;
+    }
+
+    public ProtobufSchemaProvider getProtobufSchemaProvider(String clusterId) {
+        ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
+        protobufSchemaProvider.configure(Collections.singletonMap(
+            "schemaVersionFetcher",
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+        ));
+
+        return  protobufSchemaProvider;
+    }
+
     public RestService getRegistryRestClient(String clusterId) {
         Connection connection = this.getConnection(clusterId);
 
@@ -199,10 +223,17 @@ public class KafkaModule {
         if (!this.registryClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
+            List<SchemaProvider> providers = new ArrayList<>();
+            providers.add(  new AvroSchemaProvider() );
+            providers.add(  new JsonSchemaProvider() );
+            providers.add(  new ProtobufSchemaProvider() );
+
             SchemaRegistryClient client = new CachedSchemaRegistryClient(
                 this.getRegistryRestClient(clusterId),
                 Integer.MAX_VALUE,
-                connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null
+                providers,
+                connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null,
+                null
             );
 
             this.registryClient.put(clusterId, client);

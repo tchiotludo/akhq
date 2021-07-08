@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
@@ -10,6 +11,7 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.controllers.TopicController;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
@@ -417,23 +419,33 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
         return new Record(
+            client,
             record,
             this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
             this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId))
         );
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
         return new Record(
+            client,
             record,
-            this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId),
+            schemaRegistryType,
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId))
         );
     }

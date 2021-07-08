@@ -6,8 +6,13 @@ import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.schemaregistry.json.JsonSchema;
+import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaJsonDeserializer;
+import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.models.Schema;
@@ -36,6 +41,8 @@ public class SchemaRegistryRepository extends AbstractRepository {
     @Inject
     private KafkaModule kafkaModule;
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
+    private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
+    private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
     private AvroSerializer avroSerializer;
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
@@ -56,6 +63,28 @@ public class SchemaRegistryRepository extends AbstractRepository {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    private ParsedSchema getParsedSchema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, String clusterId)  {
+        ParsedSchema parsedSchema;
+        if ( schema.getSchemaType().equals(JsonSchema.TYPE) ) {
+            parsedSchema = this.kafkaModule
+                .getJsonSchemaProvider(clusterId)
+                .parseSchema(schema.getSchema(), schema.getReferences())
+                .orElse(null);
+
+        } else if( schema.getSchemaType().equals(ProtobufSchema.TYPE)) {
+            parsedSchema = this.kafkaModule
+                .getProtobufSchemaProvider(clusterId)
+                .parseSchema(schema.getSchema(), schema.getReferences())
+                .orElse(null);
+        } else {
+            parsedSchema = this.kafkaModule
+                .getAvroSchemaProvider(clusterId)
+                .parseSchema(schema.getSchema(), schema.getReferences())
+                .orElse(null);
+        }
+        return parsedSchema;
     }
 
     public List<String> all(String clusterId, Optional<String> search) throws  IOException, RestClientException {
@@ -104,10 +133,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .getLatestVersion(subject);
 
-        ParsedSchema parsedSchema = this.kafkaModule
-            .getAvroSchemaProvider(clusterId)
-            .parseSchema(latestVersion.getSchema(), latestVersion.getReferences())
-            .orElse(null);
+        ParsedSchema parsedSchema = getParsedSchema(latestVersion, clusterId);
 
         return new Schema(latestVersion, parsedSchema, this.getConfig(clusterId, subject));
     }
@@ -127,11 +153,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
                 }
             })
             .map(schema -> {
-                ParsedSchema parsedSchema = this.kafkaModule
-                    .getAvroSchemaProvider(clusterId)
-                    .parseSchema(schema.getSchema(), schema.getReferences())
-                    .orElse(null);
-
+                ParsedSchema parsedSchema = getParsedSchema(schema, clusterId);
                 return new Schema(schema, parsedSchema, config);
             })
             .collect(Collectors.toList());
@@ -142,10 +164,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .getRegistryRestClient(clusterId)
             .lookUpSubjectVersion(schema.toString(), subject, deleted);
 
-        ParsedSchema parsedSchema = this.kafkaModule
-            .getAvroSchemaProvider(clusterId)
-            .parseSchema(find.getSchema(), find.getReferences())
-            .orElse(null);
+        ParsedSchema parsedSchema = getParsedSchema(find, clusterId);
 
         return new Schema(find, parsedSchema, this.getConfig(clusterId, subject));
     }
@@ -251,6 +270,38 @@ public class SchemaRegistryRepository extends AbstractRepository {
         }
 
         return this.kafkaAvroDeserializers.get(clusterId);
+    }
+
+    public Deserializer getKafkaJsonDeserializer(String clusterId) {
+        if (!this.kafkaJsonDeserializers.containsKey(clusterId)) {
+            Deserializer deserializer;
+            SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
+            if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO JSON client is not supported");
+            } else {
+                deserializer = new KafkaJsonSchemaDeserializer(this.kafkaModule.getRegistryClient(clusterId));
+            }
+
+            this.kafkaJsonDeserializers.put(clusterId, deserializer);
+        }
+
+        return this.kafkaJsonDeserializers.get(clusterId);
+    }
+
+    public Deserializer getKafkaProtoDeserializer(String clusterId) {
+        if (!this.kafkaProtoDeserializers.containsKey(clusterId)) {
+            Deserializer deserializer;
+            SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
+            if (schemaRegistryType == SchemaRegistryType.TIBCO) {
+                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO JSON client is not supported");
+            } else {
+                deserializer = new KafkaProtobufDeserializer(this.kafkaModule.getRegistryClient(clusterId));
+            }
+
+            this.kafkaProtoDeserializers.put(clusterId, deserializer);
+        }
+
+        return this.kafkaProtoDeserializers.get(clusterId);
     }
 
     public AvroSerializer getAvroSerializer(String clusterId) {

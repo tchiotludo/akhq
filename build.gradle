@@ -84,6 +84,8 @@ dependencies {
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
+    implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
+    implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation 'org.sourcelab:kafka-connect-client:3.1.1'
 
     // strimzi
