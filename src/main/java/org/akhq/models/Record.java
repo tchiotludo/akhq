@@ -1,6 +1,14 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
+import io.confluent.kafka.schemaregistry.ParsedSchema;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.json.JsonSchema;
+import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonSerializer;
@@ -34,6 +42,14 @@ public class Record {
     private Map<String, String> headers = new HashMap<>();
     @JsonIgnore
     private Deserializer kafkaAvroDeserializer;
+    @JsonIgnore
+    private Deserializer kafkaProtoDeserializer;
+    @JsonIgnore
+    private Deserializer kafkaJsonDeserializer;
+
+    @JsonIgnore
+    private SchemaRegistryClient client;
+
     private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
@@ -69,13 +85,15 @@ public class Record {
         this.headers = headers;
     }
 
-    public Record(ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
+    public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
+                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
             this.MAGIC_BYTE = 0x0;
         }
+        this.client = client;
         this.topic = record.topic();
         this.partition = record.partition();
         this.offset = record.offset();
@@ -91,6 +109,8 @@ public class Record {
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
+        this.kafkaProtoDeserializer = kafkaProtoDeserializer;
+        this.kafkaJsonDeserializer = kafkaJsonDeserializer;
     }
 
     public String getKey() {
@@ -123,15 +143,39 @@ public class Record {
             return null;
         } else if (schemaId != null) {
             try {
-                Object toType = kafkaAvroDeserializer.deserialize(topic, payload);
-                
+
+                Object toType = null;
+
+                if (client != null) {
+                    ParsedSchema schema = client.getSchemaById(schemaId);
+                    if ( schema.schemaType().equals(ProtobufSchema.TYPE) ) {
+                       toType = kafkaProtoDeserializer.deserialize(topic, payload);
+                       if (!(toType instanceof Message)) {
+                           return String.valueOf(toType);
+                       }
+
+                       Message dynamicMessage = (Message)toType;
+                       return AvroToJsonSerializer.getMapper().readTree(JsonFormat.printer().print(dynamicMessage)).toString();
+                    } else  if ( schema.schemaType().equals(JsonSchema.TYPE) ) {
+                      toType = kafkaJsonDeserializer.deserialize(topic, payload);
+                      if ( !(toType instanceof JsonNode) ) {
+                          return String.valueOf(toType);
+                      }
+                      JsonNode node = (JsonNode) toType;
+                      return node.toString();
+                    }
+                }
+
+                toType = kafkaAvroDeserializer.deserialize(topic, payload);
+
                 //for primitive avro type
-                if (!(toType instanceof GenericRecord)){
+                if (!(toType instanceof GenericRecord)) {
                     return String.valueOf(toType);
                 }
 
                 GenericRecord record = (GenericRecord) toType;
                 return AvroToJsonSerializer.toJson(record);
+
             } catch (Exception exception) {
                 this.exceptions.add(exception.getMessage());
 
