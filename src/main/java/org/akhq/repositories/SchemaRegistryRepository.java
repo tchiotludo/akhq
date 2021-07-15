@@ -182,9 +182,13 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema register(String clusterId, String subject, String schema, List<SchemaReference> references) throws IOException, RestClientException {
+        return register(clusterId, subject, null, schema, references);
+    }
+
+    public Schema register(String clusterId, String subject, String type, String schema, List<SchemaReference> references) throws IOException, RestClientException {
         int id = this.kafkaModule
             .getRegistryRestClient(clusterId)
-            .registerSchema(schema, "AVRO", references, subject);
+            .registerSchema(schema, type != null? type: "AVRO", references, subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
 
@@ -293,7 +297,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             Deserializer deserializer;
             SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
             if (schemaRegistryType == SchemaRegistryType.TIBCO) {
-                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO JSON client is not supported");
+                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO PROTOBUF client is not supported");
             } else {
                 deserializer = new KafkaProtobufDeserializer(this.kafkaModule.getRegistryClient(clusterId));
             }
