@@ -25,9 +25,11 @@ client/build
 ### Ide ###
 .idea/*
 .vscode/*
-.project/*
+.classpath*
+.project*
 .settings/*
 out/*
+bin/*
 
 ### Log ###
 .*.log
