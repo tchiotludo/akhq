@@ -226,7 +226,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
                 .getConfig(subject)
             );
         } catch (RestClientException exception) {
-            if (exception.getErrorCode() != ERROR_NOT_FOUND) {
+            if (exception.getStatus() != 404) {
                 throw exception;
             }
 
