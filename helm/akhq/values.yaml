@@ -2,7 +2,7 @@
 #  - name: my-repository-secret
 image:
   repository: tchiotludo/akhq
-  tag: latest
+  tag: "" # uses Chart.AppVersion by default
 
 # custom annotations (example: for prometheus)
 annotations: {}
@@ -73,13 +73,23 @@ initContainers: {}
 #      - mountPath: /tmp
 #        name: certs
 
+# Configure the Pod Security Context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 securityContext: {}
-#  capabilities:
-#    drop:
-#      - ALL
-#  # readOnlyRootFilesystem: true
-#  runAsNonRoot: true
-#  runAsUser: 1000
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Configure the Container Security Context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
+  # privileged: false
+  # capabilities:
+  #   drop:
+  #     - ALL
+  # runAsNonRoot: true
+  # runAsUser: 1001
+  # readOnlyRootFilesystem: true
 
 service:
   enabled: true

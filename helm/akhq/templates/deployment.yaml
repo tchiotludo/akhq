@@ -53,8 +53,12 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             {{- if .Values.extraEnv }}{{ toYaml .Values.extraEnv | trim | nindent 12 }}{{ end }}
             {{- if or (.Values.existingSecrets) (.Values.secrets) }}
