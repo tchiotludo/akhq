@@ -90,15 +90,16 @@ export function showTime(milliseconds) {
 }
 
 /**
- * This function is responsible for showing the bytes in a 
- * friendly way to the user, making the leases for upper 
+ * This function is responsible for showing the bytes in a
+ * friendly way to the user, making the leases for upper
  * measures such as MB, GB, TB etc.
- * 
+ *
  * @param {*} bytes value in bytes to show
  * @param {*} decimals decimal size place
- * @returns 
+ * @returns
  */
 export function showBytes(bytes, decimals = 3) {
+  if (bytes === null || bytes === undefined) return '';
   if (bytes === 0) return '0 B';
 
   const kbytes = 1024;
