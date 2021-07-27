@@ -70,6 +70,10 @@ class NodeConfigs extends Form {
   }
 
   getConfigDataType = configName => {
+    if (configName === undefined) {
+      return TEXT;
+    }
+
     switch (configName.substring(configName.lastIndexOf('.'))) {
       case '.ms':
         return MILLI;
