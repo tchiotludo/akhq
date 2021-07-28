@@ -7,6 +7,12 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   server:
     thread-selection: AUTO
+    max-request-size: 10MB
+    read-idle-timeout: 10m
+    write-idle-timeout: 10m
+    idle-timeout: 10m
+    netty:
+      max-chunk-size: 10MB
   router:
     static-resources:
       react:
