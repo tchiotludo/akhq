@@ -15,7 +15,9 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
@@ -41,7 +43,12 @@ public class AvroSerializer {
 
     protected static final String DATE_FORMAT = "yyyy-MM-dd[XXX]";
     protected static final String TIME_FORMAT = "HH:mm[:ss][.SSSSSS][XXX]";
-    protected static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm[:ss][.SSSSSS][XXX]";
+    protected static final DateTimeFormatter DATETIME_FORMAT = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+            .appendOptional(DateTimeFormatter.ofPattern(":ss"))
+            .appendFraction(ChronoField.MICRO_OF_SECOND, 0, 6, true)
+            .appendOptional(DateTimeFormatter.ofPattern("XXX"))
+            .toFormatter();
 
     public static GenericRecord recordSerializer(Map<String, ?> record, Schema schema) {
         GenericRecord returnValue = new GenericData.Record(schema);
@@ -199,13 +206,9 @@ public class AvroSerializer {
 
     protected static Instant parseDateTime(String data) {
         try {
-            return ZonedDateTime.parse(data, DateTimeFormatter.ofPattern(AvroSerializer.DATETIME_FORMAT)).toInstant();
+            return ZonedDateTime.parse(data, DATETIME_FORMAT).toInstant();
         } catch (DateTimeParseException e) {
-            LocalDateTime localDateTime = LocalDateTime.parse(
-                data,
-                DateTimeFormatter.ofPattern(AvroSerializer.DATETIME_FORMAT)
-            );
-
+            LocalDateTime localDateTime = LocalDateTime.parse(data, DATETIME_FORMAT);
             return localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         }
     }
