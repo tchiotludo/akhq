@@ -125,7 +125,7 @@ class Form extends Root {
         )}
         <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
-            mode="json"
+            mode={ formData.schemaType === "PROTOBUF"? "protobuf"  : "json" }
             id={name}
             theme="merbivore_soft"
             value={formData[name]}

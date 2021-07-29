@@ -106,7 +106,7 @@ public class SchemaController extends AbstractController {
     }
 
     private Schema registerSchema(String cluster, @Body Schema schema) throws IOException, RestClientException {
-        Schema register = this.schemaRepository.register(cluster, schema.getSubject(), schema.getSchema(), schema.getReferences());
+        Schema register = this.schemaRepository.register(cluster, schema.getSubject(), schema.getSchemaType(), schema.getSchema(), schema.getReferences());
 
         if (schema.getCompatibilityLevel() != null) {
             this.schemaRepository.updateConfig(
