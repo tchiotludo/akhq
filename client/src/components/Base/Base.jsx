@@ -12,7 +12,7 @@ class Base extends Component {
     selectedTab: constants.CLUSTER, //cluster | node | topic | tail | group | acls | schema | connect
     action: '',
     loading: false,
-    expanded: false
+    expanded: !!localStorage.getItem('expanded')
   };
 
   static getDerivedStateFromProps(nextProps) {
@@ -74,6 +74,7 @@ class Base extends Component {
               clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
+                newExpanded ? localStorage.setItem('expanded', newExpanded) : localStorage.removeItem('expanded');
                 this.setState({ expanded: newExpanded });
               }}
               selectedTab={selectedTab}
