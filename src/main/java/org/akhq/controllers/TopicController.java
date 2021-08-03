@@ -16,7 +16,6 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
@@ -28,15 +27,14 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
-import org.akhq.models.Record;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
-@Slf4j
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller
 public class TopicController extends AbstractController {
@@ -414,6 +412,11 @@ public class TopicController extends AbstractController {
 
         if (!CollectionUtils.isNotEmpty(offsets)) {
             throw new IllegalArgumentException("Empty collections");
+        }
+
+        if (fromCluster.equals(toCluster) && fromTopicName.equals(toTopicName)) {
+            // #745 Prevent endless loop when copying topic onto itself; Use intermediate copy topic for duplication
+            throw new IllegalArgumentException("Can not copy topic to itself");
         }
 
         // after wait for next offset, so add - 1 to allow to have the current offset
