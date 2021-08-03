@@ -46,6 +46,9 @@ public class RecordRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     @Inject
+    private ConfigRepository configRepository;
+
+    @Inject
     private TopicRepository topicRepository;
 
     @Inject
@@ -536,6 +539,8 @@ public class RecordRepository extends AbstractRepository {
             } else {
                 keyAsBytes = key.get().getBytes();
             }
+        } else if (Topic.isCompacted(clusterId, topic, configRepository)) {
+            throw new IllegalArgumentException("Key missing for produce onto compacted topic");
         }
 
         if (value != null && valueSchemaId.isPresent()) {

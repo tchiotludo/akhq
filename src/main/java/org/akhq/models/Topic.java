@@ -126,7 +126,11 @@ public class Topic {
             return false;
         }
 
-        List<Config> configs = configRepository.findByTopic(clusterId, this.getName());
+        return isCompacted(clusterId, this.getName(), configRepository);
+    }
+
+    public static boolean isCompacted(String clusterId, String topic, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
+        List<Config> configs = configRepository.findByTopic(clusterId, topic);
 
         return configs != null && configs
             .stream()
