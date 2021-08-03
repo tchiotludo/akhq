@@ -50,20 +50,22 @@ public class AvroSerializer {
             .appendOptional(DateTimeFormatter.ofPattern("XXX"))
             .toFormatter();
 
-    public static GenericRecord recordSerializer(Map<String, ?> record, Schema schema) {
+    public static GenericRecord recordSerializer(Map<String, Object> record, Schema schema) {
         GenericRecord returnValue = new GenericData.Record(schema);
         schema
             .getFields()
-            .forEach(f -> returnValue.put(
-                    f.name(),
-                    AvroSerializer.objectSerializer(record.get(f.name()), schema.getField(f.name()).schema())
-                )
-            );
+            .forEach(field -> {
+                Object fieldValue = record.getOrDefault(field.name(), field.defaultVal());
+                returnValue.put(field.name(), AvroSerializer.objectSerializer(fieldValue, field.schema()));
+            });
         return returnValue;
     }
 
     @SuppressWarnings("unchecked")
     private static Object objectSerializer(Object value, Schema schema) {
+        if (value == org.apache.avro.JsonProperties.NULL_VALUE) {
+            return null;
+        }
         LogicalType logicalType = schema.getLogicalType();
         Schema.Type primitiveType = schema.getType();
         if (logicalType != null) {
@@ -92,7 +94,7 @@ public class AvroSerializer {
                 case MAP:
                     return AvroSerializer.mapSerializer((Map<String, ?>) value, schema);
                 case RECORD:
-                    return AvroSerializer.recordSerializer((Map<String, ?>) value, schema);
+                    return AvroSerializer.recordSerializer((Map<String, Object>) value, schema);
                 case ENUM:
                     return new GenericData.EnumSymbol(schema, value.toString());
                 case ARRAY:
