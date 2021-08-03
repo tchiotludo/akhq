@@ -77,6 +77,7 @@ class AvroDeserializerTest {
             Arguments.of("abc", "\"bytes\"", "abc".getBytes()),
             Arguments.of("10.10", "{\"type\": \"bytes\", \"logicalType\": \"decimal\", \"scale\": 2, \"precision\": 4}", new BigDecimal("10.10")),
             Arguments.of("26910000000000000000000000000258.00000", "{\"type\": \"bytes\", \"logicalType\": \"decimal\", \"scale\": 5, \"precision\": 37}", new BigDecimal("26910000000000000000000000000258.00000")),
+            Arguments.of(1, "[\"null\",\"long\"]", 1L),
             Arguments.of(uuid.toString(), "{\"type\": \"string\", \"logicalType\": \"uuid\"}", uuid),
             Arguments.of(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), "{\"type\": \"int\", \"logicalType\": \"date\"}", LocalDate.now()),
             Arguments.of(localTime.format(DateTimeFormatter.ISO_LOCAL_TIME), "{\"type\": \"long\", \"logicalType\": \"time-micros\"}", localTime),
