@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AvroDeserializerTest {
     private static Schema fieldsToSchema(String s) {
@@ -158,5 +157,27 @@ class AvroDeserializerTest {
         expected.put("arrayField", List.of(1.0D, 2.0D, 3.0D));
 
         genericTest(expected, type);
+    }
+
+    @Test
+    void testDefaultValue() {
+        String type = "{"
+            + "\"name\": \"root\","
+            + "\"type\": \"record\","
+            + "\"fields\": ["
+            + "    {\"name\": \"stringField\", \"type\": [\"null\", \"string\"], \"default\": null},"
+            + "    {\"name\": \"arrayField\", \"type\": {\"type\": \"array\", \"items\": \"double\"}, \"default\": []}"
+            + "    ]"
+            + "}";
+        Schema schema = new Schema.Parser().parse(type);
+
+        GenericRecord expectedRecord = AvroSerializer.recordSerializer(Map.of(), schema);
+        assert new GenericData().validate(schema, expectedRecord);
+
+        Map<String, Object> result = AvroDeserializer.recordDeserializer(expectedRecord);
+        Map<String, Object> defaultValues = new HashMap<>();
+        defaultValues.put("stringField", null);
+        defaultValues.put("arrayField", List.of());
+        assertThat(result, is(defaultValues));
     }
 }
