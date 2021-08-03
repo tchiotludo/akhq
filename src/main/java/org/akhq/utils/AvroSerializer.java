@@ -112,6 +112,9 @@ public class AvroSerializer {
                 case INT:
                     return value;
                 case LONG:
+                    if (value != null && value instanceof Integer) {
+                        return ((Integer) value).longValue();
+                    }
                     return value;
                 case FLOAT:
                     return value;
