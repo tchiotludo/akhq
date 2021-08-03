@@ -9,18 +9,38 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.*;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Delete;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
-import org.akhq.models.*;
+import org.akhq.models.AccessControl;
+import org.akhq.models.Config;
+import org.akhq.models.ConsumerGroup;
+import org.akhq.models.LogDir;
+import org.akhq.models.Partition;
+import org.akhq.models.Record;
+import org.akhq.models.Topic;
+import org.akhq.models.TopicPartition;
 import org.akhq.modules.AbstractKafkaWrapper;
-import org.akhq.repositories.*;
+import org.akhq.repositories.AccessControlListRepository;
+import org.akhq.repositories.ConfigRepository;
+import org.akhq.repositories.ConsumerGroupRepository;
+import org.akhq.repositories.RecordRepository;
+import org.akhq.repositories.SchemaRegistryRepository;
+import org.akhq.repositories.TopicRepository;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
@@ -28,12 +48,17 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
-import org.akhq.models.Record;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 @Slf4j
@@ -414,6 +439,11 @@ public class TopicController extends AbstractController {
 
         if (!CollectionUtils.isNotEmpty(offsets)) {
             throw new IllegalArgumentException("Empty collections");
+        }
+
+        if (fromCluster.equals(toCluster) && fromTopicName.equals(toTopicName)) {
+            // #745 Prevent endless loop when copying topic onto itself; Use intermediate copy topic for duplication
+            throw new IllegalArgumentException("Can not copy topic to itself");
         }
 
         // after wait for next offset, so add - 1 to allow to have the current offset
