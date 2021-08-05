@@ -8,7 +8,6 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -29,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Slf4j
 public class AvroWireFormatConverterTest {
 
     private AvroWireFormatConverter avroWireFormatConverter;

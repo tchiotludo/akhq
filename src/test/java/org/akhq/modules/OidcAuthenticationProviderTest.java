@@ -13,7 +13,6 @@ import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTok
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.controllers.AkhqController;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -30,7 +29,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-@Slf4j
 @MicronautTest(environments = "oidc")
 public class OidcAuthenticationProviderTest {
 

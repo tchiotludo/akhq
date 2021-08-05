@@ -1,7 +1,6 @@
 package org.akhq.configs;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
-import io.micronaut.core.util.StringUtils;
 import lombok.Data;
 
 import java.util.ArrayList;

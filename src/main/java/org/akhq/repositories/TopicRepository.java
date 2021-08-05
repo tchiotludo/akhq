@@ -5,7 +5,6 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.akhq.models.Partition;
@@ -45,9 +44,6 @@ public class TopicRepository extends AbstractRepository {
 
     @Value("${akhq.topic.stream-regexps}")
     protected List<String> streamRegexps;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     public enum TopicListView {
         ALL,
@@ -180,11 +176,9 @@ public class TopicRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("topicsFilterRegexp") != null) {
-            if (attributes.get("topicsFilterRegexp") instanceof List) {
-                return (List<String>)attributes.get("topicsFilterRegexp");
-            }
-        }
+        if ((attributes.get("topicsFilterRegexp") != null) && (attributes.get("topicsFilterRegexp") instanceof List)) {
+		    return (List<String>)attributes.get("topicsFilterRegexp");
+		}
         return new ArrayList<>();
     }
 

@@ -6,7 +6,6 @@ import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
-import org.akhq.models.ConsumerGroup;
 import org.akhq.repositories.ConnectRepository;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;

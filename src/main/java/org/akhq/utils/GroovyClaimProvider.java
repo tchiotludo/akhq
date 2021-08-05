@@ -2,7 +2,6 @@ package org.akhq.utils;
 
 import groovy.lang.GroovyClassLoader;
 import io.micronaut.context.annotation.Primary;
-import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
@@ -10,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 @Slf4j

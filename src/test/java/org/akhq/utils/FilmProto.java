@@ -598,7 +598,6 @@ public final class FilmProto {
       @java.lang.Override
       public org.akhq.utils.FilmProto.Film buildPartial() {
         org.akhq.utils.FilmProto.Film result = new org.akhq.utils.FilmProto.Film(this);
-        int from_bitField0_ = bitField0_;
         result.name_ = name_;
         result.producer_ = producer_;
         result.releaseYear_ = releaseYear_;

@@ -3,7 +3,6 @@ package org.akhq.repositories;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
 import org.akhq.models.ConsumerGroup;
 import org.akhq.models.Partition;
 import org.akhq.modules.AbstractKafkaWrapper;
@@ -38,9 +37,6 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
     @Inject
     private DefaultGroupUtils defaultGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search) throws ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search), pagination, groupsList -> this.findByName(clusterId, groupsList));

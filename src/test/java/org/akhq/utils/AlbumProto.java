@@ -589,7 +589,6 @@ public final class AlbumProto {
       @java.lang.Override
       public org.akhq.utils.AlbumProto.Album buildPartial() {
         org.akhq.utils.AlbumProto.Album result = new org.akhq.utils.AlbumProto.Album(this);
-        int from_bitField0_ = bitField0_;
         result.title_ = title_;
         if (((bitField0_ & 0x00000001) != 0)) {
           artist_ = artist_.getUnmodifiableView();
