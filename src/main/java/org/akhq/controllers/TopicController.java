@@ -150,7 +150,8 @@ public class TopicController extends AbstractController {
             schemaRegistryRepository.getSchemaRegistryType(cluster),
             key.map(String::getBytes).orElse(null),
             value.getBytes(),
-            headers
+            headers,
+            topicRepository.findByName(cluster, topicName)
         );
     }
 
@@ -280,7 +281,8 @@ public class TopicController extends AbstractController {
             schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
-            new HashMap<>()
+            new HashMap<>(),
+            topicRepository.findByName(cluster, topicName)
         );
     }
 
