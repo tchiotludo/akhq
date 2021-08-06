@@ -131,8 +131,8 @@ public class Topic {
 
     public static boolean isCompacted(List<Config> configs) {
         return configs != null && configs
-                .stream()
-                .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
-                .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
+            .stream()
+            .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
+            .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
     }
 }
