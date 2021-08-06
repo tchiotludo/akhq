@@ -12,7 +12,6 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCred
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -28,16 +27,10 @@ import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
-@Slf4j
 public class KafkaModule {
     @Inject
     private List<Connection> connections;
@@ -182,11 +175,9 @@ public class KafkaModule {
                     && !connection.getSchemaRegistry().getProperties().isEmpty()) {
 
                 Map<String, Object> sslConfigs =
-                        (Map) connection.getSchemaRegistry().getProperties().entrySet().stream().filter((e) -> {
-                    return ((String) e.getKey()).startsWith("schema.registry.");
-                }).collect(Collectors.toMap((e) -> {
-                    return ((String) e.getKey()).substring("schema.registry.".length());
-                }, Map.Entry::getValue));
+                        (Map) connection.getSchemaRegistry().getProperties().entrySet().stream()
+                        .filter(e -> e.getKey().startsWith("schema.registry."))
+                        .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
 
                 SslFactory sslFactory = new SslFactory(sslConfigs);
                 if (sslFactory != null && sslFactory.sslContext() != null) {

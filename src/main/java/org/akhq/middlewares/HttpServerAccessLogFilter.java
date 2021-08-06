@@ -31,7 +31,6 @@ import javax.inject.Singleton;
 @Requires(property = "akhq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.FALSE)
 @Filter("/**")
 public class HttpServerAccessLogFilter extends OncePerRequestHttpServerFilter {
-    private static final String MISSING = "-";
     private static final Integer ORDER = ServerFilterPhase.SECURITY.order() + 1;
 
     private final String logFormat;

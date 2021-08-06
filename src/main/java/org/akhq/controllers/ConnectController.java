@@ -14,7 +14,6 @@ import org.akhq.configs.Role;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.repositories.ConnectRepository;
-import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;

@@ -10,7 +10,6 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
@@ -39,9 +38,6 @@ public class ConnectRepository extends AbstractRepository {
 
     @Inject
     private DefaultGroupUtils defaultGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 

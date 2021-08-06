@@ -9,12 +9,10 @@ import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import io.micronaut.web.router.MethodBasedRouteMatch;
 import io.micronaut.web.router.RouteMatch;
-import org.akhq.configs.SecurityProperties;
 import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +23,6 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
     SecuredAnnotationRuleWithDefault(RolesFinder rolesFinder) {
         super(rolesFinder);
     }
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     @Inject
     private DefaultGroupUtils defaultGroupUtils;

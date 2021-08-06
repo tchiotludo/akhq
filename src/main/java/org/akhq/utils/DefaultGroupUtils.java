@@ -1,15 +1,12 @@
 package org.akhq.utils;
 
 import io.micronaut.core.util.StringUtils;
-import org.akhq.configs.GroupMapping;
 import org.akhq.configs.SecurityProperties;
-import org.akhq.configs.UserMapping;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Singleton
 public class DefaultGroupUtils {
