@@ -5,7 +5,6 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
-import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
@@ -108,8 +107,6 @@ public class AkhqController extends AbstractController {
     @Get("api")
     @Hidden
     public HttpResponse<?> rapidoc() {
-        MutableHttpResponse<String> response = HttpResponse.ok();
-
         String doc = "<!doctype html>\n" +
             "<html>\n" +
             "<head>\n" +

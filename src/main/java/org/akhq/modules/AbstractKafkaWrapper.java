@@ -16,7 +16,6 @@ import org.apache.kafka.common.errors.ApiException;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
-import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -239,9 +238,9 @@ abstract public class AbstractKafkaWrapper {
         this.consumerGroupOffset = new HashMap<>();
     }
 
-    private final Map<String, Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>>> logDirs = new HashMap<>();
+    private final Map<String, Map<Integer, Map<String, LogDirDescription>>> logDirs = new HashMap<>();
 
-    public Map<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>> describeLogDir(String clusterId) throws ExecutionException, InterruptedException {
+    public Map<Integer, Map<String, LogDirDescription>> describeLogDir(String clusterId) throws ExecutionException, InterruptedException {
         if (!this.logDirs.containsKey(clusterId)) {
             this.logDirs.put(clusterId, Logger.call(
                 () -> {
@@ -252,7 +251,7 @@ abstract public class AbstractKafkaWrapper {
                                 .map(Node::id)
                                 .collect(Collectors.toList())
                             )
-                            .all()
+                            .allDescriptions()
                             .get();
                     } catch (ExecutionException e) {
                         if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
@@ -280,7 +279,7 @@ abstract public class AbstractKafkaWrapper {
         describeConfigs.computeIfAbsent(clusterId, s -> new HashMap<>());
 
         List<String> list = new ArrayList<>(names);
-        list.removeIf((value) -> this.describeConfigs.get(clusterId).entrySet()
+        list.removeIf(value -> this.describeConfigs.get(clusterId).entrySet()
             .stream()
             .filter(entry -> entry.getKey().type() == type)
             .anyMatch(entry -> entry.getKey().name().equals(value))

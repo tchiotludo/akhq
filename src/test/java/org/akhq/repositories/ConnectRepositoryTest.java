@@ -6,13 +6,10 @@ import io.micronaut.security.authentication.DefaultAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
 import com.google.common.collect.ImmutableMap;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
-import org.akhq.utils.Pagination;
-import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import scala.None;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -29,9 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@Slf4j
 public class ConnectRepositoryTest extends AbstractTest {
-    
+
     @Inject
     @InjectMocks
     private ConnectRepository repository;
@@ -202,7 +197,7 @@ public class ConnectRepositoryTest extends AbstractTest {
                 "topics", KafkaTestCluster.TOPIC_CONNECT
             )
         );
-        
+
         mockApplicationContext();
 
         List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty());

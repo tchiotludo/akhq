@@ -1,7 +1,7 @@
 package org.akhq.clusters;
 
+import io.confluent.kafka.schemaregistry.CompatibilityLevel;
 import io.confluent.kafka.schemaregistry.RestApp;
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import kafka.server.KafkaConfig$;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import java.util.Properties;
 public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
     private static final int DEFAULT_BROKER_PORT = 0; // 0 results in a random port being selected
     private static final String KAFKA_SCHEMAS_TOPIC = "__schemas";
-    private static final String AVRO_COMPATIBILITY_TYPE = AvroCompatibilityLevel.BACKWARD.name;
+    private static final String AVRO_COMPATIBILITY_TYPE = CompatibilityLevel.BACKWARD.name;
 
     private static final String KAFKASTORE_OPERATION_TIMEOUT_MS = "10000";
     private static final String KAFKASTORE_DEBUG = "true";
@@ -27,7 +27,6 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
     private RestApp schemaRegistry;
     private ConnectEmbedded connect1, connect2;
     private final Properties brokerConfig;
-    private boolean running;
 
     public EmbeddedSingleNodeKafkaCluster(final Properties brokerConfig) {
         this.brokerConfig = new Properties();
@@ -96,8 +95,6 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
 
         connect2 = new ConnectEmbedded(connect2Properties);
         log.debug("Kafka Connect-2 is running at {}", connect2Url());
-
-        running = false;
     }
 
     private Properties effectiveBrokerConfigFrom(final Properties brokerConfig, final ZooKeeperEmbedded zookeeper) {
@@ -128,43 +125,39 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
     public void stop() {
         log.info("Stopping EmbeddedSingleNodeKafkaCluster");
         try {
-            try {
-                if (connect1 != null) {
-                    connect1.stop();
-                }
-            } catch (final Exception e) {
-                throw new RuntimeException(e);
+            if (connect1 != null) {
+                connect1.stop();
             }
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
 
-            try {
-                if (connect2 != null) {
-                    connect2.stop();
-                }
-            } catch (final Exception e) {
-                throw new RuntimeException(e);
+        try {
+            if (connect2 != null) {
+                connect2.stop();
             }
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
 
-            try {
-                if (schemaRegistry != null) {
-                    schemaRegistry.stop();
-                }
-            } catch (final Exception e) {
-                throw new RuntimeException(e);
+        try {
+            if (schemaRegistry != null) {
+                schemaRegistry.stop();
             }
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
 
-            if (broker != null) {
-                broker.stop();
-            }
+        if (broker != null) {
+            broker.stop();
+        }
 
-            try {
-                if (zookeeper != null) {
-                    zookeeper.stop();
-                }
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
+        try {
+            if (zookeeper != null) {
+                zookeeper.stop();
             }
-        } finally {
-            running = false;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
         log.info("EmbeddedSingleNodeKafkaCluster Stopped");
     }

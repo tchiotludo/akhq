@@ -3,7 +3,6 @@ package org.akhq.controllers;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
 import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
@@ -21,9 +20,6 @@ abstract public class AbstractController {
 
     @Inject
     private DefaultGroupUtils defaultGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     protected String getBasePath() {
         return basePath.replaceAll("/$","");

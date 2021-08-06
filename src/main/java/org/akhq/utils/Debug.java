@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutionException;
 
 public class Debug {
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
-    private static final String name = Thread.currentThread().getStackTrace()[2].getClassName();
 
     private static String caller() {
         return Thread.currentThread().getStackTrace()[3].getClassName() + " -> " +

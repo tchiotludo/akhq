@@ -1,7 +1,7 @@
 package org.akhq;
 
 import com.yammer.metrics.core.Stoppable;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +58,10 @@ public class StreamTest implements Runnable, Stoppable {
     }
 
     private void start(KafkaStreams streams) {
-        streams.setUncaughtExceptionHandler((thread, ex) -> {
-            log.error("Uncaught exception in " + thread.getName() + ", closing Kafka Streams !", ex);
+        streams.setUncaughtExceptionHandler(ex -> {
+            log.error("Uncaught exception, closing Kafka Streams !", ex);
             System.exit(1);
+            return null;
         });
 
         streams.setStateListener((newState, oldState) ->
@@ -77,7 +78,7 @@ public class StreamTest implements Runnable, Stoppable {
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapServers);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
-        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl);
+        streamsConfiguration.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl);
         streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/" + DigestUtils.md5Hex(this.bootstrapServers).toUpperCase());
 
         Serde<Cat> specificAvroSerde = getSpecificSerde();
@@ -106,7 +107,7 @@ public class StreamTest implements Runnable, Stoppable {
     private <T extends SpecificRecord> Serde<T> getSpecificSerde() {
         Serde<T> specificAvroSerde = new SpecificAvroSerde<>();
         specificAvroSerde.configure(
-            Collections.singletonMap(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl),
+            Collections.singletonMap(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl),
             false
         );
         return specificAvroSerde;
@@ -115,7 +116,7 @@ public class StreamTest implements Runnable, Stoppable {
     private Serde<GenericRecord> getGenericRecordSerde() {
         final Serde<GenericRecord> genericAvroSerde = new GenericAvroSerde();
         genericAvroSerde.configure(
-            Collections.singletonMap(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl),
+            Collections.singletonMap(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.registryUrl),
             false
         );
         return genericAvroSerde;
