@@ -539,8 +539,14 @@ public class RecordRepository extends AbstractRepository {
             } else {
                 keyAsBytes = key.get().getBytes();
             }
-        } else if (Topic.isCompacted(clusterId, topic, configRepository)) {
-            throw new IllegalArgumentException("Key missing for produce onto compacted topic");
+        } else {
+            try {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value))) {
+                    throw new IllegalArgumentException("Key missing for produce onto compacted topic");
+                }
+            } catch (ExecutionException ex) {
+                log.debug("Failed to determine if {} topic {} is compacted", clusterId, topic, ex);
+            }
         }
 
         if (value != null && valueSchemaId.isPresent()) {

@@ -126,15 +126,13 @@ public class Topic {
             return false;
         }
 
-        return isCompacted(clusterId, this.getName(), configRepository);
+        return isCompacted(configRepository.findByTopic(clusterId, this.getName()));
     }
 
-    public static boolean isCompacted(String clusterId, String topic, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
-        List<Config> configs = configRepository.findByTopic(clusterId, topic);
-
+    public static boolean isCompacted(List<Config> configs) {
         return configs != null && configs
-            .stream()
-            .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
-            .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
+                .stream()
+                .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
+                .anyMatch(config -> config.getValue().contains(TopicConfig.CLEANUP_POLICY_COMPACT));
     }
 }
