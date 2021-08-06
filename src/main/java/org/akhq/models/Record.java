@@ -2,7 +2,6 @@ package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
@@ -31,7 +30,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class Record {
-    private String topic;
+    private Topic topic;
     private int partition;
     private long offset;
     private ZonedDateTime timestamp;
@@ -68,13 +67,13 @@ public class Record {
 
     private byte MAGIC_BYTE;
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers) {
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
             this.MAGIC_BYTE = 0x0;
         }
-        this.topic = record.topic();
+        this.topic = topic;
         this.partition = record.partition();
         this.offset = record.offset();
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
@@ -87,14 +86,14 @@ public class Record {
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue, Topic topic) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
             this.MAGIC_BYTE = 0x0;
         }
         this.client = client;
-        this.topic = record.topic();
+        this.topic = topic;
         this.partition = record.partition();
         this.offset = record.offset();
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
@@ -149,7 +148,7 @@ public class Record {
                 if (client != null) {
                     ParsedSchema schema = client.getSchemaById(schemaId);
                     if ( schema.schemaType().equals(ProtobufSchema.TYPE) ) {
-                       toType = kafkaProtoDeserializer.deserialize(topic, payload);
+                       toType = kafkaProtoDeserializer.deserialize(topic.getName(), payload);
                        if (!(toType instanceof Message)) {
                            return String.valueOf(toType);
                        }
@@ -157,7 +156,7 @@ public class Record {
                        Message dynamicMessage = (Message)toType;
                        return AvroToJsonSerializer.getMapper().readTree(JsonFormat.printer().print(dynamicMessage)).toString();
                     } else  if ( schema.schemaType().equals(JsonSchema.TYPE) ) {
-                      toType = kafkaJsonDeserializer.deserialize(topic, payload);
+                      toType = kafkaJsonDeserializer.deserialize(topic.getName(), payload);
                       if ( !(toType instanceof JsonNode) ) {
                           return String.valueOf(toType);
                       }
@@ -166,7 +165,7 @@ public class Record {
                     }
                 }
 
-                toType = kafkaAvroDeserializer.deserialize(topic, payload);
+                toType = kafkaAvroDeserializer.deserialize(topic.getName(), payload);
 
                 //for primitive avro type
                 if (!(toType instanceof GenericRecord)) {
@@ -184,7 +183,7 @@ public class Record {
         } else {
             if (protobufToJsonDeserializer != null) {
                 try {
-                    String record = protobufToJsonDeserializer.deserialize(topic, payload, isKey);
+                    String record = protobufToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
                     if (record != null) {
                         return record;
                     }
@@ -199,6 +198,9 @@ public class Record {
     }
 
     private Integer getAvroSchemaId(byte[] payload) {
+        if (topic.isInternalTopic()) {
+            return null;
+        }
         try {
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
