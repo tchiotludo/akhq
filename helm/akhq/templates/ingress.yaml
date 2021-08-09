@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "akhq.fullname" . -}}
 {{- $ingressPaths := .Values.ingress.paths -}}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: {{ include "akhq.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -32,9 +32,19 @@ spec:
         paths:
 	{{- range $ingressPaths }}
           - path: {{ . }}
+            {{- if eq (include "akhq.ingress.apiVersion" $) "networking.k8s.io/v1" }}
+            pathType: "ImplementationSpecific"
+            {{- end }}
             backend:
+              {{- if eq (include "akhq.ingress.apiVersion" $) "networking.k8s.io/v1" }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
+              {{ else }}
               serviceName: {{ $fullName }}
               servicePort: http
+              {{- end }}
 	{{- end }}
   {{- end }}
 {{- end }}
