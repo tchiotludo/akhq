@@ -259,3 +259,15 @@ akhq:
             - username: einstein
               groups:
                 - admin
+
+    # Header configuration (reverse proxy)
+    header-auth:
+      user-header: x-akhq-user # mandatory (the header name that will contain username)
+      groups-header: x-akhq-group # optional (the header name that will contains groups separated by coma `,`)
+      users: # optional, the users list allow, if empty we only rely on `groups-header`
+        - username: header-user # username matching the `user-header` value
+          groups: # list of group for current users
+            - topic-reader
+        - username: header-admin
+          groups:
+            - admin

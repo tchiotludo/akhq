@@ -10,4 +10,9 @@ akhq:
       extra:
         roles:
           - topic/read
+          - topic/write
 
+    header-auth:
+      user-header: x-akhq-user
+      groups-header: x-akhq-group
+      users: []
