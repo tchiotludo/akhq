@@ -31,6 +31,7 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
         List<String> akhqGroups = new ArrayList<>();
         switch (request.getProviderType()) {
             case BASIC_AUTH:
+            case HEADER:
                 // we already have target AKHQ groups
                 akhqGroups.addAll(request.getGroups());
                 break;

@@ -13,6 +13,7 @@ public interface ClaimProvider {
     AKHQClaimResponse generateClaim(AKHQClaimRequest request);
 
     enum ProviderType {
+        HEADER,
         BASIC_AUTH,
         LDAP,
         OIDC
