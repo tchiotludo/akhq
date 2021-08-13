@@ -47,6 +47,9 @@ public class RecordRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     @Inject
+    private ConfigRepository configRepository;
+
+    @Inject
     private TopicRepository topicRepository;
 
     @Inject
@@ -539,6 +542,14 @@ public class RecordRepository extends AbstractRepository {
                 keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
             } else {
                 keyAsBytes = key.get().getBytes();
+            }
+        } else {
+            try {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value))) {
+                    throw new IllegalArgumentException("Key missing for produce onto compacted topic");
+                }
+            } catch (ExecutionException ex) {
+                log.debug("Failed to determine if {} topic {} is compacted", clusterId, topic, ex);
             }
         }
 

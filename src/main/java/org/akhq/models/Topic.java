@@ -126,8 +126,10 @@ public class Topic {
             return false;
         }
 
-        List<Config> configs = configRepository.findByTopic(clusterId, this.getName());
+        return isCompacted(configRepository.findByTopic(clusterId, this.getName()));
+    }
 
+    public static boolean isCompacted(List<Config> configs) {
         return configs != null && configs
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))
