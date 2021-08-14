@@ -13,6 +13,7 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.controllers.TopicController;
+import org.akhq.models.KeyValue;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
@@ -457,6 +458,36 @@ public class RecordRepository extends AbstractRepository {
         );
     }
 
+    public List<RecordMetadata> produce(
+            String clusterId,
+            String topic,
+            String value,
+            Map<String, String> headers,
+            Optional<String> key,
+            Optional<Integer> partition,
+            Optional<Long> timestamp,
+            Optional<Integer> keySchemaId,
+            Optional<Integer> valueSchemaId,
+            Boolean multiMessage,
+            Optional<String> messageSeparator,
+            Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException {
+
+        List<RecordMetadata> produceResults = new ArrayList<>();
+
+        // Distinguish between single record produce, and multiple messages
+        if (multiMessage.booleanValue()) {
+            // Split key-value pairs and produce them
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value, messageSeparator.orElseThrow(), keyValueSeparator.orElseThrow())) {
+                produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
+                        partition, timestamp, keySchemaId, valueSchemaId));
+            }
+        } else {
+            produceResults.add(
+                    produce(clusterId, topic, value, headers, key, partition, timestamp, keySchemaId, valueSchemaId));
+        }
+        return produceResults;
+    }
+
     private RecordMetadata produce(
         String clusterId,
         String topic, byte[] value,
@@ -484,6 +515,54 @@ public class RecordRepository extends AbstractRepository {
                     .collect(Collectors.toList())
             ))
             .get();
+    }
+
+    /**
+     * Splits a multi-message into a list of key-value pairs.
+     * @param value The multi-message string submitted by the {@link TopicController}
+     * @param messageSeparator The character separating key-value pairs
+     * @param keyValueSeparator The character separating each key from their corresponding value
+     * @return A list of {@link KeyValue}, holding the split pairs
+     */
+    private List<KeyValue<String, String>> splitMultiMessage(String value, String messageSeparator, String keyValueSeparator) {
+        return splitMessages(value, messageSeparator).stream().map(v -> getKeyValues(v, keyValueSeparator))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> splitMessages(String initialValue, String messageSeparator) {
+        switch (messageSeparator) {
+        case "lineBreak":
+            return Arrays.asList(initialValue.split("\r\n|\r|\n"));
+        case "semicolon":
+            return Arrays.asList(initialValue.split(";"));
+        default:
+            return List.of();
+        }
+    }
+
+    private KeyValue<String, String> getKeyValues(String keyValueString, String keyValueSeparator) {
+        switch (keyValueSeparator) {
+        case "colon":
+            return splitKeyValue(keyValueString, ":");
+        case "dot":
+            return splitKeyValue(keyValueString, ".");
+        case "comma":
+            return splitKeyValue(keyValueString, ",");
+        case "semicolon":
+            return splitKeyValue(keyValueString, ";");
+        case "dash":
+            return splitKeyValue(keyValueString, "-");
+        case "underscore":
+            return splitKeyValue(keyValueString, "_");
+        default:
+            return null;
+        }
+    }
+
+    private KeyValue<String, String> splitKeyValue(String keyValueStr, String keyValueSeparator) {
+        String[] keyValue = null;
+        keyValue = keyValueStr.split(keyValueSeparator, 2);
+        return new KeyValue<>(keyValue[0].trim(),keyValue[1]);
     }
 
     public void emptyTopic(String clusterId, String topicName) throws ExecutionException, InterruptedException {

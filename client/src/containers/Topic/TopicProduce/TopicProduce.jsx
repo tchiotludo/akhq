@@ -24,7 +24,9 @@ class TopicProduce extends Form {
       key: '',
       hKey0: '',
       hValue0: '',
-      value: ''
+      value: '',
+      msgSep: 'lineBreak',
+      kvSep: 'colon'
     },
     datetime: new Date(),
     openDateModal: false,
@@ -40,7 +42,9 @@ class TopicProduce extends Form {
     valueSchemaSearchValue: '',
     selectedValueSchema: '',
     clusterId: '',
-    topicId: ''
+    topicId: '',
+    multiMessage: false,
+    valuePlaceholder: '{"param": "value"}'
   };
 
   schema = {
@@ -58,8 +62,23 @@ class TopicProduce extends Form {
       .label('hValue0'),
     value: Joi.string()
       .allow('')
-      .label('Value')
+      .label('Value'),
+    msgSep: Joi.string()
+      .allow('')
+      .label('msgSep'),
+    kvSep: Joi.string()
+      .allow('')
+      .label('kvSep')
   };
+
+keyValueSepMap = {"colon": ":",
+                  "dot": ".",
+                  "comma": ",",
+                  "semicolon": ";",
+                  "dash": "-",
+                  "underscore": "_"};
+
+messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
@@ -98,7 +117,8 @@ class TopicProduce extends Form {
       selectedKeySchema,
       selectedValueSchema,
       keySchema,
-      valueSchema
+      valueSchema,
+      multiMessage
     } = this.state;
     const { clusterId, topicId } = this.props.match.params;
 
@@ -110,9 +130,12 @@ class TopicProduce extends Form {
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: JSON.parse(JSON.stringify(formData.value)),
+      value: formData.value,
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
-      valueSchema: schemaValueToSend ? schemaValueToSend.id : ''
+      valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
+      multiMessage: multiMessage,
+      messageSeparator: formData.msgSep,
+      keyValueSeparator: formData.kvSep
     };
 
     let headers = {};
@@ -132,6 +155,109 @@ class TopicProduce extends Form {
         });
         toast.success(`Produced to ${topicId}.`);
       });
+  }
+
+  renderMultiMessage() {
+    const { formData, multiMessage } = this.state;
+
+    return (
+      <div className="row multimessage-wrapper">
+          <label className="col-sm-2 col-form-label">Multi message</label>
+
+          <div className="row col-sm-10 row-cols-3 khq-multiple">
+              <div>
+                  <div className="khq-select form-group bootstrap-select">
+                      {this.renderSelect(
+                          'multiMessage',
+                          '',
+                          [{ name: "Single message", _id: "singleMessage" }, { name: "Multiple messages", _id: "multiMessage" }],
+                          event => {
+                              if (event.target.value == "multiMessage") {
+                                  this.setState({
+                                      multiMessage: true,
+                                      valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[this.state.formData.kvSep],
+                                        this.messagesSepMap[this.state.formData.msgSep])
+                                  })
+                              } else {
+                                  this.setState({
+                                      multiMessage: false,
+                                      valuePlaceholder: '{"param": "value"}'
+                                  })
+                              }
+                          }
+                      )}
+                  </div>
+              </div>
+              <div>
+                  <label className="col-auto col-form-label">Separator</label>
+                  <div className="khq-select form-group bootstrap-select">
+                      {this.renderSelect(
+                          'keyValueSeparator',
+                          '',
+                          [{ name: ":", _id: "colon" },
+                          { name: ".", _id: "dot" },
+                          { name: ",", _id: "comma" },
+                          { name: ";", _id: "semicolon" },
+                          { name: "-", _id: "dash" },
+                          { name: "_", _id: "underscore" }],
+                          value => {
+                              this.setState({
+                                  formData: {
+                                      ...formData,
+                                      kvSep: value.target.value
+                                      },
+                                      valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[value.target.value],
+                                        this.messagesSepMap[this.state.formData.msgSep])
+                              })
+                          },
+                          undefined,
+                          undefined,
+                          undefined,
+                          { disabled: !multiMessage }
+                          )}
+                  </div>
+              </div>
+              <div style={{ paddingLeft: 15 }}>
+                  <div className="khq-select form-group bootstrap-select">
+                      {this.renderSelect(
+                          'messageSeparator',
+                          '',
+                          [{ name: "Each pair on a new line", _id: "lineBreak" },
+                          { name: "Each pair split by ';'", _id: "semicolon" }],
+                          value => {
+                              this.setState({
+                                  formData: {
+                                      ...formData,
+                                      msgSep: value.target.value
+                                  },
+                                  valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[this.state.formData.kvSep],
+                                    this.messagesSepMap[value.target.value])
+                              })
+                          },
+                          undefined,
+                          undefined,
+                          undefined,
+                          { disabled: !multiMessage }
+                          )}
+                  </div>
+              </div>
+          </div>
+      </div>
+    );
+  }
+
+  setValuePlaceholder(keyValueSeparatorChar, messageSeparatorChar) {
+    if(messageSeparatorChar == ";") {
+      return "key1" + keyValueSeparatorChar + "{\"param\": \"value1\"\n"
+        + "      \"param2\": \"value2\"}"
+        + messageSeparatorChar + "\n"
+        + "key2" + keyValueSeparatorChar + "{\"param\": \"value3\"\n"
+        + "      \"param2\": \"value4\"}"
+    } else {
+      return "key1" + keyValueSeparatorChar + "{\"param\": \"value1\"}"
+        + messageSeparatorChar
+        + "key2" + keyValueSeparatorChar + "{\"param\": \"value2\"}";
+    }
   }
 
   renderHeaders() {
@@ -284,13 +410,14 @@ class TopicProduce extends Form {
       selectedKeySchema,
       valueSchema,
       valueSchemaSearchValue,
-      selectedValueSchema
+      selectedValueSchema,
+      multiMessage,
+      valuePlaceholder
     } = this.state;
     let date = moment(datetime);
     return (
       <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
-          <div>
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
@@ -313,11 +440,11 @@ class TopicProduce extends Form {
                 'key'
               )
             )}
-            {this.renderInput('key', 'Key', 'Key', 'Key')}
-            <div></div>
-          </div>
+
+          {(this.renderInput('key', 'Key', 'Key', 'Key', undefined, undefined, undefined, undefined,{ disabled: multiMessage }))}
 
           {this.renderHeaders()}
+
           {this.renderDropdown(
             'Value schema',
             valueSchema.map(value => value.subject),
@@ -336,14 +463,19 @@ class TopicProduce extends Form {
               'value'
             )
           )}
+
+          {this.renderMultiMessage()}
+
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
-              formData: {
-                ...formData,
-                value: value
-              }
-            });
-          })}
+                formData: {
+                    ...formData,
+                    value: value
+                }
+            })},
+          multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
+          { placeholder: valuePlaceholder }
+          )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
