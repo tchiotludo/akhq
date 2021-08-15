@@ -112,6 +112,8 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
     }
 
     private Stream<String> groupsSplit(Optional<String> groupHeaders) {
-        return groupHeaders.stream().flatMap(s -> Arrays.stream(s.split(",")));
+        return groupHeaders
+            .stream()
+            .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())));
     }
 }
