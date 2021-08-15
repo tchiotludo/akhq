@@ -41,16 +41,17 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
 
     @Override
     public Publisher<Authentication> fetchAuthentication(HttpRequest<?> request) {
-        Optional<String> userHeaders = request.getHeaders()
-            .get(headerAuth.getUserHeader(), String.class);
-
-        Optional<String> groupHeaders = headerAuth.getGroupsHeader() != null ?
-            request.getHeaders().get(headerAuth.getGroupsHeader(), String.class) :
+        Optional<String> userHeaders = headerAuth.getUserHeader() != null ?
+            request.getHeaders().get(headerAuth.getUserHeader(), String.class) :
             Optional.empty();
 
         if (userHeaders.isEmpty()) {
             return Publishers.empty();
         }
+
+        Optional<String> groupHeaders = headerAuth.getGroupsHeader() != null ?
+            request.getHeaders().get(headerAuth.getGroupsHeader(), String.class) :
+            Optional.empty();
 
         return Flowable
             .fromCallable(() -> {
