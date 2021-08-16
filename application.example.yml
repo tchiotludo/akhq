@@ -14,7 +14,7 @@ micronaut:
         groups:
           enabled: true
           base: "dc=example,dc=com"
-    # OIDC authentification configuration
+    # OIDC authentication configuration
     oauth2:
       enabled: true
       clients:
@@ -265,6 +265,7 @@ akhq:
       user-header: x-akhq-user # mandatory (the header name that will contain username)
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
       groups-header-separator: , # optional (separator, defaults to ',')
+      ip-patterns: [127.0.0.*] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
       users: # optional, the users list to allow, if empty we only rely on `groups-header`
         - username: header-user # username matching the `user-header` value
           groups: # list of group for current users

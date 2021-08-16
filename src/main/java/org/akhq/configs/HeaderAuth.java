@@ -1,9 +1,11 @@
 package org.akhq.configs;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+import io.micronaut.security.config.SecurityConfigurationProperties;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -13,6 +15,7 @@ public class HeaderAuth {
     String groupsHeader;
     String groupsHeaderSeparator = ",";
     List<Users> users;
+    List<String> ipPatterns = Collections.singletonList(SecurityConfigurationProperties.ANYWHERE);
 
     @Data
     public static class Users {

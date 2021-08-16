@@ -617,7 +617,7 @@ The username field can be any string field, the roles field has to be a JSON arr
 
 ### Header configuration (reverse proxy)
 
-To enable Header authentification in the application, you'll have to configure the header that will resolve users & groups:
+To enable Header authentication in the application, you'll have to configure the header that will resolve users & groups:
 
 ```yaml
 akhq:
@@ -627,6 +627,7 @@ akhq:
       user-header: x-akhq-user # mandatory (the header name that will contain username)
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
       groups-header-separator: , # optional (separator, defaults to ',')
+      ip-patterns: [0.0.0.0] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
       users: # optional, the users list to allow, if empty we only rely on `groups-header`
         - username: header-user # username matching the `user-header` value
           groups: # list of group for current users
@@ -636,10 +637,11 @@ akhq:
             - admin
 ```
 
-* The `user-header` is mandatory in order to map the user with `users` list or to display the user on the ui if no `users` is provided.
-* The `groups-header` is optional and can be used in order to inject a list of groups for all the users. This list will be merged with `groups` for the current users.
-* The `groups-header-separator` is optional and can be used to customize group separator used when parsing `groups-header` header, defaults to `,`.
-* The `users` is a list of allowed users.
+* `user-header` is mandatory in order to map the user with `users` list or to display the user on the ui if no `users` is provided.
+* `groups-header` is optional and can be used in order to inject a list of groups for all the users. This list will be merged with `groups` for the current users.
+* `groups-header-separator` is optional and can be used to customize group separator used when parsing `groups-header` header, defaults to `,`.
+* `ip-patterns` limits the IP addresses that header authentication will accept, given as a list of Java regular expressions, omit or set to `[0.0.0.0]` to allow all addresses
+* `users` is a list of allowed users.
 
 ### External roles and attributes mapping
 

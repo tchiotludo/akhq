@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HeaderAuthControllerTest extends AbstractTest {
     @Inject
@@ -87,6 +88,27 @@ class HeaderAuthControllerTest extends AbstractTest {
 
             assertEquals("header-user", result.getUsername());
             assertEquals(3, result.getRoles().size());
+        }
+    }
+
+    @MicronautTest(environments = "header-ip-disallow")
+    public static class UntrustedIp extends AbstractTest {
+        @Inject
+        @Client("/")
+        protected RxHttpClient client;
+
+        @Test
+        void invalidIp() {
+            AkhqController.AuthUser result = client.toBlocking().retrieve(
+                HttpRequest
+                    .GET("/api/me")
+                    .header("x-akhq-user", "header-user")
+                    .header("x-akhq-group", "limited,extra"),
+                AkhqController.AuthUser.class
+            );
+
+            assertNull(result.getUsername());
+            assertNull(result.getRoles());
         }
     }
 }
