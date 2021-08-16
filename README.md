@@ -625,8 +625,9 @@ akhq:
     # Header configuration (reverse proxy)
     header-auth:
       user-header: x-akhq-user # mandatory (the header name that will contain username)
-      groups-header: x-akhq-group # optional (the header name that will contains groups separated by coma `,`)
-      users: # optional, the users list allow, if empty we only rely on `groups-header`
+      groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
+      groups-header-separator: , # optional (separator, defaults to ',')
+      users: # optional, the users list to allow, if empty we only rely on `groups-header`
         - username: header-user # username matching the `user-header` value
           groups: # list of group for current users
             - topic-reader
@@ -636,8 +637,9 @@ akhq:
 ```
 
 * The `user-header` is mandatory in order to map the user with `users` list or to display the user on the ui if no `users` is provided.
-* The `groups-header` is optional and can be used in order to inject a list of groups (separated by `,`) for all the users. This list will be merged with `groups` for the current users.
-* The `users` is a list of users allowed.
+* The `groups-header` is optional and can be used in order to inject a list of groups for all the users. This list will be merged with `groups` for the current users.
+* The `groups-header-separator` is optional and can be used to customize group separator used when parsing `groups-header` header, defaults to `,`.
+* The `users` is a list of allowed users.
 
 ### External roles and attributes mapping
 
