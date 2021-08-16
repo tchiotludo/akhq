@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-@Requires(beans = HeaderAuth.class)
+@Requires(property = "akhq.security.header-auth.user-header")
 @Singleton
 @Slf4j
 public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
