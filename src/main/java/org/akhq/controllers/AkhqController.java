@@ -3,6 +3,7 @@ package org.akhq.controllers;
 import io.micronaut.configuration.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -40,6 +41,11 @@ public class AkhqController extends AbstractController {
     @Inject
     private UIOptions uIOptions;
 
+    @Inject
+    @Nullable
+    private HeaderAuth headerAuth;
+
+
     @HasAnyPermission()
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
@@ -64,18 +70,25 @@ public class AkhqController extends AbstractController {
     public AuthDefinition auths() {
         AuthDefinition authDefinition = new AuthDefinition();
 
+        if (oidc.isEnabled()) {
+            authDefinition.oidcAuths = oidc.getProviders().entrySet()
+                .stream()
+                .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
+                .collect(Collectors.toList());
+        }
+
         if (applicationContext.containsBean(SecurityService.class)) {
             authDefinition.loginEnabled = true;
             // Display login form if there are LocalUsers OR Ldap is enabled
             authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
                     applicationContext.containsBean(LdapConfiguration.class);
-        }
 
-        if (oidc.isEnabled()) {
-            authDefinition.oidcAuths = oidc.getProviders().entrySet()
-                    .stream()
-                    .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
-                    .collect(Collectors.toList());
+            if (!authDefinition.formEnabled &&
+                authDefinition.oidcAuths == null &&
+                headerAuth != null && headerAuth.getUserHeader() != null
+            ) {
+                authDefinition.loginEnabled = false;
+            }
         }
 
         return authDefinition;
