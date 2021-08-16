@@ -1,0 +1,7 @@
+akhq:
+  security:
+    header-auth:
+      user-header: x-akhq-user
+      groups-header: x-akhq-group
+      ip-patterns: ["none"]
+    default-group: invalid-group
