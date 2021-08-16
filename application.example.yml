@@ -1,7 +1,7 @@
 micronaut:
   security:
     enabled: true
-    # Ldap authentificaton configuration
+    # Ldap authenticaton configuration
     ldap:
       default:
         enabled: true
@@ -266,9 +266,14 @@ akhq:
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
       groups-header-separator: , # optional (separator, defaults to ',')
       ip-patterns: [127.0.0.*] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
-      users: # optional, the users list to allow, if empty we only rely on `groups-header`
+      default-group: topic-reader
+      groups:
+        - name: header-admin-group
+          groups:
+            - admin
+      users: # optional
         - username: header-user # username matching the `user-header` value
-          groups: # list of group for current users
+          groups: # list of groups / additional groups
             - topic-reader
         - username: header-admin
           groups:

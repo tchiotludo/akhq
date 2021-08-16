@@ -19,6 +19,8 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     @Inject
     SecurityProperties securityProperties;
     @Inject
+    HeaderAuth headerAuthProperties;
+    @Inject
     Ldap ldapProperties;
     @Inject
     Oidc oidcProperties;
@@ -31,9 +33,17 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
         List<String> akhqGroups = new ArrayList<>();
         switch (request.getProviderType()) {
             case BASIC_AUTH:
-            case HEADER:
                 // we already have target AKHQ groups
                 akhqGroups.addAll(request.getGroups());
+                break;
+            case HEADER:
+                // we need to convert from externally provided groups to AKHQ groups to find the roles and attributes
+                // using akhq.security.header-auth.groups and akhq.security.header-auth.users
+                // as well as akhq.security.header-auth.default-group
+                userMappings = headerAuthProperties.getUsers();
+                groupMappings = headerAuthProperties.getGroups();
+                defaultGroup = headerAuthProperties.getDefaultGroup();
+                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
                 break;
             case LDAP:
                 // we need to convert from LDAP groups to AKHQ groups to find the roles and attributes

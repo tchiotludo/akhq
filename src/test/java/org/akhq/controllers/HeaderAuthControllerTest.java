@@ -44,21 +44,36 @@ class HeaderAuthControllerTest extends AbstractTest {
     }
 
     @Test
-    void userGroup() {
+    void externalUserAndGroup() {
         AkhqController.AuthUser result = client.toBlocking().retrieve(
             HttpRequest
                 .GET("/api/me")
-                .header("x-akhq-user", "header-user")
-                .header("x-akhq-group", "limited,operator"),
+                .header("x-akhq-user", "header-user-operator")
+                .header("x-akhq-group", "external-operator,external-limited"),
             AkhqController.AuthUser.class
         );
 
-        assertEquals("header-user", result.getUsername());
+        assertEquals("header-user-operator", result.getUsername());
         assertEquals(11, result.getRoles().size());
     }
 
     @Test
-    void invalidUser() {
+    void userWithAdditionalExternalGroup() {
+        AkhqController.AuthUser result = client.toBlocking().retrieve(
+            HttpRequest
+                .GET("/api/me")
+                .header("x-akhq-user", "header-user")
+                .header("x-akhq-group", "external-limited"),
+            AkhqController.AuthUser.class
+        );
+
+        assertEquals("header-user", result.getUsername());
+        // operator from 'users' and externally provided 'limited'
+        assertEquals(11, result.getRoles().size());
+    }
+
+    @Test
+    void userWithoutAnyGroup() {
         AkhqController.AuthUser result = client.toBlocking().retrieve(
             HttpRequest
                 .GET("/api/me")
@@ -66,29 +81,8 @@ class HeaderAuthControllerTest extends AbstractTest {
             AkhqController.AuthUser.class
         );
 
-        assertEquals(null, result.getUsername());
-        assertEquals(7, result.getRoles().size());
-    }
-
-    @MicronautTest(environments = "overridegroups")
-    public static class NoUser extends AbstractTest {
-        @Inject
-        @Client("/")
-        protected RxHttpClient client;
-
-        @Test
-        void invalidUser() {
-            AkhqController.AuthUser result = client.toBlocking().retrieve(
-                HttpRequest
-                    .GET("/api/me")
-                    .header("x-akhq-user", "header-user")
-                    .header("x-akhq-group", "limited,extra"),
-                AkhqController.AuthUser.class
-            );
-
-            assertEquals("header-user", result.getUsername());
-            assertEquals(3, result.getRoles().size());
-        }
+        assertEquals("header-invalid", result.getUsername());
+        assertNull(result.getRoles());
     }
 
     @MicronautTest(environments = "header-ip-disallow")
