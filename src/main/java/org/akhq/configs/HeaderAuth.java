@@ -1,9 +1,7 @@
 package org.akhq.configs;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +11,7 @@ import java.util.List;
 public class HeaderAuth {
     String userHeader;
     String groupsHeader;
+    String groupsHeaderSeparator = ",";
     List<Users> users;
 
     @Data
@@ -21,4 +20,3 @@ public class HeaderAuth {
         List<String> groups = new ArrayList<>();
     }
 }
-
