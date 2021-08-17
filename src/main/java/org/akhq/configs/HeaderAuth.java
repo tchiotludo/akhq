@@ -14,12 +14,10 @@ public class HeaderAuth {
     String userHeader;
     String groupsHeader;
     String groupsHeaderSeparator = ",";
-    List<Users> users;
-    List<String> ipPatterns = Collections.singletonList(SecurityConfigurationProperties.ANYWHERE);
 
-    @Data
-    public static class Users {
-        String username;
-        List<String> groups = new ArrayList<>();
-    }
+    String defaultGroup;
+    List<GroupMapping> groups = new ArrayList<>();
+    List<UserMapping> users = new ArrayList<>();
+
+    List<String> ipPatterns = Collections.singletonList(SecurityConfigurationProperties.ANYWHERE);
 }

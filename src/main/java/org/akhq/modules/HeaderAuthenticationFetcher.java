@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -92,18 +91,17 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
 
         return Flowable
             .fromCallable(() -> {
-                List<String> strings = groupsMapper(userHeaders.get(), groupHeaders);
-
-                if (strings.size() == 0) {
-                    return Optional.<ClaimProvider.AKHQClaimResponse>empty();
-                }
+                List<String> groups = groupHeaders
+                    .stream()
+                    .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())))
+                    .collect(Collectors.toList());
 
                 ClaimProvider.AKHQClaimRequest claim =
                     ClaimProvider.AKHQClaimRequest.builder()
                         .providerType(ClaimProvider.ProviderType.HEADER)
                         .providerName(null)
                         .username(userHeaders.get())
-                        .groups(strings)
+                        .groups(groups)
                         .build();
 
                 return Optional.of(claimProvider.generateClaim(claim));
@@ -129,28 +127,5 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
                     return Flowable.empty();
                 }
             });
-    }
-
-    private List<String> groupsMapper(String user, Optional<String> groupHeaders) {
-        if (headerAuth.getUsers() == null || headerAuth.getUsers().size() == 0) {
-            return groupsSplit(groupHeaders)
-                .collect(Collectors.toList());
-        }
-
-        return headerAuth
-            .getUsers()
-            .stream()
-            .filter(users -> users.getUsername().equals(user))
-            .flatMap(users -> Stream.concat(
-                groupsSplit(groupHeaders),
-                users.getGroups() != null ? users.getGroups().stream() : Stream.empty()
-            ))
-            .collect(Collectors.toList());
-    }
-
-    private Stream<String> groupsSplit(Optional<String> groupHeaders) {
-        return groupHeaders
-            .stream()
-            .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())));
     }
 }
