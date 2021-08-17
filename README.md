@@ -628,10 +628,17 @@ akhq:
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
       groups-header-separator: , # optional (separator, defaults to ',')
       ip-patterns: [0.0.0.0] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
-      users: # optional, the users list to allow, if empty we only rely on `groups-header`
+      default-group: topic-reader
+      groups: # optional
+        # the name of the user group read from header
+        - name: header-admin-group
+          groups:
+            # the corresponding akhq groups (eg. topic-reader/writer or akhq default groups like admin/reader/no-role)
+            - admin
+      users: # optional
         - username: header-user # username matching the `user-header` value
-          groups: # list of group for current users
-            - topic-reader
+          groups: # list of groups / additional groups
+            - topic-writer
         - username: header-admin
           groups:
             - admin
@@ -641,13 +648,15 @@ akhq:
 * `groups-header` is optional and can be used in order to inject a list of groups for all the users. This list will be merged with `groups` for the current users.
 * `groups-header-separator` is optional and can be used to customize group separator used when parsing `groups-header` header, defaults to `,`.
 * `ip-patterns` limits the IP addresses that header authentication will accept, given as a list of Java regular expressions, omit or set to `[0.0.0.0]` to allow all addresses
-* `users` is a list of allowed users.
+* `default-group` default AKHQ group, used when no groups were read from `groups-header`
+* `groups` maps external group names read from headers to AKHQ groups.
+* `users` assigns additional AKHQ groups to users.
 
 ### External roles and attributes mapping
 
-If you managed which topics (or any other resource) in an external system, you have access to 2 more implementations mechanisms to map your authenticated user (from either Local, LDAP or OIDC Authent) into AKHQ roles and attributes:
+If you managed which topics (or any other resource) in an external system, you have access to 2 more implementations mechanisms to map your authenticated user (from either Local, Header, LDAP or OIDC) into AKHQ roles and attributes:
 
-If you use this mechanism, keep in mind it will take the local user's groups for local Auth, and the external groups for LDAP/OIDC (ie. this will NOT do the mapping between LDAP/OIDC and local groups)
+If you use this mechanism, keep in mind it will take the local user's groups for local Auth, and the external groups for Header/LDAP/OIDC (ie. this will NOT do the mapping between Header/LDAP/OIDC and local groups)
 
 **Default configuration-based**
 This is the current implementation and the default one (doesn't break compatibility)
@@ -665,6 +674,7 @@ akhq:
         roles: []
     ldap: # LDAP users/groups to AKHQ groups mapping
     oidc: # OIDC users/groups to AKHQ groups mapping
+    header-auth: # header authentication users/groups to AKHQ groups mapping
 ````
 
 **REST API**
@@ -682,7 +692,7 @@ In this mode, AKHQ will send to the ``akhq.security.rest.url`` endpoint a POST r
 
 ````json
 {
-  "providerType": "LDAP or OIDC or BASIC_AUTH",
+  "providerType": "LDAP or OIDC or BASIC_AUTH or HEADER",
   "providerName": "OIDC provider name (OIDC only)",
   "username": "user",
   "groups": ["LDAP-GROUP-1", "LDAP-GROUP-2", "LDAP-GROUP-3"]
