@@ -98,6 +98,10 @@ class Routes extends Root {
       } else {
         sessionStorage.setItem('user', '');
         sessionStorage.setItem('roles', JSON.stringify({}));
+        const pathname = window.location.pathname;
+        if (pathname !== '/ui/login') {
+          sessionStorage.setItem ('returnTo', pathname+window.location.search);
+        }
         this.setState({ user: 'not_logged' });
       }
     }
