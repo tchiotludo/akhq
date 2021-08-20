@@ -343,8 +343,7 @@ class TopicProduce extends Form {
       valueSchema,
       valueSchemaSearchValue,
       selectedValueSchema,
-      multiMessage,
-      valuePlaceholder
+      multiMessage
     } = this.state;
     let date = moment(datetime);
     return (
