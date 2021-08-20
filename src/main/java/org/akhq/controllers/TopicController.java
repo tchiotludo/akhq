@@ -151,7 +151,6 @@ public class TopicController extends AbstractController {
                 keySchema,
                 valueSchema,
                 multiMessage,
-                messageSeparator,
                 keyValueSeparator).stream()
                     .map(recordMetadata -> new Record(recordMetadata,
                             schemaRegistryRepository.getSchemaRegistryType(cluster),
@@ -511,3 +510,4 @@ public class TopicController extends AbstractController {
         private long offset;
     }
 }
+ 

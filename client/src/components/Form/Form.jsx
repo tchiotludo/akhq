@@ -240,6 +240,21 @@ class Form extends Root {
       </React.Fragment>
     );
   };
+
+  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked) => {
+    return (
+        <input
+        type="checkbox"
+        name={name}
+        id={name}
+        class="form-input-check"
+        checked={isChecked}
+        onChange={onChange}
+        defaultChecked={ isDefaultChecked ? isDefaultChecked : false}
+        />
+    );
+  };
 }
 
 export default Form;
+ 

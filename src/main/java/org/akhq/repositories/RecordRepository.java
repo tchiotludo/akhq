@@ -469,7 +469,6 @@ public class RecordRepository extends AbstractRepository {
             Optional<Integer> keySchemaId,
             Optional<Integer> valueSchemaId,
             Boolean multiMessage,
-            Optional<String> messageSeparator,
             Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException {
 
         List<RecordMetadata> produceResults = new ArrayList<>();
@@ -477,7 +476,7 @@ public class RecordRepository extends AbstractRepository {
         // Distinguish between single record produce, and multiple messages
         if (multiMessage.booleanValue()) {
             // Split key-value pairs and produce them
-            for (KeyValue<String, String> kvPair : splitMultiMessage(value, messageSeparator.orElseThrow(), keyValueSeparator.orElseThrow())) {
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value, keyValueSeparator.orElseThrow())) {
                 produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
                         partition, timestamp, keySchemaId, valueSchemaId));
             }
@@ -520,43 +519,12 @@ public class RecordRepository extends AbstractRepository {
     /**
      * Splits a multi-message into a list of key-value pairs.
      * @param value The multi-message string submitted by the {@link TopicController}
-     * @param messageSeparator The character separating key-value pairs
-     * @param keyValueSeparator The character separating each key from their corresponding value
+     * @param keyValueSeparator The character(s) separating each key from their corresponding value
      * @return A list of {@link KeyValue}, holding the split pairs
      */
-    private List<KeyValue<String, String>> splitMultiMessage(String value, String messageSeparator, String keyValueSeparator) {
-        return splitMessages(value, messageSeparator).stream().map(v -> getKeyValues(v, keyValueSeparator))
+    private List<KeyValue<String, String>> splitMultiMessage(String value, String keyValueSeparator) {
+        return List.of(value.split("\r\n|\r|\n")).stream().map(v -> splitKeyValue(v, keyValueSeparator))
                 .collect(Collectors.toList());
-    }
-
-    private List<String> splitMessages(String initialValue, String messageSeparator) {
-        switch (messageSeparator) {
-        case "lineBreak":
-            return Arrays.asList(initialValue.split("\r\n|\r|\n"));
-        case "semicolon":
-            return Arrays.asList(initialValue.split(";"));
-        default:
-            return List.of();
-        }
-    }
-
-    private KeyValue<String, String> getKeyValues(String keyValueString, String keyValueSeparator) {
-        switch (keyValueSeparator) {
-        case "colon":
-            return splitKeyValue(keyValueString, ":");
-        case "dot":
-            return splitKeyValue(keyValueString, ".");
-        case "comma":
-            return splitKeyValue(keyValueString, ",");
-        case "semicolon":
-            return splitKeyValue(keyValueString, ";");
-        case "dash":
-            return splitKeyValue(keyValueString, "-");
-        case "underscore":
-            return splitKeyValue(keyValueString, "_");
-        default:
-            return null;
-        }
     }
 
     private KeyValue<String, String> splitKeyValue(String keyValueStr, String keyValueSeparator) {
@@ -1288,3 +1256,4 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
     }
 }
+ 

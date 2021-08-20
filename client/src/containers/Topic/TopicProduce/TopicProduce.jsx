@@ -25,8 +25,7 @@ class TopicProduce extends Form {
       hKey0: '',
       hValue0: '',
       value: '',
-      msgSep: 'lineBreak',
-      kvSep: 'colon'
+      keyValueSeparator: ':'
     },
     datetime: new Date(),
     openDateModal: false,
@@ -63,22 +62,10 @@ class TopicProduce extends Form {
     value: Joi.string()
       .allow('')
       .label('Value'),
-    msgSep: Joi.string()
-      .allow('')
-      .label('msgSep'),
-    kvSep: Joi.string()
-      .allow('')
-      .label('kvSep')
+    keyValueSeparator: Joi.string()
+      .min(1)
+      .label('keyValueSeparator')
   };
-
-keyValueSepMap = {"colon": ":",
-                  "dot": ".",
-                  "comma": ",",
-                  "semicolon": ";",
-                  "dash": "-",
-                  "underscore": "_"};
-
-messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
@@ -134,8 +121,7 @@ messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
       valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
       multiMessage: multiMessage,
-      messageSeparator: formData.msgSep,
-      keyValueSeparator: formData.kvSep
+      keyValueSeparator: formData.keyValueSeparator
     };
 
     let headers = {};
@@ -161,102 +147,48 @@ messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
     const { formData, multiMessage } = this.state;
 
     return (
-      <div className="row multimessage-wrapper">
-          <label className="col-sm-2 col-form-label">Multi message</label>
+      <div className="form-group row">
+        <label className="col-sm-2 col-form-label">Multi message</label>
+          <div className="row khq-multiple col-sm-7">
+            {this.renderCheckbox(
+              'isMultiMessage',
+              '',
+              multiMessage,
+              () => {
+                this.setState({multiMessage: !multiMessage,
+                  valuePlaceholder: this.getPlaceholderValue(!multiMessage, formData.keyValueSeparator)})
+              },
+              false
+            )}
 
-          <div className="row col-sm-10 row-cols-3 khq-multiple">
-              <div>
-                  <div className="khq-select form-group bootstrap-select">
-                      {this.renderSelect(
-                          'multiMessage',
-                          '',
-                          [{ name: "Single message", _id: "singleMessage" }, { name: "Multiple messages", _id: "multiMessage" }],
-                          event => {
-                              if (event.target.value == "multiMessage") {
-                                  this.setState({
-                                      multiMessage: true,
-                                      valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[this.state.formData.kvSep],
-                                        this.messagesSepMap[this.state.formData.msgSep])
-                                  })
-                              } else {
-                                  this.setState({
-                                      multiMessage: false,
-                                      valuePlaceholder: '{"param": "value"}'
-                                  })
-                              }
-                          }
-                      )}
-                  </div>
-              </div>
-              <div>
-                  <label className="col-auto col-form-label">Separator</label>
-                  <div className="khq-select form-group bootstrap-select">
-                      {this.renderSelect(
-                          'keyValueSeparator',
-                          '',
-                          [{ name: ":", _id: "colon" },
-                          { name: ".", _id: "dot" },
-                          { name: ",", _id: "comma" },
-                          { name: ";", _id: "semicolon" },
-                          { name: "-", _id: "dash" },
-                          { name: "_", _id: "underscore" }],
-                          value => {
-                              this.setState({
-                                  formData: {
-                                      ...formData,
-                                      kvSep: value.target.value
-                                      },
-                                      valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[value.target.value],
-                                        this.messagesSepMap[this.state.formData.msgSep])
-                              })
-                          },
-                          undefined,
-                          undefined,
-                          undefined,
-                          { disabled: !multiMessage }
-                          )}
-                  </div>
-              </div>
-              <div style={{ paddingLeft: 15 }}>
-                  <div className="khq-select form-group bootstrap-select">
-                      {this.renderSelect(
-                          'messageSeparator',
-                          '',
-                          [{ name: "Each pair on a new line", _id: "lineBreak" },
-                          { name: "Each pair split by ';'", _id: "semicolon" }],
-                          value => {
-                              this.setState({
-                                  formData: {
-                                      ...formData,
-                                      msgSep: value.target.value
-                                  },
-                                  valuePlaceholder: this.setValuePlaceholder(this.keyValueSepMap[this.state.formData.kvSep],
-                                    this.messagesSepMap[value.target.value])
-                              })
-                          },
-                          undefined,
-                          undefined,
-                          undefined,
-                          { disabled: !multiMessage }
-                          )}
-                  </div>
-              </div>
+            <label className="col-auto col-form-label">Separator</label>
+            <input
+                type='text'
+                name='keyValueSeparator'
+                id='keyValueSeparator'
+                placeholder=':'
+                class='col-sm-2 form-control'
+                disabled={ !multiMessage }
+                onChange={
+                    event => {
+                        this.setState({
+                            formData: { ...formData,
+                                keyValueSeparator: event.target.value},
+                            valuePlaceholder: this.getPlaceholderValue(!multiMessage, event.target.value)})
+                    }
+                }
+            />
           </div>
       </div>
     );
   }
 
-  setValuePlaceholder(keyValueSeparatorChar, messageSeparatorChar) {
-    if(messageSeparatorChar == ";") {
-      return "key1" + keyValueSeparatorChar + "{\"param\": \"value1\"\n"
-        + "      \"param2\": \"value2\"}"
-        + messageSeparatorChar + "\n"
-        + "key2" + keyValueSeparatorChar + "{\"param\": \"value3\"\n"
-        + "      \"param2\": \"value4\"}"
+  getPlaceholderValue(isMultiMessage, keyValueSeparator) {
+    if(isMultiMessage) {
+      return "key1" + keyValueSeparator + "{\"param\": \"value1\"}\n"
+        + "key2" + keyValueSeparator + "{\"param\": \"value2\"}";
     } else {
-      return "key1" + keyValueSeparatorChar + "{\"param\": \"value1\"}"
-        + messageSeparatorChar
-        + "key2" + keyValueSeparatorChar + "{\"param\": \"value2\"}";
+        return '{"param": "value"}';
     }
   }
 
@@ -474,7 +406,7 @@ messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
                 }
             })},
           multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
-          { placeholder: valuePlaceholder }
+          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) }
           )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
@@ -561,3 +493,4 @@ messagesSepMap = {"lineBreak" : "\n", "semicolon": ";"};
 }
 
 export default TopicProduce;
+ 
