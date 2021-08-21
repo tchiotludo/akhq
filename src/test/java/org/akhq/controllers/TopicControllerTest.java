@@ -208,14 +208,13 @@ class TopicControllerTest extends AbstractTest {
 
     @Test
     @Order(6)
-    void produceMultipleMessagesLineBreak() {
+    void produceMultipleMessages() {
         Map<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("value", "key1_{\"test_1\":1}\n"
                             + "key2_{\"test_1\":2}\n"
                             + "key3_{\"test_1\":3}");
         paramMap.put("multiMessage", true);
-        paramMap.put("messageSeparator", "lineBreak");
-        paramMap.put("keyValueSeparator", "underscore");
+        paramMap.put("keyValueSeparator", "_");
         List<Record> response = this.retrieveList(HttpRequest.POST(
             CREATE_TOPIC_URL + "/data", paramMap
         ), Record.class);
@@ -224,26 +223,6 @@ class TopicControllerTest extends AbstractTest {
         assertTrue(response.get(0).getValue().contains("key1_{\"test_1\":1}"));
         assertTrue(response.get(1).getValue().contains("key2_{\"test_1\":2}"));
         assertTrue(response.get(2).getValue().contains("key3_{\"test_1\":3}"));
-    }
-
-    @Test
-    @Order(7)
-    void produceMultipleMessagesSemicolon() {
-        Map<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("value", "key1-{\"test_1\":1};"
-                            + "key2-{\"test_1\":2};"
-                            + "key3-{\"test_1\":-3}");
-        paramMap.put("multiMessage", true);
-        paramMap.put("messageSeparator", "semicolon");
-        paramMap.put("keyValueSeparator", "dash");
-        List<Record> response = this.retrieveList(HttpRequest.POST(
-            CREATE_TOPIC_URL + "/data", paramMap
-        ), Record.class);
-
-        assertEquals(3, response.size());
-        assertTrue(response.get(0).getValue().contains("key1-{\"test_1\":1}"));
-        assertTrue(response.get(1).getValue().contains("key2-{\"test_1\":2}"));
-        assertTrue(response.get(2).getValue().contains("key3-{\"test_1\":-3}"));
     }
 
     @Test
