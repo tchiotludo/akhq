@@ -58,11 +58,14 @@ class Login extends Form {
       sessionStorage.setItem('login', true);
       sessionStorage.setItem('user', currentUserData.username);
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+
       const returnTo = sessionStorage.getItem('returnTo');
       sessionStorage.removeItem('returnTo');
+
       this.props.history.push({
-        pathname: returnTo || '/ui',
+        pathname: (returnTo || '/ui'),
       });
+
       window.location.reload(true);
     } else {
       toast.error('Wrong Username or Password!');
