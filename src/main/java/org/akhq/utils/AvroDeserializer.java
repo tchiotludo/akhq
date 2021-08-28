@@ -26,7 +26,7 @@ public class AvroDeserializer {
     private static final String TIME_MICROS = "time-micros";
     private static final String TIMESTAMP_MILLIS = "timestamp-millis";
     private static final String TIMESTAMP_MICROS = "timestamp-micros";
-    
+
     private static final DecimalConversion DECIMAL_CONVERSION = new DecimalConversion();
     private static final UUIDConversion UUID_CONVERSION = new UUIDConversion();
     private static final DateConversion DATE_CONVERSION = new DateConversion();
