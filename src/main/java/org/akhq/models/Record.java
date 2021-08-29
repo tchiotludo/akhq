@@ -87,10 +87,8 @@ public class Record {
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
-                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer,
-        AvroToJsonSerializer avroToJsonSerializer,
+                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue, Topic topic) {
-        this.avroToJsonSerializer = avroToJsonSerializer;
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -113,6 +111,7 @@ public class Record {
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
+        this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
     }
 

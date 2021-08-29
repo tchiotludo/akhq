@@ -31,7 +31,6 @@ public class AvroToJsonSerializer {
             .registerModule(new JavaTimeModule())
             .registerModule(new Jdk8Module())
             .setTimeZone(TimeZone.getDefault());
-        System.out.println("Inclusions: " + jsonInclusions);
         for (Include include : jsonInclusions) {
             objectMapper = objectMapper.setSerializationInclusion(include);
         }
