@@ -45,6 +45,8 @@ public class Record {
     private Deserializer kafkaProtoDeserializer;
     @JsonIgnore
     private Deserializer kafkaJsonDeserializer;
+    @JsonIgnore
+    private AvroToJsonSerializer avroToJsonSerializer;
 
     @JsonIgnore
     private SchemaRegistryClient client;
@@ -85,7 +87,7 @@ public class Record {
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
-                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer,
+                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue, Topic topic) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
@@ -109,6 +111,7 @@ public class Record {
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
+        this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
     }
 
@@ -154,7 +157,7 @@ public class Record {
                        }
 
                        Message dynamicMessage = (Message)toType;
-                       return AvroToJsonSerializer.getMapper().readTree(JsonFormat.printer().print(dynamicMessage)).toString();
+                       return avroToJsonSerializer.getMapper().readTree(JsonFormat.printer().print(dynamicMessage)).toString();
                     } else  if ( schema.schemaType().equals(JsonSchema.TYPE) ) {
                       toType = kafkaJsonDeserializer.deserialize(topic.getName(), payload);
                       if ( !(toType instanceof JsonNode) ) {
@@ -173,7 +176,7 @@ public class Record {
                 }
 
                 GenericRecord record = (GenericRecord) toType;
-                return AvroToJsonSerializer.toJson(record);
+                return avroToJsonSerializer.toJson(record);
 
             } catch (Exception exception) {
                 this.exceptions.add(exception.getMessage());

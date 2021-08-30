@@ -18,6 +18,7 @@ import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
+import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
@@ -48,6 +49,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private ConfigRepository configRepository;
+
+    @Inject
+    private AvroToJsonSerializer avroToJsonSerializer;
 
     @Inject
     private TopicRepository topicRepository;
@@ -433,6 +437,7 @@ public class RecordRepository extends AbstractRepository {
             this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
+            this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
@@ -450,6 +455,7 @@ public class RecordRepository extends AbstractRepository {
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
+            this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),

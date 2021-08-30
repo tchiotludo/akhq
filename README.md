@@ -275,6 +275,10 @@ akhq:
 #### Pagination
 * `akhq.pagination.page-size` number of topics per page (default : 25)
 
+#### Avro Serializer
+* `akhq.avro-serializer.json.serialization.inclusions` is list of ObjectMapper serialization inclusions that is used for converting Avro message to more
+  readable Json format in the UI. Supports Enums of JsonInclude.Include from Jackson library
+
 #### Topic List
 * `akhq.topic.internal-regexps` is list of regexp to be considered as internal (internal topic can't be deleted or updated)
 * `akhq.topic.stream-regexps` is list of regexp to be considered as internal stream topic
