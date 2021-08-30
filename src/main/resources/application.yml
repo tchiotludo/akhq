@@ -103,6 +103,11 @@ akhq:
     page-size: 25
     threads: 16
 
+  avro-serializer:
+    json.serialization.inclusions:
+      - NON_NULL
+      - NON_EMPTY
+
   topic:
     replication: 1
     retention: 86400000

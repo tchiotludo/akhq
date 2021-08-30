@@ -1,32 +1,48 @@
 package org.akhq.utils;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import javax.inject.Singleton;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.core.annotation.Nullable;
 import org.apache.avro.generic.GenericRecord;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.TimeZone;
-
+@Singleton
 public class AvroToJsonSerializer {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-        .registerModule(new JavaTimeModule())
-        .registerModule(new Jdk8Module())
-        .setTimeZone(TimeZone.getDefault());
+    private final ObjectMapper mapper;
 
-    public static String toJson(GenericRecord record) throws IOException {
-        Map<String, Object> map = AvroDeserializer.recordDeserializer(record);
-
-        return MAPPER.writeValueAsString(map);
+    public AvroToJsonSerializer(@Value("${akhq.avro-serializer.json.serialization.inclusions}") @Nullable List<Include> jsonInclusions) {
+        List<Include> inclusions = jsonInclusions != null ? jsonInclusions : Collections.emptyList();
+        this.mapper = createObjectMapper(inclusions);
     }
 
-    public static ObjectMapper getMapper() {
-        return MAPPER;
+    private ObjectMapper createObjectMapper(List<Include> jsonInclusions) {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            .registerModule(new JavaTimeModule())
+            .registerModule(new Jdk8Module())
+            .setTimeZone(TimeZone.getDefault());
+        for (Include include : jsonInclusions) {
+            objectMapper = objectMapper.setSerializationInclusion(include);
+        }
+        return objectMapper;
+    }
+
+    public String toJson(GenericRecord record) throws IOException {
+        Map<String, Object> map = AvroDeserializer.recordDeserializer(record);
+        return mapper.writeValueAsString(map);
+    }
+
+    public ObjectMapper getMapper() {
+        return mapper;
     }
 }

@@ -131,6 +131,13 @@ akhq:
     page-size: 25 # number of elements per page (default : 25)
     threads: 16 # Number of parallel threads to resolve page
 
+  # Configure avro-to-json serializer
+  avro-serializer:
+    json.serialization.inclusions: # ObjectMapper serialization inclusions used for avro-to-json conversion for display in the UI.
+    # Supports Enums in JsonInclude.Include from Jackson library
+      - NON_NULL
+      - NON_EMPTY
+
   # Topic list display options (optional)
   topic:
     retention: 172800000 # default retention period when creating topic
