@@ -117,7 +117,7 @@ class TopicProduce extends Form {
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: formData.value,
+      value: multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value)),
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
       valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
       multiMessage: multiMessage,
