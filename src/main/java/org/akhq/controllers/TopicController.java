@@ -135,7 +135,6 @@ public class TopicController extends AbstractController {
         Optional<Integer> keySchema,
         Optional<Integer> valueSchema,
         Boolean multiMessage,
-        Optional<String> messageSeparator,
         Optional<String> keyValueSeparator
     ) throws ExecutionException, InterruptedException {
         Topic targetTopic = topicRepository.findByName(cluster, topicName);
