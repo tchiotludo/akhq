@@ -13,14 +13,15 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,10 +45,10 @@ public class AvroSerializer {
     protected static final String DATE_FORMAT = "yyyy-MM-dd[XXX]";
     protected static final String TIME_FORMAT = "HH:mm[:ss][.SSSSSS][XXX]";
     protected static final DateTimeFormatter DATETIME_FORMAT = new DateTimeFormatterBuilder()
-            .append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
-            .appendOptional(DateTimeFormatter.ofPattern(":ss"))
-            .appendFraction(ChronoField.MICRO_OF_SECOND, 0, 6, true)
-            .appendOptional(DateTimeFormatter.ofPattern("XXX"))
+            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .optionalStart()
+            .parseLenient()
+            .appendOffsetId()
             .toFormatter();
 
     public static GenericRecord recordSerializer(Map<String, Object> record, Schema schema) {
@@ -176,6 +177,8 @@ public class AvroSerializer {
             }
         } else if (data instanceof Long) {
             value = Instant.ofEpochSecond(0, (Long) data * 1000);
+        } else if (data instanceof Integer) {
+            value = Instant.ofEpochSecond(0, ((Integer) data).longValue() * 1000);
         } else {
             value = (Instant) data;
         }
@@ -198,6 +201,8 @@ public class AvroSerializer {
             }
         } else if (data instanceof Long) {
             value = Instant.ofEpochMilli((Long) data);
+        } else if (data instanceof Integer) {
+            value = Instant.ofEpochMilli(((Integer) data).longValue());
         } else {
             value = (Instant) data;
         }
@@ -210,12 +215,8 @@ public class AvroSerializer {
     }
 
     protected static Instant parseDateTime(String data) {
-        try {
-            return ZonedDateTime.parse(data, DATETIME_FORMAT).toInstant();
-        } catch (DateTimeParseException e) {
-            LocalDateTime localDateTime = LocalDateTime.parse(data, DATETIME_FORMAT);
-            return localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        }
+        TimeZone tz = TimeZone.getDefault();
+        return DATETIME_FORMAT.withZone(tz.toZoneId()).parse(data, Instant::from);
     }
 
     private static Long timeMicrosDeserializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
