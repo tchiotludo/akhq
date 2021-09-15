@@ -44,6 +44,9 @@ spec:
       {{- if .Values.serviceAccountName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
       {{- end }}
+      {{- if .Values.serviceAccountCreate }}
+      serviceAccountName: {{ include "akhq.name" . }}
+      {{- end }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- range $key, $value := .Values.initContainers }}
