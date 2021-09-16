@@ -24,7 +24,8 @@ class TopicProduce extends Form {
       key: '',
       hKey0: '',
       hValue0: '',
-      value: ''
+      value: '',
+      keyValueSeparator: ':'
     },
     datetime: new Date(),
     openDateModal: false,
@@ -40,7 +41,9 @@ class TopicProduce extends Form {
     valueSchemaSearchValue: '',
     selectedValueSchema: '',
     clusterId: '',
-    topicId: ''
+    topicId: '',
+    multiMessage: false,
+    valuePlaceholder: '{"param": "value"}'
   };
 
   schema = {
@@ -58,7 +61,10 @@ class TopicProduce extends Form {
       .label('hValue0'),
     value: Joi.string()
       .allow('')
-      .label('Value')
+      .label('Value'),
+    keyValueSeparator: Joi.string()
+      .min(1)
+      .label('keyValueSeparator')
   };
 
   async componentDidMount() {
@@ -98,7 +104,8 @@ class TopicProduce extends Form {
       selectedKeySchema,
       selectedValueSchema,
       keySchema,
-      valueSchema
+      valueSchema,
+      multiMessage
     } = this.state;
     const { clusterId, topicId } = this.props.match.params;
 
@@ -110,9 +117,11 @@ class TopicProduce extends Form {
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: JSON.parse(JSON.stringify(formData.value)),
+      value: multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value)),
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
-      valueSchema: schemaValueToSend ? schemaValueToSend.id : ''
+      valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
+      multiMessage: multiMessage,
+      keyValueSeparator: formData.keyValueSeparator
     };
 
     let headers = {};
@@ -132,6 +141,55 @@ class TopicProduce extends Form {
         });
         toast.success(`Produced to ${topicId}.`);
       });
+  }
+
+  renderMultiMessage() {
+    const { formData, multiMessage } = this.state;
+
+    return (
+      <div className="form-group row">
+        <label className="col-sm-2 col-form-label">Multi message</label>
+          <div className="row khq-multiple col-sm-7">
+            {this.renderCheckbox(
+              'isMultiMessage',
+              '',
+              multiMessage,
+              () => {
+                this.setState({multiMessage: !multiMessage,
+                  valuePlaceholder: this.getPlaceholderValue(!multiMessage, formData.keyValueSeparator)})
+              },
+              false
+            )}
+
+            <label className="col-auto col-form-label">Separator</label>
+            <input
+                type='text'
+                name='keyValueSeparator'
+                id='keyValueSeparator'
+                placeholder=':'
+                class='col-sm-2 form-control'
+                disabled={ !multiMessage }
+                onChange={
+                    event => {
+                        this.setState({
+                            formData: { ...formData,
+                                keyValueSeparator: event.target.value},
+                            valuePlaceholder: this.getPlaceholderValue(!multiMessage, event.target.value)})
+                    }
+                }
+            />
+          </div>
+      </div>
+    );
+  }
+
+  getPlaceholderValue(isMultiMessage, keyValueSeparator) {
+    if(isMultiMessage) {
+      return "key1" + keyValueSeparator + "{\"param\": \"value1\"}\n"
+        + "key2" + keyValueSeparator + "{\"param\": \"value2\"}";
+    } else {
+        return '{"param": "value"}';
+    }
   }
 
   renderHeaders() {
@@ -284,13 +342,13 @@ class TopicProduce extends Form {
       selectedKeySchema,
       valueSchema,
       valueSchemaSearchValue,
-      selectedValueSchema
+      selectedValueSchema,
+      multiMessage
     } = this.state;
     let date = moment(datetime);
     return (
       <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
-          <div>
             <Header title={`Produce to ${topicId} `} />
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
@@ -313,11 +371,11 @@ class TopicProduce extends Form {
                 'key'
               )
             )}
-            {this.renderInput('key', 'Key', 'Key', 'Key')}
-            <div></div>
-          </div>
+
+          {(this.renderInput('key', 'Key', 'Key', 'Key', undefined, undefined, undefined, undefined,{ disabled: multiMessage }))}
 
           {this.renderHeaders()}
+
           {this.renderDropdown(
             'Value schema',
             valueSchema.map(value => value.subject),
@@ -336,14 +394,19 @@ class TopicProduce extends Form {
               'value'
             )
           )}
+
+          {this.renderMultiMessage()}
+
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
-              formData: {
-                ...formData,
-                value: value
-              }
-            });
-          })}
+                formData: {
+                    ...formData,
+                    value: value
+                }
+            })},
+          multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
+          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) }
+          )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
@@ -429,3 +492,4 @@ class TopicProduce extends Form {
 }
 
 export default TopicProduce;
+ 

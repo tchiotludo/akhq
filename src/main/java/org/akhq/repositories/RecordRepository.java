@@ -13,6 +13,7 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.controllers.TopicController;
+import org.akhq.models.KeyValue;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
@@ -463,6 +464,35 @@ public class RecordRepository extends AbstractRepository {
         );
     }
 
+    public List<RecordMetadata> produce(
+            String clusterId,
+            String topic,
+            String value,
+            Map<String, String> headers,
+            Optional<String> key,
+            Optional<Integer> partition,
+            Optional<Long> timestamp,
+            Optional<Integer> keySchemaId,
+            Optional<Integer> valueSchemaId,
+            Boolean multiMessage,
+            Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException {
+
+        List<RecordMetadata> produceResults = new ArrayList<>();
+
+        // Distinguish between single record produce, and multiple messages
+        if (multiMessage.booleanValue()) {
+            // Split key-value pairs and produce them
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value, keyValueSeparator.orElseThrow())) {
+                produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
+                        partition, timestamp, keySchemaId, valueSchemaId));
+            }
+        } else {
+            produceResults.add(
+                    produce(clusterId, topic, value, headers, key, partition, timestamp, keySchemaId, valueSchemaId));
+        }
+        return produceResults;
+    }
+
     private RecordMetadata produce(
         String clusterId,
         String topic, byte[] value,
@@ -490,6 +520,23 @@ public class RecordRepository extends AbstractRepository {
                     .collect(Collectors.toList())
             ))
             .get();
+    }
+
+    /**
+     * Splits a multi-message into a list of key-value pairs.
+     * @param value The multi-message string submitted by the {@link TopicController}
+     * @param keyValueSeparator The character(s) separating each key from their corresponding value
+     * @return A list of {@link KeyValue}, holding the split pairs
+     */
+    private List<KeyValue<String, String>> splitMultiMessage(String value, String keyValueSeparator) {
+        return List.of(value.split("\r\n|\r|\n")).stream().map(v -> splitKeyValue(v, keyValueSeparator))
+                .collect(Collectors.toList());
+    }
+
+    private KeyValue<String, String> splitKeyValue(String keyValueStr, String keyValueSeparator) {
+        String[] keyValue = null;
+        keyValue = keyValueStr.split(keyValueSeparator, 2);
+        return new KeyValue<>(keyValue[0].trim(),keyValue[1]);
     }
 
     public void emptyTopic(String clusterId, String topicName) throws ExecutionException, InterruptedException {
@@ -1215,3 +1262,4 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
     }
 }
+ 
