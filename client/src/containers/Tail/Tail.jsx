@@ -9,7 +9,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
-import Root from "../../components/Root";
+import Root from '../../components/Root';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -77,13 +77,16 @@ class Tail extends Root {
       let res = JSON.parse(e.data);
       let { data } = self.state;
 
+
       if (res.records) {
-        data.push(res.records[0]);
+        data = data.concat(res.records);
         if (data.length > maxRecords) {
           data = data.slice(data.length - maxRecords);
         }
       }
-      self.setState({ data });
+
+      self.setState({ data: data });
+      self.scrollToBottom();
     });
 
     this.eventSource.onerror = e => {
@@ -98,6 +101,15 @@ class Tail extends Root {
   onStart = () => {
     this.startEventSource();
   };
+
+  scrollToBottom = () => {
+    const followScroll = (document.body.scrollTop || document.documentElement.scrollTop) + window.innerHeight >=
+        (document.documentElement.scrollHeight - document.documentElement.clientHeight)
+
+    if (followScroll) {
+      this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 
   handleChange = e => {
     this.setState({ [e.target.name]: [e.target.value] });
@@ -184,11 +196,12 @@ class Tail extends Root {
       data,
       showFilters
     } = this.state;
+
     return (
       <div>
         <Header title="Live Tail" history={this.props.history} />
         <nav
-          className="navbar navbar-expand-lg navbar-light 
+          className="navbar navbar-expand-lg navbar-light
         bg-light mr-auto khq-data-filter khq-sticky khq-nav"
         >
           <button
@@ -363,12 +376,18 @@ class Tail extends Root {
         {selectedStatus !== STATUS.STOPPED && (
           <Table
             history={this.props.history}
+            rowId={data => {
+              return data.topic.name + '-' + data.partition + '-' + data.offset;
+            }}
             columns={[
               {
                 id: 'topic',
                 accessor: 'topic',
                 colName: 'Topic',
-                type: 'text'
+                type: 'text',
+                cell: obj => {
+                  return obj.topic.name;
+                }
               },
               {
                 id: 'key',
@@ -385,8 +404,7 @@ class Tail extends Root {
                 colName: 'Date',
                 type: 'text',
                 cell: obj => {
-                  let date = obj.timestamp.split('T')[0];
-                  return <div className="tail-headers">{date}</div>;
+                  return <div className="tail-headers">{obj.timestamp}</div>;
                 }
               },
               {
@@ -448,7 +466,7 @@ class Tail extends Root {
             noStripes
             data={data}
             updateData={data => {
-              this.setState({ data });
+              this.setState({ data: data });
             }}
             noContent={<tr />}
             onExpand={obj => {
@@ -489,6 +507,8 @@ class Tail extends Root {
             }}
           />
         )}
+        <div ref={(el) => { this.messagesEnd = el; }}>
+        </div>
       </div>
     );
   }

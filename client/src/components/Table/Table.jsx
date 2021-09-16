@@ -423,11 +423,15 @@ class Table extends Component {
   }
 
   render() {
-    const { noStripes, loading } = this.props;
+    const { noStripes, loading, rowId } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 
     data.forEach((item, index) => {
+      if (rowId !== undefined) {
+        index = rowId(item);
+      }
+
       if (!item.id) {
         item.id = index;
       }
@@ -481,7 +485,8 @@ Table.propTypes = {
   handleExtraExpand: PropTypes.func,
   handleExtraCollapse: PropTypes.func,
   loading: PropTypes.bool,
-  history: PropTypes.object
+  history: PropTypes.object,
+  rowId: PropTypes.func,
 };
 
 export default Table;
