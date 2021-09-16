@@ -15,6 +15,7 @@ import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
 import {getClusterUIOptions} from "../../../utils/functions";
 import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+import TimeAgo from "react-timeago";
 
 class TopicList extends Root {
   state = {
@@ -304,7 +305,10 @@ class TopicList extends Root {
           id: 'lastWrite',
           accessor: 'lastWrite',
           colName: 'Last Record',
-          type: 'text'
+          type: 'text',
+          cell: (obj, col) => {
+            return <TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>;
+          }
         });
     }
 

@@ -10,6 +10,7 @@ import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
+import TimeAgo from 'react-timeago';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -404,7 +405,7 @@ class Tail extends Root {
                 colName: 'Date',
                 type: 'text',
                 cell: obj => {
-                  return <div className="tail-headers">{obj.timestamp}</div>;
+                  return (<div className="tail-headers"><TimeAgo date={Date.parse(obj.timestamp)} title={obj.timestamp}/></div>);
                 }
               },
               {

@@ -5,7 +5,6 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import prefix from './prefix';
 
-
 let pathPrefix = prefix() + '/ui';
 
 ReactDOM.render(<App pathPrefix={pathPrefix} />, document.getElementById('root'));
