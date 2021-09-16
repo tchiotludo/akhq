@@ -11,7 +11,9 @@ import org.apache.kafka.common.config.TopicConfig;
 import org.junit.jupiter.api.*;
 import org.akhq.models.Record;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -153,24 +155,24 @@ class TopicControllerTest extends AbstractTest {
     @Test
     @Order(3)
     void produce() {
-        Record record = this.retrieve(HttpRequest.POST(
-            CREATE_TOPIC_URL + "/data",
-            ImmutableMap.of(
-                "value", "my-value",
-                "key", "my-key",
-                "partition", 1,
-                "headers", ImmutableMap.of(
-                    "my-header-1", "1",
-                    "my-header-2", "2"
-                )
-            )
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("value", "my-value");
+        paramMap.put("key", "my-key");
+        paramMap.put("partition", 1);
+        paramMap.put("headers", ImmutableMap.of(
+                "my-header-1", "1",
+                "my-header-2", "2"));
+        paramMap.put("multiMessage", false);
+        List<Record> response = this.retrieveList(HttpRequest.POST(
+            CREATE_TOPIC_URL + "/data", paramMap
         ), Record.class);
 
-        assertEquals("my-key", record.getKey());
-        assertEquals("my-value", record.getValue());
-        assertEquals(1, record.getPartition());
-        assertEquals(2, record.getHeaders().size());
-        assertEquals("1", record.getHeaders().get("my-header-1"));
+        assertEquals(1, response.size());
+        assertEquals("my-key", response.get(0).getKey());
+        assertEquals("my-value", response.get(0).getValue());
+        assertEquals(1, response.get(0).getPartition());
+        assertEquals(2, response.get(0).getHeaders().size());
+        assertEquals("1", response.get(0).getHeaders().get("my-header-1"));
     }
 
     @Test
@@ -206,6 +208,25 @@ class TopicControllerTest extends AbstractTest {
 
     @Test
     @Order(6)
+    void produceMultipleMessages() {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("value", "key1_{\"test_1\":1}\n"
+                            + "key2_{\"test_1\":2}\n"
+                            + "key3_{\"test_1\":3}");
+        paramMap.put("multiMessage", true);
+        paramMap.put("keyValueSeparator", "_");
+        List<Record> response = this.retrieveList(HttpRequest.POST(
+            CREATE_TOPIC_URL + "/data", paramMap
+        ), Record.class);
+
+        assertEquals(3, response.size());
+        assertTrue(response.get(0).getValue().contains("key1_{\"test_1\":1}"));
+        assertTrue(response.get(1).getValue().contains("key2_{\"test_1\":2}"));
+        assertTrue(response.get(2).getValue().contains("key3_{\"test_1\":3}"));
+    }
+
+    @Test
+    @Order(8)
     void delete() {
         this.exchange(
             HttpRequest.DELETE(CREATE_TOPIC_URL)

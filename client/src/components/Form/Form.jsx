@@ -112,8 +112,9 @@ class Form extends Root {
     );
   };
 
-  renderJSONInput = (name, label, onChange) => {
+  renderJSONInput = (name, label, onChange, textMode, options) => {
     const { formData, errors } = this.state;
+    const inputMode = textMode ? "text" : (formData.schemaType === "PROTOBUF" ? "protobuf"  : "json")
     return (
       <div className="form-group row">
         {label !== '' ? (
@@ -125,7 +126,7 @@ class Form extends Root {
         )}
         <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
-            mode={ formData.schemaType === "PROTOBUF"? "protobuf"  : "json" }
+            mode={ inputMode }
             id={name}
             theme="merbivore_soft"
             value={formData[name]}
@@ -134,6 +135,7 @@ class Form extends Root {
             }}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
+            setOptions={options}
             style={{ width: '100%', minHeight: '25vh' }}
           />
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
@@ -238,6 +240,21 @@ class Form extends Root {
       </React.Fragment>
     );
   };
+
+  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked) => {
+    return (
+        <input
+        type="checkbox"
+        name={name}
+        id={name}
+        class="form-input-check"
+        checked={isChecked}
+        onChange={onChange}
+        defaultChecked={ isDefaultChecked ? isDefaultChecked : false}
+        />
+    );
+  };
 }
 
 export default Form;
+ 
