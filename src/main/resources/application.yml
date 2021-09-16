@@ -106,7 +106,6 @@ akhq:
   avro-serializer:
     json.serialization.inclusions:
       - NON_NULL
-      - NON_EMPTY
 
   topic:
     replication: 1

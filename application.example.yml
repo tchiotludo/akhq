@@ -136,7 +136,6 @@ akhq:
     json.serialization.inclusions: # ObjectMapper serialization inclusions used for avro-to-json conversion for display in the UI.
     # Supports Enums in JsonInclude.Include from Jackson library
       - NON_NULL
-      - NON_EMPTY
 
   # Topic list display options (optional)
   topic:
