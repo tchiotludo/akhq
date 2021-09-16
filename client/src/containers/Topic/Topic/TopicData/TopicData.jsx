@@ -9,7 +9,8 @@ import {
   uriTopicData,
   uriTopicDataDelete,
   uriTopicDataSearch, uriTopicDataSingleRecord,
-  uriTopicsPartitions
+  uriTopicsPartitions,
+  basePath
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
@@ -25,9 +26,9 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
-import { basePath } from '../../../../utils/endpoints';
-import {capitalizeTxt, getClusterUIOptions} from "../../../../utils/functions";
-import Select from "../../../../components/Form/Select";
+import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
+import Select from '../../../../components/Form/Select';
+import TimeAgo from 'react-timeago'
 
 class TopicData extends Root {
   state = {
@@ -116,7 +117,7 @@ class TopicData extends Root {
             }
         }
     );
-  };
+  }
 
   _buildSearchFromQueryString(query) {
     const { search } = this.state;
@@ -886,7 +887,7 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return obj[col.accessor];
+                      return (<TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>);
                     }
                   },
                   {
