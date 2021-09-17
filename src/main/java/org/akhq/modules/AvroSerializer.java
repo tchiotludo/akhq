@@ -14,17 +14,16 @@ import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.Encoder;
-import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.io.*;
 
-import javax.inject.Singleton;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TimeZone;
+import javax.inject.Singleton;
 
 @Singleton
 @Slf4j
@@ -68,8 +67,16 @@ public class AvroSerializer {
     private byte[] fromJsonToAvro(String json, Schema schema, int schemaId) throws IOException {
         log.trace("encoding message {} with schema {} and id {}", json, schema, schemaId);
 
-        Map<String, Object> map = MAPPER.readValue(json, TYPE_REFERENCE);
-        GenericRecord genericRecord = org.akhq.utils.AvroSerializer.recordSerializer(map, schema);
+        Object genericRecord;
+        try {
+            Map<String, Object> map = MAPPER.readValue(json, TYPE_REFERENCE);
+            genericRecord = org.akhq.utils.AvroSerializer.recordSerializer(map, schema);
+        } catch (IOException e) {
+            // rollback to jsonDecoder to handle special schema like "string"
+            DatumReader<Object> reader = new GenericDatumReader<>(schema);
+            Decoder decoder = DecoderFactory.get().jsonDecoder(schema, json);
+            genericRecord = reader.read(null, decoder);
+        }
 
         GenericData genericData = new GenericData();
         genericData.addLogicalTypeConversion(new Conversions.UUIDConversion());
@@ -80,7 +87,7 @@ public class AvroSerializer {
         genericData.addLogicalTypeConversion(new TimeConversions.TimestampMicrosConversion());
         genericData.addLogicalTypeConversion(new TimeConversions.TimestampMillisConversion());
 
-        GenericDatumWriter<GenericRecord> w = new GenericDatumWriter<>(schema, genericData);
+        GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema, genericData);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(MAGIC_BYTE);
         outputStream.write(ByteBuffer.allocate(SCHEMA_ID_SIZE).putInt(schemaId).array());
