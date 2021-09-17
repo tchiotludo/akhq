@@ -24,7 +24,6 @@
 
 # Do not rely on the system configuration
 -Dfile.encoding=UTF-8
--Duser.timezone=UTC
 
 # Jmx Remote
 -Dcom.sun.management.jmxremote
