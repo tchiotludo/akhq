@@ -30,3 +30,14 @@ Create chart name and version as used by the chart label.
 {{- define "akhq.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "akhq.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "akhq.fullname" .) .Values.serviceAccountName }}
+{{- else }}
+{{- default "default" .Values.serviceAccountName }}
+{{- end }}
+{{- end }}
