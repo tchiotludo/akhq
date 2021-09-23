@@ -158,7 +158,7 @@ public class ProtobufToJsonDeserializer {
         List<Descriptor> descriptorsWithDependencies = this.descriptors.get(topicRegex);
         List<Descriptor> descriptorsForConfiguredMessageTypes =
                 descriptorsWithDependencies.stream()
-                        .filter(mp -> messageType.equals(mp.getName()))
+                        .filter(mp -> messageType.equals(mp.getFullName()))
                         .collect(Collectors.toList());
 
         if (descriptorsForConfiguredMessageTypes.isEmpty()) {

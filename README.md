@@ -312,7 +312,8 @@ for each `topic-regex` you can specify `descriptor-file-base64` (descriptor file
 or you can put descriptor files in `descriptors-folder` and specify `descriptor-file` name,
 also specify corresponding message types for keys and values.
 If, for example, keys are not in Protobuf format, `key-message-type` can be omitted,
-the same for `value-message-type`.
+the same for `value-message-type`. . It's important to keep in mind that both `key-message-type` and `value-message-type`
+require a fully-qualified name.
 This configuration can be specified for each Kafka cluster.
 
 Example configuration can look like as follows:
@@ -329,14 +330,14 @@ akhq:
           topics-mapping:
             - topic-regex: "album.*"
               descriptor-file-base64: "Cs4BCgthbGJ1bS5wcm90bxIXY29tLm5ldGNyYWNrZXIucHJvdG9idWYidwoFQWxidW0SFAoFdGl0bGUYASABKAlSBXRpdGxlEhYKBmFydGlzdBgCIAMoCVIGYXJ0aXN0EiEKDHJlbGVhc2VfeWVhchgDIAEoBVILcmVsZWFzZVllYXISHQoKc29uZ190aXRsZRgEIAMoCVIJc29uZ1RpdGxlQiUKF2NvbS5uZXRjcmFja2VyLnByb3RvYnVmQgpBbGJ1bVByb3RvYgZwcm90bzM="
-              value-message-type: "Album"
+              value-message-type: "org.akhq.utils.Album"
             - topic-regex: "film.*"
               descriptor-file-base64: "CuEBCgpmaWxtLnByb3RvEhRjb20uY29tcGFueS5wcm90b2J1ZiKRAQoERmlsbRISCgRuYW1lGAEgASgJUgRuYW1lEhoKCHByb2R1Y2VyGAIgASgJUghwcm9kdWNlchIhCgxyZWxlYXNlX3llYXIYAyABKAVSC3JlbGVhc2VZZWFyEhoKCGR1cmF0aW9uGAQgASgFUghkdXJhdGlvbhIaCghzdGFycmluZxgFIAMoCVIIc3RhcnJpbmdCIQoUY29tLmNvbXBhbnkucHJvdG9idWZCCUZpbG1Qcm90b2IGcHJvdG8z"
-              value-message-type: "Film"
+              value-message-type: "org.akhq.utils.Film"
             - topic-regex: "test.*"
               descriptor-file: "other.desc"
-              key-message-type: "Row"
-              value-message-type: "Envelope"
+              key-message-type: "org.akhq.utils.Row"
+              value-message-type: "org.akhq.utils.Envelope"
 ```
 
 More examples about Protobuf deserialization can be found in [tests](./src/test/java/org/akhq/utils).
