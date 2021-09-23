@@ -32,6 +32,17 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
+Create the name of the service account to use
+*/}}
+{{- define "akhq.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "akhq.fullname" .) .Values.serviceAccountName }}
+{{- else }}
+{{- default "default" .Values.serviceAccountName }}
+{{- end }}
+{{- end }}
+
+{{/*
 Return the appropriate apiVersion for Ingress
 */}}
 {{- define "akhq.ingress.apiVersion" -}}

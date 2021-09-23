@@ -63,6 +63,10 @@ extraVolumeMounts: []
 
 # Specify ServiceAccount for pod
 serviceAccountName: null
+serviceAccount:
+  create: false
+  #annotations:
+  #  eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
 
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
