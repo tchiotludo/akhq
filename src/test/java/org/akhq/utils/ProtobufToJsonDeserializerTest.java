@@ -47,13 +47,13 @@ public class ProtobufToJsonDeserializerTest {
         TopicsMapping albumTopicsMapping = new TopicsMapping();
         albumTopicsMapping.setTopicRegex("album.*");
         albumTopicsMapping.setDescriptorFile("album.desc");
-        albumTopicsMapping.setValueMessageType("Album");
+        albumTopicsMapping.setValueMessageType("org.akhq.utils.Album");
 
         TopicsMapping filmTopicsMapping = new TopicsMapping();
         filmTopicsMapping.setTopicRegex("film.*");
         String base64FilmDescriptor = encodeDescriptorFileToBase64("film.desc");
         filmTopicsMapping.setDescriptorFileBase64(base64FilmDescriptor);
-        filmTopicsMapping.setValueMessageType("Film");
+        filmTopicsMapping.setValueMessageType("org.akhq.utils.Film");
 
         // Do not specify message type neither for a key, nor for a value
         TopicsMapping incorrectTopicsMapping = new TopicsMapping();
@@ -64,7 +64,7 @@ public class ProtobufToJsonDeserializerTest {
         TopicsMapping complexObjectTopicsMapping = new TopicsMapping();
         complexObjectTopicsMapping.setTopicRegex("complex.*");
         complexObjectTopicsMapping.setDescriptorFile("complex.desc");
-        complexObjectTopicsMapping.setValueMessageType("Complex");
+        complexObjectTopicsMapping.setValueMessageType("org.akhq.utils.Complex");
 
         protobufDeserializationTopicsMapping.setTopicsMapping(
                 Arrays.asList(albumTopicsMapping, filmTopicsMapping, complexObjectTopicsMapping, incorrectTopicsMapping));
