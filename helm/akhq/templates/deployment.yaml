@@ -41,9 +41,7 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 }}
       {{- end }}
-      {{- if .Values.serviceAccountName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
-      {{- end }}
+      serviceAccountName: {{ include "akhq.serviceAccountName" . }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- range $key, $value := .Values.initContainers }}
