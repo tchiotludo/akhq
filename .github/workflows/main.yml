@@ -162,7 +162,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set output
+      - name: Set Tag Variable
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
