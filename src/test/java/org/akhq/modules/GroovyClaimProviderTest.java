@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MicronautTest(environments = "groovy")
-public class GroovyClaimProviderTest {
+class GroovyClaimProviderTest {
     @Inject
     BasicAuthAuthenticationProvider auth;
 
     @Test
-    public void successUser() {
+    void successUser() {
         AuthenticationResponse response = Flowable
                 .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
@@ -42,6 +42,6 @@ public class GroovyClaimProviderTest {
         assertThat(roles, hasSize(1));
         assertThat(roles, hasItem("topic/read"));
 
-        assertEquals("single-topic", ((List)userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("single-topic", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
     }
 }

@@ -86,7 +86,7 @@ class HeaderAuthControllerTest extends AbstractTest {
     }
 
     @MicronautTest(environments = "header-ip-disallow")
-    public static class UntrustedIp extends AbstractTest {
+    static class UntrustedIp extends AbstractTest {
         @Inject
         @Client("/")
         protected RxHttpClient client;
