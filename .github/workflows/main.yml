@@ -171,6 +171,7 @@ jobs:
           push: true
           context: .
           tags: tchiotludo/akhq:${{ steps.vars.outputs.tag }}
+          platforms: linux/amd64,linux/arm64
 
       # Slack
       - name: Slack notification
