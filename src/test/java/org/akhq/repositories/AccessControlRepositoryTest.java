@@ -14,25 +14,25 @@ import javax.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AccessControlRepositoryTest extends AbstractTest {
+class AccessControlRepositoryTest extends AbstractTest {
     @Inject
     private AccessControlListRepository aclRepository;
 
     @Test
-    public void findAll() throws ExecutionException, InterruptedException {
+    void findAll() throws ExecutionException, InterruptedException {
         List<AccessControl> all = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.empty());
         assertEquals(2, all.size());
     }
 
     @Test
-    public void findAllWithFilter() throws ExecutionException, InterruptedException {
+    void findAllWithFilter() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.of("toto"));
         assertEquals(1, searchResult.size());
         assertEquals("user:toto", searchResult.get(0).getPrincipal());
     }
 
     @Test
-    public void findAllByUser() throws ExecutionException, InterruptedException {
+    void findAllByUser() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("user:toto"), Optional.empty());
         assertEquals("user:toto", searchResult.getPrincipal());
         assertEquals(5, searchResult.getAcls().size());
@@ -45,7 +45,7 @@ public class AccessControlRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void findHostByUser() throws ExecutionException, InterruptedException {
+    void findHostByUser() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("user:tata"), Optional.empty());
         assertEquals("user:tata", searchResult.getPrincipal());
         assertEquals(2, searchResult.getAcls().size());
@@ -64,28 +64,28 @@ public class AccessControlRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void findByUserForTopic() throws ExecutionException, InterruptedException {
+    void findByUserForTopic() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("user:toto"), Optional.of(ResourceType.TOPIC));
         assertEquals("user:toto", searchResult.getPrincipal());
         assertEquals(3, searchResult.getAcls().size());
     }
 
     @Test
-    public void findByUserForGroup() throws ExecutionException, InterruptedException {
+    void findByUserForGroup() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("user:toto"), Optional.of(ResourceType.GROUP));
         assertEquals("user:toto", searchResult.getPrincipal());
         assertEquals(2, searchResult.getAcls().size());
     }
 
     @Test
-    public void findByResourceTypeTopic() throws ExecutionException, InterruptedException {
+    void findByResourceTypeTopic() throws ExecutionException, InterruptedException {
         List<AccessControl> searchResult = aclRepository.findByResourceType(KafkaTestCluster.CLUSTER_ID, ResourceType.TOPIC, "testAclTopic");
         assertEquals(2, searchResult.size());
         assertEquals(2, searchResult.stream().mapToLong(r -> r.getAcls().size()).sum());
     }
 
     @Test
-    public void findByResourceTypeGroup() throws ExecutionException, InterruptedException {
+    void findByResourceTypeGroup() throws ExecutionException, InterruptedException {
         List<AccessControl> searchResult = aclRepository.findByResourceType(KafkaTestCluster.CLUSTER_ID, ResourceType.GROUP, "groupConsumer");
         assertEquals(2, searchResult.size());
         assertEquals(2, searchResult.stream().mapToLong(r -> r.getAcls().size()).sum());

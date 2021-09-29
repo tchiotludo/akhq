@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @MicronautTest(environments = "oidc")
-public class OidcAuthenticationProviderTest {
+class OidcAuthenticationProviderTest {
 
     @Named("oidc")
     @Inject
@@ -103,7 +103,7 @@ public class OidcAuthenticationProviderTest {
     }
 
     @Test
-    public void successWithMultipleOidcGroups() {
+    void successWithMultipleOidcGroups() {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
@@ -143,7 +143,7 @@ public class OidcAuthenticationProviderTest {
     }
 
     @Test
-    public void successWithOidcGroupAndUserRole() {
+    void successWithOidcGroupAndUserRole() {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user2")
@@ -183,7 +183,7 @@ public class OidcAuthenticationProviderTest {
     }
 
     @Test
-    public void successWithoutRoles() {
+    void successWithoutRoles() {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
@@ -214,7 +214,7 @@ public class OidcAuthenticationProviderTest {
     }
 
     @Test
-    public void failure() {
+    void failure() {
 
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
@@ -234,7 +234,7 @@ public class OidcAuthenticationProviderTest {
     }
 
     @Test
-    void noLoginForm(){
+    void noLoginForm() {
         AkhqController.AuthDefinition actual = akhqController.auths();
 
         assertTrue(actual.isLoginEnabled(), "Login must be enabled with OIDC");

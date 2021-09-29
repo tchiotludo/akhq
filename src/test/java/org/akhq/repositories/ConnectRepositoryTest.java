@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-public class ConnectRepositoryTest extends AbstractTest {
+class ConnectRepositoryTest extends AbstractTest {
 
     @Inject
     @InjectMocks
@@ -35,18 +35,18 @@ public class ConnectRepositoryTest extends AbstractTest {
     ApplicationContext applicationContext;
 
     @BeforeEach
-    public void before(){
+    void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void getPlugins() {
+    void getPlugins() {
         List<ConnectPlugin> all = repository.getPlugins(KafkaTestCluster.CLUSTER_ID, "connect-1");
         assertEquals(2, all.size());
     }
 
     @Test
-    public void getPlugin() {
+    void getPlugin() {
         Optional<ConnectPlugin> plugin = repository.getPlugin(
             KafkaTestCluster.CLUSTER_ID,
             "connect-1",
@@ -60,7 +60,7 @@ public class ConnectRepositoryTest extends AbstractTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "ConnectRepositoryTest1");
             repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-2", "ConnectRepositoryTest2");
@@ -69,7 +69,7 @@ public class ConnectRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void create() {
+    void create() {
         String path1 = ConnectRepository.class.getClassLoader().getResource("application.yml").getPath();
         String path2 = ConnectRepository.class.getClassLoader().getResource("logback.xml").getPath();
 
@@ -163,7 +163,7 @@ public class ConnectRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getFilteredList() {
+    void getFilteredList() {
 
         repository.create(
             KafkaTestCluster.CLUSTER_ID,
@@ -202,14 +202,14 @@ public class ConnectRepositoryTest extends AbstractTest {
 
         List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty());
         assertEquals(2, filtered.size());
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching1");
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching2");
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","not.Matching3");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "not.Matching3");
     }
 
 
     @Test
-    public void getFilteredBySearchList() {
+    void getFilteredBySearchList() {
 
         repository.create(
                 KafkaTestCluster.CLUSTER_ID,
@@ -242,8 +242,8 @@ public class ConnectRepositoryTest extends AbstractTest {
         List<ConnectDefinition> filteredAll = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching"));
         assertEquals(2, filteredAll.size());
 
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching1");
-        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","prefixed.Matching2");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
     }
 
 }

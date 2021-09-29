@@ -14,12 +14,12 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest
-public class BasicAuthAuthenticationProviderTest {
+class BasicAuthAuthenticationProviderTest {
     @Inject
     BasicAuthAuthenticationProvider auth;
 
     @Test
-    public void success() {
+    void success() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user",
@@ -39,11 +39,11 @@ public class BasicAuthAuthenticationProviderTest {
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List)userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
     }
 
     @Test
-    public void successCase() {
+    void successCase() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "MyUser3!@yàhöù.com",
@@ -63,11 +63,11 @@ public class BasicAuthAuthenticationProviderTest {
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List)userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
     }
 
     @Test
-    public void failed_UserNotFound() {
+    void failed_UserNotFound() {
         AuthenticationResponse response = Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user2",
@@ -78,8 +78,9 @@ public class BasicAuthAuthenticationProviderTest {
         AuthenticationFailed authenticationFailed = (AuthenticationFailed) response;
         assertEquals(AuthenticationFailureReason.USER_NOT_FOUND, authenticationFailed.getReason());
     }
+
     @Test
-    public void failed_PasswordInvalid() {
+    void failed_PasswordInvalid() {
         AuthenticationResponse response = Flowable
                 .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
