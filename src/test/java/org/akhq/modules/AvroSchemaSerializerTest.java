@@ -53,7 +53,7 @@ class AvroSchemaSerializerTest {
     }
 
     @Test
-    public void shouldSerializeSchemaId() {
+    void shouldSerializeSchemaId() {
         int schemaId = 3;
         byte[] bytes = cut.toAvro(VALID_JSON, schemaId);
 
@@ -66,7 +66,7 @@ class AvroSchemaSerializerTest {
     }
 
     @Test
-    public void shouldFailIfDoesntMatchSchemaId() {
+    void shouldFailIfDoesntMatchSchemaId() {
         assertThrows(NullPointerException.class, () -> {
             int schemaId = 3;
             cut.toAvro(INVALID_JSON, schemaId);

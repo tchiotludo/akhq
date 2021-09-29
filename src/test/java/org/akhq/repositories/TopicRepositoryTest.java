@@ -7,7 +7,6 @@ import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.common.config.TopicConfig;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,12 +25,11 @@ import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(KafkaClusterExtension.class)
-public class TopicRepositoryTest extends AbstractTest {
+class TopicRepositoryTest extends AbstractTest {
 
     @Inject
     @InjectMocks
@@ -44,12 +42,12 @@ public class TopicRepositoryTest extends AbstractTest {
     ApplicationContext applicationContext;
 
     @BeforeEach
-    public void before(){
+    void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void list() throws ExecutionException, InterruptedException {
+    void list() throws ExecutionException, InterruptedException {
         assertEquals(KafkaTestCluster.TOPIC_ALL_COUNT, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -59,7 +57,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void listNoInternal() throws ExecutionException, InterruptedException {
+    void listNoInternal() throws ExecutionException, InterruptedException {
         assertEquals(KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -69,7 +67,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void listNoInternalStream() throws ExecutionException, InterruptedException {
+    void listNoInternalStream() throws ExecutionException, InterruptedException {
         assertEquals(KafkaTestCluster.TOPIC_HIDE_INTERNAL_STREAM_COUNT, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -79,7 +77,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void listNoStream() throws ExecutionException, InterruptedException {
+    void listNoStream() throws ExecutionException, InterruptedException {
         assertEquals(KafkaTestCluster.TOPIC_HIDE_STREAM_COUNT, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -89,7 +87,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void listWithTopicRegex() throws ExecutionException, InterruptedException {
+    void listWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
         assertEquals(1, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
@@ -100,7 +98,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void search() throws ExecutionException, InterruptedException {
+    void search() throws ExecutionException, InterruptedException {
         assertEquals(1, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -110,7 +108,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void searchWithTopicRegex() throws ExecutionException, InterruptedException {
+    void searchWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
         assertEquals(0, topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
@@ -121,17 +119,17 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
+    void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
-        Assertions.assertThrows(NoSuchElementException.class, () -> {
-            topicRepository.findByName(KafkaTestCluster.CLUSTER_ID,"compacted");
+        assertThrows(NoSuchElementException.class, () -> {
+            topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "compacted");
         });
 
         assertEquals(1, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("compacted", "random")).size());
     }
 
     @Test
-    public void create() throws ExecutionException, InterruptedException {
+    void create() throws ExecutionException, InterruptedException {
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, "create", 8, (short) 1, Collections.singletonList(
                 new Config(TopicConfig.SEGMENT_MS_CONFIG, "1000")
         ));
@@ -149,7 +147,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void offset() throws ExecutionException, InterruptedException {
+    void offset() throws ExecutionException, InterruptedException {
         Optional<Partition> compacted = topicRepository
                 .findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED)
                 .getPartitions()
@@ -163,7 +161,7 @@ public class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void partition() throws ExecutionException, InterruptedException {
+    void partition() throws ExecutionException, InterruptedException {
         assertEquals(3, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
     }
 

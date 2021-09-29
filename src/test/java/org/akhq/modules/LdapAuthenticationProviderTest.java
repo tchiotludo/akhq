@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 @MicronautTest(propertySources = "application.yml")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class LdapAuthenticationProviderTest {
+class LdapAuthenticationProviderTest {
     @Inject
     ContextBuilder contextBuilder;
 
@@ -60,7 +60,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
-    public void success() throws NamingException {
+    void success() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
         List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -91,14 +91,14 @@ public class LdapAuthenticationProviderTest {
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List)userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
     }
 
     @Test
-    public void successWithMultipleLdapGroups() throws NamingException {
+    void successWithMultipleLdapGroups() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
-        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(),"dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
 
@@ -127,17 +127,17 @@ public class LdapAuthenticationProviderTest {
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList =  (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
     }
 
     @Test
-    public void successWithLdapGroupAndUserRole() throws NamingException {
+    void successWithLdapGroupAndUserRole() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
-        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(),"dn"));
+        List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
 
@@ -166,14 +166,14 @@ public class LdapAuthenticationProviderTest {
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList =  (List)(userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList =  (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
     }
 
     @Test
-    public void successWithoutRoles() throws NamingException {
+    void successWithoutRoles() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
         List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
@@ -203,7 +203,7 @@ public class LdapAuthenticationProviderTest {
     }
 
     @Test
-    public void failure() throws NamingException {
+    void failure() throws NamingException {
 
         Optional<LdapSearchResult> optionalResult = Optional.empty();
 

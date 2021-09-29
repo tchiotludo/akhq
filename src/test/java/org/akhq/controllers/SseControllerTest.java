@@ -24,7 +24,7 @@ class SseControllerTest extends AbstractTest {
     private EmbeddedServer embeddedServer;
 
     @Test
-    public void searchApi() {
+    void searchApi() {
         RxSseClient sseClient = embeddedServer.getApplicationContext().createBean(RxSseClient.class, embeddedServer.getURL());
 
         List<Record> results = sseClient

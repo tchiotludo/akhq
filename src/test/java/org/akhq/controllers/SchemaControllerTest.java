@@ -36,10 +36,6 @@ class SchemaControllerTest extends AbstractTest {
     }
 
     @Test
-    void createApi() {
-    }
-
-    @Test
     void homeApi() {
         Schema result = this.retrieve(HttpRequest.GET(SCHEMA_URL), Schema.class);
         assertEquals("stream-map-value", result.getSubject());
