@@ -18,7 +18,7 @@ import java.util.Map;
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
-    Deserialization deserialization;
+    Deserialization deserialization = new Deserialization();
     UiOptions uiOptions = new UiOptions();
 
     public Connection(@Parameter String name) {
