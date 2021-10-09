@@ -54,6 +54,7 @@ public class Record {
 
     private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
+    @JsonIgnore
     private AvroToJsonDeserializer avroToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
