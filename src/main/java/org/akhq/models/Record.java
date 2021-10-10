@@ -51,6 +51,7 @@ public class Record {
     @JsonIgnore
     private SchemaRegistryClient client;
 
+    @JsonIgnore
     private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
     @Getter(AccessLevel.NONE)
