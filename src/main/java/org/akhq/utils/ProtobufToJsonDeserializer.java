@@ -29,7 +29,7 @@ public class ProtobufToJsonDeserializer {
     private final List<TopicsMapping> topicsMapping;
     private final String protobufDescriptorsFolder;
 
-    public ProtobufToJsonDeserializer(Connection.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping) {
+    public ProtobufToJsonDeserializer(Connection.Deserialization.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping) {
         if (protobufDeserializationTopicsMapping == null) {
             this.descriptors = new HashMap<>();
             this.topicsMapping = new ArrayList<>();

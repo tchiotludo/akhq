@@ -1,0 +1,11 @@
+{
+    "name": "AlbumAvro",
+    "namespace": "org.akhq",
+    "type": "record",
+    "fields" : [
+        {"name": "title", "type": "string"},
+        {"name": "artist", "type": {"type": "array", "items": "string"}},
+        {"name": "releaseYear", "type": "int"},
+        {"name": "songTitle", "type": {"type": "array", "items": "string"}}
+    ]
+}

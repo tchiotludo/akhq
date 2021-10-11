@@ -10,6 +10,7 @@ import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
+import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
@@ -54,6 +55,9 @@ public class Record {
     @JsonIgnore
     private ProtobufToJsonDeserializer protobufToJsonDeserializer;
 
+    @JsonIgnore
+    private AvroToJsonDeserializer avroToJsonDeserializer;
+
     @Getter(AccessLevel.NONE)
     private byte[] bytesKey;
 
@@ -89,7 +93,7 @@ public class Record {
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, byte[] bytesValue, Topic topic) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -111,6 +115,7 @@ public class Record {
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
+        this.avroToJsonDeserializer = avroToJsonDeserializer;
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
@@ -188,6 +193,19 @@ public class Record {
             if (protobufToJsonDeserializer != null) {
                 try {
                     String record = protobufToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
+                    if (record != null) {
+                        return record;
+                    }
+                } catch (Exception exception) {
+                    this.exceptions.add(exception.getMessage());
+
+                    return new String(payload);
+                }
+            }
+
+            if (avroToJsonDeserializer != null) {
+                try {
+                    String record = avroToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
                     if (record != null) {
                         return record;
                     }
