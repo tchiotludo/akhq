@@ -11,7 +11,7 @@ annotations: {}
   #prometheus.io/path: '/prometheus'
 
 # custom labels
-labels : {}
+labels: {}
   # custom.label: 'true
 
 ## You can put directly your configuration here... or add java opts or any other env vars
