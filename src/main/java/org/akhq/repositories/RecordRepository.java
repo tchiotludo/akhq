@@ -440,6 +440,7 @@ public class RecordRepository extends AbstractRepository {
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
             this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
+            this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
             topic
@@ -458,6 +459,7 @@ public class RecordRepository extends AbstractRepository {
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
             this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
+            this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
             topic
@@ -1262,4 +1264,4 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
     }
 }
- 
+

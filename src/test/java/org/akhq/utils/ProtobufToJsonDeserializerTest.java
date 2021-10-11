@@ -3,7 +3,7 @@ package org.akhq.utils;
 import com.google.protobuf.Any;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.StringValue;
-import org.akhq.configs.Connection.ProtobufDeserializationTopicsMapping;
+import org.akhq.configs.Connection.Deserialization.ProtobufDeserializationTopicsMapping;
 import org.akhq.configs.TopicsMapping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

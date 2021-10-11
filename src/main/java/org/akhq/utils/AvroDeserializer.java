@@ -41,7 +41,7 @@ public class AvroDeserializer {
             .getFields()
             .stream()
             .collect(
-                HashMap::new,
+                LinkedHashMap::new, // preserve schema field order
                 (m, v) -> m.put(
                     v.name(),
                     AvroDeserializer.objectDeserializer(record.get(v.name()), v.schema())
