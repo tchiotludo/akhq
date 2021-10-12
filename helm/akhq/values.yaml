@@ -10,6 +10,10 @@ annotations: {}
   #prometheus.io/port: '8080'
   #prometheus.io/path: '/prometheus'
 
+# custom labels
+labels: {}
+  # custom.label: 'true
+
 ## You can put directly your configuration here... or add java opts or any other env vars
 extraEnv: []
 # - name: AKHQ_CONFIGURATION
