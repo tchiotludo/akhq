@@ -17,6 +17,7 @@
     "css-loader": "^3.4.1",
     "font-awesome": "^4.7.0",
     "joi-validation": "^2.0.0",
+    "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "node-sass": "^4.14.1",

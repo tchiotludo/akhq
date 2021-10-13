@@ -29,6 +29,7 @@ import Root from '../../../../components/Root';
 import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
 import Select from '../../../../components/Form/Select';
 import TimeAgo from 'react-timeago'
+import JSONbig from 'json-bigint';
 
 class TopicData extends Root {
   state = {
@@ -846,8 +847,8 @@ class TopicData extends Root {
                     extraRowContent: (obj, index) => {
                       let value = obj.value;
                       try {
-                        let json = JSON.parse(obj.value);
-                        value = JSON.stringify(json, null, 2);
+                        let json = JSONbig.parse(obj.value);
+                        value = JSONbig.stringify(json, null, 2);
                         // eslint-disable-next-line no-empty
                       } catch (e) {}
 
