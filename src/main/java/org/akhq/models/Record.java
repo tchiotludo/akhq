@@ -8,6 +8,7 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import kafka.coordinator.group.GroupMetadataManager;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
@@ -188,6 +189,12 @@ public class Record {
                 this.exceptions.add(exception.getMessage());
 
                 return new String(payload);
+            }
+        } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
+            if (isKey) {
+                return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).toString();
+            } else {
+                return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
             }
         } else {
             if (protobufToJsonDeserializer != null) {
