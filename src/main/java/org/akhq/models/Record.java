@@ -192,9 +192,25 @@ public class Record {
             }
         } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
             if (isKey) {
-                return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).toString();
+                try {
+                    return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).key().toString();
+                } catch (Exception exception) {
+                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                            .filter(msg -> !msg.isBlank())
+                            .orElseGet(() -> exception.getClass().getCanonicalName()));
+
+                    return new String(payload);
+                }
             } else {
-                return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
+                try {
+                    return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
+                } catch (Exception exception) {
+                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                        .filter(msg -> !msg.isBlank())
+                        .orElseGet(() -> exception.getClass().getCanonicalName()));
+
+                    return new String(payload);
+                }
             }
         } else {
             if (protobufToJsonDeserializer != null) {
