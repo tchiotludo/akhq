@@ -8,6 +8,7 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import kafka.coordinator.group.GroupMetadataManager;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
@@ -188,6 +189,28 @@ public class Record {
                 this.exceptions.add(exception.getMessage());
 
                 return new String(payload);
+            }
+        } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
+            if (isKey) {
+                try {
+                    return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).key().toString();
+                } catch (Exception exception) {
+                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                            .filter(msg -> !msg.isBlank())
+                            .orElseGet(() -> exception.getClass().getCanonicalName()));
+
+                    return new String(payload);
+                }
+            } else {
+                try {
+                    return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
+                } catch (Exception exception) {
+                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                        .filter(msg -> !msg.isBlank())
+                        .orElseGet(() -> exception.getClass().getCanonicalName()));
+
+                    return new String(payload);
+                }
             }
         } else {
             if (protobufToJsonDeserializer != null) {
