@@ -9,6 +9,8 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import kafka.coordinator.group.GroupMetadataManager;
+import kafka.coordinator.transaction.TransactionLog;
+import kafka.coordinator.transaction.TxnKey;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
@@ -191,26 +193,36 @@ public class Record {
                 return new String(payload);
             }
         } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
-            if (isKey) {
-                try {
+            try {
+                if (isKey) {
                     return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).key().toString();
-                } catch (Exception exception) {
-                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
-                            .filter(msg -> !msg.isBlank())
-                            .orElseGet(() -> exception.getClass().getCanonicalName()));
-
-                    return new String(payload);
-                }
-            } else {
-                try {
+                } else {
                     return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
-                } catch (Exception exception) {
-                    this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                }
+            } catch (Exception exception) {
+                this.exceptions.add(Optional.ofNullable(exception.getMessage())
                         .filter(msg -> !msg.isBlank())
                         .orElseGet(() -> exception.getClass().getCanonicalName()));
 
-                    return new String(payload);
+                return new String(payload);
+            }
+        } else if (topic.isInternalTopic() && topic.getName().equals("__transaction_state")) {
+            try {
+                if (isKey) {
+                    TxnKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
+                    return avroToJsonSerializer.getMapper().writeValueAsString(
+                        Map.of("transactionalId", txnKey.transactionalId(), "version", txnKey.version())
+                    );
+                } else {
+                    TxnKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(this.bytesKey));
+                    return avroToJsonSerializer.getMapper().writeValueAsString(TransactionLog.readTxnRecordValue(txnKey.transactionalId(), ByteBuffer.wrap(payload)));
                 }
+            } catch (Exception exception) {
+                this.exceptions.add(Optional.ofNullable(exception.getMessage())
+                    .filter(msg -> !msg.isBlank())
+                    .orElseGet(() -> exception.getClass().getCanonicalName()));
+
+                return new String(payload);
             }
         } else {
             if (protobufToJsonDeserializer != null) {
