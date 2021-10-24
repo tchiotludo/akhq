@@ -10,6 +10,12 @@ annotations: {}
   #prometheus.io/port: '8080'
   #prometheus.io/path: '/prometheus'
 
+# custom pods annotations
+podAnnotations: {}
+  #prometheus.io/scrape: 'true'
+  #prometheus.io/port: '8080'
+  #prometheus.io/path: '/prometheus'
+
 # custom labels
 labels: {}
   # custom.label: 'true
