@@ -3,7 +3,7 @@ name: Main
 on:
   push:
     branches:
-      - master
+      - dev
 
 jobs:
   check:
@@ -13,10 +13,26 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Web site
+      # Setup
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      # Build
+      - name: Build
+        working-directory: docs
+        run: |
+          npm install
+          node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > .vuepress/public/contributors.html
+          npm run build
+          echo "akhq.io" > .vuepress/dist/CNAME
+
+      # Copy for helm
       - name: Add some files
         run: |
-          echo "akhq.io" > docs/CNAME
           cp LICENSE helm/akhq/LICENSE
           cp README.md helm/akhq/README.md
 
@@ -38,13 +54,7 @@ jobs:
       - name: Add helm charts
         run: |
           rm -rf tmp-helm/.git
-          cp -R tmp-helm/* docs/
-
-      # Contributors
-      - name: Contributor
-        run: |
-          npm i github-contributors-list
-          node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > docs/contributors.html
+          cp -R tmp-helm/* docs/.vuepress/dist/
 
       # Deploy
       - name: Deploy
@@ -52,7 +62,7 @@ jobs:
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
           PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: docs/
+          PUBLISH_DIR: docs/.vuepress/dist/
 
       # Slack
       - name: Slack notification
