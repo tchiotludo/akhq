@@ -21,7 +21,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
-import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.*;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -34,6 +34,17 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class Record {
+    @JsonIgnore
+    private static final List<Deserializer<?>> STANDARD_DESERIALIZER = List.of(
+        new DoubleDeserializer(),
+        new FloatDeserializer(),
+        new IntegerDeserializer(),
+        new LongDeserializer(),
+        new ShortDeserializer(),
+        new StringDeserializer(),
+        new UUIDDeserializer()
+    );
+
     private Topic topic;
     private int partition;
     private long offset;
@@ -152,7 +163,9 @@ public class Record {
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
         if (payload == null) {
             return null;
-        } else if (schemaId != null) {
+        }
+
+        if (schemaId != null) {
             try {
 
                 Object toType = null;
@@ -192,7 +205,9 @@ public class Record {
 
                 return new String(payload);
             }
-        } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
+        }
+
+        if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
             try {
                 if (isKey) {
                     return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).key().toString();
@@ -206,7 +221,9 @@ public class Record {
 
                 return new String(payload);
             }
-        } else if (topic.isInternalTopic() && topic.getName().equals("__transaction_state")) {
+        }
+
+        if (topic.isInternalTopic() && topic.getName().equals("__transaction_state")) {
             try {
                 if (isKey) {
                     TxnKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
@@ -224,34 +241,45 @@ public class Record {
 
                 return new String(payload);
             }
-        } else {
-            if (protobufToJsonDeserializer != null) {
-                try {
-                    String record = protobufToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
-                    if (record != null) {
-                        return record;
-                    }
-                } catch (Exception exception) {
-                    this.exceptions.add(exception.getMessage());
-
-                    return new String(payload);
-                }
-            }
-
-            if (avroToJsonDeserializer != null) {
-                try {
-                    String record = avroToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
-                    if (record != null) {
-                        return record;
-                    }
-                } catch (Exception exception) {
-                    this.exceptions.add(exception.getMessage());
-
-                    return new String(payload);
-                }
-            }
-            return new String(payload);
         }
+
+        if (protobufToJsonDeserializer != null) {
+            try {
+                String record = protobufToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
+                if (record != null) {
+                    return record;
+                }
+            } catch (Exception exception) {
+                this.exceptions.add(exception.getMessage());
+
+                return new String(payload);
+            }
+        }
+
+        if (avroToJsonDeserializer != null) {
+            try {
+                String record = avroToJsonDeserializer.deserialize(topic.getName(), payload, isKey);
+                if (record != null) {
+                    return record;
+                }
+            } catch (Exception exception) {
+                this.exceptions.add(exception.getMessage());
+
+                return new String(payload);
+            }
+        }
+
+        // try standard deserializer ?
+        for (Deserializer<?> deserializer : STANDARD_DESERIALIZER) {
+            try {
+                Object deserialize = deserializer.deserialize(topic.getName(), payload);
+                return deserialize.toString();
+            } catch (Exception ignored) {
+
+            }
+        }
+
+        return new String(payload);
     }
 
     private Integer getAvroSchemaId(byte[] payload) {
@@ -263,7 +291,7 @@ public class Record {
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
 
-            if (magicBytes == MAGIC_BYTE && schemaId >= 0) {
+            if (magicBytes == MAGIC_BYTE && schemaId > 0) {
                 return schemaId;
             }
         } catch (Exception ignore) {
