@@ -35,6 +35,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "akhq.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- with .Values.image.labels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
