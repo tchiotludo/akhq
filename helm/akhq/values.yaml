@@ -10,9 +10,13 @@ annotations: {}
   #prometheus.io/port: '8080'
   #prometheus.io/path: '/prometheus'
 
+podAnnotations: {}
+
 # custom labels
 labels: {}
-  # custom.label: 'true
+  # custom.label: 'true'
+
+podLabels: {}
 
 ## You can put directly your configuration here... or add java opts or any other env vars
 extraEnv: []

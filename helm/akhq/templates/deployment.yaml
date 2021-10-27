@@ -29,12 +29,15 @@ spec:
         {{- if and (not .Values.existingSecret) (.Values.secrets) }}
         checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
-        {{- with .Values.image.annotations }}
+        {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "akhq.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
