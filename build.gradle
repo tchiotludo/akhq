@@ -10,13 +10,10 @@ plugins {
     id 'com.github.psxpaul.execfork' version '0.1.15'
     id "com.github.ben-manes.versions" version "0.39.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.2.0"
-    id "com.palantir.git-version" version "0.12.3"
 }
 
 group "org.akhq"
-// Grab version from last Git tag with git-version plugin
-def gitVersionDetails = versionDetails()
-version gitVersionDetails.lastTag
+version "0.19.0"
 mainClassName = "org.akhq.App"
 sourceCompatibility = 11
 
