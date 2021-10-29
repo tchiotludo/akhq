@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 import org.akhq.modules.HasAnyPermission;
+import org.akhq.utils.VersionProvider;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ public class AkhqController extends AbstractController {
     @Nullable
     private HeaderAuth headerAuth;
 
+    @Inject
+    private VersionProvider versionProvider;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -90,6 +93,7 @@ public class AkhqController extends AbstractController {
                 authDefinition.loginEnabled = false;
             }
         }
+        authDefinition.version = versionProvider.getVersion();
 
         return authDefinition;
     }
@@ -176,6 +180,7 @@ public class AkhqController extends AbstractController {
         private boolean loginEnabled;
         private boolean formEnabled;
         private List<OidcAuth> oidcAuths;
+        private String version;
     }
 
     @AllArgsConstructor

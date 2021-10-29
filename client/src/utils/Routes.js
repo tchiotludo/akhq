@@ -79,6 +79,7 @@ class Routes extends Root {
   _setAuths(response) {
     if (response.status === 200) {
         sessionStorage.setItem('auths', JSON.stringify(response.data));
+        sessionStorage.setItem('version', response.data.version);
     }
   }
 

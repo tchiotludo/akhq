@@ -230,7 +230,7 @@ class Sidebar extends Component {
       enableConnect
     } = this.state;
     const roles = this.state.roles || {};
-    const tag = 'Snapshot';
+    const tag = sessionStorage.getItem('version');
     const { listConnects, listClusters } = this.setClustersAndConnects();
     return (
       <SideNav
