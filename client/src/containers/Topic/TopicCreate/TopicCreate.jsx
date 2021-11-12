@@ -3,7 +3,7 @@ import Joi from 'joi-browser';
 import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
-import { uriTopicsCreate } from '../../../utils/endpoints';
+import { uriTopicsCreate, uriTopicDefaultConf } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
 
 class TopicCreate extends Form {
@@ -17,6 +17,21 @@ class TopicCreate extends Form {
     },
     errors: {}
   };
+
+  componentDidMount() {
+    this.getTopicDefaultConf();
+  }
+
+  async getTopicDefaultConf() {
+    let { formData } = { ...this.state }
+    const defaults = await this.getApi(uriTopicDefaultConf());
+
+    formData.retention = defaults.data.retention
+    formData.partition = defaults.data.partition
+    formData.replication = defaults.data.replication
+
+    this.setState({ formData });
+  }
 
   schema = {
     name: Joi.string()
