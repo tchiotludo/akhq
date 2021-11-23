@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "releaseYear": {
+      "type": "number"
+    },
+    "artists": {
+      "type": "array",
+      "items": {
+        "type" : "string"
+      }
+    },
+    "songsTitles": {
+      "type": "array",
+      "items": {
+        "type" : "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "releaseYear",
+    "artists",
+    "songsTitles"
+  ]
+}

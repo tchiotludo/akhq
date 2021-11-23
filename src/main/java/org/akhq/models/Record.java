@@ -78,11 +78,7 @@ public class Record {
     private byte MAGIC_BYTE;
 
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
-        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
-            this.MAGIC_BYTE = (byte) 0x80;
-        } else {
-            this.MAGIC_BYTE = 0x0;
-        }
+        this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
         this.offset = record.offset();

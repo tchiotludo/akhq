@@ -54,6 +54,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_MAP = "stream-map";
     public static final String TOPIC_STREAM_COUNT = "stream-count";
     public static final String TOPIC_CONNECT = "connect-sink";
+    public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
 
     public static final int TOPIC_ALL_COUNT = 19;
     public static final int TOPIC_HIDE_INTERNAL_COUNT = 11;

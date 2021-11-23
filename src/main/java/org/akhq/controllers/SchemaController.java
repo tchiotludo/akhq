@@ -128,7 +128,9 @@ public class SchemaController extends AbstractController {
         String cluster,
         Integer id
     ) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        return this.schemaRepository.getById(cluster, id);
+        return this.schemaRepository
+            .getById(cluster, id)
+            .orElse(null);
     }
 
     @Get("api/{cluster}/schema/{subject}/version")

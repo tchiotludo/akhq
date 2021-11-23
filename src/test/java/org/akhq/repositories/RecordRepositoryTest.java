@@ -1,20 +1,28 @@
 package org.akhq.repositories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
+import org.akhq.models.Schema;
 import org.akhq.models.Topic;
+import org.akhq.utils.Album;
+import org.akhq.utils.ResourceTestUtil;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import javax.inject.Inject;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -30,7 +38,13 @@ class RecordRepositoryTest extends AbstractTest {
     private TopicRepository topicRepository;
 
     @Inject
+    private SchemaRegistryRepository schemaRegistryRepository;
+
+    @Inject
     private Environment environment;
+
+    @Inject
+    private ObjectMapper objectMapper;
 
     @Test
     void consumeEmpty() throws ExecutionException, InterruptedException {
@@ -223,6 +237,53 @@ class RecordRepositoryTest extends AbstractTest {
     void lastRecordTest() throws ExecutionException, InterruptedException {
         Map<String, Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, Collections.singletonList(KafkaTestCluster.TOPIC_RANDOM));
         assertTrue(record.containsKey(KafkaTestCluster.TOPIC_RANDOM));
+    }
+
+    @Test
+    void produceAndConsumeRecordUsingJsonSchema() throws ExecutionException, InterruptedException, IOException, RestClientException {
+        Schema keyJsonSchema = registerSchema("json_schema/key.json", KafkaTestCluster.TOPIC_JSON_SCHEMA + "-key");
+        Schema valueJsonSchema = registerSchema("json_schema/album.json", KafkaTestCluster.TOPIC_JSON_SCHEMA + "-value");
+        Album objectSatisfyingJsonSchema = new Album("title", List.of("artist_1", "artist_2"), 1989, List.of("song_1", "song_2"));
+        String recordAsJsonString = objectMapper.writeValueAsString(objectSatisfyingJsonSchema);
+        String keyJsonString = new JSONObject(Collections.singletonMap("id", "83fff9f8-b47a-4bf7-863b-9942c4369f06")).toString();
+
+        RecordMetadata producedRecordMetadata = repository.produce(
+            KafkaTestCluster.CLUSTER_ID,
+            KafkaTestCluster.TOPIC_JSON_SCHEMA,
+            recordAsJsonString,
+            Collections.emptyMap(),
+            Optional.of(keyJsonString),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.of(keyJsonSchema.getId()),
+            Optional.of(valueJsonSchema.getId())
+        );
+
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_JSON_SCHEMA);
+        List<Record> records = consumeAllRecord(options);
+        Optional<Record> consumedRecord = records.stream()
+            .filter(record -> Objects.equals(record.getKey(), keyJsonString))
+            .findFirst();
+        assertTrue(consumedRecord.isPresent());
+        Record recordToAssert = consumedRecord.get();
+        assertEquals(recordToAssert.getKey(), keyJsonString);
+        assertEquals(recordToAssert.getValue(), recordAsJsonString);
+        assertEquals(recordToAssert.getValueSchemaId(), valueJsonSchema.getId());
+
+        // clear schema registry as it is shared between tests
+        schemaRegistryRepository.delete(KafkaTestCluster.CLUSTER_ID, keyJsonSchema.getSubject());
+        schemaRegistryRepository.delete(KafkaTestCluster.CLUSTER_ID, valueJsonSchema.getSubject());
+    }
+
+    private Schema registerSchema(String resourcePath, String subject) throws IOException, RestClientException {
+        String jsonSchemaRequest = ResourceTestUtil.resourceAsString(resourcePath);
+        return schemaRegistryRepository.register(
+            KafkaTestCluster.CLUSTER_ID,
+            subject,
+            "JSON",
+            jsonSchemaRequest,
+            Collections.emptyList()
+        );
     }
 
     private int searchAll(RecordRepository.Options options) throws ExecutionException, InterruptedException {
