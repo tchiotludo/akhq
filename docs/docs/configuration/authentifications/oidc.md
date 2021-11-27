@@ -47,3 +47,48 @@ akhq:
 ```
 
 The username field can be any string field, the roles field has to be a JSON array.
+
+## Direct OIDC mapping
+
+If you want to manage AKHQ roles an attributes directly with the OIDC provider, you can use the following configuration:
+```yaml
+akhq:
+  security:
+    oidc:
+      enabled: true
+      providers:
+        google:
+          label: "Login with Google"
+          username-field: preferred_username
+          use-oidc-claim: true
+````
+
+In this scenario, you need to make the OIDC provider return a JWT which have the following fields:
+````json
+{
+  // Standard claims
+  "exp": 1635868816,
+  "iat": 1635868516,
+  "preferred_username": "json",
+  ...
+  "scope": "openid email profile",
+  // Mandatory AKHQ claims
+  "roles": [
+    "acls/read",
+    "topic/data/delete",
+    "topic/data/insert",
+    "..."
+  ],
+  // Optional AKHQ claims
+  // If not set, no filtering is applied (full access ".*")
+  "topicsFilterRegexp": [
+    "^json.*$"
+  ],
+  "connectsFilterRegexp": [
+    "^json.*$"
+  ],
+  "consumerGroupsFilterRegexp": [
+    "^json-consumer.*$"
+  ]
+}
+````
