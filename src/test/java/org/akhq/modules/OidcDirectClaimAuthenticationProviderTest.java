@@ -72,8 +72,8 @@ class OidcDirectClaimAuthenticationProviderTest {
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
                 .claim("roles", List.of("topic/read"))
-                .claim("topicsFilterRegex", List.of("^topic1$", "^topic2$"))
-                .claim("connectsFilterRegex", List.of("^connect1", "^connect2"))
+                .claim("topicsFilterRegexp", List.of("^topic1$", "^topic2$"))
+                .claim("connectsFilterRegexp", List.of("^connect1", "^connect2"))
                 .claim("consumerGroupsFilterRegexp", List.of("^cg1", "^cg2"))
                 .build();
         JWT jwt = new PlainJWT(claimsSet);
