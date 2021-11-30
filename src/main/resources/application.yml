@@ -123,7 +123,6 @@ akhq:
       - "^.*-rekey$"
 
   topic-data:
-    sort: OLDEST
     size: 50
     poll-timeout: 1000
 
