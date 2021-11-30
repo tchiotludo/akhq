@@ -1,9 +1,9 @@
 # Others
 
 ## Server
-* `micronaut.server.context-path`: if behind a reverse proxy, path to akhq with trailing slash (optional). Example:
-  akhq is behind a reverse proxy with url <http://my-server/akhq>, set base-path: "/akhq/". Not needed if you're
-  behind a reverse proxy with subdomain <http://akhq.my-server/>
+* `micronaut.server.context-path`: if behind a reverse proxy, path to akhq without trailing slash (optional).
+  Example: akhq is behind a reverse proxy with url <http://my-server/akhq>, set `context-path: "/akhq"`.
+  Not needed if you're behind a reverse proxy with subdomain <http://akhq.my-server/>
 
 ## Kafka admin / producer / consumer default properties
 * `akhq.clients-defaults.{{admin|producer|consumer}}.properties`: default configuration for admin producer or
