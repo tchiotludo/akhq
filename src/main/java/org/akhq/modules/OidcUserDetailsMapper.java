@@ -74,18 +74,20 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     }
 
     private AuthenticationResponse createDirectClaimAuthenticationResponse(String oidcUsername, OpenIdClaims openIdClaims) {
-        List<String> roles = (List<String>) openIdClaims.get("roles");
-        Map<String, Object> attributes =  openIdClaims.getClaims()
-            .entrySet()
-            .stream()
-            // keep only topicsFilterRegexp, connectsFilterRegexp, consumerGroupsFilterRegexp and potential future filters
-            .filter(kv -> kv.getKey().matches(".*FilterRegexp$"))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        try {
+        String ROLES_KEY = "roles";
+        if(openIdClaims.contains(ROLES_KEY) && openIdClaims.get(ROLES_KEY) instanceof List){
+            List<String> roles = (List<String>) openIdClaims.get(ROLES_KEY);
+            Map<String, Object> attributes =  openIdClaims.getClaims()
+                .entrySet()
+                .stream()
+                // keep only topicsFilterRegexp, connectsFilterRegexp, consumerGroupsFilterRegexp and potential future filters
+                .filter(kv -> kv.getKey().matches(".*FilterRegexp$"))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             return new UserDetails(oidcUsername, roles, attributes);
-        } catch (Exception e) {
-            return new AuthenticationFailed("Exception during createDirectClaimAuthenticationResponse: " + e.getMessage());
         }
+
+        return new AuthenticationFailed("Exception during Authentication: use-oidc-claim config requires attribute " +
+            ROLES_KEY + " in the OIDC claim");
     }
 
     /**

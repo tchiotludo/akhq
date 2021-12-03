@@ -111,31 +111,99 @@ class OidcDirectClaimAuthenticationProviderTest {
     }
 
     @Test
-    void failure() {
+    void successSingleOidcGroup_KeepsAllFilterRegexp() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+            .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
+            .claim("roles", List.of("topic/read"))
+            .claim("topicsFilterRegexp", List.of("^topic1$", "^topic2$"))
+            .claim("connectsFilterRegexp", List.of("^connect1", "^connect2"))
+            .claim("consumerGroupsFilterRegexp", List.of("^cg1", "^cg2"))
+            .claim("futureFilterRegexp", List.of("^future1"))
+            .claim("donotkeep", "drop")
+            .claim("remove-me", "drop")
+            .claim("FilterRegexpRemove", "drop")
+            .claim("aaaFilterRegexpaaa", "drop")
+            .build();
+        JWT jwt = new PlainJWT(claimsSet);
 
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
-                .thenReturn(Publishers.just(new OpenIdTokenResponse()));
+            .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.empty());
+            .thenReturn(Optional.of(jwt));
 
-        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> {
-            Flowable
-                    .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
-                            "user",
-                            "pass"
-                    ))).blockingFirst();
-        });
+        AuthenticationResponse response = Flowable
+            .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                "user",
+                "pass"
+            ))).blockingFirst();
 
-        assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
-        assertFalse(authenticationException.getResponse().isAuthenticated());
+        assertThat(response, instanceOf(UserDetails.class));
+
+        UserDetails userDetail = (UserDetails) response;
+
+        assertTrue(userDetail.isAuthenticated());
+        assertEquals("user", userDetail.getUsername());
+
+        Collection<String> roles = userDetail.getRoles();
+
+        assertThat(roles, hasSize(1));
+        assertThat(roles, hasItem("topic/read"));
+
+        Map<String, Object> attributes = userDetail.getAttributes("roles", "username");
+        assertEquals(4, attributes.size());
+        assertThat(attributes.keySet(), hasItem("topicsFilterRegexp"));
+        assertThat(attributes.keySet(), hasItem("connectsFilterRegexp"));
+        assertThat(attributes.keySet(), hasItem("consumerGroupsFilterRegexp"));
+        assertThat(attributes.keySet(), hasItem("futureFilterRegexp"));
     }
 
     @Test
-    void noLoginForm() {
-        AkhqController.AuthDefinition actual = akhqController.auths();
+    void failureNoRoles() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+            .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
+            //.claim("roles", List.of("topic/read")) no roles
+            .claim("topicsFilterRegexp", List.of("^topic1$", "^topic2$"))
+            .claim("connectsFilterRegexp", List.of("^connect1", "^connect2"))
+            .claim("consumerGroupsFilterRegexp", List.of("^cg1", "^cg2"))
+            .build();
+        JWT jwt = new PlainJWT(claimsSet);
 
-        assertTrue(actual.isLoginEnabled(), "Login must be enabled with OIDC");
-        assertFalse(actual.isFormEnabled(), "Login Form must not be active if only OIDC is enabled");
-        assertFalse(actual.getOidcAuths().isEmpty());
+        Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
+            .thenReturn(Publishers.just(new OpenIdTokenResponse()));
+        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Optional.of(jwt));
+
+        AuthenticationResponse response = Flowable
+            .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                "user",
+                "pass"
+            ))).blockingFirst();
+
+        assertThat(response, instanceOf(AuthenticationFailed.class));
+    }
+
+    @Test
+    void failureRolesNotAList() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+            .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
+            .claim("roles", "string") //not a list of roles
+            .claim("topicsFilterRegexp", List.of("^topic1$", "^topic2$"))
+            .claim("connectsFilterRegexp", List.of("^connect1", "^connect2"))
+            .claim("consumerGroupsFilterRegexp", List.of("^cg1", "^cg2"))
+            .build();
+        JWT jwt = new PlainJWT(claimsSet);
+
+        Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
+            .thenReturn(Publishers.just(new OpenIdTokenResponse()));
+        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Optional.of(jwt));
+
+        AuthenticationResponse response = Flowable
+            .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                "user",
+                "pass"
+            ))).blockingFirst();
+
+        assertThat(response, instanceOf(AuthenticationFailed.class));
     }
 }
