@@ -150,7 +150,10 @@ class OidcDirectClaimAuthenticationProviderTest {
         assertThat(roles, hasItem("topic/read"));
 
         Map<String, Object> attributes = userDetail.getAttributes("roles", "username");
-        assertEquals(4, attributes.size());
+
+        assertEquals(6, attributes.size());
+        assertThat(attributes.keySet(), hasItem("username"));
+        assertThat(attributes.keySet(), hasItem("roles"));
         assertThat(attributes.keySet(), hasItem("topicsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("connectsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("consumerGroupsFilterRegexp"));
