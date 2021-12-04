@@ -19,10 +19,7 @@ import org.akhq.utils.ClaimProvider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,9 +43,19 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
     @NonNull
     @Override
     public AuthenticationResponse createAuthenticationResponse(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims, @Nullable State state) {
+        // get the current OIDC provider
+        Oidc.Provider provider = oidc.getProvider(providerName);
+
         // get username and groups declared from OIDC system
-        String oidcUsername = getUsername(providerName, tokenResponse, openIdClaims);
-        List<String> oidcGroups = getOidcGroups(oidc.getProvider(providerName), openIdClaims);
+        String oidcUsername = getUsername(provider, openIdClaims);
+
+        // Some OIDC providers like Keycloak can return a claim with roles and attributes directly,
+        // so we don't use the AKHQ internal ClaimProvider mechanism
+        if(provider.isUseOidcClaim()){
+            return createDirectClaimAuthenticationResponse(oidcUsername, openIdClaims);
+        }
+
+        List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
 
         ClaimProvider.AKHQClaimRequest request = ClaimProvider.AKHQClaimRequest.builder()
                 .providerType(ClaimProvider.ProviderType.OIDC)
@@ -66,16 +73,31 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
         }
     }
 
+    private AuthenticationResponse createDirectClaimAuthenticationResponse(String oidcUsername, OpenIdClaims openIdClaims) {
+        String ROLES_KEY = "roles";
+        if(openIdClaims.contains(ROLES_KEY) && openIdClaims.get(ROLES_KEY) instanceof List){
+            List<String> roles = (List<String>) openIdClaims.get(ROLES_KEY);
+            Map<String, Object> attributes =  openIdClaims.getClaims()
+                .entrySet()
+                .stream()
+                // keep only topicsFilterRegexp, connectsFilterRegexp, consumerGroupsFilterRegexp and potential future filters
+                .filter(kv -> kv.getKey().matches(".*FilterRegexp$"))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            return new UserDetails(oidcUsername, roles, attributes);
+        }
+
+        return new AuthenticationFailed("Exception during Authentication: use-oidc-claim config requires attribute " +
+            ROLES_KEY + " in the OIDC claim");
+    }
+
     /**
      * Tries to read the username from the configured username field.
      *
-     * @param providerName  The OpenID provider name
-     * @param tokenResponse The token response
+     * @param provider  The OpenID provider
      * @param openIdClaims  The OpenID claims
      * @return The username to set in the {@link UserDetails}
      */
-    protected String getUsername(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims) {
-        Oidc.Provider provider = oidc.getProvider(providerName);
+    protected String getUsername(Oidc.Provider provider, OpenIdClaims openIdClaims) {
         return Objects.toString(openIdClaims.get(provider.getUsernameField()));
     }
 
