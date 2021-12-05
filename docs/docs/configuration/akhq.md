@@ -20,7 +20,6 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic.partition` Default number of partition
 
 ## Topic Data
-* `akhq.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
 * `akhq.topic-data.size`: max record per page (default: 50)
 * `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the buffer (default: 1000).
 

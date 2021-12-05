@@ -202,6 +202,11 @@ class SchemaList extends Root {
               colName: 'Subject'
             },
             {
+              id: 'schemaType',
+              accessor: 'schemaType',
+              colName: 'Schema Type'
+            },
+            {
               id: 'version',
               accessor: 'version',
               colName: 'Version',

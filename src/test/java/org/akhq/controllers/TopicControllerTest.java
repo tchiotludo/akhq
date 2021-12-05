@@ -22,9 +22,21 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TopicControllerTest extends AbstractTest {
     public static final String BASE_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/topic";
+    public static final String DEFAULTS_CONFIGS_URL = "api/topic/defaults-configs";
     public static final String TOPIC_URL = BASE_URL + "/" + KafkaTestCluster.TOPIC_COMPACTED;
     public static final String CREATE_TOPIC_NAME = UUID.randomUUID().toString();
     public static final String CREATE_TOPIC_URL = BASE_URL + "/" + CREATE_TOPIC_NAME;
+
+    @Test
+    @Order(1)
+    void defaultsConfigsApi(){
+        Map<String,Integer> result = this.retrieve(HttpRequest.GET(DEFAULTS_CONFIGS_URL), Map.class);
+
+        assertEquals(1, result.get("replication"));
+        assertEquals(86400000, result.get("retention"));
+        assertEquals(1, result.get("partition"));
+    }
+
 
     @Test
     @Order(1)

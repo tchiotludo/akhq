@@ -39,6 +39,8 @@ export const uriTopics = (clusterId, search, show, page) => {
   return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
 };
 
+export const uriTopicDefaultConf = () => `${apiUrl}/topic/defaults-configs`;
+
 export const uriTopicsName = (clusterId) => `${apiUrl}/${clusterId}/topic/name`;
 
 export const uriTopicsInfo = (clusterId, topicId) => `${apiUrl}/${clusterId}/topic/${topicId}`;
