@@ -17,8 +17,9 @@ import org.akhq.models.KeyValue;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
-import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
+import org.akhq.modules.schemaregistry.SchemaSerializer;
+import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
 import org.apache.kafka.clients.admin.DeletedRecords;
@@ -59,6 +60,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+
+    @Inject
+    private RecordWithSchemaSerializerFactory serializerFactory;
 
     @Inject
     private CustomDeserializerRepository customDeserializerRepository;
@@ -588,13 +592,13 @@ public class RecordRepository extends AbstractRepository {
         Optional<Integer> keySchemaId,
         Optional<Integer> valueSchemaId
     ) throws ExecutionException, InterruptedException {
-        AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
 
         if (key.isPresent()) {
             if (keySchemaId.isPresent()) {
-                keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
+                SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, keySchemaId.get());
+                keyAsBytes = keySerializer.serialize(key.get());
             } else {
                 keyAsBytes = key.get().getBytes();
             }
@@ -609,7 +613,8 @@ public class RecordRepository extends AbstractRepository {
         }
 
         if (value != null && valueSchemaId.isPresent()) {
-            valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
+            SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
+            valueAsBytes = valueSerializer.serialize(value);
         } else {
             valueAsBytes = value != null ? value.getBytes() : null;
         }

@@ -15,7 +15,6 @@ import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.models.Schema;
-import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
@@ -38,7 +37,6 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
-    private AvroSerializer avroSerializer;
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search), pagination, list -> this.toSchemasLatestVersion(list, clusterId));
@@ -111,16 +109,16 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return found;
     }
 
-    public Schema getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
+    public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
         for (String subject: this.all(clusterId, Optional.empty())) {
             for (Schema version: this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
-                    return version;
+                    return Optional.of(version);
                 }
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public Schema getLatestVersion(String clusterId, String subject) throws IOException, RestClientException {
@@ -301,14 +299,6 @@ public class SchemaRegistryRepository extends AbstractRepository {
         }
 
         return this.kafkaProtoDeserializers.get(clusterId);
-    }
-
-    public AvroSerializer getAvroSerializer(String clusterId) {
-        if(this.avroSerializer == null){
-            this.avroSerializer = new AvroSerializer(this.kafkaModule.getRegistryClient(clusterId),
-                    getSchemaRegistryType(clusterId));
-        }
-        return this.avroSerializer;
     }
 
     public SchemaRegistryType getSchemaRegistryType(String clusterId) {

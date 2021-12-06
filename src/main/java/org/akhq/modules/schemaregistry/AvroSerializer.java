@@ -1,4 +1,4 @@
-package org.akhq.modules;
+package org.akhq.modules.schemaregistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.schemaregistry.ParsedSchema;
+import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.Conversions;
@@ -18,16 +18,17 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.*;
 
+import javax.inject.Singleton;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
-import javax.inject.Singleton;
 
 @Singleton
 @Slf4j
-public class AvroSerializer {
+public class AvroSerializer implements SchemaSerializer {
     private static final ObjectMapper MAPPER = new ObjectMapper()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -37,31 +38,32 @@ public class AvroSerializer {
         .setTimeZone(TimeZone.getDefault());
     private static final TypeReference<Map<String, Object>> TYPE_REFERENCE = new TypeReference<>() {};
 
-    private final int MAGIC_BYTE;
-
     public static final int SCHEMA_ID_SIZE = 4;
+    private final int schemaId;
+    private final AvroSchema avroSchema;
+    private final SchemaRegistryType schemaRegistryType;
 
-    private final SchemaRegistryClient registryClient;
+    public static boolean supports(ParsedSchema parsedSchema) {
+        return Objects.equals(AvroSchema.TYPE, parsedSchema.schemaType());
+    }
 
-    public AvroSerializer(SchemaRegistryClient registryClient, SchemaRegistryType schemaRegistryType) {
-        this.registryClient = registryClient;
-
-        if (schemaRegistryType == SchemaRegistryType.TIBCO) {
-            MAGIC_BYTE = (byte) 0x80;
+    public static AvroSerializer newInstance(int schemaId, ParsedSchema parsedSchema, SchemaRegistryType schemaRegistryType) {
+        if (supports(parsedSchema)) {
+            return new AvroSerializer(schemaId, (AvroSchema) parsedSchema, schemaRegistryType);
         } else {
-            MAGIC_BYTE = 0x0;
+            String errorMsg = String.format("Schema %s has not supported schema type expected %s but found %s", parsedSchema.name(), AvroSchema.TYPE, parsedSchema.schemaType());
+            throw new IllegalArgumentException(errorMsg);
         }
     }
 
-    public byte[] toAvro(String json, int schemaId) {
-        byte[] asBytes;
+    @Override
+    public byte[] serialize(String json) {
         try {
-            Schema schema = this.registryClient.getById(schemaId);
-            asBytes = this.fromJsonToAvro(json.trim(), schema, schemaId);
-        } catch (IOException | RestClientException e) {
-            throw new RuntimeException(String.format("Can't retrieve schema %d in registry", schemaId), e);
+            return this.fromJsonToAvro(json.trim(), avroSchema.rawSchema(), schemaId);
+        } catch (IOException e) {
+            log.error("Cannot serialize value", e);
+            throw new RuntimeException("Cannot serialize value", e);
         }
-        return asBytes;
     }
 
     private byte[] fromJsonToAvro(String json, Schema schema, int schemaId) throws IOException {
@@ -89,7 +91,7 @@ public class AvroSerializer {
 
         GenericDatumWriter<Object> w = new GenericDatumWriter<>(schema, genericData);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(MAGIC_BYTE);
+        outputStream.write(schemaRegistryType.getMagicByte());
         outputStream.write(ByteBuffer.allocate(SCHEMA_ID_SIZE).putInt(schemaId).array());
 
         Encoder e = EncoderFactory.get().binaryEncoder(outputStream, null);
@@ -98,5 +100,11 @@ public class AvroSerializer {
         e.flush();
 
         return outputStream.toByteArray();
+    }
+
+    private AvroSerializer(int schemaId, AvroSchema avroSchema, SchemaRegistryType schemaRegistryType) {
+        this.schemaId = schemaId;
+        this.avroSchema = avroSchema;
+        this.schemaRegistryType = schemaRegistryType;
     }
 }

@@ -54,11 +54,12 @@ public class KafkaTestCluster implements Runnable, Stoppable {
     public static final String TOPIC_STREAM_MAP = "stream-map";
     public static final String TOPIC_STREAM_COUNT = "stream-count";
     public static final String TOPIC_CONNECT = "connect-sink";
+    public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
 
-    public static final int TOPIC_ALL_COUNT = 19;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 11;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 9;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 17;
+    public static final int TOPIC_ALL_COUNT = 20;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 12;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 10;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 18;
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
@@ -290,6 +291,10 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             testUtils.produceRecords(randomDatas(1000, 0), TOPIC_HUGE, partition);
         }
         log.debug("Huge topic created");
+
+        // empty topic
+        testUtils.createTopic(TOPIC_JSON_SCHEMA, 3, (short) 1);
+        log.debug("{} topic created", TOPIC_JSON_SCHEMA);
 
         // consumer groups
         for (int c = 0; c < 5; c++) {
