@@ -26,6 +26,7 @@ class TopicControllerTest extends AbstractTest {
     public static final String TOPIC_URL = BASE_URL + "/" + KafkaTestCluster.TOPIC_COMPACTED;
     public static final String CREATE_TOPIC_NAME = UUID.randomUUID().toString();
     public static final String CREATE_TOPIC_URL = BASE_URL + "/" + CREATE_TOPIC_NAME;
+    public static final int DEFAULT_PAGE_SIZE = 5;
 
     @Test
     @Order(1)
@@ -43,12 +44,17 @@ class TopicControllerTest extends AbstractTest {
     void listApi() {
         ResultPagedList<Topic> result;
 
+        int expectedPageCount = (int) Math.ceil((double)KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT / DEFAULT_PAGE_SIZE);
         result = this.retrievePagedList(HttpRequest.GET(BASE_URL), Topic.class);
-        assertEquals(5, result.getResults().size());
+        assertEquals(expectedPageCount, result.getPage());
+        assertEquals(DEFAULT_PAGE_SIZE, result.getResults().size());
 
         result = this.retrievePagedList(HttpRequest.GET(BASE_URL + "?page=2"), Topic.class);
-        assertEquals(KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT - 6, result.getResults().size());
-        assertEquals("stream-test-example-count-changelog", result.getResults().get(4).getName());
+        assertEquals(DEFAULT_PAGE_SIZE, result.getResults().size());
+
+        int expectedLastPageSize = KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT - 2 * DEFAULT_PAGE_SIZE;
+        result = this.retrievePagedList(HttpRequest.GET(BASE_URL + "?page=3"), Topic.class);
+        assertEquals(expectedLastPageSize, result.getResults().size());
     }
 
     @Test
@@ -221,7 +227,7 @@ class TopicControllerTest extends AbstractTest {
     @Test
     @Order(6)
     void produceMultipleMessages() {
-        Map<String, Object> paramMap = new HashMap<String, Object>();
+        Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("value", "key1_{\"test_1\":1}\n"
                             + "key2_{\"test_1\":2}\n"
                             + "key3_{\"test_1\":3}");
