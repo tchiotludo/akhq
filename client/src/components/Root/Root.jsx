@@ -1,4 +1,4 @@
-import {Component} from 'react';
+import { Component } from 'react';
 import axios from 'axios';
 import { get, put, post, remove } from '../../utils/api';
 
@@ -7,6 +7,12 @@ class Root extends Component {
   cancel = axios.CancelToken.source();
 
   componentWillUnmount() {
+    const pathname = window.location.pathname;
+
+    if (pathname !== '/ui/login') {
+      sessionStorage.setItem('returnTo', pathname + (window.location.search || ''));
+    }
+
     this.cancelAxiosRequests();
   }
 
@@ -21,16 +27,16 @@ class Root extends Component {
   }
 
   getApi(url) {
-    return get(url, {cancelToken: this.cancel.token})
+    return get(url, { cancelToken: this.cancel.token })
   }
   postApi(url, body) {
-    return post(url, body,{cancelToken: this.cancel.token})
+    return post(url, body, { cancelToken: this.cancel.token })
   }
   putApi(url, body) {
-    return put(url, body,{cancelToken: this.cancel.token})
+    return put(url, body, { cancelToken: this.cancel.token })
   }
   removeApi(url, body) {
-    return remove(url, body, {cancelToken: this.cancel.token})
+    return remove(url, body, { cancelToken: this.cancel.token })
   }
 
 }

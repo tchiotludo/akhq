@@ -1,6 +1,5 @@
 package org.akhq.clusters;
 
-import com.google.common.io.Files;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
@@ -10,6 +9,8 @@ import org.apache.kafka.common.network.ListenerName;
 import org.apache.kafka.common.utils.Time;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 @Slf4j
@@ -21,9 +22,9 @@ public class KafkaEmbedded {
     private final KafkaServer kafka;
 
     @SuppressWarnings("UnstableApiUsage")
-    public KafkaEmbedded(final Properties config) {
-        tmpFolder = Files.createTempDir();
-        logDir = Files.createTempDir();
+    public KafkaEmbedded(final Properties config) throws IOException {
+        tmpFolder = Files.createTempDirectory("tmp").toFile();
+        logDir = Files.createTempDirectory("log").toFile();
         effectiveConfig = effectiveConfigFrom(config);
 
         final KafkaConfig kafkaConfig = new KafkaConfig(effectiveConfig, true);

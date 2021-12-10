@@ -1,0 +1,140 @@
+@import "variable";
+
+$web-font-path: "https://fonts.googleapis.com/css?family=Lato|Open+Sans:300,400,400i,600,700,800" !default;
+@import url($web-font-path);
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css");
+
+$font-family-sans-serif: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+$font-family-monospace: 'Source Code Pro', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/utilities";
+@import "~bootstrap/scss/root";
+@import "~bootstrap/scss/reboot";
+@import "~bootstrap/scss/type";
+@import "~bootstrap/scss/containers";
+@import "~bootstrap/scss/grid";
+
+:root {
+    // brand colors
+    --c-brand: #{$primary};
+    --c-brand-light: #{$blue-700};
+
+
+    // background colors
+    --c-bg: #{$body-bg};
+    --c-bg-light: #{lighten($body-bg, 5%)};
+    --c-bg-lighter: #{lighten($body-bg, 10%)};
+    --c-bg-arrow: #{lighten($body-bg, 20%)};
+
+    // text colors
+    --c-text: #{$body-color};
+    --c-text-light: #{darken($body-color, 5%)};
+    --c-text-lighter: #{darken($body-color, 10%)};
+    --c-text-lightest: #{darken($body-color, 15%)};
+    --c-text-quote: #{darken($body-color, 50%)};
+    --c-border-dark: #{darken($body-color, 50%)};
+
+    // border colors
+    --c-border: #{$gray-800};
+
+    // custom container colors
+    --c-tip: #{$info};
+    --c-tip-bg: #{shift-color($info, $alert-bg-scale)};
+    --c-tip-title: #{shift-color($info, $alert-bg-scale)};
+    --c-tip-text: #{shift-color($info, $alert-bg-scale)};
+    --c-tip-text-accent: #{shift-color($info, $alert-bg-scale)};
+    --c-warning: #{$warning};
+    --c-warning-bg: #{shift-color($warning, $alert-bg-scale)};
+    --c-warning-title: #{shift-color($warning, $alert-color-scale)};
+    --c-warning-text: #{shift-color($warning, $alert-color-scale)};
+    --c-warning-text-accent: #{shift-color($warning, $alert-color-scale)};
+    --c-danger: #{$danger};
+    --c-danger-bg: #{shift-color($danger, $alert-bg-scale)};
+    --c-danger-title: #{shift-color($danger, $alert-bg-scale)};
+    --c-danger-text: #{shift-color($danger, $alert-bg-scale)};
+    --c-danger-text-accent: #{shift-color($danger, $alert-color-scale)};
+
+    // code blocks vars
+    --code-bg-color: var(--c-bg-light);
+
+    // font vars
+    --font-family: #{$font-family-sans-serif};
+    --font-family-code: #{$font-family-monospace};
+
+    // search
+    --search-input-width: 120rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: 'Lato', sans-serif;
+	font-weight: 700;
+    padding-top: 0 !important;
+    margin-top: 2rem !important;
+    margin-bottom: 1rem !important;
+}
+
+h2 {
+    border-bottom: 0;
+}
+
+a {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+blockquote {
+    font-size: $font-size-base;
+}
+
+code {
+    background-color: lighten($body-bg, 5%);
+    padding: 0 4px;
+    font-size: $font-size-base;
+}
+
+header.navbar {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #FFF;
+
+    .logo {
+        height: 65px;
+        margin-top: -10px;
+    }
+    .site-name {
+        display: none;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+}
+
+.custom-container {
+    a {
+        font-weight: bold;
+    }
+}
+
+.landing {
+    color: $body-bg;
+
+    main {
+        padding: 0;
+        max-width: none;
+    }
+
+    header.hero {
+        display: none;
+    }
+}

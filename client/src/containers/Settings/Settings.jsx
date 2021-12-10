@@ -6,7 +6,7 @@ import {getUIOptions, setUIOptions} from "../../utils/localstorage";
 import './styles.scss';
 import {toast} from "react-toastify";
 
-class Setttings extends Form {
+class Settings extends Form {
   state = {
     clusterId: '',
     formData: {
@@ -143,4 +143,4 @@ class Setttings extends Form {
   }
 }
 
-export default Setttings;
+export default Settings;

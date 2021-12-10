@@ -2,13 +2,21 @@
 #  - name: my-repository-secret
 image:
   repository: tchiotludo/akhq
-  tag: latest
+  tag: "" # uses Chart.AppVersion by default
 
 # custom annotations (example: for prometheus)
 annotations: {}
   #prometheus.io/scrape: 'true'
   #prometheus.io/port: '8080'
   #prometheus.io/path: '/prometheus'
+
+podAnnotations: {}
+
+# custom labels
+labels: {}
+  # custom.label: 'true'
+
+podLabels: {}
 
 ## You can put directly your configuration here... or add java opts or any other env vars
 extraEnv: []
@@ -25,7 +33,7 @@ extraEnv: []
 #   value: "/any/additional/jars/desired.jar:/go/here.jar"
 
 ## Or you can also use configmap for the configuration...
-configuration: |
+configuration:
   akhq:
     server:
       access-log:
@@ -63,6 +71,10 @@ extraVolumeMounts: []
 
 # Specify ServiceAccount for pod
 serviceAccountName: null
+serviceAccount:
+  create: false
+  #annotations:
+  #  eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
 
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
@@ -73,13 +85,23 @@ initContainers: {}
 #      - mountPath: /tmp
 #        name: certs
 
+# Configure the Pod Security Context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 securityContext: {}
-#  capabilities:
-#    drop:
-#      - ALL
-#  # readOnlyRootFilesystem: true
-#  runAsNonRoot: true
-#  runAsUser: 1000
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Configure the Container Security Context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
+  # privileged: false
+  # capabilities:
+  #   drop:
+  #     - ALL
+  # runAsNonRoot: true
+  # runAsUser: 1001
+  # readOnlyRootFilesystem: true
 
 service:
   enabled: true

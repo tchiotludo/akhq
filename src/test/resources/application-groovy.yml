@@ -1,0 +1,37 @@
+akhq:
+  security:
+    basic-auth:
+      - username: user
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - limited
+      - username: admin
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - admin
+    groovy:
+      enabled: true
+      file: |
+        package org.akhq.utils;
+        class GroovyCustomClaimProvider implements ClaimProvider {
+            @Override
+            AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
+                AKHQClaimResponse a = AKHQClaimResponse.builder().build();
+                a.roles = ["topic/read"]
+                if (request.username == "admin") {
+                    a.attributes = [
+                            topicsFilterRegexp: [".*"],
+                            connectsFilterRegexp: [".*"],
+                            consumerGroupsFilterRegexp: [".*"]
+                    ]
+                }else{
+                    a.attributes = [
+                            topicsFilterRegexp: ["single-topic"],
+                            connectsFilterRegexp: ["single-connect"],
+                            consumerGroupsFilterRegexp: ["single-consumer-group"]
+                    ]
+                }
+                return a
+            }
+        }
+

@@ -18,7 +18,7 @@ import java.util.Map;
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
-    ProtobufDeserializationTopicsMapping deserialization;
+    Deserialization deserialization = new Deserialization();
     UiOptions uiOptions = new UiOptions();
 
     public Connection(@Parameter String name) {
@@ -38,11 +38,24 @@ public class Connection extends AbstractProperties {
     }
 
     @Getter
-    @Data
-    @ConfigurationProperties("deserialization.protobuf")
-    public static class ProtobufDeserializationTopicsMapping {
-        String descriptorsFolder;
-        List<TopicsMapping> topicsMapping = new ArrayList<>();
+    @ConfigurationProperties("deserialization")
+    public static class Deserialization {
+        ProtobufDeserializationTopicsMapping protobuf;
+        AvroDeserializationTopicsMapping avroRaw;
+
+        @Data
+        @ConfigurationProperties("protobuf")
+        public static class ProtobufDeserializationTopicsMapping {
+            String descriptorsFolder;
+            List<TopicsMapping> topicsMapping = new ArrayList<>();
+        }
+
+        @Data
+        @ConfigurationProperties("avro-raw")
+        public static class AvroDeserializationTopicsMapping {
+            String schemasFolder;
+            List<AvroTopicsMapping> topicsMapping = new ArrayList<>();
+        }
     }
 
     @Data

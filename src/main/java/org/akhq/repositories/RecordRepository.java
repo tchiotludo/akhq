@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
@@ -10,12 +11,16 @@ import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.controllers.TopicController;
+import org.akhq.models.KeyValue;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
-import org.akhq.modules.AvroSerializer;
 import org.akhq.modules.KafkaModule;
+import org.akhq.modules.schemaregistry.SchemaSerializer;
+import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
+import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
@@ -32,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -44,10 +50,19 @@ public class RecordRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     @Inject
+    private ConfigRepository configRepository;
+
+    @Inject
+    private AvroToJsonSerializer avroToJsonSerializer;
+
+    @Inject
     private TopicRepository topicRepository;
 
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+
+    @Inject
+    private RecordWithSchemaSerializerFactory serializerFactory;
 
     @Inject
     private CustomDeserializerRepository customDeserializerRepository;
@@ -62,9 +77,10 @@ public class RecordRepository extends AbstractRepository {
     protected int maxPollRecords;
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
-        List<Topic> topics = topicRepository.findByName(clusterId, topicsName);
+        Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
+            .collect(Collectors.toMap(Topic::getName, Function.identity()));
 
-        List<TopicPartition> topicPartitions = topics
+        List<TopicPartition> topicPartitions = topics.values()
             .stream()
             .flatMap(topic -> topic.getPartitions().stream())
             .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
@@ -86,11 +102,11 @@ public class RecordRepository extends AbstractRepository {
         this.poll(consumer)
             .forEach(record -> {
                 if (!records.containsKey(record.topic())) {
-                    records.put(record.topic(), newRecord(record, clusterId));
+                    records.put(record.topic(), newRecord(record, clusterId, topics.get(record.topic())));
                 } else {
                     Record current = records.get(record.topic());
                     if (current.getTimestamp().toInstant().toEpochMilli() < record.timestamp()) {
-                        records.put(record.topic(), newRecord(record, clusterId));
+                        records.put(record.topic(), newRecord(record, clusterId, topics.get(record.topic())));
                     }
                 }
 
@@ -135,7 +151,7 @@ public class RecordRepository extends AbstractRepository {
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
             for (ConsumerRecord<byte[], byte[]> record : records) {
-                Record current = newRecord(record, options);
+                Record current = newRecord(record, options, topic);
                 if (searchFilter(options, current)) {
                     list.add(current);
                 }
@@ -192,7 +208,7 @@ public class RecordRepository extends AbstractRepository {
 
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
             if(!records.isEmpty()) {
-                singleRecord = Optional.of(newRecord(records.iterator().next(), options));
+                singleRecord = Optional.of(newRecord(records.iterator().next(), options, topic));
             }
 
             consumer.close();
@@ -293,7 +309,7 @@ public class RecordRepository extends AbstractRepository {
                             emptyPoll = 2;
                             break;
                         }
-                        Record current = newRecord(record, options);
+                        Record current = newRecord(record, options, topic);
                         if (searchFilter(options, current)) {
                             list.add(current);
                         }
@@ -416,26 +432,71 @@ public class RecordRepository extends AbstractRepository {
         */
     }
 
-    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId) {
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
         return new Record(
+            client,
             record,
             this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
             this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
+            this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(clusterId),
-                    this.schemaRegistryRepository.getSchemaRegistryType(clusterId))
+            this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
+                    this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
+            topic
         );
     }
 
-    private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options) {
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
         return new Record(
+            client,
             record,
-            this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId),
+            schemaRegistryType,
             this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
+            this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, this.kafkaModule.getRegistryClient(options.clusterId),
-                    this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId))
+            this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
+                    this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
+            topic
         );
+    }
+
+    public List<RecordMetadata> produce(
+            String clusterId,
+            String topic,
+            String value,
+            Map<String, String> headers,
+            Optional<String> key,
+            Optional<Integer> partition,
+            Optional<Long> timestamp,
+            Optional<Integer> keySchemaId,
+            Optional<Integer> valueSchemaId,
+            Boolean multiMessage,
+            Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException {
+
+        List<RecordMetadata> produceResults = new ArrayList<>();
+
+        // Distinguish between single record produce, and multiple messages
+        if (multiMessage.booleanValue()) {
+            // Split key-value pairs and produce them
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value, keyValueSeparator.orElseThrow())) {
+                produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
+                        partition, timestamp, keySchemaId, valueSchemaId));
+            }
+        } else {
+            produceResults.add(
+                    produce(clusterId, topic, value, headers, key, partition, timestamp, keySchemaId, valueSchemaId));
+        }
+        return produceResults;
     }
 
     private RecordMetadata produce(
@@ -465,6 +526,23 @@ public class RecordRepository extends AbstractRepository {
                     .collect(Collectors.toList())
             ))
             .get();
+    }
+
+    /**
+     * Splits a multi-message into a list of key-value pairs.
+     * @param value The multi-message string submitted by the {@link TopicController}
+     * @param keyValueSeparator The character(s) separating each key from their corresponding value
+     * @return A list of {@link KeyValue}, holding the split pairs
+     */
+    private List<KeyValue<String, String>> splitMultiMessage(String value, String keyValueSeparator) {
+        return List.of(value.split("\r\n|\r|\n")).stream().map(v -> splitKeyValue(v, keyValueSeparator))
+                .collect(Collectors.toList());
+    }
+
+    private KeyValue<String, String> splitKeyValue(String keyValueStr, String keyValueSeparator) {
+        String[] keyValue = null;
+        keyValue = keyValueStr.split(keyValueSeparator, 2);
+        return new KeyValue<>(keyValue[0].trim(),keyValue[1]);
     }
 
     public void emptyTopic(String clusterId, String topicName) throws ExecutionException, InterruptedException {
@@ -514,20 +592,29 @@ public class RecordRepository extends AbstractRepository {
         Optional<Integer> keySchemaId,
         Optional<Integer> valueSchemaId
     ) throws ExecutionException, InterruptedException {
-        AvroSerializer avroSerializer = this.schemaRegistryRepository.getAvroSerializer(clusterId);
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
 
         if (key.isPresent()) {
             if (keySchemaId.isPresent()) {
-                keyAsBytes = avroSerializer.toAvro(key.get(), keySchemaId.get());
+                SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, keySchemaId.get());
+                keyAsBytes = keySerializer.serialize(key.get());
             } else {
                 keyAsBytes = key.get().getBytes();
+            }
+        } else {
+            try {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value))) {
+                    throw new IllegalArgumentException("Key missing for produce onto compacted topic");
+                }
+            } catch (ExecutionException ex) {
+                log.debug("Failed to determine if {} topic {} is compacted", clusterId, topic, ex);
             }
         }
 
         if (value != null && valueSchemaId.isPresent()) {
-            valueAsBytes = avroSerializer.toAvro(value, valueSchemaId.get());
+            SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
+            valueAsBytes = valueSerializer.serialize(value);
         } else {
             valueAsBytes = value != null ? value.getBytes() : null;
         }
@@ -600,7 +687,7 @@ public class RecordRepository extends AbstractRepository {
             for (ConsumerRecord<byte[], byte[]> record : records) {
                 currentEvent.updateProgress(record);
 
-                Record current = newRecord(record, options);
+                Record current = newRecord(record, options, topic);
                 if (searchFilter(options, current)) {
                     list.add(current);
                     matchesCount.getAndIncrement();
@@ -637,15 +724,21 @@ public class RecordRepository extends AbstractRepository {
             return search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
         } else {
             if (options.getSearchByKey() != null) {
-                if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) return false;
+                if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) {
+                    return false;
+                }
             }
 
             if (options.getSearchByValue() != null) {
-                if (!search(options.getSearchByValue(), Collections.singletonList(record.getValue()))) return false;
+                if (!search(options.getSearchByValue(), Collections.singletonList(record.getValue()))) {
+                    return false;
+                }
             }
 
             if (options.getSearchByHeaderKey() != null) {
-                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) return false;
+                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) {
+                    return false;
+                }
             }
 
             if (options.getSearchByHeaderValue() != null) {
@@ -667,6 +760,12 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private static boolean containsAll(String search, Collection<String> in) {
+        if (search.equals("null")) {
+            return in
+                .stream()
+                .allMatch(Objects::isNull);
+        }
+
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
@@ -682,6 +781,12 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private static boolean equalsAll(String search, Collection<String> in) {
+        if (search.equals("null")) {
+            return in
+                .stream()
+                .allMatch(Objects::isNull);
+        }
+
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
@@ -697,6 +802,12 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private static boolean notContainsAll(String search, Collection<String> in) {
+        if (search.equals("null")) {
+            return in
+                .stream()
+                .noneMatch(Objects::isNull);
+        }
+
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
@@ -777,10 +888,11 @@ public class RecordRepository extends AbstractRepository {
         return Flowable.generate(() -> {
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
-            List<Topic> topics = topicRepository.findByName(clusterId, options.topics);
+            Map<String, Topic> topics = topicRepository.findByName(clusterId, options.topics).stream()
+                    .collect(Collectors.toMap(Topic::getName, Function.identity()));
 
             consumer
-                .assign(topics
+                .assign(topics.values()
                     .stream()
                     .flatMap(topic -> topic.getPartitions()
                         .stream()
@@ -801,7 +913,7 @@ public class RecordRepository extends AbstractRepository {
                     });
             }
 
-            return new TailState(consumer, new TailEvent());
+            return new TailState(consumer, new TailEvent(), topics);
         }, (state, subscriber) -> {
             ConsumerRecords<byte[], byte[]> records = this.poll(state.getConsumer());
             TailEvent tailEvent = state.getTailEvent();
@@ -818,7 +930,7 @@ public class RecordRepository extends AbstractRepository {
                     record.offset()
                 );
 
-                Record current = newRecord(record, options);
+                Record current = newRecord(record, options, state.getTopics().get(record.topic()));
                 if (searchFilter(options, current)) {
                     list.add(current);
                     log.trace(
@@ -915,6 +1027,7 @@ public class RecordRepository extends AbstractRepository {
     public static class TailState {
         private final KafkaConsumer<byte[], byte[]> consumer;
         private TailEvent tailEvent;
+        private Map<String, Topic> topics;
     }
 
     @ToString
@@ -1156,3 +1269,4 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
     }
 }
+

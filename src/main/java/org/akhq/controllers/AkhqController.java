@@ -1,10 +1,11 @@
 package org.akhq.controllers;
 
+import io.micronaut.configuration.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
-import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
@@ -17,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 import org.akhq.modules.HasAnyPermission;
+import org.akhq.utils.VersionProvider;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -32,9 +34,6 @@ public class AkhqController extends AbstractController {
     private ApplicationContext applicationContext;
 
     @Inject
-    private Ldap ldap;
-
-    @Inject
     private SecurityProperties securityProperties;
 
     @Inject
@@ -42,6 +41,13 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private UIOptions uIOptions;
+
+    @Inject
+    @Nullable
+    private HeaderAuth headerAuth;
+
+    @Inject
+    private VersionProvider versionProvider;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -67,17 +73,27 @@ public class AkhqController extends AbstractController {
     public AuthDefinition auths() {
         AuthDefinition authDefinition = new AuthDefinition();
 
-        if (applicationContext.containsBean(SecurityService.class)) {
-            authDefinition.loginEnabled = true;
-            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 || ldap.isEnabled();
-        }
-
         if (oidc.isEnabled()) {
             authDefinition.oidcAuths = oidc.getProviders().entrySet()
-                    .stream()
-                    .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
-                    .collect(Collectors.toList());
+                .stream()
+                .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
+                .collect(Collectors.toList());
         }
+
+        if (applicationContext.containsBean(SecurityService.class)) {
+            authDefinition.loginEnabled = true;
+            // Display login form if there are LocalUsers OR Ldap is enabled
+            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
+                    applicationContext.containsBean(LdapConfiguration.class);
+
+            if (!authDefinition.formEnabled &&
+                authDefinition.oidcAuths == null &&
+                headerAuth != null && headerAuth.getUserHeader() != null
+            ) {
+                authDefinition.loginEnabled = false;
+            }
+        }
+        authDefinition.version = versionProvider.getVersion();
 
         return authDefinition;
     }
@@ -108,8 +124,6 @@ public class AkhqController extends AbstractController {
     @Get("api")
     @Hidden
     public HttpResponse<?> rapidoc() {
-        MutableHttpResponse<String> response = HttpResponse.ok();
-
         String doc = "<!doctype html>\n" +
             "<html>\n" +
             "<head>\n" +
@@ -166,6 +180,7 @@ public class AkhqController extends AbstractController {
         private boolean loginEnabled;
         private boolean formEnabled;
         private List<OidcAuth> oidcAuths;
+        private String version;
     }
 
     @AllArgsConstructor

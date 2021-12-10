@@ -2,15 +2,15 @@ package org.akhq.repositories;
 
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import org.apache.avro.SchemaBuilder;
-import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Schema;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
+import org.apache.avro.SchemaBuilder;
+import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SchemaRegistryRepositoryTest extends AbstractTest {
     @Inject
@@ -63,7 +61,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     public final static String SCHEMA_4 = "{\"name\":\"Schema4\",\"namespace\":\"org.akhq\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":[\"null\",\"string\"]},{\"name\":\"schema3\",\"type\":\"Schema3\"}]}";
 
     @BeforeEach
-    public void cleanup() {
+    void cleanup() {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_2);
@@ -74,7 +72,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getAll() throws IOException, RestClientException, ExecutionException, InterruptedException {
+    void getAll() throws IOException, RestClientException, ExecutionException, InterruptedException {
         PagedList<Schema> all = repository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -84,7 +82,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getAllSearch() throws IOException, RestClientException, ExecutionException, InterruptedException {
+    void getAllSearch() throws IOException, RestClientException, ExecutionException, InterruptedException {
         PagedList<Schema> all = repository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -94,14 +92,14 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getStreamSubject() throws IOException, RestClientException {
+    void getStreamSubject() throws IOException, RestClientException {
         Schema latestVersion = repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP + "-value");
 
         assertNotNull(latestVersion);
     }
 
     @Test
-    public void missingSubjectConfigMustBeDefault() throws IOException, RestClientException {
+    void missingSubjectConfigMustBeDefault() throws IOException, RestClientException {
         Schema.Config defaultConfig = repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID);
         Schema.Config subjectConfig = repository.getConfig(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
 
@@ -109,7 +107,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getLatestVersion() throws IOException, RestClientException {
+    void getLatestVersion() throws IOException, RestClientException {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
         repository.updateConfig(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, new Schema.Config(Schema.Config.CompatibilityLevelConfig.NONE));
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V2.toString(), Collections.emptyList());
@@ -121,7 +119,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void getLatestVersionWithReferences() throws IOException, RestClientException {
+    void getLatestVersionWithReferences() throws IOException, RestClientException {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_3, SCHEMA_3, Collections.emptyList());
         repository.updateConfig(KafkaTestCluster.CLUSTER_ID, SUBJECT_3, new Schema.Config(Schema.Config.CompatibilityLevelConfig.NONE));
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_4, SCHEMA_4, Collections.singletonList(new SchemaReference("Schema3", SUBJECT_3, -1)));
@@ -137,29 +135,37 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     }
 
     @Test
-    public void register() throws IOException, RestClientException, ExecutionException, InterruptedException {
+    void register() throws IOException, RestClientException, ExecutionException, InterruptedException {
+        int numberOfSchemasAlreadyStored = repository.listAll(KafkaTestCluster.CLUSTER_ID, Optional.empty()).size();
+
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
         repository.updateConfig(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, new Schema.Config(Schema.Config.CompatibilityLevelConfig.FORWARD));
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V2.toString(), Collections.emptyList());
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_2, SCHEMA_2.toString(), Collections.emptyList());
 
-        assertEquals(5, repository.list(KafkaTestCluster.CLUSTER_ID, new Pagination(100, URIBuilder.empty(), 1), Optional.empty()).size());
-        assertEquals(SCHEMA_1_V2, repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).getAvroSchema());
+        int expectedNumberAllSchemas = numberOfSchemasAlreadyStored + 2;
+        assertEquals(expectedNumberAllSchemas, repository.list(KafkaTestCluster.CLUSTER_ID, new Pagination(100, URIBuilder.empty(), 1), Optional.empty()).size());
+
+        Schema subject1Schema = repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
+        assertEquals(SCHEMA_1_V2, subject1Schema.getAvroSchema());
+        assertEquals(Schema.Config.CompatibilityLevelConfig.FORWARD, subject1Schema.getCompatibilityLevel());
         assertEquals(2, repository.getAllVersions(KafkaTestCluster.CLUSTER_ID, SUBJECT_1).size());
 
         assertEquals(SCHEMA_2, repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_2).getAvroSchema());
     }
 
     @Test
-    public void delete() throws IOException, RestClientException, ExecutionException, InterruptedException {
-        repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
+    void delete() throws IOException, RestClientException, ExecutionException, InterruptedException {
+        Schema registeredSchema = repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
+
         repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
 
-        assertEquals(3, repository.list(KafkaTestCluster.CLUSTER_ID, new Pagination(100, URIBuilder.empty(), 1), Optional.empty()).size());
+        Optional<Schema> schemaById = repository.getById(KafkaTestCluster.CLUSTER_ID, registeredSchema.getId());
+        assertTrue(schemaById.isEmpty());
     }
 
     @Test
-    public void getDefaultConfig() throws IOException, RestClientException {
+    void getDefaultConfig() throws IOException, RestClientException {
         assertEquals(Schema.Config.CompatibilityLevelConfig.BACKWARD, repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID).getCompatibilityLevel());
     }
 

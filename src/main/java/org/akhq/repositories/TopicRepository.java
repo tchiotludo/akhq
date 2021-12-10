@@ -14,7 +14,7 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,16 +39,13 @@ public class TopicRepository extends AbstractRepository {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
+    private DefaultGroupUtils defaultGroupUtils;
 
     @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
     @Value("${akhq.topic.stream-regexps}")
     protected List<String> streamRegexps;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     public enum TopicListView {
         ALL,
@@ -192,7 +189,7 @@ public class TopicRepository extends AbstractRepository {
         }
         // get topic filter regex for default groups
         topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
-            userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
+            defaultGroupUtils.getDefaultAttributes()
         ));
 
         return Optional.of(topicFilterRegex);
@@ -200,11 +197,9 @@ public class TopicRepository extends AbstractRepository {
 
     @SuppressWarnings("unchecked")
     private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("topicsFilterRegexp") != null) {
-            if (attributes.get("topicsFilterRegexp") instanceof List) {
-                return (List<String>)attributes.get("topicsFilterRegexp");
-            }
-        }
+        if ((attributes.get("topicsFilterRegexp") != null) && (attributes.get("topicsFilterRegexp") instanceof List)) {
+		    return (List<String>)attributes.get("topicsFilterRegexp");
+		}
         return new ArrayList<>();
     }
 

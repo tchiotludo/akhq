@@ -17,7 +17,6 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
@@ -29,17 +28,15 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
-import org.akhq.models.Record;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import org.akhq.models.Record;
 
-@Slf4j
+import javax.inject.Inject;
+
 @Secured(Role.ROLE_TOPIC_READ)
 @Controller
 public class TopicController extends AbstractController {
@@ -68,8 +65,20 @@ public class TopicController extends AbstractController {
     private Short replicationFactor;
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
+    @Value("${akhq.topic.retention}")
+    private Integer retention;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
+
+    @Get ("api/topic/defaults-configs")
+    @Operation(tags = {"topic"}, summary = "Get default topic configuration")
+    public Map<String,Integer> getDefaultConf(){
+        return Map.of(
+            "replication", replicationFactor.intValue(),
+            "partition", partitionCount,
+            "retention", retention
+        );
+    }
 
     @Get("api/{cluster}/topic")
     @Operation(tags = {"topic"}, summary = "List all topics")
@@ -138,7 +147,7 @@ public class TopicController extends AbstractController {
     @Secured(Role.ROLE_TOPIC_DATA_INSERT)
     @Post(value = "api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Produce data to a topic")
-    public Record produce(
+    public List<Record> produce(
         HttpRequest<?> request,
         String cluster,
         String topicName,
@@ -148,9 +157,12 @@ public class TopicController extends AbstractController {
         Optional<String> timestamp,
         Map<String, String> headers,
         Optional<Integer> keySchema,
-        Optional<Integer> valueSchema
+        Optional<Integer> valueSchema,
+        Boolean multiMessage,
+        Optional<String> keyValueSeparator
     ) throws ExecutionException, InterruptedException {
-        return new Record(
+        Topic targetTopic = topicRepository.findByName(cluster, topicName);
+        return
             this.recordRepository.produce(
                 cluster,
                 topicName,
@@ -160,13 +172,16 @@ public class TopicController extends AbstractController {
                 partition,
                 timestamp.map(r -> Instant.parse(r).toEpochMilli()),
                 keySchema,
-                valueSchema
-            ),
-            schemaRegistryRepository.getSchemaRegistryType(cluster),
-            key.map(String::getBytes).orElse(null),
-            value.getBytes(),
-            headers
-        );
+                valueSchema,
+                multiMessage,
+                keyValueSeparator).stream()
+                    .map(recordMetadata -> new Record(recordMetadata,
+                            schemaRegistryRepository.getSchemaRegistryType(cluster),
+                            key.map(String::getBytes).orElse(null),
+                            value.getBytes(),
+                            headers,
+                            targetTopic))
+                    .collect(Collectors.toList());
     }
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
@@ -204,7 +219,7 @@ public class TopicController extends AbstractController {
             data,
             options.after(data, uri),
             (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())),
-            topic.canDeleteRecords(cluster, configRepository)
+            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
@@ -295,7 +310,8 @@ public class TopicController extends AbstractController {
             schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
-            new HashMap<>()
+            new HashMap<>(),
+            topicRepository.findByName(cluster, topicName)
         );
     }
 
@@ -365,7 +381,7 @@ public class TopicController extends AbstractController {
             String cluster,
             String topicName,
             Integer partition,
-            Integer offset
+            Long offset
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
@@ -390,7 +406,7 @@ public class TopicController extends AbstractController {
                 data,
                 URIBuilder.empty(),
                 data.size(),
-                topic.canDeleteRecords(cluster, configRepository)
+            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
@@ -427,6 +443,11 @@ public class TopicController extends AbstractController {
 
         if (!CollectionUtils.isNotEmpty(offsets)) {
             throw new IllegalArgumentException("Empty collections");
+        }
+
+        if (fromCluster.equals(toCluster) && fromTopicName.equals(toTopicName)) {
+            // #745 Prevent endless loop when copying topic onto itself; Use intermediate copy topic for duplication
+            throw new IllegalArgumentException("Can not copy topic to itself");
         }
 
         // after wait for next offset, so add - 1 to allow to have the current offset
@@ -512,3 +533,4 @@ public class TopicController extends AbstractController {
         private long offset;
     }
 }
+

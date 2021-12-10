@@ -10,4 +10,3 @@ akhq:
       extra:
         roles:
           - topic/read
-

@@ -17,8 +17,8 @@ import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.UserGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
+import org.akhq.utils.DefaultGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
@@ -46,10 +46,7 @@ public class ConnectRepository extends AbstractRepository {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
+    private DefaultGroupUtils defaultGroupUtils;
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -293,7 +290,7 @@ public class ConnectRepository extends AbstractRepository {
         }
         // get Connect filter regex for default groups
         connectFilterRegex.addAll(getConnectFilterRegexFromAttributes(
-            userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
+            defaultGroupUtils.getDefaultAttributes()
         ));
 
         return Optional.of(connectFilterRegex);

@@ -14,17 +14,17 @@ volumes:
 
 services:
   akhq:
-    image: gradle:6.6.1-jdk11
-    command: 'gradle run --continuous'
+    image: gradle:7-jdk11
+    command: 'gradle run -x installFrontend -x assembleFrontend -t'
     working_dir: /app
     volumes:
-      - ./:/app:z
+      - ./:/app:Z
+      - ./application-dev.yml:/tmp/application.dev.yml:Z
       - ./gradle/gradle.properties:/root/.gradle/gradle.properties:Z
     ports:
       - 8080:8080
     environment:
-      MICRONAUT_IO_WATCH_RESTART: 'true'
-      MICRONAUT_CONFIG_FILES: '/app/application.dev.yml'
+      MICRONAUT_CONFIG_FILES: '/tmp/application.dev.yml'
     depends_on:
       - kafka
       - schema-registry
@@ -38,6 +38,8 @@ services:
       - ./:/app:z
       - ui-modules:/app/client/node_modules:Z
       - ui-build:/app/client/build:Z
+    environment:
+      REACT_APP_BASE_URL: "http://localhost:8080"
     ports:
       - 3000:3000
     depends_on:
@@ -92,8 +94,6 @@ services:
 
   connect:
     image: confluentinc/cp-kafka-connect
-    ports:
-      - 8083:8083
     depends_on:
       - kafka
       - schema-registry
@@ -118,4 +118,5 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
-
+    ports:
+      - 8083:8083

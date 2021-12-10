@@ -8,7 +8,6 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -29,8 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Slf4j
-public class AvroWireFormatConverterTest {
+class AvroWireFormatConverterTest {
 
     private AvroWireFormatConverter avroWireFormatConverter;
     private SchemaRegistryClient schemaRegistryClient;
@@ -44,7 +42,7 @@ public class AvroWireFormatConverterTest {
 
     @BeforeEach
     @SneakyThrows
-    public void before() {
+    void before() {
         avroWireFormatConverter = new AvroWireFormatConverter();
         schemaRegistryClient = mock(SchemaRegistryClient.class);
 
@@ -58,20 +56,20 @@ public class AvroWireFormatConverterTest {
     }
 
     @Test
-    public void convertValueToWireFormatNull() {
+    void convertValueToWireFormatNull() {
         byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], null), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertNull(convertedValue);
     }
 
     @Test
-    public void convertValueToWireFormatEmptyValue() {
+    void convertValueToWireFormatEmptyValue() {
         byte[] convertedValue = avroWireFormatConverter.convertValueToWireFormat(new ConsumerRecord<>("topic", 1, 0, new byte[0], new byte[0]), schemaRegistryClient, SchemaRegistryType.CONFLUENT);
         assertEquals(0, convertedValue.length);
     }
 
     @Test
     @SneakyThrows
-    public void convertValueToWireFormatWrongContentType() {
+    void convertValueToWireFormatWrongContentType() {
         MyRecord record = new MyRecord(42, "leet");
         byte[] avroPayload = serializeAvro(record);
 
@@ -84,7 +82,7 @@ public class AvroWireFormatConverterTest {
 
     @Test
     @SneakyThrows
-    public void convertValueToWireFormatWireFormat() {
+    void convertValueToWireFormatWireFormat() {
         MyRecord record = new MyRecord(42, "leet");
         byte[] avroPayload = serializeAvro(record);
 

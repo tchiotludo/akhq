@@ -17,7 +17,8 @@
     "css-loader": "^3.4.1",
     "font-awesome": "^4.7.0",
     "joi-validation": "^2.0.0",
-    "lodash": "^4.17.19",
+    "json-bigint": "^1.0.0",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
@@ -29,6 +30,7 @@
     "react-helmet": "^6.0.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
+    "react-timeago": "^6.2.1",
     "react-toastify": "^6.0.6",
     "reactstrap": "^8.4.0"
   },
@@ -43,18 +45,12 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "browserslist": [
+    ">0.3%",
+    "not ie 11",
+    "not dead",
+    "not op_mini all"
+  ],
   "devDependencies": {
     "@testing-library/react": "^10.4.7",
     "@testing-library/jest-dom": "^5.11.2",

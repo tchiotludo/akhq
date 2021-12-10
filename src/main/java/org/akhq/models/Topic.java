@@ -88,19 +88,21 @@ public class Topic {
             .collect(Collectors.toList());
     }
 
-    public Optional<Long> getLogDirSize() {
+    public Long getLogDirSize() {
         Integer logDirCount = this.getPartitions().stream()
             .map(r -> r.getLogDir().size())
             .reduce(0, Integer::sum);
 
         if (logDirCount == 0) {
-            return Optional.empty();
+            return null;
         }
 
-        return Optional.of(this.getPartitions().stream()
-            .map(Partition::getLogDirSize)
-            .reduce(0L, Long::sum)
-        );
+        return Optional
+            .of(this.getPartitions().stream()
+                .map(Partition::getLogDirSize)
+                .reduce(0L, Long::sum)
+            )
+            .orElse(null);
     }
 
     public long getSize() {
@@ -124,8 +126,10 @@ public class Topic {
             return false;
         }
 
-        List<Config> configs = configRepository.findByTopic(clusterId, this.getName());
+        return isCompacted(configRepository.findByTopic(clusterId, this.getName()));
+    }
 
+    public static boolean isCompacted(List<Config> configs) {
         return configs != null && configs
             .stream()
             .filter(config -> config.getName().equals(TopicConfig.CLEANUP_POLICY_CONFIG))

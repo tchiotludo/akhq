@@ -55,6 +55,15 @@ class ConnectList extends Root {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this.componentDidMount();
+    }
+  }
+
   async getConnectDefinitions() {
     const { clusterId, connectId, pageNumber } = this.state;
     const { search } = this.state.searchData;
@@ -249,7 +258,7 @@ class ConnectList extends Root {
               },
               cell: (obj, col) => {
                 return (
-                  <pre class="mb-0 khq-data-highlight">
+                  <pre className="mb-0 khq-data-highlight">
                     <code onClick={() => JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}>
                       {obj[col.accessor]}
                     </code>

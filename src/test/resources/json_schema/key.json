@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for a message",
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "required": [ "id" ]
+}

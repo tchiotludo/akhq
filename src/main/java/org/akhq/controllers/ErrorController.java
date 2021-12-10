@@ -71,11 +71,11 @@ public class ErrorController extends AbstractController {
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
-
         if (request.getUri().toString().startsWith("/api")) {
-            return HttpResponse.unauthorized().body( new JsonError("Unauthorized"));
+            return HttpResponse.unauthorized().body(new JsonError("Unauthorized"));
         }
-        return HttpResponse.temporaryRedirect(this.uri("/login"));
+
+        return HttpResponse.temporaryRedirect(this.uri("/ui/login"));
     }
 
     @Error(global = true)

@@ -1,0 +1,19 @@
+micronaut:
+  server:
+    cors:
+      enabled: true
+      configurations:
+        all:
+          allowedOrigins:
+            - http://localhost:3000
+
+akhq:
+  connections:
+    local:
+      properties:
+        bootstrap.servers: "kafka:9092"
+      schema-registry:
+        url: "http://schema-registry:8085"
+      connect:
+        - name: "connect"
+          url: "http://connect:8083"

@@ -1,0 +1,12 @@
+{
+    "name": "FilmAvro",
+    "namespace": "org.akhq",
+    "type": "record",
+    "fields" : [
+        {"name": "name", "type": "string"},
+        {"name": "producer", "type": "string"},
+        {"name": "releaseYear", "type": "int"},
+        {"name": "duration", "type": "int"},
+        {"name": "starring", "type": {"type": "array", "items": "string"}}
+    ]
+}

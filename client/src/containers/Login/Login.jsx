@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logo from '../../images/logo.svg';
-import {uriCurrentUser, uriLogin, uriOidc} from '../../utils/endpoints';
+import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
@@ -59,9 +59,13 @@ class Login extends Form {
       sessionStorage.setItem('user', currentUserData.username);
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
 
+      const returnTo = sessionStorage.getItem('returnTo');
+      sessionStorage.removeItem('returnTo');
+
       this.props.history.push({
-        pathname: '/ui',
+        pathname: (returnTo || '/ui'),
       });
+
       window.location.reload(true);
     } else {
       toast.error('Wrong Username or Password!');
@@ -70,9 +74,9 @@ class Login extends Form {
 
   componentDidMount() {
     const auths = JSON.parse(sessionStorage.getItem('auths'));
-    if(auths && auths.loginEnabled) {
-      const {loginEnabled, ...config} = auths;
-      this.setState({config});
+    if (auths && auths.loginEnabled) {
+      const { loginEnabled, ...config } = auths;
+      this.setState({ config });
     } else {
       this.props.history.push({
         pathname: '/ui',
@@ -86,9 +90,9 @@ class Login extends Form {
       <>
         <div className="input-group mb-3">
           <div className="input-group-prepend">
-              <span className="input-group-text">
-                <i className="fa fa-user" />
-              </span>
+            <span className="input-group-text">
+              <i className="fa fa-user" />
+            </span>
           </div>
           <input
             type="text"

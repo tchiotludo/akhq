@@ -1,0 +1,51 @@
+@import "../client/src/css/variables";
+
+
+// Variables
+//
+// Variables should follow the `$component-state-property-size` formula for
+// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+// Color system
+
+// scss-docs-start gray-color-variables
+$white: #fff !default;
+$gray-100: #f8f9fa !default;
+$gray-200: #ebebeb !default;
+$gray-300: #dee2e6 !default;
+$gray-400: #ced4da !default;
+$gray-500: #adb5bd !default;
+$gray-600: #999 !default;
+$gray-700: #444 !default;
+$gray-800: #303030 !default;
+$gray-900: #222 !default;
+$black: #000 !default;
+// scss-docs-end gray-color-variables
+
+
+
+// scss-docs-start color-variables
+$blue: #33b5e5 !default;
+$indigo: #005f81 !default;
+$purple: #9933cc !default;
+$pink: #ff4444 !default;
+$red: #d44a3a !default;
+$orange: #eb7b18 !default;
+$yellow: #ecbb13 !default;
+$green: #299c46 !default;
+$teal: #20c997 !default;
+$cyan: #3498DB !default;
+// scss-docs-end color-variables
+
+// scss-docs-start theme-color-variables
+$primary: $blue !default;
+$secondary: $gray-700 !default;
+$tertiary: $indigo;
+$success: $green !default;
+$info: $cyan !default;
+$warning: $yellow !default;
+$danger: $red !default;
+$light: $gray-800 !default;
+$dark: $gray-500 !default;
+// scss-docs-end theme-color-variables
+

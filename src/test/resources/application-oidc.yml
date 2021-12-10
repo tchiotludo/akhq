@@ -1,0 +1,139 @@
+micronaut:
+  application:
+    name: akhq
+
+  security:
+    enabled: true
+    endpoints:
+      login:
+        path: "/login"
+      logout:
+        path: "/logout"
+        get-allowed: true
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
+    ldap:
+      enabled: false
+    oauth2:
+      enabled: true
+      clients:
+        oidc:
+          grant-type: password
+          openid:
+            issuer: "http://no.url"
+            token: "fake-token"
+
+akhq:
+  server:
+    access-log:
+      enabled: false
+
+  clients-defaults:
+    consumer:
+      properties:
+        group.id: Akhq
+        enable.auto.commit: "false"
+
+  topic:
+    replication: 1
+    retention: 86400000
+    partition: 1
+    internal-regexps:
+      - "^_.*$"
+      - "^.*_schemas$"
+      - "^.*connect-config$"
+      - "^.*connect-offsets$1"
+      - "^.*connect-status$"
+    stream-regexps:
+      - "^.*-changelog$"
+      - "^.*-repartition$"
+      - "^.*-rekey$"
+
+  topic-data:
+    poll-timeout: 5000
+
+  pagination:
+    page-size: 5
+
+  security:
+    default-group: no-filter
+    basic-auth: []
+    groups:
+      admin:
+        name: admin
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
+      limited:
+        name: limited
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
+        attributes:
+          topics-filter-regexp:
+            - "test.*"
+      operator:
+        name: operator
+        roles:
+          - topic/read
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+        attributes:
+          topics-filter-regexp:
+            - "test-operator.*"
+      no-filter:
+        name: no-filter
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
+    oidc:
+      enabled: true
+      providers:
+        oidc:
+          username-field: preferred_username
+          groups-field: roles
+          default-group: topic-reader
+          groups:
+            - name: oidc-limited-group
+              groups:
+                - limited
+            - name: oidc-operator-group
+              groups:
+                - operator
+          users:
+            - username: user2
+              groups:
+                - operator

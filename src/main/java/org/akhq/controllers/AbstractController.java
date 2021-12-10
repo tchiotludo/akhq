@@ -3,8 +3,7 @@ package org.akhq.controllers;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -20,10 +19,7 @@ abstract public class AbstractController {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
+    private DefaultGroupUtils defaultGroupUtils;
 
     protected String getBasePath() {
         return basePath.replaceAll("/$","");
@@ -54,10 +50,16 @@ abstract public class AbstractController {
             .collect(Collectors.toList());
     }
 
+    protected boolean isAllowed(String role) {
+        return this.getRights()
+            .stream()
+            .anyMatch(s -> s.equals(role));
+    }
+
     @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())));
+            return expandRoles(this.defaultGroupUtils.getDefaultRoles());
         }
 
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
@@ -66,7 +68,7 @@ abstract public class AbstractController {
             securityService
                 .getAuthentication()
                 .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
-                .orElseGet(() -> this.userGroupUtils.getUserRoles(Collections.singletonList(securityProperties.getDefaultGroup())))
+                .orElseGet(() -> this.defaultGroupUtils.getDefaultRoles())
         );
     }
 }

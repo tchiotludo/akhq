@@ -22,6 +22,7 @@ public class Oidc {
         private String defaultGroup;
         private List<GroupMapping> groups = new ArrayList<>();
         private List<UserMapping> users = new ArrayList<>();
+        private boolean useOidcClaim = false;
     }
 
     public Provider getProvider(String key) {

@@ -4,14 +4,13 @@ import org.akhq.models.ClusterStats;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.configs.SecurityProperties;
 import org.akhq.models.ConsumerGroup;
 import org.akhq.models.Partition;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.UserGroupUtils;
+import org.akhq.utils.DefaultGroupUtils;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -38,10 +37,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
     private ApplicationContext applicationContext;
 
     @Inject
-    private UserGroupUtils userGroupUtils;
-
-    @Inject
-    private SecurityProperties securityProperties;
+    private DefaultGroupUtils defaultGroupUtils;
 
     public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search) throws ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search), pagination, groupsList -> this.findByName(clusterId, groupsList));
@@ -176,7 +172,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
         }
         // get consumer group filter regex for default groups
         consumerGroupFilterRegex.addAll(getConsumerGroupFilterRegexFromAttributes(
-                userGroupUtils.getUserAttributes(Collections.singletonList(securityProperties.getDefaultGroup()))
+                defaultGroupUtils.getDefaultAttributes()
         ));
 
         return Optional.of(consumerGroupFilterRegex);

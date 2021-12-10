@@ -89,10 +89,26 @@ export function showTime(milliseconds) {
   return `${valueToSHow} ${decimalPartToShow}`;
 }
 
-export function showBytes(bytes, dPlaces = 2) {
-  if (!bytes) return '0 B';
-  const value = handleConvert(bytes, 'B');
-  return `${parseFloat(value.val.toFixed(dPlaces))} ${value.unit}`;
+/**
+ * This function is responsible for showing the bytes in a
+ * friendly way to the user, making the leases for upper
+ * measures such as MB, GB, TB etc.
+ *
+ * @param {*} bytes value in bytes to show
+ * @param {*} decimals decimal size place
+ * @returns
+ */
+export function showBytes(bytes, decimals = 3) {
+  if (bytes === null || bytes === undefined) return '';
+  if (bytes === 0) return '0 B';
+
+  const kbytes = 1024;
+  const decimalCheck = decimals < 0 ? 0 : decimals;
+  const measures = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const identification = Math.floor(Math.log(bytes) / Math.log(kbytes));
+
+  return parseFloat((bytes / Math.pow(kbytes, identification)).toFixed(decimalCheck)) + ' ' + measures[identification];
 }
 
 function insertRole(roles, roleType, role) {

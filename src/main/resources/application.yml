@@ -7,6 +7,12 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   server:
     thread-selection: AUTO
+    max-request-size: 10MB
+    read-idle-timeout: 10m
+    write-idle-timeout: 10m
+    idle-timeout: 10m
+    netty:
+      max-chunk-size: 10MB
   router:
     static-resources:
       react:
@@ -67,7 +73,7 @@ jackson:
 
 endpoints:
   all:
-    port: 8081
+    port: 28081
     enabled: true
     sensitive: false
   health:
@@ -97,6 +103,10 @@ akhq:
     page-size: 25
     threads: 16
 
+  avro-serializer:
+    json.serialization.inclusions:
+      - NON_NULL
+
   topic:
     replication: 1
     retention: 86400000
@@ -113,7 +123,6 @@ akhq:
       - "^.*-rekey$"
 
   topic-data:
-    sort: OLDEST
     size: 50
     poll-timeout: 1000
 

@@ -10,7 +10,6 @@ import org.akhq.models.LogDir;
 import org.akhq.models.Node;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 

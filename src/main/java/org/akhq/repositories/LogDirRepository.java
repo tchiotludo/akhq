@@ -1,7 +1,8 @@
 package org.akhq.repositories;
 
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.requests.DescribeLogDirsResponse;
+import org.apache.kafka.clients.admin.LogDirDescription;
+import org.apache.kafka.clients.admin.ReplicaInfo;
 import org.akhq.models.LogDir;
 import org.akhq.modules.AbstractKafkaWrapper;
 
@@ -18,12 +19,12 @@ public class LogDirRepository extends AbstractRepository {
     @Inject
     AbstractKafkaWrapper kafkaWrapper;
 
-    public ArrayList<LogDir> list(String clusterId) throws ExecutionException, InterruptedException {
-        ArrayList<LogDir> list = new ArrayList<>();
+    public List<LogDir> list(String clusterId) throws ExecutionException, InterruptedException {
+        List<LogDir> list = new ArrayList<>();
 
-        for(Map.Entry<Integer, Map<String, DescribeLogDirsResponse.LogDirInfo>> nodes : kafkaWrapper.describeLogDir(clusterId).entrySet()) {
-            for(Map.Entry<String, DescribeLogDirsResponse.LogDirInfo> node: nodes.getValue().entrySet()) {
-                for(Map.Entry<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> log: node.getValue().replicaInfos.entrySet()) {
+        for(Map.Entry<Integer, Map<String, LogDirDescription>> nodes : kafkaWrapper.describeLogDir(clusterId).entrySet()) {
+            for(Map.Entry<String, LogDirDescription> node: nodes.getValue().entrySet()) {
+                for(Map.Entry<TopicPartition, ReplicaInfo> log: node.getValue().replicaInfos().entrySet()) {
                     list.add(new LogDir(nodes.getKey(), node.getKey(), log.getKey(), log.getValue()));
                 }
             }

@@ -29,7 +29,7 @@ public class ProtobufToJsonDeserializer {
     private final List<TopicsMapping> topicsMapping;
     private final String protobufDescriptorsFolder;
 
-    public ProtobufToJsonDeserializer(Connection.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping) {
+    public ProtobufToJsonDeserializer(Connection.Deserialization.ProtobufDeserializationTopicsMapping protobufDeserializationTopicsMapping) {
         if (protobufDeserializationTopicsMapping == null) {
             this.descriptors = new HashMap<>();
             this.topicsMapping = new ArrayList<>();
@@ -158,7 +158,7 @@ public class ProtobufToJsonDeserializer {
         List<Descriptor> descriptorsWithDependencies = this.descriptors.get(topicRegex);
         List<Descriptor> descriptorsForConfiguredMessageTypes =
                 descriptorsWithDependencies.stream()
-                        .filter(mp -> messageType.equals(mp.getName()))
+                        .filter(mp -> messageType.equals(mp.getFullName()))
                         .collect(Collectors.toList());
 
         if (descriptorsForConfiguredMessageTypes.isEmpty()) {
