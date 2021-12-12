@@ -7,18 +7,17 @@ import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.AuthenticationFailed;
 import io.micronaut.security.authentication.AuthenticationResponse;
-import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.config.AuthenticationModeConfiguration;
 import io.micronaut.security.oauth2.configuration.OpenIdAdditionalClaimsConfiguration;
 import io.micronaut.security.oauth2.endpoint.authorization.state.State;
-import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdUserDetailsMapper;
+import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdAuthenticationMapper;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.ClaimProvider;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,9 +27,9 @@ import java.util.stream.Collectors;
  * It will read a username and roles from the OpenID claims and translate them to akhq roles.
  */
 @Singleton
-@Replaces(DefaultOpenIdUserDetailsMapper.class)
+@Replaces(DefaultOpenIdAuthenticationMapper.class)
 @Requires(property = "akhq.security.oidc.enabled", value = StringUtils.TRUE)
-public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
+public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
     @Inject
     private Oidc oidc;
     @Inject
@@ -66,7 +65,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
 
         try {
             ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-            return new UserDetails(oidcUsername, claim.getRoles(), claim.getAttributes());
+            return AuthenticationResponse.success(oidcUsername, claim.getRoles(), claim.getAttributes());
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
@@ -83,7 +82,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
                 // keep only topicsFilterRegexp, connectsFilterRegexp, consumerGroupsFilterRegexp and potential future filters
                 .filter(kv -> kv.getKey().matches(".*FilterRegexp$"))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            return new UserDetails(oidcUsername, roles, attributes);
+            return AuthenticationResponse.success(oidcUsername, roles, attributes);
         }
 
         return new AuthenticationFailed("Exception during Authentication: use-oidc-claim config requires attribute " +
@@ -95,7 +94,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdUserDetailsMapper {
      *
      * @param provider  The OpenID provider
      * @param openIdClaims  The OpenID claims
-     * @return The username to set in the {@link UserDetails}
+     * @return The username to set in the {@link io.micronaut.security.authentication.Authentication}
      */
     protected String getUsername(Oidc.Provider provider, OpenIdClaims openIdClaims) {
         return Objects.toString(openIdClaims.get(provider.getUsernameField()));

@@ -13,13 +13,12 @@ import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTok
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
-import org.akhq.controllers.AkhqController;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +41,6 @@ class OidcDirectClaimAuthenticationProviderTest {
 
     @Inject
     OpenIdTokenResponseValidator openIdTokenResponseValidator;
-
-    @Inject
-    DefaultOpenIdProviderMetadata defaultOpenIdProviderMetadata;
-
-    @Inject
-    AkhqController akhqController;
 
     @Named("oidc")
     @MockBean(TokenEndpointClient.class)
@@ -89,25 +82,21 @@ class OidcDirectClaimAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(1));
         assertThat(roles, hasItem("topic/read"));
 
-        Map<String, Object> attributes = userDetail.getAttributes("roles", "username");
+        Map<String, Object> attributes = response.getAuthentication().get().getAttributes();
         assertThat(attributes.keySet(), hasItem("topicsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("connectsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("consumerGroupsFilterRegexp"));
 
-        assertEquals("^topic1$", ((List) attributes.get("topicsFilterRegexp")).get(0));
-
+        assertEquals("^topic1$", ((List<?>) attributes.get("topicsFilterRegexp")).get(0));
     }
 
     @Test
@@ -137,23 +126,18 @@ class OidcDirectClaimAuthenticationProviderTest {
                 "pass"
             ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(1));
         assertThat(roles, hasItem("topic/read"));
 
-        Map<String, Object> attributes = userDetail.getAttributes("roles", "username");
+        Map<String, Object> attributes = response.getAuthentication().get().getAttributes();
 
-        assertEquals(6, attributes.size());
-        assertThat(attributes.keySet(), hasItem("username"));
-        assertThat(attributes.keySet(), hasItem("roles"));
+        assertEquals(4, attributes.size());
         assertThat(attributes.keySet(), hasItem("topicsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("connectsFilterRegexp"));
         assertThat(attributes.keySet(), hasItem("consumerGroupsFilterRegexp"));

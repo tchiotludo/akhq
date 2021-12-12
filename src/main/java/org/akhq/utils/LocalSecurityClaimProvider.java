@@ -4,8 +4,8 @@ import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.util.StringUtils;
 import org.akhq.configs.*;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

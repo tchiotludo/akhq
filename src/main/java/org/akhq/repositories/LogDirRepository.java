@@ -6,8 +6,8 @@ import org.apache.kafka.clients.admin.ReplicaInfo;
 import org.akhq.models.LogDir;
 import org.akhq.modules.AbstractKafkaWrapper;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -6,7 +6,7 @@ import io.micronaut.core.convert.TypeConverterRegistrar;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class ConverterRegistrar implements TypeConverterRegistrar {

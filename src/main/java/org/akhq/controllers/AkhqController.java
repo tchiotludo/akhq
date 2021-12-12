@@ -1,6 +1,5 @@
 package org.akhq.controllers;
 
-import io.micronaut.configuration.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
@@ -9,6 +8,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.utils.SecurityService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -20,7 +20,7 @@ import org.akhq.configs.*;
 import org.akhq.modules.HasAnyPermission;
 import org.akhq.utils.VersionProvider;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

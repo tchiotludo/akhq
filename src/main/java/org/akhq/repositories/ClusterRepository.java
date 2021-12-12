@@ -3,8 +3,8 @@ package org.akhq.repositories;
 import org.akhq.models.Cluster;
 import org.akhq.modules.AbstractKafkaWrapper;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.concurrent.ExecutionException;
 
 @Singleton

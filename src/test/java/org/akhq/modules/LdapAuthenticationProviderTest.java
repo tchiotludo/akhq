@@ -1,10 +1,11 @@
 package org.akhq.modules;
 
-import io.micronaut.configuration.security.ldap.LdapAuthenticationProvider;
-import io.micronaut.configuration.security.ldap.context.*;
-import io.micronaut.configuration.security.ldap.group.DefaultLdapGroupProcessor;
-import io.micronaut.configuration.security.ldap.group.LdapGroupProcessor;
+
 import io.micronaut.security.authentication.*;
+import io.micronaut.security.ldap.LdapAuthenticationProvider;
+import io.micronaut.security.ldap.context.*;
+import io.micronaut.security.ldap.group.DefaultLdapGroupProcessor;
+import io.micronaut.security.ldap.group.LdapGroupProcessor;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
@@ -12,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.*;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
@@ -61,7 +62,6 @@ class LdapAuthenticationProviderTest {
 
     @Test
     void success() throws NamingException {
-
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
         List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
@@ -78,22 +78,21 @@ class LdapAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
 
-        UserDetails userDetail = (UserDetails) response;
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(4));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void successWithMultipleLdapGroups() throws NamingException {
 
@@ -113,29 +112,26 @@ class LdapAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(7));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList =  (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList =  (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void successWithLdapGroupAndUserRole() throws NamingException {
-
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
         List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
@@ -144,7 +140,7 @@ class LdapAuthenticationProviderTest {
         when(ldapSearchService.searchFirst(any(DirContext.class), any(SearchSettings.class))).thenReturn(optionalResult);
         when(ldapSearchService.search(any(DirContext.class), any(SearchSettings.class))).thenReturn(listResults);
 
-        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-admin")));
+        when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(List.of("ldap-admin")));
 
         AuthenticationResponse response = Flowable
                         .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
@@ -152,21 +148,18 @@ class LdapAuthenticationProviderTest {
                                         "pass"
                         ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user2", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user2", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(7));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList =  (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList =  (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
@@ -174,7 +167,6 @@ class LdapAuthenticationProviderTest {
 
     @Test
     void successWithoutRoles() throws NamingException {
-
         Optional<LdapSearchResult> optionalResult = Optional.of(new LdapSearchResult(new BasicAttributes(), "dn"));
         List<LdapSearchResult> listResults = Collections.singletonList(new LdapSearchResult(new BasicAttributes(), "dn"));
 
@@ -191,20 +183,16 @@ class LdapAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
         assertThat(roles, hasSize(0));
     }
 
     @Test
     void failure() throws NamingException {
-
         Optional<LdapSearchResult> optionalResult = Optional.empty();
 
         when(contextBuilder.build(any(ContextSettings.class))).thenReturn(new InitialLdapContext());
@@ -220,6 +208,7 @@ class LdapAuthenticationProviderTest {
         });
 
         assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
+        assertNotNull(authenticationException.getResponse());
         assertFalse(authenticationException.getResponse().isAuthenticated());
     }
 }

@@ -8,7 +8,7 @@ import io.micronaut.core.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
 
 @Slf4j
@@ -27,7 +27,7 @@ public class GroovyClaimProvider implements ClaimProvider {
         try {
             // the file must be an implementation of ClaimProvider Interface
             final Class<?> clazz = loader.parseClass(groovyFile);
-            groovyImpl = ClaimProvider.class.cast(clazz.getDeclaredConstructors()[0].newInstance());
+            groovyImpl = (ClaimProvider) clazz.getDeclaredConstructors()[0].newInstance();
 
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             log.error("Error", e);

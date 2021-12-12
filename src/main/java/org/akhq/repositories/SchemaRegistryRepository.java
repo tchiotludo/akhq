@@ -20,8 +20,8 @@ import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;

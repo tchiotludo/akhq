@@ -2,7 +2,7 @@ package org.akhq.repositories;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.authentication.DefaultAuthentication;
+import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.common.config.TopicConfig;
@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -166,7 +166,7 @@ class TopicRepositoryTest extends AbstractTest {
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new DefaultAuthentication("test", Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
+        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

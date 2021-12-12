@@ -7,7 +7,7 @@ import org.apache.kafka.common.errors.ApiException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 @Slf4j

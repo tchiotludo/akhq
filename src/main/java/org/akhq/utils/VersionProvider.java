@@ -6,8 +6,8 @@ import io.micronaut.core.util.StringUtils;
 import lombok.Getter;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
