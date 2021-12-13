@@ -1,11 +1,13 @@
 package org.akhq.clusters;
 
+import kafka.cluster.EndPoint;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
 import kafka.utils.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.network.ListenerName;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.utils.Time;
 
 import java.io.File;
@@ -43,8 +45,7 @@ public class KafkaEmbedded {
     private Properties effectiveConfigFrom(final Properties initialConfig) {
         final Properties effectiveConfig = new Properties();
         effectiveConfig.put(KafkaConfig$.MODULE$.BrokerIdProp(), 0);
-        effectiveConfig.put(KafkaConfig$.MODULE$.HostNameProp(), "127.0.0.1");
-        effectiveConfig.put(KafkaConfig$.MODULE$.PortProp(), "9092");
+        effectiveConfig.put(KafkaConfig$.MODULE$.ListenersProp(), "PLAINTEXT://127.0.0.1:" + EmbeddedSingleNodeKafkaCluster.randomPort());
         effectiveConfig.put(KafkaConfig$.MODULE$.NumPartitionsProp(), 1);
         effectiveConfig.put(KafkaConfig$.MODULE$.AutoCreateTopicsEnableProp(), true);
         effectiveConfig.put(KafkaConfig$.MODULE$.MessageMaxBytesProp(), 1000000);
@@ -56,9 +57,12 @@ public class KafkaEmbedded {
     }
 
     public String brokerList() {
-        final Object listenerConfig = effectiveConfig.get(KafkaConfig$.MODULE$.InterBrokerListenerNameProp());
-        return kafka.config().hostName() + ":" + kafka.boundPort(
-            new ListenerName(listenerConfig != null ? listenerConfig.toString() : "PLAINTEXT"));
+        final EndPoint endPoint = kafka.advertisedListeners().head();
+        final String hostname = endPoint.host() == null ? "" : endPoint.host();
+
+        return String.join(":", hostname, Integer.toString(
+            kafka.boundPort(ListenerName.forSecurityProtocol(SecurityProtocol.PLAINTEXT))
+        ));
     }
 
     public String zookeeperConnect() {

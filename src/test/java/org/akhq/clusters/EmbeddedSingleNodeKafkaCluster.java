@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Properties;
 
 @Slf4j
@@ -42,7 +43,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
 
         // kafka
         final Properties effectiveBrokerConfig = effectiveBrokerConfigFrom(brokerConfig, zookeeper);
-        log.debug("Starting a Kafka instance on port {} ...", effectiveBrokerConfig.getProperty(KafkaConfig$.MODULE$.PortProp()));
+        log.debug("Starting a Kafka instance on port {} ...", effectiveBrokerConfig.getProperty(KafkaConfig$.MODULE$.ListenersProp()));
         broker = new KafkaEmbedded(effectiveBrokerConfig);
         log.debug("Kafka instance is running at {}, connected to ZooKeeper at {}", broker.brokerList(), broker.zookeeperConnect());
 
@@ -51,6 +52,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG, KAFKASTORE_OPERATION_TIMEOUT_MS);
         schemaRegistryProps.put(SchemaRegistryConfig.DEBUG_CONFIG, KAFKASTORE_DEBUG);
         schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_INIT_TIMEOUT_CONFIG, KAFKASTORE_INIT_TIMEOUT);
+        schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_BOOTSTRAP_SERVERS_CONFIG, bootstrapServers());
 
         schemaRegistry = new RestApp(0, zookeeperConnect(), KAFKA_SCHEMAS_TOPIC, AVRO_COMPATIBILITY_TYPE, schemaRegistryProps);
         schemaRegistry.start();
@@ -63,7 +65,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect1Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
         connect1Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
         connect1Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect1Properties.put("rest.port", "0");
+        connect1Properties.put("listeners", "http://:" + randomPort());
         connect1Properties.put("group.id", "connect-1-integration-test-");
         connect1Properties.put("offset.storage.topic", "__connect-1-offsets");
         connect1Properties.put("offset.storage.replication.factor", 1);
@@ -80,7 +82,7 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         connect2Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
         connect2Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
         connect2Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect2Properties.put("rest.port", "0");
+        connect2Properties.put("listeners", "http://:" + randomPort());
         connect2Properties.put("group.id", "connect-2-integration-test-");
         connect2Properties.put("offset.storage.topic", "__connect-2-offsets");
         connect2Properties.put("offset.storage.replication.factor", 1);
@@ -97,11 +99,22 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         log.debug("Kafka Connect-2 is running at {}", connect2Url());
     }
 
+    static Integer randomPort() {
+        try {
+            try (
+                ServerSocket socket = new ServerSocket(0)
+            ) {
+                return socket.getLocalPort();
+            }
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
     private Properties effectiveBrokerConfigFrom(final Properties brokerConfig, final ZooKeeperEmbedded zookeeper) {
         final Properties effectiveConfig = new Properties();
         effectiveConfig.putAll(brokerConfig);
         effectiveConfig.put(KafkaConfig$.MODULE$.ZkConnectProp(), zookeeper.connectString());
-        effectiveConfig.put(KafkaConfig$.MODULE$.PortProp(), DEFAULT_BROKER_PORT);
         effectiveConfig.put(KafkaConfig$.MODULE$.DeleteTopicEnableProp(), true);
         effectiveConfig.put(KafkaConfig$.MODULE$.LogCleanerDedupeBufferSizeProp(), 2 * 1024 * 1024L);
         effectiveConfig.put(KafkaConfig$.MODULE$.GroupMinSessionTimeoutMsProp(), 0);
