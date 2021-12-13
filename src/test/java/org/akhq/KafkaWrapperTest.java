@@ -3,7 +3,7 @@ package org.akhq;
 import io.micronaut.context.annotation.Replaces;
 import org.akhq.modules.AbstractKafkaWrapper;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 @Replaces(AbstractKafkaWrapper.class)

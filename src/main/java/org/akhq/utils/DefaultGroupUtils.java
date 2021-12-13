@@ -3,8 +3,8 @@ package org.akhq.utils;
 import io.micronaut.core.util.StringUtils;
 import org.akhq.configs.SecurityProperties;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 

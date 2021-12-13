@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Secured(Role.ROLE_CONNECT_READ)
 @Controller("/api/{cluster}/connect/{connectId}")

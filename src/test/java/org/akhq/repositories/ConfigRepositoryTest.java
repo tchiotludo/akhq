@@ -5,7 +5,7 @@ import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Config;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;

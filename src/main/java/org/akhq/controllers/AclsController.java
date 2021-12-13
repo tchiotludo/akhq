@@ -13,7 +13,7 @@ import org.apache.kafka.common.resource.ResourceType;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Secured(Role.ROLE_ACLS_READ)
 @Controller("/api/{cluster}/acls")

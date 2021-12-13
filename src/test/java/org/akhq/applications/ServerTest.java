@@ -4,7 +4,7 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import org.junit.jupiter.api.Test;
 import org.akhq.AbstractTest;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

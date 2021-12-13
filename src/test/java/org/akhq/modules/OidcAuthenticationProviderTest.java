@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,9 +41,6 @@ class OidcAuthenticationProviderTest {
 
     @Inject
     OpenIdTokenResponseValidator openIdTokenResponseValidator;
-
-    @Inject
-    DefaultOpenIdProviderMetadata defaultOpenIdProviderMetadata;
 
     @Inject
     AkhqController akhqController;
@@ -85,26 +82,22 @@ class OidcAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(4));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
-
+        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void successWithMultipleOidcGroups() {
-
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
                 .claim("roles", List.of("oidc-limited-group", "oidc-operator-group"))
@@ -122,29 +115,26 @@ class OidcAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(7));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList = (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList = (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void successWithOidcGroupAndUserRole() {
-
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user2")
                 .claim("roles", List.of("oidc-limited-group"))
@@ -162,21 +152,18 @@ class OidcAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user2", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user2", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(7));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
         assertThat(roles, hasItem("topic/data/read"));
 
-        List<String> topicsFilterList = (List) (userDetail.getAttributes("roles", "username").get("topicsFilterRegexp"));
+        List<String> topicsFilterList = (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
         assertThat(topicsFilterList, hasSize(2));
         assertThat(topicsFilterList, hasItem("test.*"));
         assertThat(topicsFilterList, hasItem("test-operator.*"));
@@ -184,7 +171,6 @@ class OidcAuthenticationProviderTest {
 
     @Test
     void successWithoutRoles() {
-
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
                 .claim("roles", List.of("oidc-other-group"))
@@ -202,14 +188,10 @@ class OidcAuthenticationProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
         assertThat(roles, hasSize(0));
     }
 
@@ -221,15 +203,14 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.empty());
 
-        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> {
-            Flowable
-                    .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
-                            "user",
-                            "pass"
-                    ))).blockingFirst();
-        });
+        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> Flowable
+                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                        "user",
+                        "pass"
+                ))).blockingFirst());
 
         assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
+        assertNotNull(authenticationException.getResponse());
         assertFalse(authenticationException.getResponse().isAuthenticated());
     }
 

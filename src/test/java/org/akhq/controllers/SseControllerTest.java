@@ -1,7 +1,7 @@
 package org.akhq.controllers;
 
 import io.micronaut.context.annotation.Property;
-import io.micronaut.http.client.sse.RxSseClient;
+import io.micronaut.rxjava2.http.client.sse.RxSseClient;
 import io.micronaut.runtime.server.EmbeddedServer;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

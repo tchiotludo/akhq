@@ -24,8 +24,8 @@ import org.akhq.configs.Default;
 import org.sourcelab.kafka.connect.apiclient.Configuration;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,7 +91,7 @@ public class KafkaModule {
         return props;
     }
 
-    private Map<String, AdminClient> adminClient = new HashMap<>();
+    private final Map<String, AdminClient> adminClient = new HashMap<>();
 
     public AdminClient getAdminClient(String clusterId) {
         if (!this.adminClient.containsKey(clusterId)) {
@@ -120,7 +120,7 @@ public class KafkaModule {
         );
     }
 
-    private Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
+    private final Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
 
     public KafkaProducer<byte[], byte[]> getProducer(String clusterId) {
         if (!this.producers.containsKey(clusterId)) {
@@ -175,9 +175,9 @@ public class KafkaModule {
                     && !connection.getSchemaRegistry().getProperties().isEmpty()) {
 
                 Map<String, Object> sslConfigs =
-                        (Map) connection.getSchemaRegistry().getProperties().entrySet().stream()
-                        .filter(e -> e.getKey().startsWith("schema.registry."))
-                        .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
+                    connection.getSchemaRegistry().getProperties().entrySet().stream()
+                    .filter(e -> e.getKey().startsWith("schema.registry."))
+                    .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
 
                 SslFactory sslFactory = new SslFactory(sslConfigs);
                 if (sslFactory != null && sslFactory.sslContext() != null) {
@@ -208,7 +208,7 @@ public class KafkaModule {
         return null;
     }
 
-    private Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
+    private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
 
     public SchemaRegistryClient getRegistryClient(String clusterId) {
         if (!this.registryClient.containsKey(clusterId)) {
@@ -233,7 +233,7 @@ public class KafkaModule {
         return this.registryClient.get(clusterId);
     }
 
-    private Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
+    private final Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
 
     public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) {
         if (!this.connectRestClient.containsKey(clusterId)) {

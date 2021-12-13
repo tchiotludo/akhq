@@ -5,7 +5,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.utils.DefaultGroupUtils;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -56,7 +56,6 @@ abstract public class AbstractController {
             .anyMatch(s -> s.equals(role));
     }
 
-    @SuppressWarnings("unchecked")
     protected List<String> getRights() {
         if (!applicationContext.containsBean(SecurityService.class)) {
             return expandRoles(this.defaultGroupUtils.getDefaultRoles());
@@ -67,7 +66,7 @@ abstract public class AbstractController {
         return expandRoles(
             securityService
                 .getAuthentication()
-                .map(authentication -> (List<String>) authentication.getAttributes().get("roles"))
+                .map(authentication -> (List<String>) new ArrayList<>(authentication.getRoles()))
                 .orElseGet(() -> this.defaultGroupUtils.getDefaultRoles())
         );
     }

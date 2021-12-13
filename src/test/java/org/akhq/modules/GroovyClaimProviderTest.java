@@ -1,13 +1,12 @@
 package org.akhq.modules;
 
 import io.micronaut.security.authentication.AuthenticationResponse;
-import io.micronaut.security.authentication.UserDetails;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,18 +29,16 @@ class GroovyClaimProviderTest {
                         "pass"
                 ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
 
-        UserDetails userDetail = (UserDetails) response;
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(1));
         assertThat(roles, hasItem("topic/read"));
 
-        assertEquals("single-topic", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("single-topic", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 }

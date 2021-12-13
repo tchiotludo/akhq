@@ -4,9 +4,8 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.authentication.AuthenticationUserDetailsAdapter;
 import io.micronaut.security.authentication.Authenticator;
-import io.micronaut.security.authentication.UserDetails;
+import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.config.SecurityConfigurationProperties;
 import io.micronaut.security.filters.AuthenticationFetcher;
 import io.micronaut.security.token.config.TokenConfiguration;
@@ -23,8 +22,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Requires(property = "akhq.security.header-auth.user-header")
 @Singleton
@@ -109,16 +108,10 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
             })
             .switchMap(t -> {
                 if (t.isPresent()) {
-                    UserDetails userDetails = new UserDetails(
+                    return Flowable.just(new ServerAuthentication(
                         userHeaders.get(),
                         t.get().getRoles(),
                         t.get().getAttributes()
-                    );
-
-                    return Flowable.just(new AuthenticationUserDetailsAdapter(
-                        userDetails,
-                        configuration.getRolesName(),
-                        configuration.getNameKey()
                     ));
                 } else {
                     if (log.isDebugEnabled()) {

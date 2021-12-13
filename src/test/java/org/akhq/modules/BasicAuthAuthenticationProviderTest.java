@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.List;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -26,20 +26,17 @@ class BasicAuthAuthenticationProviderTest {
                 "pass"
             ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
 
-        UserDetails userDetail = (UserDetails) response;
-
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("user", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(4));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 
     @Test
@@ -50,20 +47,18 @@ class BasicAuthAuthenticationProviderTest {
                 "pass"
             ))).blockingFirst();
 
-        assertThat(response, instanceOf(UserDetails.class));
 
-        UserDetails userDetail = (UserDetails) response;
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("MyUser3!@yàhöù.com", response.getAuthentication().get().getName());
 
-        assertTrue(userDetail.isAuthenticated());
-        assertEquals("MyUser3!@yàhöù.com", userDetail.getUsername());
-
-        Collection<String> roles = userDetail.getRoles();
+        Collection<String> roles = response.getAuthentication().get().getRoles();
 
         assertThat(roles, hasSize(4));
         assertThat(roles, hasItem("topic/read"));
         assertThat(roles, hasItem("registry/version/delete"));
 
-        assertEquals("test.*", ((List) userDetail.getAttributes("roles", "username").get("topicsFilterRegexp")).get(0));
+        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 
     @Test

@@ -14,8 +14,8 @@ import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.DefaultGroupUtils;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;

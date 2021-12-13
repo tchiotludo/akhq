@@ -8,7 +8,7 @@ import io.micronaut.http.filter.ServerFilterChain;
 import org.akhq.modules.KafkaModule;
 import org.reactivestreams.Publisher;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Filter("/**")
 public class KafkaWrapperFilter implements HttpServerFilter {

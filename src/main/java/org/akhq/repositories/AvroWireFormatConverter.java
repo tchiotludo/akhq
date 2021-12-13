@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Converts an avro payload to the kafka avro wire format (https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)

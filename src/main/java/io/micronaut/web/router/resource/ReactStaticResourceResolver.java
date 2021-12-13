@@ -7,7 +7,7 @@ import io.micronaut.core.util.CollectionUtils;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 @Replaces(StaticResourceResolver.class)

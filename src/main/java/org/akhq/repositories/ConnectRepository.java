@@ -21,8 +21,8 @@ import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigMod
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
