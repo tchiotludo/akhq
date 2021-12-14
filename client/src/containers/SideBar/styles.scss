@@ -37,8 +37,15 @@ $sidebarTransition: 0.5s;
   white-space: nowrap;
   overflow: hidden;
   max-width: 90px;
+  font-size: $font-size-base;
+  vertical-align: middle;
+}
+.sidenav-subnav---1EN61 {
+    background-color: $primary !important;
+
 }
 
-.sidenav-subnav---1EN61{
-  background-color: $primary !important;
+.sidenav---sidenav-subnav---1EN61 {
+    max-height: calc(30vh);
+    overflow: auto !important;
 }

@@ -266,12 +266,12 @@ class Sidebar extends Component {
               <div
                 data-toggle="collapse"
                 aria-expanded={showClusters}
-                className="dropdown-toggle"
+                className="dropdown-toggle text-center"
                 onClick={() => {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                Clusters <span className="badge badge-primary clusters">{selectedCluster}</span>
+                <span className="badge badge-primary clusters">{selectedCluster}</span>
               </div>
             </NavText>
             {listClusters}
@@ -309,17 +309,17 @@ class Sidebar extends Component {
                 <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
               </NavIcon>
               <NavText>
-                <Link
+                <div
                   to={`/ui/${selectedCluster}/connect/${selectedConnect}`}
                   data-toggle="collapse"
                   aria-expanded={showConnects}
-                  className="dropdown-toggle"
+                  className="dropdown-toggle text-center"
                   onClick={() => {
                     this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
                 >
-                  Connects <span className="badge badge-primary">{selectedConnect}</span>
-                </Link>
+                  <span className="badge badge-primary clusters">{selectedConnect}</span>
+                </div>
               </NavText>
 
               {listConnects}
