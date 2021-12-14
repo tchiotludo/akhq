@@ -8,7 +8,6 @@ import com.salesforce.kafka.test.KafkaBrokers;
 import com.salesforce.kafka.test.KafkaProvider;
 import com.salesforce.kafka.test.KafkaTestUtils;
 import com.salesforce.kafka.test.ListenerProperties;
-import com.yammer.metrics.core.Stoppable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-public class KafkaTestCluster implements Runnable, Stoppable {
+public class KafkaTestCluster implements Runnable {
     private static final Path CS_PATH = Paths.get(System.getProperty("java.io.tmpdir"), "/akhq-cs.json");
 
     public static final String CLUSTER_ID = "test";
@@ -106,7 +105,7 @@ public class KafkaTestCluster implements Runnable, Stoppable {
             put("log.cleaner.backoff.ms", "1");
             put("log.segment.delete.delay.ms", "1");
             put("max.compaction.lag.ms", "1");
-            put("authorizer.class.name", "kafka.security.auth.SimpleAclAuthorizer");
+            put("authorizer.class.name", "kafka.security.authorizer.AclAuthorizer");
             put("allow.everyone.if.no.acl.found", "true");
 
             // Segment config
@@ -134,7 +133,6 @@ public class KafkaTestCluster implements Runnable, Stoppable {
         kafkaCluster.start();
     }
 
-    @Override
     public void stop() {
         kafkaCluster.stop();
         stream.stop();

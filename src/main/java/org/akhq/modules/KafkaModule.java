@@ -3,7 +3,6 @@ package org.akhq.modules;
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.SchemaProvider;
 import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
-import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
@@ -11,21 +10,22 @@ import io.confluent.kafka.schemaregistry.client.security.SslFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProvider;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCredentialProviderFactory;
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
+import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import org.akhq.configs.AbstractProperties;
+import org.akhq.configs.Connection;
+import org.akhq.configs.Default;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.akhq.configs.AbstractProperties;
-import org.akhq.configs.Connection;
-import org.akhq.configs.Default;
 import org.sourcelab.kafka.connect.apiclient.Configuration;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -138,7 +138,7 @@ public class KafkaModule {
         AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
         avroSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
         ));
         return avroSchemaProvider;
     }
@@ -147,7 +147,7 @@ public class KafkaModule {
         JsonSchemaProvider jsonSchemaProvider = new JsonSchemaProvider();
         jsonSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
         ));
 
         return  jsonSchemaProvider;
@@ -157,7 +157,7 @@ public class KafkaModule {
         ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
         protobufSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 100)
+            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
         ));
 
         return  protobufSchemaProvider;
@@ -210,18 +210,20 @@ public class KafkaModule {
 
     private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
 
+
     public SchemaRegistryClient getRegistryClient(String clusterId) {
         if (!this.registryClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
+
             List<SchemaProvider> providers = new ArrayList<>();
-            providers.add(  new AvroSchemaProvider() );
-            providers.add(  new JsonSchemaProvider() );
-            providers.add(  new ProtobufSchemaProvider() );
+            providers.add(new AvroSchemaProvider());
+            providers.add(new JsonSchemaProvider());
+            providers.add(new ProtobufSchemaProvider());
 
             SchemaRegistryClient client = new CachedSchemaRegistryClient(
                 this.getRegistryRestClient(clusterId),
-                Integer.MAX_VALUE,
+                1000,
                 providers,
                 connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null,
                 null
