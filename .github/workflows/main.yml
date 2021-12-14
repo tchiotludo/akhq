@@ -17,6 +17,8 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     strategy:
       matrix:
@@ -179,7 +181,7 @@ jobs:
       # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v2
-        if: always() && github.event_name != 'pull_request'
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != 0 }}
         with:
           status: ${{ job.status }}
           username: Github Actions
