@@ -1,6 +1,5 @@
 package org.akhq;
 
-import com.yammer.metrics.core.Stoppable;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
@@ -25,17 +24,16 @@ import java.util.Collections;
 import java.util.Properties;
 
 @Slf4j
-public class StreamTest implements Runnable, Stoppable {
+public class StreamTest implements Runnable {
     private KafkaStreams streams;
-    private String bootstrapServers;
-    private String registryUrl;
+    private final String bootstrapServers;
+    private final String registryUrl;
 
     public StreamTest(String bootstrapServers, String registryUrl) {
         this.bootstrapServers = bootstrapServers;
         this.registryUrl = registryUrl;
     }
 
-    @Override
     public void stop() {
         try {
             streams.close();
