@@ -1,0 +1,31 @@
+micronaut:
+  application:
+    name: akhq
+  http:
+    client:
+      follow-redirects: false # Required to ignore /login redirection
+  security:
+    enabled: true
+    authentication: cookie
+    endpoints:
+      login:
+        path: "/login"
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
+akhq:
+  security:
+    basic-auth:
+      - username: admin
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - admin
+    rest:
+      enabled: true
+      url: /external-mock
