@@ -111,7 +111,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
                     return Flowable.just(new ServerAuthentication(
                         userHeaders.get(),
                         t.get().getRoles(),
-                        t.get().getAttributes()
+                        t.get().getAttributes().toMap()
                     ));
                 } else {
                     if (log.isDebugEnabled()) {
