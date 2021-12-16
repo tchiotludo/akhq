@@ -2,16 +2,21 @@ package org.akhq.modules;
 
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
+import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.client.DefaultHttpClientConfiguration;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.HttpClientConfiguration;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.filter.HttpServerFilter;
+import io.micronaut.http.filter.ServerFilterChain;
 import io.micronaut.rxjava2.http.client.RxHttpClient;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthenticationRequest;
@@ -19,8 +24,10 @@ import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.akhq.controllers.AkhqController;
+import org.akhq.middlewares.KafkaWrapperFilter;
 import org.akhq.utils.ClaimProvider;
 import org.junit.jupiter.api.Test;
+import org.reactivestreams.Publisher;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -58,7 +65,17 @@ public class RestApiClaimProviderTest {
         assertLinesMatch(List.of("topic/read", "group/read", "registry/read", "connect/read"), actualRoles);
     }
 
-    //@Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
+    @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
+    @Filter("/**")
+    @Replaces(KafkaWrapperFilter.class)
+    static class IgnoreKafkaWrapperFilter implements HttpServerFilter {
+
+        @Override
+        public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
+            return chain.proceed(request);
+        }
+    }
+    @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
     @PermitAll
     @Controller("/external-mock")
     static class RestApiExternalService {
