@@ -48,7 +48,7 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
 
         try {
             ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-            return Flowable.just(AuthenticationResponse.success(auth.getUsername(), claim.getRoles(), claim.getAttributes()));
+            return Flowable.just(AuthenticationResponse.success(auth.getUsername(), claim.getRoles(), claim.getAttributes().toMap()));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));

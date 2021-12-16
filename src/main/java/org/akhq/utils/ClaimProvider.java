@@ -25,7 +25,24 @@ public interface ClaimProvider {
     @Setter
     class AKHQClaimResponse {
         private List<String> roles;
-        private Map<String,Object> attributes;
+        private AKHQClaimResponseAttributes attributes;
+    }
+
+    @Introspected
+    @Builder
+    @Getter
+    @Setter
+    class AKHQClaimResponseAttributes {
+        private List<String> topicsFilterRegexp;
+        private List<String> connectsFilterRegexp;
+        private List<String> consumerGroupsFilterRegexp;
+        public Map<String, Object> toMap(){
+            return Map.of(
+                "topicsFilterRegexp", topicsFilterRegexp,
+                "connectsFilterRegexp", connectsFilterRegexp,
+                "consumerGroupsFilterRegexp", consumerGroupsFilterRegexp
+            );
+        }
     }
 
     @Introspected

@@ -106,11 +106,11 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
         return AKHQClaimResponse.builder()
                 .roles(getUserRoles(groups))
                 .attributes(
-                        Map.of(
-                                "topicsFilterRegexp", getAttributeMergedList(groups, "topicsFilterRegexp"),
-                                "connectsFilterRegexp", getAttributeMergedList(groups, "connectsFilterRegexp"),
-                                "consumerGroupsFilterRegexp", getAttributeMergedList(groups, "consumerGroupsFilterRegexp")
-                        )
+                    AKHQClaimResponseAttributes.builder()
+                        .topicsFilterRegexp(getAttributeMergedList(groups, "topicsFilterRegexp"))
+                        .connectsFilterRegexp(getAttributeMergedList(groups, "connectsFilterRegexp"))
+                        .consumerGroupsFilterRegexp(getAttributeMergedList(groups, "consumerGroupsFilterRegexp"))
+                        .build()
                 )
                 .build();
     }

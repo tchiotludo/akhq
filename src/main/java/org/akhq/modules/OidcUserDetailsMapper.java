@@ -65,7 +65,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         try {
             ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
-            return AuthenticationResponse.success(oidcUsername, claim.getRoles(), claim.getAttributes());
+            return AuthenticationResponse.success(oidcUsername, claim.getRoles(), claim.getAttributes().toMap());
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
