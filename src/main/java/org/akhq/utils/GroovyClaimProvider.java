@@ -35,7 +35,7 @@ public class GroovyClaimProvider implements ClaimProvider {
     }
 
     @Override
-    public AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
+    public ClaimResponse generateClaim(ClaimRequest request) {
         return groovyImpl.generateClaim(request);
     }
 }

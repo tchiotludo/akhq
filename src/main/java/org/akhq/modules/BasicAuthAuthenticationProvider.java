@@ -8,7 +8,10 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.BasicAuth;
 import org.akhq.configs.SecurityProperties;
+import org.akhq.utils.ClaimRequest;
+import org.akhq.utils.ClaimResponse;
 import org.akhq.utils.ClaimProvider;
+import org.akhq.utils.ClaimProviderType;
 import org.reactivestreams.Publisher;
 
 import java.util.Optional;
@@ -39,15 +42,15 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
             return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
         }
 
-        ClaimProvider.AKHQClaimRequest request = ClaimProvider.AKHQClaimRequest.builder()
-            .providerType(ClaimProvider.ProviderType.BASIC_AUTH)
+        ClaimRequest request = ClaimRequest.builder()
+            .providerType(ClaimProviderType.BASIC_AUTH)
             .providerName(null)
             .username(auth.getUsername())
             .groups(auth.getGroups())
             .build();
 
         try {
-            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            ClaimResponse claim = claimProvider.generateClaim(request);
             return Flowable.just(AuthenticationResponse.success(auth.getUsername(), claim.getRoles(), claim.getAttributes()));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();

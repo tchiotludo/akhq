@@ -49,12 +49,9 @@ and expect the following JSON as response :
 ````json
 {
   "roles": ["topic/read", "topic/write", "..."],
-  "attributes":
-  {
-    "topics-filter-regexp": [".*"],
-    "connects-filter-regexp": [".*"],
-    "consumer-groups-filter-regexp": [".*"]
-  }
+  "topics-filter-regexp": [".*"],
+  "connects-filter-regexp": [".*"],
+  "consumer-groups-filter-regexp": [".*"]
 }
 ````
 
@@ -69,15 +66,14 @@ akhq:
         package org.akhq.utils;
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
-            AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
-                AKHQClaimResponse a = new AKHQClaimResponse();
+            ClaimResponse generateClaim(ClaimRequest request) {
+                ClaimResponse a = new ClaimResponse();
                 a.roles = ["topic/read"]
-                a.attributes = [
-                        topicsFilterRegexp: [".*"],
-                        connectsFilterRegexp: [".*"],
-                        consumerGroupsFilterRegexp: [".*"]
-                ]
-                return a
+                a.topicsFilterRegexp: [".*"],
+                a.connectsFilterRegexp: [".*"],
+                a.consumerGroupsFilterRegexp: [".*"]
+
+        return a
             }
         }
     groups: # anything set here will not be used
@@ -86,23 +82,26 @@ akhq:
 ````java
 package org.akhq.utils;
 public interface ClaimProvider {
+    ClaimResponse generateClaim(ClaimRequest request);
+}
 
-    AKHQClaimResponse generateClaim(AKHQClaimRequest request);
+enum ClaimProviderType {
+  BASIC_AUTH,
+  LDAP,
+  OIDC
+}
 
-    class AKHQClaimRequest{
-        ProviderType providerType;
-        String providerName;
-        String username;
-        List<String> groups;
-    }
-    class AKHQClaimResponse {
-        private List<String> roles;
-        private Map<String,Object> attributes;
-    }
-    enum ProviderType {
-        BASIC_AUTH,
-        LDAP,
-        OIDC
-    }
+public class ClaimRequest {
+  ClaimProvider.ProviderType providerType;
+  String providerName;
+  String username;
+  List<String> groups;
+}
+
+public class ClaimResponse {
+    private List<String> roles;
+    private List<String> topicsFilterRegexp;
+    private List<String> connectsFilterRegexp;
+    private List<String> consumerGroupsFilterRegexp;
 }
 ````

@@ -12,7 +12,9 @@ import io.micronaut.security.token.config.TokenConfiguration;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.HeaderAuth;
+import org.akhq.utils.ClaimRequest;
 import org.akhq.utils.ClaimProvider;
+import org.akhq.utils.ClaimProviderType;
 import org.reactivestreams.Publisher;
 
 import java.net.InetSocketAddress;
@@ -95,9 +97,9 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
                     .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())))
                     .collect(Collectors.toList());
 
-                ClaimProvider.AKHQClaimRequest claim =
-                    ClaimProvider.AKHQClaimRequest.builder()
-                        .providerType(ClaimProvider.ProviderType.HEADER)
+                ClaimRequest claim =
+                    ClaimRequest.builder()
+                        .providerType(ClaimProviderType.HEADER)
                         .providerName(null)
                         .username(userHeaders.get())
                         .groups(groups)

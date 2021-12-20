@@ -15,21 +15,17 @@ akhq:
         package org.akhq.utils;
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
-            AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
-                AKHQClaimResponse a = AKHQClaimResponse.builder().build();
+            ClaimResponse generateClaim(ClaimRequest request) {
+                ClaimResponse a = ClaimResponse.builder().build();
                 a.roles = ["topic/read"]
                 if (request.username == "admin") {
-                    a.attributes = [
-                            topicsFilterRegexp: [".*"],
-                            connectsFilterRegexp: [".*"],
-                            consumerGroupsFilterRegexp: [".*"]
-                    ]
-                }else{
-                    a.attributes = [
-                            topicsFilterRegexp: ["single-topic"],
-                            connectsFilterRegexp: ["single-connect"],
-                            consumerGroupsFilterRegexp: ["single-consumer-group"]
-                    ]
+                    a.topicsFilterRegexp = [".*"]
+                    a.connectsFilterRegexp = [".*"]
+                    a.consumerGroupsFilterRegexp = [".*"]
+                } else {
+                    a.topicsFilterRegexp = ["single-topic"]
+                    a.connectsFilterRegexp = ["single-connect"]
+                    a.consumerGroupsFilterRegexp = ["single-consumer-group"]
                 }
                 return a
             }
