@@ -14,10 +14,14 @@ import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdAuthent
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import org.akhq.configs.Oidc;
+import org.akhq.utils.ClaimRequest;
+import org.akhq.utils.ClaimResponse;
 import org.akhq.utils.ClaimProvider;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.akhq.utils.ClaimProviderType;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,15 +60,15 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
 
-        ClaimProvider.AKHQClaimRequest request = ClaimProvider.AKHQClaimRequest.builder()
-                .providerType(ClaimProvider.ProviderType.OIDC)
+        ClaimRequest request = ClaimRequest.builder()
+                .providerType(ClaimProviderType.OIDC)
                 .providerName(providerName)
                 .username(oidcUsername)
                 .groups(oidcGroups)
                 .build();
 
         try {
-            ClaimProvider.AKHQClaimResponse claim = claimProvider.generateClaim(request);
+            ClaimResponse claim = claimProvider.generateClaim(request);
             return AuthenticationResponse.success(oidcUsername, claim.getRoles(), claim.getAttributes());
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();

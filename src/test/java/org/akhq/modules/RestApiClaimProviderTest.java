@@ -11,28 +11,21 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.http.client.DefaultHttpClientConfiguration;
-import io.micronaut.http.client.HttpClient;
-import io.micronaut.http.client.HttpClientConfiguration;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
 import io.micronaut.rxjava2.http.client.RxHttpClient;
-import io.micronaut.security.annotation.Secured;
-import io.micronaut.security.authentication.AuthenticationRequest;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import org.akhq.controllers.AkhqController;
 import org.akhq.middlewares.KafkaWrapperFilter;
-import org.akhq.utils.ClaimProvider;
+import org.akhq.utils.ClaimRequest;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import java.text.ParseException;
 import java.util.List;
+import javax.annotation.security.PermitAll;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -80,15 +73,13 @@ public class RestApiClaimProviderTest {
     @Controller("/external-mock")
     static class RestApiExternalService {
         @Post("/")
-        String generateClaim(ClaimProvider.AKHQClaimRequest request) {
+        String generateClaim(ClaimRequest request) {
             return
                 "{\n" +
                     "  \"roles\" : [ \"topic/read\", \"group/read\", \"registry/read\", \"connect/read\" ],\n" +
-                    "  \"attributes\" : {\n" +
-                    "    \"consumerGroupsFilterRegexp\" : [ \".*\" ],\n" +
-                    "    \"connectsFilterRegexp\" : [ \".*\" ],\n" +
-                    "    \"topicsFilterRegexp\" : [ \"filter1\", \"filter2\" ]\n" +
-                    "  }\n" +
+                    "  \"consumerGroupsFilterRegexp\" : [ \".*\" ],\n" +
+                    "  \"connectsFilterRegexp\" : [ \".*\" ],\n" +
+                    "  \"topicsFilterRegexp\" : [ \"filter1\", \"filter2\" ]\n" +
                     "}";
         }
     }

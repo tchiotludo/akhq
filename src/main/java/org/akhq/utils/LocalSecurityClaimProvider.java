@@ -2,13 +2,12 @@ package org.akhq.utils;
 
 import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.util.StringUtils;
-import org.akhq.configs.*;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.akhq.configs.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,7 +25,7 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     Oidc oidcProperties;
 
     @Override
-    public AKHQClaimResponse generateClaim(AKHQClaimRequest request) {
+    public ClaimResponse generateClaim(ClaimRequest request) {
         List<UserMapping> userMappings;
         List<GroupMapping> groupMappings;
         String defaultGroup;
@@ -102,17 +101,13 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
         ).distinct().collect(Collectors.toList());
     }
 
-    public AKHQClaimResponse generateClaimFromAKHQGroups(String username, List<String> groups) {
-        return AKHQClaimResponse.builder()
-                .roles(getUserRoles(groups))
-                .attributes(
-                        Map.of(
-                                "topicsFilterRegexp", getAttributeMergedList(groups, "topicsFilterRegexp"),
-                                "connectsFilterRegexp", getAttributeMergedList(groups, "connectsFilterRegexp"),
-                                "consumerGroupsFilterRegexp", getAttributeMergedList(groups, "consumerGroupsFilterRegexp")
-                        )
-                )
-                .build();
+    public ClaimResponse generateClaimFromAKHQGroups(String username, List<String> groups) {
+        return ClaimResponse.builder()
+            .roles(getUserRoles(groups))
+            .topicsFilterRegexp(getAttributeMergedList(groups, "topicsFilterRegexp"))
+            .connectsFilterRegexp(getAttributeMergedList(groups, "connectsFilterRegexp"))
+            .consumerGroupsFilterRegexp(getAttributeMergedList(groups, "consumerGroupsFilterRegexp"))
+            .build();
     }
 
     /**

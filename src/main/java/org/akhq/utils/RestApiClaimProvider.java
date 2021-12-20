@@ -11,8 +11,7 @@ import io.micronaut.http.client.annotation.Client;
 @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
 @Client("${akhq.security.rest.url}")
 public interface RestApiClaimProvider extends ClaimProvider {
-
     @Post
     @Override
-    AKHQClaimResponse generateClaim(@Body AKHQClaimRequest request);
+    ClaimResponse generateClaim(@Body ClaimRequest request);
 }
