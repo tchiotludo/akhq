@@ -15,7 +15,7 @@ public class HeaderAuth {
     String groupsHeader;
     String groupsHeaderSeparator = ",";
 
-    String defaultGroup;
+    List<String> defaultBindings;
     List<GroupMapping> groups = new ArrayList<>();
     List<UserMapping> users = new ArrayList<>();
 

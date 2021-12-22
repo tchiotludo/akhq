@@ -127,44 +127,40 @@ akhq:
     poll-timeout: 1000
 
   security:
-    default-group: admin
-    groups:
+    default-bindings:
+      - admin
+    permissions:
+      topic-admin:
+        resource: TOPIC
+        roles: ["READ", "CREATE", "UPDATE", "DELETE", "CONSUME", "PRODUCE", "READ_CONFIG", "UPDATE_CONFIG"]
+      topic-reader:
+        resource: TOPIC
+        roles: ["READ", "CONSUME", "READ_CONFIG"]
+      topic-writer:
+        resource: TOPIC
+        roles: ["READ", "CONSUME", "PRODUCE", "READ_CONFIG"]
+    bindings:
       admin:
-        name: admin
-        roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
+        - permission: cluster-admin
+        - permission: topic-admin
+        - permission: group-admin
+        - permission: connect-admin
+        - permission: schema-admin
       reader:
-        name: reader
-        roles:
-        - topic/read
-        - node/read
-        - topic/data/read
-        - group/read
-        - registry/read
-        - acls/read
-        - connect/read
-      no-roles:
-        name: no-roles
-        roles: []
+        - permission: cluster-reader
+        - permission: topic-reader
+        - permission: group-reader
+        - permission: connect-reader
+        - permission: schema-reader
+      no-roles: []
+      # Temporary list during implementation
+      reader-project1:
+        - permission: topic-reader
+          patterns: ["project1-.*"]
+        - permission: group-reader
+          patterns: ["project1-.*", "connect-project1-.*"]
+        - permission: connect-reader
+          patterns: ["project1-.*"]
+        - permission: schema-reader
+          patterns: ["project1-.*"]
+

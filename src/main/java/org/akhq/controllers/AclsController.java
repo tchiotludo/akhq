@@ -6,6 +6,8 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
+import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.Permission;
 import org.akhq.models.AccessControl;
 import org.akhq.repositories.AccessControlListRepository;
 import org.apache.kafka.common.resource.ResourceType;
@@ -15,7 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_ACLS_READ)
+@AKHQSecured(resource = Permission.Resource.ACLS, role = Permission.Role.READ)
 @Controller("/api/{cluster}/acls")
 public class AclsController extends AbstractController {
     private final AccessControlListRepository aclRepository;

@@ -17,6 +17,8 @@ import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
 import org.akhq.configs.Role;
+import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.Permission;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.*;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_TOPIC_READ)
+@AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.READ)
 @Controller
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
@@ -107,7 +109,7 @@ public class TopicController extends AbstractController {
     }
 
 
-    @Secured(Role.ROLE_TOPIC_INSERT)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.CREATE)
     @Post(value = "api/{cluster}/topic")
     @Operation(tags = {"topic"}, summary = "Create a topic")
     public Topic create(
@@ -132,10 +134,10 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, name);
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.PRODUCE)
     @Post(value = "api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Produce data to a topic")
-    public List<Record> produce(
+    public List<org.akhq.models.Record> produce(
         HttpRequest<?> request,
         String cluster,
         String topicName,
@@ -163,7 +165,7 @@ public class TopicController extends AbstractController {
                 valueSchema,
                 multiMessage,
                 keyValueSeparator).stream()
-                    .map(recordMetadata -> new Record(recordMetadata,
+                    .map(recordMetadata -> new org.akhq.models.Record(recordMetadata,
                             schemaRegistryRepository.getSchemaRegistryType(cluster),
                             key.map(String::getBytes).orElse(null),
                             value.getBytes(),
@@ -172,10 +174,10 @@ public class TopicController extends AbstractController {
                     .collect(Collectors.toList());
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Read datas from a topic")
-    public ResultNextList<Record> data(
+    public ResultNextList<org.akhq.models.Record> data(
         HttpRequest<?> request,
         String cluster,
         String topicName,
@@ -201,13 +203,13 @@ public class TopicController extends AbstractController {
                         searchByHeaderKey,
                         searchByHeaderValue);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        List<Record> data = this.recordRepository.consume(cluster, options);
+        List<org.akhq.models.Record> data = this.recordRepository.consume(cluster, options);
 
         return TopicDataResultNextList.of(
             data,
             options.after(data, uri),
             (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())),
-            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+            topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
@@ -219,7 +221,7 @@ public class TopicController extends AbstractController {
 
     @Get("api/{cluster}/topic/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
-    public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
+    public Map<String, org.akhq.models.Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
         return this.recordRepository.getLastRecord(cluster, topics);
     }
 
@@ -253,7 +255,7 @@ public class TopicController extends AbstractController {
         return aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topicName);
     }
 
-    @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.ALTER_CONFIG)
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "Update configs from a topic")
     public List<Config> updateConfig(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
@@ -272,7 +274,7 @@ public class TopicController extends AbstractController {
         return updated;
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.PRODUCE)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
     public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
@@ -284,11 +286,11 @@ public class TopicController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.PRODUCE)
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
-    public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
-        return new Record(
+    public org.akhq.models.Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+        return new org.akhq.models.Record(
             this.recordRepository.delete(
                 cluster,
                 topicName,
@@ -303,7 +305,7 @@ public class TopicController extends AbstractController {
         );
     }
 
-    @Secured(Role.ROLE_TOPIC_DELETE)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.DELETE)
     @Delete("api/{cluster}/topic/{topicName}")
     @Operation(tags = {"topic"}, summary = "Delete a topic")
     public HttpResponse<?> delete(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -312,7 +314,7 @@ public class TopicController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.CONSUME)
     @ExecuteOn(TaskExecutors.IO)
     @Get(value = "api/{cluster}/topic/{topicName}/data/search", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
@@ -361,10 +363,10 @@ public class TopicController extends AbstractController {
             });
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
     @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
-    public ResultNextList<Record> record(
+    public ResultNextList<org.akhq.models.Record> record(
             HttpRequest<?> request,
             String cluster,
             String topicName,
@@ -387,18 +389,18 @@ public class TopicController extends AbstractController {
             Optional.empty()
         );
 
-        Optional<Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
-        List<Record> data = singleRecord.map(Collections::singletonList).orElse(Collections.emptyList());
+        Optional<org.akhq.models.Record> singleRecord = this.recordRepository.consumeSingleRecord(cluster, topic, options);
+        List<org.akhq.models.Record> data = singleRecord.map(Collections::singletonList).orElse(Collections.emptyList());
 
         return TopicDataResultNextList.of(
                 data,
                 URIBuilder.empty(),
                 data.size(),
-            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+            topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/offsets/start")
     @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
@@ -414,8 +416,7 @@ public class TopicController extends AbstractController {
         );
     }
 
-
-    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @AKHQSecured(resource = Permission.Resource.TOPIC, role = Permission.Role.PRODUCE)
     @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
     public RecordRepository.CopyResult copy(
@@ -507,7 +508,7 @@ public class TopicController extends AbstractController {
         private final Double percent;
 
         @JsonProperty("records")
-        private List<Record> records;
+        private List<org.akhq.models.Record> records;
 
         @JsonProperty("after")
         private final String after;

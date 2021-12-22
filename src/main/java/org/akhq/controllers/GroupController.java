@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.Role;
+import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.Permission;
 import org.akhq.models.AccessControl;
 import org.akhq.models.Consumer;
 import org.akhq.models.ConsumerGroup;
@@ -34,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_GROUP_READ)
+@AKHQSecured(resource = Permission.Resource.CONSUMER_GROUP, role = Permission.Role.READ)
 @Controller("/api/{cluster}/group")
 public class GroupController extends AbstractController {
     private final AbstractKafkaWrapper kafkaWrapper;
@@ -106,7 +108,7 @@ public class GroupController extends AbstractController {
         ).orElse(Collections.EMPTY_LIST);
     }
 
-    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
+    @AKHQSecured(resource = Permission.Resource.CONSUMER_GROUP, role = Permission.Role.UPDATE)
     @Post(value = "{groupName}/offsets", consumes = MediaType.APPLICATION_JSON)
     @Operation(tags = {"consumer group"}, summary = "Update consumer group offsets")
     public HttpResponse<?> offsets(
@@ -130,7 +132,7 @@ public class GroupController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
+    @AKHQSecured(resource = Permission.Resource.CONSUMER_GROUP, role = Permission.Role.UPDATE)
     @Get("{groupName}/offsets/start")
     @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
@@ -146,7 +148,7 @@ public class GroupController extends AbstractController {
         );
     }
 
-    @Secured(Role.ROLE_GROUP_DELETE)
+    @AKHQSecured(resource = Permission.Resource.CONSUMER_GROUP, role = Permission.Role.DELETE)
     @Delete("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Delete a consumer group")
     public HttpResponse<?> delete(String cluster, String groupName) throws ExecutionException, InterruptedException {

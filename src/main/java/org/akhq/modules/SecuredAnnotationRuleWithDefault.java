@@ -13,7 +13,6 @@ import io.micronaut.web.router.RouteMatch;
 import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import org.akhq.utils.DefaultGroupUtils;
 import org.reactivestreams.Publisher;
 
 import java.util.List;
@@ -26,14 +25,10 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
         super(rolesFinder);
     }
 
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
 
     @Override
     protected List<String> getRoles(Authentication authentication) {
         List<String> roles = super.getRoles(authentication);
-
-        roles.addAll(this.defaultGroupUtils.getDefaultRoles());
 
         return roles;
     }

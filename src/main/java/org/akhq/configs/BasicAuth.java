@@ -13,7 +13,7 @@ public class BasicAuth {
     String username;
     String password;
     PasswordHash passwordHash = PasswordHash.SHA256;
-    List<String> groups = new ArrayList<>();
+    List<String> bindings = new ArrayList<>();
 
     @SuppressWarnings("UnstableApiUsage")
     public boolean isValidPassword(String password) {

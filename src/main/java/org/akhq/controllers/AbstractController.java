@@ -3,7 +3,6 @@ package org.akhq.controllers;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.security.utils.SecurityService;
-import org.akhq.utils.DefaultGroupUtils;
 
 import jakarta.inject.Inject;
 import java.net.URI;
@@ -18,9 +17,6 @@ abstract public class AbstractController {
     @Inject
     private ApplicationContext applicationContext;
 
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
-
     protected String getBasePath() {
         return basePath.replaceAll("/$","");
     }
@@ -29,45 +25,4 @@ abstract public class AbstractController {
         return new URI((this.basePath != null ? this.basePath : "") + path);
     }
 
-    private static List<String> expandRoles(List<String> roles) {
-        return roles
-            .stream()
-            .map(s -> {
-                ArrayList<String> rolesExpanded = new ArrayList<>();
-
-                ArrayList<String> split = new ArrayList<>(Arrays.asList(s.split("/")));
-
-                while (split.size() > 0) {
-                    rolesExpanded.add(String.join("/", split));
-                    split.remove(split.size() - 1);
-                }
-
-                return rolesExpanded;
-            })
-            .flatMap(Collection::stream)
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
-    }
-
-    protected boolean isAllowed(String role) {
-        return this.getRights()
-            .stream()
-            .anyMatch(s -> s.equals(role));
-    }
-
-    protected List<String> getRights() {
-        if (!applicationContext.containsBean(SecurityService.class)) {
-            return expandRoles(this.defaultGroupUtils.getDefaultRoles());
-        }
-
-        SecurityService securityService = applicationContext.getBean(SecurityService.class);
-
-        return expandRoles(
-            securityService
-                .getAuthentication()
-                .map(authentication -> (List<String>) new ArrayList<>(authentication.getRoles()))
-                .orElseGet(() -> this.defaultGroupUtils.getDefaultRoles())
-        );
-    }
 }

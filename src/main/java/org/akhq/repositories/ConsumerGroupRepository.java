@@ -9,7 +9,6 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.DefaultGroupUtils;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -34,9 +33,6 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
-
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
 
     public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search) throws ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search), pagination, groupsList -> this.findByName(clusterId, groupsList));
@@ -169,10 +165,6 @@ public class ConsumerGroupRepository extends AbstractRepository {
                 consumerGroupFilterRegex.addAll(getConsumerGroupFilterRegexFromAttributes(auth.getAttributes()));
             }
         }
-        // get consumer group filter regex for default groups
-        consumerGroupFilterRegex.addAll(getConsumerGroupFilterRegexFromAttributes(
-                defaultGroupUtils.getDefaultAttributes()
-        ));
 
         return Optional.of(consumerGroupFilterRegex);
     }

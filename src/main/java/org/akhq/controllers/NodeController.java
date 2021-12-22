@@ -6,6 +6,8 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
+import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.Permission;
 import org.akhq.models.Cluster;
 import org.akhq.models.Config;
 import org.akhq.models.LogDir;
@@ -21,7 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_NODE_READ)
+@AKHQSecured(resource = Permission.Resource.NODE, role = Permission.Role.READ_CONFIG)
 @Controller
 public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
@@ -69,6 +71,7 @@ public class NodeController extends AbstractController {
         return configs;
     }
 
+    @AKHQSecured(resource = Permission.Resource.NODE, role = Permission.Role.ALTER_CONFIG)
     @Post("api/{cluster}/node/{nodeId}/configs")
     @Operation(tags = {"node"}, summary = "Update configs for a node")
     public List<Config> nodeConfigUpdate(String cluster, Integer nodeId, Map<String, String> configs) throws ExecutionException, InterruptedException {

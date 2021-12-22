@@ -8,6 +8,8 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
+import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.Permission;
 import org.akhq.middlewares.SchemaComparator;
 import org.akhq.models.Schema;
 import org.akhq.models.TopicSchema;
@@ -23,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_REGISTRY_READ)
+@AKHQSecured(resource = Permission.Resource.SCHEMA, role = Permission.Role.READ)
 @Controller
 public class SchemaController extends AbstractController {
     private final SchemaRegistryRepository schemaRepository;
@@ -70,7 +72,7 @@ public class SchemaController extends AbstractController {
         );
     }
 
-    @Secured(Role.ROLE_REGISTRY_INSERT)
+    @AKHQSecured(resource = Permission.Resource.SCHEMA, role = Permission.Role.CREATE)
     @Post(value = "api/{cluster}/schema")
     @Operation(tags = {"schema registry"}, summary = "Create a new schema")
     public Schema create(
@@ -90,7 +92,7 @@ public class SchemaController extends AbstractController {
         return this.schemaRepository.getLatestVersion(cluster, subject);
     }
 
-    @Secured(Role.ROLE_REGISTRY_UPDATE)
+    @AKHQSecured(resource = Permission.Resource.SCHEMA, role = Permission.Role.UPDATE)
     @Post(value = "api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Update a schema")
     public Schema updateSchema(String cluster, String subject, @Body Schema schema) throws Throwable {
@@ -139,7 +141,7 @@ public class SchemaController extends AbstractController {
         return this.schemaRepository.getAllVersions(cluster, subject);
     }
 
-    @Secured(Role.ROLE_REGISTRY_DELETE)
+    @AKHQSecured(resource = Permission.Resource.SCHEMA, role = Permission.Role.DELETE)
     @Delete("api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Delete a schema")
     public HttpResponse<?> delete(String cluster, String subject) throws IOException, RestClientException {
@@ -152,7 +154,7 @@ public class SchemaController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_REGISTRY_VERSION_DELETE)
+    @AKHQSecured(resource = Permission.Resource.SCHEMA, role = Permission.Role.DELETE)
     @Delete("api/{cluster}/schema/{subject}/version/{version}")
     @Operation(tags = {"schema registry"}, summary = "Delete a version for a schema")
     public HttpResponse<?> deleteVersion(

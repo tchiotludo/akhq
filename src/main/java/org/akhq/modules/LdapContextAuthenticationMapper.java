@@ -6,6 +6,8 @@ import io.micronaut.security.authentication.AuthenticationFailed;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.ldap.ContextAuthenticationMapper;
 import io.micronaut.security.ldap.DefaultContextAuthenticationMapper;
+import io.micronaut.security.rules.SecurityRule;
+import io.reactivex.Flowable;
 import org.akhq.utils.ClaimRequest;
 import org.akhq.utils.ClaimResponse;
 import org.akhq.utils.ClaimProvider;
@@ -15,6 +17,7 @@ import jakarta.inject.Singleton;
 import org.akhq.utils.ClaimProviderType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Singleton
@@ -33,7 +36,7 @@ public class LdapContextAuthenticationMapper implements ContextAuthenticationMap
                 .build();
         try {
             ClaimResponse claim = claimProvider.generateClaim(request);
-            return AuthenticationResponse.success(username, claim.getRoles(), claim.getAttributes());
+            return AuthenticationResponse.success(username, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("bindings", claim.getBindings()));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());

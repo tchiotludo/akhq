@@ -4,13 +4,16 @@ import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.*;
+import org.akhq.configs.newAcls.Binding;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Singleton
 @Secondary
 public class LocalSecurityClaimProvider implements ClaimProvider {
@@ -28,21 +31,21 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     public ClaimResponse generateClaim(ClaimRequest request) {
         List<UserMapping> userMappings;
         List<GroupMapping> groupMappings;
-        String defaultGroup;
-        List<String> akhqGroups = new ArrayList<>();
+        List<String> defaultBindings;
+        List<String> bindingNames = new ArrayList<>();
         switch (request.getProviderType()) {
             case BASIC_AUTH:
-                // we already have target AKHQ groups
-                akhqGroups.addAll(request.getGroups());
+                // we already have target AKHQ bindings
+                bindingNames.addAll(request.getGroups());
                 break;
             case HEADER:
-                // we need to convert from externally provided groups to AKHQ groups to find the roles and attributes
+                // we need to convert from externally provided groups to AKHQ bindings to find the roles and attributes
                 // using akhq.security.header-auth.groups and akhq.security.header-auth.users
                 // as well as akhq.security.header-auth.default-group
                 userMappings = headerAuthProperties.getUsers();
                 groupMappings = headerAuthProperties.getGroups();
-                defaultGroup = headerAuthProperties.getDefaultGroup();
-                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
+                defaultBindings = headerAuthProperties.getDefaultBindings();
+                bindingNames.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultBindings));
                 break;
             case LDAP:
                 // we need to convert from LDAP groups to AKHQ groups to find the roles and attributes
@@ -50,8 +53,8 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 // as well as akhq.security.ldap.default-group
                 userMappings = ldapProperties.getUsers();
                 groupMappings = ldapProperties.getGroups();
-                defaultGroup = ldapProperties.getDefaultGroup();
-                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
+                defaultBindings = ldapProperties.getDefaultBindings();
+                bindingNames.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultBindings));
                 break;
             case OIDC:
                 // we need to convert from OIDC groups to AKHQ groups to find the roles and attributes
@@ -60,25 +63,37 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 Oidc.Provider provider = oidcProperties.getProvider(request.getProviderName());
                 userMappings = provider.getUsers();
                 groupMappings = provider.getGroups();
-                defaultGroup = provider.getDefaultGroup();
-                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
+                defaultBindings = provider.getDefaultBindings();
+                bindingNames.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultBindings));
                 break;
             default:
                 break;
         }
+        List<Binding> bindings = bindingNames.stream()
+            .flatMap(bindingName -> {
+                if (securityProperties.getBindings().containsKey(bindingName)) {
+                    return securityProperties.getBindings().get(bindingName).stream();
+                } else {
+                    // TODO warn or fail ?
+                    log.warn("Binding {} not found for user {}", bindingName, request.getUsername());
+                    return Stream.empty();
+                }
+            })
+            .collect(Collectors.toList());
 
-        // translate akhq groups into roles and attributes
-        return generateClaimFromAKHQGroups(request.getUsername(), akhqGroups);
+        return ClaimResponse.builder()
+            .bindings(bindings)
+            .build();
     }
 
     /**
      * Maps the provider username and a set of provider groups to AKHQ groups using group and user mappings.
      *
-     * @param username       the username to use
-     * @param providerGroups the groups from the provider side
-     * @param groupMappings  the group mappings configured for the provider
-     * @param userMappings   the user mappings configured for the provider
-     * @param defaultGroup   a default group for the provider
+     * @param username        the username to use
+     * @param providerGroups  the groups from the provider side
+     * @param groupMappings   the group mappings configured for the provider
+     * @param userMappings    the user mappings configured for the provider
+     * @param defaultBindings the default bindings for the provider
      * @return the mapped AKHQ groups
      */
     public List<String> mapToAkhqGroups(
@@ -86,61 +101,18 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
             List<String> providerGroups,
             List<GroupMapping> groupMappings,
             List<UserMapping> userMappings,
-            String defaultGroup) {
-        Stream<String> defaultGroupStream = StringUtils.hasText(defaultGroup) ? Stream.of(defaultGroup) : Stream.empty();
+            List<String> defaultBindings) {
+        Stream<String> defaultBindingsStream = defaultBindings.stream();
         return Stream.concat(
                 Stream.concat(
                         userMappings.stream()
                                 .filter(mapping -> username.equalsIgnoreCase(mapping.getUsername()))
-                                .flatMap(mapping -> mapping.getGroups().stream()),
+                                .flatMap(mapping -> mapping.getBindings().stream()),
                         groupMappings.stream()
                                 .filter(mapping -> providerGroups.stream().anyMatch(s -> s.equalsIgnoreCase(mapping.getName())))
-                                .flatMap(mapping -> mapping.getGroups().stream())
+                                .flatMap(mapping -> mapping.getBindings().stream())
                 ),
-                defaultGroupStream
+            defaultBindingsStream
         ).distinct().collect(Collectors.toList());
-    }
-
-    public ClaimResponse generateClaimFromAKHQGroups(String username, List<String> groups) {
-        return ClaimResponse.builder()
-            .roles(getUserRoles(groups))
-            .topicsFilterRegexp(getAttributeMergedList(groups, "topicsFilterRegexp"))
-            .connectsFilterRegexp(getAttributeMergedList(groups, "connectsFilterRegexp"))
-            .consumerGroupsFilterRegexp(getAttributeMergedList(groups, "consumerGroupsFilterRegexp"))
-            .build();
-    }
-
-    /**
-     * Get all distinct roles for the list of groups
-     *
-     * @param groups list of user groups
-     * @return list of roles
-     */
-    public List<String> getUserRoles(List<String> groups) {
-        if (securityProperties.getGroups() == null || groups == null) {
-            return List.of();
-        }
-
-        return securityProperties.getGroups().values().stream()
-                .filter(group -> groups.contains(group.getName()))
-                .filter(group -> group.getRoles() != null)
-                .flatMap(group -> group.getRoles().stream())
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public List<String> getAttributeMergedList(List<String> groups, String attribute) {
-        return securityProperties.getGroups().values().stream()
-                //group matches
-                .filter(group -> groups.contains(group.getName()))
-                //group contains this attribute in the attributes Map
-                .filter(group -> group.getAttributes() != null && group.getAttributes().containsKey(attribute))
-                // attribute is not an empty List
-                .filter(group -> group.getAttributes().get(attribute) != null && !group.getAttributes().get(attribute).isEmpty())
-                //flatMap attribute List
-                .flatMap(group -> group.getAttributes().get(attribute).stream())
-                //dedup & collect
-                .distinct()
-                .collect(Collectors.toList());
     }
 }

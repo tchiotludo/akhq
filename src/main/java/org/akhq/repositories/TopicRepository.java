@@ -12,7 +12,6 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.DefaultGroupUtils;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -35,9 +34,6 @@ public class TopicRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
-
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
 
     @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
@@ -166,10 +162,6 @@ public class TopicRepository extends AbstractRepository {
                 topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(auth.getAttributes()));
             }
         }
-        // get topic filter regex for default groups
-        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
-            defaultGroupUtils.getDefaultAttributes()
-        ));
 
         return Optional.of(topicFilterRegex);
     }

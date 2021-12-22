@@ -13,6 +13,8 @@ import io.micronaut.security.oauth2.endpoint.authorization.state.State;
 import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdAuthenticationMapper;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
+import io.micronaut.security.rules.SecurityRule;
+import io.reactivex.Flowable;
 import org.akhq.configs.Oidc;
 import org.akhq.utils.ClaimRequest;
 import org.akhq.utils.ClaimResponse;
@@ -69,7 +71,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         try {
             ClaimResponse claim = claimProvider.generateClaim(request);
-            return AuthenticationResponse.success(oidcUsername, claim.getRoles(), claim.getAttributes());
+            return AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("bindings", claim.getBindings()));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());

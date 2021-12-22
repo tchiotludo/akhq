@@ -3,6 +3,7 @@ package org.akhq.modules;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.*;
+import io.micronaut.security.rules.SecurityRule;
 import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -14,7 +15,10 @@ import org.akhq.utils.ClaimProvider;
 import org.akhq.utils.ClaimProviderType;
 import org.reactivestreams.Publisher;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Singleton
 public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
@@ -46,12 +50,12 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
             .providerType(ClaimProviderType.BASIC_AUTH)
             .providerName(null)
             .username(auth.getUsername())
-            .groups(auth.getGroups())
+            .groups(auth.getBindings())
             .build();
 
         try {
             ClaimResponse claim = claimProvider.generateClaim(request);
-            return Flowable.just(AuthenticationResponse.success(auth.getUsername(), claim.getRoles(), claim.getAttributes()));
+            return Flowable.just(AuthenticationResponse.success(auth.getUsername(), List.of(SecurityRule.IS_AUTHENTICATED), Map.of("bindings", claim.getBindings())));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
             return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));

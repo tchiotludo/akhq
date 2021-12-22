@@ -115,8 +115,6 @@ public class AkhqController extends AbstractController {
                     });
         }
 
-        authUser.roles = this.getRights();
-
         return authUser;
     }
 

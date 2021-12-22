@@ -9,7 +9,7 @@ import java.util.List;
 @ConfigurationProperties("akhq.security.ldap")
 @Data
 public class Ldap {
-    private String defaultGroup;
+    private List<String> defaultBindings;
     private List<GroupMapping> groups = new ArrayList<>();
     private List<UserMapping> users = new ArrayList<>();
 }

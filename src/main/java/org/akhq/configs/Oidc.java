@@ -19,7 +19,7 @@ public class Oidc {
         private String label = "Login with OIDC";
         private String usernameField = OpenIdClaims.CLAIMS_PREFERRED_USERNAME;
         private String groupsField = "roles";
-        private String defaultGroup;
+        private List<String> defaultBindings;
         private List<GroupMapping> groups = new ArrayList<>();
         private List<UserMapping> users = new ArrayList<>();
         private boolean useOidcClaim = false;

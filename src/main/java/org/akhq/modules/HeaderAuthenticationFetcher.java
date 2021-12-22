@@ -8,6 +8,7 @@ import io.micronaut.security.authentication.Authenticator;
 import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.config.SecurityConfigurationProperties;
 import io.micronaut.security.filters.AuthenticationFetcher;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.token.config.TokenConfiguration;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.reactivestreams.Publisher;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -112,8 +114,8 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
                 if (t.isPresent()) {
                     return Flowable.just(new ServerAuthentication(
                         userHeaders.get(),
-                        t.get().getRoles(),
-                        t.get().getAttributes()
+                        List.of(SecurityRule.IS_AUTHENTICATED),
+                        Map.of("bindings",t.get().getBindings())
                     ));
                 } else {
                     if (log.isDebugEnabled()) {
