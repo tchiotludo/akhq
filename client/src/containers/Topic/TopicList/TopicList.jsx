@@ -62,7 +62,9 @@ class TopicList extends Root {
       this.cancelAxiosRequests();
       this.renewCancelToken();
 
-      this._initializeVars(this.getTopics);
+      this.setState({ pageNumber: 1 }, () => {
+        this._initializeVars(this.getTopics);
+      });
     }
   }
 
