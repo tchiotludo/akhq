@@ -27,6 +27,7 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
+import org.akhq.models.Record;
 
 import java.time.Instant;
 import java.util.*;
