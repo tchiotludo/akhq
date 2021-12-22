@@ -32,6 +32,7 @@
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
 * [GetYourGuide](https://www.getyourguide.com)
+* [Kitopi](https://kitopi.com)
 * [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
