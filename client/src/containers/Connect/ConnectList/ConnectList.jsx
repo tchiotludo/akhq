@@ -49,7 +49,7 @@ class ConnectList extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     this.setState({
       searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
-      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+      pageNumber: (query.get('page')) ? parseInt(query.get('page')) : parseInt(pageNumber)
     }, () => {
       this.getConnectDefinitions();
     });
@@ -60,7 +60,9 @@ class ConnectList extends Root {
       this.cancelAxiosRequests();
       this.renewCancelToken();
 
-      this.componentDidMount();
+      this.setState({ pageNumber: 1 }, () => {
+        this.componentDidMount();
+      });
     }
   }
 
