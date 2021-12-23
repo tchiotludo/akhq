@@ -127,12 +127,16 @@ akhq:
     poll-timeout: 1000
 
   security:
-    default-bindings:
-      - admin
+    # Global Bindings applies to ALL users
+    # - anonymous users micronaut.security.enabled=false
+    # - Authenticated users from LDAP, OIDC, HEADER or BASIC-AUTH
+    global-bindings: [ ]
     permissions:
+      # Warning, if a permission contains invalid resource
+      # or invalid roles, it will not be visible to Micronaut
       topic-admin:
         resource: TOPIC
-        roles: ["READ", "CREATE", "UPDATE", "DELETE", "CONSUME", "PRODUCE", "READ_CONFIG", "UPDATE_CONFIG"]
+        roles: ["READ", "CREATE", "UPDATE", "DELETE", "CONSUME", "PRODUCE", "READ_CONFIG", "ALTER_CONFIG"]
       topic-reader:
         resource: TOPIC
         roles: ["READ", "CONSUME", "READ_CONFIG"]

@@ -5,6 +5,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.AbstractSecurityRule;
 import io.micronaut.security.rules.SecuredAnnotationRule;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import io.micronaut.web.router.MethodBasedRouteMatch;
@@ -22,50 +23,48 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Singleton
-public class AKHQSecurityRule extends AbstractSecurityRule {
-    /**
-     * @param rolesFinder Roles Parser
-     */
-    public AKHQSecurityRule(RolesFinder rolesFinder) {
-        super(rolesFinder);
-    }
+public class AKHQSecurityRule implements SecurityRule {
 
     @Inject
     UserRequest userRequest;
 
     @Override
     public Publisher<SecurityRuleResult> check(HttpRequest<?> request, RouteMatch<?> routeMatch, Authentication authentication) {
+        log.info("Checking security for logged-in user");
+        return Flowable.just(checkNotReact(request, routeMatch, userRequest));
+    }
+    public SecurityRuleResult checkNotReact(HttpRequest<?> request, RouteMatch<?> routeMatch, UserRequest userRequest){
         if (!(routeMatch instanceof MethodBasedRouteMatch)) {
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return SecurityRuleResult.UNKNOWN;
         }
 
         MethodBasedRouteMatch<?, ?> methodRoute = ((MethodBasedRouteMatch<?, ?>) routeMatch);
         if (!methodRoute.hasAnnotation(AKHQSecured.class)) {
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return SecurityRuleResult.UNKNOWN;
         }
 
 
         Optional<Permission.Resource> optionalResource = methodRoute.getValue(AKHQSecured.class, "resource", Permission.Resource.class);
         Optional<Permission.Role> optionalRole = methodRoute.getValue(AKHQSecured.class, "role", Permission.Role.class);
         if (optionalResource.isEmpty() || optionalRole.isEmpty()) {
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return SecurityRuleResult.UNKNOWN;
         }
         log.info("Route matches AKHQSecured annotation, validating");
 
         if (!routeMatch.getVariableValues().containsKey("cluster")) {
             log.warn("Required parameter `cluster` not provided");
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return SecurityRuleResult.REJECTED;
         }
         String cluster = routeMatch.getVariableValues().get("cluster").toString();
 
         boolean allowed = userRequest.isRequestAllowed(optionalResource.get(), optionalRole.get(), cluster, null);
 
         if (allowed)
-            return Flowable.just(SecurityRuleResult.ALLOWED);
+            return SecurityRuleResult.ALLOWED;
         else {
             log.warn("AKHQSecured validation did not succeed: didn't find resource={}, roles={}, cluster={} in bindings",
                 optionalResource.get(), optionalRole.get(), cluster);
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return SecurityRuleResult.REJECTED;
         }
     }
 

@@ -25,27 +25,32 @@ public class UserRequest {
     //ctor inject
     private SecurityProperties securityProperties;
 
-
-    private List<Binding> bindings = List.of();
-
-    private List<String> topicFilters = new ArrayList<>();
-    private List<String> connectFilters = new ArrayList<>();
-    private List<String> groupFilters = new ArrayList<>();
-    private List<String> schemaFilters = new ArrayList<>();
+    private List<Binding> bindings = new ArrayList<>();
 
     public UserRequest(@Nullable SecurityService securityService, SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
         log.info("Creating UserRequest");
         // if micronaut.security.enabled=false, securityService is null
-        Optional<Authentication> user = securityService != null ? securityService.getAuthentication() : Optional.empty();
-        if (user.isPresent() && user.get().getAttributes().containsKey("bindings")) {
-            bindings = parseBindings(user.get().getAttributes().get("bindings"))
-                .stream()
-                // keep only bindings matching existing permissions
-                .filter(binding -> securityProperties.getPermissions().containsKey(binding.getPermission()))
-                .collect(Collectors.toList());
+        if(securityService != null) {
+            Optional<Authentication> user = securityService.getAuthentication();
+            if (user.isPresent() && user.get().getAttributes().containsKey("bindings")) {
+                bindings.addAll(parseBindings(user.get().getAttributes().get("bindings"))
+                    .stream()
+                    // keep only bindings matching existing permissions
+                    .filter(binding -> securityProperties.getPermissions().containsKey(binding.getPermission()))
+                    .collect(Collectors.toList()));
 
+            }
         }
+        // We also add the default bindings for authenticated and anonymous users
+        bindings.addAll(securityProperties.getGlobalBindings()
+            .stream()
+            .filter(bindingName -> securityProperties.getBindings().containsKey(bindingName))
+            .flatMap(bindingName -> securityProperties.getBindings().get(bindingName).stream())
+            // keep only bindings matching existing permissions
+            .filter(binding -> securityProperties.getPermissions().containsKey(binding.getPermission()))
+            .collect(Collectors.toList()));
+        log.info("Bindings found for user {}", bindings);
     }
 
     public boolean isRequestAllowed(Permission.Resource resourceType, Permission.Role role, String cluster, String resourceName) {

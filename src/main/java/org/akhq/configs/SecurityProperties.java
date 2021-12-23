@@ -18,7 +18,7 @@ import java.util.Map;
 public class SecurityProperties {
     private List<BasicAuth> basicAuth = new ArrayList<>();
 
-    private List<String> defaultBindings;
+    private List<String> globalBindings;
 
     private Map<String, Permission> permissions;
 
