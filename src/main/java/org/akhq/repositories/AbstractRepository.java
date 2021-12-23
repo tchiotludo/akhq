@@ -23,7 +23,7 @@ abstract public class AbstractRepository {
         if (regex.isEmpty() || regex.get().isEmpty()) {
             return true;
         }
-
+        // return regex.get().stream().anyMatch(item::matches);
         for (String strRegex : regex.get()) {
             if (item.matches(strRegex)) {
                 return true;

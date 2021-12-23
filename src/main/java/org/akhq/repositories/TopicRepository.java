@@ -5,6 +5,8 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
+import org.akhq.configs.newAcls.Permission;
+import org.akhq.configs.newAcls.UserRequest;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.akhq.models.Partition;
@@ -31,9 +33,11 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     private ConfigRepository configRepository;
 
-
     @Inject
     private ApplicationContext applicationContext;
+
+    @Inject
+    UserRequest userRequest;
 
     @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
@@ -151,27 +155,6 @@ public class TopicRepository extends AbstractRepository {
     }
 
     private Optional<List<String>> getTopicFilterRegex() {
-
-        List<String> topicFilterRegex = new ArrayList<>();
-
-        if (applicationContext.containsBean(SecurityService.class)) {
-            SecurityService securityService = applicationContext.getBean(SecurityService.class);
-            Optional<Authentication> authentication = securityService.getAuthentication();
-            if (authentication.isPresent()) {
-                Authentication auth = authentication.get();
-                topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(auth.getAttributes()));
-            }
-        }
-
-        return Optional.of(topicFilterRegex);
+        return Optional.of(userRequest.getListFilterFor(Permission.Resource.TOPIC));
     }
-
-    @SuppressWarnings("unchecked")
-    private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if ((attributes.get("topicsFilterRegexp") != null) && (attributes.get("topicsFilterRegexp") instanceof List)) {
-		    return (List<String>)attributes.get("topicsFilterRegexp");
-		}
-        return new ArrayList<>();
-    }
-
 }

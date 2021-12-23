@@ -10,15 +10,19 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.AuthorizationException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
 import org.akhq.configs.Role;
 import org.akhq.configs.newAcls.AKHQSecured;
+import org.akhq.configs.newAcls.AccessDeniedException;
 import org.akhq.configs.newAcls.Permission;
+import org.akhq.configs.newAcls.UserRequest;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.*;
@@ -58,6 +62,8 @@ public class TopicController extends AbstractController {
     private AccessControlListRepository aclRepository;
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+    @Inject
+    private UserRequest userRequest;
 
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
@@ -119,6 +125,9 @@ public class TopicController extends AbstractController {
         Optional<Short> replication,
         Map<String, String> configs
     ) throws Throwable {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CREATE, cluster, name)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CREATE, cluster, name);
+        }
         this.topicRepository.create(
             cluster,
             name,
@@ -151,6 +160,9 @@ public class TopicController extends AbstractController {
         Boolean multiMessage,
         Optional<String> keyValueSeparator
     ) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName);
+        }
         Topic targetTopic = topicRepository.findByName(cluster, topicName);
         return
             this.recordRepository.produce(
@@ -190,6 +202,9 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName);
+        }
         Topic topic = this.topicRepository.findByName(cluster, topicName);
         RecordRepository.Options options =
                 dataSearchOptions(cluster,
@@ -259,6 +274,9 @@ public class TopicController extends AbstractController {
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "Update configs from a topic")
     public List<Config> updateConfig(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.ALTER_CONFIG, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.ALTER_CONFIG, cluster, topicName);
+        }
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
 
         if (updated.size() == 0) {
@@ -278,6 +296,9 @@ public class TopicController extends AbstractController {
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
     public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName);
+        }
         this.recordRepository.emptyTopic(
                 cluster,
                 topicName
@@ -290,6 +311,9 @@ public class TopicController extends AbstractController {
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
     public org.akhq.models.Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.PRODUCE, cluster, topicName);
+        }
         return new org.akhq.models.Record(
             this.recordRepository.delete(
                 cluster,
@@ -309,6 +333,9 @@ public class TopicController extends AbstractController {
     @Delete("api/{cluster}/topic/{topicName}")
     @Operation(tags = {"topic"}, summary = "Delete a topic")
     public HttpResponse<?> delete(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.DELETE, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.DELETE, cluster, topicName);
+        }
         this.kafkaWrapper.deleteTopics(cluster, topicName);
 
         return HttpResponse.noContent();
@@ -330,6 +357,9 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName);
+        }
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
@@ -373,6 +403,9 @@ public class TopicController extends AbstractController {
             Integer partition,
             Long offset
     ) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName);
+        }
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         // after wait for next offset, so add - 1 to allow to have the current offset
@@ -404,6 +437,9 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/{topicName}/offsets/start")
     @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CONSUME, cluster, topicName);
+        }
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         return recordRepository.getOffsetForTime(
@@ -427,6 +463,13 @@ public class TopicController extends AbstractController {
             String toTopicName,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
+        // TODO do we want a list on the annotation for this use case ?
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.CONSUME, fromCluster, fromTopicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.CONSUME, fromCluster, fromTopicName);
+        }
+        if(!userRequest.isRequestAllowed(Permission.Resource.TOPIC, Permission.Role.PRODUCE, toCluster, toTopicName)){
+            throw new AccessDeniedException(Permission.Resource.TOPIC, Permission.Role.PRODUCE, toCluster, toTopicName);
+        }
         Topic fromTopic = this.topicRepository.findByName(fromCluster, fromTopicName);
         Topic toTopic = this.topicRepository.findByName(toCluster, toTopicName);
 
