@@ -226,6 +226,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn
  **********************************************************************************************************************/
 shadowJar {
     mergeServiceFiles()
+    zip64 true
 }
 
 processResources.dependsOn ":client:installFrontend"
