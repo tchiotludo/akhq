@@ -75,6 +75,15 @@ class Header extends Root {
               </button>
             </Link>
         ));
+    } else if (auths && username) {
+      return ( <button
+          className="btn btn-primary"
+          disabled
+      >
+        {' '}
+        <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
+        {username}
+      </button>);
     } else {
       return (<></>);
     }
