@@ -8,6 +8,7 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import io.micronaut.context.annotation.Value;
 import kafka.coordinator.group.GroupMetadataManager;
 import kafka.coordinator.transaction.TransactionLog;
 import kafka.coordinator.transaction.TxnKey;
@@ -71,6 +72,7 @@ public class Record {
     private byte[] bytesValue;
 
     @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private String value;
 
     private final List<String> exceptions = new ArrayList<>();
@@ -143,6 +145,10 @@ public class Record {
         }
 
         return this.value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
