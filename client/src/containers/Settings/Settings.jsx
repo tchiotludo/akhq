@@ -13,7 +13,8 @@ class Settings extends Form {
       topicDefaultView: '',
       topicDataSort: '',
       skipConsumerGroups: false,
-      skipLastRecord: false
+      skipLastRecord: false,
+      showAllConsumerGroups: true
     },
     errors: {}
   };
@@ -26,7 +27,8 @@ class Settings extends Form {
     topicDefaultView: Joi.string().required(),
     topicDataSort: Joi.string().required(),
     skipConsumerGroups: Joi.boolean().optional(),
-    skipLastRecord: Joi.boolean().optional()
+    skipLastRecord: Joi.boolean().optional(),
+    showAllConsumerGroups: Joi.boolean().optional()
   };
 
   componentDidMount() {
@@ -38,7 +40,8 @@ class Settings extends Form {
         topicDefaultView: (uiOptions && uiOptions.topic)? uiOptions.topic.defaultView : '',
         topicDataSort: (uiOptions && uiOptions.topicData)? uiOptions.topicData.sort : '',
         skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false,
-        skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false
+        skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false,
+        showAllConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.showAllConsumerGroups : false
       }})
   }
 
@@ -53,10 +56,17 @@ class Settings extends Form {
   doSubmit() {
     const { clusterId, formData } = this.state;
     setUIOptions(clusterId,
-        { topic: { defaultView: formData.topicDefaultView,
-                               skipConsumerGroups: formData.skipConsumerGroups,
-                               skipLastRecord: formData.skipLastRecord },
-                      topicData: {sort: formData.topicDataSort} });
+        { 
+          topic: { 
+            defaultView: formData.topicDefaultView,
+            skipConsumerGroups: formData.skipConsumerGroups,
+            skipLastRecord: formData.skipLastRecord,
+            showAllConsumerGroups: formData.showAllConsumerGroups
+          },
+          topicData: {
+            sort: formData.topicDataSort
+          } 
+        });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
   }
 
@@ -109,6 +119,20 @@ class Settings extends Form {
                   }}
               /></span>
             </div>
+            <div className="select-wrapper settings-wrapper row">
+              <span className="col-sm-2 col-form-label">Show All Consumer Groups</span>
+              <span className="col-sm-10 row-checkbox-settings">
+              <input
+                  type="checkbox"
+                  value="showAllConsumerGroups"
+                  checked={this.state.formData.showAllConsumerGroups || false}
+                  onChange={ event => {
+                    const { formData } = this.state;
+                    formData.showAllConsumerGroups = event.target.checked;
+                    this.setState({formData});
+                  }}
+              /></span>
+            </div>            
           </fieldset>
 
           <fieldset id="topicData" key="topicData">
