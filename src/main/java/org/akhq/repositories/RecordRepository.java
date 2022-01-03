@@ -77,8 +77,12 @@ public class RecordRepository extends AbstractRepository {
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
 
+<<<<<<< HEAD
     @Value("${akhq.kafka-max-message-length}")
     private int maxKafkaMessageLength;
+=======
+    private final int maxKafkaMessageLength = 1000000; // 1MB
+>>>>>>> 98774198bb4cc0f9f36b0ffc725dbf4ec757971b
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
         Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
