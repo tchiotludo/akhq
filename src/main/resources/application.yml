@@ -89,7 +89,6 @@ akhq:
       format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]"
       filters:
         - "((?!/health).)*"
-
   kafka-max-message-length: 1000000
 
   clients-defaults:
