@@ -79,6 +79,9 @@ public class Record {
 
     private byte MAGIC_BYTE;
 
+    @Setter(AccessLevel.NONE)
+    private Boolean truncated;
+
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
@@ -90,6 +93,7 @@ public class Record {
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         this.headers = headers;
+        this.truncated = false;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
@@ -120,6 +124,7 @@ public class Record {
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
+        this.truncated = false;
     }
 
     public String getKey() {
@@ -149,6 +154,10 @@ public class Record {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setTruncated(Boolean truncated) {
+        this.truncated = truncated;
     }
 
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {

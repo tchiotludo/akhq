@@ -90,6 +90,8 @@ akhq:
       filters:
         - "((?!/health).)*"
 
+  kafka-max-message-length: 1000000
+
   clients-defaults:
     consumer:
       properties:

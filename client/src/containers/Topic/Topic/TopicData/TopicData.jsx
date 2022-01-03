@@ -398,7 +398,9 @@ class TopicData extends Root {
     messages.forEach(message => {
       let messageToPush = {
         key: message.key || 'null',
-        value: message.value || 'null',
+        value: message.truncated
+          ? message.value + '...\nToo large message. Full body in share button.'  || 'null'
+          : message.value || 'null',
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
