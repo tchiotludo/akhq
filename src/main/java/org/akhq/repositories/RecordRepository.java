@@ -77,7 +77,7 @@ public class RecordRepository extends AbstractRepository {
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
 
-    private final int maxKakfaMessageLength = 1000000; // 1MB
+    private final int maxKafkaMessageLength = 1000000; // 1MB
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
         Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
@@ -1276,8 +1276,8 @@ public class RecordRepository extends AbstractRepository {
 
     private void filterMessageLength(Record record) {
         int bytesLength = record.getValue().getBytes(StandardCharsets.UTF_8).length;
-        if (bytesLength > maxKakfaMessageLength) {
-            int substringChars = maxKakfaMessageLength / 1000;
+        if (bytesLength > maxKafkaMessageLength) {
+            int substringChars = maxKafkaMessageLength / 1000;
             record.setValue(record.getValue().substring(0, substringChars) +
                 "\n ... Too long message. Full body in share button.");
         }
