@@ -77,7 +77,7 @@ public class RecordRepository extends AbstractRepository {
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
 
-    @Value("${akhq.kafka-max-message-length}")
+    @Value("${akhq.topic-data.kafka-max-message-length}")
     private int maxKafkaMessageLength;
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {

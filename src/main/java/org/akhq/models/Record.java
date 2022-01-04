@@ -79,7 +79,6 @@ public class Record {
 
     private byte MAGIC_BYTE;
 
-    @Setter(AccessLevel.NONE)
     private Boolean truncated;
 
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
