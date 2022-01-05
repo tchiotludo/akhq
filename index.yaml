@@ -3,10 +3,10 @@ entries:
   akhq:
   - apiVersion: v1
     appVersion: 0.20.0
-    created: "2022-01-05T19:56:50.557777879Z"
+    created: "2022-01-05T20:20:58.434210596Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
-    digest: dde9213ce4f1d8671b83477ccc9e2aea2117ebe783085be16b3af66dc4bc6236
+    digest: f7b54967d2991c68ee7f8b657fe5b3f3850909111477f357eee6c145a7994f44
     home: https://akhq.io
     icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
     keywords:
@@ -26,7 +26,7 @@ entries:
     version: 0.2.7
   - apiVersion: v1
     appVersion: 0.19.0
-    created: "2022-01-05T19:56:50.557022752Z"
+    created: "2022-01-05T20:20:58.433431387Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: c3d7f855ebf15118ca2cebd01d742debbfcb44ab16471b71da96d991935db650
@@ -49,7 +49,7 @@ entries:
     version: 0.2.6
   - apiVersion: v1
     appVersion: 0.18.0
-    created: "2022-01-05T19:56:50.556255225Z"
+    created: "2022-01-05T20:20:58.432658178Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 8a17bb6f04424be57358d0cf195afecc6a006cc74af3025e5f21fab9b2657d72
@@ -72,7 +72,7 @@ entries:
     version: 0.2.5
   - apiVersion: v1
     appVersion: 0.18.0
-    created: "2022-01-05T19:56:50.554556765Z"
+    created: "2022-01-05T20:20:58.431861269Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 2a2c659a589ec962dba35f952b0ca2e711426c5d5f2db5c0c2503b766364255e
@@ -95,7 +95,7 @@ entries:
     version: 0.2.4
   - apiVersion: v1
     appVersion: 0.18.0
-    created: "2022-01-05T19:56:50.55298401Z"
+    created: "2022-01-05T20:20:58.430776456Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: c52c37acc45effc783e56a3b0927525502452d60ab27818f00ea21f642cb1d75
@@ -118,7 +118,7 @@ entries:
     version: 0.2.3
   - apiVersion: v1
     appVersion: 0.18.0
-    created: "2022-01-05T19:56:50.552229583Z"
+    created: "2022-01-05T20:20:58.429958847Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: e29d6745742157cc727b557667ab933120d73b30f3b677e63084c4b3087f110c
@@ -141,7 +141,7 @@ entries:
     version: 0.2.2
   - apiVersion: v1
     appVersion: 0.17.0
-    created: "2022-01-05T19:56:50.551126744Z"
+    created: "2022-01-05T20:20:58.428865035Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 385065f39d13078b807ab63ad22996af36b31a51ac2f83df3f2a19b09dc79cda
@@ -164,7 +164,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 0.17.0
-    created: "2022-01-05T19:56:50.550115508Z"
+    created: "2022-01-05T20:20:58.427776222Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: b745495207a1dc5c5ec11a2d0e3428d5f31522b2553805539f1888f8a0063b43
@@ -187,7 +187,7 @@ entries:
     version: 0.2.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-01-05T19:56:50.54958359Z"
+    created: "2022-01-05T20:20:58.426888412Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 32fb69d515737b6250940edf1743b1bcfcf2425b531acda6084ee57ea79ec71f
@@ -210,7 +210,7 @@ entries:
     version: 0.1.3
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-01-05T19:56:50.54902577Z"
+    created: "2022-01-05T20:20:58.426122703Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 004ec4f314a076b51532d6124867dc2f2947e2e9595fa8879386a06690c7de8c
@@ -232,7 +232,7 @@ entries:
     version: 0.1.2
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-01-05T19:56:50.548500351Z"
+    created: "2022-01-05T20:20:58.417478103Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 9b327a2adfb91219e4ce2d176dff26eb74d59de29332912e034b37ea60b02645
@@ -254,7 +254,7 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-01-05T19:56:50.548004034Z"
+    created: "2022-01-05T20:20:58.416970898Z"
     description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers
       group, schema registry, connect and more...
     digest: 25a5a2c7d0d4e4ba7080e0193435c3dad0035bdaee2379885a42cfe4fceb144d
@@ -274,4 +274,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-05T19:56:50.547141003Z"
+generated: "2022-01-05T20:20:58.416215789Z"
