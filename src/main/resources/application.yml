@@ -125,6 +125,7 @@ akhq:
   topic-data:
     size: 50
     poll-timeout: 1000
+    kafka-max-message-length: 1000000
 
   security:
     default-group: admin

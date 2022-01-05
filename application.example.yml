@@ -165,6 +165,7 @@ akhq:
   topic-data:
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
+    kafka-max-message-length: 1000000 # Max message length allowed to send to UI when retrieving a list of records in bytes.
 
   # Ui Global Options (optional)
   ui-options:

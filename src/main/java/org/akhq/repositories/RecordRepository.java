@@ -33,6 +33,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -75,6 +76,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
+
+    @Value("${akhq.topic-data.kafka-max-message-length}")
+    private int maxKafkaMessageLength;
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
         Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
@@ -153,6 +157,7 @@ public class RecordRepository extends AbstractRepository {
             for (ConsumerRecord<byte[], byte[]> record : records) {
                 Record current = newRecord(record, options, topic);
                 if (searchFilter(options, current)) {
+                    filterMessageLength(current);
                     list.add(current);
                 }
             }
@@ -311,6 +316,7 @@ public class RecordRepository extends AbstractRepository {
                         }
                         Record current = newRecord(record, options, topic);
                         if (searchFilter(options, current)) {
+                            filterMessageLength(current);
                             list.add(current);
                         }
                     }
@@ -1267,6 +1273,15 @@ public class RecordRepository extends AbstractRepository {
         private final long begin;
         private final long end;
         private final KafkaConsumer<byte[], byte[]> consumer;
+    }
+
+    private void filterMessageLength(Record record) {
+        int bytesLength = record.getValue().getBytes(StandardCharsets.UTF_8).length;
+        if (bytesLength > maxKafkaMessageLength) {
+            int substringChars = maxKafkaMessageLength / 1000;
+            record.setValue(record.getValue().substring(0, substringChars));
+            record.setTruncated(true);
+        }
     }
 }
 

@@ -24,6 +24,7 @@ export const TABLE_DETAILS = 'details';
 export const TABLE_CONFIG = 'config';
 export const TABLE_RESTART = 'restart';
 export const TABLE_SHARE = 'share';
+export const TABLE_DOWNLOAD = 'download'
 
 // Tab names/route names
 export const CLUSTER = 'cluster';
@@ -65,6 +66,7 @@ export default {
   TABLE_CONFIG,
   TABLE_RESTART,
   TABLE_SHARE,
+  TABLE_DOWNLOAD,
   CLUSTER,
   NODE,
   TOPIC,

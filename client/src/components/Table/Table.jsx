@@ -288,7 +288,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, idCol } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, onDownload, idCol } = this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -371,6 +371,18 @@ class Table extends Component {
                 }}
             >
               <i className="fa fa-share" />
+            </span>
+            </td>
+        )}
+        {actions.find(el => el === constants.TABLE_DOWNLOAD) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Download"
+                id="download"
+                onClick={() => {
+                  onDownload && onDownload(row);
+                }}
+            >
+              <i className="fa fa-download" />
             </span>
             </td>
         )}

@@ -64,7 +64,8 @@ class TopicData extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0,
-    loading: true
+    loading: true,
+    canDownload: false
   };
 
   searchFilterTypes = [
@@ -113,6 +114,7 @@ class TopicData extends Root {
         () => {
             if(query.get('single') !== null) {
               this._getSingleMessage(query.get('partition'), query.get('offset'));
+              this.setState({ canDownload: true })
             } else {
               this._getMessages();
             }
@@ -346,8 +348,21 @@ class TopicData extends Root {
       console.error('Failed to copy: ', err);
     }
 
+    this.setState({ canDownload: true })
+
     this.props.history.push(pathToShare)
     this._getSingleMessage(row.partition, row.offset);
+  }
+
+  _handleDownload({ key, value: data }) {
+    const hasKey = key && key !== null && key !== 'null';
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
+    a.download = `${hasKey ? key : 'file'}.json`;
+
+    a.click();
+    a.remove();
   }
 
   _showDeleteModal = deleteMessage => {
@@ -383,7 +398,9 @@ class TopicData extends Root {
     messages.forEach(message => {
       let messageToPush = {
         key: message.key || 'null',
-        value: message.value || 'null',
+        value: message.truncated
+          ? message.value + '...\nToo large message. Full body in share button.'  || 'null'
+          : message.value || 'null',
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
@@ -642,9 +659,14 @@ class TopicData extends Root {
       datetime,
       isSearching,
       canDeleteRecords,
+      canDownload,
       percent,
       loading
     } = this.state;
+
+    let actions = canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]
+    if (canDownload) actions.push(constants.TABLE_DOWNLOAD)
+
     let date = moment(datetime);
     const { history } = this.props;
     const firstColumns = [
@@ -965,7 +987,10 @@ class TopicData extends Root {
                 onShare={row => {
                   this._handleOnShare(row);
                 }}
-                actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
+                onDownload={row => {
+                  this._handleDownload(row);
+                }}
+                actions={actions}
                 onExpand={obj => {
                   return Object.keys(obj.headers).map(header => {
                     return (
