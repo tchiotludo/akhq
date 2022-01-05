@@ -24,8 +24,8 @@ class Settings extends Form {
   topicDataSort = [ { _id: 'OLDEST', name: 'OLDEST' }, { _id: 'NEWEST', name: 'NEWEST' } ];
 
   schema = {
-    topicDefaultView: Joi.string().required(),
-    topicDataSort: Joi.string().required(),
+    topicDefaultView: Joi.string().optional(),
+    topicDataSort: Joi.string().optional(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional()
@@ -56,8 +56,8 @@ class Settings extends Form {
   doSubmit() {
     const { clusterId, formData } = this.state;
     setUIOptions(clusterId,
-        { 
-          topic: { 
+        {
+          topic: {
             defaultView: formData.topicDefaultView,
             skipConsumerGroups: formData.skipConsumerGroups,
             skipLastRecord: formData.skipLastRecord,
@@ -65,7 +65,7 @@ class Settings extends Form {
           },
           topicData: {
             sort: formData.topicDataSort
-          } 
+          }
         });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
   }
@@ -132,7 +132,7 @@ class Settings extends Form {
                     this.setState({formData});
                   }}
               /></span>
-            </div>            
+            </div>
           </fieldset>
 
           <fieldset id="topicData" key="topicData">
