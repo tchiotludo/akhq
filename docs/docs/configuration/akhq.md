@@ -28,6 +28,7 @@ These parameters are the default values used in the topic creation page.
 * `akhq.ui-options.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM) (default: HIDE_INTERNAL)
 * `akhq.ui-options.topic.skip-consumer-groups` hide consumer groups columns on topic list
 * `akhq.ui-options.topic.skip-last-record` hide the last records on topic list
+* `akhq.ui-options.topic.show-all-consumer-groups` expand lists of consumer groups on topic list
 
 ### Topic Data
 * `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)

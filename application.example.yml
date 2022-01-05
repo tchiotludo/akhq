@@ -102,6 +102,7 @@ akhq:
           default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
           skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
           skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+          show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
@@ -154,6 +155,7 @@ akhq:
       - "^.*-rekey$"
     skip-consumer-groups: false # Skip loading consumer group information when showing topics
     skip-last-record: false # Skip loading last record date information when showing topics
+    show-all-consumer-groups: false # Expand list of consumer groups instead of showing one.
     # Retry options for topic operations
     retry:
       topic-exists: # Delay between retries when checking for existence of newly created topics. This is needed as it might take the kafka broker a few seconds to create new topics.
@@ -170,6 +172,7 @@ akhq:
       default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
       skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
       skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+      show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
     topic-data:
       sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 

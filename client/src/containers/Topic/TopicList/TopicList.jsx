@@ -191,7 +191,7 @@ class TopicList extends Root {
         groupComponent: undefined,
         internal: topic.internal
       }
-      collapseConsumerGroups[topic.name] = false;
+      collapseConsumerGroups[topic.name] = (uiOptions.showAllConsumerGroups)  ? true : false;
     });
     this.setState({collapseConsumerGroups});
     setState()
