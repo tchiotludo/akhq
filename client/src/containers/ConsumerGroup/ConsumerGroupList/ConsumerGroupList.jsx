@@ -71,7 +71,7 @@ class ConsumerGroupList extends Root {
           })
       );
     } else {
-      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 0, loading: false });
+      this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 1, loading: false });
     }
   }
 
