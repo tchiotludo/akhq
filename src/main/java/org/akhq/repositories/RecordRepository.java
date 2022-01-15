@@ -1276,7 +1276,7 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private void filterMessageLength(Record record) {
-        if (maxKafkaMessageLength == Integer.MAX_VALUE) {
+        if (maxKafkaMessageLength == Integer.MAX_VALUE || record.getValue() == null) {
             return;
         }
 
