@@ -94,6 +94,15 @@ class ConsumerGroupTopics extends Root {
               }
             },
             {
+              id: 'metadata',
+              accessor: 'metadata',
+              colName: 'Metadata',
+              type: 'text',
+              cell: obj => {
+                return this.handleOptional(obj.metadata);
+              }
+            },
+            {
               id: 'lag',
               accessor: 'lag',
               colName: 'Lag',
