@@ -90,7 +90,14 @@ class ConsumerGroupTopics extends Root {
               colName: 'Offset',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.offset);
+                if (obj.offset !== undefined && obj.offset !== '') {
+                  return (
+                    <Link to={`/ui/${this.state.selectedCluster}/topic/${obj.name}/data?single=true&partition=${obj.partition}&offset=${obj.offset}`}>
+                      {obj.offset}
+                    </Link>
+                  );
+                }
+                return <label>-</label>;
               }
             },
             {
