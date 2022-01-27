@@ -3,7 +3,7 @@ import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriNodes } from '../../../utils/endpoints';
-import Root from "../../../components/Root";
+import Root from '../../../components/Root';
 
 class NodesList extends Root {
   state = {
@@ -31,8 +31,7 @@ class NodesList extends Root {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
-        controller: nodes.controller.id === node.id ? `True`: `False` || '',
-        partitions: `${node.paritions} (${node.partitions} / ${node.total}})` || ''
+        controller: nodes.controller.id === node.id ? 'True': 'False' || '',
       };
     });
     this.setState({ data: tableNodes, loading: false });
@@ -70,13 +69,6 @@ class NodesList extends Root {
               id: 'controller',
               accessor: 'controller',
               colName: 'Controller',
-              type: 'text',
-              sortable: true
-            },
-            {
-              id: 'partitions',
-              accessor: 'partitions',
-              colName: 'Number of Partitions',
               type: 'text',
               sortable: true
             },
