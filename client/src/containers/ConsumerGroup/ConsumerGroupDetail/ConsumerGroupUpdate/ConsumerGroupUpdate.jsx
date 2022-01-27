@@ -182,7 +182,7 @@ class ConsumerGroupUpdate extends Form {
       this.setState({ state: this.state });
       toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
     } else {
-      toast.error(`Unable to perform operation, no topics checked.`)
+      toast.error(`Unable to perform operation, no topics checked.`);
     }
   }
 
