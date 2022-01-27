@@ -3,7 +3,7 @@ import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
-import {formatDateTime, groupedTopicOffset} from '../../../../utils/converters';
+import { formatDateTime, groupedTopicOffset } from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import {
   uriConsumerGroup,
@@ -39,23 +39,23 @@ class ConsumerGroupUpdate extends Form {
   }
 
   async getTopicOffset() {
-    const { clusterId, consumerGroupId, topicOffset, timestamp} = this.state;
+    const { clusterId, consumerGroupId, topicOffset, timestamp } = this.state;
     const momentValue = moment(timestamp);
 
     const date =
       timestamp.toString().length > 0
         ? formatDateTime(
-            {
-              year: momentValue.year(),
-              monthValue: momentValue.month(),
-              dayOfMonth: momentValue.date(),
-              hour: momentValue.hour(),
-              minute: momentValue.minute(),
-              second: momentValue.second(),
-              milli: momentValue.millisecond()
-            },
-            'YYYY-MM-DDTHH:mm:ss.SSS'
-          ) + 'Z'
+          {
+            year: momentValue.year(),
+            monthValue: momentValue.month(),
+            dayOfMonth: momentValue.date(),
+            hour: momentValue.hour(),
+            minute: momentValue.minute(),
+            second: momentValue.second(),
+            milli: momentValue.millisecond()
+          },
+          'YYYY-MM-DDTHH:mm:ss.SSS'
+        ) + 'Z'
         : '';
 
     let data = {};
@@ -65,7 +65,7 @@ class ConsumerGroupUpdate extends Form {
       const topicOffset = groupedTopicOffset(data.offsets);
 
       if (data) {
-        this.setState({ topicOffset:  topicOffset}, () =>
+        this.setState({ topicOffset: topicOffset }, () =>
           this.createValidationSchema(topicOffset)
         );
       } else {
@@ -81,7 +81,7 @@ class ConsumerGroupUpdate extends Form {
   }
 
   createValidationSchema = topicOffset => {
-    let { formData, checked} = this.state;
+    let { formData, checked } = this.state;
     let firstOffsets = {};
     let lastOffsets = {};
     let name = '';
@@ -101,7 +101,7 @@ class ConsumerGroupUpdate extends Form {
       });
     });
 
-    this.setState({ formData, firstOffsets, lastOffsets, checked});
+    this.setState({ formData, firstOffsets, lastOffsets, checked });
   };
 
   handleOffsetsByTimestamp = offsets => {
@@ -126,14 +126,14 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
-  unCheckAll = (value)  => {
-    const {checked} = this.state;
+  unCheckAll = (value) => {
+    const { checked } = this.state;
 
     Object.keys(checked).forEach(name => {
       checked[name] = value;
     });
 
-    this.setState({ checked});
+    this.setState({ checked });
   }
 
   resetToLastOffsets = () => {
@@ -154,9 +154,9 @@ class ConsumerGroupUpdate extends Form {
     let partition = '';
 
     Object.keys(formData).forEach(name => {
-        splitName = name.split('-');
-        partition = splitName.pop();
-        topic = splitName.join('-');
+      splitName = name.split('-');
+      partition = splitName.pop();
+      topic = splitName.join('-');
 
       if (checked[topic] === true) {
         body.push({
@@ -173,13 +173,17 @@ class ConsumerGroupUpdate extends Form {
   async doSubmit() {
     const { clusterId, consumerGroupId, formData, checked } = this.state;
 
-    await this.postApi(
-      uriConsumerGroupUpdate(clusterId, consumerGroupId),
-      this.createSubmitBody(formData, checked)
-    );
+    if (this.checked) {
+      await this.postApi(
+        uriConsumerGroupUpdate(clusterId, consumerGroupId),
+        this.createSubmitBody(formData, checked)
+      );
 
-    this.setState({ state: this.state });
-    toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
+      this.setState({ state: this.state });
+      toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
+    } else {
+      toast.error(`Unable to perform operation, no topics checked.`)
+    }
   }
 
   rendertopicOffset = () => {
@@ -194,7 +198,7 @@ class ConsumerGroupUpdate extends Form {
               type="checkbox"
               value={topicId}
               checked={checked[topicId] || false}
-              onChange={this.checkedtopicOffset}/> {topicId}
+              onChange={this.checkedtopicOffset} /> {topicId}
           </legend>
           {this.renderPartitionInputs(topicOffset[topicId], topicId, !checked[topicId])}
         </fieldset>
@@ -256,10 +260,10 @@ class ConsumerGroupUpdate extends Form {
           Check all
         </div>
         <div
-            className="btn btn-secondary"
-            type="button"
-            style={{ marginRight: '0.5rem' }}
-            onClick={() => this.unCheckAll(false)}
+          className="btn btn-secondary"
+          type="button"
+          style={{ marginRight: '0.5rem' }}
+          onClick={() => this.unCheckAll(false)}
         >
           Uncheck all
         </div>
