@@ -87,7 +87,7 @@ class ConsumerGroupUpdate extends Form {
     let name = '';
 
     Object.keys(topicOffset).forEach(topidId => {
-      checked[topidId] = true;
+      checked[topidId] = false;
       topicOffset[topidId].forEach(offset => {
         name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
