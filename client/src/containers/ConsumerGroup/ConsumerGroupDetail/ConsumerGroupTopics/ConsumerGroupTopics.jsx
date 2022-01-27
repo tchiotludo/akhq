@@ -92,7 +92,7 @@ class ConsumerGroupTopics extends Root {
               cell: obj => {
                 if (obj.offset !== undefined && obj.offset !== '') {
                   return (
-                    <Link to={`/ui/${this.state.selectedCluster}/topic/${obj.name}/data?single=true&partition=${obj.partition}&offset=${obj.offset}`}>
+                    <Link to={`/ui/${this.state.selectedCluster}/topic/${obj.name}/data?sort=Oldest&partition=${obj.partition}&after=${obj.partition}-${obj.offset - 1}`}>
                       {obj.offset}
                     </Link>
                   );
