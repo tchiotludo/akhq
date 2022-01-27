@@ -87,7 +87,7 @@ class ConsumerGroupUpdate extends Form {
     let name = '';
 
     Object.keys(topicOffset).forEach(topidId => {
-      checked[topidId] = true;
+      checked[topidId] = false;
       topicOffset[topidId].forEach(offset => {
         name = `${topidId}-${offset.partition}`;
         this.schema[name] = Joi.number()
@@ -173,13 +173,17 @@ class ConsumerGroupUpdate extends Form {
   async doSubmit() {
     const { clusterId, consumerGroupId, formData, checked } = this.state;
 
-    await this.postApi(
-      uriConsumerGroupUpdate(clusterId, consumerGroupId),
-      this.createSubmitBody(formData, checked)
-    );
+    if (Object.values(checked).filter(value => value === true).length > 0) {
+      await this.postApi(
+        uriConsumerGroupUpdate(clusterId, consumerGroupId),
+        this.createSubmitBody(formData, checked)
+      );
 
-    this.setState({ state: this.state });
-    toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
+      this.setState({ state: this.state });
+      toast.success(`Offsets for '${consumerGroupId}' updated successfully.`);
+    } else {
+      toast.error('Unable to perform operation, no topics checked.');
+    }
   }
 
   rendertopicOffset = () => {
