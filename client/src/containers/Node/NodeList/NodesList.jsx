@@ -30,7 +30,9 @@ class NodesList extends Root {
       return {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
-        rack: node.rack || ''
+        rack: node.rack || '',
+        controller: nodes.controller.id === node.id ? `True`: `False` || '',
+        partitions: `${node.paritions} (${node.partitions} / ${node.total}})` || ''
       };
     });
     this.setState({ data: tableNodes, loading: false });
@@ -61,6 +63,20 @@ class NodesList extends Root {
               id: 'host',
               accessor: 'host',
               colName: 'Host',
+              type: 'text',
+              sortable: true
+            },
+            {
+              id: 'controller',
+              accessor: 'controller',
+              colName: 'Controller',
+              type: 'text',
+              sortable: true
+            },
+            {
+              id: 'partitions',
+              accessor: 'partitions',
+              colName: 'Number of Partitions',
               type: 'text',
               sortable: true
             },
