@@ -274,7 +274,7 @@ akhq:
     header-auth:
       user-header: x-akhq-user # mandatory (the header name that will contain username)
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
-      groups-header-separator: , # optional (separator, defaults to ',')
+      groups-header-separator: ',' # optional (separator, defaults to ',')
       ip-patterns: [127.0.0.*] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
       default-group: topic-reader
       groups:
