@@ -34,4 +34,23 @@ These parameters are the default values used in the topic creation page.
 ### Topic Data
 * `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
 
+### Inject some css or javascript
+* `akhq.html-head`: Append some head tags on the webserver application
+Mostly useful in order to inject some css or javascript to customize the web application.
 
+Examples, add a environment information on the left menu:
+```yaml
+akhq:
+  html-head: |
+    <style type="text/css">
+      .logo-wrapper:after {
+        display: block;
+        content: "Local";
+        position: relative;
+        text-transform: uppercase;
+        text-align: center;
+        color: white;
+        margin-top: 10px;
+      }
+    </style>
+```

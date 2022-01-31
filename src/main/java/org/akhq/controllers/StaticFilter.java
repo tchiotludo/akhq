@@ -27,6 +27,10 @@ public class StaticFilter implements HttpServerFilter {
     @Value("${micronaut.server.context-path}")
     protected String basePath;
 
+    @Nullable
+    @Value("${akhq.html-head}")
+    protected String htmlHead;
+
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         return Publishers
@@ -66,9 +70,9 @@ public class StaticFilter implements HttpServerFilter {
     }
 
     private String replace(String line) {
-
         line = line.replace("./ui", (basePath == null ? "" : basePath) + "/ui");
 
+        line = line.replace("<meta name=\"html-head\" content=\"replace\">", this.htmlHead == null ? "" : this.htmlHead);
 
         return line;
     }
