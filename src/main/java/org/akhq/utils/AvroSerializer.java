@@ -15,7 +15,9 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.AbstractMap;
@@ -33,6 +35,8 @@ public class AvroSerializer {
     private static final String TIME_MICROS = "time-micros";
     private static final String TIMESTAMP_MILLIS = "timestamp-millis";
     private static final String TIMESTAMP_MICROS = "timestamp-micros";
+    private static final String LOCAL_TIMESTAMP_MILLIS = "local-timestamp-millis";
+    private static final String LOCAL_TIMESTAMP_MICROS = "local-timestamp-micros";
 
     private static final Conversions.DecimalConversion DECIMAL_CONVERSION = new Conversions.DecimalConversion();
     private static final Conversions.UUIDConversion UUID_CONVERSION = new Conversions.UUIDConversion();
@@ -41,6 +45,8 @@ public class AvroSerializer {
     private static final TimeConversions.TimeMillisConversion TIME_MILLIS_CONVERSION = new TimeConversions.TimeMillisConversion();
     private static final TimeConversions.TimestampMicrosConversion TIMESTAMP_MICROS_CONVERSION = new TimeConversions.TimestampMicrosConversion();
     private static final TimeConversions.TimestampMillisConversion TIMESTAMP_MILLIS_CONVERSION = new TimeConversions.TimestampMillisConversion();
+    private static final TimeConversions.LocalTimestampMicrosConversion LOCAL_TIMESTAMP_MICROS_CONVERSION = new TimeConversions.LocalTimestampMicrosConversion();
+    private static final TimeConversions.LocalTimestampMillisConversion LOCAL_TIMESTAMP_MILLIS_CONVERSION = new TimeConversions.LocalTimestampMillisConversion();
 
     protected static final String DATE_FORMAT = "yyyy-MM-dd[XXX]";
     protected static final String TIME_FORMAT = "HH:mm[:ss][.SSSSSS][XXX]";
@@ -76,13 +82,17 @@ public class AvroSerializer {
                 case DECIMAL:
                     return AvroSerializer.decimalSerializer(value, schema, primitiveType, logicalType);
                 case TIME_MICROS:
-                    return AvroSerializer.timeMicrosDeserializer(value, schema, primitiveType, logicalType);
+                    return AvroSerializer.timeMicrosSerializer(value, schema, primitiveType, logicalType);
                 case TIME_MILLIS:
                     return AvroSerializer.timeMillisSerializer(value, schema, primitiveType, logicalType);
                 case TIMESTAMP_MICROS:
                     return AvroSerializer.timestampMicrosSerializer(value, schema, primitiveType, logicalType);
                 case TIMESTAMP_MILLIS:
                     return AvroSerializer.timestampMillisSerializer(value, schema, primitiveType, logicalType);
+                case LOCAL_TIMESTAMP_MICROS:
+                    return AvroSerializer.localTimestampMicrosSerializer(value, schema, primitiveType, logicalType);
+                case LOCAL_TIMESTAMP_MILLIS:
+                    return AvroSerializer.localTimestampMillisSerializer(value, schema, primitiveType, logicalType);
                 case UUID:
                     return AvroSerializer.uuidSerializer(value, schema, primitiveType, logicalType);
                 default:
@@ -214,12 +224,60 @@ public class AvroSerializer {
         throw new IllegalStateException("Unexpected value: " + primitiveType + " on schema " + schema);
     }
 
+    private static Long localTimestampMicrosSerializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
+        LocalDateTime value;
+
+        if (data instanceof String) {
+            try {
+                value = LocalDateTime.ofInstant(Instant.ofEpochSecond(0, Long.parseLong((String) data) * 1000), ZoneOffset.UTC);
+            } catch (NumberFormatException ignored) {
+                value = LocalDateTime.parse((String) data);
+            }
+        } else if (data instanceof Long) {
+            value = LocalDateTime.ofInstant(Instant.ofEpochSecond(0, (Long) data * 1000), ZoneOffset.UTC);
+        } else if (data instanceof Integer) {
+            value = LocalDateTime.ofInstant(Instant.ofEpochSecond(0, ((Integer) data).longValue() * 1000), ZoneOffset.UTC);
+        } else {
+            value = (LocalDateTime) data;
+        }
+
+        if (primitiveType == Schema.Type.LONG) {
+            return AvroSerializer.LOCAL_TIMESTAMP_MICROS_CONVERSION.toLong(value, schema, logicalType);
+        }
+
+        throw new IllegalStateException("Unexpected value: " + primitiveType + " on schema " + schema);
+    }
+
+    private static Long localTimestampMillisSerializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
+        LocalDateTime value;
+
+        if (data instanceof String) {
+            try {
+                value = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) data)), ZoneOffset.UTC);
+            } catch (NumberFormatException ignored) {
+                value = LocalDateTime.parse((String) data);
+            }
+        } else if (data instanceof Long) {
+            value = LocalDateTime.ofInstant(Instant.ofEpochMilli((Long) data), ZoneOffset.UTC);
+        } else if (data instanceof Integer) {
+            value = LocalDateTime.ofInstant(Instant.ofEpochMilli(((Integer) data).longValue()), ZoneOffset.UTC);
+        } else {
+            value = (LocalDateTime) data;
+        }
+
+        if (primitiveType == Schema.Type.LONG) {
+            return AvroSerializer.LOCAL_TIMESTAMP_MILLIS_CONVERSION.toLong(value, schema, logicalType);
+        }
+
+        throw new IllegalStateException("Unexpected value: " + primitiveType + " on schema " + schema);
+    }
+
     protected static Instant parseDateTime(String data) {
         TimeZone tz = TimeZone.getDefault();
         return DATETIME_FORMAT.withZone(tz.toZoneId()).parse(data, Instant::from);
     }
 
-    private static Long timeMicrosDeserializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
+    private static Long timeMicrosSerializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
         LocalTime value;
         if (data instanceof String) {
             value = LocalTime.parse((String) data, DateTimeFormatter.ofPattern(AvroSerializer.TIME_FORMAT));
