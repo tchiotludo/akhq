@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +41,12 @@ class AvroDeserializerTest {
             Arguments.of(UUID.randomUUID(), "{\"type\": \"string\", \"logicalType\": \"uuid\"}"),
             Arguments.of(LocalDate.now(), "{\"type\": \"int\", \"logicalType\": \"date\"}"),
             Arguments.of(LocalTime.now(Clock.tickMillis(ZoneId.of("UTC"))), "{\"type\": \"int\", \"logicalType\": \"time-millis\"}"),
-            Arguments.of(LocalTime.now(), "{\"type\": \"long\", \"logicalType\": \"time-micros\"}"),
+            Arguments.of(LocalTime.now().truncatedTo(ChronoUnit.MICROS), "{\"type\": \"long\", \"logicalType\": \"time-micros\"}"),
             Arguments.of(Instant.now(Clock.tickMillis(ZoneId.of("UTC"))), "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"),
-            Arguments.of(Instant.now(), "{\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}"),
-            Arguments.of(Instant.now(), "[\"null\", {\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}]")
+            Arguments.of(Instant.now().truncatedTo(ChronoUnit.MICROS), "{\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}"),
+            Arguments.of(Instant.now().truncatedTo(ChronoUnit.MICROS), "[\"null\", {\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}]"),
+            Arguments.of(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS), "{\"type\": \"long\", \"logicalType\": \"local-timestamp-micros\"}"),
+            Arguments.of(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS), "{\"type\": \"long\", \"logicalType\": \"local-timestamp-millis\"}")
         );
     }
 
@@ -70,8 +73,10 @@ class AvroDeserializerTest {
 
     static Stream<Arguments> convertionSource() {
         UUID uuid = UUID.randomUUID();
-        LocalTime localTime = LocalTime.now();
-        Instant now = Instant.now();
+        LocalTime localTime = LocalTime.now().truncatedTo(ChronoUnit.MICROS);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        LocalDateTime localDateTimeMicros = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
+        LocalDateTime localDateTimeMillis = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
         return Stream.of(
             Arguments.of("abc", "\"bytes\"", "abc".getBytes()),
@@ -81,7 +86,9 @@ class AvroDeserializerTest {
             Arguments.of(uuid.toString(), "{\"type\": \"string\", \"logicalType\": \"uuid\"}", uuid),
             Arguments.of(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), "{\"type\": \"int\", \"logicalType\": \"date\"}", LocalDate.now()),
             Arguments.of(localTime.format(DateTimeFormatter.ISO_LOCAL_TIME), "{\"type\": \"long\", \"logicalType\": \"time-micros\"}", localTime),
-            Arguments.of(now.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "{\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}", now)
+            Arguments.of(now.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "{\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}", now),
+            Arguments.of(localDateTimeMicros.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "{\"type\": \"long\", \"logicalType\": \"local-timestamp-micros\"}", localDateTimeMicros),
+            Arguments.of(localDateTimeMillis.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "{\"type\": \"long\", \"logicalType\": \"local-timestamp-millis\"}", localDateTimeMillis)
         );
     }
 
