@@ -31,6 +31,7 @@
 * [BPCE-IT](https://www.bpce-it.fr/)
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
+* [Galeries Lafayette](https://www.galerieslafayette.com/)
 * [GetYourGuide](https://www.getyourguide.com)
 * [Kitopi](https://kitopi.com)
 * [Klarna](https://www.klarna.com)

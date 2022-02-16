@@ -110,6 +110,12 @@
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
+                                                    <img src="/assets/images/using/lafayette.jpg" alt="Galerie Lafayette">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
                                                     <img src="/assets/images/using/get-your-guide.png" alt="Get Your Guide">
                                                 </div>
                                             </div>
