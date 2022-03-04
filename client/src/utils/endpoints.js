@@ -212,6 +212,10 @@ export const uriNodes = id => {
   return `${apiUrl}/${id}/node`;
 };
 
+export const uriNodePartitions = clusterId => {
+  return `${apiUrl}/${clusterId}/node/partitions`;
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
 };
@@ -321,6 +325,7 @@ export default {
   uriNodesConfigs,
   uriTopicsLogs,
   uriTopicsGroups,
+  uriNodePartitions,
   uriTopicsPartitions,
   uriTopicData,
   uriTopicsProduce,

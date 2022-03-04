@@ -14,6 +14,12 @@ import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
 
+import org.akhq.repositories.TopicRepository;
+import org.akhq.repositories.TopicRepository.TopicListView;
+import org.akhq.models.Partition;
+import java.util.Optional;
+import java.util.HashMap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +33,45 @@ public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
     private final ConfigRepository configRepository;
     private final LogDirRepository logDirRepository;
+    @Inject
+    private TopicRepository topicRepository;
 
     @Inject
     public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository) {
         this.clusterRepository = clusterRepository;
         this.configRepository = configRepository;
         this.logDirRepository = logDirRepository;
+    }
+
+    @Get("api/{cluster}/node/partitions")
+    @Operation(tags = {"topic"}, summary = "partition counts")
+    public Map<String, Map<Long,Long>> nodePartitions( String cluster ) throws ExecutionException, InterruptedException {
+        List<Partition> thePartitions = new ArrayList<>();
+        Integer totalPartitions = 0;
+        Integer nodeId = 0;
+        List<String> topicNames = this.topicRepository.all(cluster, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty());
+        final Map<Long, Long> nodePartitionCounts = new HashMap<>();
+        // Get total count of paritions across all topics
+        for (String topicName : topicNames) {
+            thePartitions = this.topicRepository.findByName(cluster, topicName).getPartitions();
+            totalPartitions += thePartitions.size();   
+        }
+        // Get partiton counts for each node
+        for ( Node node : this.clusterRepository.get(cluster).getNodes()){
+            for (String topicName : topicNames) {
+                thePartitions = this.topicRepository.findByName(cluster, topicName).getPartitions();
+                for (Partition part : thePartitions){
+                    nodePartitionCounts.put((long)node.getId(), nodePartitionCounts.getOrDefault((long)node.getId(),0L) + part.getNodes().stream().filter(e -> e.getId() == node.getId()).count());
+                }
+                
+            }
+        }
+        final Map<String, Map<Long,Long>> results = new HashMap<>();
+        final Map<Long, Long> totalParts = new HashMap<>();
+        totalParts.put(0L,(long)totalPartitions);
+        results.put("total",totalParts);
+        results.put("nodes",nodePartitionCounts);
+        return results;
     }
 
     @Get("api/{cluster}/node")

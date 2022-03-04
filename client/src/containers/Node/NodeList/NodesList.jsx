@@ -3,6 +3,8 @@ import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriNodes } from '../../../utils/endpoints';
+import { uriNodePartitions } from '../../../utils/endpoints';
+// import { uriTopicsName } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
 
 class NodesList extends Root {
@@ -18,20 +20,22 @@ class NodesList extends Root {
 
   async getNodes() {
     let nodes = [];
+    let totalPartitionsAllTopics = [];
     const { clusterId } = this.props.match.params;
-
     nodes = await this.getApi(uriNodes(clusterId));
-    this.handleData(nodes.data);
+    totalPartitionsAllTopics = await this.getApi(uriNodePartitions(clusterId));
+    this.handleData(nodes.data,totalPartitionsAllTopics.data);
     this.setState({ selectedCluster: clusterId });
   }
 
-  handleData(nodes) {
+  handleData(nodes, topics) {
     let tableNodes = nodes.nodes.map(node => {
       return {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
-        controller: nodes.controller.id === node.id ? 'True': 'False' || '',
+        controller: nodes.controller.id === node.id ? 'True' : 'False' || '',
+        partition: topics.nodes[node.id]+' (' + (topics.nodes[node.id] / topics.total[0]) * 100 + '%)' || '',
       };
     });
     this.setState({ data: tableNodes, loading: false });
@@ -71,6 +75,13 @@ class NodesList extends Root {
               colName: 'Controller',
               type: 'text',
               sortable: true
+            },
+            {
+              id: 'partition',
+              accessor: 'partition',
+              colName: 'Partitions (% of total)',
+              type: 'text',
+              sortable: false
             },
             {
               id: 'rack',
