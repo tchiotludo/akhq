@@ -4,7 +4,6 @@ import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriNodes } from '../../../utils/endpoints';
 import { uriNodePartitions } from '../../../utils/endpoints';
-// import { uriTopicsName } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
 
 class NodesList extends Root {
