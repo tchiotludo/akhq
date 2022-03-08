@@ -19,22 +19,27 @@ class NodesList extends Root {
 
   async getNodes() {
     let nodes = [];
-    let totalPartitionsAllTopics = [];
+    let paritionsLeaderInsync = [];
     const { clusterId } = this.props.match.params;
     nodes = await this.getApi(uriNodes(clusterId));
-    totalPartitionsAllTopics = await this.getApi(uriNodePartitions(clusterId));
-    this.handleData(nodes.data,totalPartitionsAllTopics.data);
+    paritionsLeaderInsync = await this.getApi(uriNodePartitions(clusterId));
+    this.handleData(nodes.data,paritionsLeaderInsync.data);
     this.setState({ selectedCluster: clusterId });
   }
 
   handleData(nodes, topics) {
+    const topicMap = new Map();
+    topics.forEach(topic => {
+      topicMap.set(topic.id, topic);
+    });
     let tableNodes = nodes.nodes.map(node => {
+      let topicNode = topicMap.get(node.id);
       return {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
         controller: nodes.controller.id === node.id ? 'True' : 'False' || '',
-        partition: topics.nodes[node.id]+' (' + (topics.nodes[node.id] / topics.total[0]) * 100 + '%)' || '',
+        partition: topicNode ? (topicNode.countLeader) + ' (' + (((topicNode.countLeader) / topicNode.totalPartitions) * 100).toFixed(2) + '%)' : '',
       };
     });
     this.setState({ data: tableNodes, loading: false });

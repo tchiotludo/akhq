@@ -1,5 +1,7 @@
 package org.akhq.controllers;
 
+import io.micronaut.core.annotation.Introspected;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
@@ -17,8 +19,11 @@ import org.akhq.repositories.LogDirRepository;
 import org.akhq.repositories.TopicRepository;
 import org.akhq.repositories.TopicRepository.TopicListView;
 import org.akhq.models.Partition;
+import org.akhq.models.Topic;
 import java.util.Optional;
-import java.util.HashMap;
+import lombok.Builder;
+import java.util.stream.Collectors;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,35 +48,48 @@ public class NodeController extends AbstractController {
         this.logDirRepository = logDirRepository;
     }
 
+    @Introspected
+    @Builder(toBuilder = true)
+    @Getter
+    public static class NodePartition {
+        int id;
+        int countLeader;
+        int countInSyncReplicas;
+        long totalPartitions;
+    }
+
     @Get("api/{cluster}/node/partitions")
     @Operation(tags = {"topic"}, summary = "partition counts")
-    public Map<String, Map<Long,Long>> nodePartitions( String cluster ) throws ExecutionException, InterruptedException {
-        List<Partition> thePartitions = new ArrayList<>();
-        Integer totalPartitions = 0;
-        Integer nodeId = 0;
+    public List<NodePartition> nodePartitions( String cluster ) throws ExecutionException, InterruptedException {
         List<String> topicNames = this.topicRepository.all(cluster, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty());
-        final Map<Long, Long> nodePartitionCounts = new HashMap<>();
-        // Get total count of paritions across all topics
-        for (String topicName : topicNames) {
-            thePartitions = this.topicRepository.findByName(cluster, topicName).getPartitions();
-            totalPartitions += thePartitions.size();   
-        }
-        // Get partiton counts for each node
-        for ( Node node : this.clusterRepository.get(cluster).getNodes()){
-            for (String topicName : topicNames) {
-                thePartitions = this.topicRepository.findByName(cluster, topicName).getPartitions();
-                for (Partition part : thePartitions){
-                    nodePartitionCounts.put((long)node.getId(), nodePartitionCounts.getOrDefault((long)node.getId(),0L) + part.getNodes().stream().filter(e -> e.getId() == node.getId()).count());
-                }
-                
-            }
-        }
-        final Map<String, Map<Long,Long>> results = new HashMap<>();
-        final Map<Long, Long> totalParts = new HashMap<>();
-        totalParts.put(0L,(long)totalPartitions);
-        results.put("total",totalParts);
-        results.put("nodes",nodePartitionCounts);
-        return results;
+        List<Topic> topics = this.topicRepository.findByName(cluster, topicNames);
+        long totalPartitions = topics
+        .stream()
+        .mapToInt(t -> t.getPartitions().size())
+        .sum();
+        return topics
+            .stream()
+            .flatMap(topic -> topic.getPartitions().stream())
+            .flatMap(partition -> partition.getNodes()
+                .stream()
+                .map(n -> NodePartition.builder()
+                    .id(n.getId())
+                    .countLeader(n.isLeader() ? 1 : 0)
+                    .countInSyncReplicas(n.isInSyncReplicas() ? 1 : 0)
+                    .build()
+                )
+            )
+            .collect(Collectors.groupingBy(NodePartition::getId))
+            .entrySet()
+            .stream()
+            .map(n -> NodePartition.builder()
+                .id(n.getKey())
+                .countLeader(n.getValue().stream().mapToInt(NodePartition::getCountLeader).sum())
+                .countInSyncReplicas(n.getValue().stream().mapToInt(NodePartition::getCountInSyncReplicas).sum())
+                .totalPartitions(totalPartitions)
+                .build()
+            )
+            .collect(Collectors.toList());
     }
 
     @Get("api/{cluster}/node")
