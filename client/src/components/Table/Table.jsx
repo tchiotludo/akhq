@@ -431,7 +431,7 @@ class Table extends Component {
   colspan() {
     const { actions, columns } = this.props;
 
-    return columns.length + (actions && actions.length ? actions.length : 0)
+    return columns.filter(column => !column.extraRow).length + (actions && actions.length ? actions.length : 0)
   }
 
   render() {
