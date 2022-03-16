@@ -31,6 +31,8 @@ import Select from '../../../../components/Form/Select';
 import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
 
+import {Tooltip} from '@material-ui/core';
+
 class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
@@ -65,7 +67,8 @@ class TopicData extends Root {
     canDeleteRecords: false,
     percent: 0,
     loading: true,
-    canDownload: false
+    canDownload: false,
+    showRelativeTimes: true
   };
 
   searchFilterTypes = [
@@ -835,6 +838,21 @@ class TopicData extends Root {
                     )}
                   </Dropdown>
                 </li>
+                <li>
+                  <Dropdown>
+                    <Dropdown.Toggle className="nav-link dropdown-toggle">
+                      <strong>Date Format</strong>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={() => this.setState({showTimeAgo: true})}>
+                        Show relative time
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => this.setState({showTimeAgo: false})}>
+                        Show ISO timestamp
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </li>
               </ul>
             </div>
           </nav>
@@ -910,7 +928,13 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return (<TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>);
+                      const isoDate = obj[col.accessor]
+                      const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={""}/>
+                      return (
+                          <Tooltip arrow title={!this.state.showRelativeTimes ? TimeAgoComp : isoDate} interactive>
+                            <span>{this.state.showRelativeTimes ? TimeAgoComp : isoDate}</span>
+                          </Tooltip>
+                      );
                     }
                   },
                   {
