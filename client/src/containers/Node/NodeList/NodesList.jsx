@@ -19,31 +19,44 @@ class NodesList extends Root {
 
   async getNodes() {
     let nodes = [];
-    let paritionsLeaderInsync = [];
     const { clusterId } = this.props.match.params;
     nodes = await this.getApi(uriNodes(clusterId));
-    paritionsLeaderInsync = await this.getApi(uriNodePartitions(clusterId));
-    this.handleData(nodes.data,paritionsLeaderInsync.data);
+    this.handleData(nodes.data);
     this.setState({ selectedCluster: clusterId });
   }
 
-  handleData(nodes, topics) {
-    const topicMap = new Map();
-    topics.forEach(topic => {
-      topicMap.set(topic.id, topic);
-    });
-    let tableNodes = nodes.nodes.map(node => {
-      let topicNode = topicMap.get(node.id);
-      return {
+  handleData(nodes) {
+    const { clusterId } = this.props.match.params;
+    let tableNodes = {}
+    const setState = () =>  {
+      this.setState({ data: Object.values(tableNodes), loading: false});
+    }
+
+    nodes.nodes.forEach(node => {
+      tableNodes[node.id] = {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
         controller: nodes.controller.id === node.id ? 'True' : 'False' || '',
-        partition: topicNode ? (topicNode.countLeader) + ' (' + (((topicNode.countLeader) / topicNode.totalPartitions) * 100).toFixed(2) + '%)' : '',
+        partition: undefined
       };
     });
-    this.setState({ data: tableNodes, loading: false });
-    return tableNodes;
+
+    setState();
+
+    this.getApi(uriNodePartitions(clusterId))
+        .then(value => {
+          for (let node of value.data) {
+            const topicNode = tableNodes[node.id];
+            tableNodes[node.id].partition = topicNode ?
+                (node.countLeader) + ' (' + (((node.countLeader) / node.totalPartitions) * 100).toFixed(2) + '%)' :
+                '';
+          }
+
+          setState();
+        })
+
+    return Object.values(tableNodes);
   }
 
   render() {

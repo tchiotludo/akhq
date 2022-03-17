@@ -1,36 +1,24 @@
 package org.akhq.controllers;
 
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.inject.Inject;
+import lombok.Builder;
+import lombok.Getter;
 import org.akhq.configs.Role;
-import org.akhq.models.Cluster;
-import org.akhq.models.Config;
-import org.akhq.models.LogDir;
-import org.akhq.models.Node;
+import org.akhq.models.*;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
-
 import org.akhq.repositories.TopicRepository;
-import org.akhq.repositories.TopicRepository.TopicListView;
-import org.akhq.models.Partition;
-import org.akhq.models.Topic;
-import java.util.Optional;
-import lombok.Builder;
-import java.util.stream.Collectors;
-import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-import jakarta.inject.Inject;
+import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_NODE_READ)
 @Controller
