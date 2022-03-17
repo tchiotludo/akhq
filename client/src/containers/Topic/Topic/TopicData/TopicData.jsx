@@ -844,10 +844,10 @@ class TopicData extends Root {
                       <strong>Date Format</strong>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => this.setState({showTimeAgo: true})}>
+                      <Dropdown.Item onClick={() => this.setState({showRelativeTimes: true})}>
                         Show relative time
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={() => this.setState({showTimeAgo: false})}>
+                      <Dropdown.Item onClick={() => this.setState({showRelativeTimes: false})}>
                         Show ISO timestamp
                       </Dropdown.Item>
                     </Dropdown.Menu>
