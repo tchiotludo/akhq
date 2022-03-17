@@ -21,6 +21,7 @@ import Schema from '../containers/Schema/SchemaDetail/Schema';
 import SchemaList from '../containers/Schema/SchemaList/SchemaList';
 import SchemaCreate from '../containers/Schema/SchemaCreate/SchemaCreate';
 import ConsumerGroupUpdate from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate';
+import ConsumerGroupOffsetDelete from '../containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupOffsetDelete';
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from '../containers/Settings/Settings';
@@ -183,6 +184,14 @@ class Routes extends Root {
 
               {roles && roles.group && roles.group['group/read'] && (
                 <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
+              )}
+
+              {roles && roles.group && roles.group['group/offsets/delete'] && (
+                  <Route
+                      exact
+                      path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
+                      component={ConsumerGroupOffsetDelete}
+                  />
               )}
 
               {roles && roles.group && roles.group['group/offsets/update'] && (
