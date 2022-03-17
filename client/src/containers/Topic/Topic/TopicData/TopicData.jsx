@@ -17,6 +17,7 @@ import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import _ from 'lodash';
 import constants from '../../../../utils/constants';
+import { setProduceToTopicValues } from '../../../../utils/localstorage';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
@@ -26,7 +27,7 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
-import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
+import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
 import Select from '../../../../components/Form/Select';
 import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
@@ -365,6 +366,21 @@ class TopicData extends Root {
     a.remove();
   }
 
+  _handleCopy(row) {
+    const data =  {
+      partition: row.partition,
+      key: row.key,
+      header: row.headers,
+      keySchemaId: row.schema.key,
+      valueSchemaId: row.schema.value,
+      value: row.value,
+    }
+    setProduceToTopicValues(data)
+
+    const { clusterId, topicId } = this.props.match.params;
+    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`)
+  }
+
   _showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
   };
@@ -664,7 +680,8 @@ class TopicData extends Root {
       loading
     } = this.state;
 
-    let actions = canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]
+    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY]
+    if (canDeleteRecords) actions.push(constants.TABLE_DELETE)
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD)
 
     let date = moment(datetime);
@@ -989,6 +1006,9 @@ class TopicData extends Root {
                 }}
                 onDownload={row => {
                   this._handleDownload(row);
+                }}
+                onCopy={row => {
+                  this._handleCopy(row)
                 }}
                 actions={actions}
                 onExpand={obj => {

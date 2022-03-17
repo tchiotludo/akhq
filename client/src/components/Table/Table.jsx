@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
 import Spinner from '../Spinner';
-import {Link} from "react-router-dom";
+import {Link} from 'react-router-dom';
 
 class Table extends Component {
   state = {
@@ -288,7 +288,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, onDownload, idCol } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } = this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -361,6 +361,18 @@ class Table extends Component {
               <i className="fa fa-refresh" />
             </span>
           </td>
+        )}
+        {actions.find(el => el === constants.TABLE_COPY) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Copy"
+                  id="copy"
+                  onClick={() => {
+                    onCopy && onCopy(row);
+                  }}
+            >
+              <i className="fa fa-clone" />
+            </span>
+            </td>
         )}
         {actions.find(el => el === constants.TABLE_SHARE) && (
             <td className="khq-row-action khq-row-action-main action-hover">
@@ -488,9 +500,17 @@ Table.propTypes = {
     })
   ),
   actions: PropTypes.array,
+
+  onAdd: PropTypes.func,
   onDetails: PropTypes.func,
   onConfig: PropTypes.func,
   onDelete: PropTypes.func,
+  onEdit: PropTypes.func,
+  onRestart: PropTypes.func,
+  onShare: PropTypes.func,
+  onDownload: PropTypes.func,
+  onCopy: PropTypes.func,
+
   idCol: PropTypes.string,
   toPresent: PropTypes.array,
   noContent: PropTypes.any,
