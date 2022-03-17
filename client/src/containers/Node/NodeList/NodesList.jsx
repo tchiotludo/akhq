@@ -3,6 +3,7 @@ import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriNodes } from '../../../utils/endpoints';
+import { uriNodePartitions } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
 
 class NodesList extends Root {
@@ -19,23 +20,43 @@ class NodesList extends Root {
   async getNodes() {
     let nodes = [];
     const { clusterId } = this.props.match.params;
-
     nodes = await this.getApi(uriNodes(clusterId));
     this.handleData(nodes.data);
     this.setState({ selectedCluster: clusterId });
   }
 
   handleData(nodes) {
-    let tableNodes = nodes.nodes.map(node => {
-      return {
+    const { clusterId } = this.props.match.params;
+    let tableNodes = {}
+    const setState = () =>  {
+      this.setState({ data: Object.values(tableNodes), loading: false});
+    }
+
+    nodes.nodes.forEach(node => {
+      tableNodes[node.id] = {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
-        controller: nodes.controller.id === node.id ? 'True': 'False' || '',
+        controller: nodes.controller.id === node.id ? 'True' : 'False' || '',
+        partition: undefined
       };
     });
-    this.setState({ data: tableNodes, loading: false });
-    return tableNodes;
+
+    setState();
+
+    this.getApi(uriNodePartitions(clusterId))
+        .then(value => {
+          for (let node of value.data) {
+            const topicNode = tableNodes[node.id];
+            tableNodes[node.id].partition = topicNode ?
+                (node.countLeader) + ' (' + (((node.countLeader) / node.totalPartitions) * 100).toFixed(2) + '%)' :
+                '';
+          }
+
+          setState();
+        })
+
+    return Object.values(tableNodes);
   }
 
   render() {
@@ -71,6 +92,13 @@ class NodesList extends Root {
               colName: 'Controller',
               type: 'text',
               sortable: true
+            },
+            {
+              id: 'partition',
+              accessor: 'partition',
+              colName: 'Partitions (% of total)',
+              type: 'text',
+              sortable: false
             },
             {
               id: 'rack',
