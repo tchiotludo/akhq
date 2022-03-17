@@ -145,6 +145,7 @@ akhq:
         - group/read
         - group/delete
         - group/offsets/update
+        - group/offsets/delete
         - registry/read
         - registry/insert
         - registry/update
