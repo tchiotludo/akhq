@@ -6,6 +6,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { formatDateTime } from '../../../utils/converters';
 import { popProduceToTopicValues } from '../../../utils/localstorage';
 import {
+  uriTopics,
   uriPreferredSchemaForTopic,
   uriTopicsPartitions,
   uriTopicsProduce
@@ -43,6 +44,8 @@ class TopicProduce extends Form {
     selectedValueSchema: '',
     clusterId: '',
     topicId: '',
+    topics: [],
+    topicsSearchValue: '',
     multiMessage: false,
     valuePlaceholder: '{"param": "value"}'
   };
@@ -79,6 +82,7 @@ class TopicProduce extends Form {
 
     this.setState(({
       partitions,
+      topicId,
       formData: {
         ...this.state.formData,
         partition: partitions[0]._id,
@@ -87,16 +91,37 @@ class TopicProduce extends Form {
 
     await this.getPreferredSchemaForTopic();
     const topicEventData = popProduceToTopicValues();
-    if(Object.keys(topicEventData).length !== 0) {
+    if (Object.keys(topicEventData).length) {
       await this.initByTopicEvent(topicEventData);
     }
 
     this.setState({ clusterId, topicId });
+
+    this.initAvailableTopics();
+  }
+
+  async initAvailableTopics() {
+    const {clusterId} = this.props.match.params;
+
+    const topics = [];
+    let page = 0;
+    let topicResponseData = {};
+    do {
+      page = page + 1;
+      topicResponseData = await this.getApi(uriTopics(clusterId, '', '', page))
+          .then(res => res.data);
+      topicResponseData.results
+          .forEach(topicData => topics.push(topicData.name));
+    } while(page < topicResponseData.pages);
+
+    this.setState({
+      topics,
+    });
   }
 
   async getPreferredSchemaForTopic() {
-    const { clusterId, topicId } = this.props.match.params;
-    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, topicId));
+    const { clusterId } = this.props.match.params;
+    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, this.state.topicId));
     let keySchema = [];
     let valueSchema = [];
     schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
@@ -126,6 +151,7 @@ class TopicProduce extends Form {
   doSubmit() {
     const {
       formData,
+      topicId,
       datetime,
       selectedKeySchema,
       selectedValueSchema,
@@ -133,13 +159,14 @@ class TopicProduce extends Form {
       valueSchema,
       multiMessage
     } = this.state;
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
 
     let schemaKeyToSend = keySchema.find(key => key.subject === selectedKeySchema);
     let schemaValueToSend = valueSchema.find(value => value.subject === selectedValueSchema);
     const topic = {
       clusterId,
       topicId,
+      topics: [topicId],
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
@@ -326,7 +353,7 @@ class TopicProduce extends Form {
                 <li>
                   <Tooltip
                     title={
-                      selectedValue === key ? 'Click to unselect option' : 'Click to select option'
+                      selectedValue === key && tag !== 'topicId' ? 'Click to unselect option' : 'Click to select option'
                     }
                   >
                     <div
@@ -339,6 +366,11 @@ class TopicProduce extends Form {
                           selectedValue === key
                             ? this.setState({ selectedValueSchema: '' })
                             : this.setState({ selectedValueSchema: key });
+                        } else if (tag === 'topicId') {
+                          if( selectedValue !== key) {
+                            this.setState({topicId: key});
+                            this.getPreferredSchemaForTopic();
+                          }
                         }
                       }}
                       role="option"
@@ -360,6 +392,8 @@ class TopicProduce extends Form {
   render() {
     const {
       topicId,
+      topics,
+      topicsSearchValue,
       formData,
       partitions,
       datetime,
@@ -376,6 +410,23 @@ class TopicProduce extends Form {
       <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
             <Header title={`Produce to ${topicId} `} />
+            {this.renderDropdown(
+                'Topic',
+                topics,
+                topicsSearchValue,
+                topicId,
+                value => {
+                  this.setState({
+                    topicsSearchValue: value.target.value
+                  });
+                },
+                this.renderResults(
+                    topics,
+                    topicsSearchValue,
+                    topicId,
+                    'topicId'
+                )
+            )}
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
             }, 'col-sm-10')}
