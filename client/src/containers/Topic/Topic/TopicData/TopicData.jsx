@@ -27,6 +27,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
+import {setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
 import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
@@ -68,7 +69,7 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    showRelativeTimes: true
+    dateFormat: 'RELATIVE'
   };
 
   searchFilterTypes = [
@@ -113,6 +114,8 @@ class TopicData extends Root {
           search: this._buildSearchFromQueryString(query),
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
+          dateFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateFormat)?
+              uiOptions.topicData.dateFormat : 'RELATIVE'
         },
         () => {
             if(query.get('single') !== null) {
@@ -366,6 +369,22 @@ class TopicData extends Root {
 
     a.click();
     a.remove();
+  }
+
+  async _handleOnDateFormatChanged(newDateFormat) {
+    const { clusterId } = this.props.match.params;
+    this.setState(({
+      dateFormat: newDateFormat
+    }));
+    const currentUiOptions = await getClusterUIOptions(clusterId);
+    const newUiOptions = {
+      ...currentUiOptions,
+      topicData: {
+        ...(currentUiOptions.topicData),
+        dateFormat: newDateFormat
+      }
+    }
+    setUIOptions(clusterId, newUiOptions);
   }
 
   _showDeleteModal = deleteMessage => {
@@ -844,10 +863,10 @@ class TopicData extends Root {
                       <strong>Date Format</strong>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => this.setState({showRelativeTimes: true})}>
+                      <Dropdown.Item onClick={() => this._handleOnDateFormatChanged('RELATIVE')}>
                         Show relative time
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={() => this.setState({showRelativeTimes: false})}>
+                      <Dropdown.Item onClick={() => this._handleOnDateFormatChanged('ISO')}>
                         Show ISO timestamp
                       </Dropdown.Item>
                     </Dropdown.Menu>
@@ -929,10 +948,10 @@ class TopicData extends Root {
                     type: 'text',
                     cell: (obj, col) => {
                       const isoDate = obj[col.accessor]
-                      const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={""}/>
+                      const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''}/>
                       return (
-                          <Tooltip arrow title={!this.state.showRelativeTimes ? TimeAgoComp : isoDate} interactive>
-                            <span>{this.state.showRelativeTimes ? TimeAgoComp : isoDate}</span>
+                          <Tooltip arrow title={this.state.dateFormat === 'ISO' ? TimeAgoComp : isoDate} interactive>
+                            <span>{this.state.dateFormat === 'ISO' ?  isoDate : TimeAgoComp}</span>
                           </Tooltip>
                       );
                     }

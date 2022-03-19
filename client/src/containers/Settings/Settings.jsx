@@ -2,9 +2,9 @@ import React from 'react';
 import Joi from 'joi-browser';
 import Form from '../../components/Form/Form';
 import Header from '../Header';
-import {getUIOptions, setUIOptions} from "../../utils/localstorage";
+import {getUIOptions, setUIOptions} from '../../utils/localstorage';
 import './styles.scss';
-import {toast} from "react-toastify";
+import {toast} from 'react-toastify';
 
 class Settings extends Form {
   state = {
@@ -12,6 +12,7 @@ class Settings extends Form {
     formData: {
       topicDefaultView: '',
       topicDataSort: '',
+      topicDataDateFormat: '',
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true
@@ -22,10 +23,12 @@ class Settings extends Form {
   topicDefaultView = [ { _id: 'ALL', name: 'ALL' }, { _id: 'HIDE_INTERNAL', name: 'HIDE_INTERNAL' },
     { _id: 'HIDE_INTERNAL_STREAM', name: 'HIDE_INTERNAL_STREAM' }, { _id: 'HIDE_STREAM', name: 'HIDE_STREAM' } ];
   topicDataSort = [ { _id: 'OLDEST', name: 'OLDEST' }, { _id: 'NEWEST', name: 'NEWEST' } ];
+  topicDataDateFormat = [ { _id: 'RELATIVE', name: 'RELATIVE' }, { _id: 'ISO', name: 'ISO' } ];
 
   schema = {
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
+    topicDataDateFormat: Joi.string().required(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional()
@@ -39,6 +42,7 @@ class Settings extends Form {
     this.setState({ clusterId, formData: {
         topicDefaultView: (uiOptions && uiOptions.topic)? uiOptions.topic.defaultView : '',
         topicDataSort: (uiOptions && uiOptions.topicData)? uiOptions.topicData.sort : '',
+        topicDataDateFormat: (uiOptions && uiOptions.topicData)? uiOptions.topicData.dateFormat : '',
         skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false,
         skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false,
         showAllConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.showAllConsumerGroups : false
@@ -64,7 +68,8 @@ class Settings extends Form {
             showAllConsumerGroups: formData.showAllConsumerGroups
           },
           topicData: {
-            sort: formData.topicDataSort
+            sort: formData.topicDataSort,
+            dateFormat: formData.topicDataDateFormat
           }
         });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
@@ -144,6 +149,20 @@ class Settings extends Form {
                 ({ currentTarget: input }) => {
                   const { formData } = this.state;
                   formData.topicDataSort = input.value;
+                  this.setState({formData});
+                },
+                'col-sm-10',
+                'select-wrapper settings-wrapper',
+                true,
+                { className: 'form-control' }
+            )}
+            {this.renderSelect(
+                'topicDataDateFormat',
+                'Date Format',
+                this.topicDataDateFormat,
+                ({ currentTarget: input }) => {
+                  const { formData } = this.state;
+                  formData.topicDataDateFormat = input.value;
                   this.setState({formData});
                 },
                 'col-sm-10',
