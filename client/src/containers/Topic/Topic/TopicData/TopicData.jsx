@@ -69,7 +69,7 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    dateFormat: 'RELATIVE'
+    dateFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE
   };
 
   searchFilterTypes = [
@@ -115,7 +115,7 @@ class TopicData extends Root {
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
           dateFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateFormat)?
-              uiOptions.topicData.dateFormat : 'RELATIVE'
+              uiOptions.topicData.dateFormat : constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE
         },
         () => {
             if(query.get('single') !== null) {
@@ -863,10 +863,14 @@ class TopicData extends Root {
                       <strong>Date Format</strong>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => this._handleOnDateFormatChanged('RELATIVE')}>
+                      <Dropdown.Item onClick={() => 
+                          this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE)
+                        }>
                         Show relative time
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={() => this._handleOnDateFormatChanged('ISO')}>
+                      <Dropdown.Item onClick={() => 
+                          this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO)
+                        }>
                         Show ISO timestamp
                       </Dropdown.Item>
                     </Dropdown.Menu>
@@ -950,8 +954,17 @@ class TopicData extends Root {
                       const isoDate = obj[col.accessor]
                       const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''}/>
                       return (
-                          <Tooltip arrow title={this.state.dateFormat === 'ISO' ? TimeAgoComp : isoDate} interactive>
-                            <span>{this.state.dateFormat === 'ISO' ?  isoDate : TimeAgoComp}</span>
+                          <Tooltip arrow title={
+                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
+                                  TimeAgoComp : 
+                                  isoDate
+                              } interactive>
+                            <span>{
+                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?  
+                                  isoDate : 
+                                  TimeAgoComp
+                              }
+                            </span>
                           </Tooltip>
                       );
                     }

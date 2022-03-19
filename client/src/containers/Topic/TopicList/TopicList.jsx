@@ -13,9 +13,9 @@ import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
-import {getClusterUIOptions} from "../../../utils/functions";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
-import TimeAgo from "react-timeago";
+import {getClusterUIOptions} from '../../../utils/functions';
+import {handlePageChange, getPageNumber} from './../../../utils/pagination';
+import TimeAgo from 'react-timeago';
 
 class TopicList extends Root {
   state = {
@@ -29,7 +29,7 @@ class TopicList extends Root {
     totalPageNumber: 1,
     searchData: {
       search: '',
-      topicListView: 'HIDE_INTERNAL'
+      topicListView: constants.SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_INTERNAL
     },
     keepSearch: false,
     createTopicFormData: {

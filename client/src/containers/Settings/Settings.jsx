@@ -2,6 +2,7 @@ import React from 'react';
 import Joi from 'joi-browser';
 import Form from '../../components/Form/Form';
 import Header from '../Header';
+import { SETTINGS_VALUES } from '../../utils/constants';
 import {getUIOptions, setUIOptions} from '../../utils/localstorage';
 import './styles.scss';
 import {toast} from 'react-toastify';
@@ -20,10 +21,12 @@ class Settings extends Form {
     errors: {}
   };
 
-  topicDefaultView = [ { _id: 'ALL', name: 'ALL' }, { _id: 'HIDE_INTERNAL', name: 'HIDE_INTERNAL' },
-    { _id: 'HIDE_INTERNAL_STREAM', name: 'HIDE_INTERNAL_STREAM' }, { _id: 'HIDE_STREAM', name: 'HIDE_STREAM' } ];
-  topicDataSort = [ { _id: 'OLDEST', name: 'OLDEST' }, { _id: 'NEWEST', name: 'NEWEST' } ];
-  topicDataDateFormat = [ { _id: 'RELATIVE', name: 'RELATIVE' }, { _id: 'ISO', name: 'ISO' } ];
+  topicDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW)
+                        .map(([value]) => ({_id: value, name: value}));
+  topicDataSort = Object.entries(SETTINGS_VALUES.TOPIC_DATA.SORT)
+                        .map(([value]) => ({_id: value, name: value}));
+  topicDataDateFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT)
+                        .map(([value]) => ({_id: value, name: value}));
 
   schema = {
     topicDefaultView: Joi.string().optional(),

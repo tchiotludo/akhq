@@ -2,6 +2,7 @@ import React from 'react';
 import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
+import { SETTINGS_VALUES } from '../../utils/constants';
 import './styles.scss';
 
 class SearchBar extends Form {
@@ -17,19 +18,19 @@ class SearchBar extends Form {
     errors: {},
     topicListViewOptions: [
       {
-        _id: 'ALL',
+        _id: SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.ALL,
         name: 'Show all topics'
       },
       {
-        _id: 'HIDE_INTERNAL',
+        _id: SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_INTERNAL,
         name: 'Hide internal topics'
       },
       {
-        _id: 'HIDE_INTERNAL_STREAM',
+        _id: SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_INTERNAL_STREAM,
         name: 'Hide internal & stream topics'
       },
       {
-        _id: 'HIDE_STREAM',
+        _id: SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_STREAM,
         name: 'Hide stream topics'
       }
     ]
