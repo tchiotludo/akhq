@@ -19,6 +19,30 @@
 * The official AKHQ documentation can be found under: [akhq.io](https://akhq.io/docs)
 
 
+## Sponsors
+<table>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://upstash.com/?utm_source=AKHQ" >
+  <img src="https://raw.githubusercontent.com/upstash/sponsorship/master/kafka.png" alt="Upstash" width="260" align="right">
+  </a>
+
+<h3>Upstash: Serverless Kafka</h3>
+
+  <ul>
+    <li>True Serverless Kafka with per-request-pricing</li>
+    <li>Managed Apache Kafka, works with all Kafka clients</li>
+    <li>Built-in REST API designed for serverless and edge functions</li>
+  </ul>
+
+[Start for free in 30 seconds!](https://upstash.com/?utm_source=AKHQ)
+</td>
+</tr>
+</table>
+
+
+
 ## Who's using AKHQ
 * [Adeo](https://www.adeo.com/)
 * [Avlino](https://avlino.com/)

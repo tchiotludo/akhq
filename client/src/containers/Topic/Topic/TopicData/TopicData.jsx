@@ -26,8 +26,8 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
-import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
-import {setUIOptions} from '../../../../utils/localstorage';
+import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
+import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
 import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
@@ -387,6 +387,21 @@ class TopicData extends Root {
     setUIOptions(clusterId, newUiOptions);
   }
 
+  _handleCopy(row) {
+    const data =  {
+      partition: row.partition,
+      key: row.key,
+      header: row.headers,
+      keySchemaId: row.schema.key,
+      valueSchemaId: row.schema.value,
+      value: row.value,
+    }
+    setProduceToTopicValues(data)
+
+    const { clusterId, topicId } = this.props.match.params;
+    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`)
+  }
+
   _showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
   };
@@ -419,10 +434,10 @@ class TopicData extends Root {
     let tableMessages = append ? this.state.messages : [];
     messages.forEach(message => {
       let messageToPush = {
-        key: message.key || 'null',
+        key: message.key || '',
         value: message.truncated
-          ? message.value + '...\nToo large message. Full body in share button.'  || 'null'
-          : message.value || 'null',
+          ? message.value + '...\nToo large message. Full body in share button.'  || ''
+          : message.value || '',
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
@@ -686,7 +701,8 @@ class TopicData extends Root {
       loading
     } = this.state;
 
-    let actions = canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]
+    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY]
+    if (canDeleteRecords) actions.push(constants.TABLE_DELETE)
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD)
 
     let date = moment(datetime);
@@ -863,12 +879,12 @@ class TopicData extends Root {
                       <strong>Date Format</strong>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => 
+                      <Dropdown.Item onClick={() =>
                           this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE)
                         }>
                         Show relative time
                       </Dropdown.Item>
-                      <Dropdown.Item onClick={() => 
+                      <Dropdown.Item onClick={() =>
                           this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO)
                         }>
                         Show ISO timestamp
@@ -920,7 +936,7 @@ class TopicData extends Root {
                               mode="json"
                               id={'value' + index}
                               theme="merbivore_soft"
-                              value={value}
+                              value={value || 'null'}
                               readOnly
                               name="UNIQUE_ID_OF_DIV"
                               editorProps={{ $blockScrolling: true }}
@@ -939,7 +955,7 @@ class TopicData extends Root {
                                 </div>
                             )}
                             <pre className="mb-0 khq-data-highlight">
-                              <code>{obj.value}</code>
+                              <code>{obj.value || 'null'}</code>
                             </pre>
                           </div>
                       );
@@ -956,12 +972,12 @@ class TopicData extends Root {
                       return (
                           <Tooltip arrow title={
                                 this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
-                                  TimeAgoComp : 
+                                  TimeAgoComp :
                                   isoDate
                               } interactive>
                             <span>{
-                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?  
-                                  isoDate : 
+                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
+                                  isoDate :
                                   TimeAgoComp
                               }
                             </span>
@@ -1045,6 +1061,9 @@ class TopicData extends Root {
                 }}
                 onDownload={row => {
                   this._handleDownload(row);
+                }}
+                onCopy={row => {
+                  this._handleCopy(row)
                 }}
                 actions={actions}
                 onExpand={obj => {
