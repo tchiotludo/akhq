@@ -76,7 +76,7 @@ class TopicGroups extends Root {
           onClick={noPropagation}
         >
           {topic}
-          <div className="badge badge-secondary">Lag: {topics[topic]}</div>
+          <div className="badge badge-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
         </Link>
       );
     });

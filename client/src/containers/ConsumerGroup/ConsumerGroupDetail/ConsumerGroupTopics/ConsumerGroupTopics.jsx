@@ -39,7 +39,7 @@ class ConsumerGroupTopics extends Root {
   }
 
   handleOptional(optional) {
-    if (optional !== undefined && optional !== '') {
+    if (optional !== undefined && optional !== '' && optional !== 'NaN') {
       return <label>{optional}</label>;
     } else {
       return <label>-</label>;
@@ -115,7 +115,7 @@ class ConsumerGroupTopics extends Root {
               colName: 'Lag',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.lag);
+                return this.handleOptional(Number(obj.lag).toLocaleString());
               }
             }
           ]}
