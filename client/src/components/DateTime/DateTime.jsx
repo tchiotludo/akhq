@@ -29,8 +29,8 @@ class DateTime extends Component {
 }
 
 DateTime.propTypes = {
-  isoDateTimeString: PropTypes.string,
-  dateTimeFormat: PropTypes.string,
+  isoDateTimeString: PropTypes.string.isRequired,
+  dateTimeFormat: PropTypes.string.isRequired,
 };
 
 export default DateTime;
