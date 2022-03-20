@@ -53,7 +53,7 @@ export const SETTINGS_VALUES = {
       OLDEST: 'OLDEST',
       NEWEST: 'NEWEST',
     },
-    DATE_FORMAT: {
+    DATE_TIME_FORMAT: {
       RELATIVE: 'RELATIVE',
       ISO: 'ISO',
     }

@@ -281,9 +281,9 @@ class TopicList extends Root {
   render() {
     const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const uiOptionsTopic = uiOptions.topic ?? {};
-    const dateFormat = uiOptions.topicData ? 
-      uiOptions.topicData.dateFormat : 
-      constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE;
+    const dateTimeFormat = uiOptions.topicData ?
+      uiOptions.topicData.dateTimeFormat :
+      constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
     
@@ -320,7 +320,9 @@ class TopicList extends Root {
           colName: 'Last Record',
           type: 'text',
           cell: (obj, col) => {
-            return <DateTime isoDateTimeString={obj[col.accessor]} dateTimeFormat={dateFormat} />;
+            return obj[col.accessor] ?
+              <DateTime isoDateTimeString={obj[col.accessor]} dateTimeFormat={dateTimeFormat} /> :
+              '';
           }
         });
     }

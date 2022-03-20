@@ -67,7 +67,7 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    dateFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
 
   searchFilterTypes = [
@@ -112,8 +112,8 @@ class TopicData extends Root {
           search: this._buildSearchFromQueryString(query),
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
-          dateFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateFormat)?
-              uiOptions.topicData.dateFormat : constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE
+          dateTimeFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat)?
+              uiOptions.topicData.dateTimeFormat : constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
         },
         () => {
             if(query.get('single') !== null) {
@@ -369,17 +369,17 @@ class TopicData extends Root {
     a.remove();
   }
 
-  async _handleOnDateFormatChanged(newDateFormat) {
+  async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
     const { clusterId } = this.props.match.params;
     this.setState(({
-      dateFormat: newDateFormat
+      dateTimeFormat: newDateTimeFormat
     }));
     const currentUiOptions = await getClusterUIOptions(clusterId);
     const newUiOptions = {
       ...currentUiOptions,
       topicData: {
         ...(currentUiOptions.topicData),
-        dateFormat: newDateFormat
+        dateTimeFormat: newDateTimeFormat
       }
     }
     setUIOptions(clusterId, newUiOptions);
@@ -874,16 +874,20 @@ class TopicData extends Root {
                 <li>
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Date Format:</strong> ({this.state.dateFormat})
+                      <strong>Time Format:</strong> ({this.state.dateTimeFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                       <Dropdown.Item onClick={() =>
-                          this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE)
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+                          )
                         }>
                         Show relative time
                       </Dropdown.Item>
                       <Dropdown.Item onClick={() =>
-                          this._handleOnDateFormatChanged(constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO)
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                          )
                         }>
                         Show ISO timestamp
                       </Dropdown.Item>
@@ -965,7 +969,10 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return <DateTime isoDateTimeString={obj[col.accessor]} dateTimeFormat={this.state.dateFormat} />;
+                      return <DateTime 
+                        isoDateTimeString={obj[col.accessor]} 
+                        dateTimeFormat={this.state.dateTimeFormat} 
+                      />;
                     }
                   },
                   {

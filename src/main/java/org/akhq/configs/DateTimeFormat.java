@@ -1,6 +1,6 @@
 package org.akhq.configs;
 
-public enum DateFormat {
+public enum DateTimeFormat {
 
     RELATIVE, ISO
 

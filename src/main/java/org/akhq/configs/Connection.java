@@ -80,7 +80,7 @@ public class Connection extends AbstractProperties {
 
         options.topicData = new UiOptionsTopicData(
             StringUtils.isNotEmpty(this.uiOptions.topicData.getSort()) ? this.uiOptions.topicData.getSort() : defaultOptions.getTopicData().getSort(),
-            this.uiOptions.topicData.getDateFormat()
+            this.uiOptions.topicData.getDateTimeFormat()
         );
 
         return options;

@@ -33,7 +33,7 @@ class Tail extends Root {
     maxRecords: 50,
     data: [],
     showFilters: '',
-    dateFormat: SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.RELATIVE
+    dateTimeFormat: SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
   eventSource;
 
@@ -64,14 +64,14 @@ class Tail extends Root {
       });
     }
 
-    this.initDateFormat();
+    this.initDateTimeFormat();
   }
 
-  initDateFormat = async () => {
+  initDateTimeFormat = async () => {
     const { clusterId } = this.props.match.params;
     const uiOptions = await getClusterUIOptions(clusterId)
     this.setState(({
-      dateFormat: uiOptions.topicData.dateFormat
+      dateTimeFormat: uiOptions.topicData.dateTimeFormat
     }));
   }
 
@@ -422,7 +422,7 @@ class Tail extends Root {
                     <div className="tail-headers">
                       <DateTime 
                         isoDateTimeString={obj.timestamp} 
-                        dateTimeFormat={this.state.dateFormat} 
+                        dateTimeFormat={this.state.dateTimeFormat}
                       />                
                     </div>
                   );

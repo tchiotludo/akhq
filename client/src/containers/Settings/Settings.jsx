@@ -13,7 +13,7 @@ class Settings extends Form {
     formData: {
       topicDefaultView: '',
       topicDataSort: '',
-      topicDataDateFormat: '',
+      topicDataDateTimeFormat: '',
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true
@@ -25,13 +25,13 @@ class Settings extends Form {
                         .map(([value]) => ({_id: value, name: value}));
   topicDataSort = Object.entries(SETTINGS_VALUES.TOPIC_DATA.SORT)
                         .map(([value]) => ({_id: value, name: value}));
-  topicDataDateFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT)
+  topicDataDateTimeFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT)
                         .map(([value]) => ({_id: value, name: value}));
 
   schema = {
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
-    topicDataDateFormat: Joi.string().required(),
+    topicDataDateTimeFormat: Joi.string().required(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional()
@@ -45,7 +45,7 @@ class Settings extends Form {
     this.setState({ clusterId, formData: {
         topicDefaultView: (uiOptions && uiOptions.topic)? uiOptions.topic.defaultView : '',
         topicDataSort: (uiOptions && uiOptions.topicData)? uiOptions.topicData.sort : '',
-        topicDataDateFormat: (uiOptions && uiOptions.topicData)? uiOptions.topicData.dateFormat : '',
+        topicDataDateTimeFormat: (uiOptions && uiOptions.topicData)? uiOptions.topicData.dateTimeFormat : '',
         skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false,
         skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false,
         showAllConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.showAllConsumerGroups : false
@@ -72,7 +72,7 @@ class Settings extends Form {
           },
           topicData: {
             sort: formData.topicDataSort,
-            dateFormat: formData.topicDataDateFormat
+            dateTimeFormat: formData.topicDataDateTimeFormat
           }
         });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
@@ -160,12 +160,12 @@ class Settings extends Form {
                 { className: 'form-control' }
             )}
             {this.renderSelect(
-                'topicDataDateFormat',
-                'Date Format',
-                this.topicDataDateFormat,
+                'topicDataDateTimeFormat',
+                'Time Format',
+                this.topicDataDateTimeFormat,
                 ({ currentTarget: input }) => {
                   const { formData } = this.state;
-                  formData.topicDataDateFormat = input.value;
+                  formData.topicDataDateTimeFormat = input.value;
                   this.setState({formData});
                 },
                 'col-sm-10',

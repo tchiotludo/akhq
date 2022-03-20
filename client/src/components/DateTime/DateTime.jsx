@@ -13,12 +13,12 @@ class DateTime extends Component {
     const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''}/>
     return (
       <Tooltip arrow title={
-        this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
+        this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO ?
           TimeAgoComp :
           isoDate
         } interactive>
         <span>{
-          this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
+          this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO ?
             isoDate :
             TimeAgoComp
         }</span>
