@@ -26,13 +26,11 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
+import DateTime from '../../../../components/DateTime';
 import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
 import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
-import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
-
-import {Tooltip} from '@material-ui/core';
 
 class TopicData extends Root {
   state = {
@@ -876,7 +874,7 @@ class TopicData extends Root {
                 <li>
                   <Dropdown>
                     <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Date Format</strong>
+                      <strong>Date Format:</strong> ({this.state.dateFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                       <Dropdown.Item onClick={() =>
@@ -967,22 +965,7 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      const isoDate = obj[col.accessor]
-                      const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''}/>
-                      return (
-                          <Tooltip arrow title={
-                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
-                                  TimeAgoComp :
-                                  isoDate
-                              } interactive>
-                            <span>{
-                                this.state.dateFormat === constants.SETTINGS_VALUES.TOPIC_DATA.DATE_FORMAT.ISO ?
-                                  isoDate :
-                                  TimeAgoComp
-                              }
-                            </span>
-                          </Tooltip>
-                      );
+                      return <DateTime isoDateTimeString={obj[col.accessor]} dateTimeFormat={this.state.dateFormat} />;
                     }
                   },
                   {
