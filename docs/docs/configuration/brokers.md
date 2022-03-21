@@ -42,7 +42,7 @@ akhq:
         bootstrap.servers: "{{ cluster }}.{{ region }}.{{ cloud }}.confluent.cloud:9092"
         security.protocol: SASL_SSL
         sasl.mechanism: PLAIN
-        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="{{ kafkaUsername }}" password="{{ kafkaPassword }}";
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="{{ kafkaUsername }}" password="{{ kafkaPassword }}"
       schema-registry:
         url: "https://{{ cluster }}.{{ region }}.{{ cloud }}.confluent.cloud"
         basic-auth-username: "{{ schemaRegistryUsername }}"
@@ -110,7 +110,7 @@ akhq:
     my-kafka-cluster:
       properties:
         bootstrap.servers: "<url broker kafka>:9094,<url broker kafka>:9094"
-        sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required auth.valid.issuer.uri="https://<url keycloak>/auth/realms/sandbox_kafka" oauth.jwks.endpoint.uri="https:/<url keycloak>//auth/realms/sandbox_kafka/protocol/openid-connect/certs" oauth.username.claim="preferred_username" oauth.client.id="kafka-producer-client" oauth.client.secret="" oauth.ssl.truststore.location="kafka.server.truststore.jks" oauth.ssl.truststore.password="xxxxx" oauth.ssl.truststore.type="jks" oauth.ssl.endpoint_identification_algorithm="" oauth.token.endpoint.uri="https:///auth/realms/sandbox_kafka/protocol/openid-connect/token";
+        sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required auth.valid.issuer.uri="https://<url keycloak>/auth/realms/sandbox_kafka" oauth.jwks.endpoint.uri="https:/<url keycloak>//auth/realms/sandbox_kafka/protocol/openid-connect/certs" oauth.username.claim="preferred_username" oauth.client.id="kafka-producer-client" oauth.client.secret="" oauth.ssl.truststore.location="kafka.server.truststore.jks" oauth.ssl.truststore.password="xxxxx" oauth.ssl.truststore.type="jks" oauth.ssl.endpoint_identification_algorithm="" oauth.token.endpoint.uri="https:///auth/realms/sandbox_kafka/protocol/openid-connect/token"
         sasl.login.callback.handler.class: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
         security.protocol: SASL_PLAINTEXT
         sasl.mechanism: OAUTHBEARER
