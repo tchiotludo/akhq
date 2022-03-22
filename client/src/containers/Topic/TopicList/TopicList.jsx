@@ -281,7 +281,7 @@ class TopicList extends Root {
   render() {
     const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const uiOptionsTopic = uiOptions.topic ?? {};
-    const dateTimeFormat = uiOptions.topicData ?
+    const dateTimeFormat = uiOptions.topicData && uiOptions.topicData.dateTimeFormat ?
       uiOptions.topicData.dateTimeFormat :
       constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE;
     const roles = this.state.roles || {};

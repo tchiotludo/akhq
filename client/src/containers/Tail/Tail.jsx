@@ -70,9 +70,11 @@ class Tail extends Root {
   initDateTimeFormat = async () => {
     const { clusterId } = this.props.match.params;
     const uiOptions = await getClusterUIOptions(clusterId)
-    this.setState(({
-      dateTimeFormat: uiOptions.topicData.dateTimeFormat
-    }));
+    if(uiOptions.topicData && uiOptions.topicData.dateTimeFormat) {
+      this.setState(({
+        dateTimeFormat: uiOptions.topicData.dateTimeFormat
+      }));
+    }
   }
 
   componentWillUnmount = () => {

@@ -100,8 +100,8 @@ class TopicData extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
 
-    this.setState(
-        {
+    this.setState((prevState) =>
+        ({
           selectedCluster: clusterId,
           selectedTopic: topicId,
           sortBy: (query.get('sort'))? query.get('sort') : (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)?
@@ -113,8 +113,8 @@ class TopicData extends Root {
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
           dateTimeFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat)?
-              uiOptions.topicData.dateTimeFormat : constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
-        },
+              uiOptions.topicData.dateTimeFormat : prevState.dateTimeFormat
+        }),
         () => {
             if(query.get('single') !== null) {
               this._getSingleMessage(query.get('partition'), query.get('offset'));
