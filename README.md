@@ -41,6 +41,26 @@
 </tr>
 </table>
 
+## From AKHQ project creator
+<table>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://github.com/kestra-io/kestra?utm_source=AKHQ" >
+  <img src="https://kestra.io/video.gif" alt="Upstash" width="320" align="right">
+  </a>
+
+<h3>Kestra: Open source data orchestration and scheduling platform</h3>
+
+<p>
+Kestra is an infinitely scalable orchestration and scheduling platform, creating, running, scheduling, and monitoring millions of complex pipelines.
+</p>
+
+[Discover the project!](https://github.com/kestra-io/kestra?utm_source=AKHQ)
+</td>
+</tr>
+</table>
+
 
 
 ## Who's using AKHQ
