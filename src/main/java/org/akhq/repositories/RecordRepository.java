@@ -396,6 +396,7 @@ public class RecordRepository extends AbstractRepository {
                 }
 
                 if (last == partition.getFirstOffset() || last < 0) {
+                    consumer.close();
                     return null;
                 } else if (!(last - pollSizePerPartition < first)) {
                     first = last - pollSizePerPartition;
