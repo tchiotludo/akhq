@@ -113,8 +113,8 @@ dependencies {
 
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.19.1'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.19.1'
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.19.2'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.19.2'
 
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
