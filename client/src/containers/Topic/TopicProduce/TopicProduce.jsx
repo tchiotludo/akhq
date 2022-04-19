@@ -257,8 +257,7 @@ class TopicProduce extends Form {
                 '',
                 tombstone,
                 () => {
-                  this.setState({tombstone: !tombstone,
-                    valuePlaceholder: this.getPlaceholderValue(tombstone, null)})
+                  this.setState({tombstone: !tombstone} )
                 },
                 false,
                 { disabled: multiMessage }
