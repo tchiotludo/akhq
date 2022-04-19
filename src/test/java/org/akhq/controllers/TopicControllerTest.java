@@ -194,6 +194,22 @@ class TopicControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(3)
+    void produceTombstone() {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("value", null);
+        paramMap.put("key", "my-key-tomb");
+        paramMap.put("multiMessage", false);
+        List<Record> response = this.retrieveList(HttpRequest.POST(
+            CREATE_TOPIC_URL + "/data", paramMap
+        ), Record.class);
+
+        assertEquals(1, response.size());
+        assertEquals("my-key-tomb", response.get(0).getKey());
+        assertNull(response.get(0).getValue());
+    }
+
+    @Test
     @Order(4)
     void dataGet() {
         ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
@@ -214,7 +230,7 @@ class TopicControllerTest extends AbstractTest {
             ),
             Record.class
         );
-        assertEquals(1, retrieve.getOffset());
+        assertEquals(2, retrieve.getOffset());
 
         // get data
         // @TODO: Failed to see the message
