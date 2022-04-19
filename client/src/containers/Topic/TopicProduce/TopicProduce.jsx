@@ -204,7 +204,7 @@ class TopicProduce extends Form {
       });
   }
 
-  renderMultiMessage() {
+  renderMultiMessage(tombstone) {
     const { formData, multiMessage } = this.state;
 
     return (
@@ -219,7 +219,8 @@ class TopicProduce extends Form {
                 this.setState({multiMessage: !multiMessage,
                   valuePlaceholder: this.getPlaceholderValue(!multiMessage, formData.keyValueSeparator)})
               },
-              false
+              false,
+              { disabled: tombstone }
             )}
 
             <label className="col-auto col-form-label">Separator</label>
@@ -244,7 +245,7 @@ class TopicProduce extends Form {
     );
   }
 
-  renderTombstone() {
+  renderTombstone(multiMessage) {
     const { tombstone } = this.state;
 
     return (
@@ -259,7 +260,8 @@ class TopicProduce extends Form {
                   this.setState({tombstone: !tombstone,
                     valuePlaceholder: this.getPlaceholderValue(tombstone, null)})
                 },
-                false
+                false,
+                { disabled: multiMessage }
             )}
           </div>
         </div>
@@ -433,7 +435,8 @@ class TopicProduce extends Form {
       valueSchema,
       valueSchemaSearchValue,
       selectedValueSchema,
-      multiMessage
+      multiMessage,
+      tombstone
     } = this.state;
     let date = moment(datetime);
     return (
@@ -502,9 +505,9 @@ class TopicProduce extends Form {
             )
           )}
 
-          {this.renderMultiMessage()}
+          {this.renderMultiMessage(tombstone)}
 
-          {this.renderTombstone()}
+          {this.renderTombstone(multiMessage)}
 
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
@@ -514,7 +517,8 @@ class TopicProduce extends Form {
                 }
             })},
           multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
-          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) }
+          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) },
+          { readOnly: tombstone }
           )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
