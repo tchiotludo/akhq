@@ -390,12 +390,12 @@
                                                 <p>These support consists in providing time for contribution to core
                                                     contributors.</p>
                                                 <div class="mu-about-info-companies text-center">
-                                                    <span class="mu-about-image">
+                                                    <span class="mu-about-image mb-2">
                                                         <img aria-hidden="true"
                                                              style="width:210px"
                                                              src="/assets/images/using/la-redoute.jpg" alt="La Redoute">
                                                     </span>
-                                                    <span class="mu-about-image">
+                                                    <span class="mu-about-image mb-2">
                                                         <a href="https://www.linkedin.com/company/polarising/"
                                                            target="_blank">
                                                             <img aria-hidden="true"
@@ -403,12 +403,20 @@
                                                                  src="/assets/images/polarising.png" alt="Polarising">
                                                         </a>
                                                     </span>
-                                                    <span class="mu-about-image">
+                                                    <span class="mu-about-image mb-2">
                                                         <a href="https://upstash.com/?utm_source=AKHQ"
                                                            target="_blank">
                                                             <img aria-hidden="true"
                                                                  style="width:210px"
                                                                  src="https://raw.githubusercontent.com/upstash/sponsorship/master/logo.png" alt="Upstash">
+                                                        </a>
+                                                    </span>
+                                                    <span class="mu-about-image">
+                                                        <a href="https://redpanda.com/?utm_source=AKHQ"
+                                                           target="_blank">
+                                                            <img aria-hidden="true"
+                                                                 style="width:210px"
+                                                                 src="https://user-images.githubusercontent.com/2064609/164302508-76ac1dfb-6c50-43d4-a092-ff275b25a032.svg" alt="Redpanda">
                                                         </a>
                                                     </span>
                                                 </div>
