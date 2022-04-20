@@ -30,7 +30,7 @@ class TopicLogs extends Root {
         topic: log.topic,
         partition: log.partition,
         size: log.size,
-        offsetLag: log.offsetLag
+        offsetLag: Number(log.offsetLag).toLocaleString()
       };
     });
     this.setState({ data: tableLogs, loading: false });

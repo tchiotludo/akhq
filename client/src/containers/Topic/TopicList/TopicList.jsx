@@ -249,7 +249,7 @@ class TopicList extends Root {
               className={className}
               onClick={noPropagation}
             >
-              {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
+              {consumerGroup.id} <div className="badge badge-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
             </Link>
           );
       });

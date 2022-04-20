@@ -127,7 +127,7 @@ class ConsumerGroupList extends Root {
         >
           {topicId + ' '}
 
-          <div className="badge badge-secondary">Lag: {offsetLag}</div>
+          <div className="badge badge-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
         </Link>
       );
     });
