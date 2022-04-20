@@ -58,7 +58,7 @@ class ConnectCreate extends Root {
     let formData = {};
     formData.type = this.state.selectedType;
     this.schema['type'] = Joi.string().required();
-    formData.subject = '';
+    // formData.subject = '';
     this.schema['subject'] = Joi.string().required();
     definitions.forEach(definition => {
       let config = this.handleDefinition(definition);
@@ -414,6 +414,28 @@ class ConnectCreate extends Root {
       });
   }
 
+  handleFileUpload(){
+    let fileElem = document.getElementById("fileElem");
+    if (fileElem) {
+      fileElem.click();
+    }
+  }
+
+  onFileUpload = value => {
+    const reader = new FileReader();
+    const self = this;
+    reader.onload = function(evt) {
+      let connector = JSON.parse(evt.target.result.replaceAll('\r\n', ''));
+      connector.config.subject = connector.name;
+      connector.config.type = connector.config['connector.class'];
+      window.connector = connector;
+      self.setState({ selectedType: connector.config['connector.class'], formData: connector.config }, () => {
+        self.renderForm();
+      });  
+    };
+    reader.readAsText(value.target.files[0]);
+  };
+
   render() {
     const { formData, selectedType } = this.state;
     const { history } = this.props;
@@ -479,6 +501,8 @@ class ConnectCreate extends Root {
             </React.Fragment>
           )}
         </form>
+        <input type="file" id="fileElem" onChange={value => {this.onFileUpload(value)}} accept=".json" style={{display:'none'}}></input>
+        <button type="button" id="uploadButton" onClick={this.handleFileUpload} className='btn btn-warning'>Upload</button>
       </div>
     );
   }
