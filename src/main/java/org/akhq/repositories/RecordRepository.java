@@ -479,7 +479,7 @@ public class RecordRepository extends AbstractRepository {
     public List<RecordMetadata> produce(
             String clusterId,
             String topic,
-            String value,
+            Optional<String> value,
             Map<String, String> headers,
             Optional<String> key,
             Optional<Integer> partition,
@@ -492,10 +492,10 @@ public class RecordRepository extends AbstractRepository {
         List<RecordMetadata> produceResults = new ArrayList<>();
 
         // Distinguish between single record produce, and multiple messages
-        if (multiMessage.booleanValue()) {
+        if (Boolean.TRUE.equals(multiMessage) && value.isPresent()) {
             // Split key-value pairs and produce them
-            for (KeyValue<String, String> kvPair : splitMultiMessage(value, keyValueSeparator.orElseThrow())) {
-                produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value.get(), keyValueSeparator.orElseThrow())) {
+                produceResults.add(produce(clusterId, topic, Optional.of(kvPair.getValue()), headers, Optional.of(kvPair.getKey()),
                         partition, timestamp, keySchemaId, valueSchemaId));
             }
         } else {
@@ -590,7 +590,7 @@ public class RecordRepository extends AbstractRepository {
     public RecordMetadata produce(
         String clusterId,
         String topic,
-        String value,
+        Optional<String> value,
         Map<String, String> headers,
         Optional<String> key,
         Optional<Integer> partition,
@@ -610,7 +610,7 @@ public class RecordRepository extends AbstractRepository {
             }
         } else {
             try {
-                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value))) {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value.isEmpty() ? null : value.get()))) {
                     throw new IllegalArgumentException("Key missing for produce onto compacted topic");
                 }
             } catch (ExecutionException ex) {
@@ -618,11 +618,11 @@ public class RecordRepository extends AbstractRepository {
             }
         }
 
-        if (value != null && valueSchemaId.isPresent()) {
+        if (value.isPresent() && valueSchemaId.isPresent()) {
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
-            valueAsBytes = valueSerializer.serialize(value);
+            valueAsBytes = valueSerializer.serialize(value.get());
         } else {
-            valueAsBytes = value != null ? value.getBytes() : null;
+            valueAsBytes = value.map(String::getBytes).orElse(null);
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);

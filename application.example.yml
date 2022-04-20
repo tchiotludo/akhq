@@ -105,6 +105,7 @@ akhq:
           show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
+          date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
 
     my-cluster-ssl:
       properties:

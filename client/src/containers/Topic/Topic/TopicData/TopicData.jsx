@@ -17,7 +17,6 @@ import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import _ from 'lodash';
 import constants from '../../../../utils/constants';
-import { setProduceToTopicValues } from '../../../../utils/localstorage';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
@@ -27,9 +26,10 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
+import DateTime from '../../../../components/DateTime';
 import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
+import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
-import TimeAgo from 'react-timeago'
 import JSONbig from 'json-bigint';
 
 class TopicData extends Root {
@@ -66,7 +66,8 @@ class TopicData extends Root {
     canDeleteRecords: false,
     percent: 0,
     loading: true,
-    canDownload: false
+    canDownload: false,
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
 
   searchFilterTypes = [
@@ -99,8 +100,8 @@ class TopicData extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
 
-    this.setState(
-        {
+    this.setState((prevState) =>
+        ({
           selectedCluster: clusterId,
           selectedTopic: topicId,
           sortBy: (query.get('sort'))? query.get('sort') : (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)?
@@ -111,7 +112,9 @@ class TopicData extends Root {
           search: this._buildSearchFromQueryString(query),
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
-        },
+          dateTimeFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat)?
+              uiOptions.topicData.dateTimeFormat : prevState.dateTimeFormat
+        }),
         () => {
             if(query.get('single') !== null) {
               this._getSingleMessage(query.get('partition'), query.get('offset'));
@@ -364,6 +367,22 @@ class TopicData extends Root {
 
     a.click();
     a.remove();
+  }
+
+  async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
+    const { clusterId } = this.props.match.params;
+    this.setState(({
+      dateTimeFormat: newDateTimeFormat
+    }));
+    const currentUiOptions = await getClusterUIOptions(clusterId);
+    const newUiOptions = {
+      ...currentUiOptions,
+      topicData: {
+        ...(currentUiOptions.topicData),
+        dateTimeFormat: newDateTimeFormat
+      }
+    }
+    setUIOptions(clusterId, newUiOptions);
   }
 
   _handleCopy(row) {
@@ -852,6 +871,29 @@ class TopicData extends Root {
                     )}
                   </Dropdown>
                 </li>
+                <li>
+                  <Dropdown>
+                    <Dropdown.Toggle className="nav-link dropdown-toggle">
+                      <strong>Time Format:</strong> ({this.state.dateTimeFormat})
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={() =>
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+                          )
+                        }>
+                        Show relative time
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() =>
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                          )
+                        }>
+                        Show ISO timestamp
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </li>
               </ul>
             </div>
           </nav>
@@ -927,7 +969,10 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return (<TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>);
+                      return <DateTime 
+                        isoDateTimeString={obj[col.accessor]} 
+                        dateTimeFormat={this.state.dateTimeFormat} 
+                      />;
                     }
                   },
                   {

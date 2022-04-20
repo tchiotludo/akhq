@@ -260,6 +260,10 @@ export const uriConsumerGroupUpdate = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
 };
 
+export const uriDeleteGroupOffsets = (clusterId, groupId, topicName) => {
+  return `${apiUrl}/${clusterId}/group/${groupId}/topic/${topicName}`;
+};
+
 export const uriAclsList = (clusterId, search) => {
   let url = `${apiUrl}/${clusterId}/acls`;
   return search ? `${url}?search=${search}` : url;
@@ -348,5 +352,6 @@ export default {
   uriAclsByPrincipal,
   uriLiveTail,
   uriTopicDataSearch,
-  uriTopicDataDelete
+  uriTopicDataDelete,
+  uriDeleteGroupOffsets
 };

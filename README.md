@@ -40,6 +40,27 @@
 </td>
 </tr>
 </table>
+<table>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://redpanda.com/?utm_source=AKHQ" >
+
+  <img style="background-color: #FFF;padding:10px" src="https://user-images.githubusercontent.com/2064609/164302508-76ac1dfb-6c50-43d4-a092-ff275b25a032.svg" alt="Upstash" width="260" align="right">
+  </a>
+
+<h3>Redpanda</h3>
+
+  <ul>
+    <li>Redpanda is a streaming data platform for developers.</li>
+    <li>Kafka API compatible.</li>
+    <li>10x faster. No ZooKeeper. No JVM!</li>
+  </ul>
+
+[redpanda.com](https://redpanda.com/?utm_source=AKHQ)
+</td>
+</tr>
+</table>
 
 ## From AKHQ project creator
 <table>
