@@ -140,7 +140,7 @@ public class TopicController extends AbstractController {
         HttpRequest<?> request,
         String cluster,
         String topicName,
-        String value,
+        Optional<String> value,
         Optional<String> key,
         Optional<Integer> partition,
         Optional<String> timestamp,
@@ -167,7 +167,7 @@ public class TopicController extends AbstractController {
                     .map(recordMetadata -> new Record(recordMetadata,
                             schemaRegistryRepository.getSchemaRegistryType(cluster),
                             key.map(String::getBytes).orElse(null),
-                            value.getBytes(),
+                            value.map(String::getBytes).orElse(null),
                             headers,
                             targetTopic))
                     .collect(Collectors.toList());

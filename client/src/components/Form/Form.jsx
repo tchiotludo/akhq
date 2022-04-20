@@ -112,7 +112,7 @@ class Form extends Root {
     );
   };
 
-  renderJSONInput = (name, label, onChange, textMode, options) => {
+  renderJSONInput = (name, label, onChange, textMode, options, rest) => {
     const { formData, errors } = this.state;
     const inputMode = textMode ? "text" : (formData.schemaType === "PROTOBUF" ? "protobuf"  : "json")
     return (
@@ -137,6 +137,7 @@ class Form extends Root {
             editorProps={{ $blockScrolling: true }}
             setOptions={options}
             style={{ width: '100%', minHeight: '25vh' }}
+            {...rest}
           />
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
         </div>
@@ -241,7 +242,7 @@ class Form extends Root {
     );
   };
 
-  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked) => {
+  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked, rest) => {
     return (
         <input
         type="checkbox"
@@ -251,6 +252,7 @@ class Form extends Root {
         checked={isChecked}
         onChange={onChange}
         defaultChecked={ isDefaultChecked ? isDefaultChecked : false}
+        {...rest}
         />
     );
   };

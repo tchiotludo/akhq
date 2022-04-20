@@ -47,6 +47,7 @@ class TopicProduce extends Form {
     topics: [],
     topicsSearchValue: '',
     multiMessage: false,
+    tombstone: false,
     valuePlaceholder: '{"param": "value"}'
   };
 
@@ -157,12 +158,19 @@ class TopicProduce extends Form {
       selectedValueSchema,
       keySchema,
       valueSchema,
-      multiMessage
+      multiMessage,
+      tombstone
     } = this.state;
     const { clusterId } = this.props.match.params;
 
     let schemaKeyToSend = keySchema.find(key => key.subject === selectedKeySchema);
     let schemaValueToSend = valueSchema.find(value => value.subject === selectedValueSchema);
+    let value;
+    if (tombstone) {
+      value = null;
+    } else {
+      value = multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value))
+    }
     const topic = {
       clusterId,
       topicId,
@@ -170,7 +178,7 @@ class TopicProduce extends Form {
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value)),
+      value: value,
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
       valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
       multiMessage: multiMessage,
@@ -196,7 +204,7 @@ class TopicProduce extends Form {
       });
   }
 
-  renderMultiMessage() {
+  renderMultiMessage(tombstone) {
     const { formData, multiMessage } = this.state;
 
     return (
@@ -211,7 +219,8 @@ class TopicProduce extends Form {
                 this.setState({multiMessage: !multiMessage,
                   valuePlaceholder: this.getPlaceholderValue(!multiMessage, formData.keyValueSeparator)})
               },
-              false
+              false,
+              { disabled: tombstone }
             )}
 
             <label className="col-auto col-form-label">Separator</label>
@@ -233,6 +242,28 @@ class TopicProduce extends Form {
             />
           </div>
       </div>
+    );
+  }
+
+  renderTombstone(multiMessage) {
+    const { tombstone } = this.state;
+
+    return (
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label">Tombstone</label>
+          <div className="row khq-multiple col-sm-7">
+            {this.renderCheckbox(
+                'isTombstone',
+                '',
+                tombstone,
+                () => {
+                  this.setState({tombstone: !tombstone} )
+                },
+                false,
+                { disabled: multiMessage }
+            )}
+          </div>
+        </div>
     );
   }
 
@@ -403,7 +434,8 @@ class TopicProduce extends Form {
       valueSchema,
       valueSchemaSearchValue,
       selectedValueSchema,
-      multiMessage
+      multiMessage,
+      tombstone
     } = this.state;
     let date = moment(datetime);
     return (
@@ -472,7 +504,9 @@ class TopicProduce extends Form {
             )
           )}
 
-          {this.renderMultiMessage()}
+          {this.renderMultiMessage(tombstone)}
+
+          {this.renderTombstone(multiMessage)}
 
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
@@ -482,7 +516,8 @@ class TopicProduce extends Form {
                 }
             })},
           multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
-          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) }
+          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) },
+          { readOnly: tombstone }
           )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
