@@ -3,14 +3,16 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import _ from 'lodash';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
-import {uriLiveTail, uriTopicsName} from '../../utils/endpoints';
+import { SETTINGS_VALUES } from '../../utils/constants';
+import { getClusterUIOptions } from '../../utils/functions';
+import { uriLiveTail, uriTopicsName } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
-import TimeAgo from 'react-timeago';
+import DateTime from '../../components/DateTime';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -30,7 +32,8 @@ class Tail extends Root {
     selectedStatus: 'STOPPED',
     maxRecords: 50,
     data: [],
-    showFilters: ''
+    showFilters: '',
+    dateTimeFormat: SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
   eventSource;
 
@@ -59,6 +62,18 @@ class Tail extends Root {
           this.startEventSource();
         }
       });
+    }
+
+    this.initDateTimeFormat();
+  }
+
+  initDateTimeFormat = async () => {
+    const { clusterId } = this.props.match.params;
+    const uiOptions = await getClusterUIOptions(clusterId)
+    if(uiOptions.topicData && uiOptions.topicData.dateTimeFormat) {
+      this.setState(({
+        dateTimeFormat: uiOptions.topicData.dateTimeFormat
+      }));
     }
   }
 
@@ -405,7 +420,14 @@ class Tail extends Root {
                 colName: 'Date',
                 type: 'text',
                 cell: obj => {
-                  return (<div className="tail-headers"><TimeAgo date={Date.parse(obj.timestamp)} title={obj.timestamp}/></div>);
+                  return (
+                    <div className="tail-headers">
+                      <DateTime 
+                        isoDateTimeString={obj.timestamp} 
+                        dateTimeFormat={this.state.dateTimeFormat}
+                      />                
+                    </div>
+                  );
                 }
               },
               {

@@ -37,12 +37,28 @@ export const ACLS = 'acls';
 export const SCHEMA = 'schema';
 export const CONNECT = 'connect';
 export const SETTINGS = 'settings';
-export const TOPICS = {
-  ALL: 'ALL',
-  HIDE_INTERNAL: 'HIDE_INTERNAL',
-  HIDE_INTERNAL_STREAM: 'HIDE_INTERNAL_STREAM',
-  HIDE_STREAM: 'HIDE_STREAM'
-};
+
+// Configurable settings
+export const SETTINGS_VALUES = {
+  TOPIC: {
+    TOPIC_DEFAULT_VIEW: {
+      ALL: 'ALL',
+      HIDE_INTERNAL: 'HIDE_INTERNAL',
+      HIDE_INTERNAL_STREAM: 'HIDE_INTERNAL_STREAM',
+      HIDE_STREAM: 'HIDE_STREAM'
+    }
+  },
+  TOPIC_DATA: {
+    SORT: {
+      OLDEST: 'OLDEST',
+      NEWEST: 'NEWEST',
+    },
+    DATE_TIME_FORMAT: {
+      RELATIVE: 'RELATIVE',
+      ISO: 'ISO',
+    }
+  }
+}
 
 export const TYPES = {
   STRING: 'STRING',
@@ -73,7 +89,6 @@ export default {
   NODE,
   TOPIC,
   TAIL,
-  TOPICS,
   GROUP,
   ACLS,
   SCHEMA,
@@ -81,7 +96,8 @@ export default {
   TYPES,
   ROLE_TYPE,
   VERSION,
-  SETTINGS
+  SETTINGS,
+  SETTINGS_VALUES
 };
 
 export const sortBy = (field, reverse, primer) => {
