@@ -41,7 +41,6 @@ class ConnectCreate extends Root {
 
   async getPlugins() {
     const { connectId, clusterId } = this.state;
-
     let plugins = await this.getApi(uriConnectPlugins(clusterId, connectId));
     this.setState({ clusterId, connectId, plugins: plugins.data });
   }
@@ -53,16 +52,15 @@ class ConnectCreate extends Root {
     });
   };
 
-  handleShema(definitions) {
-    this.schema = {};
-    let formData = {};
+  handleSchema(definitions) {
+    this.schema = !(_.isEmpty(this.schema)) ? this.schema : {};
+    let formData = !(_.isEmpty(this.state.formData)) ? this.state.formData : {};
     formData.type = this.state.selectedType;
     this.schema['type'] = Joi.string().required();
-    // formData.subject = '';
     this.schema['subject'] = Joi.string().required();
     definitions.forEach(definition => {
       let config = this.handleDefinition(definition);
-      formData[definition.name] = '';
+      formData[definition.name] = formData[definition.name] ? formData[definition.name] : '';
       this.schema[definition.name] = config;
       if (definition.name === 'transforms') {
         formData['transformsprops'] = '{}';
@@ -113,7 +111,6 @@ class ConnectCreate extends Root {
     } else {
       def = Joi.string().allow('');
     }
-
     return def;
   }
 
@@ -320,7 +317,7 @@ class ConnectCreate extends Root {
     let plugin = this.getPlugin();
     if(plugin.definitions){
       this.setState({ plugin }, () => {
-        this.handleShema(
+        this.handleSchema(
           _(plugin.definitions)
             .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
             .value()
@@ -335,6 +332,8 @@ class ConnectCreate extends Root {
   }
 
   validate = () => {
+    if(_.isEmpty(this.state.formData) || _.isEmpty(this.schema))
+      return { "error": "No data present"};
     const { error } = Joi.validate(this.state.formData, this.schema);
     if (!error) return null;
     const errors = {};
@@ -426,9 +425,12 @@ class ConnectCreate extends Root {
     const self = this;
     reader.onload = function(evt) {
       let connector = JSON.parse(evt.target.result.replaceAll('\r\n', ''));
-      connector.config.subject = connector.name;
+      connector.config.subject = connector.name ? connector.name : '';
       connector.config.type = connector.config['connector.class'];
-      window.connector = connector;
+      self.schema = !(_.isEmpty(self.schema)) ? self.schema : {};
+      for(let config in connector.config) { 
+        self.schema[config] = Joi.string().allow('');
+      }
       self.setState({ selectedType: connector.config['connector.class'], formData: connector.config }, () => {
         self.renderForm();
       });  
@@ -488,21 +490,24 @@ class ConnectCreate extends Root {
                     </tr>
                   </thead>
                   <tbody>{this.state.display}</tbody>
+
                 </table>
               </div>
 
-              <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
-                <aside>
-                  <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
-                    Create
-                  </button>
-                </aside>
-              </div>
+              
             </React.Fragment>
           )}
+          <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+            <aside>
+              <input type="file" id="fileElem" onChange={value => {this.onFileUpload(value)}} accept=".json" style={{display:'none'}}></input>
+              <button type="button" id="uploadButton" onClick={this.handleFileUpload} className='btn btn-warning'>Upload</button>
+              <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
+                Create
+              </button>
+            </aside>
+          </div>
         </form>
-        <input type="file" id="fileElem" onChange={value => {this.onFileUpload(value)}} accept=".json" style={{display:'none'}}></input>
-        <button type="button" id="uploadButton" onClick={this.handleFileUpload} className='btn btn-warning'>Upload</button>
+        
       </div>
     );
   }
