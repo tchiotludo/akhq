@@ -438,6 +438,25 @@ class ConnectCreate extends Root {
     reader.readAsText(value.target.files[0]);
   };
 
+  handleDownload = value => {
+    const { formData } = this.state;
+    let filename = formData['subject'] + ".json";
+    let filtered = {};
+    for (let d in formData){ if (formData[d] != '' && formData[d] != null) { filtered[d] = formData[d] }}
+    let text = JSON.stringify({
+      "name": formData['subject'],
+      "config": filtered
+    })
+
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+
   render() {
     const { formData, selectedType } = this.state;
     const { history } = this.props;
@@ -501,6 +520,7 @@ class ConnectCreate extends Root {
             <aside>
               <input type="file" id="fileElem" onChange={value => {this.onFileUpload(value)}} accept=".json" style={{display:'none'}}></input>
               <button type="button" id="uploadButton" onClick={this.handleFileUpload} className='btn btn-warning'>Upload</button>
+              <button type="button" id="downloadButton" onClick={this.handleDownload} className='btn btn-danger'>Download</button>
               <button type={'submit'} className="btn btn-primary" disabled={this.validate()}>
                 Create
               </button>
