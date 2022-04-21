@@ -369,6 +369,25 @@ class ConnectConfigs extends Form {
     toast.success(`${`Definition '${formData.name}' is updated`}`);
   }
 
+  handleDownload = value => {
+    const { formData } = this.state;
+    let filename = formData['name'] + ".json";
+    let filtered = {};
+    for (let d in formData){ if (formData[d] != '' && formData[d] != null) { filtered[d] = formData[d] }}
+    let text = JSON.stringify({
+      "name": formData['name'],
+      "config": filtered
+    })
+
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+
   render() {
     const { plugin, display } = this.state;
     const { name } = this.state.formData;
@@ -416,6 +435,14 @@ class ConnectConfigs extends Form {
               </div>
               {roles.connect && roles.connect['connect/update'] && (
                 <div style={{ left: 0, width: '100%' }} className="khq-submit">
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    style={{ marginRight: '10px' }}
+                    onClick={this.handleDownload}
+                  >
+                    Download
+                  </button>
                   <button
                     type={'submit'}
                     className="btn btn-primary"
