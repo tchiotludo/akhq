@@ -796,12 +796,11 @@ public class RecordRepository extends AbstractRepository {
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
-                s = s.toLowerCase();
-                for (String k : split) {
-                    if (s.equals(k)) {
-                        return true;
-                    }
-                }
+                final String lowerS = s.toLowerCase();
+
+                return Stream.of(split)
+                    .filter(lowerS::equals)
+                    .count() == split.length;
             }
         }
         return false;
@@ -817,12 +816,11 @@ public class RecordRepository extends AbstractRepository {
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
-                s = s.toLowerCase();
-                for (String k : split) {
-                    if (s.contains(k)) {
-                        return false;
-                    }
-                }
+                final String lowerS = s.toLowerCase();
+
+                return Stream.of(split)
+                    .filter(lowerS::contains)
+                    .count() == split.length;
             }
         }
         return true;
