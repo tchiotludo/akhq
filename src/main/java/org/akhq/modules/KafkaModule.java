@@ -46,6 +46,10 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
+    public boolean clusterExists(String cluster){
+        return this.getClustersList().contains(cluster);
+    }
+
     public Connection getConnection(String cluster) {
         return this.connections
             .stream()

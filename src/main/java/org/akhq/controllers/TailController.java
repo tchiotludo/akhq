@@ -1,6 +1,8 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -14,6 +16,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.akhq.configs.Role;
 import org.akhq.models.Record;
+import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.RecordRepository;
 import org.reactivestreams.Publisher;
 
@@ -33,6 +36,8 @@ public class TailController extends AbstractController {
     public TailController(RecordRepository recordRepository) {
         this.recordRepository = recordRepository;
     }
+    @Inject
+    private KafkaModule kafkaModule;
 
     @Secured(Role.ROLE_TOPIC_DATA_READ)
     @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
@@ -44,24 +49,29 @@ public class TailController extends AbstractController {
         Optional<String> search,
         Optional<List<String>> after
     ) {
-        RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
-        search.ifPresent(options::setSearch);
-        after.ifPresent(options::setAfter);
+        if(kafkaModule.clusterExists(cluster)) {
+            RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
+            search.ifPresent(options::setSearch);
+            after.ifPresent(options::setAfter);
 
-        return recordRepository
-            .tail(cluster, options)
-            .map(event -> {
-                TailRecord tailRecord = new TailRecord();
-                tailRecord.offsets = getOffsets(event);
+            return recordRepository
+                .tail(cluster, options)
+                .map(event -> {
+                    TailRecord tailRecord = new TailRecord();
+                    tailRecord.offsets = getOffsets(event);
 
-                if (event.getData().getRecords().size() > 0) {
-                    tailRecord.records = event.getData().getRecords();
-                }
+                    if (event.getData().getRecords().size() > 0) {
+                        tailRecord.records = event.getData().getRecords();
+                    }
 
-                return Event
-                    .of(tailRecord)
-                    .name(event.getName());
-            });
+                    return Event
+                        .of(tailRecord)
+                        .name(event.getName());
+                });
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     private static List<String> getOffsets(Event<RecordRepository.TailEvent> event) {

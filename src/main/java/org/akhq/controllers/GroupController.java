@@ -3,6 +3,7 @@ package org.akhq.controllers;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
@@ -16,6 +17,7 @@ import org.akhq.models.Consumer;
 import org.akhq.models.ConsumerGroup;
 import org.akhq.models.TopicPartition;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.AccessControlListRepository;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
@@ -57,45 +59,73 @@ public class GroupController extends AbstractController {
         this.recordRepository = recordRepository;
         this.aclRepository = aclRepository;
     }
+    @Inject
+    private KafkaModule kafkaModule;
 
     @Get
     @Operation(tags = {"consumer group"}, summary = "List all consumer groups")
     public ResultPagedList<ConsumerGroup> list(HttpRequest<?> request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
-        URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+        if(kafkaModule.clusterExists(cluster)) {
+            URIBuilder uri = URIBuilder.fromURI(request.getUri());
+            Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
-        return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search));
+            return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search));
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group")
     public ConsumerGroup home(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName);
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.consumerGroupRepository.findByName(cluster, groupName);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("{groupName}/offsets")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsets(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getOffsets();
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.consumerGroupRepository.findByName(cluster, groupName).getOffsets();
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("{groupName}/members")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
     public List<Consumer> members(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getMembers();
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.consumerGroupRepository.findByName(cluster, groupName).getMembers();
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("{groupName}/acls")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group acls")
     public List<AccessControl> acls(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
+        if(kafkaModule.clusterExists(cluster)) {
+            return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("topics")
     @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group for list of topics")
     public List filterByTopics(String cluster, Optional<List<String>> topics) {
+        if(kafkaModule.clusterExists(cluster)) {
 
-        return topics.map(
+            return topics.map(
                 topicsName -> {
                     try {
                         return this.consumerGroupRepository.findByTopics(cluster, topicsName);
@@ -103,7 +133,11 @@ public class GroupController extends AbstractController {
                         throw new RuntimeException(e);
                     }
                 }
-        ).orElse(Collections.EMPTY_LIST);
+            ).orElse(Collections.EMPTY_LIST);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
@@ -114,53 +148,70 @@ public class GroupController extends AbstractController {
         String groupName,
         @Body List<OffsetsUpdate> offsets
     ) {
-        this.consumerGroupRepository.updateOffsets(
-            cluster,
-            groupName,
-            offsets
-                .stream()
-                .map(r -> new AbstractMap.SimpleEntry<>(
-                        new TopicPartition(r.getTopic(), r.getPartition()),
-                        r.getOffset()
+        if(kafkaModule.clusterExists(cluster)) {
+            this.consumerGroupRepository.updateOffsets(
+                cluster,
+                groupName,
+                offsets
+                    .stream()
+                    .map(r -> new AbstractMap.SimpleEntry<>(
+                            new TopicPartition(r.getTopic(), r.getPartition()),
+                            r.getOffset()
+                        )
                     )
-                )
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        );
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
     @Get("{groupName}/offsets/start")
     @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
+        if(kafkaModule.clusterExists(cluster)) {
+            ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
 
-        return recordRepository.getOffsetForTime(
-            cluster,
-            group.getOffsets()
-                .stream()
-                .map(r -> new TopicPartition(r.getTopic(), r.getPartition()))
-                .collect(Collectors.toList()),
-            timestamp.toEpochMilli()
-        );
+            return recordRepository.getOffsetForTime(
+                cluster,
+                group.getOffsets()
+                    .stream()
+                    .map(r -> new TopicPartition(r.getTopic(), r.getPartition()))
+                    .collect(Collectors.toList()),
+                timestamp.toEpochMilli()
+            );
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_GROUP_DELETE)
     @Delete("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Delete a consumer group")
     public HttpResponse<?> delete(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        this.kafkaWrapper.deleteConsumerGroups(cluster, groupName);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.kafkaWrapper.deleteConsumerGroups(cluster, groupName);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Secured(Role.ROLE_GROUP_OFFSETS_DELETE)
     @Delete("{groupName}/topic/{topicName}")
     @Operation(tags = {"consumer group"}, summary = "Delete group offsets of given topic")
     public HttpResponse<?> deleteConsumerGroupOffsets(String cluster, String groupName, String topicName) throws ExecutionException {
-        this.kafkaWrapper.deleteConsumerGroupOffsets(cluster, groupName, topicName);
-        return HttpResponse.noContent();
+        if(kafkaModule.clusterExists(cluster)) {
+            this.kafkaWrapper.deleteConsumerGroupOffsets(cluster, groupName, topicName);
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @NoArgsConstructor

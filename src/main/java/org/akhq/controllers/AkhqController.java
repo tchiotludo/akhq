@@ -4,6 +4,7 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 import org.akhq.modules.HasAnyPermission;
+import org.akhq.modules.KafkaModule;
 import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
@@ -48,6 +50,9 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private VersionProvider versionProvider;
+
+    @Inject
+    private KafkaModule kafkaModule;
 
     @HasAnyPermission()
     @Get("api/cluster")
@@ -167,10 +172,15 @@ public class AkhqController extends AbstractController {
     @Get("api/{cluster}/ui-options")
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
     public Connection.UiOptions options(String cluster) {
-        return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
-                .map(conn -> conn.mergeOptions(this.uIOptions) )
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
+                .map(conn -> conn.mergeOptions(this.uIOptions))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("No cluster found"));
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @AllArgsConstructor

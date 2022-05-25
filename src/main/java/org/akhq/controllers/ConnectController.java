@@ -4,6 +4,7 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
+import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.ConnectRepository;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
@@ -38,6 +40,8 @@ public class ConnectController extends AbstractController {
     public ConnectController(ConnectRepository connectRepository) {
         this.connectRepository = connectRepository;
     }
+    @Inject
+    private KafkaModule kafkaModule;
 
     @Get
     @Operation(tags = {"connect"}, summary = "List all connect definitions")
@@ -45,28 +49,43 @@ public class ConnectController extends AbstractController {
             HttpRequest<?> request, String cluster, String connectId,  Optional<String> search, Optional<Integer> page)
             throws IOException, RestClientException, ExecutionException, InterruptedException
     {
-        URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+        if(kafkaModule.clusterExists(cluster)) {
+            URIBuilder uri = URIBuilder.fromURI(request.getUri());
+            Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
-        return ResultPagedList.of(this.connectRepository.getPaginatedDefinitions(cluster, connectId, pagination, search));
+            return ResultPagedList.of(this.connectRepository.getPaginatedDefinitions(cluster, connectId, pagination, search));
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("/plugins")
     @Operation(tags = {"connect"}, summary = "List all connect plugins")
     public List<ConnectPlugin> pluginsList(String cluster, String connectId) {
-        return this.connectRepository.getPlugins(cluster, connectId);
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.getPlugins(cluster, connectId);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("/plugins/{type}")
     @Operation(tags = {"connect"}, summary = "Retrieve a connect plugin")
     public ConnectPlugin plugins(String cluster, String connectId, String type) {
-        List<ConnectPlugin> plugins = this.connectRepository.getPlugins(cluster, connectId);
+        if(kafkaModule.clusterExists(cluster)) {
+            List<ConnectPlugin> plugins = this.connectRepository.getPlugins(cluster, connectId);
 
-        return plugins
-            .stream()
-            .filter(connectPlugin -> connectPlugin.getClassName().equals(type))
-            .findAny()
-            .orElseThrow();
+            return plugins
+                .stream()
+                .filter(connectPlugin -> connectPlugin.getClassName().equals(type))
+                .findAny()
+                .orElseThrow();
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_INSERT)
@@ -78,34 +97,58 @@ public class ConnectController extends AbstractController {
         String name,
         Map<String, String> configs
     ) {
-        return this.connectRepository.create(cluster, connectId, name, configs);
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.create(cluster, connectId, name, configs);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_DELETE)
     @Delete("/{name}")
     @Operation(tags = {"connect"}, summary = "Delete a connect definition")
     public HttpResponse<?> delete(String cluster, String connectId, String name) {
-        this.connectRepository.delete(cluster, connectId, name);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.connectRepository.delete(cluster, connectId, name);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Get("/{name}")
     @Operation(tags = {"connect"}, summary = "Retrieve a connect definition")
     public ConnectDefinition home(HttpRequest<?> request, String cluster, String connectId, String name) {
-        return this.connectRepository.getDefinition(cluster, connectId, name);
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.getDefinition(cluster, connectId, name);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("/{name}/tasks")
     @Operation(tags = {"connect"}, summary = "Retrieve a connect task")
     public List<ConnectDefinition.TaskDefinition> tasks(HttpRequest<?> request, String cluster, String connectId, String name) {
-        return this.connectRepository.getDefinition(cluster, connectId, name).getTasks();
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.getDefinition(cluster, connectId, name).getTasks();
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Get("/{name}/configs")
     @Operation(tags = {"connect"}, summary = "Retrieve a connect config")
     public Map<String, String> configs(HttpRequest<?> request, String cluster, String connectId, String name) {
-        return this.connectRepository.getDefinition(cluster, connectId, name).getConfigs();
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.getDefinition(cluster, connectId, name).getConfigs();
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_UPDATE)
@@ -117,42 +160,63 @@ public class ConnectController extends AbstractController {
         String name,
         Map<String, String> configs
     ) {
-        return this.connectRepository.update(cluster, connectId, name, configs);
+        if(kafkaModule.clusterExists(cluster)) {
+            return this.connectRepository.update(cluster, connectId, name, configs);
+        } else {
+            HttpResponse.status(HttpStatus.NOT_FOUND);
+            return null;
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
     @Get("/{name}/restart")
     @Operation(tags = {"connect"}, summary = "Restart a connect definition")
     public HttpResponse<?> definitionRestart(String cluster, String connectId, String name) {
-        this.connectRepository.restart(cluster, connectId, name);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.connectRepository.restart(cluster, connectId, name);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
     @Get("/{name}/pause")
     @Operation(tags = {"connect"}, summary = "Pause a connect definition")
     public HttpResponse<?> definitionPause(String cluster, String connectId, String name) {
-        this.connectRepository.pause(cluster, connectId, name);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.connectRepository.pause(cluster, connectId, name);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
     @Get("/{name}/resume")
     @Operation(tags = {"connect"}, summary = "Resume a connect definition")
     public HttpResponse<?> definitionResume(String cluster, String connectId, String name) {
-        this.connectRepository.resume(cluster, connectId, name);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.connectRepository.resume(cluster, connectId, name);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
     @Get("/{name}/tasks/{taskId}/restart")
     @Operation(tags = {"connect"}, summary = "Restart a connect task")
     public HttpResponse<?> taskRestart(HttpRequest<?> request, String cluster, String connectId, String name, int taskId) {
-        this.connectRepository.restartTask(cluster, connectId, name, taskId);
+        if(kafkaModule.clusterExists(cluster)) {
+            this.connectRepository.restartTask(cluster, connectId, name, taskId);
 
-        return HttpResponse.noContent();
+            return HttpResponse.noContent();
+        } else {
+            return HttpResponse.status(HttpStatus.NOT_FOUND);
+        }
     }
 }
