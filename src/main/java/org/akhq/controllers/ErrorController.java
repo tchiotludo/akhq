@@ -13,6 +13,7 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.modules.InvalidClusterException;
 import org.apache.kafka.common.errors.ApiException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -107,5 +108,12 @@ public class ErrorController extends AbstractController {
 
         return HttpResponse.<JsonError>notFound()
             .body(error);
+    }
+    @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, InvalidClusterException e) {
+        JsonError error = new JsonError(e.getMessage())
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.status(HttpStatus.CONFLICT).body(error);
     }
 }

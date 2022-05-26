@@ -12,6 +12,8 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCred
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
@@ -46,7 +48,15 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
-    public Connection getConnection(String cluster) {
+    public boolean clusterExists(String cluster){
+        return this.getClustersList().contains(cluster);
+    }
+
+    public Connection getConnection(String cluster) throws InvalidClusterException {
+        if (!this.clusterExists(cluster)) {
+            throw new InvalidClusterException("Invalid cluster '" + cluster + "'");
+        }
+
         return this.connections
             .stream()
             .filter(r -> r.getName().equals(cluster))
@@ -60,14 +70,16 @@ public class KafkaModule {
         current
             .stream()
             .filter(r -> r.getName().equals(type))
-            .forEach(r -> r.getProperties()
-                .forEach(properties::put)
-            );
+            .forEach(r -> properties.putAll(r.getProperties()));
 
         return properties;
     }
 
-    private Properties getConsumerProperties(String clusterId) {
+    private Properties getConsumerProperties(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         Properties props = new Properties();
         props.putAll(this.getDefaultsProperties(this.defaults, "consumer"));
         props.putAll(this.getDefaultsProperties(this.connections, clusterId));
@@ -75,7 +87,11 @@ public class KafkaModule {
         return props;
     }
 
-    private Properties getProducerProperties(String clusterId) {
+    private Properties getProducerProperties(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         Properties props = new Properties();
         props.putAll(this.getDefaultsProperties(this.defaults, "producer"));
         props.putAll(this.getDefaultsProperties(this.connections, clusterId));
@@ -83,7 +99,11 @@ public class KafkaModule {
         return props;
     }
 
-    private Properties getAdminProperties(String clusterId) {
+    private Properties getAdminProperties(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         Properties props = new Properties();
         props.putAll(this.getDefaultsProperties(this.defaults, "admin"));
         props.putAll(this.getDefaultsProperties(this.connections, clusterId));
@@ -93,7 +113,11 @@ public class KafkaModule {
 
     private final Map<String, AdminClient> adminClient = new HashMap<>();
 
-    public AdminClient getAdminClient(String clusterId) {
+    public AdminClient getAdminClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         if (!this.adminClient.containsKey(clusterId)) {
             this.adminClient.put(clusterId, AdminClient.create(this.getAdminProperties(clusterId)));
         }
@@ -101,7 +125,11 @@ public class KafkaModule {
         return this.adminClient.get(clusterId);
     }
 
-    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) {
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         return new KafkaConsumer<>(
             this.getConsumerProperties(clusterId),
             new ByteArrayDeserializer(),
@@ -109,7 +137,11 @@ public class KafkaModule {
         );
     }
 
-    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) {
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         Properties props = this.getConsumerProperties(clusterId);
         props.putAll(properties);
 
@@ -122,7 +154,11 @@ public class KafkaModule {
 
     private final Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
 
-    public KafkaProducer<byte[], byte[]> getProducer(String clusterId) {
+    public KafkaProducer<byte[], byte[]> getProducer(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         if (!this.producers.containsKey(clusterId)) {
             this.producers.put(clusterId, new KafkaProducer<>(
                 this.getProducerProperties(clusterId),
@@ -134,7 +170,11 @@ public class KafkaModule {
         return this.producers.get(clusterId);
     }
 
-    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) {
+    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
         avroSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
@@ -143,27 +183,39 @@ public class KafkaModule {
         return avroSchemaProvider;
     }
 
-    public JsonSchemaProvider getJsonSchemaProvider(String clusterId) {
+    public JsonSchemaProvider getJsonSchemaProvider(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         JsonSchemaProvider jsonSchemaProvider = new JsonSchemaProvider();
         jsonSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
             new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
         ));
 
-        return  jsonSchemaProvider;
+        return jsonSchemaProvider;
     }
 
-    public ProtobufSchemaProvider getProtobufSchemaProvider(String clusterId) {
+    public ProtobufSchemaProvider getProtobufSchemaProvider(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
         protobufSchemaProvider.configure(Collections.singletonMap(
             "schemaVersionFetcher",
             new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
         ));
 
-        return  protobufSchemaProvider;
+        return protobufSchemaProvider;
     }
 
-    public RestService getRegistryRestClient(String clusterId) {
+    public RestService getRegistryRestClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         Connection connection = this.getConnection(clusterId);
 
         if (connection.getSchemaRegistry() != null) {
@@ -172,12 +224,16 @@ public class KafkaModule {
             );
 
             if (connection.getSchemaRegistry().getProperties() != null
-                    && !connection.getSchemaRegistry().getProperties().isEmpty()) {
+                && !connection.getSchemaRegistry().getProperties().isEmpty()) {
 
                 Map<String, Object> sslConfigs =
-                    connection.getSchemaRegistry().getProperties().entrySet().stream()
-                    .filter(e -> e.getKey().startsWith("schema.registry."))
-                    .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
+                    connection
+                        .getSchemaRegistry()
+                        .getProperties()
+                        .entrySet()
+                        .stream()
+                        .filter(e -> e.getKey().startsWith("schema.registry."))
+                        .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
 
                 SslFactory sslFactory = new SslFactory(sslConfigs);
                 if (sslFactory != null && sslFactory.sslContext() != null) {
@@ -205,13 +261,18 @@ public class KafkaModule {
             }
             return restService;
         }
+
         return null;
     }
 
     private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
 
 
-    public SchemaRegistryClient getRegistryClient(String clusterId) {
+    public SchemaRegistryClient getRegistryClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         if (!this.registryClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
@@ -237,13 +298,17 @@ public class KafkaModule {
 
     private final Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
 
-    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) {
+    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
         if (!this.connectRestClient.containsKey(clusterId)) {
             Connection connection = this.getConnection(clusterId);
 
             if (connection.getConnect() != null && !connection.getConnect().isEmpty()) {
 
-                Map<String,KafkaConnectClient> mapConnects = new HashMap<>();
+                Map<String, KafkaConnectClient> mapConnects = new HashMap<>();
                 connection.getConnect().forEach(connect -> {
 
                     URIBuilder uri = URIBuilder.fromString(connect.getUrl().toString());
@@ -251,22 +316,22 @@ public class KafkaModule {
 
                     if (connect.getBasicAuthUsername() != null) {
                         configuration.useBasicAuth(
-                                connect.getBasicAuthUsername(),
-                                connect.getBasicAuthPassword()
+                            connect.getBasicAuthUsername(),
+                            connect.getBasicAuthPassword()
                         );
                     }
 
                     if (connect.getSslTrustStore() != null) {
                         configuration.useTrustStore(
-                                new File(connect.getSslTrustStore()),
-                                connect.getSslTrustStorePassword()
+                            new File(connect.getSslTrustStore()),
+                            connect.getSslTrustStorePassword()
                         );
                     }
 
                     if (connect.getSslKeyStore() != null) {
                         configuration.useKeyStore(
-                                new File(connect.getSslKeyStore()),
-                                connect.getSslKeyStorePassword()
+                            new File(connect.getSslKeyStore()),
+                            connect.getSslKeyStorePassword()
                         );
                     }
                     mapConnects.put(connect.getName(), new KafkaConnectClient(configuration));
