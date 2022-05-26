@@ -3,7 +3,7 @@ import Table from '../../../../components/Table/Table';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
 import Root from "../../../../components/Root";
 
-class AclGroups extends Root {
+class AclTransactionalIds extends Root {
   state = {
     selectedCluster: this.props.clusterId,
     principalEncoded: this.props.principalEncoded,
@@ -18,7 +18,7 @@ class AclGroups extends Root {
   async getAcls() {
     const { selectedCluster, principalEncoded } = this.state;
 
-    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'GROUP'));
+    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'TRANSACTIONAL_ID'));
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);
@@ -30,7 +30,7 @@ class AclGroups extends Root {
   handleAcls = data => {
     const tableData = data.acls.map(acl => {
       return {
-        group: acl.resource.name,
+        topic: acl.resource.name,
         host: acl.host,
         permission: acl.operation
       };
@@ -56,9 +56,9 @@ class AclGroups extends Root {
         history={this.props.history}
         columns={[
           {
-            id: 'group',
-            accessor: 'group',
-            colName: 'Group',
+            id: 'topic',
+            accessor: 'topic',
+            colName: 'Topic',
             type: 'text',
             sortable: true
           },
@@ -93,4 +93,4 @@ class AclGroups extends Root {
   }
 }
 
-export default AclGroups;
+export default AclTransactionalIds;
