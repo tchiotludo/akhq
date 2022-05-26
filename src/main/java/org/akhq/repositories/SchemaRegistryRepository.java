@@ -220,7 +220,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         try {
             return new Schema.Config(this.kafkaModule
                 .getRegistryRestClient(clusterId)
-                .getConfig(subject)
+                .getConfig(Map.of(), subject, true)
             );
         } catch (RestClientException exception) {
             if (exception.getStatus() != 404) {
