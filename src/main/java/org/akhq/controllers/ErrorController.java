@@ -7,13 +7,13 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
-import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.hateoas.JsonError;
 import io.micronaut.http.hateoas.Link;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.modules.InvalidClusterException;
 import org.apache.kafka.common.errors.ApiException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -110,10 +110,10 @@ public class ErrorController extends AbstractController {
             .body(error);
     }
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, HttpStatusException e) {
+    public HttpResponse<?> error(HttpRequest<?> request, InvalidClusterException e) {
         JsonError error = new JsonError(e.getMessage())
             .link(Link.SELF, Link.of(request.getUri()));
 
-        return HttpResponse.status(e.getStatus()).body(error);
+        return HttpResponse.status(HttpStatus.CONFLICT).body(error);
     }
 }
