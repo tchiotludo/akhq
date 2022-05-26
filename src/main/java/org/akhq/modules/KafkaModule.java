@@ -12,6 +12,8 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCred
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
@@ -46,12 +48,20 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
-    public Connection getConnection(String cluster) {
-        return this.connections
-            .stream()
-            .filter(r -> r.getName().equals(cluster))
-            .findFirst()
-            .get();
+    public boolean clusterExists(String cluster){
+        return this.getClustersList().contains(cluster);
+    }
+
+    public Connection getConnection(String cluster) throws HttpStatusException {
+        if(this.clusterExists(cluster)) {
+            return this.connections
+                .stream()
+                .filter(r -> r.getName().equals(cluster))
+                .findFirst()
+                .get();
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
     private Properties getDefaultsProperties(List<? extends AbstractProperties> current, String type) {
@@ -67,143 +77,187 @@ public class KafkaModule {
         return properties;
     }
 
-    private Properties getConsumerProperties(String clusterId) {
-        Properties props = new Properties();
-        props.putAll(this.getDefaultsProperties(this.defaults, "consumer"));
-        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
+    private Properties getConsumerProperties(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            Properties props = new Properties();
+            props.putAll(this.getDefaultsProperties(this.defaults, "consumer"));
+            props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
-        return props;
+            return props;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    private Properties getProducerProperties(String clusterId) {
-        Properties props = new Properties();
-        props.putAll(this.getDefaultsProperties(this.defaults, "producer"));
-        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
+    private Properties getProducerProperties(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            Properties props = new Properties();
+            props.putAll(this.getDefaultsProperties(this.defaults, "producer"));
+            props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
-        return props;
+            return props;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    private Properties getAdminProperties(String clusterId) {
-        Properties props = new Properties();
-        props.putAll(this.getDefaultsProperties(this.defaults, "admin"));
-        props.putAll(this.getDefaultsProperties(this.connections, clusterId));
+    private Properties getAdminProperties(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            Properties props = new Properties();
+            props.putAll(this.getDefaultsProperties(this.defaults, "admin"));
+            props.putAll(this.getDefaultsProperties(this.connections, clusterId));
 
-        return props;
+            return props;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
     private final Map<String, AdminClient> adminClient = new HashMap<>();
 
-    public AdminClient getAdminClient(String clusterId) {
-        if (!this.adminClient.containsKey(clusterId)) {
-            this.adminClient.put(clusterId, AdminClient.create(this.getAdminProperties(clusterId)));
+    public AdminClient getAdminClient(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            if (!this.adminClient.containsKey(clusterId)) {
+                this.adminClient.put(clusterId, AdminClient.create(this.getAdminProperties(clusterId)));
+            }
+
+            return this.adminClient.get(clusterId);
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
         }
-
-        return this.adminClient.get(clusterId);
     }
 
-    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) {
-        return new KafkaConsumer<>(
-            this.getConsumerProperties(clusterId),
-            new ByteArrayDeserializer(),
-            new ByteArrayDeserializer()
-        );
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            return new KafkaConsumer<>(
+                this.getConsumerProperties(clusterId),
+                new ByteArrayDeserializer(),
+                new ByteArrayDeserializer()
+            );
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) {
-        Properties props = this.getConsumerProperties(clusterId);
-        props.putAll(properties);
+    public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            Properties props = this.getConsumerProperties(clusterId);
+            props.putAll(properties);
 
-        return new KafkaConsumer<>(
-            props,
-            new ByteArrayDeserializer(),
-            new ByteArrayDeserializer()
-        );
+            return new KafkaConsumer<>(
+                props,
+                new ByteArrayDeserializer(),
+                new ByteArrayDeserializer()
+            );
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
     private final Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
 
-    public KafkaProducer<byte[], byte[]> getProducer(String clusterId) {
-        if (!this.producers.containsKey(clusterId)) {
-            this.producers.put(clusterId, new KafkaProducer<>(
-                this.getProducerProperties(clusterId),
-                new ByteArraySerializer(),
-                new ByteArraySerializer()
-            ));
+    public KafkaProducer<byte[], byte[]> getProducer(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            if (!this.producers.containsKey(clusterId)) {
+                this.producers.put(clusterId, new KafkaProducer<>(
+                    this.getProducerProperties(clusterId),
+                    new ByteArraySerializer(),
+                    new ByteArraySerializer()
+                ));
+            }
+
+            return this.producers.get(clusterId);
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
         }
-
-        return this.producers.get(clusterId);
     }
 
-    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) {
-        AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
-        avroSchemaProvider.configure(Collections.singletonMap(
-            "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
-        ));
-        return avroSchemaProvider;
+    public AvroSchemaProvider getAvroSchemaProvider(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
+            avroSchemaProvider.configure(Collections.singletonMap(
+                "schemaVersionFetcher",
+                new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
+            ));
+            return avroSchemaProvider;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    public JsonSchemaProvider getJsonSchemaProvider(String clusterId) {
-        JsonSchemaProvider jsonSchemaProvider = new JsonSchemaProvider();
-        jsonSchemaProvider.configure(Collections.singletonMap(
-            "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
-        ));
+    public JsonSchemaProvider getJsonSchemaProvider(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            JsonSchemaProvider jsonSchemaProvider = new JsonSchemaProvider();
+            jsonSchemaProvider.configure(Collections.singletonMap(
+                "schemaVersionFetcher",
+                new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
+            ));
 
-        return  jsonSchemaProvider;
+            return jsonSchemaProvider;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    public ProtobufSchemaProvider getProtobufSchemaProvider(String clusterId) {
-        ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
-        protobufSchemaProvider.configure(Collections.singletonMap(
-            "schemaVersionFetcher",
-            new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
-        ));
+    public ProtobufSchemaProvider getProtobufSchemaProvider(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
+            protobufSchemaProvider.configure(Collections.singletonMap(
+                "schemaVersionFetcher",
+                new CachedSchemaRegistryClient(this.getRegistryRestClient(clusterId), 1000)
+            ));
 
-        return  protobufSchemaProvider;
+            return protobufSchemaProvider;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
-    public RestService getRegistryRestClient(String clusterId) {
-        Connection connection = this.getConnection(clusterId);
+    public RestService getRegistryRestClient(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
 
-        if (connection.getSchemaRegistry() != null) {
-            RestService restService = new RestService(
-                connection.getSchemaRegistry().getUrl()
-            );
+            if (connection.getSchemaRegistry() != null) {
+                RestService restService = new RestService(
+                    connection.getSchemaRegistry().getUrl()
+                );
 
-            if (connection.getSchemaRegistry().getProperties() != null
+                if (connection.getSchemaRegistry().getProperties() != null
                     && !connection.getSchemaRegistry().getProperties().isEmpty()) {
 
-                Map<String, Object> sslConfigs =
-                    connection.getSchemaRegistry().getProperties().entrySet().stream()
-                    .filter(e -> e.getKey().startsWith("schema.registry."))
-                    .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
+                    Map<String, Object> sslConfigs =
+                        connection.getSchemaRegistry().getProperties().entrySet().stream()
+                            .filter(e -> e.getKey().startsWith("schema.registry."))
+                            .collect(Collectors.toMap(e -> e.getKey().substring("schema.registry.".length()), Map.Entry::getValue));
 
-                SslFactory sslFactory = new SslFactory(sslConfigs);
-                if (sslFactory != null && sslFactory.sslContext() != null) {
-                    restService.setSslSocketFactory(sslFactory.sslContext().getSocketFactory());
+                    SslFactory sslFactory = new SslFactory(sslConfigs);
+                    if (sslFactory != null && sslFactory.sslContext() != null) {
+                        restService.setSslSocketFactory(sslFactory.sslContext().getSocketFactory());
+                    }
                 }
-            }
 
-            restService.setHttpHeaders(Collections.singletonMap("Accept", "application/json"));
+                restService.setHttpHeaders(Collections.singletonMap("Accept", "application/json"));
 
-            if (connection.getSchemaRegistry().getBasicAuthUsername() != null) {
-                BasicAuthCredentialProvider basicAuthCredentialProvider = BasicAuthCredentialProviderFactory
-                    .getBasicAuthCredentialProvider(
-                        new UserInfoCredentialProvider().alias(),
-                        ImmutableMap.of(
-                            "schema.registry.basic.auth.user.info",
-                            connection.getSchemaRegistry().getBasicAuthUsername() + ":" +
-                                connection.getSchemaRegistry().getBasicAuthPassword()
-                        )
-                    );
-                restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
-            }
+                if (connection.getSchemaRegistry().getBasicAuthUsername() != null) {
+                    BasicAuthCredentialProvider basicAuthCredentialProvider = BasicAuthCredentialProviderFactory
+                        .getBasicAuthCredentialProvider(
+                            new UserInfoCredentialProvider().alias(),
+                            ImmutableMap.of(
+                                "schema.registry.basic.auth.user.info",
+                                connection.getSchemaRegistry().getBasicAuthUsername() + ":" +
+                                    connection.getSchemaRegistry().getBasicAuthPassword()
+                            )
+                        );
+                    restService.setBasicAuthCredentialProvider(basicAuthCredentialProvider);
+                }
 
-            if (connection.getSchemaRegistry().getProperties() != null) {
-                restService.configure(connection.getSchemaRegistry().getProperties());
+                if (connection.getSchemaRegistry().getProperties() != null) {
+                    restService.configure(connection.getSchemaRegistry().getProperties());
+                }
+                return restService;
             }
-            return restService;
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
         }
         return null;
     }
@@ -211,71 +265,79 @@ public class KafkaModule {
     private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
 
 
-    public SchemaRegistryClient getRegistryClient(String clusterId) {
-        if (!this.registryClient.containsKey(clusterId)) {
-            Connection connection = this.getConnection(clusterId);
+    public SchemaRegistryClient getRegistryClient(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            if (!this.registryClient.containsKey(clusterId)) {
+                Connection connection = this.getConnection(clusterId);
 
 
-            List<SchemaProvider> providers = new ArrayList<>();
-            providers.add(new AvroSchemaProvider());
-            providers.add(new JsonSchemaProvider());
-            providers.add(new ProtobufSchemaProvider());
+                List<SchemaProvider> providers = new ArrayList<>();
+                providers.add(new AvroSchemaProvider());
+                providers.add(new JsonSchemaProvider());
+                providers.add(new ProtobufSchemaProvider());
 
-            SchemaRegistryClient client = new CachedSchemaRegistryClient(
-                this.getRegistryRestClient(clusterId),
-                1000,
-                providers,
-                connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null,
-                null
-            );
+                SchemaRegistryClient client = new CachedSchemaRegistryClient(
+                    this.getRegistryRestClient(clusterId),
+                    1000,
+                    providers,
+                    connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getProperties() : null,
+                    null
+                );
 
-            this.registryClient.put(clusterId, client);
+                this.registryClient.put(clusterId, client);
+            }
+
+            return this.registryClient.get(clusterId);
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
         }
-
-        return this.registryClient.get(clusterId);
     }
 
     private final Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
 
-    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) {
-        if (!this.connectRestClient.containsKey(clusterId)) {
-            Connection connection = this.getConnection(clusterId);
+    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) throws HttpStatusException {
+        if(this.clusterExists(clusterId)) {
+            if (!this.connectRestClient.containsKey(clusterId)) {
+                Connection connection = this.getConnection(clusterId);
 
-            if (connection.getConnect() != null && !connection.getConnect().isEmpty()) {
+                if (connection.getConnect() != null && !connection.getConnect().isEmpty()) {
 
-                Map<String,KafkaConnectClient> mapConnects = new HashMap<>();
-                connection.getConnect().forEach(connect -> {
+                    Map<String, KafkaConnectClient> mapConnects = new HashMap<>();
+                    connection.getConnect().forEach(connect -> {
 
-                    URIBuilder uri = URIBuilder.fromString(connect.getUrl().toString());
-                    Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
+                        URIBuilder uri = URIBuilder.fromString(connect.getUrl().toString());
+                        Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
 
-                    if (connect.getBasicAuthUsername() != null) {
-                        configuration.useBasicAuth(
+                        if (connect.getBasicAuthUsername() != null) {
+                            configuration.useBasicAuth(
                                 connect.getBasicAuthUsername(),
                                 connect.getBasicAuthPassword()
-                        );
-                    }
+                            );
+                        }
 
-                    if (connect.getSslTrustStore() != null) {
-                        configuration.useTrustStore(
+                        if (connect.getSslTrustStore() != null) {
+                            configuration.useTrustStore(
                                 new File(connect.getSslTrustStore()),
                                 connect.getSslTrustStorePassword()
-                        );
-                    }
+                            );
+                        }
 
-                    if (connect.getSslKeyStore() != null) {
-                        configuration.useKeyStore(
+                        if (connect.getSslKeyStore() != null) {
+                            configuration.useKeyStore(
                                 new File(connect.getSslKeyStore()),
                                 connect.getSslKeyStorePassword()
-                        );
-                    }
-                    mapConnects.put(connect.getName(), new KafkaConnectClient(configuration));
-                });
-                this.connectRestClient.put(clusterId, mapConnects);
+                            );
+                        }
+                        mapConnects.put(connect.getName(), new KafkaConnectClient(configuration));
+                    });
+                    this.connectRestClient.put(clusterId, mapConnects);
+                }
             }
-        }
 
-        return this.connectRestClient.get(clusterId);
+            return this.connectRestClient.get(clusterId);
+        }else{
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Page Not Found");
+        }
     }
 
 }
