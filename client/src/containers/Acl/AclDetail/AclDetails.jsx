@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
+import AclClusters from './AclClusters/AclClusters';
+import AclTransactionalIds from './AclTransactionalIds/AclTransactionalIds';
 import {getSelectedTab} from "../../../utils/functions";
 import { Link } from 'react-router-dom';
 
@@ -12,7 +14,7 @@ class AclDetails extends Component {
     selectedTab: 'topics'
   };
 
-  tabs = ['topics', 'groups'];
+  tabs = ['topics', 'groups', 'clusters', 'transactionalids'];
 
   componentDidMount() {
     const { clusterId, principalEncoded } = this.props.match.params;
@@ -52,6 +54,14 @@ class AclDetails extends Component {
         return (
           <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
         );
+      case 'clusters':
+        return (
+          <AclClusters clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+        );
+      case 'transactionalids':
+        return (
+          <AclTransactionalIds clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+        );
       default:
         return (
           <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
@@ -80,6 +90,20 @@ class AclDetails extends Component {
                 className={this.tabClassName('groups')}
               >
                 Groups
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/clusters`}
+                className={this.tabClassName('clusters')}
+              >
+                Clusters
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/transactionalids`}
+                className={this.tabClassName('transactionalids')}
+              >
+                Transactional Ids
               </Link>
             </li>
           </ul>
