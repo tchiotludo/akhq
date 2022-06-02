@@ -75,6 +75,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [BPCE-IT](https://www.bpce-it.fr/)
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
+* [Fresha](https://www.fresha.com/)
 * [Galeries Lafayette](https://www.galerieslafayette.com/)
 * [GetYourGuide](https://www.getyourguide.com)
 * [Kitopi](https://kitopi.com)
