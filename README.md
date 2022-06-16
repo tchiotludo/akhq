@@ -105,6 +105,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
+* [TUI](https://www.tui.com)
 * [TVG](https://www.tvg.com)
 * [Vodeno](https://www.vodeno.com/)
 
