@@ -123,13 +123,23 @@ public class AvroSerializer {
                 case INT:
                     return value;
                 case LONG:
-                    if (value != null && value instanceof Integer) {
+                   if (value instanceof Integer) {
                         return ((Integer) value).longValue();
                     }
                     return value;
                 case FLOAT:
+                    if (value instanceof Integer) {
+                        return ((Integer) value).floatValue();
+                    } else if (value instanceof Long) {
+                        return ((Long) value).floatValue();
+                    }
                     return value;
                 case DOUBLE:
+                    if (value instanceof Integer) {
+                        return ((Integer) value).doubleValue();
+                    } else if (value instanceof Long) {
+                        return ((Long) value).doubleValue();
+                    }
                     return value;
                 case BOOLEAN:
                     return value;
