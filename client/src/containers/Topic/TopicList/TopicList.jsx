@@ -16,6 +16,7 @@ import Root from '../../../components/Root';
 import DateTime from '../../../components/DateTime';
 import {getClusterUIOptions} from '../../../utils/functions';
 import {handlePageChange, getPageNumber} from './../../../utils/pagination';
+import PageSize from '../../../components/PageSize';
 
 class TopicList extends Root {
   state = {
@@ -27,6 +28,7 @@ class TopicList extends Root {
     deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
+    currentPageSize: 1,
     searchData: {
       search: '',
       topicListView: constants.SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_INTERNAL
@@ -72,6 +74,7 @@ class TopicList extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
     let { pageNumber } = this.state;
+    let { currentPageSize } = this.state;
     const uiOptions = await getClusterUIOptions(clusterId)
 
     let searchDataTmp;
@@ -87,6 +90,7 @@ class TopicList extends Root {
             (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
       pageNumber = (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+      currentPageSize = (query.get('uiPageSize'))? parseInt(query.get('uiPageSize')) : parseInt(currentPageSize)
     }
 
     this.setState({
@@ -94,7 +98,8 @@ class TopicList extends Root {
       searchData: searchDataTmp,
       keepSearch: keepSearchTmp,
       uiOptions: uiOptions ?? {},
-      pageNumber: pageNumber
+      pageNumber: pageNumber,
+      currentPageSize: currentPageSize
     }, callBackFunction);
   }
 
@@ -153,12 +158,23 @@ class TopicList extends Root {
     });
   };
 
+  handlePageSizeChangeSubmission = value => {
+    let pageNumber = 1;
+    this.setState({ currentPageSize: value, pageNumber: pageNumber},() => {
+      this.getTopics();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&uiPageSize=${value}`
+      });
+    });
+  };
+
   async getTopics() {
-    const { selectedCluster, pageNumber } = this.state;
+    const { selectedCluster, pageNumber, currentPageSize } = this.state;
     const { search, topicListView } = this.state.searchData;
     this.setState({ loading: true } );
 
-    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber, currentPageSize));
     let data = response.data;
 
     if (data) {
@@ -167,7 +183,7 @@ class TopicList extends Root {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }  )
+      this.setState({ selectedCluster, totalPageNumber: data.page, currentPageSize: data.pageSize, loading: false }  )
     } else {
       this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
@@ -279,7 +295,7 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, currentPageSize, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
     const uiOptionsTopic = uiOptions.topic ?? {};
     const dateTimeFormat = uiOptions.topicData && uiOptions.topicData.dateTimeFormat ?
       uiOptions.topicData.dateTimeFormat :
@@ -441,9 +457,18 @@ class TopicList extends Root {
               }}
               doSubmit={this.handleSearch}
           />
+
+          <PageSize
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            currentPageSize={this.state.currentPageSize}
+            onChange={this.handlePageSizeChangeSubmission}
+          />
+          
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
+            currentPageSize={currentPageSize}
             onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />

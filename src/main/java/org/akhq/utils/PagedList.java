@@ -25,6 +25,10 @@ public class PagedList<T> extends ArrayList<T> {
         return this.total;
     }
 
+    public int pageSize() {
+        return this.pageSize;
+    }
+
     public URIBuilder before() {
         if (currentPage - 1 > 0) {
             return uri.addParameter("page", String.valueOf(currentPage - 1));

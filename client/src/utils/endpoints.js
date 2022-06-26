@@ -35,8 +35,12 @@ export const uriUIOptions = (clusterId) => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };
 
-export const uriTopics = (clusterId, search, show, page) => {
-  return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
+export const uriTopics = (clusterId, search, show, page, pageSize) => {
+  if(pageSize === 1){
+    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
+  }else{
+    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}&uiPageSize=${pageSize}`;
+  }
 };
 
 export const uriTopicDefaultConf = () => `${apiUrl}/topic/defaults-configs`;
