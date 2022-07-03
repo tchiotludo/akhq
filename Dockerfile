@@ -4,6 +4,7 @@ FROM openjdk:11-jre-slim
 RUN apt-get update && \
     apt-get install -y \
       curl && \
+    apt-get upgrade -y &&\ 
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
