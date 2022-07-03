@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+docker run --rm -t --user $(id -u):$(id -g) -w /path -v $(pwd):/path checkmarx/kics scan -p "/path"
