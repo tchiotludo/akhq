@@ -7,6 +7,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
+HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
+  CMD curl --fail http://localhost/8080 || exit 1
+
 WORKDIR /app
 COPY docker /
 ENV MICRONAUT_CONFIG_FILES=/app/application.yml
