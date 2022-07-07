@@ -88,7 +88,7 @@ class ConsumerGroup extends Component {
     const roles = this.state.roles || {};
     return (
       <div>
-        <Header title={`Consumer Group: ${consumerGroupId}`} history={this.props.history} />
+        <Header title={`Consumer Group: ${decodeURIComponent(consumerGroupId)}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
