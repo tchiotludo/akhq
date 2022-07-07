@@ -261,7 +261,7 @@ class TopicList extends Root {
           return (
             <Link
               key={consumerGroup.id}
-              to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
+              to={`/ui/${this.state.selectedCluster}/group/${encodeURIComponent(consumerGroup.id)}`}
               className={className}
               onClick={noPropagation}
             >
