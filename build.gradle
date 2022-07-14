@@ -13,7 +13,7 @@ plugins {
 }
 
 group "org.akhq"
-version "0.21.0"
+version "0.21.1"
 mainClassName = "org.akhq.App"
 sourceCompatibility = 11
 
@@ -180,7 +180,7 @@ dependencies {
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.3'
     testImplementation 'com.fasterxml.jackson.core:jackson-core:'
     testImplementation 'com.fasterxml.jackson.core:jackson-annotations'
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
     testImplementation 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.11'
 }
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
 
+set -e
+
+if [ "${AKHQ_CONFIGURATION}" ]; then
+    echo "${AKHQ_CONFIGURATION}" > /app/application.yml
+fi
+
 # Read user-defined JVM options from jvm.options file
 JVM_OPTS_FILE=${JVM_OPTS_FILE:-/app/jvm.options}
 for JVM_OPT in `grep "^-" ${JVM_OPTS_FILE}`
@@ -7,4 +13,4 @@ do
   JAVA_OPTS="${JAVA_OPTS} ${JVM_OPT}"
 done
 
-/usr/local/openjdk-11/bin/java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App
+java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App
