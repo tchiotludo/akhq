@@ -2,7 +2,7 @@
 
 set -e
 
-if [ "${AKHQ_CONFIGURATION}" ]; then
+if [ ! -z "${AKHQ_CONFIGURATION}" ]; then
     echo "${AKHQ_CONFIGURATION}" > /app/application.yml
 fi
 
@@ -13,4 +13,4 @@ do
   JAVA_OPTS="${JAVA_OPTS} ${JVM_OPT}"
 done
 
-java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App
+exec java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App
