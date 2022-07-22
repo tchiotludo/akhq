@@ -1,0 +1,16 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.13
+
+ENV MICRONAUT_CONFIG_FILES=/app/application.yml
+USER root
+
+WORKDIR /app
+
+COPY docker /
+
+RUN chmod +x /app/entrypoint
+
+RUN chown -R 1001:0 /app && \
+  chmod -R g=u /app
+USER 1001
+
+ENTRYPOINT ["/app/entrypoint"]
