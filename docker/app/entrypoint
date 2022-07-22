@@ -13,4 +13,6 @@ do
   JAVA_OPTS="${JAVA_OPTS} ${JVM_OPT}"
 done
 
+export JWT_TOKEN=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c64)
+
 exec java ${JAVA_OPTS} -cp /app/akhq.jar:${CLASSPATH} org.akhq.App
