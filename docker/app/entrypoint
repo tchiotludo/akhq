@@ -3,7 +3,7 @@
 set -e
 
 if [ ! -z "${AKHQ_CONFIGURATION}" ]; then
-    echo "${AKHQ_CONFIGURATION}" > /app/application.yml
+    echo "${AKHQ_CONFIGURATION}" > "${MICRONAUT_CONFIG_FILES}"
 fi
 
 # Read user-defined JVM options from jvm.options file
