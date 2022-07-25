@@ -9,8 +9,8 @@ COPY docker /
 
 RUN chmod +x /app/entrypoint
 
-RUN chown -R 1001:0 /app && \
-  chmod -R g=u /app
+RUN chown -R 1001:0 /home/jboss /app && \
+  chmod -R g=u /home/jboss /app
 USER 1001
 
 ENTRYPOINT ["/app/entrypoint"]
