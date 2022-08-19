@@ -28,7 +28,7 @@ extraEnv: []
 #             properties:
 #               bootstrap.servers: "kafka:9092"
 # - name: JAVA_OPTS
-#   value: "-Djavax.net.ssl.trustStore=/usr/local/openjdk-11/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=password"
+#   value: "-Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=password"
 # - name: CLASSPATH
 #   value: "/any/additional/jars/desired.jar:/go/here.jar"
 
@@ -79,7 +79,7 @@ serviceAccount:
 # Add your own init container or uncomment and modify the example.
 initContainers: {}
 #   create-keystore:
-#     image: "openjdk:11-slim"
+#     image: "eclipse-temurin:11-jre"
 #     command: ['sh', '-c', 'keytool']
 #     volumeMounts:
 #      - mountPath: /tmp
