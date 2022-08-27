@@ -238,34 +238,34 @@ export const uriConsumerGroups = (clusterId, search, pageNumber) => {
 };
 
 export const uriConsumerGroup = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}`;
 };
 
 export const uriConsumerGroupTopics = (clusterId, groupId) => {
-  return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${groupId}`;
+  return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${encodeURIComponent(groupId)}`;
 };
 export const uriConsumerGroupMembers = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/members`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/members`;
 };
 
 export const uriConsumerGroupOffsets = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets`;
 };
 
 export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets/start?timestamp=${timestamp}`;
 };
 
 export const uriConsumerGroupDelete = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}`;
 };
 
 export const uriConsumerGroupUpdate = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets`;
 };
 
 export const uriDeleteGroupOffsets = (clusterId, groupId, topicName) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/topic/${topicName}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/topic/${topicName}`;
 };
 
 export const uriAclsList = (clusterId, search) => {
@@ -274,7 +274,7 @@ export const uriAclsList = (clusterId, search) => {
 };
 
 export const uriConsumerGroupAcls = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/acls`;
 };
 
 export const uriConsumerGroupByTopics = (clusterId, topicList) => {
