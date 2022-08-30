@@ -35,7 +35,7 @@ class SchemaVersions extends Root {
         return {
           id: schema.id,
           version: schema.version,
-          schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
+          schema: "PROTOBUF" === formData.schemaType?latestSchemaVersion.schema :JSON.stringify(JSON.parse(latestSchemaVersion.schema), null, 2);
         };
       });
       this.setState({ data, loading: false });
