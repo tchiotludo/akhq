@@ -1,1 +1,107 @@
-!function(e){jQuery(window).bind("scroll",(function(){e(window).scrollTop()>150?e("#mu-header").addClass("mu-fixed-nav"):e("#mu-header").removeClass("mu-fixed-nav")}));var t,i=e(".mu-menu"),n=i.outerHeight()+13,r=i.find("a[href^=\\#]"),a=r.map((function(){var t=e(e(this).attr("href"));if(t.length)return t}));r.click((function(t){var i=e(this).attr("href"),r="#"===i?0:e(i).offset().top-n+22;jQuery("html, body").stop().animate({scrollTop:r},1500),t.preventDefault()})),jQuery(window).scroll((function(){var i=e(this).scrollTop()+n,o=a.map((function(){if(e(this).offset().top<i)return this})),s=(o=o[o.length-1])&&o.length?o[0].id:"";t!==s&&(t=s,r.parent().removeClass("active").end().filter("[href=\\#"+s+"]").parent().addClass("active"))})),e(".mu-testimonial-slide").slick({arrows:!1,dots:!0,infinite:!0,speed:500,autoplay:!0,cssEase:"linear"}),jQuery(".mu-menu").on("click","li a",(function(){e(".mu-navbar .in").collapse("hide")}))}(jQuery);
+/**	
+	Custom JS
+	
+	1. FIXED MENU
+	2. MENU SMOOTH SCROLLING
+	3. USERS TESTIMONIALS ( SLICK SLIDER )
+	4. MOBILE MENU CLOSE
+	
+**/
+
+(function( $ ){
+
+
+	/* ----------------------------------------------------------- */
+	/*  1. FIXED MENU
+	/* ----------------------------------------------------------- */
+
+
+		jQuery(window).bind('scroll', function () {
+    		if ($(window).scrollTop() > 150) {
+
+		        $('#mu-header').addClass('mu-fixed-nav');
+		        
+			    } else {
+			    $('#mu-header').removeClass('mu-fixed-nav');
+			}
+		});
+
+		
+	/* ----------------------------------------------------------- */
+	/*  2. MENU SMOOTH SCROLLING
+	/* ----------------------------------------------------------- */ 
+
+		//MENU SCROLLING WITH ACTIVE ITEM SELECTED
+
+		// Cache selectors
+		var lastId,
+		topMenu = $(".mu-menu"),
+		topMenuHeight = topMenu.outerHeight()+13,
+		// All list items
+		menuItems = topMenu.find('a[href^=\\#]'),
+		// Anchors corresponding to menu items
+		scrollItems = menuItems.map(function(){
+		  var item = $($(this).attr("href"));
+		  if (item.length) { return item; }
+		});
+
+		// Bind click handler to menu items
+		// so we can get a fancy scroll animation
+		menuItems.click(function(e){
+		  var href = $(this).attr("href"),
+		      offsetTop = href === "#" ? 0 : $(href).offset().top-topMenuHeight+22;
+		  jQuery('html, body').stop().animate({ 
+		      scrollTop: offsetTop
+		  }, 1500);
+		  e.preventDefault();
+		});
+
+		// Bind to scroll
+		jQuery(window).scroll(function(){
+		   // Get container scroll position
+		   var fromTop = $(this).scrollTop()+topMenuHeight;
+		   
+		   // Get id of current scroll item
+		   var cur = scrollItems.map(function(){
+		     if ($(this).offset().top < fromTop)
+		       return this;
+		   });
+		   // Get the id of the current element
+		   cur = cur[cur.length-1];
+		   var id = cur && cur.length ? cur[0].id : "";
+		   
+		   if (lastId !== id) {
+		       lastId = id;
+		       // Set/remove active class
+		       menuItems
+		         .parent().removeClass("active")
+		         .end().filter("[href=\\#"+id+"]").parent().addClass("active");
+		   }           
+		});
+
+
+	/* ----------------------------------------------------------- */
+	/*  3. USERS TESTIMONIALS (SLICK SLIDER)
+	/* ----------------------------------------------------------- */
+
+		$('.mu-testimonial-slide').slick({
+			arrows: false,
+			dots: true,
+			infinite: true,
+			speed: 500,
+			autoplay: true,
+			cssEase: 'linear'
+		});
+
+	/* ----------------------------------------------------------- */
+	/*  4. MOBILE MENU CLOSE
+	/* ----------------------------------------------------------- */ 
+
+		jQuery('.mu-menu').on('click', 'li a', function() {
+		  $('.mu-navbar .in').collapse('hide');
+		});
+	
+})( jQuery );
+
+
+  

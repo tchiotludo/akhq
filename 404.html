@@ -3,13 +3,31 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="generator" content="VuePress 2.0.0-beta.26">
+    <meta name="generator" content="VuePress 2.0.0-beta.51">
+    <style>
+      :root {
+        --c-bg: #fff;
+      }
+      html.dark {
+        --c-bg: #22272e;
+      }
+      html, body {
+        background-color: var(--c-bg);
+      }
+    </style>
+    <script>
+      const userMode = localStorage.getItem('vuepress-color-scheme');
+			const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
+				document.documentElement.classList.toggle('dark', true);
+			}
+    </script>
     <title>AKHQ</title><meta name="description" content="Get all the insight of your Apache Kafka clusters, see topics, browse data inside topics, see consumer groups and their lag, manage your schema registry, see and manage your Kafka Connect cluster status, and more...">
-    <link rel="preload" href="/assets/js/runtime~app.477ef385.js" as="script"><link rel="preload" href="/assets/css/styles.3c566108.css" as="style"><link rel="preload" href="/assets/js/7.ed5b9ad9.js" as="script"><link rel="preload" href="/assets/js/app.adbfa168.js" as="script">
-    <link rel="stylesheet" href="/assets/css/styles.3c566108.css">
+    <link rel="modulepreload" href="/assets/app.8c288fc0.js"><link rel="modulepreload" href="/assets/404.html.65ea362a.js"><link rel="modulepreload" href="/assets/404.html.98e87f94.js"><link rel="prefetch" href="/assets/index.html.98ecff21.js"><link rel="prefetch" href="/assets/index.html.f39e4c69.js"><link rel="prefetch" href="/assets/api.html.85cbc368.js"><link rel="prefetch" href="/assets/debug.html.00fec037.js"><link rel="prefetch" href="/assets/dev.html.f4777680.js"><link rel="prefetch" href="/assets/installation.html.c71a81f3.js"><link rel="prefetch" href="/assets/index.html.a6b3fc44.js"><link rel="prefetch" href="/assets/akhq.html.985356a4.js"><link rel="prefetch" href="/assets/avro.html.e7bac029.js"><link rel="prefetch" href="/assets/brokers.html.ff871d3d.js"><link rel="prefetch" href="/assets/docker.html.8df57a0a.js"><link rel="prefetch" href="/assets/others.html.9b622fc2.js"><link rel="prefetch" href="/assets/protobuf.html.bd1eace9.js"><link rel="prefetch" href="/assets/index.html.7d44e60f.js"><link rel="prefetch" href="/assets/aws-iam-auth.html.25ba29ee.js"><link rel="prefetch" href="/assets/basic-auth.html.71b54b6f.js"><link rel="prefetch" href="/assets/external.html.9f219cd4.js"><link rel="prefetch" href="/assets/groups.html.71ddea83.js"><link rel="prefetch" href="/assets/header.html.285cb2ca.js"><link rel="prefetch" href="/assets/jwt.html.e0a1e320.js"><link rel="prefetch" href="/assets/ldap.html.6f9c12d9.js"><link rel="prefetch" href="/assets/oidc.html.0aecfb2c.js"><link rel="prefetch" href="/assets/index.html.2505e8a7.js"><link rel="prefetch" href="/assets/schema-references.html.7db56d29.js"><link rel="prefetch" href="/assets/tibco.html.a90be381.js"><link rel="prefetch" href="/assets/index.html.1dc94985.js"><link rel="prefetch" href="/assets/index.html.1051d0c2.js"><link rel="prefetch" href="/assets/api.html.0bab51c5.js"><link rel="prefetch" href="/assets/debug.html.44ccf988.js"><link rel="prefetch" href="/assets/dev.html.2dc9e179.js"><link rel="prefetch" href="/assets/installation.html.bd07be35.js"><link rel="prefetch" href="/assets/index.html.a2771c07.js"><link rel="prefetch" href="/assets/akhq.html.bda4d29b.js"><link rel="prefetch" href="/assets/avro.html.c3db0dca.js"><link rel="prefetch" href="/assets/brokers.html.8b429a9c.js"><link rel="prefetch" href="/assets/docker.html.b0710c47.js"><link rel="prefetch" href="/assets/others.html.f720214a.js"><link rel="prefetch" href="/assets/protobuf.html.4765d786.js"><link rel="prefetch" href="/assets/index.html.d3bd2a73.js"><link rel="prefetch" href="/assets/aws-iam-auth.html.150365c7.js"><link rel="prefetch" href="/assets/basic-auth.html.d5c4140d.js"><link rel="prefetch" href="/assets/external.html.f7a1d1e6.js"><link rel="prefetch" href="/assets/groups.html.5fc8289d.js"><link rel="prefetch" href="/assets/header.html.8cd31a16.js"><link rel="prefetch" href="/assets/jwt.html.9069c138.js"><link rel="prefetch" href="/assets/ldap.html.15f09fe2.js"><link rel="prefetch" href="/assets/oidc.html.505c49f2.js"><link rel="prefetch" href="/assets/index.html.56fe0307.js"><link rel="prefetch" href="/assets/schema-references.html.d3928035.js"><link rel="prefetch" href="/assets/tibco.html.200654a6.js"><link rel="prefetch" href="/assets/Index.864e74a4.js">
+    <link rel="stylesheet" href="/assets/style.68387a23.css">
   </head>
   <body>
-    <div id="app"><!--[--><div class="theme-container"><div class="theme-default-content"><h1>404</h1><blockquote>That&#39;s a Four-Oh-Four.</blockquote><a href="/" class="">Take me home</a></div></div><!----><!--]--></div>
-    <script src="/assets/js/runtime~app.477ef385.js" defer></script><script src="/assets/js/7.ed5b9ad9.js" defer></script><script src="/assets/js/app.adbfa168.js" defer></script>
+    <div id="app"><!--[--><div class="theme-container"><main class="page"><div class="theme-default-content"><h1>404</h1><blockquote>There&#39;s nothing here.</blockquote><a href="/" class="">Take me home</a></div></main></div><!----><!--]--></div>
+    <script type="module" src="/assets/app.8c288fc0.js" defer></script>
   </body>
 </html>
