@@ -2,10 +2,11 @@ import React from 'react';
 import Joi from 'joi-browser';
 import Form from '../../components/Form/Form';
 import Header from '../Header';
-import { SETTINGS_VALUES } from '../../utils/constants';
-import {getUIOptions, setUIOptions} from '../../utils/localstorage';
+import {SETTINGS_VALUES} from '../../utils/constants';
+import {setUIOptions} from '../../utils/localstorage';
 import './styles.scss';
 import {toast} from 'react-toastify';
+import {getClusterUIOptions} from '../../utils/functions';
 
 class Settings extends Form {
   state = {
@@ -39,17 +40,26 @@ class Settings extends Form {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-
-    const uiOptions = getUIOptions(clusterId);
-
-    this.setState({ clusterId, formData: {
-        topicDefaultView: (uiOptions && uiOptions.topic)? uiOptions.topic.defaultView : '',
-        topicDataSort: (uiOptions && uiOptions.topicData)? uiOptions.topicData.sort : '',
-        topicDataDateTimeFormat: (uiOptions && uiOptions.topicData)? uiOptions.topicData.dateTimeFormat : '',
-        skipConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.skipConsumerGroups : false,
-        skipLastRecord: (uiOptions && uiOptions.topic)? uiOptions.topic.skipLastRecord : false,
-        showAllConsumerGroups: (uiOptions && uiOptions.topic)? uiOptions.topic.showAllConsumerGroups : false
-      }})
+    this.setState( {clusterId}, () => {
+        this._initializeVars(() => {
+            this.setState({
+                formData: {
+                    topicDefaultView: (this.state.uiOptions && this.state.uiOptions.topic) ?
+                        this.state.uiOptions.topic.defaultView : '',
+                    topicDataSort: (this.state.uiOptions && this.state.uiOptions.topicData) ?
+                        this.state.uiOptions.topicData.sort : '',
+                    topicDataDateTimeFormat: (this.state.uiOptions && this.state.uiOptions.topicData) ?
+                        this.state.uiOptions.topicData.dateTimeFormat : '',
+                    skipConsumerGroups: (this.state.uiOptions && this.state.uiOptions.topic) ?
+                        this.state.uiOptions.topic.skipConsumerGroups : false,
+                    skipLastRecord: (this.state.uiOptions && this.state.uiOptions.topic) ?
+                        this.state.uiOptions.topic.skipLastRecord : false,
+                    showAllConsumerGroups: (this.state.uiOptions && this.state.uiOptions.topic) ?
+                        this.state.uiOptions.topic.showAllConsumerGroups : false
+                }
+            })
+        })
+    });
   }
 
   checkedSkipConsumerGroups = (event) => {
@@ -58,7 +68,12 @@ class Settings extends Form {
     this.setState({formData});
   }
 
-
+async _initializeVars(callBackFunction) {
+    const uiOptions = await getClusterUIOptions(this.state.clusterId)
+    this.setState({
+        uiOptions: uiOptions ?? {},
+    }, callBackFunction);
+}
 
   doSubmit() {
     const { clusterId, formData } = this.state;
