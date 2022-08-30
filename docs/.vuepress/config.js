@@ -61,6 +61,7 @@ module.exports = {
             ]
           },
           '/docs/configuration/docker.md',
+          '/docs/configuration/helm.md',
           '/docs/configuration/akhq.md',
           '/docs/configuration/avro.md',
           '/docs/configuration/protobuf.md',
