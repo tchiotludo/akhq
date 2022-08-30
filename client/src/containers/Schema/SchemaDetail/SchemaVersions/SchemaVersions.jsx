@@ -35,7 +35,8 @@ class SchemaVersions extends Root {
         return {
           id: schema.id,
           version: schema.version,
-          schema: JSON.stringify(JSON.parse(schema.schema), null, 2)
+          schemaType: schema.schemaType,
+          schema: "PROTOBUF" === schema.schemaType ? schema.schema : JSON.stringify(JSON.parse(schema.schema), null, 2)
         };
       });
       this.setState({ data, loading: false });
@@ -144,7 +145,7 @@ class SchemaVersions extends Root {
                 return (
                   <pre className="mb-0 khq-data-highlight">
                     <code>
-                      {JSON.stringify(JSON.parse(obj[col.accessor]))}
+                    {obj["schemaType"] === "PROTOBUF" ? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
                     </code>
                   </pre>
                 );
