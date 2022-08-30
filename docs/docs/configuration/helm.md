@@ -22,38 +22,6 @@ Also, if you need to add more stuff like ACL defintions, LDAP integrations or ot
 
 # This is an example with basic auth and a AWS MSK and using a AWS loadbalancer controller ingress
 
-image:
-  repository: tchiotludo/akhq
-
-# custom annotations (example: for prometheus)
-annotations: {}
-  #prometheus.io/scrape: 'true'
-  #prometheus.io/port: '8080'
-  #prometheus.io/path: '/prometheus'
-
-podAnnotations: {}
-
-# custom labels
-labels: {}
-  # custom.label: 'true'
-
-podLabels: {}
-
-## You can put directly your configuration here... or add java opts or any other env vars
-#extraEnv: 
-#  - name: AKHQ_CONFIGURATION
-#    value: |
-#        akhq:
-#          secrets:
-#            docker-kafka-server:
-#              properties:
-#  - name: JAVA_OPTS
-#    value: "-Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=password"
-#  # - name: CLASSPATH
-#  #   value: "/any/additional/jars/desired.jar:/go/here.jar"
-
-## Or you can also use configmap for the configuration...
-#in that example we are using BASIC-AUTH #https://akhq.io/docs/configuration/authentifications/basic-auth.html
 configuration:
   micronaut:
     security:
@@ -89,98 +57,6 @@ configuration:
           security.protocol: SASL_SSL
           sasl.mechanism: SCRAM-SHA-512
           sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="username" password="password";
-
-
-##... and secret for connection information
-existingSecrets: ""
-# name of the existingSecret
-secrets: {}
-#  akhq:
-#    connections:
-#      my-cluster-plain-text:
-#        properties:
-#          bootstrap.servers: "kafka:9092"
-#        schema-registry:
-#          url: "http://schema-registry:8085"
-#          type: "confluent"
-#          basic-auth-username: basic-auth-user
-#          basic-auth-password: basic-auth-pass
-#        connect:
-#          - name: "my-connect"
-#            url: "http://connect:8083"
-#            basic-auth-username: basic-auth-user
-#            basic-auth-password: basic-auth-pass
-
-kafkaSecrets: []
-#Provide extra base64 encoded kubernetes secrets (keystore/truststore)
-
-# Any extra volumes to define for the pod (like keystore/truststore)
-extraVolumes: []
-
-# Any extra volume mounts to define for the akhq container
-extraVolumeMounts: []
-
-# Specify ServiceAccount for pod
-serviceAccountName: null
-serviceAccount:
-  create: false
-  #annotations:
-  #  eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
-
-
-# Add your own init container or uncomment and modify the example.
-initContainers: {}
-#   create-keystore:
-#     image: "eclipse-temurin:11-jre"
-#     command: ['sh', '-c', 'keytool']
-#     volumeMounts:
-#      - mountPath: /tmp
-#        name: certs
-
-# Configure the Pod Security Context
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-securityContext: {}
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-# Configure the Container Security Context
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-containerSecurityContext: {}
-  # allowPrivilegeEscalation: false
-  # privileged: false
-  # capabilities:
-  #   drop:
-  #     - ALL
-  # runAsNonRoot: true
-  # runAsUser: 1001
-  # readOnlyRootFilesystem: true
-
-readinessProbe:
-  prefix: "" # set same as `micronaut.server.context-path`
-
-resources: {}
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
-service:
-  enabled: true
-  type: NodePort
-  port: 8080
-  targetPort: 8080
-  labels:
-    app: akhq
-  portName: service-akhq
-
 
 ingress:
   enabled: true
