@@ -1,9 +1,9 @@
 # Helm  
 
-Taking a look to the default values you can see how your values could be defined:
+Basically to create your helm values, you can take a look to the default values and you can see how your values could be defined:
 https://github.com/tchiotludo/akhq/blob/dev/helm/akhq/values.yaml
 
-But sometimes some examples are needed to understand better how to define this, so here we show some examples:
+Nextone we will present some helm chart value example used in an AWS MSK that maybe could show how to use and define stuff in the helm chart and understand better how to define that. 
 
 
 ## Examples
@@ -14,9 +14,9 @@ The following HELM chart is an example of AWS MSK with a basic authentication an
 
 So mixing the default values.yaml previously linked and adding the basic idea of basic AKHQ authentication (more info here: https://akhq.io/docs/configuration/authentifications/basic-auth.html) and the documentation about how to connect to the AWS MSK here https://akhq.io/docs/configuration/authentifications/aws-iam-auth.html, we created the following example.
 
-And of course, about ingress and service is using similar configuration like other external helm charts are using in the opensource community.
+And of course, about `ingress` and `service` is using similar Helm configurations like other external helm charts are using in the opensource community.
 
-If you need to add ACL defintions, LDAP integrations or other stuff. You can see some examples in the main documentation of AKHQ https://akhq.io/docs/
+Also, if you need to add more stuff like ACL defintions, LDAP integrations or other stuff. In the main documentation there are present a lot of examples https://akhq.io/docs/ .
 
 ```yaml
 
