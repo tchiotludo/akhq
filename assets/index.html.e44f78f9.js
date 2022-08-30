@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-33d73a8b","path":"/docs/configuration/authentifications/","title":"Authentifications","lang":"en-US","frontmatter":{},"excerpt":"","headers":[],"git":{"updatedTime":1661884814000,"contributors":[{"name":"Alex Vaque","email":"alex.vaque@gmx.com","commits":1}]},"filePathRelative":"docs/configuration/authentifications/README.md"}');export{t as data};
