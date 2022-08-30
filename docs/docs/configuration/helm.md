@@ -1,10 +1,22 @@
 # Helm  
 
+Taking a look to the default values you can see how your values could be defined:
+https://github.com/tchiotludo/akhq/blob/dev/helm/akhq/values.yaml
+
+But sometimes some examples are needed to understand better how to define this, so here we show some examples:
+
 
 ## Examples
 
 ### AWS MSK with Basic Authentication and ALB controller ingress
 
+The following HELM chart is an example of AWS MSK with a basic authentication and also using AWS load balancer controller.
+
+So mixing the default values.yaml previously linked and adding the basic idea of basic AKHQ authentication (more info here: https://akhq.io/docs/configuration/authentifications/basic-auth.html) and the documentation about how to connect to the AWS MSK here https://akhq.io/docs/configuration/authentifications/aws-iam-auth.html, we created the following example.
+
+And of course, about ingress and service is using similar configuration like other external helm charts are using in the opensource community.
+
+If you need to add ACL defintions, LDAP integrations or other stuff. You can see some examples in the main documentation of AKHQ https://akhq.io/docs/
 
 ```yaml
 
@@ -116,13 +128,32 @@ serviceAccount:
   #  eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
 
 
+# Add your own init container or uncomment and modify the example.
+initContainers: {}
+#   create-keystore:
+#     image: "eclipse-temurin:11-jre"
+#     command: ['sh', '-c', 'keytool']
+#     volumeMounts:
+#      - mountPath: /tmp
+#        name: certs
+
 # Configure the Pod Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-#securityContext: 
-#
-## Configure the Container Security Context
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-#containerSecurityContext: 
+securityContext: {}
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Configure the Container Security Context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
+  # privileged: false
+  # capabilities:
+  #   drop:
+  #     - ALL
+  # runAsNonRoot: true
+  # runAsUser: 1001
+  # readOnlyRootFilesystem: true
 
 readinessProbe:
   prefix: "" # set same as `micronaut.server.context-path`
