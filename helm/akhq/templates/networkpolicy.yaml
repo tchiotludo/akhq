@@ -1,0 +1,25 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: {{ template "akhq.networkPolicy.apiVersion" . }}
+kind: NetworkPolicy
+metadata:
+  name: {{ include "akhq.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+     {{- with .Values.labels }}
+       {{- toYaml . | nindent 4 }}
+     {{- end }}
+spec:
+  policyTypes:
+    - Ingress
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "akhq.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  ingress:
+  - ports:
+    - port: http
+    - port: management
+{{- end }}
