@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11-jre
+FROM eclipse-temurin:11-jre-focal
 
 # install curl
 RUN apt-get update && \
