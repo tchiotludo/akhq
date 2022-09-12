@@ -1,5 +1,8 @@
 FROM eclipse-temurin:11-jre
 
+ARG https_proxy=http://mmwwatch2.warburg.com:3128
+ARG http_proxy=http://mmwwatch2.warburg.com:3128
+
 # install curl
 RUN apt-get update && \
     apt-get install -y \
