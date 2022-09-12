@@ -90,13 +90,30 @@ spec:
             - name: management
               containerPort: 28081
               protocol: TCP
+          {{- if $.Values.livenessProbe.enabled }}
           livenessProbe:
-            tcpSocket:
-              port: management
+            httpGet:
+              path: {{ .Values.livenessProbe.prefix | default "" }}{{ $.Values.livenessProbe.path }}
+              port: {{ $.Values.livenessProbe.port }}
+              {{- if $.Values.livenessProbe.httpGetExtra }}{{ toYaml $.Values.livenessProbe.httpGetExtra | trim | nindent 14 }}{{ end }}
+            initialDelaySeconds: {{ $.Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $.Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ $.Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ $.Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ $.Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if $.Values.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.readinessProbe.prefix | default "" }}/health
-              port: management
+              path: {{ .Values.readinessProbe.prefix | default "" }}{{ $.Values.readinessProbe.path }}
+              port: {{ $.Values.readinessProbe.port }}
+              {{- if $.Values.readinessProbe.httpGetExtra }}{{ toYaml $.Values.readinessProbe.httpGetExtra | trim | nindent 14 }}{{ end }}
+            initialDelaySeconds: {{ $.Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $.Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ $.Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ $.Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ $.Values.readinessProbe.failureThreshold }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

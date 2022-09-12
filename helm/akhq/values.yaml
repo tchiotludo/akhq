@@ -127,8 +127,31 @@ ingress:
   #    hosts:
   #      - akhq.demo.com
 
+### Readiness / Liveness probe config.
+### ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 readinessProbe:
+  enabled: true
   prefix: "" # set same as `micronaut.server.context-path`
+  path: /health
+  port: management
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+  httpGetExtra: {}
+
+livenessProbe:
+  enabled: true
+  prefix: "" # set same as `micronaut.server.context-path`
+  path: /health
+  port: management
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+  httpGetExtra: {}
 
 resources: {}
   # limits:
