@@ -84,10 +84,11 @@ public class TopicController extends AbstractController {
         String cluster,
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
-        Optional<Integer> page
+        Optional<Integer> page,
+        Optional<Integer> uiPageSize
     ) throws ExecutionException, InterruptedException {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+        Pagination pagination = new Pagination(uiPageSize.orElse(pageSize), uri, page.orElse(1));
 
         return ResultPagedList.of(this.topicRepository.list(
             cluster,

@@ -154,7 +154,7 @@ class ConsumerGroupList extends Root {
   deleteConsumerGroup = () => {
     const { selectedCluster, groupToDelete } = this.state;
 
-    this.removeApi(uriConsumerGroupDelete(selectedCluster, groupToDelete.id))
+    this.removeApi(uriConsumerGroupDelete(selectedCluster, encodeURIComponent(groupToDelete.id)))
       .then(() => {
         toast.success(`Consumer Group '${groupToDelete.id}' is deleted`);
         this.setState({ showDeleteModal: false, groupToDelete: {} }, () => this.getConsumerGroup());
@@ -243,7 +243,7 @@ class ConsumerGroupList extends Root {
           onDelete={group => {
             this.handleOnDelete(group);
           }}
-          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
+          onDetails={id => `/ui/${selectedCluster}/group/${encodeURIComponent(id)}`}
           actions={
             roles.group && roles.group['group/delete']
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]

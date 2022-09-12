@@ -1,11 +1,15 @@
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre
 
 # install curl
 RUN apt-get update && \
     apt-get install -y \
       curl && \
+    apt-get upgrade -y &&\
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
+
+HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
+  CMD curl --fail http://localhost:8080/health || exit 1
 
 WORKDIR /app
 COPY docker /
