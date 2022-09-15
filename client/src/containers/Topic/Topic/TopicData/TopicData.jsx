@@ -143,6 +143,9 @@ class TopicData extends Root {
   _startEventSource = (changePage) => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
+    let lastPercentVal = 0.0;
+    const percentUpdateDelta = 0.5;
+
     let self = this;
     this.setState({ sortBy: 'Oldest', messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
       const filters = this._buildFilters();
@@ -157,9 +160,18 @@ class TopicData extends Root {
         const res = JSON.parse(e.data);
         const records = res.records || [];
         const nextPage = (res.after) ? res.after : self.state.nextPage;
-        self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) }, () => {
+
+        const percentDiff = res.percent - lastPercentVal;
+
+        // to avoid UI slowdowns, only update the percentage in fixed increments
+        if(percentDiff >= percentUpdateDelta) {
+          lastPercentVal = res.percent;
+          self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) });
+        }
+
+        if(records.length) {
           self._handleMessages(records, true);
-        });
+        }
       });
 
       this.eventSource.addEventListener('searchEnd', function(e) {
@@ -969,9 +981,9 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return <DateTime 
-                        isoDateTimeString={obj[col.accessor]} 
-                        dateTimeFormat={this.state.dateTimeFormat} 
+                      return <DateTime
+                        isoDateTimeString={obj[col.accessor]}
+                        dateTimeFormat={this.state.dateTimeFormat}
                       />;
                     }
                   },
