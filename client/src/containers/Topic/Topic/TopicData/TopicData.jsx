@@ -147,7 +147,7 @@ class TopicData extends Root {
     const percentUpdateDelta = 0.5;
 
     let self = this;
-    this.setState({ sortBy: 'Oldest', messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
+    this.setState({ messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
       const filters = this._buildFilters();
       if (changePage) {
         this._setUrlHistory(filters + '&after=' + nextPage );
@@ -170,7 +170,8 @@ class TopicData extends Root {
         }
 
         if(records.length) {
-          self._handleMessages(records, true);
+          const tableMessages = self._handleMessages(records, true, self.state.sortBy === "Oldest");
+          self.setState({messages: tableMessages});
         }
       });
 
@@ -440,8 +441,8 @@ class TopicData extends Root {
         });
   };
 
-  _handleMessages = (messages, append = false) => {
-    let tableMessages = append ? this.state.messages : [];
+  _handleMessages = (messages, append = false, insertAtEnd = true) => {
+    let tableMessages = append ? [...this.state.messages] : [];
     messages.forEach(message => {
       let messageToPush = {
         key: message.key || '',
@@ -455,7 +456,12 @@ class TopicData extends Root {
         schema: { key: message.keySchemaId, value: message.valueSchemaId },
         exceptions: message.exceptions || []
       };
-      tableMessages.push(messageToPush);
+
+      if (insertAtEnd) {
+        tableMessages.push(messageToPush);
+      } else {
+        tableMessages.unshift(messageToPush);
+      }
     });
     return tableMessages;
   };
@@ -1052,6 +1058,9 @@ class TopicData extends Root {
                 extraRow
                 noStripes
                 data={messages}
+                rowId={data => {
+                  return data.partition + '-' + data.offset;
+                }}
                 updateData={data => {
                   this.setState({ messages: data });
                 }}
