@@ -2,6 +2,13 @@
     <div>
         <!-- Start Featured Slider -->
 
+        <div id="kestra">
+
+            <a href="https://kestra.io" target="_blank">
+                Discover <img height="22px" src="https://kestra.io/logo.svg" alt="" />, infinitely scalable open source orchestration & scheduling platform.
+            </a>
+        </div>
+
         <section id="mu-hero">
             <div class="container">
                 <div class="row">
@@ -487,9 +494,29 @@ export default {
 
 
 <style lang="scss">
+@import "../styles/variable";
 .landing {
     @import "../styles/home/style";
     @import "../styles/home/akhq-theme";
+    header.navbar, #mu-hero {
+        margin-top: 29px;
+    }
+}
+
+#kestra {
+    z-index: 1000;
+    display: block;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 4px;
+    text-align: center;
+    background: $teal;
+    cursor: pointer;
+
+    a {
+        color: darken($teal, 25%);
+    }
 }
 
 </style>
