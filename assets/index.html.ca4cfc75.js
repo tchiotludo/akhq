@@ -1,1 +1,0 @@
-const t=JSON.parse('{"key":"v-75b1ef1a","path":"/docs/configuration/schema-registry/","title":"Schema registry","lang":"en-US","frontmatter":{},"excerpt":"","headers":[],"git":{"updatedTime":1665475241000,"contributors":[{"name":"Mitsuaki Ito","email":"itoumagic@gmail.com","commits":1}]},"filePathRelative":"docs/configuration/schema-registry/README.md"}');export{t as data};
