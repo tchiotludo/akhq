@@ -177,15 +177,17 @@ class AvroDeserializerTest {
             + "    {\"name\": \"arrayField\", \"type\": {\"type\": \"array\", \"items\": \"double\"}, \"default\": []}"
             + "    ]"
             + "}";
-        Schema schema = new Schema.Parser().parse(type);
-
-        GenericRecord expectedRecord = AvroSerializer.recordSerializer(Map.of(), schema);
-        assert new GenericData().validate(schema, expectedRecord);
-
-        Map<String, Object> result = AvroDeserializer.recordDeserializer(expectedRecord);
         Map<String, Object> defaultValues = new HashMap<>();
         defaultValues.put("stringField", null);
         defaultValues.put("arrayField", List.of());
+
+        Schema schema = new Schema.Parser().parse(type);
+
+        GenericRecord expectedRecord = AvroSerializer.recordSerializer(defaultValues, schema);
+        assert new GenericData().validate(schema, expectedRecord);
+
+        Map<String, Object> result = AvroDeserializer.recordDeserializer(expectedRecord);
+
         assertThat(result, is(defaultValues));
     }
 }
