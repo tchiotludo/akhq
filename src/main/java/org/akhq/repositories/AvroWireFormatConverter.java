@@ -34,11 +34,14 @@ public class AvroWireFormatConverter {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             magicByte = (byte) 0x80;
         }
-        Iterator<Header> contentTypeIter = record.headers().headers("contentType").iterator();
+            Iterator<Header> contentTypeIter = record.headers().headers("contentType").iterator();
         byte[] value = record.value();
-        if (contentTypeIter.hasNext() &&
+        if (
+            value != null &&
+                contentTypeIter.hasNext() &&
                 value.length > 0 &&
-                ByteBuffer.wrap(value).get() != magicByte) {
+                ByteBuffer.wrap(value).get() != magicByte
+        ) {
             String headerValue = new String(contentTypeIter.next().value());
             Matcher matcher = AVRO_CONTENT_TYPE_PATTERN.matcher(headerValue);
             if (matcher.matches()) {
