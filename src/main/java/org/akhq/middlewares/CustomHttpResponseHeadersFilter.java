@@ -21,7 +21,7 @@ import java.util.Map;
 public class CustomHttpResponseHeadersFilter implements HttpServerFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomHttpResponseHeadersFilter.class);
-    public static final String PROPERTY_CUSTOM_RESPONSE_HEADERS = "akhq.http.headers.custom-response-headers";
+    public static final String PROPERTY_CUSTOM_RESPONSE_HEADERS = "akhq.server.custom-response-headers";
     public static final String REMOVE_HEADER_VALUE = "REMOVE_HEADER";
 
     private Map<String,String> customResponseHeaders = new HashMap<>();
