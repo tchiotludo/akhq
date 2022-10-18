@@ -54,3 +54,16 @@ akhq:
       }
     </style>
 ```
+
+## Custom HTTP response headers
+To add headers to every response please add the headers like in following example:
+```yaml
+akhq:
+  http:
+    headers:
+      customResponseHeaders:
+        - "Content-Security-Policy|default-src 'none'; frame-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests"
+        - "X-Permitted-Cross-Domain-Policies|none"
+        - "Cross-Origin-Embedder-Policy|require-corp"
+```
+The header/value pairs are split by the pipe character `|`.
