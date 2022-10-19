@@ -1,0 +1,12 @@
+micronaut:
+  application:
+    name: akhq
+  security:
+    enabled: false
+  server:
+    port: -1
+akhq:
+  connections:
+    dummy-kafka-cluster:
+      properties:
+        bootstrap.servers: "localhost:9121"
