@@ -7,14 +7,12 @@ import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CustomHttpResponseHeadersFilterTest {
 
     private static EmbeddedServer server;
@@ -38,11 +36,10 @@ public class CustomHttpResponseHeadersFilterTest {
     protected static final String FORBIDDEN_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     protected static final String FORBIDDEN_HEADER_VIA = "Via";
     protected static final String FORBIDDEN_HEADER_SERVER = "Server";
-    
 
     @BeforeAll
     public static void setupServer() {
-        server = ApplicationContext.run(EmbeddedServer.class, "custom-response-headers");
+        server = ApplicationContext.run(EmbeddedServer.class, "custom-http-response-headers");
         client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
     }
 
@@ -56,13 +53,13 @@ public class CustomHttpResponseHeadersFilterTest {
         }
     }
 
-
     /**
      * Test the {@link CustomHttpResponseHeadersFilter} for a valid URI. Check the response for existence of the custom headers.
      */
     @Test
+    @Order(1)
     void testFilterCheckHeaders() {
-        HttpResponse response = client.toBlocking().exchange("/issues/66");
+        HttpResponse<?> response = client.toBlocking().exchange("/issues/66");
         assertEquals(HttpStatus.OK.getCode(), response.getStatus().getCode());
         assertHeaders(response);
     }
@@ -71,13 +68,14 @@ public class CustomHttpResponseHeadersFilterTest {
      * Test the {@link CustomHttpResponseHeadersFilter} for an invalid URI. But the response must nevertheless be added.
      */
     @Test
+    @Order(2)
     void testFilterCheckHeadersForInvalidURI() {
         HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> client.toBlocking().exchange("/issues/"));
         assertEquals(HttpStatus.NOT_FOUND.getCode(), exception.getStatus().getCode());
         assertHeaders(exception.getResponse());
     }
 
-    private static void assertHeaders(HttpResponse response) {
+    private static void assertHeaders(HttpResponse<?> response) {
 
         Assertions.assertEquals(REQUIRED_HEADER_CONTENT_SECURITY_POLICY_VALUE, response.getHeaders().get(REQUIRED_HEADER_CONTENT_SECURITY_POLICY),
                 "Wrong value " + response.getHeaders().get(REQUIRED_HEADER_CONTENT_SECURITY_POLICY) + " for " + REQUIRED_HEADER_CONTENT_SECURITY_POLICY);
