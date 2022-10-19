@@ -66,4 +66,4 @@ akhq:
       - name: "X-Permitted-Cross-Domain-Policies"
         value: "none"
 ```
-The header/value pairs are split by the pipe character `|`.
+
