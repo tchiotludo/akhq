@@ -40,6 +40,12 @@ akhq:
       enabled: true # true by default
       name: org.akhq.log.access # Logger name
       format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
+    # Custom HTTP response headers configuration
+    customHttpResponseHeaders:
+      - name: "Content-Security-Policy"
+        value: "default-src 'none'; frame-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests"
+      - name: "X-Permitted-Cross-Domain-Policies"
+        value: "none"
 
   # default kafka properties for each clients, available for admin / producer / consumer (optional)
   clients-defaults:
@@ -289,3 +295,4 @@ akhq:
         - username: header-admin
           groups:
             - admin
+            
