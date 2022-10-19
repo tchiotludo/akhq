@@ -27,31 +27,31 @@ public class CustomHttpResponseHeadersFilter implements HttpServerFilter {
 
     public CustomHttpResponseHeadersFilter(ApplicationContext context, Server server) {
         this.server = server;
-        LOG.info("Created instance of " + CustomHttpResponseHeadersFilter.class);
+        LOG.trace("Created instance of " + CustomHttpResponseHeadersFilter.class);
     }
 
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         Publisher<MutableHttpResponse<?>> responsePublisher = chain.proceed(request);
-        LOG.debug("Adding custom headers to response.");
+        LOG.trace("Adding custom headers to response.");
         return Publishers.map(responsePublisher, mutableHttpResponse -> {
             this.server.getCustomHttpResponseHeaders().entrySet().forEach(responseHeader -> {
                 if (responseHeader.getValue().equals(REMOVE_HEADER_VALUE)) {
                     if (mutableHttpResponse.getHeaders().contains(responseHeader.getKey())) {
                         String existingHeaderValue = mutableHttpResponse.getHeaders().get(responseHeader.getKey());
                         mutableHttpResponse.getHeaders().remove(responseHeader.getKey());
-                        LOG.debug("Removed header '{}' (value was '{}')", responseHeader.getKey(), existingHeaderValue);
+                        LOG.trace("Removed header '{}' (value was '{}')", responseHeader.getKey(), existingHeaderValue);
                     } else {
-                        LOG.debug("Header '{}' to be removed did not exist", responseHeader.getKey());
+                        LOG.trace("Header '{}' to be removed did not exist", responseHeader.getKey());
                     }
                 } else {
                     if (mutableHttpResponse.getHeaders().contains(responseHeader.getKey())) {
                         String existingHeaderValue = mutableHttpResponse.getHeaders().get(responseHeader.getKey());
                         mutableHttpResponse.getHeaders().set(responseHeader.getKey(), responseHeader.getValue());
-                        LOG.debug("Replaced existing header '{}' by value {} (value was '{}')", responseHeader.getKey(), responseHeader.getValue(), existingHeaderValue);
+                        LOG.trace("Replaced existing header '{}' by value {} (value was '{}')", responseHeader.getKey(), responseHeader.getValue(), existingHeaderValue);
                     } else {
                         mutableHttpResponse.getHeaders().add(responseHeader.getKey(), responseHeader.getValue());
-                        LOG.debug("Added custom header '{}' with value '{}'", responseHeader.getKey(), responseHeader.getValue());
+                        LOG.trace("Added custom header '{}' with value '{}'", responseHeader.getKey(), responseHeader.getValue());
                     }
                 }
             });
