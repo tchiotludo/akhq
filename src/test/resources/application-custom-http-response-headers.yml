@@ -6,6 +6,10 @@ micronaut:
   server:
     port: -1
 akhq:
+  connections:
+    dummy-kafka-cluster:
+      properties:
+        bootstrap.servers: "localhost:9121"
   server:
     customHttpResponseHeaders:
       - name: "Content-Security-Policy"
