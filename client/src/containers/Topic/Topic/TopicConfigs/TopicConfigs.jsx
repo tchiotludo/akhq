@@ -212,6 +212,7 @@ class TopicConfigs extends Form {
   render() {
     const { data, loading } = this.state;
     const roles = this.state.roles || {};
+    const isUpdatable = roles.topic && roles.topic['topic/config/update'];
     return (
       <form
         encType="multipart/form-data"
@@ -237,6 +238,7 @@ class TopicConfigs extends Form {
                 accessor: 'value',
                 colName: 'Value',
                 type: 'text',
+                readOnly: !isUpdatable,
                 cell: obj => {
                   return this.getInput(
                     this.state.formData[obj.name],
@@ -262,7 +264,7 @@ class TopicConfigs extends Form {
             }}
             noContent={'No acl for configs for current kafka user.'}
           />
-          {roles.topic && roles.topic['topic/config/update'] && !this.props.internal ? (
+          {isUpdatable && !this.props.internal ? (
             <aside>
               {this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
             </aside>

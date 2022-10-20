@@ -162,6 +162,7 @@ class Table extends Component {
               <td
                 key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
+                className={column.readOnly ? 'not-allowed' : ''}
                 onDoubleClick={() => {
                   if (
                     actions &&
@@ -184,6 +185,7 @@ class Table extends Component {
             <td
               key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
+              className={column.readOnly ? 'not-allowed' : ''}
               onDoubleClick={() => {
                 if (
                   actions &&
@@ -496,6 +498,7 @@ Table.propTypes = {
       accessor: PropTypes.string,
       colName: PropTypes.string,
       type: PropTypes.string,
+      readOnly: PropTypes.bool,
       cell: PropTypes.function
     })
   ),
