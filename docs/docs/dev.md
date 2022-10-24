@@ -1,36 +1,44 @@
-
 # Development Environment
 
 ## Early dev image
 
-You can have access to last feature / bug fix with docker dev image automatically build on tag `dev`
+You can have access to last feature or bug fix by using the docker dev image automatically build on tag `dev`:
+
 ```bash
 docker pull tchiotludo/akhq:dev
 ```
 
 The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar :
 
-Get it from docker image
-```bash
-docker pull tchiotludo/akhq:dev
-docker run --rm --name=akhq -it tchiotludo/akhq:dev
-docker cp akhq:/app/akhq.jar .
-```
-Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/akhq-*.jar`
+Get it from docker image:
 
+```bash
+$ docker pull tchiotludo/akhq:dev
+$ docker run --rm --name=akhq -it tchiotludo/akhq:dev
+$ docker cp akhq:/app/akhq.jar .
+```
+
+Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/akhq-*.jar`.
 
 ## Development Server
 
-A docker-compose is provided to start a development environment.
-Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
-Dev server is a java server & webpack-dev-server with live reload.
+A docker-compose is provided to start a development environment:
+
+* Install docker & docker-compose.
+* Clone the repository.
+* Run `docker-compose -f docker-compose-dev.yml up` from the root of the repo to start a dev server.
+* Once everything is running, head to http://localhost:8080
+
+The dev server is comprised of a java server and webpack-dev-server with live reload.
 
 The configuration for the dev server is in `application.dev.yml`.
 
 ## Setup local dev environment on Windows
 
 In case you want to develop for AKHQ on Windows with IntelliJ IDEA without Docker (for any reason) you can follow this
-brief guide. For the following steps, please, make sure you meet these requirements:
+brief guide.
+
+For the following steps,  make sure you meet these requirements:
 
 * OS: Windows (10)
 * Kafka (2.6.0) is downloaded and extracted, the installation directory is referred to as $KAFKA_HOME in the latter
@@ -40,18 +48,21 @@ brief guide. For the following steps, please, make sure you meet these requireme
   * [Lombok](https://plugins.jetbrains.com/plugin/6317-lombok)
 
 First run a Kafka server locally. Therefore, you need to start Zookeeper first by opening a CMD and doing:
+
 ```bash
 $KAFKA_HOME\bin\windows\zookeeper-server-start.bat config\zookeper.properties
 $KAFKA_HOME\bin\windows\kafka-server-start.bat config\server.properties
 ```
 A zero-config Kafka server should be up and running locally on your machine now. For further details or troubleshooting
 see [Kafka Getting started guide](https://kafka.apache.org/quickstart). In the next step we're going to checkout AKHQ from GitHub:
+
 ```bash
 git clone https://github.com/tchiotludo/akhq.git
 ```
 
 Open the checked out directory in IntelliJ IDEA. The current version (0.16.0) of AKHQ is built with Java 11. If you
 don't have OpenJDK 11 installed already, do the following in IntelliJ IDEA:
+
 * _File > Project Structure... > Platform Settings >
 SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 11)
 * download + install. Make sure
@@ -68,6 +79,7 @@ akhq:
       properties:
         bootstrap.servers: "localhost:9092"
 ```
+
 ::: warning
 Do not commit this part of `application.yml`. A more secure way to configure your local development Kafka server is
 described in the Micronaut doc, chapter ["Application Configuration"](https://docs.micronaut.io/2.5.13/guide/index.html#config).

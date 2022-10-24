@@ -15,7 +15,7 @@ import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
 import DateTime from '../../../components/DateTime';
 import {getClusterUIOptions} from '../../../utils/functions';
-import {handlePageChange, getPageNumber} from './../../../utils/pagination';
+import {handlePageChange, getPageNumber} from '../../../utils/pagination';
 import PageSize from '../../../components/PageSize';
 
 class TopicList extends Root {
@@ -94,7 +94,7 @@ class TopicList extends Root {
     }
 
     this.setState({
-      selectedCluster: clusterId, 
+      selectedCluster: clusterId,
       searchData: searchDataTmp,
       keepSearch: keepSearchTmp,
       uiOptions: uiOptions ?? {},
@@ -302,7 +302,7 @@ class TopicList extends Root {
       constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
-    
+
 
     const topicCols =
         [
@@ -464,7 +464,7 @@ class TopicList extends Root {
             currentPageSize={this.state.currentPageSize}
             onChange={this.handlePageSizeChangeSubmission}
           />
-          
+
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
