@@ -160,8 +160,8 @@ jobs:
         with:
           status: ${{ job.status }}
           username: Github Actions
-          icon_emoji: ':octocat:'
-          channel: '#akhq'
+          icon_emoji: ':github-actions:'
+          channel: 'C03H9CEBGS2'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
