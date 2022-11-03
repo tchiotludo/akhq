@@ -40,6 +40,7 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
 
     @Test
     void list() throws ExecutionException, InterruptedException {
+        mockApplicationContext();
         assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
@@ -50,7 +51,7 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
     @Test
     void listWithConsumerGroupRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
-        assertEquals(5, consumerGroupRepository.list(
+        assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             Optional.empty()

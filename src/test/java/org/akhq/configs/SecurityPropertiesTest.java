@@ -19,13 +19,12 @@ class SecurityPropertiesTest {
                 CollectionUtils.toSet(new String[] {"admin", "limited", "operator", "no-filter"}),
                 securityProperties.getGroups().keySet()
         );
-
         ctx.close();
     }
 
     @Test
     void shouldReturnAllBasicPlusConfiguredGroups() {
-        ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class, "extragroups");
+        ApplicationContext ctx = ApplicationContext.run("extragroups");
         SecurityProperties securityProperties = ctx.getBean(SecurityProperties.class);
 
         assertEquals(
@@ -38,7 +37,7 @@ class SecurityPropertiesTest {
 
     @Test
     void shouldOverrideBasicGroups() {
-        ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class, "overridegroups");
+        ApplicationContext ctx = ApplicationContext.run("overridegroups");
         SecurityProperties securityProperties = ctx.getBean(SecurityProperties.class);
 
         assertEquals(

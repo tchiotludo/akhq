@@ -75,7 +75,7 @@ class TopicControllerTest extends AbstractTest {
     @Order(1)
     void groupsApi() {
         List<ConsumerGroup> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/groups"), ConsumerGroup.class);
-        assertEquals(5, result.size());
+        assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, result.size());
     }
 
     @Test
