@@ -30,7 +30,7 @@ import DateTime from '../../../../components/DateTime';
 import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
 import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
-import JSONbig from 'json-bigint';
+import * as LosslessJson from 'lossless-json'
 
 class TopicData extends Root {
   state = {
@@ -928,8 +928,8 @@ class TopicData extends Root {
                     extraRowContent: (obj, index) => {
                       let value = obj.value;
                       try {
-                        let json = JSONbig.parse(obj.value);
-                        value = JSONbig.stringify(json, null, 2);
+                        let json = LosslessJson.parse(obj.value);
+                        value = LosslessJson.stringify(json, undefined, "  ");
                         // eslint-disable-next-line no-empty
                       } catch (e) {}
 
@@ -969,9 +969,9 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return <DateTime 
-                        isoDateTimeString={obj[col.accessor]} 
-                        dateTimeFormat={this.state.dateTimeFormat} 
+                      return <DateTime
+                        isoDateTimeString={obj[col.accessor]}
+                        dateTimeFormat={this.state.dateTimeFormat}
                       />;
                     }
                   },
