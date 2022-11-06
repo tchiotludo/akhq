@@ -295,7 +295,7 @@ public class KafkaTestCluster implements Runnable {
         log.debug("{} topic created", TOPIC_JSON_SCHEMA);
 
         // consumer groups
-        for (int c = 0; c < 5; c++) {
+        for (int c = 0; c < CONSUMER_GROUP_COUNT; c++) {
             Properties properties = new Properties();
             properties.put("group.id", "consumer-" + c);
 

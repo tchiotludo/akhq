@@ -17,7 +17,7 @@ public class SecurityProperties {
     private List<BasicAuth> basicAuth = new ArrayList<>();
     private String defaultGroup;
 
-    @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
+    //@MapFormat(transformation = MapFormat.MapTransformation.FLAT)
     private Map<String, Group> groups = new HashMap<>();
 
     @PostConstruct
@@ -27,5 +27,9 @@ public class SecurityProperties {
                 group.setName(key);
             }
         });
+    }
+    @Override
+    public String toString() {
+        return "defaultGroup ="+defaultGroup+" keys="+groups.keySet();
     }
 }
