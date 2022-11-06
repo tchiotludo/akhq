@@ -929,7 +929,7 @@ class TopicData extends Root {
                       let value = obj.value;
                       try {
                         let json = LosslessJson.parse(obj.value);
-                        value = LosslessJson.stringify(json, undefined, " ");
+                        value = LosslessJson.stringify(json, undefined, "  ");
                         // eslint-disable-next-line no-empty
                       } catch (e) {}
 
@@ -969,9 +969,9 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return <DateTime 
-                        isoDateTimeString={obj[col.accessor]} 
-                        dateTimeFormat={this.state.dateTimeFormat} 
+                      return <DateTime
+                        isoDateTimeString={obj[col.accessor]}
+                        dateTimeFormat={this.state.dateTimeFormat}
                       />;
                     }
                   },
