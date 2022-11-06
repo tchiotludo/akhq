@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-7e1a880c","path":"/docs/configuration/protobuf.html","title":"Protobuf deserialization","lang":"en-US","frontmatter":{},"excerpt":"","headers":[],"git":{"updatedTime":1667762903000,"contributors":[{"name":"meeraj257","email":"nagaraj.vn@aexp.com","commits":1}]},"filePathRelative":"docs/configuration/protobuf.md"}');export{t as data};
