@@ -67,7 +67,7 @@ public class ConnectEmbedded {
         connect = new Connect(herder, rest);
         connect.start();
 
-        log.debug("Startup of embedded Kafka connect at {} completed ...", connect.restUrl());
+        log.debug("Startup of embedded Kafka connect at {} completed ...", connect.rest().serverUrl());
     }
 
     private Map<String, String> effectiveConfigFrom(final Properties initialConfig) {
@@ -86,15 +86,15 @@ public class ConnectEmbedded {
     }
 
     public String connectUrl() {
-        return connect.restUrl().toString();
+        return connect.rest().serverUrl().toString();
     }
 
     public void stop() {
-        log.debug("Shutting down embedded connect at {} ...", connect.restUrl() );
+        log.debug("Shutting down embedded connect at {} ...", connect.rest().serverUrl() );
 
         connect.stop();
         connect.awaitStop();
 
-        log.debug("Shutdown of embedded connect at {} completed", connect.restUrl());
+        log.debug("Shutdown of embedded connect at {} completed", connect.rest().serverUrl());
     }
 }
