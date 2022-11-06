@@ -26,8 +26,8 @@ public class Cluster {
             this.nodes.add(new Node(node));
         }
 
-        Optional.ofNullable(result.controller().get()).ifPresentOrElse(
-            node -> this.controller = new Node(node),
-            () -> this.controller = new Node());
+        if (result.controller().get() != null) {
+            this.controller = new Node(result.controller().get());
+        }
     }
 }
