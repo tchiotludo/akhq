@@ -37,7 +37,7 @@ class NodesList extends Root {
         id: JSON.stringify(node.id) || '',
         host: `${node.host}:${node.port}` || '',
         rack: node.rack || '',
-        controller: nodes.controller.id === node.id ? 'True' : 'False' || '',
+        controller: nodes.controller && nodes.controller.id === node.id ? 'True' : 'False' || '',
         partition: undefined
       };
     });
