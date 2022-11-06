@@ -8,6 +8,7 @@ import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -20,11 +21,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AvroSerializer {
@@ -59,6 +56,16 @@ public class AvroSerializer {
 
     public static GenericRecord recordSerializer(Map<String, Object> record, Schema schema) {
         GenericRecord returnValue = new GenericData.Record(schema);
+        Set<String> schemaFields = schema.getFields().stream()
+            .map(Schema.Field::name).collect(Collectors.toSet());
+
+        Set<String> recordFields = record.keySet();
+
+        if (schemaFields.size() != recordFields.size()) {
+            Object[] missingFields = CollectionUtils.disjunction(schemaFields, recordFields).stream().toArray();
+            throw new IllegalArgumentException(" Record does not contain followings fields ".concat(Arrays.toString(missingFields)));
+        }
+
         schema
             .getFields()
             .forEach(field -> {
