@@ -17,10 +17,9 @@
     "css-loader": "^3.4.1",
     "font-awesome": "^4.7.0",
     "joi-validation": "^2.0.0",
-    "lossless-json": "^2.0.1",
     "lodash": "^4.17.21",
+    "lossless-json": "^2.0.1",
     "moment": "^2.24.0",
-    "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-ace": "^9.1.2",
@@ -52,8 +51,8 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@testing-library/react": "^10.4.7",
     "@testing-library/jest-dom": "^5.11.2",
+    "@testing-library/react": "^10.4.7",
     "@testing-library/user-event": "^12.1.0",
     "babel-eslint": "10.1.0",
     "enzyme": "^3.11.0",
@@ -64,7 +63,8 @@
     "jest-dom": "^4.0.0",
     "joi-browser": "^13.4.0",
     "prettier": "^2.0.5",
-    "react-test-render": "^1.1.2",
+    "react-test-renderer": "^16.13.1",
+    "sass": "^1.56.0",
     "style-loader": "^1.1.2",
     "webpack": "4.42.0"
   },
