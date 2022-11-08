@@ -10,13 +10,17 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
+import org.akhq.configs.SecurityProperties;
+import org.akhq.models.ClusterStats;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
+import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.akhq.utils.DefaultGroupUtils;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
+import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
@@ -26,7 +30,12 @@ import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
 
 @Singleton
 public class ConnectRepository extends AbstractRepository {
@@ -226,6 +235,24 @@ public class ConnectRepository extends AbstractRepository {
         }
 
         return list;
+    }
+
+    public ClusterStats.ConnectStats getConnectStats(String clusterId, String connectId) {
+        KafkaConnectClient client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
+        Collection<String> connectors = client.getConnectors();
+        int connectorCount = connectors.size();
+        Map<String, Integer> collect = connectors
+                .stream()
+                .map(c -> client.getConnectorStatus(c).getTasks())
+                .flatMap(Collection::stream)
+                .map(TaskStatus::getState)
+                .collect(groupingBy(identity(), countingInt()));
+        int tasks = collect.values().stream().mapToInt(Integer::intValue).sum();
+        return new ClusterStats.ConnectStats(connectId, connectorCount, tasks, collect);
+    }
+
+    private static Collector<String, ?, Integer> countingInt() {
+        return reducing(0, e -> 1, Integer::sum);
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {

@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import jakarta.inject.Inject;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -244,6 +245,35 @@ class ConnectRepositoryTest extends AbstractTest {
 
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
+    }
+
+    @Test
+    public void getConnectStats() {
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-2", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.create(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused", ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+        ));
+        repository.pause(KafkaTestCluster.CLUSTER_ID, "connect-1", "foo-bar-paused");
+        Map<String, Integer> assertStats = Map.of("RUNNING", 2, "PAUSED", 1);
+        try {
+            sleep(500);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(3, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getConnectors());
+        assertEquals(assertStats, repository.getConnectStats(KafkaTestCluster.CLUSTER_ID, "connect-1").getStateCount());
     }
 
 }

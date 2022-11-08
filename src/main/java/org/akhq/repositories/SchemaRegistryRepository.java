@@ -14,6 +14,7 @@ import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
+import org.akhq.models.ClusterStats;
 import org.akhq.models.Schema;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
@@ -92,6 +93,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
             .filter(s -> isSearchMatch(search, s))
             .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
+    }
+
+    public ClusterStats.SchemaRegistryStats schemaCount(String clusterId)
+            throws IOException, RestClientException
+    {
+        return new ClusterStats.SchemaRegistryStats(this.all(clusterId, Optional.empty()).size());
     }
 
     public boolean exist(String clusterId, String subject) throws IOException, RestClientException {

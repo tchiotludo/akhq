@@ -9,6 +9,7 @@ import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
 import org.akhq.middlewares.SchemaComparator;
+import org.akhq.models.ClusterStats;
 import org.akhq.models.Schema;
 import org.akhq.models.TopicSchema;
 import org.akhq.repositories.SchemaRegistryRepository;
@@ -49,6 +50,14 @@ public class SchemaController extends AbstractController {
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
         return ResultPagedList.of(this.schemaRepository.list(cluster, pagination, search));
+    }
+
+    @Get("api/{cluster}/schema/globalstats")
+    @Operation(tags={"schema registry"}, summary = "Count of schemas")
+    public ClusterStats.SchemaRegistryStats clusterSchemaStats(String cluster)
+            throws IOException, RestClientException
+    {
+        return this.schemaRepository.schemaCount(cluster);
     }
 
     @Get("api/{cluster}/schema/topic/{topic}")

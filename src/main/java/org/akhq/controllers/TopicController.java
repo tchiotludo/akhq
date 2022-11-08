@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.CollectionUtils;
@@ -29,6 +30,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
 import org.akhq.models.Record;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +53,8 @@ public class TopicController extends AbstractController {
     private RecordRepository recordRepository;
     @Inject
     private ConsumerGroupRepository consumerGroupRepository;
+    @Inject
+    private ConnectRepository connectRepository;
     @Inject
     private Environment environment;
     @Inject
@@ -96,6 +100,14 @@ public class TopicController extends AbstractController {
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search
         ));
+    }
+
+    @Get("api/{cluster}/topic/globalstats")
+    @Operation(tags = {"topic"}, summary = "Summary of topics on cluster")
+    public ClusterStats.TopicStats clusterTopicStats(String cluster)
+            throws ExecutionException, InterruptedException, IOException, RestClientException
+    {
+        return this.topicRepository.getTopicStats(cluster);
     }
 
     @Get("api/{cluster}/topic/name")

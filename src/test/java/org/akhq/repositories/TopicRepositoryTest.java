@@ -165,6 +165,14 @@ class TopicRepositoryTest extends AbstractTest {
         assertEquals(3, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED).getPartitions().size());
     }
 
+    @Test
+    public void stats() throws ExecutionException, InterruptedException
+    {
+        assertEquals(19, topicRepository.getTopicStats(KafkaTestCluster.CLUSTER_ID).getTopics());
+        assertEquals(115, topicRepository.getTopicStats(KafkaTestCluster.CLUSTER_ID).getPartitions());
+        assertEquals(19, topicRepository.getTopicStats(KafkaTestCluster.CLUSTER_ID).getInSyncReplicaCount());
+    }
+
     private void mockApplicationContext() {
         Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);

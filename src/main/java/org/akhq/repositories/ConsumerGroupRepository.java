@@ -1,5 +1,6 @@
 package org.akhq.repositories;
 
+import org.akhq.models.ClusterStats;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
@@ -185,5 +186,15 @@ public class ConsumerGroupRepository extends AbstractRepository {
             }
         }
         return new ArrayList<>();
+    }
+
+    public ClusterStats.ConsumerGroupStats getConsumerGroupStats(String clusterId)
+            throws ExecutionException, InterruptedException
+    {
+// TODO: Define the rebalancing groups and empty groups
+        int rebalancingGroups = 0;
+        int emptyGroups = 0;
+        final Collection<ConsumerGroupListing> groupListings = kafkaWrapper.listConsumerGroups(clusterId);
+        return new ClusterStats.ConsumerGroupStats(groupListings.size(), rebalancingGroups, emptyGroups);
     }
 }
