@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ToString
 @EqualsAndHashCode
@@ -43,7 +44,7 @@ public class Record {
     private TimestampType timestampType;
     private Integer keySchemaId;
     private Integer valueSchemaId;
-    private Map<String, String> headers = new HashMap<>();
+    private List<KeyValue<String, String>> headers = new ArrayList<>();
     @JsonIgnore
     private Deserializer kafkaAvroDeserializer;
     @JsonIgnore
@@ -81,7 +82,7 @@ public class Record {
 
     private Boolean truncated;
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
@@ -114,7 +115,8 @@ public class Record {
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         for (Header header: record.headers()) {
-            this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
+            String headerValue = header.value() != null ? new String(header.value()) : null;
+            this.headers.add(new KeyValue<>(header.key(), headerValue));
         }
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
@@ -264,6 +266,20 @@ public class Record {
         }
     }
 
+    public Collection<String> getHeadersKeySet() {
+        return headers
+            .stream()
+            .map(KeyValue::getKey)
+            .collect(Collectors.toList());
+    }
+
+    public Collection<String> getHeadersValues() {
+        return headers
+            .stream()
+            .map(KeyValue::getValue)
+            .collect(Collectors.toList());
+    }
+
     private Integer getAvroSchemaId(byte[] payload) {
         if (topic.isInternalTopic()) {
             return null;
@@ -281,4 +297,5 @@ public class Record {
         }
         return null;
     }
+
 }

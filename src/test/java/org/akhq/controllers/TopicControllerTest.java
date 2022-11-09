@@ -177,9 +177,9 @@ class TopicControllerTest extends AbstractTest {
         paramMap.put("value", "my-value");
         paramMap.put("key", "my-key");
         paramMap.put("partition", 1);
-        paramMap.put("headers", ImmutableMap.of(
-                "my-header-1", "1",
-                "my-header-2", "2"));
+        paramMap.put("headers", List.of(
+            new KeyValue<>("my-header-1", "1"),
+            new KeyValue<>("my-header-2", "2")));
         paramMap.put("multiMessage", false);
         List<Record> response = this.retrieveList(HttpRequest.POST(
             CREATE_TOPIC_URL + "/data", paramMap
@@ -190,7 +190,7 @@ class TopicControllerTest extends AbstractTest {
         assertEquals("my-value", response.get(0).getValue());
         assertEquals(1, response.get(0).getPartition());
         assertEquals(2, response.get(0).getHeaders().size());
-        assertEquals("1", response.get(0).getHeaders().get("my-header-1"));
+        assertEquals("1", response.get(0).getHeaders().get(0).getValue());
     }
 
     @Test

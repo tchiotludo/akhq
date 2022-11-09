@@ -481,7 +481,7 @@ public class RecordRepository extends AbstractRepository {
             String clusterId,
             String topic,
             Optional<String> value,
-            Map<String, String> headers,
+            List<KeyValue<String, String>> headers,
             Optional<String> key,
             Optional<Integer> partition,
             Optional<Long> timestamp,
@@ -509,7 +509,7 @@ public class RecordRepository extends AbstractRepository {
     private RecordMetadata produce(
         String clusterId,
         String topic, byte[] value,
-        Map<String, String> headers,
+        List<KeyValue<String, String>> headers,
         byte[] key,
         Optional<Integer> partition,
         Optional<Long> timestamp
@@ -522,8 +522,7 @@ public class RecordRepository extends AbstractRepository {
                 timestamp.orElse(null),
                 key,
                 value,
-                (headers == null ? ImmutableMap.<String, String>of() : headers)
-                    .entrySet()
+                headers == null ? Collections.emptyList() : headers
                     .stream()
                     .filter(entry -> StringUtils.isNotEmpty(entry.getKey()))
                     .map(entry -> new RecordHeader(
@@ -592,7 +591,7 @@ public class RecordRepository extends AbstractRepository {
         String clusterId,
         String topic,
         Optional<String> value,
-        Map<String, String> headers,
+        List<KeyValue<String, String>> headers,
         Optional<String> key,
         Optional<Integer> partition,
         Optional<Long> timestamp,
@@ -743,13 +742,13 @@ public class RecordRepository extends AbstractRepository {
             }
 
             if (options.getSearchByHeaderKey() != null) {
-                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) {
+                if (!search(options.getSearchByHeaderKey(), record.getHeadersKeySet())) {
                     return false;
                 }
             }
 
             if (options.getSearchByHeaderValue() != null) {
-                return search(options.getSearchByHeaderValue(), record.getHeaders().values());
+                return search(options.getSearchByHeaderValue(), record.getHeadersValues());
             }
         }
         return true;
