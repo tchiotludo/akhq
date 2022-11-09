@@ -452,7 +452,7 @@ class TopicData extends Root {
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
-        headers: message.headers || {},
+        headers: message.headers || [],
         schema: { key: message.keySchemaId, value: message.valueSchemaId },
         exceptions: message.exceptions || []
       };
@@ -1018,7 +1018,7 @@ class TopicData extends Root {
                     type: 'text',
                     expand: true,
                     cell: obj => {
-                      return <div className="tail-headers">{Object.keys(obj.headers).length}</div>;
+                      return <div className="tail-headers">{obj.headers.length}</div>;
                     }
                   },
                   {
@@ -1078,7 +1078,7 @@ class TopicData extends Root {
                 }}
                 actions={actions}
                 onExpand={obj => {
-                  return Object.keys(obj.headers).map(header => {
+                  return obj.headers.map(header => {
                     return (
                         <tr
                             className={'table-sm'}
@@ -1097,7 +1097,7 @@ class TopicData extends Root {
                                 backgroundColor: '#171819'
                               }}
                           >
-                            {header}
+                            {header.key}
                           </td>
                           <td
                               style={{
@@ -1108,7 +1108,7 @@ class TopicData extends Root {
                                 backgroundColor: '#171819'
                               }}
                           >
-                            {obj.headers[header]}
+                            {header.value}
                           </td>
                         </tr>
                     );

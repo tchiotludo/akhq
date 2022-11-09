@@ -185,11 +185,14 @@ class TopicProduce extends Form {
       keyValueSeparator: formData.keyValueSeparator
     };
 
-    let headers = {};
+    const headers = [];
     Object.keys(formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
-        headers[formData[key]] = formData[`hValue${keyNumbers}`];
+        headers.push({
+          key: formData[key],
+          value: formData[`hValue${keyNumbers}`]
+        });
       }
     });
 

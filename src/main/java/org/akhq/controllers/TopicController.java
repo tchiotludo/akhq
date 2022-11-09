@@ -145,7 +145,7 @@ public class TopicController extends AbstractController {
         Optional<String> key,
         Optional<Integer> partition,
         Optional<String> timestamp,
-        Map<String, String> headers,
+        List<KeyValue<String, String>> headers,
         Optional<Integer> keySchema,
         Optional<Integer> valueSchema,
         Boolean multiMessage,
@@ -300,7 +300,7 @@ public class TopicController extends AbstractController {
             schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
-            new HashMap<>(),
+            new ArrayList<>(),
             topicRepository.findByName(cluster, topicName)
         );
     }

@@ -251,7 +251,7 @@ class RecordRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             KafkaTestCluster.TOPIC_JSON_SCHEMA,
             Optional.of(recordAsJsonString),
-            Collections.emptyMap(),
+            Collections.emptyList(),
             Optional.of(keyJsonString),
             Optional.empty(),
             Optional.empty(),
