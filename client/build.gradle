@@ -8,7 +8,7 @@ repositories {
 }
 
 frontend {
-    nodeVersion = '14.8.0'
+    nodeVersion = '18.12.1'
     assembleScript = 'run build'
 }
 
