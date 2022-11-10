@@ -9,9 +9,9 @@ import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
-import {Link} from "react-router-dom";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+import Root from '../../../components/Root';
+import {Link} from 'react-router-dom';
+import {handlePageChange, getPageNumber} from './../../../utils/pagination'
 
 class ConsumerGroupList extends Root {
   state = {

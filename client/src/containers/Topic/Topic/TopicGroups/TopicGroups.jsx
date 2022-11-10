@@ -2,8 +2,8 @@ import React from 'react';
 import Table from '../../../../components/Table';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
-import Root from "../../../../components/Root";
-import {Link} from "react-router-dom";
+import Root from '../../../../components/Root';
+import {Link} from 'react-router-dom';
 
 class TopicGroups extends Root {
   state = {

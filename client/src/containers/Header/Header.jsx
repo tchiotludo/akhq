@@ -6,7 +6,7 @@ import { logout } from '../../utils/api';
 import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../components/Root";
+import Root from '../../components/Root';
 
 class Header extends Root {
   state = {

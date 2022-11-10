@@ -4,11 +4,11 @@ import {
   uriConsumerGroup, uriDeleteGroupOffsets,
 } from '../../../../utils/endpoints';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../../components/Root";
-import Table from "../../../../components/Table";
-import constants from "../../../../utils/constants";
-import ConfirmModal from "../../../../components/Modal/ConfirmModal";
-import {toast} from "react-toastify";
+import Root from '../../../../components/Root';
+import Table from '../../../../components/Table';
+import constants from '../../../../utils/constants';
+import ConfirmModal from '../../../../components/Modal/ConfirmModal';
+import {toast} from 'react-toastify';
 
 class ConsumerGroupOffsetDelete extends Root {
   state = {

@@ -2,7 +2,7 @@ import React from 'react';
 import { uriTopicsPartitions } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import converters from '../../../../utils/converters';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class TopicPartitions extends Root {
   state = {

@@ -15,8 +15,8 @@ import 'ace-builds/src-noconflict/mode-protobuf';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+import Root from '../../../components/Root';
+import {handlePageChange, getPageNumber} from './../../../utils/pagination'
 
 
 class SchemaList extends Root {
@@ -108,7 +108,7 @@ class SchemaList extends Root {
         version: schema.version,
         exception: schema.exception,
         schemaType: schema.schemaType,
-        schema: schema.schemaType === "PROTOBUF" ? schema.schema : (schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null)
+        schema: schema.schemaType === 'PROTOBUF' ? schema.schema : (schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null)
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry, loading: false });
@@ -224,7 +224,7 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    mode={ obj.schemaType === "PROTOBUF"? "protobuf"  : "json"}
+                    mode={ obj.schemaType === 'PROTOBUF'? 'protobuf'  : 'json'}
                     id={'value' + index}
                     theme="merbivore_soft"
                     value={obj[col.accessor]}
@@ -240,7 +240,7 @@ class SchemaList extends Root {
                   return (
                     <pre className="mb-0 khq-data-highlight">
                       <code>
-                        { obj.schemaType === "PROTOBUF"? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
+                        { obj.schemaType === 'PROTOBUF'? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
                       </code>
                     </pre>
                   );

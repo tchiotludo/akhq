@@ -87,7 +87,7 @@ class SchemaUpdate extends Form {
     formData.subject = latestSchemaVersion.subject;
     formData.compatibility = latestSchemaVersion.compatibilityLevel;
     formData.schemaType = latestSchemaVersion.schemaType;
-    formData.schema = "PROTOBUF" === formData.schemaType?latestSchemaVersion.schema :JSON.stringify(JSON.parse(latestSchemaVersion.schema), null, 2);
+    formData.schema = 'PROTOBUF' === formData.schemaType?latestSchemaVersion.schema :JSON.stringify(JSON.parse(latestSchemaVersion.schema), null, 2);
     formData.references = latestSchemaVersion.references;
 
     this.setState(formData);

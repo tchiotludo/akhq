@@ -4,7 +4,7 @@ import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriAclsList } from '../../../utils/endpoints';
 import SearchBar from '../../../components/SearchBar';
-import Root from "../../../components/Root";
+import Root from '../../../components/Root';
 
 class Acls extends Root {
   state = {
