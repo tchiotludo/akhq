@@ -380,7 +380,7 @@ class TopicData extends Root {
   _handleOnShare(row) {
     const { selectedCluster, selectedTopic } = this.state;
 
-    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
+    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
 
     try {
       this._copyToClipboard(`${window.location.host}${pathToShare}`);
