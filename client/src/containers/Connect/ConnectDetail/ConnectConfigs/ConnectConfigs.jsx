@@ -91,7 +91,7 @@ class ConnectConfigs extends Form {
           return obj;
         }, {});
     return JSON.stringify(filtered, null, 2);
-  };
+  }
 
 
   handleDefinition = definition => {
@@ -254,7 +254,7 @@ class ConnectConfigs extends Form {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr className="bg-primary">
+      <tr key={0} className="bg-primary">
         <td colSpan="3">{group[0].group}</td>
       </tr>
     ];

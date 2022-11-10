@@ -11,10 +11,10 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
-import SearchBar from "../../../components/SearchBar";
-import Pagination from "../../../components/Pagination";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+import Root from '../../../components/Root';
+import SearchBar from '../../../components/SearchBar';
+import Pagination from '../../../components/Pagination';
+import {handlePageChange, getPageNumber} from './../../../utils/pagination';
 
 class ConnectList extends Root {
   state = {
@@ -312,9 +312,9 @@ class ConnectList extends Root {
           extraRow
           noStripes
           onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
+            return Object.keys(obj.headers).map((header, i) => {
               return (
-                <tr
+                <tr key={i}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',

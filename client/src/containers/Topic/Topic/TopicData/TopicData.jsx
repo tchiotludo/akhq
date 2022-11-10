@@ -1078,9 +1078,9 @@ class TopicData extends Root {
                 }}
                 actions={actions}
                 onExpand={obj => {
-                  return obj.headers.map(header => {
+                  return obj.headers.map((header, i) => {
                     return (
-                        <tr
+                        <tr key={i}
                             className={'table-sm'}
                             style={{
                               display: 'flex',

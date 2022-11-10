@@ -522,6 +522,13 @@ Table.propTypes = {
   loading: PropTypes.bool,
   history: PropTypes.object,
   rowId: PropTypes.func,
+
+  updateData: PropTypes.func,
+  extraRow: PropTypes.bool,
+  noRowBackgroundChange: PropTypes.bool,
+  onExpand: PropTypes.func,
+  reduce: PropTypes.bool,
+  noStripes: PropTypes.bool,
 };
 
 export default Table;

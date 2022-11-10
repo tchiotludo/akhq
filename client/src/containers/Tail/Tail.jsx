@@ -422,10 +422,10 @@ class Tail extends Root {
                 cell: obj => {
                   return (
                     <div className="tail-headers">
-                      <DateTime 
-                        isoDateTimeString={obj.timestamp} 
+                      <DateTime
+                        isoDateTimeString={obj.timestamp}
                         dateTimeFormat={this.state.dateTimeFormat}
-                      />                
+                      />
                     </div>
                   );
                 }
@@ -493,9 +493,9 @@ class Tail extends Root {
             }}
             noContent={<tr />}
             onExpand={obj => {
-              return Object.keys(obj.headers).map(header => {
+              return Object.keys(obj.headers).map((header, i) => {
                 return (
-                  <tr
+                  <tr key={i}
                     style={{
                       display: 'flex',
                       flexDirection: 'row',

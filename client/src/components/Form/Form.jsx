@@ -114,7 +114,7 @@ class Form extends Root {
 
   renderJSONInput = (name, label, onChange, textMode, options, rest) => {
     const { formData, errors } = this.state;
-    const inputMode = textMode ? "text" : (formData.schemaType === "PROTOBUF" ? "protobuf"  : "json")
+    const inputMode = textMode ? 'text' : (formData.schemaType === 'PROTOBUF' ? 'protobuf'  : 'json')
     return (
       <div className="form-group row">
         {label !== '' ? (
@@ -242,13 +242,13 @@ class Form extends Root {
     );
   };
 
-  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked, rest) => {
+  renderCheckbox = (name, isChecked, onChange, isDefaultChecked, rest) => {
     return (
         <input
         type="checkbox"
         name={name}
         id={name}
-        class="form-input-check"
+        className="form-input-check"
         checked={isChecked}
         onChange={onChange}
         defaultChecked={ isDefaultChecked ? isDefaultChecked : false}

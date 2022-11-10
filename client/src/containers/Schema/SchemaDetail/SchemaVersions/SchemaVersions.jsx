@@ -167,9 +167,9 @@ class SchemaVersions extends Root {
           extraRow
           noStripes
           onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
+            return Object.keys(obj.headers).map((header, i) => {
               return (
-                <tr
+                <tr key={i}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',

@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
-import {getSelectedTab} from "../../../utils/functions";
-import {Link} from "react-router-dom";
+import {getSelectedTab} from '../../../utils/functions';
+import {Link} from 'react-router-dom';
 
 class Connect extends Component {
   state = {
@@ -108,5 +109,11 @@ class Connect extends Component {
     );
   }
 }
+
+Connect.propTypes = {
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+};
 
 export default Connect;

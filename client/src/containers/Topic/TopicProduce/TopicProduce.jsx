@@ -384,7 +384,7 @@ class TopicProduce extends Form {
             .map((key, index) => {
               let selected = selectedValue === key ? 'selected' : '';
               return (
-                <li>
+                <li key={index}>
                   <Tooltip
                     title={
                       selectedValue === key && tag !== 'topicId' ? 'Click to unselect option' : 'Click to select option'

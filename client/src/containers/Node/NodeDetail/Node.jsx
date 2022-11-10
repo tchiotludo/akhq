@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header';
 import NodeConfigs from './/NodeConfigs/NodeConfigs';
 import NodeLogs from './/NodeLogs/NodeLogs';
-import {getSelectedTab} from "../../../utils/functions";
-import {Link} from "react-router-dom";
+import {getSelectedTab} from '../../../utils/functions';
+import {Link} from 'react-router-dom';
 
 class Node extends Component {
   state = {
@@ -105,6 +106,14 @@ class Node extends Component {
       </div>
     );
   }
+}
+
+Node.propTypes = {
+    history: PropTypes.object,
+    match: PropTypes.object,
+    location: PropTypes.object,
+    clusters: PropTypes.array,
+    children: PropTypes.any,
 }
 
 export default Node;

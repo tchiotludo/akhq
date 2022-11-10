@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class RadioGroup extends Component {
   renderOptions = (name, items, handleChange) => {
-    let renderedItems = [];
-    for (let item of items) {
-      renderedItems.push(
+    return items.map( item =>
         <div id={`radio-option-${name}`} key={item.value} className="form-check">
           <input
             className="form-check-input"
@@ -20,9 +19,6 @@ class RadioGroup extends Component {
           </label>
         </div>
       );
-    }
-
-    return renderedItems;
   };
 
   render() {
@@ -39,6 +35,13 @@ class RadioGroup extends Component {
       </fieldset>
     );
   }
+}
+
+RadioGroup.propTypes = {
+  name: PropTypes.string,
+  label: PropTypes.string,
+  items: PropTypes.array,
+  handleChange: PropTypes.func,
 }
 
 export default RadioGroup;

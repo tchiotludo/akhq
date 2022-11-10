@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header';
 import ConsumerGroupTopics from './ConsumerGroupTopics/ConsumerGroupTopics';
 import ConsumerGroupMembers from './ConsumerGroupMembers/ConsumerGroupMembers';
 import { Link } from 'react-router-dom';
 import ConsumerGroupAcls from './ConsumerGroupAcls/ConsumerGroupAcls';
-import {getSelectedTab} from "../../../utils/functions";
+import {getSelectedTab} from '../../../utils/functions';
 
 class ConsumerGroup extends Component {
   state = {
@@ -148,6 +149,14 @@ class ConsumerGroup extends Component {
       </div>
     );
   }
+}
+
+ConsumerGroup.propTypes = {
+    history: PropTypes.object,
+    match: PropTypes.object,
+    location: PropTypes.object,
+    clusters: PropTypes.array,
+    children: PropTypes.any,
 }
 
 export default ConsumerGroup;

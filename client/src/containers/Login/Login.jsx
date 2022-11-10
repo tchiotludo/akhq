@@ -154,8 +154,8 @@ class Login extends Form {
   }
 
   _renderOidc(oidcsAuths) {
-    return oidcsAuths.map(auth => (
-      <a href={uriOidc(auth.key)} className="btn btn-primary btn-block">{auth.label}</a>
+    return oidcsAuths.map((auth, i) => (
+      <a key={i} href={uriOidc(auth.key)} className="btn btn-primary btn-block">{auth.label}</a>
     ));
   }
 
