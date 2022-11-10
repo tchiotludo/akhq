@@ -149,11 +149,12 @@ class TopicList extends Root {
     const { searchData } = data;
 
     this.setState({ pageNumber: 1, searchData }, () => {
+      const { topicListView } = this.state.searchData;
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
       this.props.history.push({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${this.state.pageNumber}`
+        search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
       });
     });
   };
@@ -162,10 +163,11 @@ class TopicList extends Root {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
     this.setState({ pageNumber: pageNumber }, () => {
+      const { search, topicListView } = this.state.searchData;
       this.getTopics();
       this.props.history.push({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&page=${pageNumber}`
+        search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
       });
     });
   };
@@ -173,10 +175,11 @@ class TopicList extends Root {
   handlePageSizeChangeSubmission = value => {
     let pageNumber = 1;
     this.setState({ currentPageSize: value, pageNumber: pageNumber }, () => {
+      const { search, topicListView } = this.state.searchData;
       this.getTopics();
       this.props.history.push({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&uiPageSize=${value}`
+        search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
       });
     });
   };
