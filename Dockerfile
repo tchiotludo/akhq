@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get clean
 
 HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
-  CMD curl --fail http://localhost:8080/health || exit 1
+  CMD curl --fail http://localhost:28081/health || exit 1
 
 WORKDIR /app
 COPY docker /
