@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
@@ -606,7 +607,7 @@ public class RecordRepository extends AbstractRepository {
                 SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, keySchemaId.get());
                 keyAsBytes = keySerializer.serialize(key.get());
             } else {
-                keyAsBytes = key.get().getBytes();
+                keyAsBytes = key.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
             }
         } else {
             try {
@@ -622,7 +623,7 @@ public class RecordRepository extends AbstractRepository {
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
             valueAsBytes = valueSerializer.serialize(value.get());
         } else {
-            valueAsBytes = value.map(String::getBytes).orElse(null);
+            valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
