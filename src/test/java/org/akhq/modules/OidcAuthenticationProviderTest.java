@@ -95,6 +95,38 @@ class OidcAuthenticationProviderTest {
         assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
     }
 
+    @Test
+    void successSingleStringOidcGroup() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
+                .claim("roles", "oidc-limited-group")
+                .build();
+        JWT jwt = new PlainJWT(claimsSet);
+
+        Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
+                .thenReturn(Publishers.just(new OpenIdTokenResponse()));
+        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+                .thenReturn(Optional.of(jwt));
+
+        AuthenticationResponse response = Flowable
+                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                        "user",
+                        "pass"
+                ))).blockingFirst();
+
+        assertTrue(response.isAuthenticated());
+        assertTrue(response.getAuthentication().isPresent());
+        assertEquals("user", response.getAuthentication().get().getName());
+
+        Collection<String> roles = response.getAuthentication().get().getRoles();
+
+        assertThat(roles, hasSize(4));
+        assertThat(roles, hasItem("topic/read"));
+        assertThat(roles, hasItem("registry/version/delete"));
+
+        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     void successWithMultipleOidcGroups() {
