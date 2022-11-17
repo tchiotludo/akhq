@@ -119,7 +119,7 @@ class TopicProduce extends Form {
   }
 
   async initByTopicEvent(copyValues) {
-    const { header, keySchemaId, valueSchemaId, ...topicValuesDefault } = copyValues;
+    const { headers, keySchemaId, valueSchemaId, ...topicValuesDefault } = copyValues;
 
     const keySchema = this.state.keySchema.find(schema => schema.id === keySchemaId);
     const valueSchema = this.state.valueSchema.find(schema => schema.id === valueSchemaId);
@@ -131,10 +131,10 @@ class TopicProduce extends Form {
       },
       selectedKeySchema: keySchema ? keySchema.subject : '',
       selectedValueSchema: valueSchema ? valueSchema.subject : '',
-      nHeaders: Object.keys(header).length ? 0 : 1
+      nHeaders: headers.length === 0 ? 1 : 0
     });
 
-    Object.entries(header).forEach(([key, value]) => this.handlePlus(key, value));
+    headers.forEach(({key, value}) => this.handlePlus(key, value));
   }
 
   doSubmit() {

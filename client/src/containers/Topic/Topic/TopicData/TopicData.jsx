@@ -426,7 +426,7 @@ class TopicData extends Root {
     const data = {
       partition: row.partition,
       key: row.key,
-      header: row.headers,
+      headers: row.headers,
       keySchemaId: row.schema.key,
       valueSchemaId: row.schema.value,
       value: row.value
