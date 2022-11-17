@@ -31,6 +31,7 @@
 * [BPCE-IT](https://www.bpce-it.fr/)
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
+* [Doximity](https://www.doximity.com)
 * [GetYourGuide](https://www.getyourguide.com)
 * [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
