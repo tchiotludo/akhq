@@ -1,0 +1,36 @@
+micronaut:
+  application:
+    name: akhq
+  security:
+    enabled: false
+  server:
+    port: -1
+akhq:
+  connections:
+    dummy-kafka-cluster:
+      properties:
+        bootstrap.servers: "localhost:9121"
+  server:
+    customHttpResponseHeaders:
+      - name: "Content-Security-Policy"
+        value: "default-src 'none'; frame-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests"
+      - name: "X-Permitted-Cross-Domain-Policies"
+        value: "none"
+      - name: "Cross-Origin-Embedder-Policy"
+        value: "require-corp"
+      - name: "Cross-Origin-Opener-Policy"
+        value: "same-origin"
+      - name: "Cross-Origin-Resource-Policy"
+        value: "same-origin"
+      - name: "Feature-Policy"
+        value: "microphone 'none'; geolocation 'none'; usb 'none'; payment 'none'; document-domain 'none'; camera 'none'; display-capture 'none'; ambient-light-sensor 'none'"
+      - name: "Permissions-Policy"
+        value: "microphone=(), geolocation=(), usb=(), payment=(), document-domain=(), camera=(), display-capture=(), ambient-light-sensor=()"
+      - name: "X-Powered-By"
+        value: "REMOVE_HEADER"
+      - name: "Access-Control-Allow-Origin"
+        value: "REMOVE_HEADER"
+      - name: "Via"
+        value: "REMOVE_HEADER"
+      - name: "Server"
+        value: "REMOVE_HEADER"

@@ -3,7 +3,7 @@ import Table from '../../../../components/Table/Table';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
 import Root from "../../../../components/Root";
 
-class AclTopics extends Root {
+class AclGroups extends Root {
   state = {
     selectedCluster: this.props.clusterId,
     principalEncoded: this.props.principalEncoded,
@@ -31,6 +31,7 @@ class AclTopics extends Root {
     const tableData = data.acls.map(acl => {
       return {
         group: acl.resource.name,
+        patterntype: acl.resource.patternType,
         host: acl.host,
         permission: acl.operation
       };
@@ -59,6 +60,13 @@ class AclTopics extends Root {
             id: 'group',
             accessor: 'group',
             colName: 'Group',
+            type: 'text',
+            sortable: true
+          },
+          {
+            id: 'pattern-type',
+            accessor: 'patterntype',
+            colName: 'Pattern Type',
             type: 'text',
             sortable: true
           },
@@ -93,4 +101,4 @@ class AclTopics extends Root {
   }
 }
 
-export default AclTopics;
+export default AclGroups;

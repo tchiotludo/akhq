@@ -7,6 +7,8 @@ volumes:
     driver: local
   kafka-data:
     driver: local
+  kafka-data1:
+    driver: local
   ui-modules:
     driver: local
   ui-build:
@@ -63,22 +65,53 @@ services:
     environment:
       KAFKA_BROKER_ID: '0'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://kafka:9092
       KAFKA_NUM_PARTITIONS: '12'
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_COMPRESSION_TYPE: 'gzip'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
       KAFKA_JMX_PORT: '9091'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.authorizer.AclAuthorizer'
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
+      KAFKA_ALLOW_PLAINTEXT_LISTENER: 'true'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
     links:
       - zookeeper
     ports:
       - 9092:9092
       - 9091:9091
+
+  # kafka-1:
+  #     image: confluentinc/cp-kafka
+  #     volumes:
+  #       - kafka-data1:/var/lib/kafka/data:Z
+  #     depends_on:
+  #       - kafka
+  #     environment:
+  #       KAFKA_BROKER_ID: '1'
+  #       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+  #       KAFKA_NUM_PARTITIONS: '12'
+  #       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:29093,EXTERNAL://kafka-1:9093
+  #       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #       KAFKA_COMPRESSION_TYPE: 'gzip'
+  #       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+  #       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+  #       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
+  #       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+  #       KAFKA_JMX_PORT: '9091'
+  #       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+  #       KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.authorizer.AclAuthorizer'
+  #       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
+  #       KAFKA_ALLOW_PLAINTEXT_LISTENER: 'true'
+  #       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+  #     links:
+  #       - zookeeper
+  #     ports:
+  #       - 9093:9093
 
   schema-registry:
     image: confluentinc/cp-schema-registry

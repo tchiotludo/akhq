@@ -27,6 +27,7 @@ import org.akhq.utils.TopicDataResultNextList;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
+import org.akhq.models.Record;
 
 import java.time.Instant;
 import java.util.*;
@@ -83,10 +84,11 @@ public class TopicController extends AbstractController {
         String cluster,
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
-        Optional<Integer> page
+        Optional<Integer> page,
+        Optional<Integer> uiPageSize
     ) throws ExecutionException, InterruptedException {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
-        Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
+        Pagination pagination = new Pagination(uiPageSize.orElse(pageSize), uri, page.orElse(1));
 
         return ResultPagedList.of(this.topicRepository.list(
             cluster,
@@ -139,11 +141,11 @@ public class TopicController extends AbstractController {
         HttpRequest<?> request,
         String cluster,
         String topicName,
-        String value,
+        Optional<String> value,
         Optional<String> key,
         Optional<Integer> partition,
         Optional<String> timestamp,
-        Map<String, String> headers,
+        List<KeyValue<String, String>> headers,
         Optional<Integer> keySchema,
         Optional<Integer> valueSchema,
         Boolean multiMessage,
@@ -166,7 +168,7 @@ public class TopicController extends AbstractController {
                     .map(recordMetadata -> new Record(recordMetadata,
                             schemaRegistryRepository.getSchemaRegistryType(cluster),
                             key.map(String::getBytes).orElse(null),
-                            value.getBytes(),
+                            value.map(String::getBytes).orElse(null),
                             headers,
                             targetTopic))
                     .collect(Collectors.toList());
@@ -298,7 +300,7 @@ public class TopicController extends AbstractController {
             schemaRegistryRepository.getSchemaRegistryType(cluster),
             Base64.getDecoder().decode(key),
             null,
-            new HashMap<>(),
+            new ArrayList<>(),
             topicRepository.findByName(cluster, topicName)
         );
     }

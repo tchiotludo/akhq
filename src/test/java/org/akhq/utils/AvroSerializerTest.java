@@ -1,13 +1,16 @@
 package org.akhq.utils;
 
+import org.apache.avro.SchemaBuilder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AvroSerializerTest {
 
@@ -125,6 +128,21 @@ class AvroSerializerTest {
 
         }
 
+    }
+
+    private final org.apache.avro.Schema SCHEMA = SchemaBuilder
+        .record("schema1").namespace("org.akhq")
+        .fields()
+        .name("title").type().stringType().noDefault()
+        .name("release_year").type().intType().noDefault()
+        .name("rating").type().doubleType().noDefault()
+        .endRecord();
+
+    @Test
+    void shouldThrowIfSchemaAndRecordFieldsAreNotEqual() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            AvroSerializer.recordSerializer(Map.of("title", "akhq"), SCHEMA);
+        });
     }
 
 }

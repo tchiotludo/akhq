@@ -1,7 +1,6 @@
 package org.akhq.modules;
 
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.modules.schemaregistry.AvroSerializer;
 import org.apache.avro.SchemaBuilder;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,5 +64,4 @@ class AvroSchemaSerializerTest {
             avroSerializer.serialize(INVALID_JSON);
         });
     }
-
 }

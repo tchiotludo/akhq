@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
 import Spinner from '../Spinner';
-import {Link} from "react-router-dom";
+import {Link} from 'react-router-dom';
 
 class Table extends Component {
   state = {
@@ -162,6 +162,7 @@ class Table extends Component {
               <td
                 key={`tableCol${index}${colIndex}`}
                 style={column.expand ? { cursor: 'pointer' } : {}}
+                className={column.readOnly ? 'not-allowed' : ''}
                 onDoubleClick={() => {
                   if (
                     actions &&
@@ -184,6 +185,7 @@ class Table extends Component {
             <td
               key={`tableCol${index}${colIndex}`}
               style={column.expand ? { cursor: 'pointer' } : {}}
+              className={column.readOnly ? 'not-allowed' : ''}
               onDoubleClick={() => {
                 if (
                   actions &&
@@ -288,7 +290,7 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, idCol } = this.props;
+    const { actions, onAdd, onDetails, onConfig, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } = this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -362,6 +364,18 @@ class Table extends Component {
             </span>
           </td>
         )}
+        {actions.find(el => el === constants.TABLE_COPY) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Copy"
+                  id="copy"
+                  onClick={() => {
+                    onCopy && onCopy(row);
+                  }}
+            >
+              <i className="fa fa-clone" />
+            </span>
+            </td>
+        )}
         {actions.find(el => el === constants.TABLE_SHARE) && (
             <td className="khq-row-action khq-row-action-main action-hover">
             <span title="Share"
@@ -371,6 +385,18 @@ class Table extends Component {
                 }}
             >
               <i className="fa fa-share" />
+            </span>
+            </td>
+        )}
+        {actions.find(el => el === constants.TABLE_DOWNLOAD) && (
+            <td className="khq-row-action khq-row-action-main action-hover">
+            <span title="Download"
+                id="download"
+                onClick={() => {
+                  onDownload && onDownload(row);
+                }}
+            >
+              <i className="fa fa-download" />
             </span>
             </td>
         )}
@@ -419,7 +445,7 @@ class Table extends Component {
   colspan() {
     const { actions, columns } = this.props;
 
-    return columns.length + (actions && actions.length ? actions.length : 0)
+    return columns.filter(column => !column.extraRow).length + (actions && actions.length ? actions.length : 0)
   }
 
   render() {
@@ -472,13 +498,22 @@ Table.propTypes = {
       accessor: PropTypes.string,
       colName: PropTypes.string,
       type: PropTypes.string,
+      readOnly: PropTypes.bool,
       cell: PropTypes.function
     })
   ),
   actions: PropTypes.array,
+
+  onAdd: PropTypes.func,
   onDetails: PropTypes.func,
   onConfig: PropTypes.func,
   onDelete: PropTypes.func,
+  onEdit: PropTypes.func,
+  onRestart: PropTypes.func,
+  onShare: PropTypes.func,
+  onDownload: PropTypes.func,
+  onCopy: PropTypes.func,
+
   idCol: PropTypes.string,
   toPresent: PropTypes.array,
   noContent: PropTypes.any,

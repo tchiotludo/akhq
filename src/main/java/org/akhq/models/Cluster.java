@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.DescribeClusterResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @ToString
@@ -25,6 +26,8 @@ public class Cluster {
             this.nodes.add(new Node(node));
         }
 
-        this.controller = new Node(result.controller().get());
+        if (result.controller().get() != null) {
+            this.controller = new Node(result.controller().get());
+        }
     }
 }

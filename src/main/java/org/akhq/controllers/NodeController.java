@@ -1,25 +1,24 @@
 package org.akhq.controllers;
 
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.inject.Inject;
+import lombok.Builder;
+import lombok.Getter;
 import org.akhq.configs.Role;
-import org.akhq.models.Cluster;
-import org.akhq.models.Config;
-import org.akhq.models.LogDir;
-import org.akhq.models.Node;
+import org.akhq.models.*;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
+import org.akhq.repositories.TopicRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-import jakarta.inject.Inject;
+import java.util.stream.Collectors;
 
 @Secured(Role.ROLE_NODE_READ)
 @Controller
@@ -27,12 +26,58 @@ public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
     private final ConfigRepository configRepository;
     private final LogDirRepository logDirRepository;
+    @Inject
+    private TopicRepository topicRepository;
 
     @Inject
     public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository) {
         this.clusterRepository = clusterRepository;
         this.configRepository = configRepository;
         this.logDirRepository = logDirRepository;
+    }
+
+    @Introspected
+    @Builder(toBuilder = true)
+    @Getter
+    public static class NodePartition {
+        int id;
+        int countLeader;
+        int countInSyncReplicas;
+        long totalPartitions;
+    }
+
+    @Get("api/{cluster}/node/partitions")
+    @Operation(tags = {"topic"}, summary = "partition counts")
+    public List<NodePartition> nodePartitions( String cluster ) throws ExecutionException, InterruptedException {
+        List<String> topicNames = this.topicRepository.all(cluster, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty());
+        List<Topic> topics = this.topicRepository.findByName(cluster, topicNames);
+        long totalPartitions = topics
+        .stream()
+        .mapToInt(t -> t.getPartitions().size())
+        .sum();
+        return topics
+            .stream()
+            .flatMap(topic -> topic.getPartitions().stream())
+            .flatMap(partition -> partition.getNodes()
+                .stream()
+                .map(n -> NodePartition.builder()
+                    .id(n.getId())
+                    .countLeader(n.isLeader() ? 1 : 0)
+                    .countInSyncReplicas(n.isInSyncReplicas() ? 1 : 0)
+                    .build()
+                )
+            )
+            .collect(Collectors.groupingBy(NodePartition::getId))
+            .entrySet()
+            .stream()
+            .map(n -> NodePartition.builder()
+                .id(n.getKey())
+                .countLeader(n.getValue().stream().mapToInt(NodePartition::getCountLeader).sum())
+                .countInSyncReplicas(n.getValue().stream().mapToInt(NodePartition::getCountInSyncReplicas).sum())
+                .totalPartitions(totalPartitions)
+                .build()
+            )
+            .collect(Collectors.toList());
     }
 
     @Get("api/{cluster}/node")

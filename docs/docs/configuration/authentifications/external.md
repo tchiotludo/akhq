@@ -49,9 +49,9 @@ and expect the following JSON as response :
 ````json
 {
   "roles": ["topic/read", "topic/write", "..."],
-  "topics-filter-regexp": [".*"],
-  "connects-filter-regexp": [".*"],
-  "consumer-groups-filter-regexp": [".*"]
+  "topicsFilterRegexp": [".*"],
+  "connectsFilterRegexp": [".*"],
+  "consumerGroupsFilterRegexp": [".*"]
 }
 ````
 

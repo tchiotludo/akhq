@@ -8,6 +8,7 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import io.micronaut.context.annotation.Value;
 import kafka.coordinator.group.GroupMetadataManager;
 import kafka.coordinator.transaction.TransactionLog;
 import kafka.coordinator.transaction.TxnKey;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ToString
 @EqualsAndHashCode
@@ -42,7 +44,7 @@ public class Record {
     private TimestampType timestampType;
     private Integer keySchemaId;
     private Integer valueSchemaId;
-    private Map<String, String> headers = new HashMap<>();
+    private List<KeyValue<String, String>> headers = new ArrayList<>();
     @JsonIgnore
     private Deserializer kafkaAvroDeserializer;
     @JsonIgnore
@@ -71,13 +73,16 @@ public class Record {
     private byte[] bytesValue;
 
     @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private String value;
 
     private final List<String> exceptions = new ArrayList<>();
 
     private byte MAGIC_BYTE;
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, Map<String, String> headers, Topic topic) {
+    private Boolean truncated;
+
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
@@ -88,6 +93,7 @@ public class Record {
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         this.headers = headers;
+        this.truncated = false;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
@@ -109,7 +115,8 @@ public class Record {
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         for (Header header: record.headers()) {
-            this.headers.put(header.key(), header.value() != null ? new String(header.value()) : null);
+            String headerValue = header.value() != null ? new String(header.value()) : null;
+            this.headers.add(new KeyValue<>(header.key(), headerValue));
         }
 
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
@@ -118,6 +125,7 @@ public class Record {
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
+        this.truncated = false;
     }
 
     public String getKey() {
@@ -143,6 +151,14 @@ public class Record {
         }
 
         return this.value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void setTruncated(Boolean truncated) {
+        this.truncated = truncated;
     }
 
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
@@ -250,6 +266,20 @@ public class Record {
         }
     }
 
+    public Collection<String> getHeadersKeySet() {
+        return headers
+            .stream()
+            .map(KeyValue::getKey)
+            .collect(Collectors.toList());
+    }
+
+    public Collection<String> getHeadersValues() {
+        return headers
+            .stream()
+            .map(KeyValue::getValue)
+            .collect(Collectors.toList());
+    }
+
     private Integer getAvroSchemaId(byte[] payload) {
         if (topic.isInternalTopic()) {
             return null;
@@ -267,4 +297,5 @@ public class Record {
         }
         return null;
     }
+
 }

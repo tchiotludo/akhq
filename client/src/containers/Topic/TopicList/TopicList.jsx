@@ -13,9 +13,10 @@ import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Collapse} from 'react-bootstrap';
 import Root from '../../../components/Root';
-import {getClusterUIOptions} from "../../../utils/functions";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
-import TimeAgo from "react-timeago";
+import DateTime from '../../../components/DateTime';
+import {getClusterUIOptions} from '../../../utils/functions';
+import {handlePageChange, getPageNumber} from './../../../utils/pagination';
+import PageSize from '../../../components/PageSize';
 
 class TopicList extends Root {
   state = {
@@ -27,9 +28,10 @@ class TopicList extends Root {
     deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
+    currentPageSize: 1,
     searchData: {
       search: '',
-      topicListView: 'HIDE_INTERNAL'
+      topicListView: constants.SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_INTERNAL
     },
     keepSearch: false,
     createTopicFormData: {
@@ -47,7 +49,6 @@ class TopicList extends Root {
   };
 
   componentDidMount() {
-
    this._initializeVars(() => {
      this.getTopics();
      this.props.history.replace({
@@ -62,7 +63,9 @@ class TopicList extends Root {
       this.cancelAxiosRequests();
       this.renewCancelToken();
 
-      this._initializeVars(this.getTopics);
+      this.setState({ pageNumber: 1 }, () => {
+        this._initializeVars(this.getTopics);
+      });
     }
   }
 
@@ -71,6 +74,7 @@ class TopicList extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     const {searchData, keepSearch} = this.state;
     let { pageNumber } = this.state;
+    let { currentPageSize } = this.state;
     const uiOptions = await getClusterUIOptions(clusterId)
 
     let searchDataTmp;
@@ -86,9 +90,17 @@ class TopicList extends Root {
             (uiOptions && uiOptions.topic && uiOptions.topic.defaultView)? uiOptions.topic.defaultView : searchData.topicListView,
       }
       pageNumber = (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
+      currentPageSize = (query.get('uiPageSize'))? parseInt(query.get('uiPageSize')) : parseInt(currentPageSize)
     }
 
-    this.setState({selectedCluster: clusterId, searchData: searchDataTmp, keepSearch: keepSearchTmp, uiOptions: (uiOptions)? uiOptions.topic : {}, pageNumber: pageNumber}, callBackFunction);
+    this.setState({
+      selectedCluster: clusterId, 
+      searchData: searchDataTmp,
+      keepSearch: keepSearchTmp,
+      uiOptions: uiOptions ?? {},
+      pageNumber: pageNumber,
+      currentPageSize: currentPageSize
+    }, callBackFunction);
   }
 
   showDeleteModal = deleteMessage => {
@@ -146,12 +158,23 @@ class TopicList extends Root {
     });
   };
 
+  handlePageSizeChangeSubmission = value => {
+    let pageNumber = 1;
+    this.setState({ currentPageSize: value, pageNumber: pageNumber},() => {
+      this.getTopics();
+      this.props.history.push({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${this.state.searchData.search}&topicListView=${this.state.searchData.topicListView}&uiPageSize=${value}`
+      });
+    });
+  };
+
   async getTopics() {
-    const { selectedCluster, pageNumber } = this.state;
+    const { selectedCluster, pageNumber, currentPageSize } = this.state;
     const { search, topicListView } = this.state.searchData;
     this.setState({ loading: true } );
 
-    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber));
+    let response = await this.getApi(uriTopics(selectedCluster, search, topicListView, pageNumber, currentPageSize));
     let data = response.data;
 
     if (data) {
@@ -160,7 +183,7 @@ class TopicList extends Root {
       } else {
         this.setState({ topics: [] });
       }
-      this.setState({ selectedCluster, totalPageNumber: data.page, loading: false }  )
+      this.setState({ selectedCluster, totalPageNumber: data.page, currentPageSize: data.pageSize, loading: false }  )
     } else {
       this.setState({ topics: [], loading: false, totalPageNumber: 0});
     }
@@ -171,6 +194,7 @@ class TopicList extends Root {
     const collapseConsumerGroups = {};
 
     const { selectedCluster, uiOptions } = this.state;
+    const uiOptionsTopic = uiOptions.topic ?? {};
 
     const setState = () =>  {
       this.setState({ topics: Object.values(tableTopics) });
@@ -189,14 +213,14 @@ class TopicList extends Root {
         groupComponent: undefined,
         internal: topic.internal
       }
-      collapseConsumerGroups[topic.name] = false;
+      collapseConsumerGroups[topic.name] = (uiOptionsTopic.showAllConsumerGroups)  ? true : false;
     });
     this.setState({collapseConsumerGroups});
     setState()
 
     const topicsName = topics.map(topic => topic.name).join(",");
 
-    if(!uiOptions.skipConsumerGroups) {
+    if(!uiOptionsTopic.skipConsumerGroups) {
       this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName)))
           .then(value => {
             topics.forEach(topic => {
@@ -208,7 +232,7 @@ class TopicList extends Root {
           });
     }
 
-    if(!uiOptions.skipLastRecord) {
+    if(!uiOptionsTopic.skipLastRecord) {
       this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName)))
           .then(value => {
             topics.forEach((topic) => {
@@ -237,11 +261,11 @@ class TopicList extends Root {
           return (
             <Link
               key={consumerGroup.id}
-              to={`/ui/${this.state.selectedCluster}/group/${consumerGroup.id}`}
+              to={`/ui/${this.state.selectedCluster}/group/${encodeURIComponent(consumerGroup.id)}`}
               className={className}
               onClick={noPropagation}
             >
-              {consumerGroup.id} <div className="badge badge-secondary"> Lag: {offsetLag}</div>
+              {consumerGroup.id} <div className="badge badge-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
             </Link>
           );
       });
@@ -271,9 +295,14 @@ class TopicList extends Root {
   }
 
   render() {
-    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
+    const { topics, selectedCluster, searchData, pageNumber, totalPageNumber, currentPageSize, loading, collapseConsumerGroups, keepSearch, uiOptions } = this.state;
+    const uiOptionsTopic = uiOptions.topic ?? {};
+    const dateTimeFormat = uiOptions.topicData && uiOptions.topicData.dateTimeFormat ?
+      uiOptions.topicData.dateTimeFormat :
+      constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE;
     const roles = this.state.roles || {};
     const { clusterId } = this.props.match.params;
+    
 
     const topicCols =
         [
@@ -300,14 +329,16 @@ class TopicList extends Root {
           }
         ];
 
-    if(!uiOptions.skipLastRecord) {
+    if(!uiOptionsTopic.skipLastRecord) {
         topicCols.push({
           id: 'lastWrite',
           accessor: 'lastWrite',
           colName: 'Last Record',
           type: 'text',
           cell: (obj, col) => {
-            return <TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>;
+            return obj[col.accessor] ?
+              <DateTime isoDateTimeString={obj[col.accessor]} dateTimeFormat={dateTimeFormat} /> :
+              '';
           }
         });
     }
@@ -386,7 +417,7 @@ class TopicList extends Root {
       {colName: 'Replications', colSpan: replicationCols.length}
     ];
 
-    if(!uiOptions.skipConsumerGroups) {
+    if(!uiOptionsTopic.skipConsumerGroups) {
       firstColumns.push({colName: 'Consumer Groups', colSpan: 1});
     }
 
@@ -426,9 +457,18 @@ class TopicList extends Root {
               }}
               doSubmit={this.handleSearch}
           />
+
+          <PageSize
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            currentPageSize={this.state.currentPageSize}
+            onChange={this.handlePageSizeChangeSubmission}
+          />
+          
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
+            currentPageSize={currentPageSize}
             onChange={handlePageChange}
             onSubmit={this.handlePageChangeSubmission}
           />
@@ -439,7 +479,7 @@ class TopicList extends Root {
           history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
-          columns={topicCols.concat(partitionCols, replicationCols, (uiOptions.skipConsumerGroups)?[]: consumerGprCols)}
+          columns={topicCols.concat(partitionCols, replicationCols, (uiOptionsTopic.skipConsumerGroups)?[]: consumerGprCols)}
           data={topics}
           updateData={data => {
             this.setState({ topics: data });

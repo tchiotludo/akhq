@@ -26,10 +26,11 @@ import 'ace-builds/src-noconflict/theme-dracula';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
-import {capitalizeTxt, getClusterUIOptions} from '../../../../utils/functions';
+import DateTime from '../../../../components/DateTime';
+import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
+import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
-import TimeAgo from 'react-timeago'
-import JSONbig from 'json-bigint';
+import * as LosslessJson from 'lossless-json'
 
 class TopicData extends Root {
   state = {
@@ -64,7 +65,9 @@ class TopicData extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0,
-    loading: true
+    loading: true,
+    canDownload: false,
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
 
   searchFilterTypes = [
@@ -97,8 +100,8 @@ class TopicData extends Root {
     const query =  new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
 
-    this.setState(
-        {
+    this.setState((prevState) =>
+        ({
           selectedCluster: clusterId,
           selectedTopic: topicId,
           sortBy: (query.get('sort'))? query.get('sort') : (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)?
@@ -109,10 +112,13 @@ class TopicData extends Root {
           search: this._buildSearchFromQueryString(query),
           offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
               ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
-        },
+          dateTimeFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat)?
+              uiOptions.topicData.dateTimeFormat : prevState.dateTimeFormat
+        }),
         () => {
             if(query.get('single') !== null) {
               this._getSingleMessage(query.get('partition'), query.get('offset'));
+              this.setState({ canDownload: true })
             } else {
               this._getMessages();
             }
@@ -137,8 +143,11 @@ class TopicData extends Root {
   _startEventSource = (changePage) => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
+    let lastPercentVal = 0.0;
+    const percentUpdateDelta = 0.5;
+
     let self = this;
-    this.setState({ sortBy: 'Oldest', messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
+    this.setState({ messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
       const filters = this._buildFilters();
       if (changePage) {
         this._setUrlHistory(filters + '&after=' + nextPage );
@@ -151,9 +160,19 @@ class TopicData extends Root {
         const res = JSON.parse(e.data);
         const records = res.records || [];
         const nextPage = (res.after) ? res.after : self.state.nextPage;
-        self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) }, () => {
-          self._handleMessages(records, true);
-        });
+
+        const percentDiff = res.percent - lastPercentVal;
+
+        // to avoid UI slowdowns, only update the percentage in fixed increments
+        if(percentDiff >= percentUpdateDelta) {
+          lastPercentVal = res.percent;
+          self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) });
+        }
+
+        if(records.length) {
+          const tableMessages = self._handleMessages(records, true, self.state.sortBy === "Oldest");
+          self.setState({messages: tableMessages});
+        }
       });
 
       this.eventSource.addEventListener('searchEnd', function(e) {
@@ -346,8 +365,52 @@ class TopicData extends Root {
       console.error('Failed to copy: ', err);
     }
 
+    this.setState({ canDownload: true })
+
     this.props.history.push(pathToShare)
     this._getSingleMessage(row.partition, row.offset);
+  }
+
+  _handleDownload({ key, value: data }) {
+    const hasKey = key && key !== null && key !== 'null';
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
+    a.download = `${hasKey ? key : 'file'}.json`;
+
+    a.click();
+    a.remove();
+  }
+
+  async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
+    const { clusterId } = this.props.match.params;
+    this.setState(({
+      dateTimeFormat: newDateTimeFormat
+    }));
+    const currentUiOptions = await getClusterUIOptions(clusterId);
+    const newUiOptions = {
+      ...currentUiOptions,
+      topicData: {
+        ...(currentUiOptions.topicData),
+        dateTimeFormat: newDateTimeFormat
+      }
+    }
+    setUIOptions(clusterId, newUiOptions);
+  }
+
+  _handleCopy(row) {
+    const data =  {
+      partition: row.partition,
+      key: row.key,
+      header: row.headers,
+      keySchemaId: row.schema.key,
+      valueSchemaId: row.schema.value,
+      value: row.value,
+    }
+    setProduceToTopicValues(data)
+
+    const { clusterId, topicId } = this.props.match.params;
+    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`)
   }
 
   _showDeleteModal = deleteMessage => {
@@ -378,20 +441,27 @@ class TopicData extends Root {
         });
   };
 
-  _handleMessages = (messages, append = false) => {
-    let tableMessages = append ? this.state.messages : [];
+  _handleMessages = (messages, append = false, insertAtEnd = true) => {
+    let tableMessages = append ? [...this.state.messages] : [];
     messages.forEach(message => {
       let messageToPush = {
-        key: message.key || 'null',
-        value: message.value || 'null',
+        key: message.key || '',
+        value: message.truncated
+          ? message.value + '...\nToo large message. Full body in share button.'  || ''
+          : message.value || '',
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
-        headers: message.headers || {},
+        headers: message.headers || [],
         schema: { key: message.keySchemaId, value: message.valueSchemaId },
         exceptions: message.exceptions || []
       };
-      tableMessages.push(messageToPush);
+
+      if (insertAtEnd) {
+        tableMessages.push(messageToPush);
+      } else {
+        tableMessages.unshift(messageToPush);
+      }
     });
     return tableMessages;
   };
@@ -642,9 +712,15 @@ class TopicData extends Root {
       datetime,
       isSearching,
       canDeleteRecords,
+      canDownload,
       percent,
       loading
     } = this.state;
+
+    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY]
+    if (canDeleteRecords) actions.push(constants.TABLE_DELETE)
+    if (canDownload) actions.push(constants.TABLE_DOWNLOAD)
+
     let date = moment(datetime);
     const { history } = this.props;
     const firstColumns = [
@@ -813,6 +889,29 @@ class TopicData extends Root {
                     )}
                   </Dropdown>
                 </li>
+                <li>
+                  <Dropdown>
+                    <Dropdown.Toggle className="nav-link dropdown-toggle">
+                      <strong>Time Format:</strong> ({this.state.dateTimeFormat})
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={() =>
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+                          )
+                        }>
+                        Show relative time
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() =>
+                          this._handleOnDateTimeFormatChanged(
+                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                          )
+                        }>
+                        Show ISO timestamp
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </li>
               </ul>
             </div>
           </nav>
@@ -847,8 +946,8 @@ class TopicData extends Root {
                     extraRowContent: (obj, index) => {
                       let value = obj.value;
                       try {
-                        let json = JSONbig.parse(obj.value);
-                        value = JSONbig.stringify(json, null, 2);
+                        let json = LosslessJson.parse(obj.value);
+                        value = LosslessJson.stringify(json, undefined, "  ");
                         // eslint-disable-next-line no-empty
                       } catch (e) {}
 
@@ -857,7 +956,7 @@ class TopicData extends Root {
                               mode="json"
                               id={'value' + index}
                               theme="merbivore_soft"
-                              value={value}
+                              value={value || 'null'}
                               readOnly
                               name="UNIQUE_ID_OF_DIV"
                               editorProps={{ $blockScrolling: true }}
@@ -876,7 +975,7 @@ class TopicData extends Root {
                                 </div>
                             )}
                             <pre className="mb-0 khq-data-highlight">
-                              <code>{obj.value}</code>
+                              <code>{obj.value || 'null'}</code>
                             </pre>
                           </div>
                       );
@@ -888,7 +987,10 @@ class TopicData extends Root {
                     colName: 'Date',
                     type: 'text',
                     cell: (obj, col) => {
-                      return (<TimeAgo date={Date.parse(obj[col.accessor])} title={obj[col.accessor]}/>);
+                      return <DateTime
+                        isoDateTimeString={obj[col.accessor]}
+                        dateTimeFormat={this.state.dateTimeFormat}
+                      />;
                     }
                   },
                   {
@@ -916,7 +1018,7 @@ class TopicData extends Root {
                     type: 'text',
                     expand: true,
                     cell: obj => {
-                      return <div className="tail-headers">{Object.keys(obj.headers).length}</div>;
+                      return <div className="tail-headers">{obj.headers.length}</div>;
                     }
                   },
                   {
@@ -956,6 +1058,9 @@ class TopicData extends Root {
                 extraRow
                 noStripes
                 data={messages}
+                rowId={data => {
+                  return data.partition + '-' + data.offset;
+                }}
                 updateData={data => {
                   this.setState({ messages: data });
                 }}
@@ -965,9 +1070,15 @@ class TopicData extends Root {
                 onShare={row => {
                   this._handleOnShare(row);
                 }}
-                actions={canDeleteRecords ? [constants.TABLE_DELETE, constants.TABLE_SHARE] : [constants.TABLE_SHARE]}
+                onDownload={row => {
+                  this._handleDownload(row);
+                }}
+                onCopy={row => {
+                  this._handleCopy(row)
+                }}
+                actions={actions}
                 onExpand={obj => {
-                  return Object.keys(obj.headers).map(header => {
+                  return obj.headers.map(header => {
                     return (
                         <tr
                             className={'table-sm'}
@@ -986,7 +1097,7 @@ class TopicData extends Root {
                                 backgroundColor: '#171819'
                               }}
                           >
-                            {header}
+                            {header.key}
                           </td>
                           <td
                               style={{
@@ -997,7 +1108,7 @@ class TopicData extends Root {
                                 backgroundColor: '#171819'
                               }}
                           >
-                            {obj.headers[header]}
+                            {header.value}
                           </td>
                         </tr>
                     );

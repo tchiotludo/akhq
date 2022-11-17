@@ -40,6 +40,12 @@ akhq:
       enabled: true # true by default
       name: org.akhq.log.access # Logger name
       format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
+    # Custom HTTP response headers configuration
+    customHttpResponseHeaders:
+      - name: "Content-Security-Policy"
+        value: "default-src 'none'; frame-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests"
+      - name: "X-Permitted-Cross-Domain-Policies"
+        value: "none"
 
   # default kafka properties for each clients, available for admin / producer / consumer (optional)
   clients-defaults:
@@ -102,8 +108,10 @@ akhq:
           default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
           skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
           skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+          show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
+          date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
 
     my-cluster-ssl:
       properties:
@@ -154,6 +162,7 @@ akhq:
       - "^.*-rekey$"
     skip-consumer-groups: false # Skip loading consumer group information when showing topics
     skip-last-record: false # Skip loading last record date information when showing topics
+    show-all-consumer-groups: false # Expand list of consumer groups instead of showing one.
     # Retry options for topic operations
     retry:
       topic-exists: # Delay between retries when checking for existence of newly created topics. This is needed as it might take the kafka broker a few seconds to create new topics.
@@ -163,6 +172,7 @@ akhq:
   topic-data:
     size: 50 # max record per page (default: 50)
     poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
+    kafka-max-message-length: 1000000 # Max message length allowed to send to UI when retrieving a list of records in bytes.
 
   # Ui Global Options (optional)
   ui-options:
@@ -170,6 +180,7 @@ akhq:
       default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
       skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
       skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+      show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
     topic-data:
       sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
@@ -270,7 +281,7 @@ akhq:
     header-auth:
       user-header: x-akhq-user # mandatory (the header name that will contain username)
       groups-header: x-akhq-group # optional (the header name that will contain groups separated by groups-header-separator)
-      groups-header-separator: , # optional (separator, defaults to ',')
+      groups-header-separator: ',' # optional (separator, defaults to ',')
       ip-patterns: [127.0.0.*] # optional (Java regular expressions for matching trusted IP addresses, '0.0.0.0' matches all addresses)
       default-group: topic-reader
       groups:
@@ -284,3 +295,4 @@ akhq:
         - username: header-admin
           groups:
             - admin
+            

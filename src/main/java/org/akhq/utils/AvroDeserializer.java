@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +27,8 @@ public class AvroDeserializer {
     private static final String TIME_MICROS = "time-micros";
     private static final String TIMESTAMP_MILLIS = "timestamp-millis";
     private static final String TIMESTAMP_MICROS = "timestamp-micros";
+    private static final String LOCAL_TIMESTAMP_MILLIS = "local-timestamp-millis";
+    private static final String LOCAL_TIMESTAMP_MICROS = "local-timestamp-micros";
 
     private static final DecimalConversion DECIMAL_CONVERSION = new DecimalConversion();
     private static final UUIDConversion UUID_CONVERSION = new UUIDConversion();
@@ -34,6 +37,8 @@ public class AvroDeserializer {
     private static final TimeMillisConversion TIME_MILLIS_CONVERSION = new TimeMillisConversion();
     private static final TimestampMicrosConversion TIMESTAMP_MICROS_CONVERSION = new TimestampMicrosConversion();
     private static final TimestampMillisConversion TIMESTAMP_MILLIS_CONVERSION = new TimestampMillisConversion();
+    private static final LocalTimestampMicrosConversion LOCAL_TIMESTAMP_MICROS_CONVERSION = new LocalTimestampMicrosConversion();
+    private static final LocalTimestampMillisConversion LOCAL_TIMESTAMP_MILLIS_CONVERSION = new LocalTimestampMillisConversion();
 
     public static Map<String, Object> recordDeserializer(GenericRecord record) {
         return record
@@ -68,6 +73,10 @@ public class AvroDeserializer {
                     return AvroDeserializer.timestampMicrosDeserializer(value, schema, primitiveType, logicalType);
                 case TIMESTAMP_MILLIS:
                     return AvroDeserializer.timestampMillisDeserializer(value, schema, primitiveType, logicalType);
+                case LOCAL_TIMESTAMP_MICROS:
+                    return AvroDeserializer.localTimestampMicrosDeserializer(value, schema, primitiveType, logicalType);
+                case LOCAL_TIMESTAMP_MILLIS:
+                    return AvroDeserializer.localTimestampMillisDeserializer(value, schema, primitiveType, logicalType);
                 case UUID:
                     return AvroDeserializer.uuidDeserializer(value, schema, primitiveType, logicalType);
                 default:
@@ -148,6 +157,23 @@ public class AvroDeserializer {
     private static Instant timestampMillisDeserializer(Object value, Schema schema, Type primitiveType, LogicalType logicalType) {
         if (primitiveType == Type.LONG) {
             return AvroDeserializer.TIMESTAMP_MILLIS_CONVERSION.fromLong((Long) value, schema, logicalType);
+        }
+
+        throw new IllegalStateException("Unexpected value: " + primitiveType);
+    }
+
+    private static LocalDateTime localTimestampMicrosDeserializer(Object value, Schema schema, Type primitiveType, LogicalType logicalType) {
+        switch (primitiveType) {
+            case LONG:
+                return AvroDeserializer.LOCAL_TIMESTAMP_MICROS_CONVERSION.fromLong((Long) value, schema, logicalType);
+            default:
+                throw new IllegalStateException("Unexpected value: " + primitiveType);
+        }
+    }
+
+    private static LocalDateTime localTimestampMillisDeserializer(Object value, Schema schema, Type primitiveType, LogicalType logicalType) {
+        if (primitiveType == Type.LONG) {
+            return AvroDeserializer.LOCAL_TIMESTAMP_MILLIS_CONVERSION.fromLong((Long) value, schema, logicalType);
         }
 
         throw new IllegalStateException("Unexpected value: " + primitiveType);

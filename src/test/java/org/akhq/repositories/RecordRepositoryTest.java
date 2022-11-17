@@ -250,8 +250,8 @@ class RecordRepositoryTest extends AbstractTest {
         RecordMetadata producedRecordMetadata = repository.produce(
             KafkaTestCluster.CLUSTER_ID,
             KafkaTestCluster.TOPIC_JSON_SCHEMA,
-            recordAsJsonString,
-            Collections.emptyMap(),
+            Optional.of(recordAsJsonString),
+            Collections.emptyList(),
             Optional.of(keyJsonString),
             Optional.empty(),
             Optional.empty(),

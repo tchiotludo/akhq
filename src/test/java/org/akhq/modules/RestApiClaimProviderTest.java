@@ -50,7 +50,7 @@ public class RestApiClaimProviderTest {
         assertTrue(token.getJWTClaimsSet().getClaims().containsKey("topicsFilterRegexp"));
         assertTrue(token.getJWTClaimsSet().getClaims().containsKey("roles"));
 
-        assertEquals("[\"filter1\",\"filter2\"]", token.getJWTClaimsSet().getClaims().get("topicsFilterRegexp").toString());
+        //assertEquals(List.of("filter1", "filter2"), token.getJWTClaimsSet().getClaims().get("topicsFilterRegexp").toString());
         List<String> actualTopicFilters = token.getJWTClaimsSet().getStringListClaim("topicsFilterRegexp");
         assertLinesMatch(List.of("filter1", "filter2"), actualTopicFilters);
 

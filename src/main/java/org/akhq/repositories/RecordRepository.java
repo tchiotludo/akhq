@@ -33,6 +33,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -75,6 +76,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
     protected int maxPollRecords;
+
+    @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
+    protected int maxKafkaMessageLength;
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
         Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
@@ -153,6 +157,7 @@ public class RecordRepository extends AbstractRepository {
             for (ConsumerRecord<byte[], byte[]> record : records) {
                 Record current = newRecord(record, options, topic);
                 if (searchFilter(options, current)) {
+                    filterMessageLength(current);
                     list.add(current);
                 }
             }
@@ -311,6 +316,7 @@ public class RecordRepository extends AbstractRepository {
                         }
                         Record current = newRecord(record, options, topic);
                         if (searchFilter(options, current)) {
+                            filterMessageLength(current);
                             list.add(current);
                         }
                     }
@@ -390,6 +396,7 @@ public class RecordRepository extends AbstractRepository {
                 }
 
                 if (last == partition.getFirstOffset() || last < 0) {
+                    consumer.close();
                     return null;
                 } else if (!(last - pollSizePerPartition < first)) {
                     first = last - pollSizePerPartition;
@@ -473,8 +480,8 @@ public class RecordRepository extends AbstractRepository {
     public List<RecordMetadata> produce(
             String clusterId,
             String topic,
-            String value,
-            Map<String, String> headers,
+            Optional<String> value,
+            List<KeyValue<String, String>> headers,
             Optional<String> key,
             Optional<Integer> partition,
             Optional<Long> timestamp,
@@ -486,10 +493,10 @@ public class RecordRepository extends AbstractRepository {
         List<RecordMetadata> produceResults = new ArrayList<>();
 
         // Distinguish between single record produce, and multiple messages
-        if (multiMessage.booleanValue()) {
+        if (Boolean.TRUE.equals(multiMessage) && value.isPresent()) {
             // Split key-value pairs and produce them
-            for (KeyValue<String, String> kvPair : splitMultiMessage(value, keyValueSeparator.orElseThrow())) {
-                produceResults.add(produce(clusterId, topic, kvPair.getValue(), headers, Optional.of(kvPair.getKey()),
+            for (KeyValue<String, String> kvPair : splitMultiMessage(value.get(), keyValueSeparator.orElseThrow())) {
+                produceResults.add(produce(clusterId, topic, Optional.of(kvPair.getValue()), headers, Optional.of(kvPair.getKey()),
                         partition, timestamp, keySchemaId, valueSchemaId));
             }
         } else {
@@ -502,7 +509,7 @@ public class RecordRepository extends AbstractRepository {
     private RecordMetadata produce(
         String clusterId,
         String topic, byte[] value,
-        Map<String, String> headers,
+        List<KeyValue<String, String>> headers,
         byte[] key,
         Optional<Integer> partition,
         Optional<Long> timestamp
@@ -515,8 +522,7 @@ public class RecordRepository extends AbstractRepository {
                 timestamp.orElse(null),
                 key,
                 value,
-                (headers == null ? ImmutableMap.<String, String>of() : headers)
-                    .entrySet()
+                headers == null ? Collections.emptyList() : headers
                     .stream()
                     .filter(entry -> StringUtils.isNotEmpty(entry.getKey()))
                     .map(entry -> new RecordHeader(
@@ -584,8 +590,8 @@ public class RecordRepository extends AbstractRepository {
     public RecordMetadata produce(
         String clusterId,
         String topic,
-        String value,
-        Map<String, String> headers,
+        Optional<String> value,
+        List<KeyValue<String, String>> headers,
         Optional<String> key,
         Optional<Integer> partition,
         Optional<Long> timestamp,
@@ -604,7 +610,7 @@ public class RecordRepository extends AbstractRepository {
             }
         } else {
             try {
-                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value))) {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value.isEmpty() ? null : value.get()))) {
                     throw new IllegalArgumentException("Key missing for produce onto compacted topic");
                 }
             } catch (ExecutionException ex) {
@@ -612,11 +618,11 @@ public class RecordRepository extends AbstractRepository {
             }
         }
 
-        if (value != null && valueSchemaId.isPresent()) {
+        if (value.isPresent() && valueSchemaId.isPresent()) {
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
-            valueAsBytes = valueSerializer.serialize(value);
+            valueAsBytes = valueSerializer.serialize(value.get());
         } else {
-            valueAsBytes = value != null ? value.getBytes() : null;
+            valueAsBytes = value.map(String::getBytes).orElse(null);
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
@@ -736,13 +742,13 @@ public class RecordRepository extends AbstractRepository {
             }
 
             if (options.getSearchByHeaderKey() != null) {
-                if (!search(options.getSearchByHeaderKey(), record.getHeaders().keySet())) {
+                if (!search(options.getSearchByHeaderKey(), record.getHeadersKeySet())) {
                     return false;
                 }
             }
 
             if (options.getSearchByHeaderValue() != null) {
-                return search(options.getSearchByHeaderValue(), record.getHeaders().values());
+                return search(options.getSearchByHeaderValue(), record.getHeadersValues());
             }
         }
         return true;
@@ -790,12 +796,11 @@ public class RecordRepository extends AbstractRepository {
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
-                s = s.toLowerCase();
-                for (String k : split) {
-                    if (s.equals(k)) {
-                        return true;
-                    }
-                }
+                final String lowerS = s.toLowerCase();
+
+                return Stream.of(split)
+                    .filter(lowerS::equals)
+                    .count() == split.length;
             }
         }
         return false;
@@ -811,12 +816,11 @@ public class RecordRepository extends AbstractRepository {
         String[] split = search.toLowerCase().split("\\s");
         for (String s : in) {
             if(s != null) {
-                s = s.toLowerCase();
-                for (String k : split) {
-                    if (s.contains(k)) {
-                        return false;
-                    }
-                }
+                final String lowerS = s.toLowerCase();
+
+                return Stream.of(split)
+                    .filter(lowerS::contains)
+                    .count() == split.length;
             }
         }
         return true;
@@ -1267,6 +1271,19 @@ public class RecordRepository extends AbstractRepository {
         private final long begin;
         private final long end;
         private final KafkaConsumer<byte[], byte[]> consumer;
+    }
+
+    private void filterMessageLength(Record record) {
+        if (maxKafkaMessageLength == Integer.MAX_VALUE || record.getValue() == null) {
+            return;
+        }
+
+        int bytesLength = record.getValue().getBytes(StandardCharsets.UTF_8).length;
+        if (bytesLength > maxKafkaMessageLength) {
+            int substringChars = maxKafkaMessageLength / 1000;
+            record.setValue(record.getValue().substring(0, substringChars));
+            record.setTruncated(true);
+        }
     }
 }
 

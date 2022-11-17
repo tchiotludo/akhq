@@ -1,16 +1,17 @@
 package org.akhq.modules.schemaregistry;
 
-import io.confluent.kafka.schemaregistry.ParsedSchema;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.modules.KafkaModule;
 
+import io.confluent.kafka.schemaregistry.ParsedSchema;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import jakarta.inject.Singleton;
-import java.io.IOException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @RequiredArgsConstructor
@@ -29,6 +30,8 @@ public class RecordWithSchemaSerializerFactory {
             return JsonSchemaSerializer.newInstance(schemaId, parsedSchema, schemaRegistryType);
         } if (AvroSerializer.supports(parsedSchema)) {
             return AvroSerializer.newInstance(schemaId, parsedSchema, schemaRegistryType);
+        } if (ProtobufSerializer.supports(parsedSchema)) {
+            return ProtobufSerializer.newInstance(schemaId, parsedSchema, schemaRegistryType);
         } else {
             String errorMsg = String.format("Schema with id %d has unsupported schema type %s", schemaId, parsedSchema.schemaType());
             throw new IllegalStateException(errorMsg);

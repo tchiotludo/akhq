@@ -24,6 +24,8 @@ export const TABLE_DETAILS = 'details';
 export const TABLE_CONFIG = 'config';
 export const TABLE_RESTART = 'restart';
 export const TABLE_SHARE = 'share';
+export const TABLE_DOWNLOAD = 'download';
+export const TABLE_COPY = 'copy';
 
 // Tab names/route names
 export const CLUSTER = 'cluster';
@@ -35,12 +37,28 @@ export const ACLS = 'acls';
 export const SCHEMA = 'schema';
 export const CONNECT = 'connect';
 export const SETTINGS = 'settings';
-export const TOPICS = {
-  ALL: 'ALL',
-  HIDE_INTERNAL: 'HIDE_INTERNAL',
-  HIDE_INTERNAL_STREAM: 'HIDE_INTERNAL_STREAM',
-  HIDE_STREAM: 'HIDE_STREAM'
-};
+
+// Configurable settings
+export const SETTINGS_VALUES = {
+  TOPIC: {
+    TOPIC_DEFAULT_VIEW: {
+      ALL: 'ALL',
+      HIDE_INTERNAL: 'HIDE_INTERNAL',
+      HIDE_INTERNAL_STREAM: 'HIDE_INTERNAL_STREAM',
+      HIDE_STREAM: 'HIDE_STREAM'
+    }
+  },
+  TOPIC_DATA: {
+    SORT: {
+      OLDEST: 'OLDEST',
+      NEWEST: 'NEWEST',
+    },
+    DATE_TIME_FORMAT: {
+      RELATIVE: 'RELATIVE',
+      ISO: 'ISO',
+    }
+  }
+}
 
 export const TYPES = {
   STRING: 'STRING',
@@ -65,11 +83,12 @@ export default {
   TABLE_CONFIG,
   TABLE_RESTART,
   TABLE_SHARE,
+  TABLE_COPY,
+  TABLE_DOWNLOAD,
   CLUSTER,
   NODE,
   TOPIC,
   TAIL,
-  TOPICS,
   GROUP,
   ACLS,
   SCHEMA,
@@ -77,7 +96,8 @@ export default {
   TYPES,
   ROLE_TYPE,
   VERSION,
-  SETTINGS
+  SETTINGS,
+  SETTINGS_VALUES
 };
 
 export const sortBy = (field, reverse, primer) => {

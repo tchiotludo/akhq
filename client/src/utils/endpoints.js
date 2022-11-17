@@ -35,8 +35,12 @@ export const uriUIOptions = (clusterId) => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };
 
-export const uriTopics = (clusterId, search, show, page) => {
-  return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
+export const uriTopics = (clusterId, search, show, page, pageSize) => {
+  if(pageSize === 1){
+    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
+  }else{
+    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}&uiPageSize=${pageSize}`;
+  }
 };
 
 export const uriTopicDefaultConf = () => `${apiUrl}/topic/defaults-configs`;
@@ -212,6 +216,10 @@ export const uriNodes = id => {
   return `${apiUrl}/${id}/node`;
 };
 
+export const uriNodePartitions = clusterId => {
+  return `${apiUrl}/${clusterId}/node/partitions`;
+};
+
 export const uriNodesConfigs = (clusterId, nodeId) => {
   return `${apiUrl}/${clusterId}/node/${nodeId}/configs`;
 };
@@ -230,30 +238,34 @@ export const uriConsumerGroups = (clusterId, search, pageNumber) => {
 };
 
 export const uriConsumerGroup = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}`;
 };
 
 export const uriConsumerGroupTopics = (clusterId, groupId) => {
-  return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${groupId}`;
+  return `${apiUrl}/group/topics?clusterId=${clusterId}&groupId=${encodeURIComponent(groupId)}`;
 };
 export const uriConsumerGroupMembers = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/members`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/members`;
 };
 
 export const uriConsumerGroupOffsets = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets`;
 };
 
 export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets/start?timestamp=${timestamp}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets/start?timestamp=${timestamp}`;
 };
 
 export const uriConsumerGroupDelete = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}`;
 };
 
 export const uriConsumerGroupUpdate = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/offsets`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets`;
+};
+
+export const uriDeleteGroupOffsets = (clusterId, groupId, topicName) => {
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/topic/${topicName}`;
 };
 
 export const uriAclsList = (clusterId, search) => {
@@ -262,7 +274,7 @@ export const uriAclsList = (clusterId, search) => {
 };
 
 export const uriConsumerGroupAcls = (clusterId, groupId) => {
-  return `${apiUrl}/${clusterId}/group/${groupId}/acls`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/acls`;
 };
 
 export const uriConsumerGroupByTopics = (clusterId, topicList) => {
@@ -321,6 +333,7 @@ export default {
   uriNodesConfigs,
   uriTopicsLogs,
   uriTopicsGroups,
+  uriNodePartitions,
   uriTopicsPartitions,
   uriTopicData,
   uriTopicsProduce,
@@ -343,5 +356,6 @@ export default {
   uriAclsByPrincipal,
   uriLiveTail,
   uriTopicDataSearch,
-  uriTopicDataDelete
+  uriTopicDataDelete,
+  uriDeleteGroupOffsets
 };

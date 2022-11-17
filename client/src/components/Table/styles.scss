@@ -19,6 +19,13 @@ td {
   position: relative;
 }
 
+.not-allowed {
+  cursor: not-allowed;
+  input {
+    pointer-events: none;
+  }
+}
+
 .close-container {
   position: absolute;
   z-index: 100;

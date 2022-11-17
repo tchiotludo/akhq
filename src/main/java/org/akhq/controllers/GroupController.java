@@ -155,6 +155,14 @@ public class GroupController extends AbstractController {
         return HttpResponse.noContent();
     }
 
+    @Secured(Role.ROLE_GROUP_OFFSETS_DELETE)
+    @Delete("{groupName}/topic/{topicName}")
+    @Operation(tags = {"consumer group"}, summary = "Delete group offsets of given topic")
+    public HttpResponse<?> deleteConsumerGroupOffsets(String cluster, String groupName, String topicName) throws ExecutionException {
+        this.kafkaWrapper.deleteConsumerGroupOffsets(cluster, groupName, topicName);
+        return HttpResponse.noContent();
+    }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter

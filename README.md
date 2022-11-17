@@ -19,6 +19,50 @@
 * The official AKHQ documentation can be found under: [akhq.io](https://akhq.io/docs)
 
 
+## Sponsors
+<table>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://upstash.com/?utm_source=AKHQ" >
+  <img src="https://raw.githubusercontent.com/upstash/sponsorship/master/kafka.png" alt="Upstash" width="260" align="right">
+  </a>
+
+<h3>Upstash: Serverless Kafka</h3>
+
+  <ul>
+    <li>True Serverless Kafka with per-request-pricing</li>
+    <li>Managed Apache Kafka, works with all Kafka clients</li>
+    <li>Built-in REST API designed for serverless and edge functions</li>
+  </ul>
+
+[Start for free in 30 seconds!](https://upstash.com/?utm_source=AKHQ)
+</td>
+</tr>
+</table>
+
+## From AKHQ project creator
+<table>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://github.com/kestra-io/kestra?utm_source=AKHQ" >
+  <img src="https://kestra.io/video.gif" alt="Upstash" width="320" align="right">
+  </a>
+
+<h3>Kestra: Open source data orchestration and scheduling platform</h3>
+
+<p>
+Kestra is an infinitely scalable orchestration and scheduling platform, creating, running, scheduling, and monitoring millions of complex pipelines.
+</p>
+
+[Discover the project!](https://github.com/kestra-io/kestra?utm_source=AKHQ)
+</td>
+</tr>
+</table>
+
+
+
 ## Who's using AKHQ
 * [Adeo](https://www.adeo.com/)
 * [Avlino](https://avlino.com/)
@@ -32,13 +76,17 @@
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
 * [Doximity](https://www.doximity.com)
+* [Fresha](https://www.fresha.com/)
+* [Galeries Lafayette](https://www.galerieslafayette.com/)
 * [GetYourGuide](https://www.getyourguide.com)
+* [Kitopi](https://kitopi.com)
 * [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
 * [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
 * [Pipedrive](https://www.pipedrive.com)
+* [TUI](https://www.tui.com)
 * [TVG](https://www.tvg.com)
 * [Vodeno](https://www.vodeno.com/)
 

@@ -39,7 +39,7 @@ class ConsumerGroupTopics extends Root {
   }
 
   handleOptional(optional) {
-    if (optional !== undefined && optional !== '') {
+    if (optional !== undefined && optional !== '' && optional !== 'NaN') {
       return <label>{optional}</label>;
     } else {
       return <label>-</label>;
@@ -90,7 +90,23 @@ class ConsumerGroupTopics extends Root {
               colName: 'Offset',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.offset);
+                if (obj.offset !== undefined && obj.offset !== '') {
+                  return (
+                    <Link to={`/ui/${this.state.selectedCluster}/topic/${obj.name}/data?sort=Oldest&partition=${obj.partition}&after=${obj.partition}-${obj.offset - 1}`}>
+                      {obj.offset}
+                    </Link>
+                  );
+                }
+                return <label>-</label>;
+              }
+            },
+            {
+              id: 'metadata',
+              accessor: 'metadata',
+              colName: 'Metadata',
+              type: 'text',
+              cell: obj => {
+                return this.handleOptional(obj.metadata);
               }
             },
             {
@@ -99,7 +115,7 @@ class ConsumerGroupTopics extends Root {
               colName: 'Lag',
               type: 'text',
               cell: obj => {
-                return this.handleOptional(obj.lag);
+                return this.handleOptional(Number(obj.lag).toLocaleString());
               }
             }
           ]}

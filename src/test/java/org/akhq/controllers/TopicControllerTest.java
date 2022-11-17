@@ -75,7 +75,7 @@ class TopicControllerTest extends AbstractTest {
     @Order(1)
     void groupsApi() {
         List<ConsumerGroup> result = this.retrieveList(HttpRequest.GET(TOPIC_URL + "/groups"), ConsumerGroup.class);
-        assertEquals(5, result.size());
+        assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, result.size());
     }
 
     @Test
@@ -177,9 +177,9 @@ class TopicControllerTest extends AbstractTest {
         paramMap.put("value", "my-value");
         paramMap.put("key", "my-key");
         paramMap.put("partition", 1);
-        paramMap.put("headers", ImmutableMap.of(
-                "my-header-1", "1",
-                "my-header-2", "2"));
+        paramMap.put("headers", List.of(
+            new KeyValue<>("my-header-1", "1"),
+            new KeyValue<>("my-header-2", "2")));
         paramMap.put("multiMessage", false);
         List<Record> response = this.retrieveList(HttpRequest.POST(
             CREATE_TOPIC_URL + "/data", paramMap
@@ -190,7 +190,23 @@ class TopicControllerTest extends AbstractTest {
         assertEquals("my-value", response.get(0).getValue());
         assertEquals(1, response.get(0).getPartition());
         assertEquals(2, response.get(0).getHeaders().size());
-        assertEquals("1", response.get(0).getHeaders().get("my-header-1"));
+        assertEquals("1", response.get(0).getHeaders().get(0).getValue());
+    }
+
+    @Test
+    @Order(3)
+    void produceTombstone() {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("value", null);
+        paramMap.put("key", "my-key-tomb");
+        paramMap.put("multiMessage", false);
+        List<Record> response = this.retrieveList(HttpRequest.POST(
+            CREATE_TOPIC_URL + "/data", paramMap
+        ), Record.class);
+
+        assertEquals(1, response.size());
+        assertEquals("my-key-tomb", response.get(0).getKey());
+        assertNull(response.get(0).getValue());
     }
 
     @Test
@@ -214,7 +230,7 @@ class TopicControllerTest extends AbstractTest {
             ),
             Record.class
         );
-        assertEquals(1, retrieve.getOffset());
+        assertEquals(2, retrieve.getOffset());
 
         // get data
         // @TODO: Failed to see the message

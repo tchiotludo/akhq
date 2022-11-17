@@ -16,6 +16,7 @@ import org.apache.kafka.common.errors.ApiException;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
+import org.apache.kafka.common.errors.UnsupportedVersionException;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -254,7 +255,7 @@ abstract public class AbstractKafkaWrapper {
                             .allDescriptions()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException) {
+                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException || e.getCause() instanceof UnsupportedVersionException) {
                             return new HashMap<>();
                         }
 
@@ -367,5 +368,24 @@ abstract public class AbstractKafkaWrapper {
         }
 
         return describeAcls.get(clusterId).get(filter);
+    }
+
+    public void deleteConsumerGroupOffsets(String clusterId, String groupName, String topicName)
+        throws ExecutionException {
+        final Map<String, TopicDescription> topics = describeTopics(clusterId, List.of(topicName));
+        if (topics.containsKey(topicName)) {
+            final TopicDescription topic = topics.get(topicName);
+            final Set<TopicPartition> topicPartitions = topic.partitions().stream()
+                .map(p -> new TopicPartition(topicName, p.partition()))
+                .collect(toSet());
+
+            Logger.call(kafkaModule
+                    .getAdminClient(clusterId)
+                    .deleteConsumerGroupOffsets(groupName, topicPartitions)
+                    .all(),
+                "Delete consumer group offsets from topic {}",
+                List.of(groupName, topicName)
+            );
+        }
     }
 }

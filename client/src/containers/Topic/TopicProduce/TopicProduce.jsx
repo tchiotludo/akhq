@@ -4,7 +4,9 @@ import Header from '../../Header';
 import Joi from 'joi-browser';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { formatDateTime } from '../../../utils/converters';
+import { popProduceToTopicValues } from '../../../utils/localstorage';
 import {
+  uriTopics,
   uriPreferredSchemaForTopic,
   uriTopicsPartitions,
   uriTopicsProduce
@@ -42,7 +44,10 @@ class TopicProduce extends Form {
     selectedValueSchema: '',
     clusterId: '',
     topicId: '',
+    topics: [],
+    topicsSearchValue: '',
     multiMessage: false,
+    tombstone: false,
     valuePlaceholder: '{"param": "value"}'
   };
 
@@ -74,22 +79,50 @@ class TopicProduce extends Form {
     let partitions = response.data.map(item => {
       return { name: item.id, _id: Number(item.id) };
     });
-    partitions.unshift({name: "auto assign", _id: null});
-    this.setState({
+    partitions.unshift({name: 'auto assign', _id: null});
+
+    this.setState(({
       partitions,
+      topicId,
       formData: {
         ...this.state.formData,
-        partition: partitions[0]._id
-      }
-    });
+        partition: partitions[0]._id,
+      },
+    }));
 
     await this.getPreferredSchemaForTopic();
+    const topicEventData = popProduceToTopicValues();
+    if (Object.keys(topicEventData).length) {
+      await this.initByTopicEvent(topicEventData);
+    }
+
     this.setState({ clusterId, topicId });
+
+    this.initAvailableTopics();
+  }
+
+  async initAvailableTopics() {
+    const {clusterId} = this.props.match.params;
+
+    const topics = [];
+    let page = 0;
+    let topicResponseData = {};
+    do {
+      page = page + 1;
+      topicResponseData = await this.getApi(uriTopics(clusterId, '', '', page))
+          .then(res => res.data);
+      topicResponseData.results
+          .forEach(topicData => topics.push(topicData.name));
+    } while(page < topicResponseData.pages);
+
+    this.setState({
+      topics,
+    });
   }
 
   async getPreferredSchemaForTopic() {
-    const { clusterId, topicId } = this.props.match.params;
-    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, topicId));
+    const { clusterId } = this.props.match.params;
+    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, this.state.topicId));
     let keySchema = [];
     let valueSchema = [];
     schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
@@ -97,38 +130,69 @@ class TopicProduce extends Form {
     this.setState({ keySchema: keySchema, valueSchema: valueSchema });
   }
 
+  async initByTopicEvent(copyValues) {
+    const {header, keySchemaId, valueSchemaId, ...topicValuesDefault} = copyValues;
+
+    const keySchema = this.state.keySchema.find(schema => schema.id === keySchemaId);
+    const valueSchema = this.state.valueSchema.find(schema => schema.id === valueSchemaId);
+
+    this.setState(({
+      formData: {
+        ...this.state.formData,
+        ...topicValuesDefault,
+      },
+      selectedKeySchema: keySchema ? keySchema.subject : '',
+      selectedValueSchema: valueSchema ? valueSchema.subject : '',
+      nHeaders: Object.keys(header).length ? 0 : 1
+    }));
+
+    Object.entries(header).forEach(([key, value]) => this.handlePlus(key, value));
+  }
+
   doSubmit() {
     const {
       formData,
+      topicId,
       datetime,
       selectedKeySchema,
       selectedValueSchema,
       keySchema,
       valueSchema,
-      multiMessage
+      multiMessage,
+      tombstone
     } = this.state;
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId } = this.props.match.params;
 
     let schemaKeyToSend = keySchema.find(key => key.subject === selectedKeySchema);
     let schemaValueToSend = valueSchema.find(value => value.subject === selectedValueSchema);
+    let value;
+    if (tombstone) {
+      value = null;
+    } else {
+      value = multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value))
+    }
     const topic = {
       clusterId,
       topicId,
+      topics: [topicId],
       partition: formData.partition,
       key: formData.key,
       timestamp: datetime.toISOString(),
-      value: multiMessage ? formData.value : JSON.parse(JSON.stringify(formData.value)),
+      value: value,
       keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
       valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
       multiMessage: multiMessage,
       keyValueSeparator: formData.keyValueSeparator
     };
 
-    let headers = {};
+    const headers = [];
     Object.keys(formData).forEach(key => {
       if (key.includes('hKey')) {
         let keyNumbers = key.replace(/\D/g, '');
-        headers[formData[key]] = formData[`hValue${keyNumbers}`];
+        headers.push({
+          key: formData[key],
+          value: formData[`hValue${keyNumbers}`]
+        });
       }
     });
 
@@ -143,7 +207,7 @@ class TopicProduce extends Form {
       });
   }
 
-  renderMultiMessage() {
+  renderMultiMessage(tombstone) {
     const { formData, multiMessage } = this.state;
 
     return (
@@ -158,7 +222,8 @@ class TopicProduce extends Form {
                 this.setState({multiMessage: !multiMessage,
                   valuePlaceholder: this.getPlaceholderValue(!multiMessage, formData.keyValueSeparator)})
               },
-              false
+              false,
+              { disabled: tombstone }
             )}
 
             <label className="col-auto col-form-label">Separator</label>
@@ -167,7 +232,7 @@ class TopicProduce extends Form {
                 name='keyValueSeparator'
                 id='keyValueSeparator'
                 placeholder=':'
-                class='col-sm-2 form-control'
+                className='col-sm-2 form-control'
                 disabled={ !multiMessage }
                 onChange={
                     event => {
@@ -183,10 +248,32 @@ class TopicProduce extends Form {
     );
   }
 
+  renderTombstone(multiMessage) {
+    const { tombstone } = this.state;
+
+    return (
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label">Tombstone</label>
+          <div className="row khq-multiple col-sm-7">
+            {this.renderCheckbox(
+                'isTombstone',
+                '',
+                tombstone,
+                () => {
+                  this.setState({tombstone: !tombstone} )
+                },
+                false,
+                { disabled: multiMessage }
+            )}
+          </div>
+        </div>
+    );
+  }
+
   getPlaceholderValue(isMultiMessage, keyValueSeparator) {
     if(isMultiMessage) {
-      return "key1" + keyValueSeparator + "{\"param\": \"value1\"}\n"
-        + "key2" + keyValueSeparator + "{\"param\": \"value2\"}";
+      return 'key1' + keyValueSeparator + '{"param": "value1"}\n'
+        + 'key2' + keyValueSeparator + '{"param": "value2"}';
     } else {
         return '{"param": "value"}';
     }
@@ -250,13 +337,13 @@ class TopicProduce extends Form {
     );
   }
 
-  handlePlus() {
+  handlePlus(providedKey, providedValue) {
     const { formData, nHeaders } = this.state;
 
     let newFormData = {
       ...formData,
-      [`hKey${nHeaders}`]: '',
-      [`hValue${nHeaders}`]: ''
+      [`hKey${nHeaders}`]: providedKey || '',
+      [`hValue${nHeaders}`]: providedValue || '',
     };
     this.schema = {
       ...this.schema,
@@ -300,7 +387,7 @@ class TopicProduce extends Form {
                 <li>
                   <Tooltip
                     title={
-                      selectedValue === key ? 'Click to unselect option' : 'Click to select option'
+                      selectedValue === key && tag !== 'topicId' ? 'Click to unselect option' : 'Click to select option'
                     }
                   >
                     <div
@@ -313,6 +400,11 @@ class TopicProduce extends Form {
                           selectedValue === key
                             ? this.setState({ selectedValueSchema: '' })
                             : this.setState({ selectedValueSchema: key });
+                        } else if (tag === 'topicId') {
+                          if( selectedValue !== key) {
+                            this.setState({topicId: key});
+                            this.getPreferredSchemaForTopic();
+                          }
                         }
                       }}
                       role="option"
@@ -334,6 +426,8 @@ class TopicProduce extends Form {
   render() {
     const {
       topicId,
+      topics,
+      topicsSearchValue,
       formData,
       partitions,
       datetime,
@@ -343,13 +437,31 @@ class TopicProduce extends Form {
       valueSchema,
       valueSchemaSearchValue,
       selectedValueSchema,
-      multiMessage
+      multiMessage,
+      tombstone
     } = this.state;
     let date = moment(datetime);
     return (
       <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
             <Header title={`Produce to ${topicId} `} />
+            {this.renderDropdown(
+                'Topic',
+                topics,
+                topicsSearchValue,
+                topicId,
+                value => {
+                  this.setState({
+                    topicsSearchValue: value.target.value
+                  });
+                },
+                this.renderResults(
+                    topics,
+                    topicsSearchValue,
+                    topicId,
+                    'topicId'
+                )
+            )}
             {this.renderSelect('partition', 'Partition', partitions, value => {
               this.setState({ formData: { ...formData, partition: value.target.value } });
             }, 'col-sm-10')}
@@ -395,7 +507,9 @@ class TopicProduce extends Form {
             )
           )}
 
-          {this.renderMultiMessage()}
+          {this.renderMultiMessage(tombstone)}
+
+          {this.renderTombstone(multiMessage)}
 
           {this.renderJSONInput('value', 'Value', value => {
             this.setState({
@@ -405,7 +519,8 @@ class TopicProduce extends Form {
                 }
             })},
           multiMessage, // true -> 'text' mode; json, protobuff, ... mode otherwise
-          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) }
+          { placeholder: this.getPlaceholderValue(multiMessage, formData.keyValueSeparator) },
+          { readOnly: tombstone }
           )}
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', padding: 0 }}>
             <label
@@ -492,4 +607,4 @@ class TopicProduce extends Form {
 }
 
 export default TopicProduce;
- 
+
