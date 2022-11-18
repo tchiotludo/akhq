@@ -18,7 +18,9 @@ class AclClusters extends Root {
   async getAcls() {
     const { selectedCluster, principalEncoded } = this.state;
 
-    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'CLUSTER'));
+    const response = await this.getApi(
+      uriAclsByPrincipal(selectedCluster, principalEncoded, 'CLUSTER')
+    );
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);

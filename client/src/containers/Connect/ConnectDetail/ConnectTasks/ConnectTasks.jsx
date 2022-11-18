@@ -230,7 +230,7 @@ class ConnectTasks extends Root {
                     />
                   );
                 },
-                cell: (obj) => {
+                cell: obj => {
                   return obj.trace ? (
                     <pre className="mb-0 khq-data-highlight">
                       <code>{obj.trace}</code>

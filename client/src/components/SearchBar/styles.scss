@@ -1,4 +1,5 @@
-.topic-search-wrapper, .select-wrapper {
+.topic-search-wrapper,
+.select-wrapper {
   display: flex;
   justify-content: space-between;
   margin-left: 0px !important;
@@ -7,17 +8,19 @@
     width: 100%;
     margin: 0 !important;
 
-    .topic-search-input, .select-class {
+    .topic-search-input,
+    .select-class {
       width: 100%;
     }
   }
 }
 
 @media (min-width: 991.98px) {
-  .topic-search-input, .select-class{
+  .topic-search-input,
+  .select-class {
     margin-right: 1rem;
   }
-  .select-wrapper{
+  .select-wrapper {
     margin-left: 0;
     margin-right: 0;
   }

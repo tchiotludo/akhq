@@ -1,4 +1,4 @@
-import {createBrowserHistory} from 'history'
+import { createBrowserHistory } from 'history';
 import { basePath } from './endpoints';
 
 const customHistory = createBrowserHistory({
