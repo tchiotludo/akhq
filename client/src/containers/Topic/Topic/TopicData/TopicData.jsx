@@ -535,6 +535,20 @@ class TopicData extends Root {
       })
   }
 
+ _getSchemaSubject =  async (id) => {
+    const { selectedCluster } = this.state;
+    const schemaSubject = 
+     await this.getApi(uriSchemaId(selectedCluster, id))
+      .then(response => {
+        if (response.data) {
+         return response.data.subject + ', ';
+        } else {
+          return '';
+        }
+      });
+      return schemaSubject;
+  }
+
   _renderSortOptions() {
     const { sortOptions } = this.state;
 
@@ -1042,13 +1056,14 @@ class TopicData extends Root {
 
                             {obj[col.accessor].value !== undefined && (
                                 <span
-                                    className="badge badge-primary clickable schema-value"
+                                id = {obj[col.accessor].value}   
+                                className="badge badge-primary clickable schema-value"
                                     onClick={() => {
                                       this._redirectToSchema(obj.schema.value);
                                     }}
                                 >
-                          Value: {obj[col.accessor].value}
-                        </span>
+                                { '' + this._getSchemaSubject(obj.schema.value).then( val => {document.getElementById(obj[col.accessor].value).innerText =  val + "Value: " + obj[col.accessor].value;})}
+                                </span>
                             )}
                           </div>
                       );
