@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header';
 import NodeConfigs from './/NodeConfigs/NodeConfigs';
 import NodeLogs from './/NodeLogs/NodeLogs';
-import {getSelectedTab} from "../../../utils/functions";
-import {Link} from "react-router-dom";
+import { getSelectedTab } from '../../../utils/functions';
+import { Link } from 'react-router-dom';
 
 class Node extends Component {
   state = {
@@ -21,16 +22,16 @@ class Node extends Component {
     const { clusterId, nodeId } = this.props.match.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
-        {
-          selectedTab: (tabSelected)? tabSelected : 'configs'
-        },
-        () => {
-          this.props.history.replace(`/ui/${clusterId}/node/${nodeId}/${this.state.selectedTab}`);
-        }
+      {
+        selectedTab: tabSelected ? tabSelected : 'configs'
+      },
+      () => {
+        this.props.history.replace(`/ui/${clusterId}/node/${nodeId}/${this.state.selectedTab}`);
+      }
     );
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       const tabSelected = getSelectedTab(this.props, this.tabs);
       this.setState({ selectedTab: tabSelected });
@@ -81,14 +82,16 @@ class Node extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/node/${selectedNode}/configs`}
+              <Link
+                to={`/ui/${clusterId}/node/${selectedNode}/configs`}
                 className={this.tabClassName('configs')}
               >
                 Configs
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/node/${selectedNode}/logs`}
+              <Link
+                to={`/ui/${clusterId}/node/${selectedNode}/logs`}
                 className={this.tabClassName('logs')}
               >
                 Logs
@@ -106,5 +109,13 @@ class Node extends Component {
     );
   }
 }
+
+Node.propTypes = {
+  history: PropTypes.object,
+  match: PropTypes.object,
+  location: PropTypes.object,
+  clusters: PropTypes.array,
+  children: PropTypes.any
+};
 
 export default Node;

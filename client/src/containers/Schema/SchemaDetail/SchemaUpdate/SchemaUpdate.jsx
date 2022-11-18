@@ -50,19 +50,11 @@ class SchemaUpdate extends Form {
   };
 
   schema = {
-    subject: Joi.string()
-        .required()
-        .label('Subject'),
-    compatibility: Joi.string()
-        .required()
-        .label('Compatibility Level'),
-    schema: Joi.string()
-        .required()
-        .label('Latest Schema'),
-    schemaType: Joi.string()
-        .label('Schema Type'),
-    references: Joi.any()
-        .label('Refecences')
+    subject: Joi.string().required().label('Subject'),
+    compatibility: Joi.string().required().label('Compatibility Level'),
+    schema: Joi.string().required().label('Latest Schema'),
+    schemaType: Joi.string().label('Schema Type'),
+    references: Joi.any().label('Refecences')
   };
 
   componentDidMount() {
@@ -87,7 +79,10 @@ class SchemaUpdate extends Form {
     formData.subject = latestSchemaVersion.subject;
     formData.compatibility = latestSchemaVersion.compatibilityLevel;
     formData.schemaType = latestSchemaVersion.schemaType;
-    formData.schema = "PROTOBUF" === formData.schemaType?latestSchemaVersion.schema :JSON.stringify(JSON.parse(latestSchemaVersion.schema), null, 2);
+    formData.schema =
+      'PROTOBUF' === formData.schemaType
+        ? latestSchemaVersion.schema
+        : JSON.stringify(JSON.parse(latestSchemaVersion.schema), null, 2);
     formData.references = latestSchemaVersion.references;
 
     this.setState(formData);
@@ -104,57 +99,59 @@ class SchemaUpdate extends Form {
       references: formData.references
     };
 
-    this.postApi(uriUpdateSchema(clusterId, formData.subject), body)
-        .then(() => {
-          toast.success(`Schema '${formData.subject}' is updated`);
-          this.props.getSchemaVersions();
-          window.location.reload(false);
-        });
+    this.postApi(uriUpdateSchema(clusterId, formData.subject), body).then(() => {
+      toast.success(`Schema '${formData.subject}' is updated`);
+      this.props.getSchemaVersions();
+      window.location.reload(false);
+    });
   }
 
   render() {
     const { compatibilityOptions, roles } = this.state;
 
     return (
-        <form
-            encType="multipart/form-data"
-            className="khq-form khq-form-config"
-            onSubmit={e => this.handleSubmit(e)}
-        >
-          <fieldset>
-            {this.renderInput(
-                'subject',
-                'Subject',
-                'Subject',
-                undefined,
-                undefined,
-                false,
-                false,
-                false,
-                { disabled: true }
-            )}
-            {this.renderSelect(
-                'compatibility',
-                'Compatibility Level',
-                compatibilityOptions,
-                ({ currentTarget: input }) => {
-                  let { formData } = { ...this.state };
-                  formData.compatibility = input.value;
-                  this.setState({ formData });
-                },
-                'col-sm-10'
-            )}
-            {this.renderJSONInput('schema', 'Latest Schema', value => {
-                  let { formData } = { ...this.state };
-                  formData.schema = value;
-                  this.setState({ formData });
-                },
-                'col-sm-10'
-            )}
-            {roles.registry['registry/update'] && (
-                this.renderButton('Update', undefined, undefined, 'submit'))}
-          </fieldset>
-        </form>
+      <form
+        encType="multipart/form-data"
+        className="khq-form khq-form-config"
+        onSubmit={e => this.handleSubmit(e)}
+      >
+        <fieldset>
+          {this.renderInput(
+            'subject',
+            'Subject',
+            'Subject',
+            undefined,
+            undefined,
+            false,
+            false,
+            false,
+            { disabled: true }
+          )}
+          {this.renderSelect(
+            'compatibility',
+            'Compatibility Level',
+            compatibilityOptions,
+            ({ currentTarget: input }) => {
+              let { formData } = { ...this.state };
+              formData.compatibility = input.value;
+              this.setState({ formData });
+            },
+            'col-sm-10'
+          )}
+          {this.renderJSONInput(
+            'schema',
+            'Latest Schema',
+            value => {
+              let { formData } = { ...this.state };
+              formData.schema = value;
+              this.setState({ formData });
+            },
+            'col-sm-10'
+          )}
+          {roles.registry['registry/update'] &&
+            this.renderButton('Update', undefined, undefined, 'submit')}
+        </fieldset>
+      </form>
     );
   }
 }

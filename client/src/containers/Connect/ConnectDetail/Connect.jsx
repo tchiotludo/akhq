@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header/Header';
 import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
-import {getSelectedTab} from "../../../utils/functions";
-import {Link} from "react-router-dom";
+import { getSelectedTab } from '../../../utils/functions';
+import { Link } from 'react-router-dom';
 
 class Connect extends Component {
   state = {
@@ -18,13 +19,14 @@ class Connect extends Component {
   componentDidMount() {
     const { clusterId, connectId, definitionId } = this.props.match.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
-    this.setState({ selectedTab: (tabSelected)? tabSelected : 'tasks' },
-        () => {
-          this.props.history.replace(`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${this.state.selectedTab}`);
-        });
+    this.setState({ selectedTab: tabSelected ? tabSelected : 'tasks' }, () => {
+      this.props.history.replace(
+        `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${this.state.selectedTab}`
+      );
+    });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       const tabSelected = getSelectedTab(this.props, this.tabs);
       this.setState({ selectedTab: tabSelected });
@@ -83,14 +85,16 @@ class Connect extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/tasks`}
+              <Link
+                to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/tasks`}
                 className={this.tabClassName('tasks')}
               >
                 Tasks
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`}
+              <Link
+                to={`/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/configs`}
                 className={this.tabClassName('configs')}
               >
                 Configs
@@ -108,5 +112,11 @@ class Connect extends Component {
     );
   }
 }
+
+Connect.propTypes = {
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object
+};
 
 export default Connect;

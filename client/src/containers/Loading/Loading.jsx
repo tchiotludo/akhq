@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import './styles.scss';
 import image from '../../images/icon.svg';
+
 class Loading extends Component {
   render() {
     const { show } = this.props;
@@ -22,6 +24,11 @@ class Loading extends Component {
       </div>
     );
   }
+}
+
+Loading.propTypes = {
+  show: PropTypes.bool,
+  children: PropTypes.any,
 }
 
 export default Loading;

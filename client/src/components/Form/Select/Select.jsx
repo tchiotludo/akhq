@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Select = ({ name, label, items, error, wrapperClass, selectClass, blankItem, ...rest }) => {
     let wrapperClassRender = 'form-group';
@@ -11,7 +12,7 @@ const Select = ({ name, label, items, error, wrapperClass, selectClass, blankIte
     }
 
     return (
-    <div className={`${wrapperClassRender} row`}>
+    <div className={`${wrapperClassRender}`}>
       {label !== '' ? (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
@@ -37,5 +38,15 @@ const Select = ({ name, label, items, error, wrapperClass, selectClass, blankIte
     </div>
   );
 };
+
+Select.propTypes = {
+    name: PropTypes.string,
+    label: PropTypes.string,
+    items: PropTypes.array,
+    error: PropTypes.string,
+    blankItem: PropTypes.bool,
+    wrapperClass: PropTypes.string,
+    selectClass: PropTypes.string,
+}
 
 export default Select;

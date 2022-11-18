@@ -15,9 +15,8 @@ import 'ace-builds/src-noconflict/mode-protobuf';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
-
+import Root from '../../../components/Root';
+import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 
 class SchemaList extends Root {
   state = {
@@ -45,15 +44,18 @@ class SchemaList extends Root {
   componentDidMount() {
     let { clusterId } = this.props.match.params;
     const { searchData, pageNumber } = this.state;
-    const query =  new URLSearchParams(this.props.location.search);
+    const query = new URLSearchParams(this.props.location.search);
 
-    this.setState({
-      selectedCluster: clusterId,
-      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
-      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
-    }, () => {
-      this.getSchemaRegistry();
-    });
+    this.setState(
+      {
+        selectedCluster: clusterId,
+        searchData: { search: query.get('search') ? query.get('search') : searchData.search },
+        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+      },
+      () => {
+        this.getSchemaRegistry();
+      }
+    );
   }
 
   handleSearch = data => {
@@ -65,13 +67,12 @@ class SchemaList extends Root {
 
   handlePageChangeSubmission = value => {
     let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
-    this.setState({pageNumber: pageNumber}, () => {
+    this.setState({ pageNumber: pageNumber }, () => {
       this.getSchemaRegistry();
-    })
-  }
+    });
+  };
 
   async getSchemaRegistry() {
-
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -88,12 +89,11 @@ class SchemaList extends Root {
         this.props.history.push({
           pathname: `/ui/${this.state.selectedCluster}/schema`,
           search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        })
+        });
       });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
     }
-
   }
 
   handleSchemaRegistry(schemas) {
@@ -108,7 +108,12 @@ class SchemaList extends Root {
         version: schema.version,
         exception: schema.exception,
         schemaType: schema.schemaType,
-        schema: schema.schemaType === "PROTOBUF" ? schema.schema : (schema.schema ? JSON.stringify(JSON.parse(schema.schema), null, 2) : null)
+        schema:
+          schema.schemaType === 'PROTOBUF'
+            ? schema.schema
+            : schema.schema
+            ? JSON.stringify(JSON.parse(schema.schema), null, 2)
+            : null
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry, loading: false });
@@ -150,13 +155,7 @@ class SchemaList extends Root {
       });
   };
   render() {
-    const {
-      selectedCluster,
-      searchData,
-      pageNumber,
-      totalPageNumber,
-      loading
-    } = this.state;
+    const { selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
     const { clusterId } = this.props.match.params;
@@ -224,7 +223,7 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    mode={ obj.schemaType === "PROTOBUF"? "protobuf"  : "json"}
+                    mode={obj.schemaType === 'PROTOBUF' ? 'protobuf' : 'json'}
                     id={'value' + index}
                     theme="merbivore_soft"
                     value={obj[col.accessor]}
@@ -240,7 +239,9 @@ class SchemaList extends Root {
                   return (
                     <pre className="mb-0 khq-data-highlight">
                       <code>
-                        { obj.schemaType === "PROTOBUF"? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
+                        {obj.schemaType === 'PROTOBUF'
+                          ? obj[col.accessor]
+                          : JSON.stringify(JSON.parse(obj[col.accessor]))}
                       </code>
                     </pre>
                   );
@@ -316,7 +317,6 @@ class SchemaList extends Root {
           handleConfirm={this.deleteSchemaRegistry}
           message={this.state.deleteMessage}
         />
-
       </div>
     );
   }

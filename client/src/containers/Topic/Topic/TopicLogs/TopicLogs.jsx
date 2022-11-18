@@ -2,7 +2,7 @@ import React from 'react';
 import { uriTopicsLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import converters from '../../../../utils/converters';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class TopicLogs extends Root {
   state = {

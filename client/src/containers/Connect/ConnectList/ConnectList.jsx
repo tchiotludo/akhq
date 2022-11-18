@@ -11,10 +11,10 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
-import SearchBar from "../../../components/SearchBar";
-import Pagination from "../../../components/Pagination";
-import {handlePageChange, getPageNumber} from "./../../../utils/pagination"
+import Root from '../../../components/Root';
+import SearchBar from '../../../components/SearchBar';
+import Pagination from '../../../components/Pagination';
+import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 
 class ConnectList extends Root {
   state = {
@@ -31,10 +31,10 @@ class ConnectList extends Root {
     history: this.props,
     searchData: {
       search: ''
-    },
+    }
   };
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps) {
     const clusterId = nextProps.match.params.clusterId;
     const connectId = nextProps.match.params.connectId;
 
@@ -46,16 +46,19 @@ class ConnectList extends Root {
 
   componentDidMount() {
     const { searchData, pageNumber } = this.state;
-    const query =  new URLSearchParams(this.props.location.search);
-    this.setState({
-      searchData: { search: (query.get('search'))? query.get('search') : searchData.search },
-      pageNumber: (query.get('page')) ? parseInt(query.get('page')) : parseInt(pageNumber)
-    }, () => {
-      this.getConnectDefinitions();
-    });
+    const query = new URLSearchParams(this.props.location.search);
+    this.setState(
+      {
+        searchData: { search: query.get('search') ? query.get('search') : searchData.search },
+        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+      },
+      () => {
+        this.getConnectDefinitions();
+      }
+    );
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       this.cancelAxiosRequests();
       this.renewCancelToken();
@@ -72,7 +75,9 @@ class ConnectList extends Root {
 
     this.setState({ loading: true });
 
-    let response = await this.getApi(uriConnectDefinitions(clusterId, connectId, search, pageNumber));
+    let response = await this.getApi(
+      uriConnectDefinitions(clusterId, connectId, search, pageNumber)
+    );
     let data = response.data;
     if (data.results) {
       this.handleData(data);
@@ -80,7 +85,7 @@ class ConnectList extends Root {
         this.props.history.push({
           pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
           search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        })
+        });
       });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
@@ -91,15 +96,15 @@ class ConnectList extends Root {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
 
     this.removeApi(uriDeleteDefinition(clusterId, connectId, definition))
-        .then(() => {
-          toast.success(`Definition '${definition}' is deleted`);
-          this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
-            this.getConnectDefinitions();
-          });
-        })
-        .catch(() => {
-          this.setState({ showDeleteModal: false, topicToDelete: {} });
+      .then(() => {
+        toast.success(`Definition '${definition}' is deleted`);
+        this.setState({ showDeleteModal: false, definitionToDelete: '' }, () => {
+          this.getConnectDefinitions();
         });
+      })
+      .catch(() => {
+        this.setState({ showDeleteModal: false, topicToDelete: {} });
+      });
   };
 
   handleData = data => {
@@ -198,7 +203,8 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } =
+      this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 
@@ -206,22 +212,22 @@ class ConnectList extends Root {
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
         <nav
-            className="navbar navbar-expand-lg navbar-light bg-light mr-auto
+          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
         >
           <SearchBar
-              showSearch={true}
-              search={searchData.search}
-              showPagination={true}
-              pagination={pageNumber}
-              doSubmit={this.handleSearch}
+            showSearch={true}
+            search={searchData.search}
+            showPagination={true}
+            pagination={pageNumber}
+            doSubmit={this.handleSearch}
           />
 
           <Pagination
-              pageNumber={pageNumber}
-              totalPageNumber={totalPageNumber}
-              onChange={handlePageChange}
-              onSubmit={this.handlePageChangeSubmission}
+            pageNumber={pageNumber}
+            totalPageNumber={totalPageNumber}
+            onChange={handlePageChange}
+            onSubmit={this.handlePageChangeSubmission}
           />
         </nav>
 
@@ -305,16 +311,17 @@ class ConnectList extends Root {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}` }
+          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}`}
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}
           extraRow
           noStripes
           onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
+            return Object.keys(obj.headers).map((header, i) => {
               return (
                 <tr
+                  key={i}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',

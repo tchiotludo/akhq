@@ -1,7 +1,7 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class AclGroups extends Root {
   state = {

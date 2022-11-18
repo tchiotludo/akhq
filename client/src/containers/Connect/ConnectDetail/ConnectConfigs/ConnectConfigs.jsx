@@ -85,14 +85,14 @@ class ConnectConfigs extends Form {
 
   getTransformAdditionalProperties() {
     const { configs } = this.state;
-    const filtered = Object.keys(configs).filter(configKey => configKey.startsWith('transforms.'))
-        .reduce((obj, configKey) => {
-          obj[configKey] = configs[configKey];
-          return obj;
-        }, {});
+    const filtered = Object.keys(configs)
+      .filter(configKey => configKey.startsWith('transforms.'))
+      .reduce((obj, configKey) => {
+        obj[configKey] = configs[configKey];
+        return obj;
+      }, {});
     return JSON.stringify(filtered, null, 2);
-  };
-
+  }
 
   handleDefinition = definition => {
     let def = '';
@@ -201,7 +201,11 @@ class ConnectConfigs extends Form {
             className="form-control"
             value={formData[plugin.name]}
             name={plugin.name}
-            disabled={plugin.name === 'name' || plugin.name === 'connector.class' || !(roles.connect && roles.connect['connect/update']) }
+            disabled={
+              plugin.name === 'name' ||
+              plugin.name === 'connector.class' ||
+              !(roles.connect && roles.connect['connect/update'])
+            }
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
               let { formData } = this.state;
@@ -254,7 +258,7 @@ class ConnectConfigs extends Form {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr className="bg-primary">
+      <tr key={0} className="bg-primary">
         <td colSpan="3">{group[0].group}</td>
       </tr>
     ];
@@ -363,7 +367,7 @@ class ConnectConfigs extends Form {
     await this.postApi(uriUpdateDefinition(clusterId, connectId, definitionId), body);
 
     history.push({
-      pathname: `/ui/${clusterId}/connect/${connectId}`,
+      pathname: `/ui/${clusterId}/connect/${connectId}`
     });
 
     toast.success(`${`Definition '${formData.name}' is updated`}`);

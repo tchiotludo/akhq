@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './styles.scss';
 
 const Pagination = ({
@@ -12,10 +13,6 @@ const Pagination = ({
 }) => {
   if (editPageNumber === undefined) {
     editPageNumber = true;
-  }
-
-  if (totalRecords !== undefined) {
-
   }
 
   return (
@@ -64,5 +61,15 @@ const Pagination = ({
     </ul>
   );
 };
+
+Pagination.propTypes = {
+ pageNumber: PropTypes.number,
+ totalPageNumber: PropTypes.number,
+ totalRecords: PropTypes.number,
+ onChange: PropTypes.func,
+ onSubmit: PropTypes.func,
+ editPageNumber: PropTypes.bool,
+ showTotalPageNumber: PropTypes.bool
+}
 
 export default Pagination;

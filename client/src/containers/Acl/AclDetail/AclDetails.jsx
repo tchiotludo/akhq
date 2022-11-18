@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
 import AclClusters from './AclClusters/AclClusters';
 import AclTransactionalIds from './AclTransactionalIds/AclTransactionalIds';
-import {getSelectedTab} from "../../../utils/functions";
+import {getSelectedTab} from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 
 class AclDetails extends Component {
@@ -29,7 +30,7 @@ class AclDetails extends Component {
     );
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       const tabSelected = getSelectedTab(this.props, this.tabs);
       this.setState({ selectedTab: tabSelected });
@@ -117,6 +118,13 @@ class AclDetails extends Component {
       </div>
     );
   }
+}
+
+AclDetails.propTypes = {
+  match: PropTypes.object,
+  location: PropTypes.object,
+  history: PropTypes.object,
+
 }
 
 export default AclDetails;

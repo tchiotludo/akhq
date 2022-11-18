@@ -13,7 +13,7 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
+import Root from '../../../components/Root';
 
 class ConnectCreate extends Root {
   state = {
@@ -243,7 +243,7 @@ class ConnectCreate extends Root {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr className="bg-primary">
+      <tr key={0} className="bg-primary">
         <td colSpan="3">{group[0].group}</td>
       </tr>
     ];
