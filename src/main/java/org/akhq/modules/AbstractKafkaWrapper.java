@@ -87,10 +87,17 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void createTopics(String clusterId, String name, int partitions, short replicationFactor) throws ExecutionException {
+    public void createTopics(String clusterId, String name, int partitions, short replicationFactor,
+        List<org.akhq.models.Config> configs) throws ExecutionException {
+        Map<String, String> kafkaTopicConfigs = new HashMap<>();
+
+        configs.forEach(c-> kafkaTopicConfigs.put(c.getName(), c.getValue()));
+
+        NewTopic topic = new NewTopic(name, partitions, replicationFactor).configs(kafkaTopicConfigs);
+
         Logger.call(kafkaModule
             .getAdminClient(clusterId)
-            .createTopics(Collections.singleton(new NewTopic(name, partitions, replicationFactor)))
+            .createTopics(Collections.singleton(topic))
             .all(),
             "Create Topics",
             Collections.singletonList(name)

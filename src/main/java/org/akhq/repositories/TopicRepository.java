@@ -137,9 +137,7 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public void create(String clusterId, String name, int partitions, short replicationFactor, List<org.akhq.models.Config> configs) throws ExecutionException, InterruptedException {
-        kafkaWrapper.createTopics(clusterId, name, partitions, replicationFactor);
-        checkIfTopicExists(clusterId, name);
-        configRepository.updateTopic(clusterId, name, configs);
+        kafkaWrapper.createTopics(clusterId, name, partitions, replicationFactor, configs);
     }
 
     public void delete(String clusterId, String name) throws ExecutionException, InterruptedException {
