@@ -130,20 +130,30 @@ class TopicRepositoryTest extends AbstractTest {
 
     @Test
     void create() throws ExecutionException, InterruptedException {
-        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "create", 8, (short) 1, Collections.singletonList(
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "createEmptyConfig", 8, (short) 1, Collections.emptyList()
+        );
+
+        assertEquals(8, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "createEmptyConfig").getPartitions().size());
+
+        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "createEmptyConfig");
+    }
+
+    @Test
+    void createWithConfig() throws ExecutionException, InterruptedException {
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "createWithConfig", 8, (short) 1, Collections.singletonList(
                 new Config(TopicConfig.SEGMENT_MS_CONFIG, "1000")
         ));
 
-        Optional<String> option = configRepository.findByTopic(KafkaTestCluster.CLUSTER_ID, "create")
+        Optional<String> option = configRepository.findByTopic(KafkaTestCluster.CLUSTER_ID, "createWithConfig")
                 .stream()
                 .filter(r -> r.getName().equals(TopicConfig.SEGMENT_MS_CONFIG))
                 .findFirst()
                 .map(Config::getValue);
 
-        assertEquals(8, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "create").getPartitions().size());
+        assertEquals(8, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "createWithConfig").getPartitions().size());
         assertEquals("1000", option.get());
 
-        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "create");
+        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "createWithConfig");
     }
 
     @Test
