@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class SchemaVersions extends Root {
   state = {
@@ -29,14 +29,16 @@ class SchemaVersions extends Root {
   }
 
   handleData(schemas) {
-
     if (schemas) {
       let data = schemas.map(schema => {
         return {
           id: schema.id,
           version: schema.version,
           schemaType: schema.schemaType,
-          schema: "PROTOBUF" === schema.schemaType ? schema.schema : JSON.stringify(JSON.parse(schema.schema), null, 2)
+          schema:
+            'PROTOBUF' === schema.schemaType
+              ? schema.schema
+              : JSON.stringify(JSON.parse(schema.schema), null, 2)
         };
       });
       this.setState({ data, loading: false });
@@ -82,7 +84,7 @@ class SchemaVersions extends Root {
       uriDeleteSchemaVersion(selectedCluster, selectedSchema, schemaToDelete.version),
       deleteData
     )
-      .then(res => {
+      .then(() => {
         toast.success(`Version'${schemaToDelete.version}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
         history.push({
@@ -145,7 +147,9 @@ class SchemaVersions extends Root {
                 return (
                   <pre className="mb-0 khq-data-highlight">
                     <code>
-                    {obj["schemaType"] === "PROTOBUF" ? obj[col.accessor] : JSON.stringify(JSON.parse(obj[col.accessor]))}
+                      {obj['schemaType'] === 'PROTOBUF'
+                        ? obj[col.accessor]
+                        : JSON.stringify(JSON.parse(obj[col.accessor]))}
                     </code>
                   </pre>
                 );
@@ -167,9 +171,10 @@ class SchemaVersions extends Root {
           extraRow
           noStripes
           onExpand={obj => {
-            return Object.keys(obj.headers).map(header => {
+            return Object.keys(obj.headers).map((header, i) => {
               return (
                 <tr
+                  key={i}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -209,7 +214,6 @@ class SchemaVersions extends Root {
           handleConfirm={this.deleteSchemaRegistry}
           message={this.state.deleteMessage}
         />
-
       </div>
     );
   }

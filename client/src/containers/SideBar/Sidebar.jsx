@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
@@ -330,6 +331,17 @@ class Sidebar extends Component {
       </SideNav>
     );
   }
+}
+
+Sidebar.propTypes = {
+  history: PropTypes.object,
+  match: PropTypes.object,
+  location: PropTypes.object,
+  clusters: PropTypes.array,
+  children: PropTypes.any,
+  expanded: PropTypes.bool,
+  toggleSidebar: PropTypes.func,
+  selectedTab: PropTypes.string,
 }
 
 export default withRouter(Sidebar);

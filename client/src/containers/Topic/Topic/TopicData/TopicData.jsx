@@ -8,7 +8,8 @@ import {
   uriSchemaId,
   uriTopicData,
   uriTopicDataDelete,
-  uriTopicDataSearch, uriTopicDataSingleRecord,
+  uriTopicDataSearch,
+  uriTopicDataSingleRecord,
   uriTopicsPartitions,
   basePath
 } from '../../../../utils/endpoints';
@@ -28,9 +29,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import DateTime from '../../../../components/DateTime';
 import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
-import { setProduceToTopicValues, setUIOptions} from '../../../../utils/localstorage';
+import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
-import * as LosslessJson from 'lossless-json'
+import * as LosslessJson from 'lossless-json';
 
 class TopicData extends Root {
   state = {
@@ -42,10 +43,10 @@ class TopicData extends Root {
     offsetsOptions: [],
     timestamp: '',
     search: {
-      key: { text: '', type: 'C'},
-      value: { text: '', type: 'C'},
-      headerKey: { text: '', type: 'C'},
-      headerValue: { text: '', type: 'C'}
+      key: { text: '', type: 'C' },
+      value: { text: '', type: 'C' },
+      headerKey: { text: '', type: 'C' },
+      headerValue: { text: '', type: 'C' }
     },
     offsets: {},
     offsetsSearch: '',
@@ -82,7 +83,8 @@ class TopicData extends Root {
     {
       _id: 'E',
       name: 'Equals'
-    }];
+    }
+  ];
 
   eventSource;
 
@@ -97,32 +99,40 @@ class TopicData extends Root {
 
   async _checkProps() {
     const { clusterId, topicId } = this.props.match.params;
-    const query =  new URLSearchParams(this.props.location.search);
+    const query = new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
 
-    this.setState((prevState) =>
-        ({
-          selectedCluster: clusterId,
-          selectedTopic: topicId,
-          sortBy: (query.get('sort'))? query.get('sort') : (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)?
-              uiOptions.topicData.sort : this.state.sortBy,
-          partition: (query.get('partition'))? query.get('partition') : this.state.partition,
-          datetime: (query.get('timestamp'))? new Date(query.get('timestamp')) : this.state.datetime,
-          offsetsSearch: (query.get('after'))? query.get('after') : this.state.offsetsSearch,
-          search: this._buildSearchFromQueryString(query),
-          offsets: (query.get('offset'))? this._getOffsetsByOffset(query.get('partition'), query.get('offset')) :
-              ((query.get('after'))? this._getOffsetsByAfterString(query.get('after')): this.state.offsets),
-          dateTimeFormat: (uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat)?
-              uiOptions.topicData.dateTimeFormat : prevState.dateTimeFormat
-        }),
-        () => {
-            if(query.get('single') !== null) {
-              this._getSingleMessage(query.get('partition'), query.get('offset'));
-              this.setState({ canDownload: true })
-            } else {
-              this._getMessages();
-            }
+    this.setState(
+      prevState => ({
+        selectedCluster: clusterId,
+        selectedTopic: topicId,
+        sortBy: query.get('sort')
+          ? query.get('sort')
+          : uiOptions && uiOptions.topicData && uiOptions.topicData.sort
+          ? uiOptions.topicData.sort
+          : this.state.sortBy,
+        partition: query.get('partition') ? query.get('partition') : this.state.partition,
+        datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : this.state.datetime,
+        offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
+        search: this._buildSearchFromQueryString(query),
+        offsets: query.get('offset')
+          ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
+          : query.get('after')
+          ? this._getOffsetsByAfterString(query.get('after'))
+          : this.state.offsets,
+        dateTimeFormat:
+          uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat
+            ? uiOptions.topicData.dateTimeFormat
+            : prevState.dateTimeFormat
+      }),
+      () => {
+        if (query.get('single') !== null) {
+          this._getSingleMessage(query.get('partition'), query.get('offset'));
+          this.setState({ canDownload: true });
+        } else {
+          this._getMessages();
         }
+      }
     );
   }
 
@@ -131,7 +141,7 @@ class TopicData extends Root {
 
     Object.keys(search).forEach(value => {
       const searchFilter = query.get(`searchBy${capitalizeTxt(value)}`);
-      if(searchFilter) {
+      if (searchFilter) {
         const pos = searchFilter.lastIndexOf('_');
         search[value].text = searchFilter.substr(0, pos);
         search[value].type = searchFilter.substr(pos + 1);
@@ -140,46 +150,64 @@ class TopicData extends Root {
     return search;
   }
 
-  _startEventSource = (changePage) => {
+  _startEventSource = changePage => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
     let lastPercentVal = 0.0;
     const percentUpdateDelta = 0.5;
 
     let self = this;
-    this.setState({ messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 }, () => {
-      const filters = this._buildFilters();
-      if (changePage) {
-        this._setUrlHistory(filters + '&after=' + nextPage );
-      } else {
-        this._setUrlHistory(filters);
+    this.setState(
+      { messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 },
+      () => {
+        const filters = this._buildFilters();
+        if (changePage) {
+          this._setUrlHistory(filters + '&after=' + nextPage);
+        } else {
+          this._setUrlHistory(filters);
+        }
+        this.eventSource = new EventSource(
+          uriTopicDataSearch(
+            selectedCluster,
+            selectedTopic,
+            filters,
+            changePage ? nextPage : undefined
+          )
+        );
+
+        this.eventSource.addEventListener('searchBody', function (e) {
+          const res = JSON.parse(e.data);
+          const records = res.records || [];
+          const nextPage = res.after ? res.after : self.state.nextPage;
+
+          const percentDiff = res.percent - lastPercentVal;
+
+          // to avoid UI slowdowns, only update the percentage in fixed increments
+          if (percentDiff >= percentUpdateDelta) {
+            lastPercentVal = res.percent;
+            self.setState({
+              nextPage,
+              recordCount: self.state.recordCount + records.length,
+              percent: res.percent.toFixed(2)
+            });
+          }
+
+          if (records.length) {
+            const tableMessages = self._handleMessages(
+              records,
+              true,
+              self.state.sortBy === 'Oldest'
+            );
+            self.setState({ messages: tableMessages });
+          }
+        });
+
+        this.eventSource.addEventListener('searchEnd', function () {
+          self.eventSource.close();
+          self.setState({ percent: 100, isSearching: false, loading: false });
+        });
       }
-      this.eventSource = new EventSource(uriTopicDataSearch(selectedCluster, selectedTopic, filters, (changePage)? nextPage: undefined));
-
-      this.eventSource.addEventListener('searchBody', function(e) {
-        const res = JSON.parse(e.data);
-        const records = res.records || [];
-        const nextPage = (res.after) ? res.after : self.state.nextPage;
-
-        const percentDiff = res.percent - lastPercentVal;
-
-        // to avoid UI slowdowns, only update the percentage in fixed increments
-        if(percentDiff >= percentUpdateDelta) {
-          lastPercentVal = res.percent;
-          self.setState({ nextPage, recordCount: self.state.recordCount + records.length , percent: res.percent.toFixed(2) });
-        }
-
-        if(records.length) {
-          const tableMessages = self._handleMessages(records, true, self.state.sortBy === "Oldest");
-          self.setState({messages: tableMessages});
-        }
-      });
-
-      this.eventSource.addEventListener('searchEnd', function(e) {
-        self.eventSource.close();
-        self.setState({ percent: 100, isSearching: false, loading: false });
-      });
-    });
+    );
   };
 
   _stopEventSource = () => {
@@ -190,15 +218,20 @@ class TopicData extends Root {
   };
 
   _clearSearch = () => {
-    this.setState({ search: {
-        key: { text: '', type: 'C'},
-        value: { text: '', type: 'C'},
-        headerKey: { text: '', type: 'C'},
-        headerValue: { text: '', type: 'C'}
-      } }, () => {
+    this.setState(
+      {
+        search: {
+          key: { text: '', type: 'C' },
+          value: { text: '', type: 'C' },
+          headerKey: { text: '', type: 'C' },
+          headerValue: { text: '', type: 'C' }
+        }
+      },
+      () => {
         this._searchMessages();
-    });
-  }
+      }
+    );
+  };
 
   _hasAnyFilterFilled() {
     const { search } = this.state;
@@ -206,13 +239,7 @@ class TopicData extends Root {
   }
 
   _buildFilters() {
-    const {
-      sortBy,
-      partition,
-      datetime,
-      offsetsSearch,
-      search
-    } = this.state;
+    const { sortBy, partition, datetime, offsetsSearch, search } = this.state;
 
     const filters = [];
 
@@ -222,30 +249,36 @@ class TopicData extends Root {
 
     if (datetime) {
       let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-      timestamp = formatDateTime(
-            {
-              year: timestamp.year(),
-              monthValue: timestamp.month(),
-              dayOfMonth: timestamp.date(),
-              hour: timestamp.hour(),
-              minute: timestamp.minute(),
-              second: timestamp.second(),
-              milli: timestamp.millisecond()
-            },
-            'YYYY-MM-DDTHH:mm:ss.SSS',
-            true
-          ) + 'Z';
+      timestamp =
+        formatDateTime(
+          {
+            year: timestamp.year(),
+            monthValue: timestamp.month(),
+            dayOfMonth: timestamp.date(),
+            hour: timestamp.hour(),
+            minute: timestamp.minute(),
+            second: timestamp.second(),
+            milli: timestamp.millisecond()
+          },
+          'YYYY-MM-DDTHH:mm:ss.SSS',
+          true
+        ) + 'Z';
       filters.push(`timestamp=${timestamp}`);
     }
 
-    Object.keys(search).filter(value => search[value].text.length > 0)
-               .forEach(value => {
-                    filters.push(`searchBy${capitalizeTxt(value)}=${encodeURIComponent(search[value].text)}_${search[value].type}`)
-                })
+    Object.keys(search)
+      .filter(value => search[value].text.length > 0)
+      .forEach(value => {
+        filters.push(
+          `searchBy${capitalizeTxt(value)}=${encodeURIComponent(search[value].text)}_${
+            search[value].type
+          }`
+        );
+      });
     return filters.join('&');
   }
 
-  _searchMessages(changePage = false){
+  _searchMessages(changePage = false) {
     this._stopEventSource();
     if (this._hasAnyFilterFilled()) {
       this._startEventSource(changePage);
@@ -255,27 +288,24 @@ class TopicData extends Root {
   }
 
   _getSingleMessage(partition, offset) {
-    const {
-      selectedCluster,
-      selectedTopic,
-    } = this.state;
+    const { selectedCluster, selectedTopic } = this.state;
 
-    const requests = [this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
-                      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))];
+    const requests = [
+      this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
+      this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))
+    ];
 
     this._fetchMessages(requests);
   }
 
   _getMessages(changePage = false) {
-    const {
-      selectedCluster,
-      selectedTopic,
-      nextPage
-    } = this.state;
+    const { selectedCluster, selectedTopic, nextPage } = this.state;
 
     const filters = this._buildFilters();
     const requests = [
-      this.getApi(uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)),
+      this.getApi(
+        uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)
+      ),
       this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic))
     ];
 
@@ -289,85 +319,79 @@ class TopicData extends Root {
   }
 
   _fetchMessages(requests, changePage = false) {
-    const {
-      nextPage,
-      pageNumber,
-      partitionCount,
-      recordCount,
-      offsets
-    } = this.state;
+    const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
 
-    Promise.all(requests)
-      .then(data => {
-        let tableMessages = [],
-            pageNumberTemp, offsetsTemp, partitionCountTemp, nextPageTemp, recordCountTemp;
+    Promise.all(requests).then(data => {
+      let tableMessages = [],
+        pageNumberTemp,
+        offsetsTemp,
+        partitionCountTemp,
+        nextPageTemp,
+        recordCountTemp;
 
-        const messagesData = data[0].data;
-        const partitionData = data[1].data;
+      const messagesData = data[0].data;
+      const partitionData = data[1].data;
 
-        if (messagesData.results) {
-          tableMessages = this._handleMessages(messagesData.results);
-        } else {
-          pageNumberTemp = 1;
+      if (messagesData.results) {
+        tableMessages = this._handleMessages(messagesData.results);
+      } else {
+        pageNumberTemp = 1;
+      }
+      if (partitionData) {
+        if (changePage) {
+          offsetsTemp = this._getNextPageOffsets(nextPage);
         }
-        if (partitionData) {
-          if (changePage) {
-            offsetsTemp = this._getNextPageOffsets(nextPage);
-          }
-          partitionCountTemp = partitionData.length;
-          nextPageTemp = messagesData.after;
-          recordCountTemp = messagesData.size;
-        }
-        this.setState({
-          messages: tableMessages,
-          canDeleteRecords: messagesData.canDeleteRecords,
-          pageNumber: (pageNumberTemp) ? pageNumberTemp : pageNumber,
-          partitionCount: (partitionCountTemp) ? partitionCountTemp : partitionCount,
-          nextPage: (nextPageTemp) ? nextPageTemp : nextPage,
-          recordCount: (recordCountTemp) ? recordCountTemp : recordCount,
-          offsets: (offsetsTemp) ? offsetsTemp : offsets,
-          loading: false
-        });
+        partitionCountTemp = partitionData.length;
+        nextPageTemp = messagesData.after;
+        recordCountTemp = messagesData.size;
+      }
+      this.setState({
+        messages: tableMessages,
+        canDeleteRecords: messagesData.canDeleteRecords,
+        pageNumber: pageNumberTemp ? pageNumberTemp : pageNumber,
+        partitionCount: partitionCountTemp ? partitionCountTemp : partitionCount,
+        nextPage: nextPageTemp ? nextPageTemp : nextPage,
+        recordCount: recordCountTemp ? recordCountTemp : recordCount,
+        offsets: offsetsTemp ? offsetsTemp : offsets,
+        loading: false
+      });
     });
   }
 
   _handleOnDelete(message) {
     this.setState({ compactMessageToDelete: message }, () => {
       this._showDeleteModal(
-          <React.Fragment>
-            Do you want to delete message: {<code>{message.key}</code>} ?
-          </React.Fragment>
+        <React.Fragment>
+          Do you want to delete message: {<code>{message.key}</code>} ?
+        </React.Fragment>
       );
     });
   }
 
   _copyToClipboard(code) {
-    const textField = document.createElement('textarea')
-    textField.innerText = code
-    document.body.appendChild(textField)
-    textField.select()
-    document.execCommand('copy')
-    textField.remove()
+    const textField = document.createElement('textarea');
+    textField.innerText = code;
+    document.body.appendChild(textField);
+    textField.select();
+    document.execCommand('copy');
+    textField.remove();
   }
 
   _handleOnShare(row) {
-    const {
-      selectedCluster,
-      selectedTopic
-    } = this.state;
+    const { selectedCluster, selectedTopic } = this.state;
 
-    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`;
+    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
 
     try {
-      this._copyToClipboard(`${window.location.host}${pathToShare}`)
+      this._copyToClipboard(`${window.location.host}${pathToShare}`);
       toast.info('Message url is copied to your clipboard!');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
 
-    this.setState({ canDownload: true })
+    this.setState({ canDownload: true });
 
-    this.props.history.push(pathToShare)
+    this.props.history.push(pathToShare);
     this._getSingleMessage(row.partition, row.offset);
   }
 
@@ -375,7 +399,7 @@ class TopicData extends Root {
     const hasKey = key && key !== null && key !== 'null';
 
     const a = document.createElement('a');
-    a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
+    a.href = URL.createObjectURL(new Blob([data], { type: 'text/json' }));
     a.download = `${hasKey ? key : 'file'}.json`;
 
     a.click();
@@ -384,33 +408,33 @@ class TopicData extends Root {
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
     const { clusterId } = this.props.match.params;
-    this.setState(({
+    this.setState({
       dateTimeFormat: newDateTimeFormat
-    }));
+    });
     const currentUiOptions = await getClusterUIOptions(clusterId);
     const newUiOptions = {
       ...currentUiOptions,
       topicData: {
-        ...(currentUiOptions.topicData),
+        ...currentUiOptions.topicData,
         dateTimeFormat: newDateTimeFormat
       }
-    }
+    };
     setUIOptions(clusterId, newUiOptions);
   }
 
   _handleCopy(row) {
-    const data =  {
+    const data = {
       partition: row.partition,
       key: row.key,
       header: row.headers,
       keySchemaId: row.schema.key,
       valueSchemaId: row.schema.value,
-      value: row.value,
-    }
-    setProduceToTopicValues(data)
+      value: row.value
+    };
+    setProduceToTopicValues(data);
 
     const { clusterId, topicId } = this.props.match.params;
-    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`)
+    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`);
   }
 
   _showDeleteModal = deleteMessage => {
@@ -427,18 +451,20 @@ class TopicData extends Root {
     const encodedkey = new Buffer(message.key).toString('base64');
     const deleteData = { partition: parseInt(message.partition), key: encodedkey };
     this.removeApi(
-        uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
-        deleteData
+      uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
+      deleteData
     )
-        .then(() => {
-          toast.success(`Record '${message.partition}-${message.offset}' will be deleted on compaction`);
-          this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
-            this._getMessages();
-          });
-        })
-        .catch(() => {
-          this.setState({ showDeleteModal: false, messageToDelete: {} });
+      .then(() => {
+        toast.success(
+          `Record '${message.partition}-${message.offset}' will be deleted on compaction`
+        );
+        this.setState({ showDeleteModal: false, compactMessageToDelete: '' }, () => {
+          this._getMessages();
         });
+      })
+      .catch(() => {
+        this.setState({ showDeleteModal: false, messageToDelete: {} });
+      });
   };
 
   _handleMessages = (messages, append = false, insertAtEnd = true) => {
@@ -447,7 +473,7 @@ class TopicData extends Root {
       let messageToPush = {
         key: message.key || '',
         value: message.truncated
-          ? message.value + '...\nToo large message. Full body in share button.'  || ''
+          ? message.value + '...\nToo large message. Full body in share button.' || ''
           : message.value || '',
         timestamp: message.timestamp,
         partition: JSON.stringify(message.partition) || '',
@@ -466,13 +492,13 @@ class TopicData extends Root {
     return tableMessages;
   };
 
-  _getNextPageOffsets = (nextPage) => {
+  _getNextPageOffsets = nextPage => {
     let aux = nextPage.substring(nextPage.indexOf('after=') + 6);
     let afterString = aux.substring(0, aux.indexOf('&'));
     return this._getOffsetsByAfterString(afterString);
   };
 
-  _getOffsetsByAfterString = (afterString) => {
+  _getOffsetsByAfterString = afterString => {
     let offsets = [];
     const offsetsByPartition = afterString.split('_');
 
@@ -481,13 +507,13 @@ class TopicData extends Root {
       offsets[`partition${offset[0]}`] = offset[1];
     });
     return offsets;
-  }
+  };
 
   _getOffsetsByOffset = (partition, offset) => {
     let offsets = [];
     offsets[`partition${partition}`] = offset;
     return offsets;
-  }
+  };
 
   _createPartitionOptions = () => {
     const { partitionCount } = this.state;
@@ -507,11 +533,8 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  _setUrlHistory(filters){
-    const {
-      selectedCluster,
-      selectedTopic
-    } = this.state;
+  _setUrlHistory(filters) {
+    const { selectedCluster, selectedTopic } = this.state;
 
     this.props.history.push({
       pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
@@ -522,17 +545,16 @@ class TopicData extends Root {
   _redirectToSchema(id) {
     const { selectedCluster } = this.state;
 
-    this.getApi(uriSchemaId(selectedCluster, id))
-      .then(response => {
-        if (response.data) {
-          this.props.history.push({
-            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
-            schemaId: response.data.subject
-          });
-        } else {
-          toast.warn(`Unable to find the registry schema with id  ${id} !`);
-        }
-      })
+    this.getApi(uriSchemaId(selectedCluster, id)).then(response => {
+      if (response.data) {
+        this.props.history.push({
+          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+          schemaId: response.data.subject
+        });
+      } else {
+        toast.warn(`Unable to find the registry schema with id  ${id} !`);
+      }
+    });
   }
 
   _renderSortOptions() {
@@ -541,14 +563,16 @@ class TopicData extends Root {
     let renderedOptions = [];
     for (let option of sortOptions) {
       renderedOptions.push(
-          <Dropdown.Item
-              key={option}
-              onClick={() => this.setState({ sortBy: option }, () => {
-                this._clearSearch();
-              })}
-          >
-            <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
-          </Dropdown.Item>
+        <Dropdown.Item
+          key={option}
+          onClick={() =>
+            this.setState({ sortBy: option }, () => {
+              this._clearSearch();
+            })
+          }
+        >
+          <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
+        </Dropdown.Item>
       );
     }
     return renderedOptions;
@@ -560,14 +584,16 @@ class TopicData extends Root {
     let renderedOptions = [];
     for (let option of partitionOptions) {
       renderedOptions.push(
-          <Dropdown.Item
-              key={option}
-              onClick={() => this.setState({ partition: option }, () => {
-                this._searchMessages();
-              })}
-          >
-            <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
-          </Dropdown.Item>
+        <Dropdown.Item
+          key={option}
+          onClick={() =>
+            this.setState({ partition: option }, () => {
+              this._searchMessages();
+            })
+          }
+        >
+          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+        </Dropdown.Item>
       );
     }
     return renderedOptions;
@@ -589,23 +615,23 @@ class TopicData extends Root {
       }
 
       renderedOptions.push(
-          <tr key={option}>
-            <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
-            <td className="offset-navbar-partition-td">
-              <input
-                  className="form-control"
-                  type="number"
-                  min="0"
-                  name={`${i}`}
-                  value={offsets[camelcaseOption]}
-                  onChange={({ currentTarget: input }) => {
-                    let { offsets } = this.state;
-                    offsets[camelcaseOption] = input.value;
-                    this.setState(offsets);
-                  }}
-              />
-            </td>
-          </tr>
+        <tr key={option}>
+          <td className="offset-navbar-partition-label offset-navbar-partition-td">{option} : </td>
+          <td className="offset-navbar-partition-td">
+            <input
+              className="form-control"
+              type="number"
+              min="0"
+              name={`${i}`}
+              value={offsets[camelcaseOption]}
+              onChange={({ currentTarget: input }) => {
+                let { offsets } = this.state;
+                offsets[camelcaseOption] = input.value;
+                this.setState(offsets);
+              }}
+            />
+          </td>
+        </tr>
       );
     }
     return renderedOptions;
@@ -624,30 +650,30 @@ class TopicData extends Root {
     const { search } = this.state;
 
     return (
-        <div className="search-input-fields">
-          <label>{label}</label>
-          <input
-              className="form-control"
-              name={`${name}_text`}
-              type="text"
-              value={search[name].text}
-              onChange={({ currentTarget: input }) => {
-                search[name].text = input.value;
-                this.setState({ search });
-              }}
-          />
-          <Select
-              name={`${name}_select`}
-              selectClass={'col-xs-2'}
-              value={search[name].type}
-              label=""
-              items={this.searchFilterTypes}
-              onChange={value => {
-                search[name].type = value.target.value;
-                this.setState({ search });
-              }}
-          />
-        </div>
+      <div className="search-input-fields">
+        <label>{label}</label>
+        <input
+          className="form-control"
+          name={`${name}_text`}
+          type="text"
+          value={search[name].text}
+          onChange={({ currentTarget: input }) => {
+            search[name].text = input.value;
+            this.setState({ search });
+          }}
+        />
+        <Select
+          name={`${name}_select`}
+          selectClass={'col-xs-2'}
+          value={search[name].type}
+          label=""
+          items={this.searchFilterTypes}
+          onChange={value => {
+            search[name].type = value.target.value;
+            this.setState({ search });
+          }}
+        />
+      </div>
     );
   }
 
@@ -656,48 +682,48 @@ class TopicData extends Root {
 
     return (
       <div style={{ minWidth: '400px' }} className="input-group">
-
         {this._renderSearchFilter('key', 'Key')}
-        {this._renderSearchFilter('value','Value')}
+        {this._renderSearchFilter('value', 'Value')}
         {this._renderSearchFilter('headerKey', 'Header Key')}
         {this._renderSearchFilter('headerValue', 'Header Value')}
 
-        <div style={{display: 'flex' }}>
+        <div style={{ display: 'flex' }}>
           <button
-              className="btn btn-primary inline-block search"
-              type="button"
-              onClick={() => this._searchMessages() }
+            className="btn btn-primary inline-block search"
+            type="button"
+            onClick={() => this._searchMessages()}
           >
             {isSearching ? (
-                <i className="fa fa-spinner fa-spin"></i>
+              <i className="fa fa-spinner fa-spin"></i>
             ) : (
-                <i className="fa fa-search"></i>
+              <i className="fa fa-search"></i>
             )}
           </button>
           <button
-              className="btn btn-primary btn-border inline-block"
-              type="button"
-              disabled={!isSearching}
-              onClick={() => this._stopEventSource()}
+            className="btn btn-primary btn-border inline-block"
+            type="button"
+            disabled={!isSearching}
+            onClick={() => this._stopEventSource()}
           >
             Stop
           </button>
           <button
-              className="btn btn-primary btn-border inline-block"
-              type="button"
-              disabled={isSearching}
-              onClick={() => this._clearSearch()}
+            className="btn btn-primary btn-border inline-block"
+            type="button"
+            disabled={isSearching}
+            onClick={() => this._clearSearch()}
           >
             Clear
           </button>
         </div>
-    </div>);
+      </div>
+    );
   }
 
   _renderCurrentSearchText() {
     const { search } = this.state;
     const filterKey = Object.keys(search).find(value => search[value].text.length > 0);
-    return (filterKey !== undefined)? search[filterKey].text : '';
+    return filterKey !== undefined ? search[filterKey].text : '';
   }
 
   render() {
@@ -717,9 +743,9 @@ class TopicData extends Root {
       loading
     } = this.state;
 
-    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY]
-    if (canDeleteRecords) actions.push(constants.TABLE_DELETE)
-    if (canDownload) actions.push(constants.TABLE_DOWNLOAD)
+    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
+    if (canDeleteRecords) actions.push(constants.TABLE_DELETE);
+    if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
     let date = moment(datetime);
     const { history } = this.props;
@@ -733,80 +759,82 @@ class TopicData extends Root {
       { colName: 'Schema', colSpan: 1 }
     ];
     return (
-        <React.Fragment>
-          <nav
-              className="navbar navbar-expand-lg navbar-light bg-light
+      <React.Fragment>
+        <nav
+          className="navbar navbar-expand-lg navbar-light bg-light
          mr-auto khq-data-filter khq-sticky khq-nav"
+        >
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#topic-data"
+            aria-controls="topic-data"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+            onClick={() => {
+              this._openAndCloseFilters();
+            }}
           >
-            <button
-                className="navbar-toggler"
-                type="button"
-                data-toggle="collapse"
-                data-target="#topic-data"
-                aria-controls="topic-data"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-                onClick={() => {
-                  this._openAndCloseFilters();
+            <span className="navbar-toggler-icon" />
+          </button>
+
+          <nav className="pagination-data">
+            <div>
+              <Pagination
+                pageNumber={pageNumber}
+                totalRecords={recordCount}
+                totalPageNumber={messages.length === 0 ? pageNumber : undefined}
+                onChange={({ currentTarget: input }) => {
+                  this.setState({ pageNumber: input.value });
                 }}
-            >
-              <span className="navbar-toggler-icon" />
-            </button>
+                onSubmit={() => {
+                  this.setState(
+                    {
+                      pageNumber: pageNumber + 1
+                    },
+                    () => {
+                      this._searchMessages(true);
+                    }
+                  );
+                }}
+                editPageNumber={false}
+                showTotalPageNumber={false}
+              />
+            </div>
+          </nav>
 
-            <nav className="pagination-data">
-              <div>
-                <Pagination
-                    pageNumber={pageNumber}
-                    totalRecords={recordCount}
-                    totalPageNumber={messages.length === 0 ? pageNumber : undefined}
-                    onChange={({ currentTarget: input }) => {
-                      this.setState({ pageNumber: input.value });
-                    }}
-                    onSubmit={() => {
-                      this.setState(
-                          {
-                            pageNumber: pageNumber + 1
-                          },
-                          () => {
-                            this._searchMessages(true);
-                          }
-                      );
-                    }}
-                    editPageNumber={false}
-                    showTotalPageNumber={false}
-                />
-              </div>
-            </nav>
-
-            <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
-              <ul className="navbar-nav mr-auto">
-                <li className="nav-item dropdown">
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Sort:</strong> ({sortBy})
-                    </Dropdown.Toggle>
-                    {!loading && <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>}
-                  </Dropdown>
-                </li>
-                <li className="nav-item dropdown">
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Partition:</strong> ({partition})
-                    </Dropdown.Toggle>
-                    {!loading && <Dropdown.Menu>
+          <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Sort:</strong> ({sortBy})
+                  </Dropdown.Toggle>
+                  {!loading && <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>}
+                </Dropdown>
+              </li>
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Partition:</strong> ({partition})
+                  </Dropdown.Toggle>
+                  {!loading && (
+                    <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      {this._renderPartitionOptions()}
+                        {this._renderPartitionOptions()}
                       </div>
-                    </Dropdown.Menu>}
-                  </Dropdown>
-                </li>
-                <li className="nav-item dropdown">
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Timestamp:</strong>
-                      {(datetime !== '' &&
+                    </Dropdown.Menu>
+                  )}
+                </Dropdown>
+              </li>
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Timestamp:</strong>
+                    {datetime !== '' &&
                       ' ' +
-                      formatDateTime(
+                        formatDateTime(
                           {
                             year: date.year(),
                             monthValue: date.month(),
@@ -816,314 +844,317 @@ class TopicData extends Root {
                             second: date.second()
                           },
                           'DD-MM-YYYY HH:mm'
-                      ))}
-                    </Dropdown.Toggle>
-                    {!loading && (
-                        <Dropdown.Menu>
-                          <div className="input-group">
-                            <DatePicker
-                                onClear={() => {
-                                  this.setState({ datetime: '' });
-                                }}
-                                showDateTimeInput
-                                showTimeSelect
-                                value={datetime}
-                                onChange={value => {
-                                  this.setState({ datetime: value }, () => {
-                                    this._searchMessages();
-                                  });
-                                }}
-                            />
-                          </div>
-                        </Dropdown.Menu>
-                    )}
-                  </Dropdown>
-                </li>
-                <li className="nav-item dropdown">
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Search:</strong> { this._renderCurrentSearchText() }
-                    </Dropdown.Toggle>
-                    {!loading && (
-                        <Dropdown.Menu>
-                          {this._renderSearchGroup()}
-                        </Dropdown.Menu>
-                    )}
-                  </Dropdown>
-                </li>
-                <li className="nav-item dropdown">
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Offsets:</strong>
-                    </Dropdown.Toggle>
-                    {!loading && (
-                        <Dropdown.Menu>
-                          <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                            <div className="input-group">
-                              <table>{this._renderOffsetsOptions()}</table>
-                              <div className="input-group-append">
-                                <button
-                                    className="btn btn-primary offsets-ok"
-                                    type="button"
-                                    onClick={() => {
-                                      let offsetsSearch = '';
-                                      for (let i = 0; i < Object.keys(offsets).length; i++) {
-                                        if (Object.values(offsets)[i] !== '') {
-                                          if (offsetsSearch !== '') {
-                                            offsetsSearch += '_';
-                                          }
-                                          offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
-                                        }
-                                      }
-                                      this.setState({ offsetsSearch }, () => {
-                                        this._searchMessages();
-                                      });
-                                    }}
-                                >
-                                  OK
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </Dropdown.Menu>
-                    )}
-                  </Dropdown>
-                </li>
-                <li>
-                  <Dropdown>
-                    <Dropdown.Toggle className="nav-link dropdown-toggle">
-                      <strong>Time Format:</strong> ({this.state.dateTimeFormat})
-                    </Dropdown.Toggle>
+                        )}
+                  </Dropdown.Toggle>
+                  {!loading && (
                     <Dropdown.Menu>
-                      <Dropdown.Item onClick={() =>
-                          this._handleOnDateTimeFormatChanged(
-                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
-                          )
-                        }>
-                        Show relative time
-                      </Dropdown.Item>
-                      <Dropdown.Item onClick={() =>
-                          this._handleOnDateTimeFormatChanged(
-                            constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
-                          )
-                        }>
-                        Show ISO timestamp
-                      </Dropdown.Item>
+                      <div className="input-group">
+                        <DatePicker
+                          onClear={() => {
+                            this.setState({ datetime: '' });
+                          }}
+                          showDateTimeInput
+                          showTimeSelect
+                          value={datetime}
+                          onChange={value => {
+                            this.setState({ datetime: value }, () => {
+                              this._searchMessages();
+                            });
+                          }}
+                        />
+                      </div>
                     </Dropdown.Menu>
-                  </Dropdown>
-                </li>
-              </ul>
-            </div>
-          </nav>
-          {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
-          <div className="table-responsive">
-            <Table
-                loading={loading}
-                history={history}
-                reduce={true}
-                firstHeader={firstColumns}
-                columns={[
-                  {
-                    id: 'key',
-                    accessor: 'key',
-                    colName: 'Key',
-                    type: 'text',
-                    cell: (obj, col) => {
-                      let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
-                      return (
-                          <span>
+                  )}
+                </Dropdown>
+              </li>
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Search:</strong> {this._renderCurrentSearchText()}
+                  </Dropdown.Toggle>
+                  {!loading && <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>}
+                </Dropdown>
+              </li>
+              <li className="nav-item dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Offsets:</strong>
+                  </Dropdown.Toggle>
+                  {!loading && (
+                    <Dropdown.Menu>
+                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                        <div className="input-group">
+                          <table>{this._renderOffsetsOptions()}</table>
+                          <div className="input-group-append">
+                            <button
+                              className="btn btn-primary offsets-ok"
+                              type="button"
+                              onClick={() => {
+                                let offsetsSearch = '';
+                                for (let i = 0; i < Object.keys(offsets).length; i++) {
+                                  if (Object.values(offsets)[i] !== '') {
+                                    if (offsetsSearch !== '') {
+                                      offsetsSearch += '_';
+                                    }
+                                    offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
+                                  }
+                                }
+                                this.setState({ offsetsSearch }, () => {
+                                  this._searchMessages();
+                                });
+                              }}
+                            >
+                              OK
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Dropdown.Menu>
+                  )}
+                </Dropdown>
+              </li>
+              <li>
+                <Dropdown>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Time Format:</strong> ({this.state.dateTimeFormat})
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item
+                      onClick={() =>
+                        this._handleOnDateTimeFormatChanged(
+                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+                        )
+                      }
+                    >
+                      Show relative time
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() =>
+                        this._handleOnDateTimeFormatChanged(
+                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                        )
+                      }
+                    >
+                      Show ISO timestamp
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
+        <div className="table-responsive">
+          <Table
+            loading={loading}
+            history={history}
+            reduce={true}
+            firstHeader={firstColumns}
+            columns={[
+              {
+                id: 'key',
+                accessor: 'key',
+                colName: 'Key',
+                type: 'text',
+                cell: (obj, col) => {
+                  let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
+                  return (
+                    <span>
                       <code className="key">{value}</code>
                     </span>
-                      );
-                    }
-                  },
-                  {
-                    id: 'value',
-                    accessor: 'value',
-                    colName: 'Value',
-                    type: 'text',
-                    extraRow: true,
-                    extraRowContent: (obj, index) => {
-                      let value = obj.value;
-                      try {
-                        let json = LosslessJson.parse(obj.value);
-                        value = LosslessJson.stringify(json, undefined, "  ");
-                        // eslint-disable-next-line no-empty
-                      } catch (e) {}
+                  );
+                }
+              },
+              {
+                id: 'value',
+                accessor: 'value',
+                colName: 'Value',
+                type: 'text',
+                extraRow: true,
+                extraRowContent: (obj, index) => {
+                  let value = obj.value;
+                  try {
+                    let json = LosslessJson.parse(obj.value);
+                    value = LosslessJson.stringify(json, undefined, '  ');
+                    // eslint-disable-next-line no-empty
+                  } catch (e) {}
 
-                      return (
-                          <AceEditor
-                              mode="json"
-                              id={'value' + index}
-                              theme="merbivore_soft"
-                              value={value || 'null'}
-                              readOnly
-                              name="UNIQUE_ID_OF_DIV"
-                              editorProps={{ $blockScrolling: true }}
-                              style={{ width: '100%', minHeight: '25vh' }}
-                          />
-                      );
-                    },
-                    cell: obj => {
-                      return (
-                          <div>
-                            {obj.exceptions.length > 0 && (
-                                <div
-                                    className="alert alert-warning"
-                                    role="alert"
-                                    dangerouslySetInnerHTML={{ __html: obj.exceptions.join('<br /><br />')}}>
-                                </div>
-                            )}
-                            <pre className="mb-0 khq-data-highlight">
-                              <code>{obj.value || 'null'}</code>
-                            </pre>
-                          </div>
-                      );
-                    }
-                  },
-                  {
-                    id: 'timestamp',
-                    accessor: 'timestamp',
-                    colName: 'Date',
-                    type: 'text',
-                    cell: (obj, col) => {
-                      return <DateTime
-                        isoDateTimeString={obj[col.accessor]}
-                        dateTimeFormat={this.state.dateTimeFormat}
-                      />;
-                    }
-                  },
-                  {
-                    id: 'partition',
-                    accessor: 'partition',
-                    colName: 'Partition',
-                    type: 'text',
-                    cell: (obj, col) => {
-                      return obj[col.accessor];
-                    }
-                  },
-                  {
-                    id: 'offset',
-                    accessor: 'offset',
-                    colName: 'Offset',
-                    type: 'text',
-                    cell: (obj, col) => {
-                      return obj[col.accessor];
-                    }
-                  },
-                  {
-                    id: 'headers',
-                    accessor: 'headers',
-                    colName: 'Headers',
-                    type: 'text',
-                    expand: true,
-                    cell: obj => {
-                      return <div className="tail-headers">{obj.headers.length}</div>;
-                    }
-                  },
-                  {
-                    id: 'schema',
-                    accessor: 'schema',
-                    colName: 'Schema',
-                    type: 'text',
-                    cell: (obj, col) => {
-                      return (
-                          <div className="justify-items">
-                            {obj[col.accessor].key !== undefined && (
-                                <span
-                                    className="badge badge-primary clickable"
-                                    onClick={() => {
-                                      this._redirectToSchema(obj.schema.key);
-                                    }}
-                                >
+                  return (
+                    <AceEditor
+                      mode="json"
+                      id={'value' + index}
+                      theme="merbivore_soft"
+                      value={value || 'null'}
+                      readOnly
+                      name="UNIQUE_ID_OF_DIV"
+                      editorProps={{ $blockScrolling: true }}
+                      style={{ width: '100%', minHeight: '25vh' }}
+                    />
+                  );
+                },
+                cell: obj => {
+                  return (
+                    <div>
+                      {obj.exceptions.length > 0 && (
+                        <div
+                          className="alert alert-warning"
+                          role="alert"
+                          dangerouslySetInnerHTML={{ __html: obj.exceptions.join('<br /><br />') }}
+                        ></div>
+                      )}
+                      <pre className="mb-0 khq-data-highlight">
+                        <code>{obj.value || 'null'}</code>
+                      </pre>
+                    </div>
+                  );
+                }
+              },
+              {
+                id: 'timestamp',
+                accessor: 'timestamp',
+                colName: 'Date',
+                type: 'text',
+                cell: (obj, col) => {
+                  return (
+                    <DateTime
+                      isoDateTimeString={obj[col.accessor]}
+                      dateTimeFormat={this.state.dateTimeFormat}
+                    />
+                  );
+                }
+              },
+              {
+                id: 'partition',
+                accessor: 'partition',
+                colName: 'Partition',
+                type: 'text',
+                cell: (obj, col) => {
+                  return obj[col.accessor];
+                }
+              },
+              {
+                id: 'offset',
+                accessor: 'offset',
+                colName: 'Offset',
+                type: 'text',
+                cell: (obj, col) => {
+                  return obj[col.accessor];
+                }
+              },
+              {
+                id: 'headers',
+                accessor: 'headers',
+                colName: 'Headers',
+                type: 'text',
+                expand: true,
+                cell: obj => {
+                  return <div className="tail-headers">{obj.headers.length}</div>;
+                }
+              },
+              {
+                id: 'schema',
+                accessor: 'schema',
+                colName: 'Schema',
+                type: 'text',
+                cell: (obj, col) => {
+                  return (
+                    <div className="justify-items">
+                      {obj[col.accessor].key !== undefined && (
+                        <span
+                          className="badge badge-primary clickable"
+                          onClick={() => {
+                            this._redirectToSchema(obj.schema.key);
+                          }}
+                        >
                           Key: {obj[col.accessor].key}
                         </span>
-                            )}
+                      )}
 
-                            {obj[col.accessor].value !== undefined && (
-                                <span
-                                    className="badge badge-primary clickable schema-value"
-                                    onClick={() => {
-                                      this._redirectToSchema(obj.schema.value);
-                                    }}
-                                >
+                      {obj[col.accessor].value !== undefined && (
+                        <span
+                          className="badge badge-primary clickable schema-value"
+                          onClick={() => {
+                            this._redirectToSchema(obj.schema.value);
+                          }}
+                        >
                           Value: {obj[col.accessor].value}
                         </span>
-                            )}
-                          </div>
-                      );
-                    }
-                  }
-                ]}
-                extraRow
-                noStripes
-                data={messages}
-                rowId={data => {
-                  return data.partition + '-' + data.offset;
-                }}
-                updateData={data => {
-                  this.setState({ messages: data });
-                }}
-                onDelete={row => {
-                  this._handleOnDelete(row);
-                }}
-                onShare={row => {
-                  this._handleOnShare(row);
-                }}
-                onDownload={row => {
-                  this._handleDownload(row);
-                }}
-                onCopy={row => {
-                  this._handleCopy(row)
-                }}
-                actions={actions}
-                onExpand={obj => {
-                  return obj.headers.map(header => {
-                    return (
-                        <tr
-                            className={'table-sm'}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'row',
-                              width: '100%'
-                            }}
-                        >
-                          <td
-                              style={{
-                                width: '100%',
-                                display: 'flex',
-                                borderStyle: 'dashed',
-                                borderWidth: '1px',
-                                backgroundColor: '#171819'
-                              }}
-                          >
-                            {header.key}
-                          </td>
-                          <td
-                              style={{
-                                width: '100%',
-                                display: 'flex',
-                                borderStyle: 'dashed',
-                                borderWidth: '1px',
-                                backgroundColor: '#171819'
-                              }}
-                          >
-                            {header.value}
-                          </td>
-                        </tr>
-                    );
-                  });
-                }}
-            />
-          </div>
-
-          <ConfirmModal
-              show={this.state.showDeleteModal}
-              handleCancel={this._closeDeleteModal}
-              handleConfirm={this._deleteCompactMessage}
-              message={this.state.deleteMessage}
+                      )}
+                    </div>
+                  );
+                }
+              }
+            ]}
+            extraRow
+            noStripes
+            data={messages}
+            rowId={data => {
+              return data.partition + '-' + data.offset;
+            }}
+            updateData={data => {
+              this.setState({ messages: data });
+            }}
+            onDelete={row => {
+              this._handleOnDelete(row);
+            }}
+            onShare={row => {
+              this._handleOnShare(row);
+            }}
+            onDownload={row => {
+              this._handleDownload(row);
+            }}
+            onCopy={row => {
+              this._handleCopy(row);
+            }}
+            actions={actions}
+            onExpand={obj => {
+              return obj.headers.map((header, i) => {
+                return (
+                  <tr
+                    key={i}
+                    className={'table-sm'}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      width: '100%'
+                    }}
+                  >
+                    <td
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        borderStyle: 'dashed',
+                        borderWidth: '1px',
+                        backgroundColor: '#171819'
+                      }}
+                    >
+                      {header.key}
+                    </td>
+                    <td
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        borderStyle: 'dashed',
+                        borderWidth: '1px',
+                        backgroundColor: '#171819'
+                      }}
+                    >
+                      {header.value}
+                    </td>
+                  </tr>
+                );
+              });
+            }}
           />
-        </React.Fragment>
+        </div>
+
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this._closeDeleteModal}
+          handleConfirm={this._deleteCompactMessage}
+          message={this.state.deleteMessage}
+        />
+      </React.Fragment>
     );
   }
 }

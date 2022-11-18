@@ -3,7 +3,7 @@ import { uriNodesLogs } from '../../../../utils/endpoints';
 import Table from '../../../../components/Table';
 import { showBytes } from '../../../../utils/converters';
 import { sortBy } from '../../../../utils/constants';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class NodeLogs extends Root {
   state = {

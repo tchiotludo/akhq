@@ -16,10 +16,10 @@ import {
 import './styles.scss';
 import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Dropdown from "react-bootstrap/Dropdown";
-import DatePicker from "../../../components/DatePicker";
-import moment from "moment";
-import Input from "../../../components/Form/Input";
+import Dropdown from 'react-bootstrap/Dropdown';
+import DatePicker from '../../../components/DatePicker';
+import moment from 'moment';
+import Input from '../../../components/Form/Input';
 
 class TopicCopy extends Form {
   state = {

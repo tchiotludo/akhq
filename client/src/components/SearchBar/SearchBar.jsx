@@ -42,10 +42,14 @@ class SearchBar extends Form {
     this.setState({ formData: this.setupProps() });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     const { search, topicListView, keepSearch } = this.props;
 
-    if(search !== prevProps.search || topicListView !== prevProps.topicListView || keepSearch !== prevProps.keepSearch) {
+    if (
+      search !== prevProps.search ||
+      topicListView !== prevProps.topicListView ||
+      keepSearch !== prevProps.keepSearch
+    ) {
       this.setupProps();
     }
   }
@@ -63,7 +67,7 @@ class SearchBar extends Form {
       formData['topicListView'] = topicListView;
       this.schema['topicListView'] = Joi.string().required();
     }
-    if(showKeepSearch) {
+    if (showKeepSearch) {
       formData['keepSearch'] = this.props.keepSearch;
       this.schema['keepSearch'] = Joi.boolean();
     }
@@ -156,14 +160,18 @@ class SearchBar extends Form {
               <span className="d-md-none">Search </span>
               <i className="fa fa-search" />
             </button>
-            {showKeepSearch && <span><input
-                type="checkbox"
-                name="keepSearch"
-                id="keepSearch"
-                onClick={(event) => this.props.onKeepSearchChange(event.target.checked)}
-                defaultChecked={formData['keepSearch']}
-              /> Keep search
-            </span>}
+            {showKeepSearch && (
+              <span>
+                <input
+                  type="checkbox"
+                  name="keepSearch"
+                  id="keepSearch"
+                  onClick={event => this.props.onKeepSearchChange(event.target.checked)}
+                  defaultChecked={formData['keepSearch']}
+                />{' '}
+                Keep search
+              </span>
+            )}
           </form>
         </div>
       </React.Fragment>

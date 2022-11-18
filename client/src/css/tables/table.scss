@@ -9,7 +9,7 @@ div.khq-search-sse {
         .progress {
             border-radius: 0;
             flex-grow: 2;
-            margin-top: $table-cell-padding / 2;
+            margin-top: $table-cell-padding * 0.5;
 
 
             .progress-bar {

@@ -4,7 +4,7 @@ import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
 import './styles.scss';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class ConsumerGroupMembers extends Root {
   state = {
@@ -40,7 +40,7 @@ class ConsumerGroupMembers extends Root {
 
   handlePartitions(partitions) {
     return partitions.map(partition => {
-      return <div className="badge badge-secondary partition">{partition}</div>;
+      return <div key={partition} className="badge badge-secondary partition">{partition}</div>;
     });
   }
 
@@ -55,7 +55,7 @@ class ConsumerGroupMembers extends Root {
         }
       });
     }
-    return topics.map(topic => {
+    return topics.map((topic, i) => {
       let partitions = [];
       assignments.forEach(assignment => {
         if (assignment.topic === topic) {
@@ -64,7 +64,7 @@ class ConsumerGroupMembers extends Root {
       });
 
       return (
-        <div
+        <div key={i}
           onClick={() => {
             history.push({
               pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,

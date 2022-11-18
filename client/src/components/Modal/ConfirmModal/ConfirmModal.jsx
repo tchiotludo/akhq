@@ -1,12 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import '../styles.scss';
 
 function ConfirmModal({handleConfirm, handleCancel, show, message, confirmLabel, cancelLabel}) {
-    const showHideClassname = show ? 'modal display-block' : 'modal display-none';
-
     return (
-        <div className={showHideClassname}>
+        <div className={show ? 'modal display-block' : 'modal display-none'}>
             <div className="swal2-container swal2-center swal2-fade swal2-shown" style={{overflowY: 'auto'}}>
                 <div aria-labelledby="swal2-title" aria-describedby="swal2-content"
                      className="swal2-popup swal2-modal swal2-show" tabIndex="-1" role="dialog"
@@ -79,6 +78,15 @@ function ConfirmModal({handleConfirm, handleCancel, show, message, confirmLabel,
             </div>
         </div>
     );
+}
+
+ConfirmModal.propTypes = {
+    handleConfirm: PropTypes.func,
+    handleCancel: PropTypes.func,
+    show: PropTypes.bool,
+    message: PropTypes.string,
+    confirmLabel: PropTypes.string,
+    cancelLabel: PropTypes.string,
 }
 
 export default ConfirmModal;
