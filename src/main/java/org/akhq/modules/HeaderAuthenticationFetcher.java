@@ -19,6 +19,7 @@ import org.reactivestreams.Publisher;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -86,16 +87,18 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
             log.debug("One or more of the IP patterns matched the host address [{}]. Continuing request processing.", hostAddress);
         }
 
-        Optional<String> groupHeaders = headerAuth.getGroupsHeader() != null ?
-            request.getHeaders().get(headerAuth.getGroupsHeader(), String.class) :
-            Optional.empty();
+        List<String> groupsHeader = headerAuth.getGroupsHeader() != null ?
+            request.getHeaders().getAll(headerAuth.getGroupsHeader()) :
+            Collections.emptyList();
 
         return Flowable
             .fromCallable(() -> {
-                List<String> groups = groupHeaders
+                List<String> groups = groupsHeader
                     .stream()
                     .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())))
                     .collect(Collectors.toList());
+
+                log.debug("Got groups [{}] from groupsHeader [{}] and separator [{}]", groups, groupsHeader, headerAuth.getGroupsHeaderSeparator());
 
                 ClaimRequest claim =
                     ClaimRequest.builder()
