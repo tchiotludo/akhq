@@ -1,4 +1,5 @@
-FROM eclipse-temurin:11-jre
+ARG BASE_IMAGE_VERSION=17-jre
+FROM eclipse-temurin:${BASE_IMAGE_VERSION}
 
 # install curl
 RUN apt-get update && \
