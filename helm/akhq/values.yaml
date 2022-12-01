@@ -107,6 +107,7 @@ service:
   enabled: true
   type: ClusterIP
   port: 80
+  managementPort: 28081
   #httpNodePort: 32551
   labels: {}
   annotations:
