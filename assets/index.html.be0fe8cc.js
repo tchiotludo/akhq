@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-8daa1a0e","path":"/","title":"Home","lang":"en-US","frontmatter":{"home":true,"title":"Home","sidebar":false,"pageClass":"landing"},"excerpt":"","headers":[],"git":{"updatedTime":1669913869000,"contributors":[{"name":"Antoine Chapusot","email":"antoine@chapusot.fr","commits":1}]},"filePathRelative":"README.md"}');export{e as data};
