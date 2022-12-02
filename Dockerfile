@@ -6,14 +6,17 @@ RUN apt-get update && \
       curl && \
     apt-get upgrade -y &&\
     rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+    apt-get clean && \
+    wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
+    chmod +x /usr/bin/yq
+
+ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 
 HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
-  CMD curl --fail http://localhost:8080/health || exit 1
+  CMD curl --fail http://localhost:$(yq '.micronaut.server.port' $MICRONAUT_CONFIG_FILES)/health || exit 1
 
 WORKDIR /app
 COPY docker /
-ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 # Create user
 RUN useradd -ms /bin/bash akhq
 # Chown to write configuration
