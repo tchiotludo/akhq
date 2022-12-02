@@ -13,7 +13,7 @@ RUN apt-get update && \
 ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 
 HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
-  CMD curl --fail http://localhost:$(yq '.micronaut.server.port' $MICRONAUT_CONFIG_FILES)/health || exit 1
+  CMD curl --fail http://localhost:$(yq '.micronaut.server.port' $MICRONAUT_CONFIG_FILES | sed "s/null/8080/")/health || exit 1
 
 WORKDIR /app
 COPY docker /
