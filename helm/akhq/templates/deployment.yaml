@@ -26,7 +26,7 @@ spec:
         {{- if .Values.configuration }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
-        {{- if and (not .Values.existingSecret) (.Values.secrets) }}
+        {{- if and (not .Values.existingSecrets) (.Values.secrets) }}
         checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.podAnnotations }}
