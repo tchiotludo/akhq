@@ -76,6 +76,8 @@ public class GithubAuthenticationMapper implements OauthAuthenticationMapper {
                     .stream()
                     .map(Objects::toString)
                     .collect(Collectors.toList());
+            } else if (groupsField instanceof String) {
+                groups.add((String) groupsField);
             }
         }
         return groups;

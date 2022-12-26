@@ -67,8 +67,8 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 break;
             case OAUTH:
                 // we need to convert from OAUTH login name to AKHQ groups to find the roles and attributes
-                // using akhq.security.oauth.groups and akhq.security.oauth.users
-                // as well as akhq.security.oauth.default-group
+                // using akhq.security.oauth2.groups and akhq.security.oauth2.users
+                // as well as akhq.security.oauth2.default-group
                 Oauth.Provider oauthPropertiesProvider = oauthProperties.getProvider(request.getProviderName());
                 userMappings = oauthPropertiesProvider.getUsers();
                 groupMappings = oauthPropertiesProvider.getGroups();
