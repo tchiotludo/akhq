@@ -61,11 +61,11 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
 
         ClaimRequest request = ClaimRequest.builder()
-                .providerType(ClaimProviderType.OIDC)
-                .providerName(providerName)
-                .username(oidcUsername)
-                .groups(oidcGroups)
-                .build();
+            .providerType(ClaimProviderType.OIDC)
+            .providerName(providerName)
+            .username(oidcUsername)
+            .groups(oidcGroups)
+            .build();
 
         try {
             ClaimResponse claim = claimProvider.generateClaim(request);
@@ -101,7 +101,8 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
      * @return The username to set in the {@link io.micronaut.security.authentication.Authentication}
      */
     protected String getUsername(Oidc.Provider provider, OpenIdClaims openIdClaims) {
-        return Objects.toString(openIdClaims.get(provider.getUsernameField()));
+        Object usernameField = getClaimValue(openIdClaims, provider.getUsernameField());
+        return Objects.toString(usernameField);
     }
 
     /**
@@ -114,15 +115,29 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
      */
     protected List<String> getOidcGroups(Oidc.Provider provider, OpenIdClaims openIdClaims) {
         List<String> groups = new ArrayList<>();
-        if (openIdClaims.contains(provider.getGroupsField())) {
-            Object groupsField = openIdClaims.get(provider.getGroupsField());
-            if (groupsField instanceof Collection) {
-                groups = ((Collection<Object>) groupsField)
-                        .stream()
-                        .map(Objects::toString)
-                        .collect(Collectors.toList());
+        Object groupsField = getClaimValue(openIdClaims, provider.getGroupsField());
+        if (groupsField instanceof Collection) {
+            groups = ((Collection<Object>) groupsField)
+                .stream()
+                .map(Objects::toString)
+                .collect(Collectors.toList());
+        }
+
+        return groups;
+    }
+
+    private Object getClaimValue(OpenIdClaims openIdClaims, String name) {
+        String[] subFields = name.split("\\.");
+        Object claimValue = openIdClaims;
+        for(String subField : subFields) {
+            if (claimValue instanceof OpenIdClaims) {
+                claimValue = ((OpenIdClaims) claimValue).get(subField);
+            } else if (claimValue instanceof Map) {
+                claimValue = ((Map) claimValue).get(subField);
+            } else {
+                break;
             }
         }
-        return groups;
+        return claimValue;
     }
 }
