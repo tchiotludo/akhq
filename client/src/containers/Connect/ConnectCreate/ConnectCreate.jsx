@@ -318,7 +318,7 @@ class ConnectCreate extends Root {
 
   renderForm() {
     let plugin = this.getPlugin();
-    if(plugin.definitions){
+    if (plugin.definitions) {
       this.setState({ plugin }, () => {
         this.handleShema(
           _(plugin.definitions)
@@ -404,14 +404,13 @@ class ConnectCreate extends Root {
 
     body.configs = configs;
 
-    this.postApi(uriCreateConnect(clusterId, connectId), body)
-      .then(() => {
-        this.props.history.push({
-          pathname: `/ui/${clusterId}/connect/${connectId}`,
-        });
-
-        toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
+    this.postApi(uriCreateConnect(clusterId, connectId), body).then(() => {
+      this.props.history.push({
+        pathname: `/ui/${clusterId}/connect/${connectId}`
       });
+
+      toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
+    });
   }
 
   render() {

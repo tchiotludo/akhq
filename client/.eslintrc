@@ -10,16 +10,29 @@
     "node": true,
     "browser": true
   },
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
-  "parser": "babel-eslint",
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "babelrc": false,
+      "configFile": false,
+      "presets": ["@babel/preset-react"]
+    },
     "sourceType": "module",
     "ecmaVersion": 7,
     "ecmaFeatures": {
       "jsx": true
     }
   },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "plugins": ["prettier"],
   "rules": {
+    "prettier/prettier": "error",
     /*
      * ENFORCING OPTIONS
      * =================

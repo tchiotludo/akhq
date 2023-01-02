@@ -3,22 +3,22 @@ import PropTypes from 'prop-types';
 
 class RadioGroup extends Component {
   renderOptions = (name, items, handleChange) => {
-    return items.map( item =>
-        <div id={`radio-option-${name}`} key={item.value} className="form-check">
-          <input
-            className="form-check-input"
-            type="radio"
-            name={item.name}
-            id={item.value}
-            value={item.value}
-            defaultChecked={item.checked}
-            onChange={() => handleChange(item.value)}
-          />
-          <label className="form-check-label" htmlFor={item.name}>
-            {item.label}
-          </label>
-        </div>
-      );
+    return items.map(item => (
+      <div id={`radio-option-${name}`} key={item.value} className="form-check">
+        <input
+          className="form-check-input"
+          type="radio"
+          name={item.name}
+          id={item.value}
+          value={item.value}
+          defaultChecked={item.checked}
+          onChange={() => handleChange(item.value)}
+        />
+        <label className="form-check-label" htmlFor={item.name}>
+          {item.label}
+        </label>
+      </div>
+    ));
   };
 
   render() {
@@ -41,7 +41,7 @@ RadioGroup.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   items: PropTypes.array,
-  handleChange: PropTypes.func,
-}
+  handleChange: PropTypes.func
+};
 
 export default RadioGroup;

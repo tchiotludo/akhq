@@ -1,4 +1,4 @@
-@import "../../css/init";
+@import '../../css/init';
 
 $sidebarWidth: 70px;
 $sidebarExpandedWidth: 250px;
@@ -15,23 +15,22 @@ $sidebarTransition: 0.5s;
     width: calc(100% - 8px);
     height: 65px;
     display: block;
-    background: url("../../images/logo.svg") no-repeat 16px;
+    background: url('../../images/logo.svg') no-repeat 16px;
     background-size: cover;
     margin-top: 60px;
     margin-left: 4px;
     margin-right: 4px;
-    transition: all 0.2s  ease;
+    transition: all 0.2s ease;
   }
 }
 
-.sidenav---expanded---1KdUL{
-
+.sidenav---expanded---1KdUL {
   span.logo {
-    background-position: 0 ;
+    background-position: 0;
   }
 }
 
-.clusters{
+.clusters {
   text-overflow: ellipsis;
   direction: ltr;
   white-space: nowrap;
@@ -41,11 +40,10 @@ $sidebarTransition: 0.5s;
   vertical-align: middle;
 }
 .sidenav-subnav---1EN61 {
-    background-color: $primary !important;
-
+  background-color: $primary !important;
 }
 
 .sidenav---sidenav-subnav---1EN61 {
-    max-height: calc(30vh);
-    overflow: auto !important;
+  max-height: calc(30vh);
+  overflow: auto !important;
 }

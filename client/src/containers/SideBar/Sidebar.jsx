@@ -118,12 +118,12 @@ class Sidebar extends Component {
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
           <Link to={`/ui/${cluster.id}/topic`}>
-          <div
-            className={selectedCluster === cluster.id ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {cluster.id}
-          </div>
+            <div
+              className={selectedCluster === cluster.id ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {cluster.id}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -136,12 +136,12 @@ class Sidebar extends Component {
       >
         <NavText>
           <Link to={`/ui/${selectedCluster}/connect/${connect}`}>
-          <div
-            className={selectedConnect === connect ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {connect}
-          </div>
+            <div
+              className={selectedConnect === connect ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {connect}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -151,7 +151,6 @@ class Sidebar extends Component {
   };
 
   changeSelectedCluster(newSelectedCluster) {
-
     this.setState(
       {
         selectedCluster: newSelectedCluster.id,
@@ -183,7 +182,6 @@ class Sidebar extends Component {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
-
       <NavItem
         eventKey={label}
         className={pathname.includes(tab) ? 'active' : ''}
@@ -197,22 +195,26 @@ class Sidebar extends Component {
       >
         <NavIcon>
           {' '}
-           <Link to={`/ui/${selectedCluster}/${tab}`}
-                 onClick={(e) => {
-                   this.setState({ selectedTab: tab });
-                   e.preventDefault();
-           }}>
-               <i className={iconClassName} aria-hidden="true" />
-           </Link>
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            <i className={iconClassName} aria-hidden="true" />
+          </Link>
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/ui/${selectedCluster}/${tab}`}
-                onClick={(e) => {
-                  this.setState({ selectedTab: tab });
-                  e.preventDefault();
-                }}>
-              {label}
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            {label}
           </Link>
         </NavText>
       </NavItem>
@@ -341,7 +343,7 @@ Sidebar.propTypes = {
   children: PropTypes.any,
   expanded: PropTypes.bool,
   toggleSidebar: PropTypes.func,
-  selectedTab: PropTypes.string,
-}
+  selectedTab: PropTypes.string
+};
 
 export default withRouter(Sidebar);

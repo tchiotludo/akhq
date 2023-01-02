@@ -51,14 +51,14 @@ export const SETTINGS_VALUES = {
   TOPIC_DATA: {
     SORT: {
       OLDEST: 'OLDEST',
-      NEWEST: 'NEWEST',
+      NEWEST: 'NEWEST'
     },
     DATE_TIME_FORMAT: {
       RELATIVE: 'RELATIVE',
-      ISO: 'ISO',
+      ISO: 'ISO'
     }
   }
-}
+};
 
 export const TYPES = {
   STRING: 'STRING',
@@ -102,16 +102,16 @@ export default {
 
 export const sortBy = (field, reverse, primer) => {
   const key = primer
-    ? function(x) {
+    ? function (x) {
         return primer(x[field]);
       }
-    : function(x) {
+    : function (x) {
         return x[field];
       };
 
   reverse = !reverse ? 1 : -1;
 
-  return function(a, b) {
+  return function (a, b) {
     // eslint-disable-next-line
     return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
   };

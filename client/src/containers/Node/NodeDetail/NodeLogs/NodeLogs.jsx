@@ -24,8 +24,7 @@ class NodeLogs extends Root {
     const { selectedCluster, selectedNode } = this.state;
 
     logs = await this.getApi(uriNodesLogs(selectedCluster, selectedNode));
-    logs = logs.data.sort(sortBy('partition', false))
-                    .sort(sortBy('topic', false));
+    logs = logs.data.sort(sortBy('partition', false)).sort(sortBy('topic', false));
     this.handleData(logs);
   }
 

@@ -26,10 +26,10 @@ class NodesList extends Root {
 
   handleData(nodes) {
     const { clusterId } = this.props.match.params;
-    let tableNodes = {}
-    const setState = () =>  {
-      this.setState({ data: Object.values(tableNodes), loading: false});
-    }
+    let tableNodes = {};
+    const setState = () => {
+      this.setState({ data: Object.values(tableNodes), loading: false });
+    };
 
     nodes.nodes.forEach(node => {
       tableNodes[node.id] = {
@@ -43,17 +43,19 @@ class NodesList extends Root {
 
     setState();
 
-    this.getApi(uriNodePartitions(clusterId))
-        .then(value => {
-          for (let node of value.data) {
-            const topicNode = tableNodes[node.id];
-            tableNodes[node.id].partition = topicNode ?
-                (node.countLeader) + ' (' + (((node.countLeader) / node.totalPartitions) * 100).toFixed(2) + '%)' :
-                '';
-          }
+    this.getApi(uriNodePartitions(clusterId)).then(value => {
+      for (let node of value.data) {
+        const topicNode = tableNodes[node.id];
+        tableNodes[node.id].partition = topicNode
+          ? node.countLeader +
+            ' (' +
+            ((node.countLeader / node.totalPartitions) * 100).toFixed(2) +
+            '%)'
+          : '';
+      }
 
-          setState();
-        })
+      setState();
+    });
 
     return Object.values(tableNodes);
   }

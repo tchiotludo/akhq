@@ -2,8 +2,8 @@ import React from 'react';
 import Header from '../../Header';
 import Joi from 'joi-browser';
 import Form from '../../../components/Form/Form';
-import {uriSchemaCreate} from '../../../utils/endpoints';
-import {toast} from 'react-toastify';
+import { uriSchemaCreate } from '../../../utils/endpoints';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 class SchemaCreate extends Form {
@@ -32,18 +32,10 @@ class SchemaCreate extends Form {
   };
 
   schema = {
-    subject: Joi.string()
-      .required()
-      .label('subject'),
-    compatibilityLevel: Joi.string()
-      .label('Compatibility')
-      .required(),
-    schemaType: Joi.string()
-        .label('SchemaType')
-        .required(),
-    schemaData: Joi.string()
-      .label('SchemaData')
-      .required()
+    subject: Joi.string().required().label('subject'),
+    compatibilityLevel: Joi.string().label('Compatibility').required(),
+    schemaType: Joi.string().label('SchemaType').required(),
+    schemaData: Joi.string().label('SchemaData').required()
   };
 
   onCleanupChange = value => {
@@ -65,7 +57,9 @@ class SchemaCreate extends Form {
       schemaData = formData.schemaData;
     } else {
       const parsedSchemaData = JSON.parse(formData.schemaData);
-      schemaData = parsedSchemaData.schema ? JSON.stringify(parsedSchemaData.schema) : formData.schemaData
+      schemaData = parsedSchemaData.schema
+        ? JSON.stringify(parsedSchemaData.schema)
+        : formData.schemaData;
       references = parsedSchemaData.references || [];
     }
 
@@ -78,13 +72,12 @@ class SchemaCreate extends Form {
       compatibilityLevel: formData.compatibilityLevel
     };
 
-    this.postApi(uriSchemaCreate(clusterId), schema)
-      .then(() => {
-        this.props.history.push({
-          pathname: `/ui/${clusterId}/schema`,
-        });
-        toast.success(`Schema '${formData.subject}' is created`);
+    this.postApi(uriSchemaCreate(clusterId), schema).then(() => {
+      this.props.history.push({
+        pathname: `/ui/${clusterId}/schema`
       });
+      toast.success(`Schema '${formData.subject}' is created`);
+    });
   }
 
   render() {
@@ -110,13 +103,13 @@ class SchemaCreate extends Form {
           )}
 
           {this.renderSelect(
-              'schemaType',
-              'Schema Type',
-              schemaTypeSelect,
-              value => {
-                this.setState({ formData: { ...formData, schemaType: value.target.value } });
-              },
-              'col-sm-10'
+            'schemaType',
+            'Schema Type',
+            schemaTypeSelect,
+            value => {
+              this.setState({ formData: { ...formData, schemaType: value.target.value } });
+            },
+            'col-sm-10'
           )}
 
           {this.renderJSONInput('schemaData', 'Schema', value => {

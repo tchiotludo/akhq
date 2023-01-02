@@ -5,7 +5,6 @@ import moment from 'moment';
 import { formatDateTime } from '../../utils/converters';
 
 class DatePicker extends Component {
-
   state = {
     value: '',
     openDateModal: false
@@ -13,7 +12,7 @@ class DatePicker extends Component {
 
   componentDidMount = () => {
     this.setState({
-      value: (this.props.value) ? this.props.value : new Date()
+      value: this.props.value ? this.props.value : new Date()
     });
   };
 
@@ -97,7 +96,7 @@ DatePicker.propTypes = {
   showDateTimeInput: PropTypes.bool,
   showTimeInput: PropTypes.bool,
   showTimeSelect: PropTypes.bool,
-  onClear: PropTypes.func,
+  onClear: PropTypes.func
 };
 
 export default DatePicker;
