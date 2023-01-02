@@ -41,17 +41,16 @@ import{_ as n,p as s,q as a,a1 as e}from"./framework-96b046e1.js";const t={},p=e
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
             ClaimResponse generateClaim(ClaimRequest request) {
-                ClaimResponse a = new ClaimResponse();
-                a.roles = [&quot;topic/read&quot;]
-                a.topicsFilterRegexp: [&quot;.*&quot;],
-                a.connectsFilterRegexp: [&quot;.*&quot;],
-                a.consumerGroupsFilterRegexp: [&quot;.*&quot;]</span>
-
-        return a
-            <span class="token punctuation">}</span>
-        <span class="token punctuation">}</span>
+                ClaimResponse response = ClaimResponse.builder().build()
+                response.roles = [&quot;topic/read&quot;]
+                response.topicsFilterRegexp: [&quot;.*&quot;]
+                response.connectsFilterRegexp: [&quot;.*&quot;]
+                response.consumerGroupsFilterRegexp: [&quot;.*&quot;]
+                return response
+            }
+        }</span>
     <span class="token key atrule">groups</span><span class="token punctuation">:</span> <span class="token comment"># anything set here will not be used</span>
-</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p><code>akhq.security.groovy.file</code> must be a groovy class that implements the interface ClaimProvider :</p><div class="language-java line-numbers-mode" data-ext="java"><pre class="language-java"><code><span class="token keyword">package</span> <span class="token namespace">org<span class="token punctuation">.</span>akhq<span class="token punctuation">.</span>utils</span><span class="token punctuation">;</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p><code>akhq.security.groovy.file</code> must be a groovy class that implements the interface ClaimProvider :</p><div class="language-java line-numbers-mode" data-ext="java"><pre class="language-java"><code><span class="token keyword">package</span> <span class="token namespace">org<span class="token punctuation">.</span>akhq<span class="token punctuation">.</span>utils</span><span class="token punctuation">;</span>
 <span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">ClaimProvider</span> <span class="token punctuation">{</span>
     <span class="token class-name">ClaimResponse</span> <span class="token function">generateClaim</span><span class="token punctuation">(</span><span class="token class-name">ClaimRequest</span> request<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
