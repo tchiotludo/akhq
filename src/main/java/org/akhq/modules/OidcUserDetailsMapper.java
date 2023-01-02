@@ -106,7 +106,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
     /**
      * Tries to read groups from the configured groups field.
-     * If the configured field cannot be found or isn't some kind of collection, it will return an empty set.
+     * If the configured field cannot be found or isn't some kind of collection or string, it will return an empty set.
      *
      * @param provider     The OpenID provider configuration
      * @param openIdClaims The OpenID claims
@@ -116,11 +116,15 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
         List<String> groups = new ArrayList<>();
         if (openIdClaims.contains(provider.getGroupsField())) {
             Object groupsField = openIdClaims.get(provider.getGroupsField());
+            // When the user belongs to only one group, groupsField can either be an array (with one item)
+            // or a string, depending on the IdP implementation.
             if (groupsField instanceof Collection) {
                 groups = ((Collection<Object>) groupsField)
                         .stream()
                         .map(Objects::toString)
                         .collect(Collectors.toList());
+            } else if (groupsField instanceof String) {
+                groups.add((String) groupsField);
             }
         }
         return groups;
