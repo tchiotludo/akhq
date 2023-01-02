@@ -23,28 +23,20 @@ class TopicCreate extends Form {
   }
 
   async getTopicDefaultConf() {
-    let { formData } = { ...this.state }
+    let { formData } = { ...this.state };
     const defaults = await this.getApi(uriTopicDefaultConf());
 
-    formData.retention = defaults.data.retention
-    formData.partition = defaults.data.partition
-    formData.replication = defaults.data.replication
+    formData.retention = defaults.data.retention;
+    formData.partition = defaults.data.partition;
+    formData.replication = defaults.data.replication;
 
     this.setState({ formData });
   }
 
   schema = {
-    name: Joi.string()
-      .required()
-      .label('Name'),
-    partition: Joi.number()
-      .min(1)
-      .label('Partition')
-      .required(),
-    replication: Joi.number()
-      .min(1)
-      .label('Replication')
-      .required(),
+    name: Joi.string().required().label('Name'),
+    partition: Joi.number().min(1).label('Partition').required(),
+    replication: Joi.number().min(1).label('Replication').required(),
     cleanup: Joi.string().required(),
     retention: Joi.number().label('Retention')
   };
@@ -70,13 +62,12 @@ class TopicCreate extends Form {
       }
     };
 
-    this.postApi(uriTopicsCreate(clusterId), topic)
-      .then(() => {
-        this.props.history.push({
-          pathname: `/ui/${clusterId}/topic`,
-        });
-        toast.success(`Topic '${formData.name}' is created`);
+    this.postApi(uriTopicsCreate(clusterId), topic).then(() => {
+      this.props.history.push({
+        pathname: `/ui/${clusterId}/topic`
       });
+      toast.success(`Topic '${formData.name}' is created`);
+    });
   }
   render() {
     return (

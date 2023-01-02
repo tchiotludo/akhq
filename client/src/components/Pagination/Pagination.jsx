@@ -21,7 +21,10 @@ const Pagination = ({
         <a
           href={'#/'}
           className={'before-button'}
-          onClick={(e) => {e.preventDefault(); onSubmit(pageNumber - 1)}}
+          onClick={e => {
+            e.preventDefault();
+            onSubmit(pageNumber - 1);
+          }}
           disabled={+pageNumber === 1}
         >
           <div className="page-link">
@@ -32,16 +35,20 @@ const Pagination = ({
       </li>
       <li className="page-item info">
         <div className="page-link page-number">
-          {totalRecords !== undefined ? '≈ ' + totalRecords : <input
-            className="pagination-input page-input"
-            disabled={!editPageNumber}
-            type="number"
-            value={pageNumber}
-            onChange={onChange}
-            onKeyDown={e => {
-              if (e.key === 'Enter') onSubmit(pageNumber);
-            }}
-          />}
+          {totalRecords !== undefined ? (
+            '≈ ' + totalRecords
+          ) : (
+            <input
+              className="pagination-input page-input"
+              disabled={!editPageNumber}
+              type="number"
+              value={pageNumber}
+              onChange={onChange}
+              onKeyDown={e => {
+                if (e.key === 'Enter') onSubmit(pageNumber);
+              }}
+            />
+          )}
           {totalPageNumber !== undefined && showTotalPageNumber && `of ${totalPageNumber}`}
         </div>
       </li>
@@ -49,7 +56,10 @@ const Pagination = ({
         <a
           href={'#/'}
           className={'after-button'}
-          onClick={(e) => {e.preventDefault(); onSubmit(pageNumber + 1)}}
+          onClick={e => {
+            e.preventDefault();
+            onSubmit(pageNumber + 1);
+          }}
           disabled={+pageNumber === +totalPageNumber}
         >
           <div className=" page-link" aria-label=" Next">
@@ -63,13 +73,13 @@ const Pagination = ({
 };
 
 Pagination.propTypes = {
- pageNumber: PropTypes.number,
- totalPageNumber: PropTypes.number,
- totalRecords: PropTypes.number,
- onChange: PropTypes.func,
- onSubmit: PropTypes.func,
- editPageNumber: PropTypes.bool,
- showTotalPageNumber: PropTypes.bool
-}
+  pageNumber: PropTypes.number,
+  totalPageNumber: PropTypes.number,
+  totalRecords: PropTypes.number,
+  onChange: PropTypes.func,
+  onSubmit: PropTypes.func,
+  editPageNumber: PropTypes.bool,
+  showTotalPageNumber: PropTypes.bool
+};
 
 export default Pagination;

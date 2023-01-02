@@ -23,7 +23,7 @@ const Input = props => {
           {label}
         </label>
       ) : (
-        <div/>
+        <div />
       )}
       <div className={`${inputClassRender}`}>
         <input
@@ -47,7 +47,7 @@ const Input = props => {
 
 Input.propTypes = {
   name: PropTypes.string,
-  label:PropTypes.string,
+  label: PropTypes.string,
   placeholder: PropTypes.string,
   error: PropTypes.string,
   noStyle: PropTypes.bool,

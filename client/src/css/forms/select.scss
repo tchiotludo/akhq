@@ -1,19 +1,19 @@
 .khq-select {
-     > .dropdown-toggle.bs-placeholder {
-        border: 0;
-    }
+  > .dropdown-toggle.bs-placeholder {
+    border: 0;
+  }
 
-    .dropdown-menu {
-        .bs-searchbox {
-            margin-bottom: 4px;
-        }
+  .dropdown-menu {
+    .bs-searchbox {
+      margin-bottom: 4px;
     }
+  }
 
-    .dropdown-item.selected {
-        background: $primary;
+  .dropdown-item.selected {
+    background: $primary;
 
-        span.fa {
-            display: none !important;
-        }
+    span.fa {
+      display: none !important;
     }
+  }
 }

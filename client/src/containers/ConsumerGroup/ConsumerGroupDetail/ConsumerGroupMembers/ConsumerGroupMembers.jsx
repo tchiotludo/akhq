@@ -21,7 +21,9 @@ class ConsumerGroupMembers extends Root {
   async getConsumerGroupMembers() {
     const { selectedCluster, selectedConsumerGroup } = this.state;
 
-    const members = await this.getApi(uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup));
+    const members = await this.getApi(
+      uriConsumerGroupMembers(selectedCluster, selectedConsumerGroup)
+    );
 
     this.handleData(members.data);
   }
@@ -40,12 +42,16 @@ class ConsumerGroupMembers extends Root {
 
   handlePartitions(partitions) {
     return partitions.map(partition => {
-      return <div key={partition} className="badge badge-secondary partition">{partition}</div>;
+      return (
+        <div key={partition} className="badge badge-secondary partition">
+          {partition}
+        </div>
+      );
     });
   }
 
   handleAssignments(assignments) {
-    const {history} = this.props;
+    const { history } = this.props;
     let topics = [];
 
     if (assignments) {
@@ -64,7 +70,8 @@ class ConsumerGroupMembers extends Root {
       });
 
       return (
-        <div key={i}
+        <div
+          key={i}
           onClick={() => {
             history.push({
               pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,

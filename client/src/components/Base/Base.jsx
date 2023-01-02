@@ -1,5 +1,5 @@
 import './Base.scss';
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
@@ -76,7 +76,9 @@ class Base extends Component {
               clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
-                newExpanded ? localStorage.setItem('expanded', newExpanded) : localStorage.removeItem('expanded');
+                newExpanded
+                  ? localStorage.setItem('expanded', newExpanded)
+                  : localStorage.removeItem('expanded');
                 this.setState({ expanded: newExpanded });
               }}
               selectedTab={selectedTab}
@@ -95,7 +97,7 @@ Base.propTypes = {
   match: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
-  children: PropTypes.any,
-}
+  children: PropTypes.any
+};
 
 export default withRouter(Base);

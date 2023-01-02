@@ -7,30 +7,32 @@ import { Tooltip } from '@material-ui/core';
 import { SETTINGS_VALUES } from '../../utils/constants';
 
 class DateTime extends Component {
-
   render() {
     const isoDate = this.props.isoDateTimeString;
-    const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''}/>
+    const TimeAgoComp = <TimeAgo date={Date.parse(isoDate)} title={''} />;
     return (
-      <Tooltip arrow title={
-        this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO ?
-          TimeAgoComp :
-          isoDate
-        } interactive>
-        <span>{
-          this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO ?
-            isoDate :
-            TimeAgoComp
-        }</span>
-      </Tooltip>   
+      <Tooltip
+        arrow
+        title={
+          this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+            ? TimeAgoComp
+            : isoDate
+        }
+        interactive
+      >
+        <span>
+          {this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+            ? isoDate
+            : TimeAgoComp}
+        </span>
+      </Tooltip>
     );
   }
-
 }
 
 DateTime.propTypes = {
   isoDateTimeString: PropTypes.string.isRequired,
-  dateTimeFormat: PropTypes.string.isRequired,
+  dateTimeFormat: PropTypes.string.isRequired
 };
 
 export default DateTime;

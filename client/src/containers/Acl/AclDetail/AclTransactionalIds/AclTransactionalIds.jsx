@@ -18,7 +18,9 @@ class AclTransactionalIds extends Root {
   async getAcls() {
     const { selectedCluster, principalEncoded } = this.state;
 
-    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'TRANSACTIONAL_ID'));
+    const response = await this.getApi(
+      uriAclsByPrincipal(selectedCluster, principalEncoded, 'TRANSACTIONAL_ID')
+    );
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);

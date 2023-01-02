@@ -3,7 +3,7 @@ import Header from '../../../Header/Header';
 import Form from '../../../../components/Form/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../../components/DatePicker';
-import {formatDateTime, groupedTopicOffset} from '../../../../utils/converters';
+import { formatDateTime, groupedTopicOffset } from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import {
   uriConsumerGroup,
@@ -39,7 +39,7 @@ class ConsumerGroupUpdate extends Form {
   }
 
   async getTopicOffset() {
-    const { clusterId, consumerGroupId, topicOffset, timestamp} = this.state;
+    const { clusterId, consumerGroupId, topicOffset, timestamp } = this.state;
     const momentValue = moment(timestamp);
 
     const date =
@@ -65,14 +65,14 @@ class ConsumerGroupUpdate extends Form {
       const topicOffset = groupedTopicOffset(data.offsets);
 
       if (data) {
-        this.setState({ topicOffset:  topicOffset}, () =>
-          this.createValidationSchema(topicOffset)
-        );
+        this.setState({ topicOffset: topicOffset }, () => this.createValidationSchema(topicOffset));
       } else {
         this.setState({ topicOffset: {} });
       }
     } else if (date !== '') {
-      data = await this.getApi(uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date));
+      data = await this.getApi(
+        uriConsumerGroupOffsetsByTimestamp(clusterId, consumerGroupId, date)
+      );
       data = data.data;
       this.handleOffsetsByTimestamp(data);
     } else {
@@ -81,7 +81,7 @@ class ConsumerGroupUpdate extends Form {
   }
 
   createValidationSchema = topicOffset => {
-    let { formData, checked} = this.state;
+    let { formData, checked } = this.state;
     let firstOffsets = {};
     let lastOffsets = {};
     let name = '';
@@ -101,7 +101,7 @@ class ConsumerGroupUpdate extends Form {
       });
     });
 
-    this.setState({ formData, firstOffsets, lastOffsets, checked});
+    this.setState({ formData, firstOffsets, lastOffsets, checked });
   };
 
   handleOffsetsByTimestamp = offsets => {
@@ -126,15 +126,15 @@ class ConsumerGroupUpdate extends Form {
     this.setState({ formData });
   };
 
-  unCheckAll = (value)  => {
-    const {checked} = this.state;
+  unCheckAll = value => {
+    const { checked } = this.state;
 
     Object.keys(checked).forEach(name => {
       checked[name] = value;
     });
 
-    this.setState({ checked});
-  }
+    this.setState({ checked });
+  };
 
   resetToLastOffsets = () => {
     const { lastOffsets } = this.state;
@@ -154,9 +154,9 @@ class ConsumerGroupUpdate extends Form {
     let partition = '';
 
     Object.keys(formData).forEach(name => {
-        splitName = name.split('-');
-        partition = splitName.pop();
-        topic = splitName.join('-');
+      splitName = name.split('-');
+      partition = splitName.pop();
+      topic = splitName.join('-');
 
       if (checked[topic] === true) {
         body.push({
@@ -198,7 +198,9 @@ class ConsumerGroupUpdate extends Form {
               type="checkbox"
               value={topicId}
               checked={checked[topicId] || false}
-              onChange={this.checkedtopicOffset}/> {topicId}
+              onChange={this.checkedtopicOffset}
+            />{' '}
+            {topicId}
           </legend>
           {this.renderPartitionInputs(topicOffset[topicId], topicId, !checked[topicId])}
         </fieldset>
@@ -208,12 +210,12 @@ class ConsumerGroupUpdate extends Form {
     return renderedItems;
   };
 
-  checkedtopicOffset = (event) => {
+  checkedtopicOffset = event => {
     const { checked } = this.state;
     checked[event.target.value] = event.target.checked;
 
     this.setState({ checked: checked });
-  }
+  };
 
   renderPartitionInputs = (offsets, topicId, disabled) => {
     const renderedInputs = [];
@@ -260,10 +262,10 @@ class ConsumerGroupUpdate extends Form {
           Check all
         </div>
         <div
-            className="btn btn-secondary"
-            type="button"
-            style={{ marginRight: '0.5rem' }}
-            onClick={() => this.unCheckAll(false)}
+          className="btn btn-secondary"
+          type="button"
+          style={{ marginRight: '0.5rem' }}
+          onClick={() => this.unCheckAll(false)}
         >
           Uncheck all
         </div>
