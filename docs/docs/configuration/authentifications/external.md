@@ -67,13 +67,12 @@ akhq:
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
             ClaimResponse generateClaim(ClaimRequest request) {
-                ClaimResponse a = new ClaimResponse();
-                a.roles = ["topic/read"]
-                a.topicsFilterRegexp: [".*"],
-                a.connectsFilterRegexp: [".*"],
-                a.consumerGroupsFilterRegexp: [".*"]
-
-        return a
+                ClaimResponse response = ClaimResponse.builder().build()
+                response.roles = ["topic/read"]
+                response.topicsFilterRegexp: [".*"]
+                response.connectsFilterRegexp: [".*"]
+                response.consumerGroupsFilterRegexp: [".*"]
+                return response
             }
         }
     groups: # anything set here will not be used
