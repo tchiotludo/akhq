@@ -54,6 +54,7 @@ module.exports = {
               '/docs/configuration/authentifications/basic-auth.md',
               '/docs/configuration/authentifications/aws-iam-auth.md',
               '/docs/configuration/authentifications/oidc.md',
+              '/docs/configuration/authentifications/github.md',
               '/docs/configuration/authentifications/ldap.md',
               '/docs/configuration/authentifications/header.md',
               '/docs/configuration/authentifications/external.md',

@@ -19,7 +19,8 @@ class Login extends Form {
     errors: {},
     config: {
       formEnabled: true,
-      oidcAuths: []
+      oidcAuths: [],
+      oauthAuths: []
     }
   };
 
@@ -157,7 +158,7 @@ class Login extends Form {
   }
 
   render() {
-    const { formEnabled, oidcAuths } = this.state.config;
+    const { formEnabled, oidcAuths, oauthAuths } = this.state.config;
 
     return (
       <div>
@@ -177,6 +178,7 @@ class Login extends Form {
             {formEnabled && this._renderForm()}
             {formEnabled && oidcAuths && this._renderSeparator()}
             {oidcAuths && this._renderOidc(oidcAuths)}
+            {oauthAuths && this._renderOidc(oauthAuths)}
           </form>
         </main>
       </div>

@@ -4,5 +4,6 @@ public enum ClaimProviderType {
     HEADER,
     BASIC_AUTH,
     LDAP,
-    OIDC
+    OIDC,
+    OAUTH
 }
