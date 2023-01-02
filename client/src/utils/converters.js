@@ -147,6 +147,9 @@ export function organizeRoles(roles) {
       case ROLE_TYPE.CONNECT:
         newRoles = insertRole(newRoles, ROLE_TYPE.CONNECT, role);
         break;
+      case ROLE_TYPE.KSQLDB:
+        newRoles = insertRole(newRoles, ROLE_TYPE.KSQLDB, role);
+        break;
       default:
         break;
     }

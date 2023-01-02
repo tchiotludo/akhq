@@ -55,10 +55,10 @@ public class KafkaTestCluster implements Runnable {
     public static final String TOPIC_CONNECT = "connect-sink";
     public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
 
-    public static final int TOPIC_ALL_COUNT = 20;
+    public static final int TOPIC_ALL_COUNT = 22;
     public static final int TOPIC_HIDE_INTERNAL_COUNT = 12;
     public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 10;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 18;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 20;
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
@@ -90,6 +90,7 @@ public class KafkaTestCluster implements Runnable {
             .kafka("kafka:9092")
             .connect1("http://connect:8083")
             .connect2("http://connect:8084")
+            .ksqlDb("http://ksqldb:8088")
             .build();
 
         testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -149,6 +150,7 @@ public class KafkaTestCluster implements Runnable {
             log.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
             log.info("Kafka Connect started on {}", kafkaCluster.connect1Url());
             log.info("Kafka Connect started on {}", kafkaCluster.connect2Url());
+            log.info("Kafka KsqlDB started on {}", kafkaCluster.ksqlDbUrl());
 
             connectionString = ConnectionString.builder()
                 .kafka(kafkaCluster.bootstrapServers())
@@ -156,6 +158,7 @@ public class KafkaTestCluster implements Runnable {
                 .schemaRegistry(kafkaCluster.schemaRegistryUrl())
                 .connect1(kafkaCluster.connect1Url())
                 .connect2(kafkaCluster.connect2Url())
+                .ksqlDb(kafkaCluster.ksqlDbUrl())
                 .build();
 
             testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -294,6 +297,10 @@ public class KafkaTestCluster implements Runnable {
         testUtils.createTopic(TOPIC_JSON_SCHEMA, 3, (short) 1);
         log.debug("{} topic created", TOPIC_JSON_SCHEMA);
 
+        // KsqlDB create transaction topic manually instead of auto created by KsqlDB queries
+        // else test will fail depending on the test class execution order.
+        testUtils.createTopic("__transaction_state", 4, (short) 1);
+
         // consumer groups
         for (int c = 0; c < CONSUMER_GROUP_COUNT; c++) {
             Properties properties = new Properties();
@@ -394,5 +401,6 @@ public class KafkaTestCluster implements Runnable {
         private final String schemaRegistry;
         private final String connect1;
         private final String connect2;
+        private final String ksqlDb;
     }
 }

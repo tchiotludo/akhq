@@ -31,4 +31,7 @@ public class Role {
     public static final String ROLE_CONNECT_UPDATE = "connect/update";
     public static final String ROLE_CONNECT_DELETE = "connect/delete";
     public static final String ROLE_CONNECT_STATE_UPDATE = "connect/state/update";
+
+    public static final String ROLE_KSQLDB_READ = "ksqldb/read";
+    public static final String ROLE_KSQLDB_EXECUTE = "ksqldb/execute";
 }

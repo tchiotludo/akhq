@@ -40,7 +40,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-admin", result.getUsername());
-        assertEquals(35, result.getRoles().size());
+        assertEquals(38, result.getRoles().size());
     }
 
     @Test

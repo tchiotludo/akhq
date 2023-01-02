@@ -94,6 +94,10 @@ abstract public class AbstractTest implements TestPropertyProvider {
                     "connect-2")
                 .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".connect[1].url",
                     connectionString.getConnect2())
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".ksqldb[0].name",
+                    "ksqldb")
+                .put("akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".ksqldb[0].url",
+                    connectionString.getKsqlDb())
                 .build();
     }
 }

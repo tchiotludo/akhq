@@ -88,6 +88,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [TUI](https://www.tui.com)
 * [TVG](https://www.tvg.com)
 * [Vodeno](https://www.vodeno.com/)
+* [Baloise](https://www.baloise.ch/)
 
 
 

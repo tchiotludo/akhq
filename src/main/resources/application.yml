@@ -157,6 +157,8 @@ akhq:
         - connect/update
         - connect/delete
         - connect/state/update
+        - ksqldb/read
+        - ksqldb/execute
       reader:
         name: reader
         roles:
@@ -167,6 +169,7 @@ akhq:
         - registry/read
         - acls/read
         - connect/read
+        - ksqldb/read
       no-roles:
         name: no-roles
         roles: []

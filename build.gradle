@@ -88,6 +88,8 @@ dependencies {
     // kafka
     implementation group: "org.apache.kafka", name: "kafka_" + kafkaScalaVersion, version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
+    implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
+    implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: ksqlApiClientVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
@@ -173,6 +175,7 @@ dependencies {
     testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
     testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
+    testImplementation 'io.confluent.ksql:ksqldb-rest-app:' + ksqlApiClientVersion
 
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion

@@ -13,7 +13,8 @@ export const ROLE_TYPE = {
   GROUP: 'group',
   REGISTRY: 'registry',
   ACLS: 'acls',
-  CONNECT: 'connect'
+  CONNECT: 'connect',
+  KSQLDB: 'ksqldb',
 };
 
 // Table actions
@@ -36,6 +37,7 @@ export const GROUP = 'group';
 export const ACLS = 'acls';
 export const SCHEMA = 'schema';
 export const CONNECT = 'connect';
+export const KSQLDB = 'ksqldb';
 export const SETTINGS = 'settings';
 
 // Configurable settings
@@ -93,6 +95,7 @@ export default {
   ACLS,
   SCHEMA,
   CONNECT,
+  KSQLDB,
   TYPES,
   ROLE_TYPE,
   VERSION,

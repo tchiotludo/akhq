@@ -172,6 +172,30 @@ export const uriDeleteDefinition = (clusterId, connectId, definitionId) => {
   return `${apiUrl}/${clusterId}/connect/${connectId}/${definitionId}`;
 };
 
+export const uriKsqlDBInfo = (clusterId, ksqlDBId) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/info`;
+};
+
+export const uriKsqlDBStreams = (clusterId, ksqlDBId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/streams?&search=${search}&page=${pageNumber}`;
+};
+
+export const uriKsqlDBTables = (clusterId, ksqlDBId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/tables?&search=${search}&page=${pageNumber}`;
+};
+
+export const uriKsqlDBQueries = (clusterId, ksqlDBId, search, pageNumber) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/queries?&search=${search}&page=${pageNumber}`;
+};
+
+export const uriKsqlDBExecuteStatement = (clusterId, ksqlDBId) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/execute`;
+};
+
+export const uriKsqlDBExecuteQuery = (clusterId, ksqlDBId) => {
+  return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/queries/pull`;
+};
+
 export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
