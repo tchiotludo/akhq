@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-6b377f67","path":"/docs/configuration/authentifications/basic-auth.html","title":"Basic Auth","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1672695739000,"contributors":[{"name":"ChrisIgel","email":"chris.irrgang@gmx.de","commits":1}]},"filePathRelative":"docs/configuration/authentifications/basic-auth.md"}');export{t as data};

@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-c69887cc","path":"/docs/configuration/authentifications/groups.html","title":"Groups","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1672695739000,"contributors":[{"name":"ChrisIgel","email":"chris.irrgang@gmx.de","commits":1}]},"filePathRelative":"docs/configuration/authentifications/groups.md"}');export{t as data};
