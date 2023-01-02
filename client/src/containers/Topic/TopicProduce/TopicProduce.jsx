@@ -134,7 +134,7 @@ class TopicProduce extends Form {
       nHeaders: headers.length === 0 ? 1 : 0
     });
 
-    headers.forEach(({key, value}) => this.handlePlus(key, value));
+    headers.forEach(({ key, value }) => this.handlePlus(key, value));
   }
 
   doSubmit() {
