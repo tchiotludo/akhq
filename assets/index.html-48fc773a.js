@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-b3a08698","path":"/docs/configuration/","title":"Configuration","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1672692875000,"contributors":[{"name":"Thomas Bx","email":"thomas.bonduaeux.partner@decathlon.com","commits":1}]},"filePathRelative":"docs/configuration/README.md"}');export{t as data};
