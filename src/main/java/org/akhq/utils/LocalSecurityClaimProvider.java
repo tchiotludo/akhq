@@ -23,6 +23,8 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     Ldap ldapProperties;
     @Inject
     Oidc oidcProperties;
+    @Inject
+    Oauth oauthProperties;
 
     @Override
     public ClaimResponse generateClaim(ClaimRequest request) {
@@ -61,6 +63,16 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 userMappings = provider.getUsers();
                 groupMappings = provider.getGroups();
                 defaultGroup = provider.getDefaultGroup();
+                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
+                break;
+            case OAUTH:
+                // we need to convert from OAUTH login name to AKHQ groups to find the roles and attributes
+                // using akhq.security.oauth2.groups and akhq.security.oauth2.users
+                // as well as akhq.security.oauth2.default-group
+                Oauth.Provider oauthPropertiesProvider = oauthProperties.getProvider(request.getProviderName());
+                userMappings = oauthPropertiesProvider.getUsers();
+                groupMappings = oauthPropertiesProvider.getGroups();
+                defaultGroup = oauthPropertiesProvider.getDefaultGroup();
                 akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
                 break;
             default:
