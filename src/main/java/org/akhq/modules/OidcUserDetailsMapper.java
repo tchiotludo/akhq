@@ -101,7 +101,8 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
      * @return The username to set in the {@link io.micronaut.security.authentication.Authentication}
      */
     protected String getUsername(Oidc.Provider provider, OpenIdClaims openIdClaims) {
-        return Objects.toString(openIdClaims.get(provider.getUsernameField()));
+        final Object username = getClaimValue(openIdClaims, provider.getUsernameField());
+        return Objects.toString(username);
     }
 
     /**
@@ -114,19 +115,31 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
      */
     protected List<String> getOidcGroups(Oidc.Provider provider, OpenIdClaims openIdClaims) {
         List<String> groups = new ArrayList<>();
-        if (openIdClaims.contains(provider.getGroupsField())) {
-            Object groupsField = openIdClaims.get(provider.getGroupsField());
-            // When the user belongs to only one group, groupsField can either be an array (with one item)
-            // or a string, depending on the IdP implementation.
-            if (groupsField instanceof Collection) {
-                groups = ((Collection<Object>) groupsField)
-                        .stream()
-                        .map(Objects::toString)
-                        .collect(Collectors.toList());
-            } else if (groupsField instanceof String) {
-                groups.add((String) groupsField);
-            }
+        Object groupsField = getClaimValue(openIdClaims, provider.getGroupsField());
+        // When the user belongs to only one group, groupsField can either be an array (with one item)
+        // or a string, depending on the IdP implementation.
+        if (groupsField instanceof Collection) {
+            groups = ((Collection<Object>) groupsField)
+                    .stream()
+                    .map(Objects::toString)
+                    .collect(Collectors.toList());
+        } else if (groupsField instanceof String) {
+            groups.add((String) groupsField);
         }
         return groups;
+    }
+
+    private Object getClaimValue(OpenIdClaims openIdClaims, String name) {
+        final String[] subFields = name.split("\\.");
+        Object claimValue = openIdClaims.get(subFields[0]);
+        for(int i = 1; i < subFields.length; i++) {
+            final String subField = subFields[i];
+            if (claimValue instanceof Map) {
+                claimValue = ((Map) claimValue).get(subField);
+            } else {
+                break;
+            }
+        }
+        return claimValue;
     }
 }
