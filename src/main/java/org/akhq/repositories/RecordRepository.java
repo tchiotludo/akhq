@@ -22,6 +22,7 @@ import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
+import org.akhq.utils.MaskingUtils;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.*;
@@ -71,6 +72,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
+
+    @Inject
+    private MaskingUtils maskingUtils;
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
@@ -443,7 +447,7 @@ public class RecordRepository extends AbstractRepository {
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
         SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
         SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
-        return new Record(
+        return maskingUtils.maskRecord(new Record(
             client,
             record,
             this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
@@ -456,13 +460,13 @@ public class RecordRepository extends AbstractRepository {
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
             topic
-        );
+        ));
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
         SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
         SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
-        return new Record(
+        return maskingUtils.maskRecord(new Record(
             client,
             record,
             schemaRegistryType,
@@ -475,7 +479,7 @@ public class RecordRepository extends AbstractRepository {
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
             topic
-        );
+        ));
     }
 
     public List<RecordMetadata> produce(

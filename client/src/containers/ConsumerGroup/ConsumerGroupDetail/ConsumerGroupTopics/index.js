@@ -1,3 +1,3 @@
-import  ConsumerGroupTopics from './ConsumerGroupTopics';
+import ConsumerGroupTopics from './ConsumerGroupTopics';
 
-export default  ConsumerGroupTopics;
+export default ConsumerGroupTopics;

@@ -2,7 +2,7 @@ import React from 'react';
 import Table from '../../../components/Table';
 import { uriConsumerGroups, uriConsumerGroupDelete } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
-import {calculateTopicOffsetLag, groupedTopicOffset} from '../../../utils/converters';
+import { calculateTopicOffsetLag, groupedTopicOffset } from '../../../utils/converters';
 import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
@@ -10,8 +10,8 @@ import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
-import {Link} from 'react-router-dom';
-import {handlePageChange, getPageNumber} from './../../../utils/pagination'
+import { Link } from 'react-router-dom';
+import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 
 class ConsumerGroupList extends Root {
   state = {
@@ -31,15 +31,19 @@ class ConsumerGroupList extends Root {
 
   componentDidMount() {
     const { clusterId } = this.props.match.params;
-    const { search, pageNumber} = this.state;
-    const query =  new URLSearchParams(this.props.location.search);
+    const { search, pageNumber } = this.state;
+    const query = new URLSearchParams(this.props.location.search);
 
-    this.setState({ selectedCluster: clusterId,
-      search: (query.get('search'))? query.get('search') : search,
-      pageNumber: (query.get('page'))? parseInt(query.get('page')) : parseInt(pageNumber)
-    }, () => {
-      this.getConsumerGroup();
-    });
+    this.setState(
+      {
+        selectedCluster: clusterId,
+        search: query.get('search') ? query.get('search') : search,
+        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+      },
+      () => {
+        this.getConsumerGroup();
+      }
+    );
   }
 
   handleSearch = data => {
@@ -55,7 +59,6 @@ class ConsumerGroupList extends Root {
     });
   };
 
-
   async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
     this.setState({ loading: true });
@@ -65,10 +68,10 @@ class ConsumerGroupList extends Root {
     if (response.results) {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
-          this.props.history.push({
-            pathname: `/ui/${this.state.selectedCluster}/group`,
-            search: `search=${this.state.search}&page=${pageNumber}`
-          })
+        this.props.history.push({
+          pathname: `/ui/${this.state.selectedCluster}/group`,
+          search: `search=${this.state.search}&page=${pageNumber}`
+        })
       );
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 1, loading: false });
@@ -164,7 +167,7 @@ class ConsumerGroupList extends Root {
       });
   };
   render() {
-    const { selectedCluster, search, pageNumber, totalPageNumber, loading} = this.state;
+    const { selectedCluster, search, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
     const { history } = this.props;
 

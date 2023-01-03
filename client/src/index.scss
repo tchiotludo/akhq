@@ -1,42 +1,42 @@
-@import "css/init";
+@import 'css/init';
 
 // vendor
-@import "~bootstrap/scss/bootstrap";
-$fa-font-path: "../fonts";
-@import "~font-awesome/scss/font-awesome";
-@import "~react-datepicker/dist/react-datepicker.css";
-@import "~axios-progress-bar/dist/nprogress.css";
+@import '~bootstrap/scss/bootstrap';
+$fa-font-path: '../fonts';
+@import '~font-awesome/scss/font-awesome';
+@import '~react-datepicker/dist/react-datepicker.css';
+@import '~axios-progress-bar/dist/nprogress.css';
 
 // old styles
-@import "css/templates/bootstrap";
-@import "css/templates/layout";
-@import "css/templates/login";
-@import "css/templates/sidebar";
-@import "css/datas/filter";
-@import "css/datas/highlight";
-@import "css/datas/after-offset";
-@import "css/forms/ace";
-@import "css/forms/datetime";
-@import "css/forms/multiple";
-@import "css/forms/select";
-@import "css/tables/table";
-@import "css/tables/row-action";
+@import 'css/templates/bootstrap';
+@import 'css/templates/layout';
+@import 'css/templates/login';
+@import 'css/templates/sidebar';
+@import 'css/datas/filter';
+@import 'css/datas/highlight';
+@import 'css/datas/after-offset';
+@import 'css/forms/ace';
+@import 'css/forms/datetime';
+@import 'css/forms/multiple';
+@import 'css/forms/select';
+@import 'css/tables/table';
+@import 'css/tables/row-action';
 
 // components
-@import "components/Base/Base.scss";
-@import "components/Table/styles.scss";
-@import "components/Form/styles.scss";
-@import "components/Form/Select/styles.scss";
-@import "components/DatePicker/styles.scss";
-@import "components/Pagination/styles.scss";
-@import "components/SearchBar/styles.scss";
+@import 'components/Base/Base.scss';
+@import 'components/Table/styles.scss';
+@import 'components/Form/styles.scss';
+@import 'components/Form/Select/styles.scss';
+@import 'components/DatePicker/styles.scss';
+@import 'components/Pagination/styles.scss';
+@import 'components/SearchBar/styles.scss';
 
 // containers
-@import "containers/SideBar/styles.scss";
-@import "containers/Tail/styles.scss";
-@import "src/containers/Node/NodeDetail/styles.scss";
-@import "src/containers/Topic/TopicProduce/styles.scss";
-@import "containers/Login/styles.scss";
+@import 'containers/SideBar/styles.scss';
+@import 'containers/Tail/styles.scss';
+@import 'src/containers/Node/NodeDetail/styles.scss';
+@import 'src/containers/Topic/TopicProduce/styles.scss';
+@import 'containers/Login/styles.scss';
 
 #content {
   transition: all 0.2s ease;
@@ -73,7 +73,6 @@ $fa-font-path: "../fonts";
   border-top-color: $red;
   border-left-color: $red;
 }
-
 
 .Toastify__toast-container {
   width: 98% !important;
@@ -118,4 +117,3 @@ $fa-font-path: "../fonts";
     }
   }
 }
-

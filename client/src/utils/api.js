@@ -49,7 +49,7 @@ const handleError = err => {
 export const get = (url, config) =>
   new Promise((resolve, reject) => {
     axios
-      .get(url, {...configs, ...config})
+      .get(url, { ...configs, ...config })
       .then(res => {
         resolve(res);
       })
@@ -63,7 +63,7 @@ export const get = (url, config) =>
 export const put = (url, body, config) =>
   new Promise((resolve, reject) => {
     axios
-      .put(url, body, {...configs, ...config})
+      .put(url, body, { ...configs, ...config })
       .then(res => {
         resolve(res);
       })
@@ -77,7 +77,7 @@ export const put = (url, body, config) =>
 export const post = (url, body, config) =>
   new Promise((resolve, reject) => {
     axios
-      .post(url, body, {...configs, ...config})
+      .post(url, body, { ...configs, ...config })
       .then(res => {
         resolve(res);
       })
@@ -123,7 +123,7 @@ export const logout = url => {
       .then(response => {
         resolve(response);
       })
-      .catch(function(err) {
+      .catch(function (err) {
         reject(handleError(err));
       });
   });

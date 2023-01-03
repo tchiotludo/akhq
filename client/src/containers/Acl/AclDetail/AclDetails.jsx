@@ -5,7 +5,7 @@ import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
 import AclClusters from './AclClusters/AclClusters';
 import AclTransactionalIds from './AclTransactionalIds/AclTransactionalIds';
-import {getSelectedTab} from '../../../utils/functions';
+import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 
 class AclDetails extends Component {
@@ -21,12 +21,14 @@ class AclDetails extends Component {
     const { clusterId, principalEncoded } = this.props.match.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
-        {
-          selectedTab: (tabSelected)? tabSelected : 'topics'
-        },
-        () => {
-          this.props.history.replace(`/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`);
-        }
+      {
+        selectedTab: tabSelected ? tabSelected : 'topics'
+      },
+      () => {
+        this.props.history.replace(
+          `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
+        );
+      }
     );
   }
 
@@ -57,11 +59,19 @@ class AclDetails extends Component {
         );
       case 'clusters':
         return (
-          <AclClusters clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+          <AclClusters
+            clusterId={clusterId}
+            principalEncoded={principalEncoded}
+            history={history}
+          />
         );
       case 'transactionalids':
         return (
-          <AclTransactionalIds clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
+          <AclTransactionalIds
+            clusterId={clusterId}
+            principalEncoded={principalEncoded}
+            history={history}
+          />
         );
       default:
         return (
@@ -80,28 +90,32 @@ class AclDetails extends Component {
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/topics`}
+              <Link
+                to={`/ui/${clusterId}/acls/${principalEncoded}/topics`}
                 className={this.tabClassName('topics')}
               >
                 Topics
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/groups`}
+              <Link
+                to={`/ui/${clusterId}/acls/${principalEncoded}/groups`}
                 className={this.tabClassName('groups')}
               >
                 Groups
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/clusters`}
+              <Link
+                to={`/ui/${clusterId}/acls/${principalEncoded}/clusters`}
                 className={this.tabClassName('clusters')}
               >
                 Clusters
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/acls/${principalEncoded}/transactionalids`}
+              <Link
+                to={`/ui/${clusterId}/acls/${principalEncoded}/transactionalids`}
                 className={this.tabClassName('transactionalids')}
               >
                 Transactional Ids
@@ -123,8 +137,7 @@ class AclDetails extends Component {
 AclDetails.propTypes = {
   match: PropTypes.object,
   location: PropTypes.object,
-  history: PropTypes.object,
-
-}
+  history: PropTypes.object
+};
 
 export default AclDetails;

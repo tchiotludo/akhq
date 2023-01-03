@@ -3,7 +3,13 @@ import React from 'react';
 import Enzyme, { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Table from './Table';
-import { TABLE_ADD, TABLE_DELETE, TABLE_DETAILS, TABLE_CONFIG, TABLE_EDIT } from '../../utils/constants';
+import {
+  TABLE_ADD,
+  TABLE_DELETE,
+  TABLE_DETAILS,
+  TABLE_CONFIG,
+  TABLE_EDIT
+} from '../../utils/constants';
 
 Enzyme.configure({ adapter: new Adapter() });
 
