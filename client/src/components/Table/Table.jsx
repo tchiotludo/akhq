@@ -473,9 +473,8 @@ class Table extends Component {
             </td>
           </tr>
         );
-      } else {
-        return noContent;
       }
+      return noContent;
     }
     return (
       <tr>
@@ -514,13 +513,11 @@ class Table extends Component {
       allItemRows = allItemRows.concat(perItemRows);
     });
 
-    let classNames = 'table table-bordered table-hover mb-0';
-    if (!noStripes) classNames += ' table-striped';
-    if (noStripes) classNames += ' no-stripes';
+    const stripesStyle = noStripes ? 'no-stripes' : 'table-striped';
 
     return (
       <div className="table-responsive">
-        <table className={classNames}>
+        <table className={`table table-bordered table-hover mb-0 ${stripesStyle}`}>
           {this.renderHeader()}
           <tbody>
             {loading
