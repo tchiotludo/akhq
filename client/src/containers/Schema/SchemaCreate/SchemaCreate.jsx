@@ -76,7 +76,7 @@ class SchemaCreate extends Form {
       this.props.history.push({
         pathname: `/ui/${clusterId}/schema`
       });
-      toast.success(`Schema '${formData.subject}' is created`);
+      toast.success(`Schema '${formData.subject}' created`);
     });
   }
 

@@ -66,7 +66,7 @@ class TopicCreate extends Form {
       this.props.history.push({
         pathname: `/ui/${clusterId}/topic`
       });
-      toast.success(`Topic '${formData.name}' is created`);
+      toast.success(`Topic '${formData.name}' created`);
     });
   }
   render() {
