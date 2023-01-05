@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import lowerCase from 'lodash/lowerCase';
 import moment from 'moment';
 import { ROLE_TYPE } from './constants';
 
@@ -54,7 +54,7 @@ export function handleConvert(value, unit, exclude) {
 }
 
 export function handleType(value) {
-  return _.lowerCase(value.plural);
+  return lowerCase(value.plural);
 }
 
 export function showTime(milliseconds) {

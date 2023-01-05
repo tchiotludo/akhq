@@ -7,7 +7,7 @@ import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import AceEditor from 'react-ace';
-import _ from 'lodash';
+import chain from 'lodash/chain';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
@@ -53,7 +53,7 @@ class ConnectCreate extends Root {
     });
   };
 
-  handleShema(definitions) {
+  handleSchema(definitions) {
     this.schema = {};
     let formData = {};
     formData.type = this.state.selectedType;
@@ -218,7 +218,7 @@ class ConnectCreate extends Root {
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    _(plugin.definitions)
+    chain(plugin.definitions)
       .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
       .value()
       .forEach(definition => {
@@ -320,8 +320,8 @@ class ConnectCreate extends Root {
     let plugin = this.getPlugin();
     if (plugin.definitions) {
       this.setState({ plugin }, () => {
-        this.handleShema(
-          _(plugin.definitions)
+        this.handleSchema(
+          chain(plugin.definitions)
             .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
             .value()
         );

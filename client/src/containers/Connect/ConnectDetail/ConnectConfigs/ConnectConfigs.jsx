@@ -9,7 +9,7 @@ import {
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
-import _ from 'lodash';
+import chain from 'lodash/chain';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
@@ -234,7 +234,7 @@ class ConnectConfigs extends Form {
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    _(plugin.definitions)
+    chain(plugin.definitions)
       .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
       .value()
       .forEach(definition => {
