@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import _ from 'lodash';
+import remove from 'lodash/remove';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
 import { SETTINGS_VALUES } from '../../utils/constants';
@@ -133,17 +133,10 @@ class Tail extends Root {
 
   handleSelectedTopics = topic => {
     let selectedTopics = this.state.selectedTopics;
-    if (
-      selectedTopics.find(el => {
-        return el === topic;
-      })
-    ) {
-      let updatedSelected = _.remove(selectedTopics, el => {
-        return el !== topic;
-      });
-      this.setState({
-        selectedTopics: updatedSelected
-      });
+    if (selectedTopics.find(el => el === topic)) {
+      let updatedSelected = remove(selectedTopics, el => el !== topic);
+
+      this.setState({ selectedTopics: updatedSelected });
     } else {
       selectedTopics.push(topic);
       this.setState({ selectedTopics: selectedTopics });

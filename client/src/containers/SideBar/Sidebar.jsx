@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
-import _ from 'lodash';
+import chain from 'lodash/chain';
 import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
@@ -59,7 +59,7 @@ class Sidebar extends Component {
 
     const clusterId = match ? match.params.clusterId || '' : '';
     let allClusters =
-      _(clusters)
+      chain(clusters)
         .sortBy(cluster => cluster.id)
         .value() || [];
     const cluster = allClusters.find(cluster => cluster.id === clusterId);
