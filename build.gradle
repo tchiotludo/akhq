@@ -206,14 +206,14 @@ task testKafkaCluster(type:JavaExec) {
     group = 'verification'
     description = 'Start a standalone test Kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.akhq.KafkaTestCluster"
+    mainClass = "org.akhq.KafkaTestCluster"
 }
 
 task testInjectData(type:JavaExec) {
     group = 'verification'
     description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.akhq.KafkaTestCluster"
+    mainClass = "org.akhq.KafkaTestCluster"
     args 'inject'
 }
 
