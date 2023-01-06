@@ -40,6 +40,9 @@ public class AkhqController extends AbstractController {
     private Oidc oidc;
 
     @Inject
+    private Oauth oauth;
+
+    @Inject
     private UIOptions uIOptions;
 
     @Inject
@@ -81,6 +84,13 @@ public class AkhqController extends AbstractController {
             authDefinition.oidcAuths = oidc.getProviders().entrySet()
                 .stream()
                 .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
+                .collect(Collectors.toList());
+        }
+
+        if (oauth.isEnabled()) {
+            authDefinition.oauthAuths = oauth.getProviders().entrySet()
+                .stream()
+                .map(e -> new OauthAuth(e.getKey(), e.getValue().getLabel()))
                 .collect(Collectors.toList());
         }
 
@@ -184,6 +194,7 @@ public class AkhqController extends AbstractController {
         private boolean loginEnabled;
         private boolean formEnabled;
         private List<OidcAuth> oidcAuths;
+        private List<OauthAuth> oauthAuths;
         private String version;
     }
 
@@ -191,6 +202,14 @@ public class AkhqController extends AbstractController {
     @NoArgsConstructor
     @Getter
     public static class OidcAuth {
+        private String key;
+        private String label;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class OauthAuth {
         private String key;
         private String label;
     }

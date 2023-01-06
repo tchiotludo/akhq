@@ -9,7 +9,7 @@ import {
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import AceEditor from 'react-ace';
-import _ from 'lodash';
+import filter from 'lodash/filter';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
@@ -234,23 +234,23 @@ class ConnectConfigs extends Form {
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    _(plugin.definitions)
-      .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
-      .value()
-      .forEach(definition => {
-        if (definition.group !== actualGroup) {
-          if (actualGroup === '') {
-            actualGroup = definition.group;
-            sameGroup = [definition];
-          } else {
-            allOfIt.push(this.handleGroup(sameGroup));
-            sameGroup = [definition];
-            actualGroup = definition.group;
-          }
+    filter(
+      plugin.definitions,
+      plugin => plugin.name !== 'name' && plugin.name !== 'connector.class'
+    ).forEach(definition => {
+      if (definition.group !== actualGroup) {
+        if (actualGroup === '') {
+          actualGroup = definition.group;
+          sameGroup = [definition];
         } else {
-          sameGroup.push(definition);
+          allOfIt.push(this.handleGroup(sameGroup));
+          sameGroup = [definition];
+          actualGroup = definition.group;
         }
-      });
+      } else {
+        sameGroup.push(definition);
+      }
+    });
     allOfIt.push(this.handleGroup(sameGroup));
     this.setState({ display: allOfIt });
   };

@@ -67,3 +67,18 @@ akhq:
         value: "none"
 ```
 
+## Data Masking
+If you want to hide some data in your records, you can configure this with the following filters.
+These will be applied to all record values and keys.
+```yaml
+akhq:
+  security:
+    data-masking:
+      filters:
+        - description: "Masks value for secret-key fields"
+          search-regex: '"(secret-key)":".*"'
+          replacement: '"$1":"xxxx"'
+        - description: "Masks last digits of phone numbers"
+          search-regex: '"([\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?)[0-9]{4,6}"'
+          replacement: '"$1xxxx"'
+```

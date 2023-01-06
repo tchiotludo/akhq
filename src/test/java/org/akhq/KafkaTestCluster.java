@@ -333,6 +333,10 @@ public class KafkaTestCluster implements Runnable {
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
+                new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
@@ -343,6 +347,10 @@ public class KafkaTestCluster implements Runnable {
         bindings.add(new AclBinding(
                 new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
                 new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+        );
+        bindings.add(new AclBinding(
+                new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
+                new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         testUtils.getAdminClient().createAcls(bindings).all().get();
         log.debug("bindings acls added");

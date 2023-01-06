@@ -30,8 +30,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "^5.0.1",
     "react-timeago": "^6.2.1",
-    "react-toastify": "^6.0.6",
-    "reactstrap": "^8.4.0"
+    "react-toastify": "^6.0.6"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -39,7 +38,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src",
-    "lint:fix": "eslint --fix src/**/*.js{,x}"
+    "lint:fix": "eslint --fix src",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write ."
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -51,18 +52,19 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@babel/core": "^7.20.2",
+    "@babel/eslint-parser": "^7.19.1",
     "@testing-library/jest-dom": "^5.11.2",
     "@testing-library/react": "^10.4.7",
     "@testing-library/user-event": "^12.1.0",
-    "babel-eslint": "10.1.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "jest-dom": "^4.0.0",
     "joi-browser": "^13.4.0",
-    "prettier": "^2.0.5",
+    "prettier": "^2.7.1",
     "react-test-renderer": "^16.13.1",
     "sass": "^1.56.0",
     "style-loader": "^1.1.2",

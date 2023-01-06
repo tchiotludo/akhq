@@ -16,7 +16,7 @@ import {
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
-import _ from 'lodash';
+import camelCase from 'lodash/camelCase';
 import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
@@ -426,7 +426,7 @@ class TopicData extends Root {
     const data = {
       partition: row.partition,
       key: row.key,
-      header: row.headers,
+      headers: row.headers,
       keySchemaId: row.schema.key,
       valueSchemaId: row.schema.value,
       value: row.value
@@ -607,10 +607,10 @@ class TopicData extends Root {
     let offsets = this.state.offsets;
     for (i = 0; i < offsetsOptions.length; i++) {
       const option = offsetsOptions[i];
-      const camelcaseOption = _.camelCase(option);
+      const camelCaseOption = camelCase(option);
 
-      if (offsets[camelcaseOption] === undefined) {
-        offsets[camelcaseOption] = '';
+      if (offsets[camelCaseOption] === undefined) {
+        offsets[camelCaseOption] = '';
         this.setState({ offsets });
       }
 
@@ -623,10 +623,10 @@ class TopicData extends Root {
               type="number"
               min="0"
               name={`${i}`}
-              value={offsets[camelcaseOption]}
+              value={offsets[camelCaseOption]}
               onChange={({ currentTarget: input }) => {
                 let { offsets } = this.state;
-                offsets[camelcaseOption] = input.value;
+                offsets[camelCaseOption] = input.value;
                 this.setState(offsets);
               }}
             />

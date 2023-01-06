@@ -1,12 +1,12 @@
-@import "../../css/init";
+@import '../../css/init';
 
-input.page-input{
-    width: 30px !important;
-    margin-top: 0;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: $white
+input.page-input {
+  width: 30px !important;
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: $white;
 }
 
 /*remove arrows from input*/
@@ -18,6 +18,6 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
-  -moz-appearance:textfield;
+input[type='number'] {
+  -moz-appearance: textfield;
 }

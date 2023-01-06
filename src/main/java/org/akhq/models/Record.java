@@ -157,6 +157,10 @@ public class Record {
         this.value = value;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
+
     public void setTruncated(Boolean truncated) {
         this.truncated = truncated;
     }

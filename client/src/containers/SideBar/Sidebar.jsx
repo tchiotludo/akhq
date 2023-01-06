@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
-import _ from 'lodash';
+import sortBy from 'lodash/sortBy';
 import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
@@ -63,10 +63,7 @@ class Sidebar extends Component {
     });
 
     const clusterId = match ? match.params.clusterId || '' : '';
-    let allClusters =
-      _(clusters)
-        .sortBy(cluster => cluster.id)
-        .value() || [];
+    const allClusters = sortBy(clusters || [], cluster => cluster.id);
     const cluster = allClusters.find(cluster => cluster.id === clusterId);
     this.setState(
       {
@@ -131,12 +128,12 @@ class Sidebar extends Component {
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
           <Link to={`/ui/${cluster.id}/topic`}>
-          <div
-            className={selectedCluster === cluster.id ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {cluster.id}
-          </div>
+            <div
+              className={selectedCluster === cluster.id ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {cluster.id}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -149,12 +146,12 @@ class Sidebar extends Component {
       >
         <NavText>
           <Link to={`/ui/${selectedCluster}/connect/${connect}`}>
-          <div
-            className={selectedConnect === connect ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {connect}
-          </div>
+            <div
+              className={selectedConnect === connect ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {connect}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -224,7 +221,6 @@ class Sidebar extends Component {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
-
       <NavItem
         eventKey={label}
         className={pathname.includes(tab) ? 'active' : ''}
@@ -238,22 +234,26 @@ class Sidebar extends Component {
       >
         <NavIcon>
           {' '}
-           <Link to={`/ui/${selectedCluster}/${tab}`}
-                 onClick={(e) => {
-                   this.setState({ selectedTab: tab });
-                   e.preventDefault();
-           }}>
-               <i className={iconClassName} aria-hidden="true" />
-           </Link>
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            <i className={iconClassName} aria-hidden="true" />
+          </Link>
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/ui/${selectedCluster}/${tab}`}
-                onClick={(e) => {
-                  this.setState({ selectedTab: tab });
-                  e.preventDefault();
-                }}>
-              {label}
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            {label}
           </Link>
         </NavText>
       </NavItem>
@@ -410,7 +410,7 @@ Sidebar.propTypes = {
   children: PropTypes.any,
   expanded: PropTypes.bool,
   toggleSidebar: PropTypes.func,
-  selectedTab: PropTypes.string,
-}
+  selectedTab: PropTypes.string
+};
 
 export default withRouter(Sidebar);

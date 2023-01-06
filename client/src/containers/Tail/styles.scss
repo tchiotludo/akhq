@@ -7,24 +7,22 @@
   @media (max-width: 991.98px) {
     width: 100%;
     padding-right: 0;
-    margin: 0!important;
+    margin: 0 !important;
 
     .tail-search-input {
       width: 100%;
     }
   }
-
 }
 
 .tail-headers:hover {
-    text-decoration: underline !important;
-    color: white !important;
+  text-decoration: underline !important;
+  color: white !important;
 }
 
 .show > .btn-white.dropdown-toggle {
-  background-color: white!important;
+  background-color: white !important;
 }
-
 
 select.bs-select-hidden,
 .bootstrap-select > select.bs-select-hidden,
@@ -52,11 +50,37 @@ select.selectpicker {
   margin-top: -1px;
 }
 
-.bootstrap-select > .dropdown-toggle.bs-placeholder, .bootstrap-select > .dropdown-toggle.bs-placeholder:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder:active {
+.bootstrap-select > .dropdown-toggle.bs-placeholder,
+.bootstrap-select > .dropdown-toggle.bs-placeholder:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder:active {
   color: #999;
 }
 
-.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:active {
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:active,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:active,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:active,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:active,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:active,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:focus,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:active {
   color: rgba(255, 255, 255, 0.5);
 }
 
@@ -97,7 +121,7 @@ select.selectpicker {
   width: auto !important;
 }
 
-.bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn) {
+.bootstrap-select:not([class*='col-']):not([class*='form-control']):not(.input-group-btn) {
   width: 220px;
 }
 
@@ -115,7 +139,7 @@ select.selectpicker {
   height: auto;
 }
 
-:not(.input-group) > .bootstrap-select.form-control:not([class*="col-"]) {
+:not(.input-group) > .bootstrap-select.form-control:not([class*='col-']) {
   width: 100%;
 }
 
@@ -125,23 +149,26 @@ select.selectpicker {
 }
 
 .form-inline .bootstrap-select,
-.form-inline .bootstrap-select.form-control:not([class*="col-"]) {
+.form-inline .bootstrap-select.form-control:not([class*='col-']) {
   width: auto;
 }
 
-.bootstrap-select:not(.input-group-btn), .bootstrap-select[class*="col-"] {
+.bootstrap-select:not(.input-group-btn),
+.bootstrap-select[class*='col-'] {
   float: none;
   display: inline-block;
   margin-left: 0;
 }
 
-.bootstrap-select.dropdown-menu-right, .bootstrap-select[class*="col-"].dropdown-menu-right,
-.row .bootstrap-select[class*="col-"].dropdown-menu-right {
+.bootstrap-select.dropdown-menu-right,
+.bootstrap-select[class*='col-'].dropdown-menu-right,
+.row .bootstrap-select[class*='col-'].dropdown-menu-right {
   float: right;
 }
 
 .form-inline .bootstrap-select,
-.form-horizontal .bootstrap-select,.bootstrap-select {
+.form-horizontal .bootstrap-select,
+.bootstrap-select {
   margin-bottom: 0;
 }
 
@@ -250,7 +277,7 @@ select.selectpicker {
   border-radius: inherit;
 }
 
-.bootstrap-select[class*="col-"] .dropdown-toggle {
+.bootstrap-select[class*='col-'] .dropdown-toggle {
   width: 100%;
 }
 
@@ -427,7 +454,8 @@ select.selectpicker {
   left: auto;
 }
 
-.bootstrap-select.show-menu-arrow.open > .dropdown-toggle .filter-option:before, .bootstrap-select.show-menu-arrow.open > .dropdown-toggle .filter-option:after,
+.bootstrap-select.show-menu-arrow.open > .dropdown-toggle .filter-option:before,
+.bootstrap-select.show-menu-arrow.open > .dropdown-toggle .filter-option:after,
 .bootstrap-select.show-menu-arrow.show > .dropdown-toggle .filter-option:before,
 .bootstrap-select.show-menu-arrow.show > .dropdown-toggle .filter-option:after {
   display: block;
@@ -494,5 +522,3 @@ select.selectpicker {
     width: 100% !important;
   }
 }
-
-

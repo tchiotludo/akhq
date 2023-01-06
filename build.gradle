@@ -134,6 +134,9 @@ dependencies {
 
     //AWS MSK IAM Auth
     implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.5'
+
+    // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.1'
 }
 
 /**********************************************************************************************************************\
@@ -206,14 +209,14 @@ task testKafkaCluster(type:JavaExec) {
     group = 'verification'
     description = 'Start a standalone test Kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.akhq.KafkaTestCluster"
+    mainClass = "org.akhq.KafkaTestCluster"
 }
 
 task testInjectData(type:JavaExec) {
     group = 'verification'
     description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
-    main = "org.akhq.KafkaTestCluster"
+    mainClass = "org.akhq.KafkaTestCluster"
     args 'inject'
 }
 

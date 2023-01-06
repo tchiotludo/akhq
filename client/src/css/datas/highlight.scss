@@ -1,19 +1,19 @@
 table {
-    tbody {
-        tr.khq-data-highlight-row {
-            &:hover {
-                background: none;
-            }
+  tbody {
+    tr.khq-data-highlight-row {
+      &:hover {
+        background: none;
+      }
 
-            pre {
-                overflow: hidden;
-                max-height: none;
-                cursor: default;
+      pre {
+        overflow: hidden;
+        max-height: none;
+        cursor: default;
 
-                code:after {
-                    display: none;
-                }
-            }
+        code:after {
+          display: none;
         }
+      }
     }
+  }
 }

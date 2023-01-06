@@ -1,11 +1,12 @@
 import prefix from './../prefix';
 
-const baseUrl = process.env.REACT_APP_BASE_URL ||
+const baseUrl =
+  process.env.REACT_APP_BASE_URL ||
   `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 
-export const basePath = prefix()
+export const basePath = prefix();
 
-export const apiUrl = baseUrl + prefix() + '/api'
+export const apiUrl = baseUrl + prefix() + '/api';
 
 export const uriLogin = () => {
   return `${basePath}/login`;
@@ -15,7 +16,7 @@ export const uriAuths = () => {
   return `${apiUrl}/auths`;
 };
 
-export const uriOidc = (provider) => {
+export const uriOidc = provider => {
   return `${baseUrl}${basePath}/oauth/login/${provider}`;
 };
 
@@ -31,21 +32,21 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
-export const uriUIOptions = (clusterId) => {
+export const uriUIOptions = clusterId => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };
 
 export const uriTopics = (clusterId, search, show, page, pageSize) => {
-  if(pageSize === 1){
+  if (pageSize === 1) {
     return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
-  }else{
+  } else {
     return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}&uiPageSize=${pageSize}`;
   }
 };
 
 export const uriTopicDefaultConf = () => `${apiUrl}/topic/defaults-configs`;
 
-export const uriTopicsName = (clusterId) => `${apiUrl}/${clusterId}/topic/name`;
+export const uriTopicsName = clusterId => `${apiUrl}/${clusterId}/topic/name`;
 
 export const uriTopicsInfo = (clusterId, topicId) => `${apiUrl}/${clusterId}/topic/${topicId}`;
 
@@ -58,12 +59,7 @@ export const uriDeleteTopics = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}`;
 };
 
-export const uriTopicData = (
-  clusterId,
-  topicId,
-  filters,
-  nextPage = ''
-) => {
+export const uriTopicData = (clusterId, topicId, filters, nextPage = '') => {
   if (nextPage !== '') {
     return basePath + nextPage;
   }
@@ -74,11 +70,11 @@ export const uriTopicData = (
 
 export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/search`;
-  if(filters) {
-    uri = uri + `?${filters}`
+  if (filters) {
+    uri = uri + `?${filters}`;
   }
-  if(offsets) {
-    uri = uri + `&after=${offsets}`
+  if (offsets) {
+    uri = uri + `&after=${offsets}`;
   }
   return uri;
 };
@@ -115,8 +111,7 @@ export const uriTopicsOffsetsByTimestamp = (clusterId, topicId, timestamp) => {
 
 export const uriTopicsCopy = (fromClusterId, fromTopicId, toClusterId, toTopicId) => {
   return `${apiUrl}/${fromClusterId}/topic/${fromTopicId}/copy/${toClusterId}/topic/${toTopicId}`;
-}
-
+};
 
 export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
@@ -277,7 +272,9 @@ export const uriConsumerGroupOffsets = (clusterId, groupId) => {
 };
 
 export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
-  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/offsets/start?timestamp=${timestamp}`;
+  return `${apiUrl}/${clusterId}/group/${encodeURIComponent(
+    groupId
+  )}/offsets/start?timestamp=${timestamp}`;
 };
 
 export const uriConsumerGroupDelete = (clusterId, groupId) => {
@@ -326,18 +323,17 @@ export const uriLiveTail = (clusterId, search, topics, size) => {
   }${size.length > 0 ? sizeUrl : ''}`;
 };
 
-
 export const uriTopicDataDelete = (clusterId, topicName, partition, key) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data?partition=${partition}&key=${key}`;
 };
 
 export const uriTopicDataEmpty = (clusterId, topicName) => {
   return `${apiUrl}/${clusterId}/topic/${topicName}/data/empty`;
-}
+};
 
 export const uriTopicLastRecord = (clusterId, topicList) => {
   return `${apiUrl}/${clusterId}/topic/last-record?topics=${topicList}`;
-}
+};
 
 export default {
   apiUrl,

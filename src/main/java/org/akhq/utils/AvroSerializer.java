@@ -8,7 +8,6 @@ import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -55,24 +54,51 @@ public class AvroSerializer {
             .toFormatter();
 
     public static GenericRecord recordSerializer(Map<String, Object> record, Schema schema) {
+        validateSchema(schema.getFields(), record);
+
         GenericRecord returnValue = new GenericData.Record(schema);
-        Set<String> schemaFields = schema.getFields().stream()
-            .map(Schema.Field::name).collect(Collectors.toSet());
-
-        Set<String> recordFields = record.keySet();
-
-        if (schemaFields.size() != recordFields.size()) {
-            Object[] missingFields = CollectionUtils.disjunction(schemaFields, recordFields).stream().toArray();
-            throw new IllegalArgumentException(" Record does not contain followings fields ".concat(Arrays.toString(missingFields)));
-        }
-
         schema
             .getFields()
             .forEach(field -> {
                 Object fieldValue = record.getOrDefault(field.name(), field.defaultVal());
                 returnValue.put(field.name(), AvroSerializer.objectSerializer(fieldValue, field.schema()));
             });
+
         return returnValue;
+    }
+
+    private static void validateSchema(List<Schema.Field> fields, Map<String, Object> record) {
+        for (Schema.Field field : fields) {
+            var schema = field.schema();
+            var type = schema.getType();
+            var value = Optional.ofNullable(record)
+                .filter(Objects::nonNull)
+                .map(r -> r.get(field.name()));
+            var hasEmptyValue = value.isEmpty();
+
+            validateSchemaHasDefaultValue(field, schema, hasEmptyValue);
+
+            if (Schema.Type.RECORD.getName().equals(type.getName()) && !hasEmptyValue) {
+                validateSchema(schema.getFields(), (Map<String, Object>) value.get());
+            }
+            else if (Schema.Type.ARRAY.getName().equals(type.getName()) && !hasEmptyValue) {
+                Schema elementType = schema.getElementType();
+                if (elementType.getType().equals(Schema.Type.RECORD)) {
+                    for(Map<String, Object> val : (List<Map<String, Object>>) value.get()) {
+                        validateSchema(elementType.getFields(), val);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void validateSchemaHasDefaultValue(Schema.Field field, Schema schema, boolean hasEmptyValue) {
+        var isFieldHasNullValue = field.hasDefaultValue() || schema.isNullable();
+
+        if ((!isFieldHasNullValue) && hasEmptyValue) {
+            var message = String.format("Field %s is missing in the payload", field.name());
+            throw new IllegalArgumentException(message);
+        }
     }
 
     @SuppressWarnings("unchecked")

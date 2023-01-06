@@ -12,9 +12,10 @@ Define groups with specific roles for your users
     * `attributes.topics-filter-regexp`: Regexp list to filter topics available for current group
     * `attributes.connects-filter-regexp`: Regexp list to filter Connect tasks available for current group
     * `attributes.consumer-groups-filter-regexp`: Regexp list to filter Consumer Groups available for current group
+    * `attributes.acls-filter-regexp`: Regexp list to filter acls available for current group
 
 ::: warning
-`topics-filter-regexp`, `connects-filter-regexp` and `consumer-groups-filter-regexp` are only used when listing resources.
+`topics-filter-regexp`, `connects-filter-regexp`, `consumer-groups-filter-regexp` and `acls-filter-regexp` are only used when listing resources.
 If you have `topics/create` or `connect/create` roles and you try to create a resource that doesn't follow the regexp, that resource **WILL** be created.
 :::
 
