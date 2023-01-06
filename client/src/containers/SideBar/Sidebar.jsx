@@ -100,25 +100,38 @@ class Sidebar extends Component {
       selectedConnect: '',
       enableKsqlDB: enableKsqlDB,
       allKsqlDBs: [],
-      selectedKsqlDB: '',
-    }
+      selectedKsqlDB: ''
+    };
     if (enableConnects) {
-      newState = {...newState, ...{
-        allConnects: cluster.connects,
-        selectedConnect: cluster.connects[0]
-      }};
+      newState = {
+        ...newState,
+        ...{
+          allConnects: cluster.connects,
+          selectedConnect: cluster.connects[0]
+        }
+      };
     }
     if (enableKsqlDB) {
-      newState = {...newState, ...{
-        allKsqlDBs: cluster.ksqldbs,
-        selectedKsqlDB: cluster.ksqldbs[0]
-      }};
+      newState = {
+        ...newState,
+        ...{
+          allKsqlDBs: cluster.ksqldbs,
+          selectedKsqlDB: cluster.ksqldbs[0]
+        }
+      };
     }
     this.setState(newState);
   }
 
   setClustersAndConnectsAndKsqlDBs = () => {
-    const { allClusters, allConnects, allKsqlDBs, selectedCluster, selectedConnect, selectedKsqlDB } = this.state;
+    const {
+      allClusters,
+      allConnects,
+      allKsqlDBs,
+      selectedCluster,
+      selectedConnect,
+      selectedKsqlDB
+    } = this.state;
     const listClusters = allClusters.map(cluster => (
       <NavItem
         key={`cluster/${cluster.id}`}
@@ -158,22 +171,22 @@ class Sidebar extends Component {
     ));
 
     const listKsqlDBs = allKsqlDBs.map(ksqlDB => (
-        <NavItem
-            key={`cluster/${ksqlDB}`}
-            eventKey={`cluster/${ksqlDB}`}
-            onClick={() => this.changeSelectedKsqlDB(ksqlDB)}
-        >
-          <NavText>
-            <Link to={`/ui/${selectedCluster}/ksqldb/${ksqlDB}`}>
-              <div
-                  className={selectedKsqlDB === ksqlDB ? ' active' : ''}
-                  style={{ color: '#759dac' }}
-              >
-                {ksqlDB}
-              </div>
-            </Link>
-          </NavText>
-        </NavItem>
+      <NavItem
+        key={`cluster/${ksqlDB}`}
+        eventKey={`cluster/${ksqlDB}`}
+        onClick={() => this.changeSelectedKsqlDB(ksqlDB)}
+      >
+        <NavText>
+          <Link to={`/ui/${selectedCluster}/ksqldb/${ksqlDB}`}>
+            <div
+              className={selectedKsqlDB === ksqlDB ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {ksqlDB}
+            </div>
+          </Link>
+        </NavText>
+      </NavItem>
     ));
 
     return { listClusters, listConnects, listKsqlDBs };
@@ -272,7 +285,7 @@ class Sidebar extends Component {
       height,
       enableRegistry,
       enableConnect,
-      enableKsqlDB,
+      enableKsqlDB
     } = this.state;
     const roles = this.state.roles || {};
     const tag = sessionStorage.getItem('version');

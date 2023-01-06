@@ -262,11 +262,7 @@ class Routes extends Root {
                 />
               )}
               {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
-                <Route
-                  exact
-                  path="/ui/:clusterId/ksqldb/:ksqlDBId/query"
-                  component={KsqlDBQuery}
-                />
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/query" component={KsqlDBQuery} />
               )}
               {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
                 <Route
@@ -276,11 +272,7 @@ class Routes extends Root {
                 />
               )}
               {roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
-                <Route
-                  exact
-                  path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?"
-                  component={KsqlDBList}
-                />
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?" component={KsqlDBList} />
               )}
               <Route exact path="/ui/:clusterId/settings" component={Settings} />
               <Redirect from="/" to={this.handleRedirect()} />

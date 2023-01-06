@@ -13,24 +13,27 @@ class KsqlDBList extends Component {
     clusterId: this.props.history.clusterId || this.props.match.params.clusterId,
     ksqlDBId: this.props.history.ksqlDBId || this.props.match.params.ksqlDBId,
     selectedTab: 'streams',
-    roles: JSON.parse(sessionStorage.getItem('roles')),
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
-  tabs = ['streams', 'tables', 'queries', 'info'];
+  tabs = {
+    streams: KsqlDBStreams,
+    tables: KsqlDBTables,
+    queries: KsqlDBQueries,
+    info: KsqlDBInfo
+  };
 
   componentDidMount() {
     const { clusterId, ksqlDBId } = this.props.match.params;
-    const tabSelected = getSelectedTab(this.props, this.tabs);
+    const tabSelected = getSelectedTab(this.props, Object.keys(this.tabs));
     this.setState({ selectedTab: tabSelected ? tabSelected : 'streams' }, () => {
-      this.props.history.replace(
-        `/ui/${clusterId}/ksqldb/${ksqlDBId}/${this.state.selectedTab}`
-      );
+      this.props.history.replace(`/ui/${clusterId}/ksqldb/${ksqlDBId}/${this.state.selectedTab}`);
     });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
-      const tabSelected = getSelectedTab(this.props, this.tabs);
+      const tabSelected = getSelectedTab(this.props, Object.keys(this.tabs));
       this.setState({ selectedTab: tabSelected });
     }
   }
@@ -43,58 +46,17 @@ class KsqlDBList extends Component {
   renderSelectedTab() {
     const { clusterId, ksqlDBId, selectedTab } = this.state;
     const { history, match, location } = this.props;
+    const SelectedTab = this.tabs[selectedTab] || KsqlDBStreams;
 
-    switch (selectedTab) {
-      case 'streams':
-        return (
-          <KsqlDBStreams
-            clusterId={clusterId}
-            ksqlDBId={ksqlDBId}
-            history={history}
-            match={match}
-            location={location}
-          ></KsqlDBStreams>
-        );
-      case 'tables':
-        return (
-          <KsqlDBTables
-            clusterId={clusterId}
-            ksqlDBId={ksqlDBId}
-            history={history}
-            match={match}
-            location={location}
-          ></KsqlDBTables>
-        );
-      case 'queries':
-        return (
-          <KsqlDBQueries
-            clusterId={clusterId}
-            ksqlDBId={ksqlDBId}
-            history={history}
-            match={match}
-            location={location}
-          ></KsqlDBQueries>
-        );
-      case 'info':
-        return (
-          <KsqlDBInfo
-            clusterId={clusterId}
-            ksqlDBId={ksqlDBId}
-            history={history}
-            match={match}
-          ></KsqlDBInfo>
-        );
-      default:
-        return (
-          <KsqlDBStreams
-            clusterId={clusterId}
-            ksqlDBId={ksqlDBId}
-            history={history}
-            match={match}
-            location={location}
-          ></KsqlDBStreams>
-        );
-    }
+    return (
+      <SelectedTab
+        clusterId={clusterId}
+        ksqlDBId={ksqlDBId}
+        history={history}
+        match={match}
+        location={location}
+      />
+    );
   }
 
   render() {

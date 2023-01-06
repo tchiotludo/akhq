@@ -67,9 +67,7 @@ class KsqlDBQueries extends Root {
 
     this.setState({ loading: true });
 
-    let response = await this.getApi(
-      uriKsqlDBQueries(clusterId, ksqlDBId, search, pageNumber)
-    );
+    let response = await this.getApi(uriKsqlDBQueries(clusterId, ksqlDBId, search, pageNumber));
     let data = response.data;
     if (data.results) {
       this.handleData(data);
@@ -91,7 +89,7 @@ class KsqlDBQueries extends Root {
         queryType: query.queryType || '',
         sink: query.sink || '',
         sinkTopic: query.sinkTopic || '',
-        sql: query.sql || '',
+        sql: query.sql || ''
       };
     });
 
@@ -113,8 +111,7 @@ class KsqlDBQueries extends Root {
   };
 
   render() {
-    const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } =
-      this.state;
+    const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
     return (
       <div>
@@ -201,8 +198,8 @@ class KsqlDBQueries extends Root {
                     style={{ width: '100%', minHeight: '25vh' }}
                   />
                 );
-              },
-            },
+              }
+            }
           ]}
           data={tableData}
           updateData={data => {

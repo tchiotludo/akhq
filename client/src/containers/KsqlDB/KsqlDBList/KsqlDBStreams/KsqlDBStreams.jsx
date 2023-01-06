@@ -66,9 +66,7 @@ class KsqlDBStreams extends Root {
 
     this.setState({ loading: true });
 
-    let response = await this.getApi(
-      uriKsqlDBStreams(clusterId, ksqlDBId, search, pageNumber)
-    );
+    let response = await this.getApi(uriKsqlDBStreams(clusterId, ksqlDBId, search, pageNumber));
     let data = response.data;
     if (data.results) {
       this.handleData(data);
@@ -112,8 +110,7 @@ class KsqlDBStreams extends Root {
   };
 
   render() {
-    const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } =
-      this.state;
+    const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     const { history } = this.props;
 
     return (
@@ -188,7 +185,7 @@ class KsqlDBStreams extends Root {
               colName: 'Is windowed',
               type: 'text',
               sortable: true
-            },
+            }
           ]}
           data={tableData}
           updateData={data => {

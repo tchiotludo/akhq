@@ -34,37 +34,44 @@ class KsqlDBQuery extends Root {
   submitDisabled = () => {
     return !this.state.formData.sql || this.state.formData.sql === '';
   };
-  buildQueryProperties = (input) => {
+  buildQueryProperties = input => {
     let properties = {};
-    input.split(/\r?\n/)
+    input
+      .split(/\r?\n/)
       .filter(value => value.includes('='))
       .forEach(value => {
         const keyValueProperty = value.split('=');
-        properties = {...properties, [keyValueProperty[0]]: keyValueProperty[1]}
+        properties = { ...properties, [keyValueProperty[0]]: keyValueProperty[1] };
       });
-  }
+  };
 
-  buildTable = (responseData) => {
+  buildTable = responseData => {
     this.setState({
-      tableColumns: Array.isArray(responseData.columnNames) && responseData.columnNames.map(value => ({
-          id: value.toLowerCase(),
-          name: value.toLowerCase(),
-          accessor: value.toLowerCase(),
-          colName: value,
-          type: 'text',
-          sortable: true
-        })) || [],
-      tableData: Array.isArray(responseData.columnValues) && responseData.columnValues.map(value => {
-        const rowValues = JSON.parse(value);
-        let row = {};
-        responseData.columnNames.forEach((columnName, index) => {
-          row = {...row, [columnName.toLowerCase()]: rowValues[index]};
-        });
-        return row;
-      }) || [],
+      tableColumns:
+        (Array.isArray(responseData.columnNames) &&
+          responseData.columnNames.map(value => ({
+            id: value.toLowerCase(),
+            name: value.toLowerCase(),
+            accessor: value.toLowerCase(),
+            colName: value,
+            type: 'text',
+            sortable: true
+          }))) ||
+        [],
+      tableData:
+        (Array.isArray(responseData.columnValues) &&
+          responseData.columnValues.map(value => {
+            const rowValues = JSON.parse(value);
+            let row = {};
+            responseData.columnNames.forEach((columnName, index) => {
+              row = { ...row, [columnName.toLowerCase()]: rowValues[index] };
+            });
+            return row;
+          })) ||
+        [],
       loading: false
     });
-  }
+  };
 
   async doSubmit() {
     const { clusterId, ksqlDBId, formData, properties } = this.state;
@@ -101,13 +108,18 @@ class KsqlDBQuery extends Root {
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">
               SQL
-              <br/>
+              <br />
               <span className="text-white font-weight-light">
                 This SQL has to conform to
                 <a
                   href="https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-clients/java-client/#execute-query"
                   target="_blank"
-                  rel="noreferrer"> executeQuery()</a>.
+                  rel="noreferrer"
+                >
+                  {' '}
+                  executeQuery()
+                </a>
+                .
               </span>
             </label>
 
@@ -131,9 +143,7 @@ class KsqlDBQuery extends Root {
           </div>
 
           <div className="form-group row">
-            <label className="col-sm-2 col-form-label">
-              Properties
-            </label>
+            <label className="col-sm-2 col-form-label">Properties</label>
 
             <div className="col-sm-10">
               <AceEditor
@@ -152,9 +162,7 @@ class KsqlDBQuery extends Root {
           </div>
 
           <div className="form-group row">
-            <label className="col-sm-2 col-form-label">
-              Result
-            </label>
+            <label className="col-sm-2 col-form-label">Result</label>
 
             <div className="col-sm-10">
               <Table

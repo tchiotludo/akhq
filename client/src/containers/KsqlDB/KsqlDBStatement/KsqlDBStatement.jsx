@@ -35,14 +35,13 @@ class KsqlDBStatement extends Root {
       sql: formData.sql
     };
 
-    this.putApi(uriKsqlDBExecuteStatement(clusterId, ksqlDBId), body)
-      .then(() => {
-        this.props.history.push({
-          pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}`,
-        });
-
-        toast.success('Statement was executed successfully');
+    this.putApi(uriKsqlDBExecuteStatement(clusterId, ksqlDBId), body).then(() => {
+      this.props.history.push({
+        pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}`
       });
+
+      toast.success('Statement was executed successfully');
+    });
   }
 
   render() {
@@ -64,13 +63,18 @@ class KsqlDBStatement extends Root {
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">
               SQL
-              <br/>
+              <br />
               <span className="text-white font-weight-light">
                 This SQL has to conform to
                 <a
                   href="https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-clients/java-client/#execute-statement"
                   target="_blank"
-                  rel="noreferrer"> executeStatement()</a>.
+                  rel="noreferrer"
+                >
+                  {' '}
+                  executeStatement()
+                </a>
+                .
               </span>
             </label>
 

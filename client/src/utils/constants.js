@@ -14,7 +14,7 @@ export const ROLE_TYPE = {
   REGISTRY: 'registry',
   ACLS: 'acls',
   CONNECT: 'connect',
-  KSQLDB: 'ksqldb',
+  KSQLDB: 'ksqldb'
 };
 
 // Table actions

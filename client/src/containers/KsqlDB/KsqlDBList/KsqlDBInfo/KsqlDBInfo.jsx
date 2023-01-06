@@ -31,7 +31,7 @@ class KsqlDBInfo extends Root {
       {
         title: 'Ksql service id',
         value: info['ksqlServiceId']
-      },
+      }
     ];
     this.setState({ tableData, loading: false });
   }
