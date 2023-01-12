@@ -3,8 +3,8 @@ import Joi from 'joi-browser';
 import './styles.scss';
 import {
   uriConnectDefinitionConfigs,
-  uriConnectPlugin,
-  uriUpdateDefinition
+  uriUpdateDefinition,
+  uriValidatePluginConfigs
 } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
@@ -49,9 +49,10 @@ class ConnectConfigs extends Form {
 
   async getPlugin(pluginId) {
     const { connectId, clusterId } = this.state;
+    const { configs } = this.state;
     let plugin = {};
-
-    plugin = await this.getApi(uriConnectPlugin(clusterId, connectId, pluginId));
+    let body = { configs };
+    plugin = await this.putApi(uriValidatePluginConfigs(clusterId, connectId, pluginId), body);
     this.setState({ plugin: plugin.data }, () => {
       this.renderForm();
     });
@@ -68,10 +69,6 @@ class ConnectConfigs extends Form {
     definitions.forEach(definition => {
       formData[definition.name] = this.getConfigValue(definition.name);
       this.schema[definition.name] = this.handleDefinition(definition);
-      if (definition.name === 'transforms') {
-        formData['transformsprops'] = this.getTransformAdditionalProperties() || '{}';
-        this.schema['transformsprops'] = Joi.object().required();
-      }
     });
     this.setState({ formData });
   };
@@ -82,17 +79,6 @@ class ConnectConfigs extends Form {
 
     return existingConfig ? configs[existingConfig] : '';
   };
-
-  getTransformAdditionalProperties() {
-    const { configs } = this.state;
-    const filtered = Object.keys(configs)
-      .filter(configKey => configKey.startsWith('transforms.'))
-      .reduce((obj, configKey) => {
-        obj[configKey] = configs[configKey];
-        return obj;
-      }, {});
-    return JSON.stringify(filtered, null, 2);
-  }
 
   handleDefinition = definition => {
     let def = '';
@@ -269,62 +255,6 @@ class ConnectConfigs extends Form {
       const roles = this.state.roles || {};
 
       groupDisplay.push(<tr>{rows}</tr>);
-      if (element.name === 'transforms') {
-        const errorMessage = this.validateProperty({
-          name: 'transformsprops',
-          value: formData['transformsprops']
-        });
-        if (errorMessage) {
-          errors['transformsprops'] = errorMessage;
-        }
-        let transform = (
-          <React.Fragment>
-            <td>
-              <code>Transforms additional properties</code>
-              <small className="form-text text-muted">
-                {`Json object to be added to configurations. example:
-                  {
-                      "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
-                      "transforms.createKey.fields":"c1",
-                      "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
-                      "transforms.extractInt.field":"c1"
-                  }`}
-              </small>
-            </td>
-            <td>
-              <AceEditor
-                mode="json"
-                id={'transformsprops'}
-                theme="merbivore_soft"
-                value={formData['transformsprops']}
-                onChange={value => {
-                  let { formData } = this.state;
-                  const errors = { ...this.state.errors };
-                  const errorMessage = this.validateProperty({ name: 'transformsprops', value });
-                  if (errorMessage) {
-                    errors['transformsprops'] = errorMessage;
-                  } else {
-                    delete errors['transformsprops'];
-                  }
-                  formData['transformsprops'] = value;
-                  this.handleData();
-                  this.setState({ formData });
-                }}
-                name="UNIQUE_ID_OF_DIV"
-                readOnly={!(roles.connect && roles.connect['connect/update'])}
-                editorProps={{ $blockScrolling: true }}
-                style={{ width: '100%', minHeight: '25vh' }}
-              />
-              {errors['transformsprops'] && (
-                <div id="input-error" className="alert alert-danger mt-1 p-1">
-                  {errors['transformsprops']}
-                </div>
-              )}
-            </td>
-          </React.Fragment>
-        );
-        groupDisplay.push(transform);
-      }
     });
     return groupDisplay;
   }
@@ -342,22 +272,11 @@ class ConnectConfigs extends Form {
     };
     let configs = {};
     Object.keys(formData).forEach(key => {
-      if (
-        key !== 'subject' &&
-        key !== 'transformsprops' &&
-        key !== 'type' &&
-        key !== 'name' &&
-        formData[key] !== ''
-      ) {
+      if (key !== 'subject' && key !== 'type' && key !== 'name' && formData[key] !== '') {
         configs[`${key}`] = formData[key];
       } else if (key === 'type') {
         configs['connector.class'] = formData[key];
       }
-    });
-
-    const transformsValue = JSON.parse(formData.transformsprops);
-    Object.keys(transformsValue).forEach(key => {
-      configs[key] = transformsValue[key];
     });
 
     body.configs = configs;

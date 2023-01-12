@@ -100,15 +100,15 @@ public class ConnectRepository extends AbstractRepository {
 
         return filtered;
     }
-
-    public Optional<ConnectPlugin> getPlugin(String clusterId, String connectId, String className) {
+    public Optional<ConnectPlugin> validatePlugin(String clusterId, String connectId, String className,
+                                                  Map<String, String> configs) {
         return this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
             .getConnectorPlugins()
             .stream()
-            .filter(connectPlugin -> getShortClassName(connectPlugin.getClassName()).equals(className))
-            .map(s -> mapToConnectPlugin(s, clusterId, connectId))
+            .filter(connectPlugin -> connectPlugin.getClassName().equals(className))
+            .map(s -> mapToConnectPlugin(s, clusterId, connectId, configs))
             .findFirst();
     }
 
@@ -229,18 +229,24 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
+        Map<String,String> config = ImmutableMap.of(
+            "connector.class", plugin.getClassName(),
+            "topics", "getPlugins"
+        );
+        return this.mapToConnectPlugin(plugin, clusterId, connectId, config);
+    }
+
+    private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId,
+                                                Map<String,String> config) {
         return new ConnectPlugin(
-                plugin,
-                this.kafkaModule
-                        .getConnectRestClient(clusterId)
-                        .get(connectId)
-                        .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
-                                Iterables.getLast(Arrays.asList(plugin.getClassName().split("/"))),
-                                ImmutableMap.of(
-                                        "connector.class", plugin.getClassName(),
-                                        "topics", "getPlugins"
-                                )
-                        )));
+            plugin,
+            this.kafkaModule
+                .getConnectRestClient(clusterId)
+                .get(connectId)
+                .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
+                    Iterables.getLast(Arrays.asList(plugin.getClassName().split("/"))),
+                    config
+                )));
     }
 
     private String getShortClassName(String className) {

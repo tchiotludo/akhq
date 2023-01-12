@@ -129,6 +129,10 @@ export const uriConnectPlugin = (clusterId, connectId, pluginId) => {
   return `${apiUrl}/${clusterId}/connect/${connectId}/plugins/${pluginId}`;
 };
 
+export const uriValidatePluginConfigs = (clusterId, connectId, pluginId) => {
+  return `${apiUrl}/${clusterId}/connect/${connectId}/plugins/${pluginId}/validate`;
+};
+
 export const uriCreateConnect = (clusterId, connectId) => {
   return `${apiUrl}/${clusterId}/connect/${connectId}`;
 };

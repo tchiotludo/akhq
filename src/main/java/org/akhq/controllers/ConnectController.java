@@ -8,6 +8,8 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Put;
+
 import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import org.akhq.configs.Role;
@@ -67,6 +69,12 @@ public class ConnectController extends AbstractController {
             .filter(connectPlugin -> connectPlugin.getClassName().equals(type))
             .findAny()
             .orElseThrow();
+    }
+
+    @Put("/plugins/{type}/validate")
+    @Operation(tags = {"connect"}, summary = "Validate plugin configs")
+    public ConnectPlugin validatePlugin(String cluster, String connectId, String type, Map<String, String> configs) {
+        return connectRepository.validatePlugin(cluster, connectId, type, configs).orElseThrow();
     }
 
     @Secured(Role.ROLE_CONNECT_INSERT)
