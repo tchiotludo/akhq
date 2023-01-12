@@ -8,7 +8,6 @@ import {
 } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
-import AceEditor from 'react-ace';
 import filter from 'lodash/filter';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
@@ -242,7 +241,6 @@ class ConnectConfigs extends Form {
   };
 
   handleGroup(group) {
-    let { formData } = this.state;
     let groupDisplay = [
       <tr key={0} className="bg-primary">
         <td colSpan="3">{group[0].group}</td>
@@ -251,9 +249,6 @@ class ConnectConfigs extends Form {
 
     group.forEach(element => {
       const rows = this.renderTableRows(element);
-      const errors = [];
-      const roles = this.state.roles || {};
-
       groupDisplay.push(<tr>{rows}</tr>);
     });
     return groupDisplay;
