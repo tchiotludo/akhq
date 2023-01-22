@@ -64,6 +64,10 @@ public class AkhqController extends AbstractController {
                 (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
                     .stream()
                     .map(Connect::getName)
+                    .collect(Collectors.toList()),
+                (connection.getKsqldb() != null ? connection.getKsqldb() : new ArrayList<KsqlDb>())
+                    .stream()
+                    .map(KsqlDb::getName)
                     .collect(Collectors.toList())
 
             ))
@@ -228,6 +232,7 @@ public class AkhqController extends AbstractController {
         private String id;
         private boolean registry;
         private List<String> connects;
+        private List<String> ksqldbs;
     }
 
 }

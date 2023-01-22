@@ -18,6 +18,7 @@ import java.util.Map;
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
+    List<KsqlDb> ksqldb;
     Deserialization deserialization = new Deserialization();
     UiOptions uiOptions = new UiOptions();
 
