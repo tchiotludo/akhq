@@ -90,6 +90,26 @@ class ConnectControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(2)
+    void validatePluginApi() {
+        ConnectPlugin result = this.retrieve(HttpRequest.PUT(
+            BASE_URL + "/plugins/org.apache.kafka.connect.file.FileStreamSinkConnector/validate",
+            ImmutableMap.of(
+                "configs",              ImmutableMap.of(
+                    "connector.class", "org.apache.kafka.connect.file.FileStreamSinkConnector",
+                    "file", PATH2,
+                    "topics", KafkaTestCluster.TOPIC_CONNECT,
+                    "consumer.override.retry.backoff.ms","400"
+                )
+            )
+        ), ConnectPlugin.class);
+
+        assertEquals("sink", result.getType());
+        assertTrue(result.getDefinitions().size() > 0);
+        assertTrue(result.getDefinitions().stream().anyMatch(definition -> definition.getName().equals("consumer.override.retry.backoff.ms")));
+    }
+
+    @Test
     @Order(5)
     void updateApi() {
         ConnectDefinition result = this.retrieve(HttpRequest.POST(

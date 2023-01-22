@@ -45,20 +45,6 @@ class ConnectRepositoryTest extends AbstractTest {
         assertEquals(2, all.size());
     }
 
-    @Test
-    void getPlugin() {
-        Optional<ConnectPlugin> plugin = repository.getPlugin(
-            KafkaTestCluster.CLUSTER_ID,
-            "connect-1",
-            "FileStreamSinkConnector"
-        );
-
-        assertTrue(plugin.isPresent());
-        assertEquals("FileStreamSinkConnector", plugin.get().getShortClassName());
-        assertEquals("sink", plugin.get().getType());
-        assertTrue(plugin.get().getDefinitions().stream().anyMatch(definition -> definition.getName().equals("file")));
-    }
-
     @AfterEach
     void cleanup() {
         try {
