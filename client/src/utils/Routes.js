@@ -28,6 +28,9 @@ import Settings from '../containers/Settings/Settings';
 import { organizeRoles } from './converters';
 import { uriAuths, uriClusters, uriCurrentUser } from './endpoints';
 import Root from '../components/Root';
+import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
+import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
+import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
 
 class Routes extends Root {
   state = {
@@ -257,6 +260,19 @@ class Routes extends Root {
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
                   component={Connect}
                 />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/query" component={KsqlDBQuery} />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+                <Route
+                  exact
+                  path="/ui/:clusterId/ksqldb/:ksqlDBId/statement"
+                  component={KsqlDBStatement}
+                />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?" component={KsqlDBList} />
               )}
               <Route exact path="/ui/:clusterId/settings" component={Settings} />
               <Redirect from="/" to={this.handleRedirect()} />

@@ -17,6 +17,11 @@
     * `ssl-trust-store-password`: trust-store-password
     * `ssl-key-store`: /app/truststore.jks
     * `ssl-key-store-password`: key-store-password
+  * `ksqldb`: *(optional list, define each ksqlDB instance as an element of a list)*
+    * `name`: ksqlDB name
+    * `url`: ksqlDB url
+    * `basic-auth-username`: ksqlDB basic auth username
+    * `basic-auth-password`: ksqlDB basic auth password
 
 ## Basic cluster with plain auth
 
@@ -31,6 +36,9 @@ akhq:
       connect:
         - name: "connect"
           url: "http://connect:8083"
+      ksqldb:
+        - name: "ksqldb"
+          url: "http://connect:8088"
 ```
 ## Example for Confluent Cloud
 

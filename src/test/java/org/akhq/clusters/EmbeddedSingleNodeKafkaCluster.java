@@ -27,6 +27,8 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
     private KafkaEmbedded broker;
     private RestApp schemaRegistry;
     private ConnectEmbedded connect1, connect2;
+    private KsqlDBEmbedded ksqlDBEmbedded;
+
     private final Properties brokerConfig;
 
     public EmbeddedSingleNodeKafkaCluster(final Properties brokerConfig) {
@@ -97,6 +99,15 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
 
         connect2 = new ConnectEmbedded(connect2Properties);
         log.debug("Kafka Connect-2 is running at {}", connect2Url());
+
+        // KsqlDB
+        Properties ksqlDbProperties = new Properties();
+        ksqlDbProperties.put("bootstrap.servers", bootstrapServers());
+        ksqlDbProperties.put("ksql.schema.registry.url", schemaRegistryUrl());
+        ksqlDbProperties.put("listeners", "http://0.0.0.0:" + randomPort());
+
+        ksqlDBEmbedded = new KsqlDBEmbedded(ksqlDbProperties);
+        log.debug("Kafka KsqlDB is running at {}", ksqlDbUrl());
     }
 
     static Integer randomPort() {
@@ -154,6 +165,14 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         }
 
         try {
+            if (ksqlDBEmbedded != null) {
+                ksqlDBEmbedded.stop();
+            }
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
             if (schemaRegistry != null) {
                 schemaRegistry.stop();
             }
@@ -193,5 +212,8 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
 
     public String connect2Url() {
         return connect2.connectUrl();
+    }
+    public String ksqlDbUrl() {
+        return ksqlDBEmbedded.ksqlDbUrl();
     }
 }

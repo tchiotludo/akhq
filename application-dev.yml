@@ -17,3 +17,6 @@ akhq:
       connect:
         - name: "connect"
           url: "http://connect:8083"
+      ksqldb:
+        - name: "ksqldb"
+          url: "http://ksqldb:8088"

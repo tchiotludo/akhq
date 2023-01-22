@@ -99,6 +99,23 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
 
+  ksqldb:
+    image: confluentinc/cp-ksqldb-server
+    depends_on:
+      - kafka
+      - connect
+      - schema-registry
+    ports:
+      - 8088:8088
+    environment:
+      KSQL_BOOTSTRAP_SERVERS: 'kafka:9092'
+      KSQL_LISTENERS: 'http://0.0.0.0:8088'
+      KSQL_KSQL_SERVICE_ID: 'ksql'
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: 'http://schema-registry:8085'
+      KSQL_KSQL_CONNECT_URL: 'http://connect:8083'
+      KSQL_KSQL_SINK_PARTITIONS: '1'
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: '1'
+
   test-data:
     image: gradle:6.3-jdk11
     command: "gradle --no-daemon testInjectData"

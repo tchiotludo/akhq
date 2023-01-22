@@ -104,6 +104,8 @@ akhq:
           - connect/update
           - connect/delete
           - connect/state/update
+          - ksqldb/read
+          - ksqldb/execute
         attributes:
           acls-filter-regexp:
             - "user.*"
