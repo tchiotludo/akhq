@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-8daa1a0e","path":"/","title":"Home","lang":"en-US","frontmatter":{"home":true,"title":"Home","sidebar":false,"pageClass":"landing"},"headers":[],"git":{"updatedTime":1674416505000,"contributors":[{"name":"Guido Schmutz","email":"guido.schmutz@trivadis.com","commits":1}]},"filePathRelative":"README.md"}');export{e as data};
