@@ -54,7 +54,7 @@ class SchemaVersions extends Root {
           Do you want to delete version:{' '}
           {
             <code>
-              {schema.id} from {this.state.selectedSchema}
+              {schema.version} from {decodeURIComponent(this.state.selectedSchema)}
             </code>
           }{' '}
           ?

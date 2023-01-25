@@ -204,11 +204,11 @@ export const uriSchemaId = (clusterId, id) => {
 };
 
 export const uriSchemaVersions = (clusterId, subject) => {
-  return `${apiUrl}/${clusterId}/schema/${subject}/version`;
+  return `${apiUrl}/${clusterId}/schema/${encodeURIComponent(subject)}/version`;
 };
 
 export const uriDeleteSchema = (clusterId, subject) => {
-  return `${apiUrl}/${clusterId}/schema/${subject}`;
+  return `${apiUrl}/${clusterId}/schema/${encodeURIComponent(subject)}`;
 };
 
 export const uriPreferredSchemaForTopic = (clusterId, topicId) => {
@@ -216,15 +216,15 @@ export const uriPreferredSchemaForTopic = (clusterId, topicId) => {
 };
 
 export const uriDeleteSchemaVersion = (clusterId, subject, version) => {
-  return `${apiUrl}/${clusterId}/schema/${subject}/version/${version}`;
+  return `${apiUrl}/${clusterId}/schema/${encodeURIComponent(subject)}/version/${version}`;
 };
 
 export const uriLatestSchemaVersion = (clusterId, subject) => {
-  return `${apiUrl}/${clusterId}/schema/${subject}`;
+  return `${apiUrl}/${clusterId}/schema/${encodeURIComponent(subject)}`;
 };
 
 export const uriUpdateSchema = (clusterId, subject) => {
-  return `${apiUrl}/${clusterId}/schema/${subject}`;
+  return `${apiUrl}/${clusterId}/schema/${encodeURIComponent(subject)}`;
 };
 
 export const uriSchemaCreate = clusterId => {
