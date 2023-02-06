@@ -6,9 +6,10 @@ class Root extends Component {
   cancel = axios.CancelToken.source();
 
   componentWillUnmount() {
-    const pathname = window.location.pathname;
+    /* eslint-disable react/prop-types */
+    const pathname = this.props.location?.pathname;
 
-    if (pathname !== '/ui/login') {
+    if (pathname && pathname !== '/ui/login') {
       sessionStorage.setItem('returnTo', pathname + (window.location.search || ''));
     }
 
