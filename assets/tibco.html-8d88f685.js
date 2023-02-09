@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-2d75354c","path":"/docs/configuration/schema-registry/tibco.html","title":"TIBCO schema registry","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1675676550000,"contributors":[{"name":"AlexisSouquiere","email":"alexis@souquiere.fr","commits":1}]},"filePathRelative":"docs/configuration/schema-registry/tibco.md"}');export{e as data};
