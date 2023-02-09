@@ -324,6 +324,12 @@ public class RecordRepository extends AbstractRepository {
                             filterMessageLength(current);
                             list.add(current);
                         }
+
+                        // End of the partition, we can stop here
+                        if (record.offset() == topicPartitionOffset.getEnd()) {
+                            emptyPoll = 1;
+                            break;
+                        }
                     }
                 }
                 while (emptyPoll < 1);
@@ -394,8 +400,10 @@ public class RecordRepository extends AbstractRepository {
     private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options, int pollSizePerPartition) {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
-                long last = partition.getLastOffset();
+                // Take end offset - 1 to get the last record offset
+                long last = partition.getLastOffset() - 1;
 
+                // If there is an after parameter in the request use this one
                 if (pollSizePerPartition > 0 && options.after.containsKey(partition.getId())) {
                     last = options.after.get(partition.getId()) - 1;
                 }
@@ -404,7 +412,7 @@ public class RecordRepository extends AbstractRepository {
                     consumer.close();
                     return null;
                 } else if (!(last - pollSizePerPartition < first)) {
-                    first = last - pollSizePerPartition;
+                    first = last - pollSizePerPartition + 1;
                 }
 
                 return EndOffsetBound.builder()
