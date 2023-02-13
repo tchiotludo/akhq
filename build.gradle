@@ -1,15 +1,15 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "io.micronaut.application" version "3.6.3"
+    id "io.micronaut.application" version "3.7.0"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
-    id 'com.adarshr.test-logger' version '3.1.0'
-    id 'org.gradle.test-retry' version '1.4.1'
-    id 'com.github.psxpaul.execfork' version '0.2.1'
-    id "com.github.ben-manes.versions" version "0.43.0"
-    id "com.github.davidmc24.gradle.plugin.avro" version "1.5.0"
+    id 'com.adarshr.test-logger' version '3.2.0'
+    id 'org.gradle.test-retry' version '1.5.1'
+    id 'com.github.psxpaul.execfork' version '0.2.2'
+    id "com.github.ben-manes.versions" version "0.45.0"
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.6.0"
 }
 
 group "org.akhq"
@@ -96,7 +96,7 @@ dependencies {
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
-    implementation 'org.sourcelab:kafka-connect-client:4.0.2'
+    implementation 'org.sourcelab:kafka-connect-client:4.0.3'
 
     // strimzi
     implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.11.0'
@@ -110,7 +110,7 @@ dependencies {
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
     implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'com.google.code.gson:gson:2.10'
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 
     // avro
@@ -127,14 +127,14 @@ dependencies {
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
     // https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.13'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.15'
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.5'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.6'
 
     // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
     implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.1'
