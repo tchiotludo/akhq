@@ -60,12 +60,7 @@ export const uriDeleteTopics = (clusterId, topicId) => {
 };
 
 export const uriTopicData = (clusterId, topicId, filters, nextPage = '') => {
-  if (nextPage !== '') {
-    return basePath + nextPage;
-  }
-
-  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data?${filters}`;
-  return uri;
+  return nextPage !== '' ? nextPage : `${apiUrl}/${clusterId}/topic/${topicId}/data?${filters}`;
 };
 
 export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
