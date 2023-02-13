@@ -264,7 +264,7 @@ class SchemaList extends Root {
           }}
           idCol="subject"
           onDetails={subject => {
-            return `/ui/${selectedCluster}/schema/details/${subject}`;
+            return `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`;
           }}
           actions={
             roles.registry && roles.registry['registry/delete']
