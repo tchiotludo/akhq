@@ -105,7 +105,7 @@ class Schema extends Root {
 
     return (
       <div>
-        <Header title={`Schema: ${schemaId}`} history={this.props.history} />
+        <Header title={`Schema: ${decodeURIComponent(schemaId)}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {roles.registry['registry/update'] && (
