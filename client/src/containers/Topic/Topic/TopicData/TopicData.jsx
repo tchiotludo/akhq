@@ -32,6 +32,7 @@ import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions'
 import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
+import { Parser } from "json2csv";
 
 class TopicData extends Root {
   state = {
@@ -68,6 +69,7 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
+    canDownloadCSV: false,
     dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
 
@@ -129,6 +131,7 @@ class TopicData extends Root {
         if (query.get('single') !== null) {
           this._getSingleMessage(query.get('partition'), query.get('offset'));
           this.setState({ canDownload: true });
+          this.setState({ canDownloadCSV: true });
         } else {
           this._getMessages();
         }
@@ -390,6 +393,7 @@ class TopicData extends Root {
     }
 
     this.setState({ canDownload: true });
+    this.setState({ canDownloadCSV: true });
 
     this.props.history.push(pathToShare);
     this._getSingleMessage(row.partition, row.offset);
@@ -404,6 +408,19 @@ class TopicData extends Root {
 
     a.click();
     a.remove();
+  }
+
+  _handleDownloadCSV({ key, value: data }) {
+      const hasKey = key && key !== null && key !== 'null';
+
+      const json2csv = new Parser();
+      const a = document.createElement('a');
+      const CSV = json2csv.parse(data)
+      a.href = URL.createObjectURL(new Blob([CSV], { type: 'text/csv' }));
+      a.download = `${hasKey ? key : 'file'}.csv`;
+
+      a.click();
+      a.remove();
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
@@ -739,6 +756,7 @@ class TopicData extends Root {
       isSearching,
       canDeleteRecords,
       canDownload,
+      canDownloadCSV,
       percent,
       loading
     } = this.state;
@@ -746,6 +764,7 @@ class TopicData extends Root {
     let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
     if (canDeleteRecords) actions.push(constants.TABLE_DELETE);
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
+    if (canDownloadCSV) actions.push(constants.TABLE_DOWNLOAD_CSV);
 
     let date = moment(datetime);
     const { history } = this.props;
@@ -1102,6 +1121,9 @@ class TopicData extends Root {
             }}
             onDownload={row => {
               this._handleDownload(row);
+            }}
+            onDownloadCSV={row => {
+              this._handleDownloadCSV(row);
             }}
             onCopy={row => {
               this._handleCopy(row);

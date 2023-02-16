@@ -333,6 +333,7 @@ class Table extends Component {
       onRestart,
       onShare,
       onDownload,
+      onDownloadCSV,
       onCopy,
       idCol
     } = this.props;
@@ -445,6 +446,19 @@ class Table extends Component {
               <i className="fa fa-download" />
             </span>
           </td>
+        )}
+        {actions.find(el => el === constants.TABLE_DOWNLOAD_CSV) && (
+           <td className="khq-row-action khq-row-action-main action-hover">
+               <span
+                  title="Download CSV"
+                  id="downloadCSV"
+                  onClick={() => {
+                     onDownloadCSV && onDownloadCSV(row);
+                  }}
+               >
+                 <i className="fa fa-download" />
+               </span>
+           </td>
         )}
       </>
     );
@@ -562,6 +576,7 @@ Table.propTypes = {
   onRestart: PropTypes.func,
   onShare: PropTypes.func,
   onDownload: PropTypes.func,
+  onDownloadCSV: PropTypes.func,
   onCopy: PropTypes.func,
 
   idCol: PropTypes.string,
