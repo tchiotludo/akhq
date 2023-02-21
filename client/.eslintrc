@@ -73,7 +73,6 @@
      */
 
     // Suppress warnings about == null comparisons.
-    "no-eq-null": "off",
-    "endOfLine": "off"
+    "no-eq-null": "off"
   }
 }
