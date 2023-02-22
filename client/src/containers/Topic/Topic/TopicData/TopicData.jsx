@@ -414,6 +414,7 @@ class TopicData extends Root {
       let allData = [];
       messages.map(tableData => {
         allData.push(tableData.value);
+        allData.push('\n');
       });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([allData], { type: 'text/csv' }));
