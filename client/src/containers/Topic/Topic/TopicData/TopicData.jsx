@@ -411,16 +411,16 @@ class TopicData extends Root {
   _handleDownloadAll() {
     let messages = this.state.messages;
     if (this.state.isChecked && !this.state.loading) {
-      let index = 0;
+      let allData = [];
       messages.map(tableData => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([tableData.value], { type: 'text/csv' }));
-        a.download = `file-${index}.csv`;
-
-        a.click();
-        a.remove();
-        index++;
+        allData.push(tableData.value);
       });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([allData], { type: 'text/csv' }));
+      a.download = 'file.csv';
+
+      a.click();
+      a.remove();
     }
   }
 
