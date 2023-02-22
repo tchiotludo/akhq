@@ -43,7 +43,16 @@ class Table extends Component {
   };
 
   renderHeader() {
-    const { has2Headers, firstHeader, columns, actions, data } = this.props;
+    const {
+      has2Headers,
+      firstHeader,
+      columns,
+      actions,
+      data,
+      loading,
+      onDownloadAll,
+      updateCheckbox
+    } = this.props;
     return (
       <>
         {has2Headers && (
@@ -74,7 +83,27 @@ class Table extends Component {
                 return (
                   <th className="header-text" key={`secondHead${column.colName}${index}`}>
                     <div className="header-content">
-                      {column.colName}
+                      {!loading && column.id === 'checkboxes' ? (
+                        <>
+                          <input
+                            type="checkbox"
+                            onClick={e => {
+                              updateCheckbox(e);
+                            }}
+                          />
+                          <span
+                            title="Download All"
+                            id="downloadAll"
+                            onClick={() => {
+                              onDownloadAll && onDownloadAll();
+                            }}
+                          >
+                            <i className="fa fa-download" />
+                          </span>
+                        </>
+                      ) : (
+                        column.colName
+                      )}
                       {column.sortable && (
                         <i
                           className="fa fa-sort clickable"
@@ -562,6 +591,8 @@ Table.propTypes = {
   onRestart: PropTypes.func,
   onShare: PropTypes.func,
   onDownload: PropTypes.func,
+  onDownloadAll: PropTypes.func,
+  updateCheckbox: PropTypes.func,
   onCopy: PropTypes.func,
 
   idCol: PropTypes.string,

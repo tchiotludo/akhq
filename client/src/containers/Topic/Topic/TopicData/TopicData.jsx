@@ -68,7 +68,8 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE,
+    isChecked: false
   };
 
   searchFilterTypes = [
@@ -353,7 +354,8 @@ class TopicData extends Root {
         nextPage: nextPageTemp ? nextPageTemp : nextPage,
         recordCount: recordCountTemp ? recordCountTemp : recordCount,
         offsets: offsetsTemp ? offsetsTemp : offsets,
-        loading: false
+        loading: false,
+        isChecked: false
       });
     });
   }
@@ -404,6 +406,26 @@ class TopicData extends Root {
 
     a.click();
     a.remove();
+  }
+
+  _handleDownloadAll() {
+    let messages = this.state.messages;
+    if (this.state.isChecked && !this.state.loading) {
+      let index = 0;
+      messages.map(tableData => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([tableData.value], { type: 'text/csv' }));
+        a.download = `file-${index}.csv`;
+
+        a.click();
+        a.remove();
+        index++;
+      });
+    }
+  }
+
+  _handleCheckbox(e) {
+    this.setState({ isChecked: e.target.checked });
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
@@ -739,6 +761,7 @@ class TopicData extends Root {
       isSearching,
       canDeleteRecords,
       canDownload,
+      isChecked,
       percent,
       loading
     } = this.state;
@@ -1083,6 +1106,17 @@ class TopicData extends Root {
                     </div>
                   );
                 }
+              },
+              {
+                id: 'checkboxes',
+                accessor: 'checkboxes',
+                colName: 'Download all',
+                type: 'checkbox',
+                expand: true,
+                cell: obj => {
+                  return <input type="checkbox" checked={this.state.isChecked} />;
+                },
+                readOnly: true
               }
             ]}
             extraRow
@@ -1094,6 +1128,9 @@ class TopicData extends Root {
             updateData={data => {
               this.setState({ messages: data });
             }}
+            updateCheckbox={e => {
+              this._handleCheckbox(e);
+            }}
             onDelete={row => {
               this._handleOnDelete(row);
             }}
@@ -1102,6 +1139,9 @@ class TopicData extends Root {
             }}
             onDownload={row => {
               this._handleDownload(row);
+            }}
+            onDownloadAll={() => {
+              this._handleDownloadAll();
             }}
             onCopy={row => {
               this._handleCopy(row);
