@@ -1,0 +1,1 @@
+import{_ as t,p as r,q as a,R as e,t as s}from"./framework-5866ffd3.js";const c={},n=e("h1",{id:"schema-registry",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#schema-registry","aria-hidden":"true"},"#"),s(" Schema registry")],-1),o=[n];function i(_,d){return r(),a("div",null,o)}const l=t(c,[["render",i],["__file","index.html.vue"]]);export{l as default};
