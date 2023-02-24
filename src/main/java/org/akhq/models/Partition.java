@@ -13,6 +13,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class Partition {
+    private Node.Partition leader;
     private int id;
     private String topic;
     private List<Node.Partition> nodes;
@@ -27,7 +28,6 @@ public class Partition {
         this.firstOffset = offsets.getFirstOffset();
         this.lastOffset = offsets.getLastOffset();
         this.nodes = new ArrayList<>();
-
         for (org.apache.kafka.common.Node replica : partitionInfo.replicas()) {
             nodes.add(new Node.Partition(
                 replica,
@@ -35,19 +35,22 @@ public class Partition {
                 partitionInfo.isr().stream().anyMatch(node -> node.id() == replica.id())
             ));
         }
+        
+        org.apache.kafka.common.Node leader = partitionInfo.leader();
+        this.leader = new Node.Partition(
+            leader,
+            true,
+            partitionInfo.isr().stream().anyMatch(node -> node.id() == leader.id())
+        );
     }
 
     public Node.Partition getLeader() {
-        return nodes
-            .stream()
-            .filter(Node.Partition::isLeader)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Leader not found"));
+        return this.leader;
     }
 
     public long getLogDirSize() {
         return this.getLogDir().stream()
-            .filter(logDir -> logDir.getBrokerId() == this.getLeader().getId())
+            .filter(logDir -> logDir.getBrokerId() == this.leader.getId())
             .map(LogDir::getSize)
             .reduce(0L, Long::sum);
     }
