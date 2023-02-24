@@ -58,7 +58,7 @@ public class Partition {
 
     public long getLogDirSize() {
         return this.getLogDir().stream()
-            .filter(logDir -> logDir.getBrokerId() == this.leader.getId())
+            .filter(logDir -> this.leader != null && logDir.getBrokerId() == this.leader.getId())
             .map(LogDir::getSize)
             .reduce(0L, Long::sum);
     }
