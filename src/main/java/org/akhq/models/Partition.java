@@ -29,19 +29,27 @@ public class Partition {
         this.lastOffset = offsets.getLastOffset();
         this.nodes = new ArrayList<>();
         for (org.apache.kafka.common.Node replica : partitionInfo.replicas()) {
-            nodes.add(new Node.Partition(
+            Node.Partition partition = new Node.Partition(
                 replica,
                 partitionInfo.leader().id() == replica.id(),
                 partitionInfo.isr().stream().anyMatch(node -> node.id() == replica.id())
-            ));
+            );
+            
+            this.nodes.add(partition);
+            if (partition.isLeader()) {
+                this.leader = partition;
+            }
         }
         
-        org.apache.kafka.common.Node leader = partitionInfo.leader();
-        this.leader = new Node.Partition(
-            leader,
-            true,
-            partitionInfo.isr().stream().anyMatch(node -> node.id() == leader.id())
-        );
+        if (this.leader == null)
+        {
+            org.apache.kafka.common.Node leader = partitionInfo.leader();
+            this.leader = new Node.Partition(
+                leader,
+                true,
+                partitionInfo.isr().stream().anyMatch(node -> node.id() == leader.id())
+            );
+        }
     }
 
     public Node.Partition getLeader() {
