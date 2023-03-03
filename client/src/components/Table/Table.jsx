@@ -181,9 +181,7 @@ class Table extends Component {
               actions.length > 0 &&
               data &&
               data.length > 0 &&
-              actions.find(el => el !== constants.TABLE_DOWNLOAD_ALL) && (
-                <th colSpan={actions.length} />
-              )}
+              !actions.includes(constants.TABLE_DOWNLOAD_ALL) && <th colSpan={actions.length} />}
           </tr>
         </thead>
       </>
