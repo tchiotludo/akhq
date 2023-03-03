@@ -408,17 +408,18 @@ class TopicData extends Root {
     a.remove();
   }
 
-  _handleDownloadAll() {
+  _handleDownloadAll(option) {
     let messages = this.state.messages;
-    if (this.state.isChecked && !this.state.loading) {
+    if (this.state.isChecked && !this.state.loading && option !== 'Select') {
       let allData = [];
       messages.map(tableData => {
         allData.push(tableData.value);
         allData.push('\n');
       });
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([allData], { type: 'text/csv' }));
-      a.download = 'file.csv';
+      const type = 'text/' + option;
+      a.href = URL.createObjectURL(new Blob([allData], { type: type }));
+      a.download = `file.${option}`;
 
       a.click();
       a.remove();
@@ -767,7 +768,7 @@ class TopicData extends Root {
       loading
     } = this.state;
 
-    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
+    let actions = [constants.TABLE_SHARE, constants.TABLE_COPY, constants.TABLE_DOWNLOAD_ALL];
     if (canDeleteRecords) actions.push(constants.TABLE_DELETE);
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
@@ -974,7 +975,19 @@ class TopicData extends Root {
             history={history}
             reduce={true}
             firstHeader={firstColumns}
+            isChecked={this.state.isChecked}
             columns={[
+              {
+                id: 'checkboxes',
+                accessor: 'checkboxes',
+                colName: 'Download all',
+                type: 'checkbox',
+                expand: true,
+                cell: obj => {
+                  return <input type="checkbox" checked={this.state.isChecked} />;
+                },
+                readOnly: true
+              },
               {
                 id: 'key',
                 accessor: 'key',
@@ -1107,17 +1120,6 @@ class TopicData extends Root {
                     </div>
                   );
                 }
-              },
-              {
-                id: 'checkboxes',
-                accessor: 'checkboxes',
-                colName: 'Download all',
-                type: 'checkbox',
-                expand: true,
-                cell: obj => {
-                  return <input type="checkbox" checked={this.state.isChecked} />;
-                },
-                readOnly: true
               }
             ]}
             extraRow
@@ -1141,8 +1143,8 @@ class TopicData extends Root {
             onDownload={row => {
               this._handleDownload(row);
             }}
-            onDownloadAll={() => {
-              this._handleDownloadAll();
+            onDownloadAll={option => {
+              this._handleDownloadAll(option);
             }}
             onCopy={row => {
               this._handleCopy(row);

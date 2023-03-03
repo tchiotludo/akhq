@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
@@ -10,7 +11,10 @@ class Table extends Component {
     extraExpanded: [],
     expanded: [],
     sortingColumn: '',
-    reverse: false
+    reverse: false,
+    downloadFormat: 'Select',
+    downloadOptions: ['Select', 'csv', 'json'],
+    isChecked: false
   };
 
   handleExpand = el => {
@@ -19,7 +23,7 @@ class Table extends Component {
     const newExpandedRows = isRowCurrentlyExpanded
       ? currentExpandedRows.filter(id => id !== el.id)
       : currentExpandedRows.concat(el.id);
-    this.setState({ expanded: newExpandedRows });
+    this.setState({ expanded: newExpandedRows, isChecked: false });
   };
 
   handleExtraExpand = el => {
@@ -29,7 +33,7 @@ class Table extends Component {
     const newExpandedRows = isRowCurrentlyExpanded
       ? currentExpandedRows
       : currentExpandedRows.concat(el.id);
-    this.setState({ extraExpanded: newExpandedRows });
+    this.setState({ extraExpanded: newExpandedRows, isChecked: false });
   };
 
   handleExtraCollapse = el => {
@@ -39,7 +43,29 @@ class Table extends Component {
     const newExpandedRows = !isRowCurrentlyExpanded
       ? currentExpandedRows
       : currentExpandedRows.filter(id => id !== el.id);
-    this.setState({ extraExpanded: newExpandedRows });
+    this.setState({ extraExpanded: newExpandedRows, isChecked: false });
+  };
+
+  _renderDownloadFormat = isChecked => {
+    const { downloadOptions } = this.state;
+
+    let renderedOptions = [];
+    for (let option of downloadOptions) {
+      renderedOptions.push(
+        <Dropdown.Item
+          key={option}
+          disabled={isChecked === false}
+          onClick={() =>
+            this.setState({ downloadFormat: option }, () => {
+              this.props.onDownloadAll(option);
+            })
+          }
+        >
+          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+        </Dropdown.Item>
+      );
+    }
+    return renderedOptions;
   };
 
   renderHeader() {
@@ -51,7 +77,8 @@ class Table extends Component {
       data,
       loading,
       onDownloadAll,
-      updateCheckbox
+      updateCheckbox,
+      isChecked
     } = this.props;
     return (
       <>
@@ -83,23 +110,15 @@ class Table extends Component {
                 return (
                   <th className="header-text" key={`secondHead${column.colName}${index}`}>
                     <div className="header-content">
-                      {!loading && column.id === 'checkboxes' ? (
+                      {!loading && data && data.length > 0 && column.id === 'checkboxes' ? (
                         <>
                           <input
                             type="checkbox"
-                            onClick={e => {
+                            checked={isChecked}
+                            onChange={e => {
                               updateCheckbox(e);
                             }}
                           />
-                          <span
-                            title="Download All"
-                            id="downloadAll"
-                            onClick={() => {
-                              onDownloadAll && onDownloadAll();
-                            }}
-                          >
-                            <i className="fa fa-download" />
-                          </span>
                         </>
                       ) : (
                         column.colName
@@ -137,9 +156,35 @@ class Table extends Component {
               }
               return null;
             })}
-            {actions && actions.length > 0 && data && data.length > 0 && (
-              <th colSpan={actions.length} />
-            )}
+            {actions &&
+              actions.length > 0 &&
+              data &&
+              data.length > 0 &&
+              actions.find(el => el === constants.TABLE_DOWNLOAD_ALL) && (
+                <>
+                  <th className="header-text" colSpan={actions.length}>
+                    <Dropdown>
+                      <Dropdown.Toggle className="nav-link dropdown-toggle">
+                        <strong>Download Format:</strong> ({this.state.downloadFormat})
+                      </Dropdown.Toggle>
+                      {!loading && (
+                        <Dropdown.Menu>
+                          <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                            {this._renderDownloadFormat(this.props.isChecked)}
+                          </div>
+                        </Dropdown.Menu>
+                      )}
+                    </Dropdown>
+                  </th>
+                </>
+              )}
+            {actions &&
+              actions.length > 0 &&
+              data &&
+              data.length > 0 &&
+              actions.find(el => el !== constants.TABLE_DOWNLOAD_ALL) && (
+                <th colSpan={actions.length} />
+              )}
           </tr>
         </thead>
       </>
@@ -564,6 +609,7 @@ class Table extends Component {
 Table.propTypes = {
   title: PropTypes.string,
   has2Headers: PropTypes.bool,
+  isChecked: PropTypes.bool,
   firstHeader: PropTypes.arrayOf(
     PropTypes.shape({
       colName: PropTypes.string,
