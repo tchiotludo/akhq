@@ -13,8 +13,7 @@ class Table extends Component {
     sortingColumn: '',
     reverse: false,
     downloadFormat: 'Select',
-    downloadOptions: ['Select', 'csv', 'json'],
-    isChecked: false
+    downloadOptions: ['Select', 'csv', 'json']
   };
 
   handleExpand = el => {
@@ -23,7 +22,7 @@ class Table extends Component {
     const newExpandedRows = isRowCurrentlyExpanded
       ? currentExpandedRows.filter(id => id !== el.id)
       : currentExpandedRows.concat(el.id);
-    this.setState({ expanded: newExpandedRows, isChecked: false });
+    this.setState({ expanded: newExpandedRows });
   };
 
   handleExtraExpand = el => {
@@ -33,7 +32,7 @@ class Table extends Component {
     const newExpandedRows = isRowCurrentlyExpanded
       ? currentExpandedRows
       : currentExpandedRows.concat(el.id);
-    this.setState({ extraExpanded: newExpandedRows, isChecked: false });
+    this.setState({ extraExpanded: newExpandedRows });
   };
 
   handleExtraCollapse = el => {
@@ -43,7 +42,7 @@ class Table extends Component {
     const newExpandedRows = !isRowCurrentlyExpanded
       ? currentExpandedRows
       : currentExpandedRows.filter(id => id !== el.id);
-    this.setState({ extraExpanded: newExpandedRows, isChecked: false });
+    this.setState({ extraExpanded: newExpandedRows });
   };
 
   _renderDownloadFormat = isChecked => {

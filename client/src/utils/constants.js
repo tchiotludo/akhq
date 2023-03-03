@@ -27,6 +27,7 @@ export const TABLE_RESTART = 'restart';
 export const TABLE_SHARE = 'share';
 export const TABLE_DOWNLOAD = 'download';
 export const TABLE_COPY = 'copy';
+export const TABLE_DOWNLOAD_ALL = 'downloadAll';
 
 // Tab names/route names
 export const CLUSTER = 'cluster';
@@ -87,6 +88,7 @@ export default {
   TABLE_SHARE,
   TABLE_COPY,
   TABLE_DOWNLOAD,
+  TABLE_DOWNLOAD_ALL,
   CLUSTER,
   NODE,
   TOPIC,
