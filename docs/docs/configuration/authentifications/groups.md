@@ -23,3 +23,31 @@ If you have `topics/create` or `connect/create` roles and you try to create a re
 - `admin` with all right
 - `reader` with only read access on all AKHQ
 - `no-roles` without any roles, that force user to login
+
+## Roles
+
+Here is the list of available roles to use with personalized groups
+
+- topic/read
+- topic/insert
+- topic/delete
+- topic/config/update
+- node/read
+- node/config/update
+- topic/data/read
+- topic/data/insert
+- topic/data/delete
+- group/read
+- group/delete
+- group/offsets/update
+- registry/read
+- registry/insert
+- registry/update
+- registry/delete
+- registry/version/delete
+- acls/read
+- connect/read
+- connect/insert
+- connect/update
+- connect/delete
+- connect/state/update
