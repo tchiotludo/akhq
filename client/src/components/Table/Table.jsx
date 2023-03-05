@@ -75,7 +75,6 @@ class Table extends Component {
       actions,
       data,
       loading,
-      onDownloadAll,
       updateCheckbox,
       isChecked
     } = this.props;
