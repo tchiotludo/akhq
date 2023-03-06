@@ -763,7 +763,6 @@ class TopicData extends Root {
       isSearching,
       canDeleteRecords,
       canDownload,
-      isChecked,
       percent,
       loading
     } = this.state;
@@ -983,7 +982,7 @@ class TopicData extends Root {
                 colName: 'Download all',
                 type: 'checkbox',
                 expand: true,
-                cell: obj => {
+                cell: () => {
                   return <input type="checkbox" checked={this.state.isChecked} />;
                 },
                 readOnly: true
