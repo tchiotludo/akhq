@@ -68,16 +68,8 @@ class Table extends Component {
   };
 
   renderHeader() {
-    const {
-      has2Headers,
-      firstHeader,
-      columns,
-      actions,
-      data,
-      loading,
-      updateCheckbox,
-      isChecked
-    } = this.props;
+    const { has2Headers, firstHeader, columns, actions, data, loading, updateCheckbox, isChecked } =
+      this.props;
     return (
       <>
         {has2Headers && (
