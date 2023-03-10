@@ -1,7 +1,7 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "io.micronaut.application" version "3.7.0"
+    id "io.micronaut.application" version "3.8.7"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
