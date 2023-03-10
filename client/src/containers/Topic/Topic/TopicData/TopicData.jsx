@@ -1011,7 +1011,7 @@ class TopicData extends Root {
               {
                 id: 'timestamp',
                 accessor: 'timestamp',
-                colName: 'Date',
+                colName: 'Timestamp',
                 type: 'text',
                 cell: (obj, col) => {
                   return (

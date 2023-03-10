@@ -291,7 +291,7 @@ class ConsumerGroupUpdate extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Filter datetime</Dropdown.Toggle>
+            <Dropdown.Toggle>Filter Timestamp UTC</Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>
