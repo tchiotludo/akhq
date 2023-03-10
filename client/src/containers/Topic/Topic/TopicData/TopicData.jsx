@@ -260,8 +260,7 @@ class TopicData extends Root {
             second: timestamp.second(),
             milli: timestamp.millisecond()
           },
-          'YYYY-MM-DDTHH:mm:ss.SSS',
-          true
+          'YYYY-MM-DDTHH:mm:ss.SSS'
         ) + 'Z';
       filters.push(`timestamp=${timestamp}`);
     }
@@ -831,7 +830,7 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp:</strong>
+                    <strong>Timestamp UTC:</strong>
                     {datetime !== '' &&
                       ' ' +
                         formatDateTime(
