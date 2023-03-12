@@ -1,14 +1,14 @@
 plugins {
     // micronaut
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "io.micronaut.application" version "3.7.0"
+    id "com.github.johnrengelman.shadow" version "8.1.0"
+    id "io.micronaut.application" version "3.7.5"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id 'com.adarshr.test-logger' version '3.2.0'
-    id 'org.gradle.test-retry' version '1.5.1'
+    id 'org.gradle.test-retry' version '1.5.2'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.45.0"
+    id "com.github.ben-manes.versions" version "0.46.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.6.0"
 }
 
@@ -41,7 +41,7 @@ configurations.all {
         force("org.slf4j:slf4j-api:1.7.32")
         force("org.slf4j:jul-to-slf4j:1.7.32")
         force("org.slf4j:log4j-over-slf4j:1.7.32")
-        force("com.google.protobuf:protobuf-java:3.20.3")
+        force("com.google.protobuf:protobuf-java:3.22.2")
     }
 }
 
@@ -90,7 +90,7 @@ dependencies {
     implementation group: "org.apache.kafka", name: "kafka_" + kafkaScalaVersion, version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
-    implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: ksqlApiClientVersion
+    implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
@@ -99,8 +99,8 @@ dependencies {
     implementation 'org.sourcelab:kafka-connect-client:4.0.3'
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.11.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.11.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.12.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.12.0'
 
     // log
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0-alpha5'
@@ -120,14 +120,13 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.13.4'
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.21.9'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.21.9'
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.22.2'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.22.2'
 
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    // https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.15'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.16'
     // api
 
     // client
@@ -136,8 +135,7 @@ dependencies {
     //AWS MSK IAM Auth
     implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.6'
 
-    // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.1'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.3'
 }
 
 /**********************************************************************************************************************\
@@ -179,7 +177,7 @@ dependencies {
     testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
     testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
-    testImplementation 'io.confluent.ksql:ksqldb-rest-app:' + ksqlApiClientVersion
+    testImplementation 'io.confluent.ksql:ksqldb-rest-app:' + confluentVersion
 
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
@@ -187,8 +185,8 @@ dependencies {
     testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.8.1'
-    testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.4'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.2.0'
+    testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
     testImplementation 'com.fasterxml.jackson.core:jackson-core:'
     testImplementation 'com.fasterxml.jackson.core:jackson-annotations'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'

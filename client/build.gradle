@@ -40,3 +40,7 @@ tasks.named('assembleFrontend') {
 tasks.named('checkFrontend') {
     enabled = false
 }
+
+copyClientResources {
+    dependsOn(':inspectRuntimeClasspath')
+}
