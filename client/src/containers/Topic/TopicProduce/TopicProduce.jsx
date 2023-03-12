@@ -203,7 +203,6 @@ class TopicProduce extends Form {
         <div className="row khq-multiple col-sm-7">
           {this.renderCheckbox(
             'isMultiMessage',
-            '',
             multiMessage,
             () => {
               this.setState({
@@ -247,7 +246,6 @@ class TopicProduce extends Form {
         <div className="row khq-multiple col-sm-7">
           {this.renderCheckbox(
             'isTombstone',
-            '',
             tombstone,
             () => {
               this.setState({ tombstone: !tombstone });
@@ -299,9 +297,9 @@ class TopicProduce extends Form {
               '',
               'Key',
               'text',
-              undefined,
               true,
-              'col-sm-6',
+              'col-sm-6 row',
+              'col-sm-12 p-0',
               'input-class'
             )}
 
@@ -310,9 +308,9 @@ class TopicProduce extends Form {
               '',
               'Value',
               'text',
-              undefined,
               true,
-              'col-sm-6',
+              'col-sm-6 row',
+              'col-sm-12 p-0',
               'input-class'
             )}
           </div>
@@ -441,7 +439,6 @@ class TopicProduce extends Form {
           <Header title={`Produce to ${topicId} `} />
           {this.renderDropdown(
             'Topic',
-            topics,
             topicsSearchValue,
             topicId,
             value => {
@@ -462,7 +459,6 @@ class TopicProduce extends Form {
           )}
           {this.renderDropdown(
             'Key schema',
-            keySchema.map(key => key.subject),
             keySchemaSearchValue,
             selectedKeySchema,
             value => {
@@ -495,7 +491,6 @@ class TopicProduce extends Form {
 
           {this.renderDropdown(
             'Value schema',
-            valueSchema.map(value => value.subject),
             valueSchemaSearchValue,
             selectedValueSchema,
             value => {

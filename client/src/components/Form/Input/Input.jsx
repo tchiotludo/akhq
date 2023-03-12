@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const Input = props => {
   const { name, label, placeholder, error, noStyle, wrapperClass, inputClass, ...rest } = props;
-  let wrapperClassRender = 'form-group';
+  let wrapperClassRender = 'form-group row';
   let inputClassRender = 'col-sm-10';
   if (noStyle) {
     wrapperClassRender = '';

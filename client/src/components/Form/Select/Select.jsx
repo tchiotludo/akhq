@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const Select = ({ name, label, items, error, wrapperClass, selectClass, blankItem, ...rest }) => {
   return (
-    <div className={`${wrapperClass || 'form-group'}`}>
+    <div className={`${wrapperClass || 'form-group row'}`}>
       {label !== '' ? (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
