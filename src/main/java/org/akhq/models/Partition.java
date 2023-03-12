@@ -34,15 +34,14 @@ public class Partition {
                 partitionInfo.leader().id() == replica.id(),
                 partitionInfo.isr().stream().anyMatch(node -> node.id() == replica.id())
             );
-            
+
             this.nodes.add(partition);
             if (partition.isLeader()) {
                 this.leader = partition;
             }
         }
-        
-        if (this.leader == null)
-        {
+
+        if (this.leader == null) {
             org.apache.kafka.common.Node leader = partitionInfo.leader();
             this.leader = new Node.Partition(
                 leader,
