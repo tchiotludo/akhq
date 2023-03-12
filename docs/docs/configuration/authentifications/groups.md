@@ -19,6 +19,11 @@ Define groups with specific roles for your users
 If you have `topics/create` or `connect/create` roles and you try to create a resource that doesn't follow the regexp, that resource **WILL** be created.
 :::
 
+::: warning
+Please also set the `micronaut.security.token.jwt.signatures.secret.generator.secret` if you set a group.
+If the secret is not set, the API will not enforce the group role, and the restriction is in the UI only.
+:::
+
 3 defaults group are available :
 - `admin` with all right
 - `reader` with only read access on all AKHQ
