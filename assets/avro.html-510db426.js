@@ -1,1 +1,0 @@
-const a=JSON.parse('{"key":"v-206cc69a","path":"/docs/configuration/avro.html","title":"Avro deserialization","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1678657505000,"contributors":[{"name":"Lazzaretti","email":"fabrizio@lazzaretti.me","commits":1}]},"filePathRelative":"docs/configuration/avro.md"}');export{a as data};
