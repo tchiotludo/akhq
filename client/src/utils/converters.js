@@ -30,7 +30,13 @@ export function groupedTopicOffset(offsets) {
   }, Object.create(null));
 }
 
-export function formatDateTime(value, format, utc = false) {
+/**
+ * If the utc parameter is true (which is the default value),
+ * the date and time will be converted to UTC time before formatting.
+ * If utc is false, the date and time will be formatted in the local time zone.
+ * Finally, the formatted date and time string is returned as a string
+ */
+export function formatDateTime(value, format, utc = true) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,

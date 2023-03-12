@@ -531,7 +531,7 @@ class TopicProduce extends Form {
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
               className="col-sm-2 col-form-label"
             >
-              Timestamp
+              Timestamp UTC
             </label>
             <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
               <Dropdown.Toggle
