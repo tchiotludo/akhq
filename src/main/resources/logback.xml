@@ -38,4 +38,5 @@
     </root>
 
     <logger name="org.apache" level="WARN" />
+    <logger name="io.micronaut" level="WARN"/>
 </configuration>
