@@ -1,6 +1,7 @@
 package org.akhq.utils;
 
 import org.akhq.models.Record;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.Test;
 
@@ -68,6 +69,13 @@ public class ContentUtilsTest {
         short testValue = 10;
 
         assertEquals(testValue, ContentUtils.convertToObject(toBytes(testValue)));
+    }
+
+    @Test
+    void testHeaderValueLongStringUTF8() {
+        String testValue = RandomStringUtils.random(10000, true, false);
+
+        assertEquals(testValue, ContentUtils.convertToObject(testValue.getBytes(StandardCharsets.UTF_8)));
     }
 
 }
