@@ -24,7 +24,8 @@ class Topic extends Root {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: []
+    configs: [],
+    isAllTopicDataSelected: false
   };
 
   tabs = ['data', 'partitions', 'groups', 'configs', 'acls', 'logs'];
@@ -32,6 +33,7 @@ class Topic extends Root {
   constructor(props) {
     super(props);
     this.topicData = React.createRef();
+    this._handleSelectAllCheckboxChange = this._handleSelectAllCheckboxChange.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -72,6 +74,10 @@ class Topic extends Root {
       );
     });
   }
+
+  _handleSelectAllCheckboxChange = isAllTopicDataSelected => {
+    this.setState({ isAllTopicDataSelected: isAllTopicDataSelected });
+  };
 
   showDeleteModal = deleteMessage => {
     this.setState({ showDeleteModal: true, deleteMessage });
@@ -137,7 +143,14 @@ class Topic extends Root {
     switch (selectedTab) {
       case 'data':
         return (
-          <TopicData ref={this.topicData} history={history} match={match} location={location} />
+          <TopicData
+            ref={this.topicData}
+            history={history}
+            match={match}
+            location={location}
+            isAllTopicDataSelected={this.state.isAllTopicDataSelected}
+            onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
+          />
         );
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;

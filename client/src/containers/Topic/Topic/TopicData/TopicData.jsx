@@ -68,8 +68,7 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE,
-    isChecked: false
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
   };
 
   searchFilterTypes = [
@@ -88,6 +87,11 @@ class TopicData extends Root {
   ];
 
   eventSource;
+
+  constructor(props) {
+    super(props);
+    this._handleCheckbox = this._handleCheckbox.bind(this);
+  }
 
   componentDidMount = () => {
     this._checkProps();
@@ -354,8 +358,7 @@ class TopicData extends Root {
         nextPage: nextPageTemp ? nextPageTemp : nextPage,
         recordCount: recordCountTemp ? recordCountTemp : recordCount,
         offsets: offsetsTemp ? offsetsTemp : offsets,
-        loading: false,
-        isChecked: false
+        loading: false
       });
     });
   }
@@ -410,7 +413,7 @@ class TopicData extends Root {
 
   _handleDownloadAll(option) {
     let messages = this.state.messages;
-    if (this.state.isChecked && !this.state.loading && option !== 'Select') {
+    if (!this.state.loading && this.props.isAllTopicDataSelected && option !== 'Select') {
       let allData = [];
       messages.map(tableData => {
         allData.push(tableData.value);
@@ -427,7 +430,7 @@ class TopicData extends Root {
   }
 
   _handleCheckbox(e) {
-    this.setState({ isChecked: e.target.checked });
+    this.props.onSelectAllCheckboxChange(e.target.checked);
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
@@ -974,7 +977,7 @@ class TopicData extends Root {
             history={history}
             reduce={true}
             firstHeader={firstColumns}
-            isChecked={this.state.isChecked}
+            isChecked={this.props.isAllTopicDataSelected}
             columns={[
               {
                 id: 'checkboxes',
@@ -983,7 +986,7 @@ class TopicData extends Root {
                 type: 'checkbox',
                 expand: true,
                 cell: () => {
-                  return <input type="checkbox" checked={this.state.isChecked} />;
+                  return <input type="checkbox" checked={this.props.isAllTopicDataSelected} />;
                 },
                 readOnly: true
               },
