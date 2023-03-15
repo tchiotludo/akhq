@@ -84,7 +84,7 @@ class Topic extends Root {
   canEmptyTopic = () => {
     const { configs } = this.state;
     const res = configs.filter(config => config.name === 'cleanup.policy');
-    if (res && res.length === 1 && res[0].value === 'delete') return true;
+    if (res && res.length === 1 && res[0].value.includes('delete')) return true;
     return false;
   };
 
