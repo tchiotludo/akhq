@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
 import './styles.scss';
@@ -11,9 +10,7 @@ class Table extends Component {
     extraExpanded: [],
     expanded: [],
     sortingColumn: '',
-    reverse: false,
-    downloadFormat: 'Select',
-    downloadOptions: ['Select', 'csv', 'json']
+    reverse: false
   };
 
   handleExpand = el => {
@@ -43,28 +40,6 @@ class Table extends Component {
       ? currentExpandedRows
       : currentExpandedRows.filter(id => id !== el.id);
     this.setState({ extraExpanded: newExpandedRows });
-  };
-
-  _renderDownloadFormat = isChecked => {
-    const { downloadOptions } = this.state;
-
-    let renderedOptions = [];
-    for (let option of downloadOptions) {
-      renderedOptions.push(
-        <Dropdown.Item
-          key={option}
-          disabled={isChecked === false}
-          onClick={() =>
-            this.setState({ downloadFormat: option }, () => {
-              this.props.onDownloadAll(option);
-            })
-          }
-        >
-          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
-        </Dropdown.Item>
-      );
-    }
-    return renderedOptions;
   };
 
   renderHeader() {
@@ -146,33 +121,9 @@ class Table extends Component {
               }
               return null;
             })}
-            {actions &&
-              actions.length > 0 &&
-              data &&
-              data.length > 0 &&
-              actions.find(el => el === constants.TABLE_DOWNLOAD_ALL) && (
-                <>
-                  <th className="header-text" colSpan={actions.length}>
-                    <Dropdown>
-                      <Dropdown.Toggle className="nav-link dropdown-toggle">
-                        <strong>Download Format:</strong> ({this.state.downloadFormat})
-                      </Dropdown.Toggle>
-                      {!loading && (
-                        <Dropdown.Menu>
-                          <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                            {this._renderDownloadFormat(this.props.isChecked)}
-                          </div>
-                        </Dropdown.Menu>
-                      )}
-                    </Dropdown>
-                  </th>
-                </>
-              )}
-            {actions &&
-              actions.length > 0 &&
-              data &&
-              data.length > 0 &&
-              !actions.includes(constants.TABLE_DOWNLOAD_ALL) && <th colSpan={actions.length} />}
+            {actions && actions.length > 0 && data && data.length > 0 && (
+              <th colSpan={actions.length} />
+            )}
           </tr>
         </thead>
       </>
@@ -625,7 +576,6 @@ Table.propTypes = {
   onRestart: PropTypes.func,
   onShare: PropTypes.func,
   onDownload: PropTypes.func,
-  onDownloadAll: PropTypes.func,
   updateCheckbox: PropTypes.func,
   onCopy: PropTypes.func,
 
