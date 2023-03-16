@@ -181,6 +181,12 @@
                                                 </div>
                                             </div>
 
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
+                                                    <img src="/assets/images/using/baloise.png" alt="Baloise">
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
