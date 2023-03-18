@@ -297,7 +297,7 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  _getMessages(changePage = false) {
+  _getMessages = changePage => {
     const { selectedCluster, selectedTopic, nextPage } = this.state;
 
     const filters = this._buildFilters();
@@ -315,7 +315,7 @@ class TopicData extends Root {
     } else {
       this._setUrlHistory(filters);
     }
-  }
+  };
 
   _fetchMessages(requests, changePage = false) {
     const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
