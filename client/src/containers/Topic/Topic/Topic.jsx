@@ -84,8 +84,7 @@ class Topic extends Root {
   canEmptyTopic = () => {
     const { configs } = this.state;
     const res = configs.filter(config => config.name === 'cleanup.policy');
-    if (res && res.length === 1 && res[0].value.includes('delete')) return true;
-    return false;
+    return res && res.length === 1 && res[0].value.includes('delete');
   };
 
   emptyTopic = () => {
@@ -95,7 +94,7 @@ class Topic extends Root {
       .then(() => {
         toast.success(`Topic '${topicId}' will be emptied`);
         this.setState({ showDeleteModal: false }, () => {
-          this.topicData.current.getMessages();
+          this.topicData.current._getMessages(false);
         });
       })
       .catch(() => {
