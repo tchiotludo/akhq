@@ -46,7 +46,9 @@ class TopicData extends Root {
       key: { text: '', type: 'C' },
       value: { text: '', type: 'C' },
       headerKey: { text: '', type: 'C' },
-      headerValue: { text: '', type: 'C' }
+      headerValue: { text: '', type: 'C' },
+      keySubject: { text: '', type: 'C' },
+      valueSubject: { text: '', type: 'C' }
     },
     offsets: {},
     offsetsSearch: '',
@@ -685,6 +687,8 @@ class TopicData extends Root {
         {this._renderSearchFilter('value', 'Value')}
         {this._renderSearchFilter('headerKey', 'Header Key')}
         {this._renderSearchFilter('headerValue', 'Header Value')}
+        {this._renderSearchFilter('keySubject', 'Key Subject')}
+        {this._renderSearchFilter('valueSubject', 'Value Subject')}
 
         <div style={{ display: 'flex' }}>
           <button

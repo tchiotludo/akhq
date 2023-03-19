@@ -188,7 +188,9 @@ public class TopicController extends AbstractController {
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
-        Optional<String> searchByHeaderValue
+        Optional<String> searchByHeaderValue,
+        Optional<String> searchByKeySubject,
+        Optional<String> searchByValueSubject
     ) throws ExecutionException, InterruptedException {
         Topic topic = this.topicRepository.findByName(cluster, topicName);
         RecordRepository.Options options =
@@ -201,7 +203,9 @@ public class TopicController extends AbstractController {
                         searchByKey,
                         searchByValue,
                         searchByHeaderKey,
-                        searchByHeaderValue);
+                        searchByHeaderValue,
+                        searchByKeySubject,
+                        searchByValueSubject);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
@@ -328,7 +332,9 @@ public class TopicController extends AbstractController {
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
-        Optional<String> searchByHeaderValue
+        Optional<String> searchByHeaderValue,
+        Optional<String> searchByKeySubject,
+        Optional<String> searchByValueSubject
     ) throws ExecutionException, InterruptedException {
         RecordRepository.Options options = dataSearchOptions(
             cluster,
@@ -340,7 +346,9 @@ public class TopicController extends AbstractController {
             searchByKey,
             searchByValue,
             searchByHeaderKey,
-            searchByHeaderValue
+            searchByHeaderValue,
+            searchByKeySubject,
+            searchByValueSubject
         );
 
         Topic topic = topicRepository.findByName(cluster, topicName);
@@ -381,6 +389,8 @@ public class TopicController extends AbstractController {
             topicName,
             offset - 1 < 0 ? Optional.empty() : Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
             Optional.of(partition),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
@@ -457,6 +467,8 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -480,7 +492,9 @@ public class TopicController extends AbstractController {
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
-        Optional<String> searchByHeaderValue
+        Optional<String> searchByHeaderValue,
+        Optional<String> searchByKeySubject,
+        Optional<String> searchByValueSubject
     ) {
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
 
@@ -493,6 +507,8 @@ public class TopicController extends AbstractController {
         searchByValue.ifPresent(options::setSearchByValue);
         searchByHeaderKey.ifPresent(options::setSearchByHeaderKey);
         searchByHeaderValue.ifPresent(options::setSearchByHeaderValue);
+        searchByKeySubject.ifPresent(options::setSearchByKeySubject);
+        searchByValueSubject.ifPresent(options::setSearchByValueSubject);
         return options;
     }
 

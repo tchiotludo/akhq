@@ -226,6 +226,14 @@ class RecordRepositoryTest extends AbstractTest {
     }
 
     @Test
+    void searchValueSubject() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_COUNT);
+        options.setSearchByValueSubject("Count");
+
+        assertEquals(12, searchAll(options));
+    }
+
+    @Test
     void searchAvro() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_COUNT);
         options.setSearchByValue("count_C");

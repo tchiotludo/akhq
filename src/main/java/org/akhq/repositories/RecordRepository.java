@@ -761,7 +761,19 @@ public class RecordRepository extends AbstractRepository {
             }
 
             if (options.getSearchByHeaderValue() != null) {
-                return search(options.getSearchByHeaderValue(), record.getHeadersValues());
+                if (!search(options.getSearchByHeaderValue(), record.getHeadersValues())) {
+                    return false;
+                }
+            }
+
+            if (options.getSearchByKeySubject() != null) {
+                if (!search(options.getSearchByKeySubject(), Collections.singletonList(record.getKeySubject()))) {
+                    return false;
+                }
+            }
+
+            if (options.getSearchByValueSubject() != null) {
+                return search(options.getSearchByValueSubject(), Collections.singletonList(record.getValueSubject()));
             }
         }
         return true;
@@ -1125,6 +1137,8 @@ public class RecordRepository extends AbstractRepository {
         protected Search searchByValue;
         protected Search searchByHeaderKey;
         protected Search searchByHeaderValue;
+        protected Search searchByKeySubject;
+        protected Search searchByValueSubject;
 
         public BaseOptions() {
         }
@@ -1145,16 +1159,24 @@ public class RecordRepository extends AbstractRepository {
             this.searchByHeaderValue = this.buildSearch(searchByHeaderValue);
         }
 
+        public void setSearchByKeySubject(String searchByKeySubject) {
+            this.searchByKeySubject = this.buildSearch(searchByKeySubject);
+        }
+
+        public void setSearchByValueSubject(String searchByValueSchemaName) {
+            this.searchByValueSubject = this.buildSearch(searchByValueSchemaName);
+        }
+
         public void setSearch(String search) {
             this.search = new Search(search);
         }
 
-        private Search buildSearch(String searchByKey) {
-            int sepPos = searchByKey.lastIndexOf('_');
+        private Search buildSearch(String search) {
+            int sepPos = search.lastIndexOf('_');
             if(sepPos > 0) {
-                return new Search(searchByKey.substring(0, sepPos), searchByKey.substring(sepPos + 1));
+                return new Search(search.substring(0, sepPos), search.substring(sepPos + 1));
             } else {
-                return new Search(searchByKey);
+                return new Search(search);
             }
         }
 
@@ -1299,4 +1321,3 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 }
-
