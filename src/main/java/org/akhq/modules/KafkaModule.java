@@ -12,16 +12,16 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCred
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
 import org.akhq.configs.Connection;
 import org.akhq.configs.Default;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -126,15 +126,7 @@ public class KafkaModule {
     }
 
     public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId) throws InvalidClusterException {
-        if (!this.clusterExists(clusterId)) {
-            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
-        }
-
-        return new KafkaConsumer<>(
-            this.getConsumerProperties(clusterId),
-            new ByteArrayDeserializer(),
-            new ByteArrayDeserializer()
-        );
+        return getConsumer(clusterId, new Properties());
     }
 
     public KafkaConsumer<byte[], byte[]> getConsumer(String clusterId, Properties properties) throws InvalidClusterException {
@@ -145,11 +137,16 @@ public class KafkaModule {
         Properties props = this.getConsumerProperties(clusterId);
         props.putAll(properties);
 
-        return new KafkaConsumer<>(
-            props,
-            new ByteArrayDeserializer(),
-            new ByteArrayDeserializer()
-        );
+        if (props.containsKey(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG) &&
+                props.containsKey(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG) ) {
+            return new KafkaConsumer<>(props);
+        } else {
+            return new KafkaConsumer<>(
+                    props,
+                    new ByteArrayDeserializer(),
+                    new ByteArrayDeserializer()
+                    );
+        }
     }
 
     private final Map<String, KafkaProducer<byte[], byte[]>> producers = new HashMap<>();
@@ -160,11 +157,18 @@ public class KafkaModule {
         }
 
         if (!this.producers.containsKey(clusterId)) {
-            this.producers.put(clusterId, new KafkaProducer<>(
-                this.getProducerProperties(clusterId),
-                new ByteArraySerializer(),
-                new ByteArraySerializer()
-            ));
+            Properties props = this.getProducerProperties(clusterId);
+
+            if (props.containsKey(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG) &&
+                    props.containsKey(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG) ) {
+                this.producers.put(clusterId, new KafkaProducer<>(props));
+            } else {
+                this.producers.put(clusterId, new KafkaProducer<>(
+                    props,
+                    new ByteArraySerializer(),
+                    new ByteArraySerializer()
+                ));
+            }
         }
 
         return this.producers.get(clusterId);
