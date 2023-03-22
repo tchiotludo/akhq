@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from '../../Header';
+import Dropdown from 'react-bootstrap/Dropdown';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
 import TopicGroups from './TopicGroups';
@@ -24,7 +25,11 @@ class Topic extends Root {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: []
+    configs: [],
+    isAllTopicDataSelected: false,
+    downloadFormat: 'Select',
+    downloadOptions: ['Select', 'csv', 'json'],
+    messages: []
   };
 
   tabs = ['data', 'partitions', 'groups', 'configs', 'acls', 'logs'];
@@ -32,6 +37,7 @@ class Topic extends Root {
   constructor(props) {
     super(props);
     this.topicData = React.createRef();
+    this._handleSelectAllCheckboxChange = this._handleSelectAllCheckboxChange.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -71,6 +77,51 @@ class Topic extends Root {
         </React.Fragment>
       );
     });
+  }
+
+  _handleSelectAllCheckboxChange = (isAllTopicDataSelected, messages) => {
+    this.setState({ isAllTopicDataSelected: isAllTopicDataSelected, messages: messages });
+  };
+
+  _renderDownloadFormat = isChecked => {
+    const { downloadOptions } = this.state;
+
+    let renderedOptions = [];
+    for (let option of downloadOptions) {
+      renderedOptions.push(
+        <Dropdown.Item
+          key={option}
+          se
+          disabled={isChecked === false}
+          onClick={() =>
+            this.setState({ downloadFormat: option }, () => {
+              this._handleDownloadAll(option);
+            })
+          }
+        >
+          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+        </Dropdown.Item>
+      );
+    }
+    return renderedOptions;
+  };
+
+  _handleDownloadAll(option) {
+    let messages = this.state.messages;
+    if (this.state.isAllTopicDataSelected && option !== 'Select') {
+      let allData = [];
+      messages.map(tableData => {
+        allData.push(tableData.value);
+        allData.push('\n');
+      });
+      const a = document.createElement('a');
+      const type = 'text/' + option;
+      a.href = URL.createObjectURL(new Blob([allData], { type: type }));
+      a.download = `file.${option}`;
+
+      a.click();
+      a.remove();
+    }
   }
 
   showDeleteModal = deleteMessage => {
@@ -136,7 +187,14 @@ class Topic extends Root {
     switch (selectedTab) {
       case 'data':
         return (
-          <TopicData ref={this.topicData} history={history} match={match} location={location} />
+          <TopicData
+            ref={this.topicData}
+            history={history}
+            match={match}
+            location={location}
+            isAllTopicDataSelected={this.state.isAllTopicDataSelected}
+            onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
+          />
         );
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
@@ -236,6 +294,18 @@ class Topic extends Root {
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <li className="aside-button">
+              {this.state.isAllTopicDataSelected && (
+                <div className="btn mr-2">
+                  <Dropdown>
+                    <Dropdown.Toggle>
+                      <strong>Download Format:</strong> ({this.state.downloadFormat})
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <div>{this._renderDownloadFormat(this.state.isAllTopicDataSelected)}</div>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+              )}
               {this.canEmptyTopic() ? (
                 <div
                   onClick={() => {
