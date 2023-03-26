@@ -90,6 +90,11 @@ class TopicData extends Root {
 
   eventSource;
 
+  constructor(props) {
+    super(props);
+    this._handleCheckbox = this._handleCheckbox.bind(this);
+  }
+
   componentDidMount = () => {
     this._checkProps();
   };
@@ -405,6 +410,10 @@ class TopicData extends Root {
 
     a.click();
     a.remove();
+  }
+
+  _handleCheckbox(e) {
+    this.props.onSelectAllCheckboxChange(e.target.checked, this.state.messages);
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
@@ -953,7 +962,21 @@ class TopicData extends Root {
             history={history}
             reduce={true}
             firstHeader={firstColumns}
+            isChecked={this.props.isAllTopicDataSelected}
             columns={[
+              {
+                id: 'checkboxes',
+                accessor: 'checkboxes',
+                colName: 'Download all',
+                type: 'checkbox',
+                expand: true,
+                cell: () => {
+                  return (
+                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} readOnly />
+                  );
+                },
+                readOnly: true
+              },
               {
                 id: 'key',
                 accessor: 'key',
@@ -1096,6 +1119,9 @@ class TopicData extends Root {
             }}
             updateData={data => {
               this.setState({ messages: data });
+            }}
+            updateCheckbox={e => {
+              this._handleCheckbox(e);
             }}
             onDelete={row => {
               this._handleOnDelete(row);
