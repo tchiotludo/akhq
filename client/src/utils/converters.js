@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import lowerCase from 'lodash/lowerCase';
 import moment from 'moment';
 import { ROLE_TYPE } from './constants';
 
@@ -7,30 +7,36 @@ export function calculateTopicOffsetLag(topicOffsets, topicId) {
   let offset = 0;
   let lastOffset = 0;
 
-  topicOffsets.filter(topicOffset => topicOffset.topic === topicId).forEach(topicOffset => {
-    offset = topicOffset.offset || 0;
-    lastOffset = topicOffset.lastOffset || 0;
-    offsetLag += lastOffset - offset;
-  });
+  topicOffsets
+    .filter(topicOffset => topicOffset.topic === topicId)
+    .forEach(topicOffset => {
+      offset = topicOffset.offset || 0;
+      lastOffset = topicOffset.lastOffset || 0;
+      offsetLag += lastOffset - offset;
+    });
 
   return offsetLag;
 }
 
 export function groupedTopicOffset(offsets) {
-  return (offsets || [])
-      .reduce((accumulator, r)  => {
-        if (accumulator[r.topic] === undefined) {
-          accumulator[r.topic] = [];
-        }
+  return (offsets || []).reduce((accumulator, r) => {
+    if (accumulator[r.topic] === undefined) {
+      accumulator[r.topic] = [];
+    }
 
-        accumulator[r.topic].push(r);
+    accumulator[r.topic].push(r);
 
-        return accumulator;
-      }, Object.create(null));
+    return accumulator;
+  }, Object.create(null));
 }
 
-
-export function formatDateTime(value, format, utc = false) {
+/**
+ * If the utc parameter is true (which is the default value),
+ * the date and time will be converted to UTC time before formatting.
+ * If utc is false, the date and time will be formatted in the local time zone.
+ * Finally, the formatted date and time string is returned as a string
+ */
+export function formatDateTime(value, format, utc = true) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,
@@ -43,25 +49,18 @@ export function formatDateTime(value, format, utc = false) {
   );
 
   return utc
-    ? moment(date.toISOString())
-        .utc()
-        .format(format)
-        .toString()
-    : moment(date.toISOString())
-        .format(format)
-        .toString();
+    ? moment(date.toISOString()).utc().format(format).toString()
+    : moment(date.toISOString()).format(format).toString();
 }
 
 export function handleConvert(value, unit, exclude) {
   exclude = exclude || '';
   const convert = require('convert-units');
-  return convert(value)
-    .from(unit)
-    .toBest(exclude);
+  return convert(value).from(unit).toBest(exclude);
 }
 
 export function handleType(value) {
-  return _.lowerCase(value.plural);
+  return lowerCase(value.plural);
 }
 
 export function showTime(milliseconds) {
@@ -108,7 +107,11 @@ export function showBytes(bytes, decimals = 3) {
 
   const identification = Math.floor(Math.log(bytes) / Math.log(kbytes));
 
-  return parseFloat((bytes / Math.pow(kbytes, identification)).toFixed(decimalCheck)) + ' ' + measures[identification];
+  return (
+    parseFloat((bytes / Math.pow(kbytes, identification)).toFixed(decimalCheck)) +
+    ' ' +
+    measures[identification]
+  );
 }
 
 function insertRole(roles, roleType, role) {
@@ -123,7 +126,7 @@ function insertRole(roles, roleType, role) {
 export function organizeRoles(roles) {
   let newRoles = {};
 
-  if(!roles) {
+  if (!roles) {
     return JSON.stringify(newRoles);
   }
 
@@ -146,6 +149,9 @@ export function organizeRoles(roles) {
         break;
       case ROLE_TYPE.CONNECT:
         newRoles = insertRole(newRoles, ROLE_TYPE.CONNECT, role);
+        break;
+      case ROLE_TYPE.KSQLDB:
+        newRoles = insertRole(newRoles, ROLE_TYPE.KSQLDB, role);
         break;
       default:
         break;

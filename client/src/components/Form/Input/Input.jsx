@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Input = props => {
   const { name, label, placeholder, error, noStyle, wrapperClass, inputClass, ...rest } = props;
-  let wrapperClassRender = 'form-group';
+  let wrapperClassRender = 'form-group row';
   let inputClassRender = 'col-sm-10';
   if (noStyle) {
     wrapperClassRender = '';
@@ -16,13 +17,13 @@ const Input = props => {
   }
 
   return (
-    <div className={`${wrapperClassRender} row`}>
+    <div className={`${wrapperClassRender}`}>
       {label !== '' ? (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
         </label>
       ) : (
-        <div/>
+        <div />
       )}
       <div className={`${inputClassRender}`}>
         <input
@@ -42,6 +43,16 @@ const Input = props => {
       </div>
     </div>
   );
+};
+
+Input.propTypes = {
+  name: PropTypes.string,
+  label: PropTypes.string,
+  placeholder: PropTypes.string,
+  error: PropTypes.string,
+  noStyle: PropTypes.bool,
+  wrapperClass: PropTypes.string,
+  inputClass: PropTypes.string
 };
 
 export default Input;

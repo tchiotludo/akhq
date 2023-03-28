@@ -1,7 +1,7 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
 import { uriAclsByPrincipal } from '../../../../utils/endpoints';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class AclTopics extends Root {
   state = {
@@ -18,7 +18,9 @@ class AclTopics extends Root {
   async getAcls() {
     const { selectedCluster, principalEncoded } = this.state;
 
-    const response = await this.getApi(uriAclsByPrincipal(selectedCluster, principalEncoded, 'TOPIC'));
+    const response = await this.getApi(
+      uriAclsByPrincipal(selectedCluster, principalEncoded, 'TOPIC')
+    );
     if (response.data.acls) {
       const acls = response.data || [];
       this.handleAcls(acls);

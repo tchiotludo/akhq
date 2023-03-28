@@ -45,6 +45,19 @@ class AccessControlRepositoryTest extends AbstractTest {
     }
 
     @Test
+    void findAllBySecondUser() throws ExecutionException, InterruptedException {
+        var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("test:toto"), Optional.empty());
+        assertEquals("test:toto", searchResult.getPrincipal());
+        assertEquals(2, searchResult.getAcls().size());
+        assertEquals(2, searchResult
+            .getAcls()
+            .stream()
+            .filter(acl -> acl.getOperation().getPermissionType() == AclPermissionType.ALLOW)
+            .count()
+        );
+    }
+
+    @Test
     void findHostByUser() throws ExecutionException, InterruptedException {
         var searchResult = aclRepository.findByPrincipal(KafkaTestCluster.CLUSTER_ID, AccessControl.encodePrincipal("user:tata"), Optional.empty());
         assertEquals("user:tata", searchResult.getPrincipal());

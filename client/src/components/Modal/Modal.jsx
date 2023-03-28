@@ -1,15 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import './styles.scss';
 
 function Modal({ show, children }) {
-    const showHideClassname = show ? 'modal display-block' : 'modal display-none';
-
-    return (
-        <div className={showHideClassname}>
-                {children}
-        </div>
-    );
+  return <div className={show ? 'modal display-block' : 'modal display-none'}>{children}</div>;
 }
+
+Modal.propTypes = {
+  children: PropTypes.any,
+  show: PropTypes.bool
+};
 
 export default Modal;

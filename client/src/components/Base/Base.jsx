@@ -1,10 +1,12 @@
 import './Base.scss';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import Loading from '../../containers/Loading';
 import { Helmet } from 'react-helmet';
+
 class Base extends Component {
   state = {
     clusterId: '',
@@ -74,7 +76,9 @@ class Base extends Component {
               clusters={clusters}
               expanded={expanded}
               toggleSidebar={newExpanded => {
-                newExpanded ? localStorage.setItem('expanded', newExpanded) : localStorage.removeItem('expanded');
+                newExpanded
+                  ? localStorage.setItem('expanded', newExpanded)
+                  : localStorage.removeItem('expanded');
                 this.setState({ expanded: newExpanded });
               }}
               selectedTab={selectedTab}
@@ -87,5 +91,13 @@ class Base extends Component {
     );
   }
 }
+
+Base.propTypes = {
+  history: PropTypes.object,
+  match: PropTypes.object,
+  location: PropTypes.object,
+  clusters: PropTypes.array,
+  children: PropTypes.any
+};
 
 export default withRouter(Base);

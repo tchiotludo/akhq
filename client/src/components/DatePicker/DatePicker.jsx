@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import DateTimePicker from 'react-datepicker';
 import moment from 'moment';
 import { formatDateTime } from '../../utils/converters';
 
-class DatePicker extends React.Component {
-  static propTypes = {
-    value: PropTypes.string,
-    onChange: PropTypes.func
-  };
-
+class DatePicker extends Component {
   state = {
     value: '',
     openDateModal: false
@@ -17,7 +12,7 @@ class DatePicker extends React.Component {
 
   componentDidMount = () => {
     this.setState({
-      value: (this.props.value) ? this.props.value : new Date()
+      value: this.props.value ? this.props.value : new Date()
     });
   };
 
@@ -94,5 +89,14 @@ class DatePicker extends React.Component {
     );
   };
 }
+
+DatePicker.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  showDateTimeInput: PropTypes.bool,
+  showTimeInput: PropTypes.bool,
+  showTimeSelect: PropTypes.bool,
+  onClear: PropTypes.func
+};
 
 export default DatePicker;

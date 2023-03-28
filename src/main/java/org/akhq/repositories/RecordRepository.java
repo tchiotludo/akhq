@@ -22,6 +22,7 @@ import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
+import org.akhq.utils.MaskingUtils;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.consumer.*;
@@ -39,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
@@ -70,6 +72,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
+
+    @Inject
+    private MaskingUtils maskingUtils;
 
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
@@ -319,6 +324,12 @@ public class RecordRepository extends AbstractRepository {
                             filterMessageLength(current);
                             list.add(current);
                         }
+
+                        // End of the partition, we can stop here
+                        if (record.offset() == topicPartitionOffset.getEnd()) {
+                            emptyPoll = 1;
+                            break;
+                        }
                     }
                 }
                 while (emptyPoll < 1);
@@ -389,8 +400,10 @@ public class RecordRepository extends AbstractRepository {
     private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options, int pollSizePerPartition) {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
-                long last = partition.getLastOffset();
+                // Take end offset - 1 to get the last record offset
+                long last = partition.getLastOffset() - 1;
 
+                // If there is an after parameter in the request use this one
                 if (pollSizePerPartition > 0 && options.after.containsKey(partition.getId())) {
                     last = options.after.get(partition.getId()) - 1;
                 }
@@ -399,7 +412,7 @@ public class RecordRepository extends AbstractRepository {
                     consumer.close();
                     return null;
                 } else if (!(last - pollSizePerPartition < first)) {
-                    first = last - pollSizePerPartition;
+                    first = last - pollSizePerPartition + 1;
                 }
 
                 return EndOffsetBound.builder()
@@ -442,7 +455,7 @@ public class RecordRepository extends AbstractRepository {
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
         SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
         SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
-        return new Record(
+        return maskingUtils.maskRecord(new Record(
             client,
             record,
             this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
@@ -455,13 +468,13 @@ public class RecordRepository extends AbstractRepository {
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
             topic
-        );
+        ));
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
         SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
         SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
-        return new Record(
+        return maskingUtils.maskRecord(new Record(
             client,
             record,
             schemaRegistryType,
@@ -474,7 +487,7 @@ public class RecordRepository extends AbstractRepository {
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
             topic
-        );
+        ));
     }
 
     public List<RecordMetadata> produce(
@@ -606,7 +619,7 @@ public class RecordRepository extends AbstractRepository {
                 SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, keySchemaId.get());
                 keyAsBytes = keySerializer.serialize(key.get());
             } else {
-                keyAsBytes = key.get().getBytes();
+                keyAsBytes = key.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
             }
         } else {
             try {
@@ -622,7 +635,7 @@ public class RecordRepository extends AbstractRepository {
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
             valueAsBytes = valueSerializer.serialize(value.get());
         } else {
-            valueAsBytes = value.map(String::getBytes).orElse(null);
+            valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);

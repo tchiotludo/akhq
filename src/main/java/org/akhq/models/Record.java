@@ -8,7 +8,6 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
-import io.micronaut.context.annotation.Value;
 import kafka.coordinator.group.GroupMetadataManager;
 import kafka.coordinator.transaction.TransactionLog;
 import kafka.coordinator.transaction.TxnKey;
@@ -16,6 +15,7 @@ import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
+import org.akhq.utils.ContentUtils;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -115,7 +115,7 @@ public class Record {
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
         for (Header header: record.headers()) {
-            String headerValue = header.value() != null ? new String(header.value()) : null;
+            String headerValue = String.valueOf(ContentUtils.convertToObject(header.value()));
             this.headers.add(new KeyValue<>(header.key(), headerValue));
         }
 
@@ -155,6 +155,10 @@ public class Record {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public void setTruncated(Boolean truncated) {

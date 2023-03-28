@@ -104,6 +104,11 @@ akhq:
           - connect/update
           - connect/delete
           - connect/state/update
+          - ksqldb/read
+          - ksqldb/execute
+        attributes:
+          acls-filter-regexp:
+            - "user.*"
       limited:
         name: limited
         roles:
@@ -114,6 +119,8 @@ akhq:
         attributes:
           topics-filter-regexp:
             - "test.*"
+          acls-filter-regexp:
+            - "user.*"
       operator:
         name: operator
         roles:
@@ -131,6 +138,9 @@ akhq:
           - topic/insert
           - topic/delete
           - registry/version/delete
+        attributes:
+          acls-filter-regexp:
+            - "user.*"
     basic-auth:
       - username: user
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1

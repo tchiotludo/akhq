@@ -6,7 +6,7 @@ import { logout } from '../../utils/api';
 import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../components/Root";
+import Root from '../../components/Root';
 
 class Header extends Root {
   state = {
@@ -52,40 +52,39 @@ class Header extends Root {
 
   _renderLogin() {
     const { login, username, auths } = this.state;
-    if(auths && auths.loginEnabled) {
-        return (login === 'false' || !login ? (
-            <Link to="/ui/login">
-              <button className="btn btn-primary">
-                {' '}
-                <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
-                Login
-              </button>
-            </Link>
-        ) : (
-            <Link to="#">
-              <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    this.logout();
-                  }}
-              >
-                {' '}
-                <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
-                {username} (Logout)
-              </button>
-            </Link>
-        ));
+    if (auths && auths.loginEnabled) {
+      return login === 'false' || !login ? (
+        <Link to="/ui/login">
+          <button className="btn btn-primary">
+            {' '}
+            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+            Login
+          </button>
+        </Link>
+      ) : (
+        <Link to="#">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              this.logout();
+            }}
+          >
+            {' '}
+            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+            {username} (Logout)
+          </button>
+        </Link>
+      );
     } else if (auths && username) {
-      return ( <button
-          className="btn btn-primary"
-          disabled
-      >
-        {' '}
-        <i className="fa fa-fw fa-sign-in" aria-hidden="true"/>
-        {username}
-      </button>);
+      return (
+        <button className="btn btn-primary" disabled>
+          {' '}
+          <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+          {username}
+        </button>
+      );
     } else {
-      return (<></>);
+      return <></>;
     }
   }
 

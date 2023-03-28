@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
-import _ from 'lodash';
+import sortBy from 'lodash/sortBy';
 import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
@@ -12,12 +13,16 @@ class Sidebar extends Component {
     selectedTab: constants.TOPIC,
     selectedCluster: '',
     selectedConnect: '',
+    selectedKsqlDB: '',
     allClusters: [],
     allConnects: [],
+    allKsqlDBs: [],
     showClusters: false,
     showConnects: false,
+    showKsqlDBs: false,
     enableRegistry: false,
     enableConnect: false,
+    enableKsqlDB: false,
     roles: JSON.parse(sessionStorage.getItem('roles')),
     height: 'auto'
   };
@@ -31,6 +36,7 @@ class Sidebar extends Component {
     let tabs = [
       constants.CLUSTER,
       constants.CONNECT,
+      constants.KSQLDB,
       constants.GROUP,
       constants.NODE,
       constants.SCHEMA,
@@ -44,7 +50,7 @@ class Sidebar extends Component {
     }
     if (this.props.clusters && this.props.clusters.length > 0) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
-        this.handleRegistryAndConnects(selectedCluster);
+        this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       });
     }
   }
@@ -57,10 +63,7 @@ class Sidebar extends Component {
     });
 
     const clusterId = match ? match.params.clusterId || '' : '';
-    let allClusters =
-      _(clusters)
-        .sortBy(cluster => cluster.id)
-        .value() || [];
+    const allClusters = sortBy(clusters || [], cluster => cluster.id);
     const cluster = allClusters.find(cluster => cluster.id === clusterId);
     this.setState(
       {
@@ -80,34 +83,55 @@ class Sidebar extends Component {
     }
     if (this.props.clusters !== prevProps.clusters) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
-        this.handleRegistryAndConnects(selectedCluster);
+        this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       });
     }
   }
 
-  handleRegistryAndConnects(selectedCluster) {
+  handleRegistryAndConnectsAndKsqlDBs(selectedCluster) {
     const { allClusters } = this.state;
     const cluster = allClusters.find(cluster => cluster.id === selectedCluster);
     const enableConnects = cluster.connects !== undefined;
+    const enableKsqlDB = cluster.ksqldbs !== undefined;
+    let newState = {
+      enableRegistry: cluster.registry,
+      enableConnect: enableConnects,
+      allConnects: [],
+      selectedConnect: '',
+      enableKsqlDB: enableKsqlDB,
+      allKsqlDBs: [],
+      selectedKsqlDB: ''
+    };
     if (enableConnects) {
-      this.setState({
-        enableRegistry: cluster.registry,
-        enableConnect: enableConnects,
-        allConnects: cluster.connects,
-        selectedConnect: cluster.connects[0]
-      });
-    } else {
-      this.setState({
-        enableRegistry: cluster.registry,
-        enableConnect: enableConnects,
-        allConnects: [],
-        selectedConnect: ''
-      });
+      newState = {
+        ...newState,
+        ...{
+          allConnects: cluster.connects,
+          selectedConnect: cluster.connects[0]
+        }
+      };
     }
+    if (enableKsqlDB) {
+      newState = {
+        ...newState,
+        ...{
+          allKsqlDBs: cluster.ksqldbs,
+          selectedKsqlDB: cluster.ksqldbs[0]
+        }
+      };
+    }
+    this.setState(newState);
   }
 
-  setClustersAndConnects = () => {
-    const { allClusters, allConnects, selectedCluster, selectedConnect } = this.state;
+  setClustersAndConnectsAndKsqlDBs = () => {
+    const {
+      allClusters,
+      allConnects,
+      allKsqlDBs,
+      selectedCluster,
+      selectedConnect,
+      selectedKsqlDB
+    } = this.state;
     const listClusters = allClusters.map(cluster => (
       <NavItem
         key={`cluster/${cluster.id}`}
@@ -117,12 +141,12 @@ class Sidebar extends Component {
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
           <Link to={`/ui/${cluster.id}/topic`}>
-          <div
-            className={selectedCluster === cluster.id ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {cluster.id}
-          </div>
+            <div
+              className={selectedCluster === cluster.id ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {cluster.id}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -135,22 +159,40 @@ class Sidebar extends Component {
       >
         <NavText>
           <Link to={`/ui/${selectedCluster}/connect/${connect}`}>
-          <div
-            className={selectedConnect === connect ? ' active' : ''}
-            style={{ color: '#759dac' }}
-          >
-            {connect}
-          </div>
+            <div
+              className={selectedConnect === connect ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {connect}
+            </div>
           </Link>
         </NavText>
       </NavItem>
     ));
 
-    return { listClusters, listConnects };
+    const listKsqlDBs = allKsqlDBs.map(ksqlDB => (
+      <NavItem
+        key={`cluster/${ksqlDB}`}
+        eventKey={`cluster/${ksqlDB}`}
+        onClick={() => this.changeSelectedKsqlDB(ksqlDB)}
+      >
+        <NavText>
+          <Link to={`/ui/${selectedCluster}/ksqldb/${ksqlDB}`}>
+            <div
+              className={selectedKsqlDB === ksqlDB ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {ksqlDB}
+            </div>
+          </Link>
+        </NavText>
+      </NavItem>
+    ));
+
+    return { listClusters, listConnects, listKsqlDBs };
   };
 
   changeSelectedCluster(newSelectedCluster) {
-
     this.setState(
       {
         selectedCluster: newSelectedCluster.id,
@@ -163,7 +205,7 @@ class Sidebar extends Component {
           selectedCluster
         });
 
-        this.handleRegistryAndConnects(selectedCluster);
+        this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       }
     );
   }
@@ -178,11 +220,20 @@ class Sidebar extends Component {
     });
   }
 
+  changeSelectedKsqlDB(ksqlDB) {
+    this.setState({ selectedKsqlDB: ksqlDB, showKsqlDBs: false }, () => {
+      const { selectedKsqlDB, selectedCluster } = this.state;
+      this.props.history.push({
+        pathname: `/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`,
+        selectedCluster
+      });
+    });
+  }
+
   renderMenuItem(iconClassName, tab, label) {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
-
       <NavItem
         eventKey={label}
         className={pathname.includes(tab) ? 'active' : ''}
@@ -196,22 +247,26 @@ class Sidebar extends Component {
       >
         <NavIcon>
           {' '}
-           <Link to={`/ui/${selectedCluster}/${tab}`}
-                 onClick={(e) => {
-                   this.setState({ selectedTab: tab });
-                   e.preventDefault();
-           }}>
-               <i className={iconClassName} aria-hidden="true" />
-           </Link>
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            <i className={iconClassName} aria-hidden="true" />
+          </Link>
         </NavIcon>
         <NavText>
           {' '}
-          <Link to={`/ui/${selectedCluster}/${tab}`}
-                onClick={(e) => {
-                  this.setState({ selectedTab: tab });
-                  e.preventDefault();
-                }}>
-              {label}
+          <Link
+            to={`/ui/${selectedCluster}/${tab}`}
+            onClick={e => {
+              this.setState({ selectedTab: tab });
+              e.preventDefault();
+            }}
+          >
+            {label}
           </Link>
         </NavText>
       </NavItem>
@@ -221,17 +276,20 @@ class Sidebar extends Component {
   render() {
     const {
       selectedConnect,
+      selectedKsqlDB,
       selectedCluster,
       showClusters,
       showConnects,
+      showKsqlDBs,
       selectedTab,
       height,
       enableRegistry,
-      enableConnect
+      enableConnect,
+      enableKsqlDB
     } = this.state;
     const roles = this.state.roles || {};
     const tag = sessionStorage.getItem('version');
-    const { listConnects, listClusters } = this.setClustersAndConnects();
+    const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
     return (
       <SideNav
         expanded={this.props.expanded}
@@ -325,11 +383,47 @@ class Sidebar extends Component {
               {listConnects}
             </NavItem>
           )}
+          {enableKsqlDB && roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
+            <NavItem
+              eventKey="ksqlDBs"
+              className={selectedTab === constants.KSQLDB ? 'active' : ''}
+            >
+              <NavIcon>
+                <i className="fa fa-fw fa fa-rocket" aria-hidden="true" />
+              </NavIcon>
+              <NavText>
+                <div
+                  to={`/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`}
+                  data-toggle="collapse"
+                  aria-expanded={showKsqlDBs}
+                  className="dropdown-toggle text-center"
+                  onClick={() => {
+                    this.setState({ showKsqlDBs: !showKsqlDBs, selectedTab: constants.KSQLDB });
+                  }}
+                >
+                  <span className="badge badge-primary clusters">{selectedKsqlDB}</span>
+                </div>
+              </NavText>
+
+              {listKsqlDBs}
+            </NavItem>
+          )}
           {this.renderMenuItem('fa fa-fw fa-gear', constants.SETTINGS, 'Settings')}
         </SideNav.Nav>
       </SideNav>
     );
   }
 }
+
+Sidebar.propTypes = {
+  history: PropTypes.object,
+  match: PropTypes.object,
+  location: PropTypes.object,
+  clusters: PropTypes.array,
+  children: PropTypes.any,
+  expanded: PropTypes.bool,
+  toggleSidebar: PropTypes.func,
+  selectedTab: PropTypes.string
+};
 
 export default withRouter(Sidebar);

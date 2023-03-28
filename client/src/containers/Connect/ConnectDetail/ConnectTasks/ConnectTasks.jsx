@@ -10,11 +10,10 @@ import {
   uriRestartTask
 } from '../../../../utils/endpoints';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class ConnectTasks extends Root {
   state = {
@@ -231,7 +230,7 @@ class ConnectTasks extends Root {
                     />
                   );
                 },
-                cell: (obj) => {
+                cell: obj => {
                   return obj.trace ? (
                     <pre className="mb-0 khq-data-highlight">
                       <code>{obj.trace}</code>

@@ -78,6 +78,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [Fresha](https://www.fresha.com/)
 * [Galeries Lafayette](https://www.galerieslafayette.com/)
 * [GetYourGuide](https://www.getyourguide.com)
+* [GrtGaz](https://www.grtgaz.com/)
 * [Kitopi](https://kitopi.com)
 * [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
@@ -88,6 +89,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [TUI](https://www.tui.com)
 * [TVG](https://www.tvg.com)
 * [Vodeno](https://www.vodeno.com/)
+* [Baloise](https://www.baloise.ch/)
 
 
 

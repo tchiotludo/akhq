@@ -17,6 +17,9 @@ import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +30,14 @@ import jakarta.inject.Inject;
 @Controller
 public class SchemaController extends AbstractController {
     private final SchemaRegistryRepository schemaRepository;
+
+    private String decode(String value) {
+        try {
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
 
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
@@ -87,19 +98,20 @@ public class SchemaController extends AbstractController {
     @Get("api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Retrieve a schema")
     public Schema home(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
-        return this.schemaRepository.getLatestVersion(cluster, subject);
+        return this.schemaRepository.getLatestVersion(cluster, decode(subject));
     }
 
     @Secured(Role.ROLE_REGISTRY_UPDATE)
     @Post(value = "api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Update a schema")
     public Schema updateSchema(String cluster, String subject, @Body Schema schema) throws Throwable {
-        if (!this.schemaRepository.exist(cluster, subject)) {
-            throw new IllegalArgumentException("Subject '" + subject + "' doesn't exits");
+        final String decodedSubject = decode(subject);
+        if (!this.schemaRepository.exist(cluster, decodedSubject)) {
+            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exits");
         }
 
-        if (!subject.equals(schema.getSubject())) {
-            throw new IllegalArgumentException("Invalid subject name '" + subject + "', doesn't egals '" + schema.getSubject() + "'");
+        if (!decodedSubject.equals(schema.getSubject())) {
+            throw new IllegalArgumentException("Invalid subject name '" + decodedSubject + "', doesn't egals '" + schema.getSubject() + "'");
         }
 
         return registerSchema(cluster, schema);
@@ -136,18 +148,19 @@ public class SchemaController extends AbstractController {
     @Get("api/{cluster}/schema/{subject}/version")
     @Operation(tags = {"schema registry"}, summary = "List all version for a schema")
     public List<Schema> versions(HttpRequest<?> request, String cluster, String subject) throws IOException, RestClientException {
-        return this.schemaRepository.getAllVersions(cluster, subject);
+        return this.schemaRepository.getAllVersions(cluster, decode(subject));
     }
 
     @Secured(Role.ROLE_REGISTRY_DELETE)
     @Delete("api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Delete a schema")
     public HttpResponse<?> delete(String cluster, String subject) throws IOException, RestClientException {
-        if (!this.schemaRepository.exist(cluster, subject)) {
-            throw new IllegalArgumentException("Subject '" + subject + "' doesn't exits");
+        final String decodedSubject = decode(subject);        
+        if (!this.schemaRepository.exist(cluster, decodedSubject)) {
+            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exits");
         }
 
-        this.schemaRepository.delete(cluster, subject);
+        this.schemaRepository.delete(cluster, decodedSubject);
 
         return HttpResponse.noContent();
     }
@@ -160,7 +173,7 @@ public class SchemaController extends AbstractController {
         String subject,
         Integer version
     ) throws IOException, RestClientException {
-        this.schemaRepository.deleteVersion(cluster, subject, version);
+        this.schemaRepository.deleteVersion(cluster, decode(subject), version);
 
         return HttpResponse.noContent();
     }

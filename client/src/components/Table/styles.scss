@@ -1,4 +1,4 @@
-@import "../../css/init";
+@import '../../css/init';
 
 .action-hover :hover {
   cursor: pointer;
@@ -29,8 +29,8 @@ td {
 .close-container {
   position: absolute;
   z-index: 100;
-  right:2px;
-  top:-5px;
+  right: 2px;
+  top: -5px;
   cursor: pointer;
   font-size: $font-size-lg;
 }

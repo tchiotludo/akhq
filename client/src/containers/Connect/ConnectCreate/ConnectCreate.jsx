@@ -7,13 +7,13 @@ import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import AceEditor from 'react-ace';
-import _ from 'lodash';
+import filter from 'lodash/filter';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../components/Root";
+import Root from '../../../components/Root';
 
 class ConnectCreate extends Root {
   state = {
@@ -53,7 +53,7 @@ class ConnectCreate extends Root {
     });
   };
 
-  handleShema(definitions) {
+  handleSchema(definitions) {
     this.schema = {};
     let formData = {};
     formData.type = this.state.selectedType;
@@ -218,23 +218,23 @@ class ConnectCreate extends Root {
     let actualGroup = '';
     let sameGroup = [];
     let allOfIt = [];
-    _(plugin.definitions)
-      .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
-      .value()
-      .forEach(definition => {
-        if (definition.group !== actualGroup) {
-          if (actualGroup === '') {
-            actualGroup = definition.group;
-            sameGroup = [definition];
-          } else {
-            allOfIt.push(this.handleGroup(sameGroup));
-            sameGroup = [definition];
-            actualGroup = definition.group;
-          }
+    filter(
+      plugin.definitions,
+      plugin => plugin.name !== 'name' && plugin.name !== 'connector.class'
+    ).forEach(definition => {
+      if (definition.group !== actualGroup) {
+        if (actualGroup === '') {
+          actualGroup = definition.group;
+          sameGroup = [definition];
         } else {
-          sameGroup.push(definition);
+          allOfIt.push(this.handleGroup(sameGroup));
+          sameGroup = [definition];
+          actualGroup = definition.group;
         }
-      });
+      } else {
+        sameGroup.push(definition);
+      }
+    });
     allOfIt.push(this.handleGroup(sameGroup));
     this.setState({ display: allOfIt });
     return allOfIt;
@@ -243,7 +243,7 @@ class ConnectCreate extends Root {
   handleGroup(group) {
     let { formData } = this.state;
     let groupDisplay = [
-      <tr className="bg-primary">
+      <tr key={0} className="bg-primary">
         <td colSpan="3">{group[0].group}</td>
       </tr>
     ];
@@ -318,12 +318,13 @@ class ConnectCreate extends Root {
 
   renderForm() {
     let plugin = this.getPlugin();
-    if(plugin.definitions){
+    if (plugin.definitions) {
       this.setState({ plugin }, () => {
-        this.handleShema(
-          _(plugin.definitions)
-            .filter(plugin => plugin.name !== 'name' && plugin.name !== 'connector.class')
-            .value()
+        this.handleSchema(
+          filter(
+            plugin.definitions,
+            plugin => plugin.name !== 'name' && plugin.name !== 'connector.class'
+          )
         );
         this.handleData();
       });
@@ -404,14 +405,13 @@ class ConnectCreate extends Root {
 
     body.configs = configs;
 
-    this.postApi(uriCreateConnect(clusterId, connectId), body)
-      .then(() => {
-        this.props.history.push({
-          pathname: `/ui/${clusterId}/connect/${connectId}`,
-        });
-
-        toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
+    this.postApi(uriCreateConnect(clusterId, connectId), body).then(() => {
+      this.props.history.push({
+        pathname: `/ui/${clusterId}/connect/${connectId}`
       });
+
+      toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
+    });
   }
 
   render() {

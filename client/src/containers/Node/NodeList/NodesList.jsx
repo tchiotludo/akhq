@@ -2,8 +2,7 @@ import React from 'react';
 import Header from '../../Header';
 import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
-import { uriNodes } from '../../../utils/endpoints';
-import { uriNodePartitions } from '../../../utils/endpoints';
+import { uriNodes, uriNodePartitions } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
 
 class NodesList extends Root {
@@ -27,10 +26,10 @@ class NodesList extends Root {
 
   handleData(nodes) {
     const { clusterId } = this.props.match.params;
-    let tableNodes = {}
-    const setState = () =>  {
-      this.setState({ data: Object.values(tableNodes), loading: false});
-    }
+    let tableNodes = {};
+    const setState = () => {
+      this.setState({ data: Object.values(tableNodes), loading: false });
+    };
 
     nodes.nodes.forEach(node => {
       tableNodes[node.id] = {
@@ -44,17 +43,19 @@ class NodesList extends Root {
 
     setState();
 
-    this.getApi(uriNodePartitions(clusterId))
-        .then(value => {
-          for (let node of value.data) {
-            const topicNode = tableNodes[node.id];
-            tableNodes[node.id].partition = topicNode ?
-                (node.countLeader) + ' (' + (((node.countLeader) / node.totalPartitions) * 100).toFixed(2) + '%)' :
-                '';
-          }
+    this.getApi(uriNodePartitions(clusterId)).then(value => {
+      for (let node of value.data) {
+        const topicNode = tableNodes[node.id];
+        tableNodes[node.id].partition = topicNode
+          ? node.countLeader +
+            ' (' +
+            ((node.countLeader / node.totalPartitions) * 100).toFixed(2) +
+            '%)'
+          : '';
+      }
 
-          setState();
-        })
+      setState();
+    });
 
     return Object.values(tableNodes);
   }

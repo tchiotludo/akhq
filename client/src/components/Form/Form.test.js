@@ -12,10 +12,7 @@ Enzyme.configure({ adapter: new Adapter() });
 describe('Form', () => {
   const TestForm = new Form();
   TestForm.schema = {
-    test: Joi.number()
-      .min(0)
-      .label('Test')
-      .required()
+    test: Joi.number().min(0).label('Test').required()
   };
   TestForm.state.formData = {
     test: 12

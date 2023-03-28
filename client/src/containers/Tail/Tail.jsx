@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import _ from 'lodash';
+import remove from 'lodash/remove';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
 import { SETTINGS_VALUES } from '../../utils/constants';
@@ -39,13 +39,13 @@ class Tail extends Root {
 
   componentDidMount = async () => {
     const { clusterId } = this.props.match.params;
-    const query =  new URLSearchParams(this.props.location.search);
+    const query = new URLSearchParams(this.props.location.search);
 
     let data = await this.getApi(uriTopicsName(clusterId));
     data = data.data;
     let topics = [];
     if (query && query.get('topicId')) {
-      topics = [ query.get('topicId') ];
+      topics = [query.get('topicId')];
     }
 
     if (data) {
@@ -65,17 +65,17 @@ class Tail extends Root {
     }
 
     this.initDateTimeFormat();
-  }
+  };
 
   initDateTimeFormat = async () => {
     const { clusterId } = this.props.match.params;
-    const uiOptions = await getClusterUIOptions(clusterId)
-    if(uiOptions.topicData && uiOptions.topicData.dateTimeFormat) {
-      this.setState(({
+    const uiOptions = await getClusterUIOptions(clusterId);
+    if (uiOptions.topicData && uiOptions.topicData.dateTimeFormat) {
+      this.setState({
         dateTimeFormat: uiOptions.topicData.dateTimeFormat
-      }));
+      });
     }
-  }
+  };
 
   componentWillUnmount = () => {
     super.componentWillUnmount();
@@ -89,10 +89,9 @@ class Tail extends Root {
       uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords))
     );
     let self = this;
-    this.eventSource.addEventListener('tailBody', function(e) {
+    this.eventSource.addEventListener('tailBody', function (e) {
       let res = JSON.parse(e.data);
       let { data } = self.state;
-
 
       if (res.records) {
         data = data.concat(res.records);
@@ -105,7 +104,7 @@ class Tail extends Root {
       self.scrollToBottom();
     });
 
-    this.eventSource.onerror = e => {
+    this.eventSource.onerror = () => {
       this.setState({ selectedStatus: STATUS.STOPPED });
     };
   };
@@ -119,13 +118,14 @@ class Tail extends Root {
   };
 
   scrollToBottom = () => {
-    const followScroll = (document.body.scrollTop || document.documentElement.scrollTop) + window.innerHeight >=
-        (document.documentElement.scrollHeight - document.documentElement.clientHeight)
+    const followScroll =
+      (document.body.scrollTop || document.documentElement.scrollTop) + window.innerHeight >=
+      document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
     if (followScroll) {
       this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
     }
-  }
+  };
 
   handleChange = e => {
     this.setState({ [e.target.name]: [e.target.value] });
@@ -133,17 +133,10 @@ class Tail extends Root {
 
   handleSelectedTopics = topic => {
     let selectedTopics = this.state.selectedTopics;
-    if (
-      selectedTopics.find(el => {
-        return el === topic;
-      })
-    ) {
-      let updatedSelected = _.remove(selectedTopics, el => {
-        return el !== topic;
-      });
-      this.setState({
-        selectedTopics: updatedSelected
-      });
+    if (selectedTopics.find(el => el === topic)) {
+      let updatedSelected = remove(selectedTopics, el => el !== topic);
+
+      this.setState({ selectedTopics: updatedSelected });
     } else {
       selectedTopics.push(topic);
       this.setState({ selectedTopics: selectedTopics });
@@ -422,10 +415,10 @@ class Tail extends Root {
                 cell: obj => {
                   return (
                     <div className="tail-headers">
-                      <DateTime 
-                        isoDateTimeString={obj.timestamp} 
+                      <DateTime
+                        isoDateTimeString={obj.timestamp}
                         dateTimeFormat={this.state.dateTimeFormat}
-                      />                
+                      />
                     </div>
                   );
                 }
@@ -493,9 +486,10 @@ class Tail extends Root {
             }}
             noContent={<tr />}
             onExpand={obj => {
-              return Object.keys(obj.headers).map(header => {
+              return Object.keys(obj.headers).map((header, i) => {
                 return (
                   <tr
+                    key={i}
                     style={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -530,8 +524,11 @@ class Tail extends Root {
             }}
           />
         )}
-        <div ref={(el) => { this.messagesEnd = el; }}>
-        </div>
+        <div
+          ref={el => {
+            this.messagesEnd = el;
+          }}
+        ></div>
       </div>
     );
   }

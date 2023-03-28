@@ -12,6 +12,8 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.BasicAuthCred
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider;
+import io.confluent.ksql.api.client.Client;
+import io.confluent.ksql.api.client.ClientOptions;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
@@ -347,4 +349,38 @@ public class KafkaModule {
         return this.connectRestClient.get(clusterId);
     }
 
+    private final Map<String, Map<String, Client>> ksqlDbClient = new HashMap<>();
+    public Map<String, Client> getKsqlDbClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException("Invalid cluster '" + clusterId + "'");
+        }
+
+        if (!this.ksqlDbClient.containsKey(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
+
+            if (connection.getKsqldb() != null && !connection.getKsqldb().isEmpty()) {
+                Map<String, Client> mapKsqlDbs = new HashMap<>();
+                connection.getKsqldb().forEach(ksqlDb -> {
+
+                    URIBuilder uri = URIBuilder.fromString(ksqlDb.getUrl().toString());
+
+                    ClientOptions options = ClientOptions.create()
+                        .setHost(uri.getHost().get())
+                        .setPort(uri.getPort().get())
+                        .setUseTls(ksqlDb.isUseTls())
+                        .setUseAlpn(ksqlDb.isUseAlpn())
+                        .setVerifyHost(ksqlDb.isVerifyHost());
+                    if (ksqlDb.getBasicAuthUsername() != null && ksqlDb.getBasicAuthPassword() != null) {
+                        options.setBasicAuthCredentials(ksqlDb.getBasicAuthUsername(), ksqlDb.getBasicAuthPassword());
+                    }
+                    Client client = Client.create(options);
+
+                    mapKsqlDbs.put(ksqlDb.getName(), client);
+                });
+                this.ksqlDbClient.put(clusterId, mapKsqlDbs);
+            }
+        }
+
+        return this.ksqlDbClient.get(clusterId);
+    }
 }

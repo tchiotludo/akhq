@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Joi from 'joi-browser';
-import _ from 'lodash';
+import camelCase from 'lodash/camelCase';
 
 import Input from './Input';
 import Select from './Select';
@@ -87,7 +87,6 @@ class Form extends Root {
     label,
     placeholder,
     type = 'text',
-    onChange = this.handleChange,
     noStyle,
     wrapperClass,
     inputClass,
@@ -114,7 +113,7 @@ class Form extends Root {
 
   renderJSONInput = (name, label, onChange, textMode, options, rest) => {
     const { formData, errors } = this.state;
-    const inputMode = textMode ? "text" : (formData.schemaType === "PROTOBUF" ? "protobuf"  : "json")
+    const inputMode = textMode ? 'text' : formData.schemaType === 'PROTOBUF' ? 'protobuf' : 'json';
     return (
       <div className="form-group row">
         {label !== '' ? (
@@ -126,7 +125,7 @@ class Form extends Root {
         )}
         <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
-            mode={ inputMode }
+            mode={inputMode}
             id={name}
             theme="merbivore_soft"
             value={formData[name]}
@@ -187,7 +186,7 @@ class Form extends Root {
     const items = [];
 
     for (let option of options) {
-      const value = _.camelCase(option.toString());
+      const value = camelCase(option.toString());
 
       items[items.length] = {
         name: name,
@@ -200,7 +199,7 @@ class Form extends Root {
     return <RadioGroup name={name} label={label} items={items} handleChange={onChange} />;
   };
 
-  renderDropdown = (name, options, searchValue, selectedKeySchema, onChange, renderResults) => {
+  renderDropdown = (name, searchValue, selectedKeySchema, onChange, renderResults) => {
     return (
       <React.Fragment>
         <div className="form-group row">
@@ -242,21 +241,20 @@ class Form extends Root {
     );
   };
 
-  renderCheckbox = (name, label, isChecked, onChange, isDefaultChecked, rest) => {
+  renderCheckbox = (name, isChecked, onChange, isDefaultChecked, rest) => {
     return (
-        <input
+      <input
         type="checkbox"
         name={name}
         id={name}
-        class="form-input-check"
+        className="form-input-check"
         checked={isChecked}
         onChange={onChange}
-        defaultChecked={ isDefaultChecked ? isDefaultChecked : false}
+        defaultChecked={isDefaultChecked ? isDefaultChecked : false}
         {...rest}
-        />
+      />
     );
   };
 }
 
 export default Form;
-

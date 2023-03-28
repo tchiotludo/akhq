@@ -1,14 +1,12 @@
 import React from 'react';
 import Header from '../../../Header/Header';
-import {
-  uriConsumerGroup, uriDeleteGroupOffsets,
-} from '../../../../utils/endpoints';
+import { uriConsumerGroup, uriDeleteGroupOffsets } from '../../../../utils/endpoints';
 import 'react-toastify/dist/ReactToastify.css';
-import Root from "../../../../components/Root";
-import Table from "../../../../components/Table";
-import constants from "../../../../utils/constants";
-import ConfirmModal from "../../../../components/Modal/ConfirmModal";
-import {toast} from "react-toastify";
+import Root from '../../../../components/Root';
+import Table from '../../../../components/Table';
+import constants from '../../../../utils/constants';
+import ConfirmModal from '../../../../components/Modal/ConfirmModal';
+import { toast } from 'react-toastify';
 
 class ConsumerGroupOffsetDelete extends Root {
   state = {
@@ -17,13 +15,13 @@ class ConsumerGroupOffsetDelete extends Root {
     topicIds: [],
     deleteAllOffsetsForTopic: '',
     showDeleteModal: false,
-    deleteMessage: '',
+    deleteMessage: ''
   };
 
   componentDidMount() {
-    const {clusterId, consumerGroupId} = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.match.params;
 
-    this.setState({clusterId, consumerGroupId}, () => {
+    this.setState({ clusterId, consumerGroupId }, () => {
       this.getTopics();
     });
   }
@@ -54,15 +52,20 @@ class ConsumerGroupOffsetDelete extends Root {
     const { clusterId, consumerGroupId, deleteAllOffsetsForTopic } = this.state;
     this.removeApi(uriDeleteGroupOffsets(clusterId, consumerGroupId, deleteAllOffsetsForTopic))
       .then(() => {
-        toast.success(`Offsets for topic '${deleteAllOffsetsForTopic}' and consumer group '${consumerGroupId}' are deleted`);
-        this.setState({ showDeleteModal: false, deleteMessage: '', deleteAllOffsetsForTopic: '' }, () => {
-          this.getTopics();
-        });
+        toast.success(
+          `Offsets for topic '${deleteAllOffsetsForTopic}' and consumer group '${consumerGroupId}' are deleted`
+        );
+        this.setState(
+          { showDeleteModal: false, deleteMessage: '', deleteAllOffsetsForTopic: '' },
+          () => {
+            this.getTopics();
+          }
+        );
       })
       .catch(() => {
         this.setState({ showDeleteModal: false, deleteMessage: '', deleteAllOffsetsForTopic: '' });
       });
-  }
+  };
 
   handleOnDelete(topicId) {
     this.setState({ deleteAllOffsetsForTopic: topicId }, () => {
@@ -75,13 +78,12 @@ class ConsumerGroupOffsetDelete extends Root {
   }
 
   render() {
-    const {consumerGroupId} = this.state;
+    const { consumerGroupId } = this.state;
 
     return (
       <div>
         <div>
-          <Header title={`Delete offsets: ${consumerGroupId}`}
-                  history={this.props.history}/>
+          <Header title={`Delete offsets: ${consumerGroupId}`} history={this.props.history} />
         </div>
         <div>
           <Table
@@ -93,7 +95,7 @@ class ConsumerGroupOffsetDelete extends Root {
                 colName: 'Topic',
                 type: 'text',
                 sortable: true
-              },
+              }
             ]}
             data={this.state.topicIds}
             noContent={
@@ -105,12 +107,10 @@ class ConsumerGroupOffsetDelete extends Root {
                 </td>
               </tr>
             }
-            onDelete={(row) => {
-              this.handleOnDelete(row.topic)
+            onDelete={row => {
+              this.handleOnDelete(row.topic);
             }}
-            actions={
-              [constants.TABLE_DELETE]
-            }
+            actions={[constants.TABLE_DELETE]}
           />
         </div>
         <ConfirmModal

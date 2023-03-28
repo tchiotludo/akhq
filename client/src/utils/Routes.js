@@ -26,8 +26,11 @@ import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from '../containers/Settings/Settings';
 import { organizeRoles } from './converters';
-import {uriAuths, uriClusters, uriCurrentUser} from './endpoints';
+import { uriAuths, uriClusters, uriCurrentUser } from './endpoints';
 import Root from '../components/Root';
+import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
+import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
+import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
 
 class Routes extends Root {
   state = {
@@ -46,41 +49,38 @@ class Routes extends Root {
   async getClusters() {
     const { clusterId } = this.state;
     try {
-        const resClusters = await this.getApi(uriClusters());
-        this.setState(
-            {
-                clusters: resClusters.data,
-                clusterId: resClusters.data ? resClusters.data[0].id : '',
-                loading: false
-            }
-        );
-
-    } catch(err) {
-        if (err.status === 401) {
-            if (!clusterId || clusterId.length <= 0) {
-                this.setState({ clusterId: '401' });
-            }
+      const resClusters = await this.getApi(uriClusters());
+      this.setState({
+        clusters: resClusters.data,
+        clusterId: resClusters.data ? resClusters.data[0].id : '',
+        loading: false
+      });
+    } catch (err) {
+      if (err.status === 401) {
+        if (!clusterId || clusterId.length <= 0) {
+          this.setState({ clusterId: '401' });
         }
-        console.error('Error:', err);
+      }
+      console.error('Error:', err);
     }
   }
 
   _initUserAndAuth() {
     const requests = [this.getApi(uriCurrentUser()), this.getApi(uriAuths())];
     Promise.all(requests)
-        .then(data => {
-            this._setAuths(data[1]);
-            this._setCurrentUser(data[0].data);
-        })
-        .catch(err => {
-            console.error('Error:', err);
-        });
+      .then(data => {
+        this._setAuths(data[1]);
+        this._setCurrentUser(data[0].data);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+      });
   }
 
   _setAuths(response) {
     if (response.status === 200) {
-        sessionStorage.setItem('auths', JSON.stringify(response.data));
-        sessionStorage.setItem('version', response.data.version);
+      sessionStorage.setItem('auths', JSON.stringify(response.data));
+      sessionStorage.setItem('version', response.data.version);
     }
   }
 
@@ -164,7 +164,7 @@ class Routes extends Root {
               )}
 
               {roles && roles.topic && roles.topic['topic/data/insert'] && (
-                  <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
+                <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
               )}
 
               {roles && roles.topic && roles.topic['topic/read'] && (
@@ -172,7 +172,7 @@ class Routes extends Root {
               )}
 
               {roles && roles.topic && roles.topic['topic/data/read'] && (
-                  <Route exact path="/ui/:clusterId/tail" component={Tail} />
+                <Route exact path="/ui/:clusterId/tail" component={Tail} />
               )}
 
               {roles && roles.node && roles.node['node/read'] && (
@@ -187,19 +187,19 @@ class Routes extends Root {
               )}
 
               {roles && roles.group && roles.group['group/offsets/delete'] && (
-                  <Route
-                      exact
-                      path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
-                      component={ConsumerGroupOffsetDelete}
-                  />
+                <Route
+                  exact
+                  path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
+                  component={ConsumerGroupOffsetDelete}
+                />
               )}
 
               {roles && roles.group && roles.group['group/offsets/update'] && (
-                  <Route
-                      exact
-                      path="/ui/:clusterId/group/:consumerGroupId/offsets"
-                      component={ConsumerGroupUpdate}
-                  />
+                <Route
+                  exact
+                  path="/ui/:clusterId/group/:consumerGroupId/offsets"
+                  component={ConsumerGroupUpdate}
+                />
               )}
 
               {roles && roles.group && roles.group['group/read'] && (
@@ -214,7 +214,11 @@ class Routes extends Root {
                 <Route exact path="/ui/:clusterId/acls" component={Acls} />
               )}
               {roles && roles.acls && roles.acls['acls/read'] && (
-                <Route exact path="/ui/:clusterId/acls/:principalEncoded/:tab?" component={AclDetails} />
+                <Route
+                  exact
+                  path="/ui/:clusterId/acls/:principalEncoded/:tab?"
+                  component={AclDetails}
+                />
               )}
 
               {roles && roles.registry && roles.registry['registry/read'] && (
@@ -225,11 +229,11 @@ class Routes extends Root {
               )}
 
               {roles && roles.registry && roles.registry['registry/update'] && (
-                  <Route
-                      exact
-                      path="/ui/:clusterId/schema/details/:schemaId/update"
-                      component={Schema}
-                  />
+                <Route
+                  exact
+                  path="/ui/:clusterId/schema/details/:schemaId/update"
+                  component={Schema}
+                />
               )}
 
               {roles && roles.registry && roles.registry['registry/read'] && (
@@ -256,6 +260,19 @@ class Routes extends Root {
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
                   component={Connect}
                 />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/query" component={KsqlDBQuery} />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+                <Route
+                  exact
+                  path="/ui/:clusterId/ksqldb/:ksqlDBId/statement"
+                  component={KsqlDBStatement}
+                />
+              )}
+              {roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
+                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?" component={KsqlDBList} />
               )}
               <Route exact path="/ui/:clusterId/settings" component={Settings} />
               <Redirect from="/" to={this.handleRedirect()} />

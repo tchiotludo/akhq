@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from '../../Header';
+import Dropdown from 'react-bootstrap/Dropdown';
 import TopicData from './TopicData';
 import TopicPartitions from './TopicPartitions';
 import TopicGroups from './TopicGroups';
@@ -9,9 +10,9 @@ import TopicLogs from './TopicLogs';
 import { uriTopicsConfigs, uriTopicDataEmpty } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
-import {getSelectedTab} from "../../../utils/functions";
+import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
-import Root from "../../../components/Root";
+import Root from '../../../components/Root';
 
 class Topic extends Root {
   state = {
@@ -24,14 +25,19 @@ class Topic extends Root {
     compactMessageToDelete: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
-    configs: []
+    configs: [],
+    isAllTopicDataSelected: false,
+    downloadFormat: 'Select',
+    downloadOptions: ['Select', 'csv', 'json'],
+    messages: []
   };
 
-  tabs = ['data','partitions','groups','configs','acls','logs'];
+  tabs = ['data', 'partitions', 'groups', 'configs', 'acls', 'logs'];
 
   constructor(props) {
     super(props);
     this.topicData = React.createRef();
+    this._handleSelectAllCheckboxChange = this._handleSelectAllCheckboxChange.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -55,7 +61,7 @@ class Topic extends Root {
       () => {
         this.getTopicsConfig();
         let uri = `/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`;
-        if(searchParams) {
+        if (searchParams) {
           uri = uri + searchParams;
         }
         this.props.history.replace(uri);
@@ -66,11 +72,56 @@ class Topic extends Root {
   handleOnEmpty() {
     this.setState(() => {
       this.showDeleteModal(
-          <React.Fragment>
-            Do you want to empty the Topic: {<code>{this.state.topicId}</code>} ?
-          </React.Fragment>
+        <React.Fragment>
+          Do you want to empty the Topic: {<code>{this.state.topicId}</code>} ?
+        </React.Fragment>
       );
     });
+  }
+
+  _handleSelectAllCheckboxChange = (isAllTopicDataSelected, messages) => {
+    this.setState({ isAllTopicDataSelected: isAllTopicDataSelected, messages: messages });
+  };
+
+  _renderDownloadFormat = isChecked => {
+    const { downloadOptions } = this.state;
+
+    let renderedOptions = [];
+    for (let option of downloadOptions) {
+      renderedOptions.push(
+        <Dropdown.Item
+          key={option}
+          se
+          disabled={isChecked === false}
+          onClick={() =>
+            this.setState({ downloadFormat: option }, () => {
+              this._handleDownloadAll(option);
+            })
+          }
+        >
+          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+        </Dropdown.Item>
+      );
+    }
+    return renderedOptions;
+  };
+
+  _handleDownloadAll(option) {
+    let messages = this.state.messages;
+    if (this.state.isAllTopicDataSelected && option !== 'Select') {
+      let allData = [];
+      messages.map(tableData => {
+        allData.push(tableData.value);
+        allData.push('\n');
+      });
+      const a = document.createElement('a');
+      const type = 'text/' + option;
+      a.href = URL.createObjectURL(new Blob([allData], { type: type }));
+      a.download = `file.${option}`;
+
+      a.click();
+      a.remove();
+    }
   }
 
   showDeleteModal = deleteMessage => {
@@ -83,29 +134,26 @@ class Topic extends Root {
 
   canEmptyTopic = () => {
     const { configs } = this.state;
-    const res = configs.filter( config => config.name === 'cleanup.policy');
-    if(res && res.length === 1 && res[0].value === 'delete') return true;
-    return false;
-  }
+    const res = configs.filter(config => config.name === 'cleanup.policy');
+    return res && res.length === 1 && res[0].value.includes('delete');
+  };
 
   emptyTopic = () => {
     const { clusterId, topicId } = this.props.match.params;
 
-    this.removeApi(
-        uriTopicDataEmpty(clusterId, topicId)
-    )
-        .then(() => {
-          toast.success(`Topic '${topicId}' will be emptied`);
-          this.setState({ showDeleteModal: false }, () => {
-            this.topicData.current.getMessages();
-          });
-        })
-        .catch(() => {
-          this.setState({ showDeleteModal: false });
+    this.removeApi(uriTopicDataEmpty(clusterId, topicId))
+      .then(() => {
+        toast.success(`Topic '${topicId}' will be emptied`);
+        this.setState({ showDeleteModal: false }, () => {
+          this.topicData.current._getMessages(false);
         });
+      })
+      .catch(() => {
+        this.setState({ showDeleteModal: false });
+      });
   };
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       const tabSelected = getSelectedTab(this.props, this.tabs);
       this.setState({ selectedTab: tabSelected });
@@ -125,7 +173,6 @@ class Topic extends Root {
 
   selectTab = tab => {
     this.setState({ selectedTab: tab });
-
   };
 
   tabClassName = tab => {
@@ -139,17 +186,20 @@ class Topic extends Root {
 
     switch (selectedTab) {
       case 'data':
-        return <TopicData ref={this.topicData} history={history} match={match} location={location} />;
+        return (
+          <TopicData
+            ref={this.topicData}
+            history={history}
+            match={match}
+            location={location}
+            isAllTopicDataSelected={this.state.isAllTopicDataSelected}
+            onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
+          />
+        );
       case 'partitions':
         return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
       case 'groups':
-        return (
-          <TopicGroups
-            clusterId={clusterId}
-            topicId={topicId}
-            history={history}
-          />
-        );
+        return <TopicGroups clusterId={clusterId} topicId={topicId} history={history} />;
       case 'configs':
         return (
           <TopicConfigs
@@ -165,7 +215,7 @@ class Topic extends Root {
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
         return roles.topic && roles.topic['topic/data/read'] ? (
-          <TopicData history={history} match={match} location={location}/>
+          <TopicData history={history} match={match} location={location} />
         ) : (
           <TopicPartitions history={history} />
         );
@@ -183,7 +233,8 @@ class Topic extends Root {
           <ul className="nav nav-tabs" role="tablist">
             {roles.topic && roles.topic['topic/data/read'] && (
               <li className="nav-item">
-                <Link to={`/ui/${clusterId}/topic/${topicId}/data`}
+                <Link
+                  to={`/ui/${clusterId}/topic/${topicId}/data`}
                   className={this.tabClassName('data')}
                 >
                   Data
@@ -191,21 +242,24 @@ class Topic extends Root {
               </li>
             )}
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/topic/${topicId}/partitions`}
+              <Link
+                to={`/ui/${clusterId}/topic/${topicId}/partitions`}
                 className={this.tabClassName('partitions')}
               >
                 Partitions
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/topic/${topicId}/groups`}
+              <Link
+                to={`/ui/${clusterId}/topic/${topicId}/groups`}
                 className={this.tabClassName('groups')}
               >
                 Consumer Groups
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/topic/${topicId}/configs`}
+              <Link
+                to={`/ui/${clusterId}/topic/${topicId}/configs`}
                 className={this.tabClassName('configs')}
               >
                 Configs
@@ -213,7 +267,8 @@ class Topic extends Root {
             </li>
             {roles.acls && roles.acls['acls/read'] && (
               <li className="nav-item">
-                <Link to={`/ui/${clusterId}/topic/${topicId}/acls`}
+                <Link
+                  to={`/ui/${clusterId}/topic/${topicId}/acls`}
                   className={this.tabClassName('acls')}
                 >
                   ACLS
@@ -221,7 +276,8 @@ class Topic extends Root {
               </li>
             )}
             <li className="nav-item">
-              <Link to={`/ui/${clusterId}/topic/${topicId}/logs`}
+              <Link
+                to={`/ui/${clusterId}/topic/${topicId}/logs`}
                 className={this.tabClassName('logs')}
               >
                 Logs
@@ -238,46 +294,63 @@ class Topic extends Root {
         {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
           <aside>
             <li className="aside-button">
-              { this.canEmptyTopic()?
-                  <div
-                      onClick={() => {
-                        this.handleOnEmpty();
-                      }}
-                      className="btn btn-secondary mr-2">
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-                  </div>
-                  :
-                  <div title="Only enabled for topics with Delete Cleanup Policy"
-                       className="btn disabled-black-button mr-2">
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-                  </div>
-              }
+              {this.state.isAllTopicDataSelected && (
+                <div className="btn mr-2">
+                  <Dropdown>
+                    <Dropdown.Toggle>
+                      <strong>Download Format:</strong> ({this.state.downloadFormat})
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <div>{this._renderDownloadFormat(this.state.isAllTopicDataSelected)}</div>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+              )}
+              {this.canEmptyTopic() ? (
+                <div
+                  onClick={() => {
+                    this.handleOnEmpty();
+                  }}
+                  className="btn btn-secondary mr-2"
+                >
+                  <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                </div>
+              ) : (
+                <div
+                  title="Only enabled for topics with Delete Cleanup Policy"
+                  className="btn disabled-black-button mr-2"
+                >
+                  <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                </div>
+              )}
 
-              <Link to={{
-                pathname: `/ui/${clusterId}/topic/${topicId}/copy`
-              }}
-                    className="btn btn-secondary mr-2"
+              <Link
+                to={{
+                  pathname: `/ui/${clusterId}/topic/${topicId}/copy`
+                }}
+                className="btn btn-secondary mr-2"
               >
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
               </Link>
 
-              <Link to={{  pathname: `/ui/${clusterId}/tail`,
-                search: `?topicId=${topicId}` }} className="btn btn-secondary mr-2">
-
+              <Link
+                to={{ pathname: `/ui/${clusterId}/tail`, search: `?topicId=${topicId}` }}
+                className="btn btn-secondary mr-2"
+              >
                 <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
               </Link>
 
-              <Link to={ `/ui/${clusterId}/topic/${topicId}/produce`}
-                className="btn btn-primary">
+              <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
                 <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
               </Link>
             </li>
           </aside>
         )}
-        <ConfirmModal show={this.state.showDeleteModal}
-                      handleCancel={this.closeDeleteModal}
-                      handleConfirm={this.emptyTopic}
-                      message={this.state.deleteMessage}
+        <ConfirmModal
+          show={this.state.showDeleteModal}
+          handleCancel={this.closeDeleteModal}
+          handleConfirm={this.emptyTopic}
+          message={this.state.deleteMessage}
         />
       </div>
     );

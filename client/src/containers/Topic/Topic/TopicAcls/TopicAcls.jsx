@@ -1,7 +1,7 @@
 import React from 'react';
 import Table from '../../../../components/Table';
 import { uriTopicsAcls } from '../../../../utils/endpoints';
-import Root from "../../../../components/Root";
+import Root from '../../../../components/Root';
 
 class TopicAcls extends Root {
   state = {
@@ -86,8 +86,8 @@ class TopicAcls extends Root {
             <tr>
               <td colSpan={3}>
                 <div className="alert alert-warning mb-0" role="alert">
-                  No ACLS found, or the "authorizer.class.name" parameter is not configured on the
-                  cluster.
+                  No ACLS found, or the &quot;authorizer.class.name&quot; parameter is not
+                  configured on the cluster.
                 </div>
               </td>
             </tr>

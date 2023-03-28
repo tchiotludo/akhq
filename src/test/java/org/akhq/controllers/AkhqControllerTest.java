@@ -22,6 +22,8 @@ class AkhqControllerTest extends AbstractTest {
         assertEquals(KafkaTestCluster.CLUSTER_ID, result.get(0).getId());
         assertEquals(2, result.get(0).getConnects().size());
         assertEquals("connect-1", result.get(0).getConnects().get(0));
+        assertEquals(1, result.get(0).getKsqldbs().size());
+        assertEquals("ksqldb", result.get(0).getKsqldbs().get(0));
         assertTrue(result.get(0).isRegistry());
     }
 
@@ -44,6 +46,6 @@ class AkhqControllerTest extends AbstractTest {
         );
 
         assertEquals("admin", result.getUsername());
-        assertEquals(35, result.getRoles().size());
+        assertEquals(38, result.getRoles().size());
     }
 }

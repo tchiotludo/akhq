@@ -1,11 +1,10 @@
-@import "../../css/init";
+@import '../../css/init';
 
-// result per page 
-#result-per-page{
+// result per page
+#result-per-page {
   float: left;
   display: flex;
 }
-#result-per-page span{
+#result-per-page span {
   margin: 5px;
 }
-

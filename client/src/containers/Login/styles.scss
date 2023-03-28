@@ -1,5 +1,5 @@
-main{
-  margin-top: calc((100vh - 330px)/2) !important;
+main {
+  margin-top: calc((100vh - 330px) / 2) !important;
 }
 
 .khq-login-separator {
@@ -12,8 +12,9 @@ main{
     padding: 0 10px;
   }
 
-  &:before, &:after {
-    content: " ";
+  &:before,
+  &:after {
+    content: ' ';
     height: 1px;
     background: currentColor;
     flex: 1 1 auto;

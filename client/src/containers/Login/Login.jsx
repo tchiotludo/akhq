@@ -19,17 +19,14 @@ class Login extends Form {
     errors: {},
     config: {
       formEnabled: true,
-      oidcAuths: []
+      oidcAuths: [],
+      oauthAuths: []
     }
   };
 
   schema = {
-    username: Joi.string()
-      .required()
-      .label('Username'),
-    password: Joi.string()
-      .required()
-      .label('Password')
+    username: Joi.string().required().label('Username'),
+    password: Joi.string().required().label('Password')
   };
 
   login() {
@@ -41,10 +38,9 @@ class Login extends Form {
         password: formData.password
       };
 
-      login(uriLogin(), body)
-        .then(() => {
-          this.getData();
-        });
+      login(uriLogin(), body).then(() => {
+        this.getData();
+      });
     } catch (err) {
       toast.error('Wrong Username or Password!');
     }
@@ -63,7 +59,7 @@ class Login extends Form {
       sessionStorage.removeItem('returnTo');
 
       this.props.history.push({
-        pathname: (returnTo || '/ui'),
+        pathname: returnTo || '/ui'
       });
 
       window.location.reload(true);
@@ -75,11 +71,11 @@ class Login extends Form {
   componentDidMount() {
     const auths = JSON.parse(sessionStorage.getItem('auths'));
     if (auths && auths.loginEnabled) {
-      const { loginEnabled, ...config } = auths;
+      const { ...config } = auths;
       this.setState({ config });
     } else {
       this.props.history.push({
-        pathname: '/ui',
+        pathname: '/ui'
       });
     }
   }
@@ -154,13 +150,15 @@ class Login extends Form {
   }
 
   _renderOidc(oidcsAuths) {
-    return oidcsAuths.map(auth => (
-      <a href={uriOidc(auth.key)} className="btn btn-primary btn-block">{auth.label}</a>
+    return oidcsAuths.map((auth, i) => (
+      <a key={i} href={uriOidc(auth.key)} className="btn btn-primary btn-block">
+        {auth.label}
+      </a>
     ));
   }
 
   render() {
-    const { formEnabled, oidcAuths } = this.state.config;
+    const { formEnabled, oidcAuths, oauthAuths } = this.state.config;
 
     return (
       <div>
@@ -180,6 +178,7 @@ class Login extends Form {
             {formEnabled && this._renderForm()}
             {formEnabled && oidcAuths && this._renderSeparator()}
             {oidcAuths && this._renderOidc(oidcAuths)}
+            {oauthAuths && this._renderOidc(oauthAuths)}
           </form>
         </main>
       </div>

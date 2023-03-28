@@ -16,6 +16,7 @@ akhq:
     kafka:
       properties:
         # standard kafka properties
+      deserialization:
         avro-raw:
           schemas-folder: "/app/avro_schemas"
           topics-mapping:

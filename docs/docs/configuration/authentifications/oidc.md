@@ -46,7 +46,7 @@ akhq:
                 - topic-writer
 ```
 
-The username field can be any string field, the roles field has to be a JSON array.
+The username field can be any string field, the roles field has to be a JSON array. The mapping is performed on the OIDC _ID token_.
 
 ## Direct OIDC mapping
 

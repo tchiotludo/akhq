@@ -2,8 +2,8 @@ import React from 'react';
 import Table from '../../../../components/Table';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
-import Root from "../../../../components/Root";
-import {Link} from "react-router-dom";
+import Root from '../../../../components/Root';
+import { Link } from 'react-router-dom';
 
 class TopicGroups extends Root {
   state = {
@@ -22,7 +22,7 @@ class TopicGroups extends Root {
   async getConsumerGroup() {
     const { selectedCluster, topicId } = this.state;
 
-    let data  = await this.getApi(uriTopicsGroups(selectedCluster, topicId));
+    let data = await this.getApi(uriTopicsGroups(selectedCluster, topicId));
     if (data && data.data) {
       this.handleGroups(data.data);
     } else {
@@ -46,7 +46,7 @@ class TopicGroups extends Root {
 
   groupTopics(topics) {
     if (!topics) return {};
-    return topics.reduce(function(a, e) {
+    return topics.reduce(function (a, e) {
       let key = e.topic;
       a[key] ? (a[key] = a[key] + e.offsetLag) : (a[key] = e.offsetLag || 0);
       return a;
@@ -134,7 +134,7 @@ class TopicGroups extends Root {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => `/ui/${selectedCluster}/group/${id}` }
+          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
           actions={[constants.TABLE_DETAILS]}
         />
       </div>
