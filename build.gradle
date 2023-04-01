@@ -10,6 +10,9 @@ plugins {
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.46.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.6.0"
+
+    // idea
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
 
 group "org.akhq"
@@ -42,6 +45,17 @@ configurations.all {
         force("org.slf4j:jul-to-slf4j:1.7.32")
         force("org.slf4j:log4j-over-slf4j:1.7.32")
         force("com.google.protobuf:protobuf-java:3.22.2")
+    }
+}
+
+
+/**********************************************************************************************************************\
+ * IntelliJ IDEA
+ **********************************************************************************************************************/
+idea.project.settings {
+    taskTriggers {
+        beforeBuild generateAvroJava
+        beforeRebuild generateAvroJava
     }
 }
 
