@@ -13,6 +13,7 @@ services:
     # build:
     #   context: .
     image: tchiotludo/akhq
+    restart: unless-stopped
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
@@ -33,7 +34,8 @@ services:
       - schema-registry
 
   zookeeper:
-    image: confluentinc/cp-zookeeper
+    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data:Z
       - zookeeper-log:/var/lib/zookeeper/log:Z
@@ -42,7 +44,8 @@ services:
       ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
 
   kafka:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - kafka-data:/var/lib/kafka/data:Z
     environment:
@@ -63,7 +66,8 @@ services:
       - zookeeper
 
   schema-registry:
-    image: confluentinc/cp-schema-registry
+    image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
     environment:
@@ -73,7 +77,8 @@ services:
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: 'INFO'
 
   connect:
-    image: confluentinc/cp-kafka-connect
+    image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
       - schema-registry
@@ -100,7 +105,8 @@ services:
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
 
   ksqldb:
-    image: confluentinc/cp-ksqldb-server
+    image: confluentinc/cp-ksqldb-server:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
       - connect
@@ -117,8 +123,9 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: '1'
 
   test-data:
-    image: gradle:6.3-jdk11
-    command: "gradle --no-daemon testInjectData"
+    image: gradle:8-jdk11
+    command: "gradle --no-daemon testInjectData -x installFrontend -x assembleFrontend"
+    restart: unless-stopped
     working_dir: /app
     volumes:
       - ./:/app:z
@@ -127,7 +134,8 @@ services:
       - schema-registry
 
   kafkacat:
-    image: confluentinc/cp-kafkacat
+    image: confluentinc/cp-kafkacat:${CONFLUENT_KAFKACAT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
     command:
