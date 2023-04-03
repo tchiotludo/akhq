@@ -1,6 +1,6 @@
 import React from 'react';
 
-import logo from '../../images/logo.svg';
+import { ReactComponent as Logo } from '../../images/logo.svg';
 import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
@@ -172,7 +172,7 @@ class Login extends Form {
           >
             <div>
               <h3 className="logo">
-                <img src={logo} alt="" />
+                <Logo />
               </h3>
             </div>
             {formEnabled && this._renderForm()}
