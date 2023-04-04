@@ -1,6 +1,6 @@
 plugins {
     // micronaut
-    id "com.github.johnrengelman.shadow" version "8.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "io.micronaut.application" version "3.7.5"
 
     // akhq
@@ -126,7 +126,7 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.16'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.17'
     // api
 
     // client
