@@ -28,7 +28,7 @@ class Topic extends Root {
     configs: [],
     isAllTopicDataSelected: false,
     downloadFormat: 'Select',
-    downloadOptions: ['Select', 'csv', 'json'],
+    downloadOptions: ['csv', 'json'],
     messages: []
   };
 
@@ -108,15 +108,30 @@ class Topic extends Root {
 
   _handleDownloadAll(option) {
     let messages = this.state.messages;
-    if (this.state.isAllTopicDataSelected && option !== 'Select') {
+    if (this.state.isAllTopicDataSelected) {
       let allData = [];
-      messages.map(tableData => {
-        allData.push(tableData.value);
-        allData.push('\n');
-      });
+      switch (option) {
+        case 'json':
+          try {
+            allData = [
+              JSON.stringify(
+                messages.map(m => JSON.parse(m.value)),
+                null,
+                2
+              )
+            ];
+          } catch (e) {
+            toast.warn('Unable to export data in JSON. Please use CSV instead');
+            return;
+          }
+          break;
+        case 'csv':
+          allData = [messages.map(m => m.value).join('\n')];
+          break;
+      }
       const a = document.createElement('a');
       const type = 'text/' + option;
-      a.href = URL.createObjectURL(new Blob([allData], { type: type }));
+      a.href = URL.createObjectURL(new Blob(allData, { type: type, endings: 'native' }));
       a.download = `file.${option}`;
 
       a.click();
