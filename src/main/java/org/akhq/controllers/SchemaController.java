@@ -89,7 +89,7 @@ public class SchemaController extends AbstractController {
         @Body Schema schema
     ) throws Throwable {
         if (this.schemaRepository.exist(cluster, schema.getSubject())) {
-            throw new IllegalArgumentException("Subject '" + schema.getSubject() + "' already exits");
+            throw new IllegalArgumentException("Subject '" + schema.getSubject() + "' already exists");
         }
 
         return registerSchema(cluster, schema);
@@ -107,11 +107,11 @@ public class SchemaController extends AbstractController {
     public Schema updateSchema(String cluster, String subject, @Body Schema schema) throws Throwable {
         final String decodedSubject = decode(subject);
         if (!this.schemaRepository.exist(cluster, decodedSubject)) {
-            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exits");
+            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exist");
         }
 
         if (!decodedSubject.equals(schema.getSubject())) {
-            throw new IllegalArgumentException("Invalid subject name '" + decodedSubject + "', doesn't egals '" + schema.getSubject() + "'");
+            throw new IllegalArgumentException("Invalid subject name '" + decodedSubject + "', doesn't match '" + schema.getSubject() + "'");
         }
 
         return registerSchema(cluster, schema);
@@ -155,9 +155,9 @@ public class SchemaController extends AbstractController {
     @Delete("api/{cluster}/schema/{subject}")
     @Operation(tags = {"schema registry"}, summary = "Delete a schema")
     public HttpResponse<?> delete(String cluster, String subject) throws IOException, RestClientException {
-        final String decodedSubject = decode(subject);        
+        final String decodedSubject = decode(subject);
         if (!this.schemaRepository.exist(cluster, decodedSubject)) {
-            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exits");
+            throw new IllegalArgumentException("Subject '" + decodedSubject + "' doesn't exist");
         }
 
         this.schemaRepository.delete(cluster, decodedSubject);
