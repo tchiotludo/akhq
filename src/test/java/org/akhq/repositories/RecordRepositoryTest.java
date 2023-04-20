@@ -255,8 +255,8 @@ class RecordRepositoryTest extends AbstractTest {
             Optional.of(keyJsonString),
             Optional.empty(),
             Optional.empty(),
-            Optional.of(keyJsonSchema.getId()),
-            Optional.of(valueJsonSchema.getId())
+            Optional.of(KafkaTestCluster.TOPIC_JSON_SCHEMA + "-key"),
+            Optional.of(KafkaTestCluster.TOPIC_JSON_SCHEMA + "-value")
         );
 
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_JSON_SCHEMA);

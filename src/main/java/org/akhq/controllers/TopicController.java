@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.CollectionUtils;
@@ -29,6 +30,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
 import org.akhq.models.Record;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -146,11 +148,11 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<String> timestamp,
         List<KeyValue<String, String>> headers,
-        Optional<Integer> keySchema,
-        Optional<Integer> valueSchema,
+        Optional<String> keySchema,
+        Optional<String> valueSchema,
         Boolean multiMessage,
         Optional<String> keyValueSeparator
-    ) throws ExecutionException, InterruptedException {
+    ) throws ExecutionException, InterruptedException, RestClientException, IOException {
         Topic targetTopic = topicRepository.findByName(cluster, topicName);
         return
             this.recordRepository.produce(

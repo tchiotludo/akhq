@@ -47,6 +47,15 @@ public class SchemaController extends AbstractController {
         this.schemaRepository = schemaRepository;
     }
 
+
+    @Get("api/{cluster}/schemas")
+    @Operation(tags = {"schema registry"}, summary = "List all schemas")
+    public List<String> listAll(
+        String cluster) throws RestClientException, IOException {
+        return this.schemaRepository.all(cluster, Optional.empty());
+    }
+
+
     @Get("api/{cluster}/schema")
     @Operation(tags = {"schema registry"}, summary = "List all schemas")
     public ResultPagedList<Schema> list(
