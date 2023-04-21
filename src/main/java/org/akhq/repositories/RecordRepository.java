@@ -408,7 +408,7 @@ public class RecordRepository extends AbstractRepository {
                     last = options.after.get(partition.getId()) - 1;
                 }
 
-                if (last == partition.getFirstOffset() || last < 0) {
+                if (last < 0) {
                     consumer.close();
                     return null;
                 } else if (!(last - pollSizePerPartition < first)) {
