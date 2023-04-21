@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+mkdir -p .output/checkov
+docker run --rm -it --user $(id -u):$(id -g) -w /tf -v $(pwd):/tf bridgecrew/checkov --directory /tf -o junitxml | tee .output/checkov/output.xml
