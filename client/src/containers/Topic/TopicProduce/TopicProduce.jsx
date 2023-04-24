@@ -463,12 +463,7 @@ class TopicProduce extends Form {
                 selectedKeySchema: value.target.value
               });
             },
-            this.renderResults(
-              keySchema.map(key => key.subject),
-              keySchemaSearchValue,
-              selectedKeySchema,
-              'key'
-            )
+            this.renderResults(keySchema, keySchemaSearchValue, selectedKeySchema, 'key')
           )}
 
           {this.renderInput(
@@ -495,12 +490,7 @@ class TopicProduce extends Form {
                 selectedValueSchema: value.target.value
               });
             },
-            this.renderResults(
-              valueSchema.map(value => value.subject),
-              valueSchemaSearchValue,
-              selectedValueSchema,
-              'value'
-            )
+            this.renderResults(valueSchema, valueSchemaSearchValue, selectedValueSchema, 'value')
           )}
 
           {this.renderMultiMessage(tombstone)}
