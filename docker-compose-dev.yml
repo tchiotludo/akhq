@@ -16,7 +16,7 @@ volumes:
 
 services:
   akhq:
-    image: gradle:7-jdk11
+    image: gradle:8-jdk11
     command: 'gradle run -x installFrontend -x assembleFrontend -t'
     working_dir: /app
     volumes:
@@ -48,7 +48,8 @@ services:
       - akhq
 
   zookeeper:
-    image: confluentinc/cp-zookeeper
+    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data:Z
       - zookeeper-log:/var/lib/zookeeper/log:Z
@@ -59,7 +60,8 @@ services:
       - 2181:2181
 
   kafka:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - kafka-data:/var/lib/kafka/data:Z
     environment:
@@ -86,7 +88,8 @@ services:
       - 9091:9091
 
   # kafka-1:
-  #     image: confluentinc/cp-kafka
+  #     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
+  #     restart: unless-stopped
   #     volumes:
   #       - kafka-data1:/var/lib/kafka/data:Z
   #     depends_on:
@@ -114,7 +117,8 @@ services:
   #       - 9093:9093
 
   schema-registry:
-    image: confluentinc/cp-schema-registry
+    image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
     environment:
@@ -126,7 +130,8 @@ services:
       - 8085:8085
 
   connect:
-    image: confluentinc/cp-kafka-connect
+    image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
       - schema-registry
@@ -155,7 +160,8 @@ services:
       - 8083:8083
 
   ksqldb:
-    image: confluentinc/cp-ksqldb-server
+    image: confluentinc/cp-ksqldb-server:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     depends_on:
       - kafka
       - connect
