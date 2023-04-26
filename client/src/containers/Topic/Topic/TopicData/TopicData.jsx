@@ -183,7 +183,6 @@ class TopicData extends Root {
         this.eventSource.addEventListener('searchBody', function (e) {
           const res = JSON.parse(e.data);
           const records = res.records || [];
-          const nextPage = res.after ? res.after : self.state.nextPage;
 
           const percentDiff = res.percent - lastPercentVal;
 
@@ -191,7 +190,6 @@ class TopicData extends Root {
           if (percentDiff >= percentUpdateDelta) {
             lastPercentVal = res.percent;
             self.setState({
-              nextPage,
               recordCount: self.state.recordCount + records.length,
               percent: res.percent.toFixed(2)
             });
@@ -207,9 +205,12 @@ class TopicData extends Root {
           }
         });
 
-        this.eventSource.addEventListener('searchEnd', function () {
+        this.eventSource.addEventListener('searchEnd', function (e) {
+          const res = JSON.parse(e.data);
+          const nextPage = res.after ? res.after : self.state.nextPage;
+          self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
+
           self.eventSource.close();
-          self.setState({ percent: 100, isSearching: false, loading: false });
         });
       }
     );
