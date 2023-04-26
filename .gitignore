@@ -45,7 +45,6 @@ connects-plugins/
 docs/contributors.html
 
 ## Docker
-.env
 docker-compose.override.yml
 
 ## Helm

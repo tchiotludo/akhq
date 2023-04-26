@@ -65,7 +65,7 @@ class SchemaControllerTest extends AbstractTest {
                 this.retrieve(HttpRequest.POST(BASE_URL, SCHEMA_1_V1), Schema.class);
             }
         );
-        assertTrue(e.getMessage().contains("already exits"));
+        assertTrue(e.getMessage().contains("already exists"));
 
         // update
         result = this.retrieve(HttpRequest.POST(BASE_URL + "/" + SCHEMA_1_V1.getSubject(), SCHEMA_1_V2), Schema.class);
@@ -102,6 +102,6 @@ class SchemaControllerTest extends AbstractTest {
                 );
             }
         );
-        assertTrue(e.getMessage().contains("doesn't exits"));
+        assertTrue(e.getMessage().contains("doesn't exist"));
     }
 }

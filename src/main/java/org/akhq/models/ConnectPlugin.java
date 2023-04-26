@@ -31,7 +31,8 @@ public class ConnectPlugin {
                 .map(config -> new Definition(config.getDefinition())),
             registryDefinition()
         )
-            .sorted(Comparator.comparing(Definition::getGroup, (s1, s2) -> s1.equals("Others") ? 1 : s1.compareTo(s2))
+            .sorted(Comparator.comparing(Definition::getGroup, Comparator.comparing((String s) -> s.equals("Others"))
+                    .thenComparing(Comparator.naturalOrder()))
                 .thenComparing(Definition::getOrder)
             )
             .collect(Collectors.toList());
