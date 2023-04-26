@@ -683,8 +683,7 @@ public class RecordRepository extends AbstractRepository {
 
             // end
             if (searchEvent == null || searchEvent.emptyPoll == 666) {
-
-                emitter.onNext(new SearchEvent(topic).end());
+                emitter.onNext(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
                 emitter.onComplete();
                 consumer.close();
 
@@ -725,7 +724,7 @@ public class RecordRepository extends AbstractRepository {
 
             if (currentEvent.emptyPoll >= 1) {
                 currentEvent.emptyPoll = 666;
-                emitter.onNext(currentEvent.end());
+                emitter.onNext(currentEvent.end(searchEvent.getAfter()));
             } else if (matchesCount.get() >= options.getSize()) {
                 currentEvent.emptyPoll = 666;
                 emitter.onNext(currentEvent.progress(options));
@@ -860,8 +859,9 @@ public class RecordRepository extends AbstractRepository {
                 });
         }
 
-        public Event<SearchEvent> end() {
+        public Event<SearchEvent> end(String after) {
             this.percent = 100;
+            this.after = after;
 
             return Event.of(this).name("searchEnd");
         }
