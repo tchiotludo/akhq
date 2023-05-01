@@ -41,7 +41,8 @@ services:
       - connect-1
       - kafka-1
   zookeeper-0:
-    image: confluentinc/cp-zookeeper
+    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - zookeeper-data-0:/var/lib/zookeeper/data:Z
       - zookeeper-log-0:/var/lib/zookeeper/log:Z
@@ -49,7 +50,8 @@ services:
       ZOOKEEPER_CLIENT_PORT: '2181'
       ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
   kafka-0:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - kafka-data-0:/var/lib/kafka:Z
     ports:
@@ -74,7 +76,8 @@ services:
     links:
       - zookeeper-0
   schema-registry-0:
-    image: confluentinc/cp-schema-registry
+    image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     ports:
       - 8085:8085
     depends_on:
@@ -85,7 +88,8 @@ services:
       SCHEMA_REGISTRY_LISTENERS: 'http://schema-registry-0:8085'
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: 'INFO'
   connect-0:
-    image: confluentinc/cp-kafka-connect
+    image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     ports:
       - 8083:8083
     depends_on:
@@ -115,7 +119,8 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
   connect-1:
-    image: confluentinc/cp-kafka-connect
+    image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     ports:
       - 8084:8084
     depends_on:
@@ -146,7 +151,8 @@ services:
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
 # ANOTHER CLUSTER
   zookeeper-1:
-    image: confluentinc/cp-zookeeper
+    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - zookeeper-data-1:/var/lib/zookeeper/data:Z
       - zookeeper-log-1:/var/lib/zookeeper/log:Z
@@ -154,7 +160,8 @@ services:
       ZOOKEEPER_CLIENT_PORT: '2171'
       ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
   kafka-1:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
+    restart: unless-stopped
     volumes:
       - kafka-data-1:/var/lib/kafka:Z
     ports:
