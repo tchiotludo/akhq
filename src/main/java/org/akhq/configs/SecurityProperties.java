@@ -1,11 +1,10 @@
 package org.akhq.configs;
 
-import com.google.common.base.Strings;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.convert.format.MapFormat;
+import io.micronaut.core.naming.conventions.StringConvention;
 import lombok.Data;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,21 +14,10 @@ import java.util.Map;
 @Data
 public class SecurityProperties {
     private List<BasicAuth> basicAuth = new ArrayList<>();
-    private String defaultGroup;
 
-    //@MapFormat(transformation = MapFormat.MapTransformation.FLAT)
-    private Map<String, Group> groups = new HashMap<>();
+    @MapFormat(keyFormat = StringConvention.RAW)
+    private Map<String, List<Role>> roles = new HashMap<>();
 
-    @PostConstruct
-    public void init() {
-        groups.forEach((key, group) -> {
-            if (Strings.isNullOrEmpty(group.getName())) {
-                group.setName(key);
-            }
-        });
-    }
-    @Override
-    public String toString() {
-        return "defaultGroup ="+defaultGroup+" keys="+groups.keySet();
-    }
+    @MapFormat(keyFormat = StringConvention.RAW)
+    private Map<String, List<Group>> groups = new HashMap<>();
 }
