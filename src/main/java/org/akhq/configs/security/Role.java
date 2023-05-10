@@ -28,6 +28,7 @@ public class Role {
         // TOPIC only
         CONSUME,
         PRODUCE,
+        DELETE_RECORD,
         // CONSUMER_GROUP only
         UPDATE_OFFSET,
         DELETE_OFFSET,

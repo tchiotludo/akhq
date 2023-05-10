@@ -1,5 +1,6 @@
 package org.akhq.configs.security;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
 
 import java.io.Serializable;
@@ -11,6 +12,15 @@ import java.util.List;
 @AllArgsConstructor
 public class Group implements Serializable {
     private String role;
-    private List<String> patterns = List.of(".*");
-    private List<String> clusters = List.of(".*");
+
+    @JsonUnwrapped
+    private Restriction restriction;
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class Restriction {
+        private List<String> patterns = List.of(".*");
+        private List<String> clusters = List.of(".*");
+    }
 }

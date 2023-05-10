@@ -67,7 +67,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
         boolean allowed = userGroups.stream()
             .map(m -> new ObjectMapper().convertValue(m, Group.class))
             // Keep only groups matching on cluster name
-            .filter(group -> group.getClusters()
+            .filter(group -> group.getRestriction().getClusters()
                     .stream()
                     .anyMatch(regex -> Pattern.matches(regex, cluster))
             )

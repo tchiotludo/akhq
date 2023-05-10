@@ -1,5 +1,7 @@
 package org.akhq.controllers;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
@@ -17,12 +19,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
-import org.akhq.modules.HasAnyPermission;
+import org.akhq.configs.security.*;
+import org.akhq.security.annotation.HasAnyPermission;
 import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -182,9 +187,31 @@ public class AkhqController extends AbstractController {
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
     public Connection.UiOptions options(String cluster) {
         return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
-                .map(conn -> conn.mergeOptions(this.uIOptions) )
+                .map(conn -> conn.mergeOptions(this.uIOptions))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("No cluster found"));
+    }
+
+    private Map<String, List<AuthUser.AuthPermissions>> expandRoles(List<?> groups) {
+        SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
+
+        return groups.stream()
+            .map(m -> new ObjectMapper().convertValue(m, Group.class))
+            .collect(Collectors.toMap(
+                Group::getRole,
+                group -> securityProperties.getRoles().get(group.getRole())
+                    .stream()
+                    .map(r -> new AuthUser.AuthPermissions(r, group.getRestriction()))
+                    .collect(Collectors.toList())
+            ));
+    }
+
+    protected Map<String, List<AuthUser.AuthPermissions>> getRights() {
+        SecurityService securityService = applicationContext.getBean(SecurityService.class);
+
+        return expandRoles(securityService.getAuthentication()
+            .map(authentication -> (List<?>) authentication.getAttributes().get("groups"))
+            .orElse(List.of()));
     }
 
     @AllArgsConstructor
@@ -220,7 +247,18 @@ public class AkhqController extends AbstractController {
     public static class AuthUser {
         private boolean logged = false;
         private String username;
-        private List<String> roles;
+        private Map<String, List<AuthPermissions>> roles = new HashMap<>();
+
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @Getter
+        public static class AuthPermissions {
+            @JsonUnwrapped
+            private Role role;
+
+            @JsonUnwrapped
+            private Group.Restriction restriction;
+        }
     }
 
 
