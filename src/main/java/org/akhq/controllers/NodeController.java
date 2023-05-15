@@ -4,23 +4,23 @@ import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
 import lombok.Builder;
 import lombok.Getter;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.*;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
 import org.akhq.repositories.TopicRepository;
+import org.akhq.security.annotation.AKHQSecured;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Secured(Role.ROLE_NODE_READ)
+@AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.READ_CONFIG)
 @Controller
 public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
@@ -48,7 +48,9 @@ public class NodeController extends AbstractController {
 
     @Get("api/{cluster}/node/partitions")
     @Operation(tags = {"topic"}, summary = "partition counts")
-    public List<NodePartition> nodePartitions( String cluster ) throws ExecutionException, InterruptedException {
+    public List<NodePartition> nodePartitions(String cluster) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+
         List<String> topicNames = this.topicRepository.all(cluster, TopicRepository.TopicListView.HIDE_INTERNAL, Optional.empty());
         List<Topic> topics = this.topicRepository.findByName(cluster, topicNames);
         long totalPartitions = topics
@@ -83,24 +85,32 @@ public class NodeController extends AbstractController {
     @Get("api/{cluster}/node")
     @Operation(tags = {"node"}, summary = "List all nodes")
     public Cluster list(String cluster) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+
         return this.clusterRepository.get(cluster);
     }
 
     @Get("api/{cluster}/node/{nodeId}")
     @Operation(tags = {"node"}, summary = "Retrieve a nodes")
     public Node node(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
+
         return findNode(cluster, nodeId);
     }
 
     @Get("api/{cluster}/node/{nodeId}/logs")
     @Operation(tags = {"node"}, summary = "List all logs for a node")
     public List<LogDir> nodeLog(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
+
         return logDirRepository.findByBroker(cluster, nodeId);
     }
 
     @Get("api/{cluster}/node/{nodeId}/configs")
     @Operation(tags = {"node"}, summary = "List all configs for a node")
     public List<Config> nodeConfig(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
+
         List<Config> configs = this.configRepository.findByBroker(cluster, nodeId);
 
         if (configs == null) {
@@ -114,9 +124,12 @@ public class NodeController extends AbstractController {
         return configs;
     }
 
+    @AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.ALTER_CONFIG)
     @Post("api/{cluster}/node/{nodeId}/configs")
     @Operation(tags = {"node"}, summary = "Update configs for a node")
     public List<Config> nodeConfigUpdate(String cluster, Integer nodeId, Map<String, String> configs) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
+
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId), false);
 
         if (updated.size() == 0) {
@@ -133,6 +146,8 @@ public class NodeController extends AbstractController {
     }
 
     private Node findNode(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
+
         return this.clusterRepository.get(cluster)
                 .getNodes()
                 .stream()

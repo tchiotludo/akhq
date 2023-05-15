@@ -39,9 +39,6 @@ public class AkhqController extends AbstractController {
     private ApplicationContext applicationContext;
 
     @Inject
-    private SecurityProperties securityProperties;
-
-    @Inject
     private Oidc oidc;
 
     @Inject

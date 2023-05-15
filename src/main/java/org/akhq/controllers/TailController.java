@@ -7,14 +7,14 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
-import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.Record;
 import org.akhq.repositories.RecordRepository;
+import org.akhq.security.annotation.AKHQSecured;
 import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_TOPIC_READ)
+@AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
 @Controller
 public class TailController extends AbstractController {
     private final RecordRepository recordRepository;
@@ -34,7 +34,7 @@ public class TailController extends AbstractController {
         this.recordRepository = recordRepository;
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
     @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
     @ExecuteOn(TaskExecutors.IO)
     @Operation(tags = {"topic data"}, summary = "Tail for data on multiple topic")
@@ -44,6 +44,8 @@ public class TailController extends AbstractController {
         Optional<String> search,
         Optional<List<String>> after
     ) {
+        topics.forEach(topic -> checkIfClusterAndResourceAllowed(cluster, topic));
+
         RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
         search.ifPresent(options::setSearch);
         after.ifPresent(options::setAfter);

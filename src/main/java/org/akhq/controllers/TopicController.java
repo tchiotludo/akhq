@@ -14,12 +14,14 @@ import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.*;
+import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
@@ -36,7 +38,8 @@ import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_TOPIC_READ)
+@AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller
 public class TopicController extends AbstractController {
     public static final String VALUE_SUFFIX = "-value";
@@ -78,6 +81,7 @@ public class TopicController extends AbstractController {
     }
 
     @Get("api/{cluster}/topic")
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Operation(tags = {"topic"}, summary = "List all topics")
     public ResultPagedList<Topic> list(
         HttpRequest<?> request,
@@ -87,6 +91,8 @@ public class TopicController extends AbstractController {
         Optional<Integer> page,
         Optional<Integer> uiPageSize
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(uiPageSize.orElse(pageSize), uri, page.orElse(1));
 
@@ -105,11 +111,13 @@ public class TopicController extends AbstractController {
             String cluster,
             Optional<TopicRepository.TopicListView> show
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+
         return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL), Optional.empty());
     }
 
 
-    @Secured(Role.ROLE_TOPIC_INSERT)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CREATE)
     @Post(value = "api/{cluster}/topic")
     @Operation(tags = {"topic"}, summary = "Create a topic")
     public Topic create(
@@ -119,6 +127,8 @@ public class TopicController extends AbstractController {
         Optional<Short> replication,
         Map<String, String> configs
     ) throws Throwable {
+        checkIfClusterAndResourceAllowed(cluster, name);
+
         this.topicRepository.create(
             cluster,
             name,
@@ -134,7 +144,7 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, name);
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.PRODUCE)
     @Post(value = "api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Produce data to a topic")
     public List<Record> produce(
@@ -151,6 +161,8 @@ public class TopicController extends AbstractController {
         Boolean multiMessage,
         Optional<String> keyValueSeparator
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         Topic targetTopic = topicRepository.findByName(cluster, topicName);
         return
             this.recordRepository.produce(
@@ -174,7 +186,7 @@ public class TopicController extends AbstractController {
                     .collect(Collectors.toList());
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Read datas from a topic")
     public ResultNextList<Record> data(
@@ -190,6 +202,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         Topic topic = this.topicRepository.findByName(cluster, topicName);
         RecordRepository.Options options =
                 dataSearchOptions(cluster,
@@ -209,56 +223,72 @@ public class TopicController extends AbstractController {
             data,
             options.after(data, uri),
             (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())),
-            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+            true // TODO: uncomment this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
     @Get("api/{cluster}/topic/{topicName}")
     @Operation(tags = {"topic"}, summary = "Retrieve a topic")
     public Topic home(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return this.topicRepository.findByName(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
     public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
+        topics.forEach(topic -> checkIfClusterAndResourceAllowed(cluster, topic));
+
         return this.recordRepository.getLastRecord(cluster, topics);
     }
 
     @Get("api/{cluster}/topic/{topicName}/partitions")
     @Operation(tags = {"topic"}, summary = "List all partition from a topic")
     public List<Partition> partitions(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return this.topicRepository.findByName(cluster, topicName).getPartitions();
     }
 
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return this.consumerGroupRepository.findByTopic(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "List all configs from a topic")
     public List<Config> config(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return this.configRepository.findByTopic(cluster, topicName);
     }
 
     @Get("api/{cluster}/topic/{topicName}/logs")
     @Operation(tags = {"topic"}, summary = "List all logs from a topic")
     public List<LogDir> logs(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return this.topicRepository.findByName(cluster, topicName).getLogDir();
     }
 
     @Get("api/{cluster}/topic/{topicName}/acls")
     @Operation(tags = {"topic"}, summary = "List all acls from a topic")
     public List<AccessControl> acls(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return aclRepository.findByResourceType(cluster, ResourceType.TOPIC, topicName);
     }
 
-    @Secured(Role.ROLE_TOPIC_CONFIG_UPDATE)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.ALTER_CONFIG)
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "Update configs from a topic")
     public List<Config> updateConfig(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
 
         if (updated.size() == 0) {
@@ -274,10 +304,12 @@ public class TopicController extends AbstractController {
         return updated;
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.DELETE_RECORD)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
     public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         this.recordRepository.emptyTopic(
                 cluster,
                 topicName
@@ -286,10 +318,12 @@ public class TopicController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_DELETE)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.DELETE_RECORD)
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
     public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         return new Record(
             this.recordRepository.delete(
                 cluster,
@@ -305,16 +339,18 @@ public class TopicController extends AbstractController {
         );
     }
 
-    @Secured(Role.ROLE_TOPIC_DELETE)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.DELETE)
     @Delete("api/{cluster}/topic/{topicName}")
     @Operation(tags = {"topic"}, summary = "Delete a topic")
     public HttpResponse<?> delete(String cluster, String topicName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         this.kafkaWrapper.deleteTopics(cluster, topicName);
 
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
     @ExecuteOn(TaskExecutors.IO)
     @Get(value = "api/{cluster}/topic/{topicName}/data/search", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
@@ -330,6 +366,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         RecordRepository.Options options = dataSearchOptions(
             cluster,
             topicName,
@@ -363,7 +401,7 @@ public class TopicController extends AbstractController {
             });
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
     @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
     public ResultNextList<Record> record(
@@ -373,6 +411,8 @@ public class TopicController extends AbstractController {
             Integer partition,
             Long offset
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         // after wait for next offset, so add - 1 to allow to have the current offset
@@ -396,14 +436,16 @@ public class TopicController extends AbstractController {
                 data,
                 URIBuilder.empty(),
                 data.size(),
-            this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+                true // TODO: uncomment this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
-    @Secured(Role.ROLE_TOPIC_DATA_READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
     @Get("api/{cluster}/topic/{topicName}/offsets/start")
     @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
         Topic topic = this.topicRepository.findByName(cluster, topicName);
 
         return recordRepository.getOffsetForTime(
@@ -417,7 +459,7 @@ public class TopicController extends AbstractController {
     }
 
 
-    @Secured(Role.ROLE_TOPIC_DATA_INSERT)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.PRODUCE)
     @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
     public RecordRepository.CopyResult copy(
@@ -428,6 +470,9 @@ public class TopicController extends AbstractController {
             String toTopicName,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(fromCluster, fromTopicName);
+        checkIfClusterAndResourceAllowed(toCluster, toTopicName);
+
         Topic fromTopic = this.topicRepository.findByName(fromCluster, fromTopicName);
         Topic toTopic = this.topicRepository.findByName(toCluster, toTopicName);
 

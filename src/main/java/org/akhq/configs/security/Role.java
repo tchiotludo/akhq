@@ -33,8 +33,8 @@ public class Role {
         UPDATE_OFFSET,
         DELETE_OFFSET,
         // TOPIC & NODE only
-        ALTER_CONFIG,
         READ_CONFIG,
+        ALTER_CONFIG,
         // SCHEMA only
         DELETE_VERSION,
         // CONNECT only

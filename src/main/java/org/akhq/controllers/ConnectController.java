@@ -10,12 +10,12 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 
-import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.repositories.ConnectRepository;
+import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_CONNECT_READ)
+@AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.READ)
 @Controller("/api/{cluster}/connect/{connectId}")
 public class ConnectController extends AbstractController {
     private final ConnectRepository connectRepository;
@@ -77,7 +77,7 @@ public class ConnectController extends AbstractController {
         return connectRepository.validatePlugin(cluster, connectId, type, configs).orElseThrow();
     }
 
-    @Secured(Role.ROLE_CONNECT_INSERT)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.CREATE)
     @Post
     @Operation(tags = {"connect"}, summary = "Create a new connect definition")
     public ConnectDefinition create(
@@ -89,7 +89,7 @@ public class ConnectController extends AbstractController {
         return this.connectRepository.create(cluster, connectId, name, configs);
     }
 
-    @Secured(Role.ROLE_CONNECT_DELETE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.DELETE)
     @Delete("/{name}")
     @Operation(tags = {"connect"}, summary = "Delete a connect definition")
     public HttpResponse<?> delete(String cluster, String connectId, String name) {
@@ -116,7 +116,7 @@ public class ConnectController extends AbstractController {
         return this.connectRepository.getDefinition(cluster, connectId, name).getConfigs();
     }
 
-    @Secured(Role.ROLE_CONNECT_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.UPDATE)
     @Post(value = "/{name}/configs")
     @Operation(tags = {"connect"}, summary = "Update a connect definition config")
     public ConnectDefinition update(
@@ -128,7 +128,7 @@ public class ConnectController extends AbstractController {
         return this.connectRepository.update(cluster, connectId, name, configs);
     }
 
-    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.UPDATE_STATE)
     @Get("/{name}/restart")
     @Operation(tags = {"connect"}, summary = "Restart a connect definition")
     public HttpResponse<?> definitionRestart(String cluster, String connectId, String name) {
@@ -137,7 +137,7 @@ public class ConnectController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.UPDATE_STATE)
     @Get("/{name}/pause")
     @Operation(tags = {"connect"}, summary = "Pause a connect definition")
     public HttpResponse<?> definitionPause(String cluster, String connectId, String name) {
@@ -146,7 +146,7 @@ public class ConnectController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.UPDATE_STATE)
     @Get("/{name}/resume")
     @Operation(tags = {"connect"}, summary = "Resume a connect definition")
     public HttpResponse<?> definitionResume(String cluster, String connectId, String name) {
@@ -155,7 +155,7 @@ public class ConnectController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_CONNECT_STATE_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONNECTOR, action = Role.Action.UPDATE_STATE)
     @Get("/{name}/tasks/{taskId}/restart")
     @Operation(tags = {"connect"}, summary = "Restart a connect task")
     public HttpResponse<?> taskRestart(HttpRequest<?> request, String cluster, String connectId, String name, int taskId) {

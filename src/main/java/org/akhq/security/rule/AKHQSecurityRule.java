@@ -84,7 +84,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
         if (allowed)
             return Flowable.just(SecurityRuleResult.ALLOWED);
         else
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return Flowable.just(SecurityRuleResult.REJECTED);
     }
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;

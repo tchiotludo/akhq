@@ -3,12 +3,12 @@ package org.akhq.controllers;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.annotation.*;
-import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.*;
 import org.akhq.repositories.KsqlDbRepository;
+import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-@Secured(Role.ROLE_KSQLDB_READ)
+@AKHQSecured(resource = Role.Resource.KSQLDB, action = Role.Action.READ)
 @Controller("/api/{cluster}/ksqldb/{ksqlDbId}")
 public class KsqlDbController extends AbstractController {
     private final KsqlDbRepository ksqlDbRepository;
@@ -72,14 +72,14 @@ public class KsqlDbController extends AbstractController {
         return ResultPagedList.of(this.ksqlDbRepository.getPaginatedQueries(cluster, ksqlDbId, pagination, search));
     }
 
-    @Secured(Role.ROLE_KSQLDB_EXECUTE)
+    @AKHQSecured(resource = Role.Resource.KSQLDB, action = Role.Action.EXECUTE)
     @Put("/queries/pull")
     @Operation(tags = {"ksqlDB"}, summary = "Execute a query")
     public KsqlDbQueryResult pullQuery(String cluster, String ksqlDbId, String sql, Map<String, String> properties) {
         return this.ksqlDbRepository.executeQuery(cluster, ksqlDbId, sql, properties);
     }
 
-    @Secured(Role.ROLE_KSQLDB_EXECUTE)
+    @AKHQSecured(resource = Role.Resource.KSQLDB, action = Role.Action.EXECUTE)
     @Put("/execute")
     @Operation(tags = {"ksqlDB"}, summary = "Execute a statement")
     public String executeStatement(String cluster, String ksqlDbId, String sql) {
