@@ -5,7 +5,6 @@ import io.micronaut.security.utils.SecurityService;
 import io.micronaut.context.ApplicationContext;
 import org.akhq.models.AccessControl;
 import org.akhq.modules.AbstractKafkaWrapper;
-import org.akhq.utils.DefaultGroupUtils;
 import org.apache.kafka.common.acl.*;
 import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
@@ -28,9 +27,6 @@ public class AccessControlListRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
-
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
 
     public List<AccessControl> findAll(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
         return toGroupedAcl(kafkaWrapper
@@ -98,11 +94,6 @@ public class AccessControlListRepository extends AbstractRepository {
                 aclFilterRegex.addAll(getAclFilterRegexFromAttributes(auth.getAttributes()));
             }
         }
-        // get topic filter regex for default groups
-        aclFilterRegex.addAll(getAclFilterRegexFromAttributes(
-            defaultGroupUtils.getDefaultAttributes()
-        ));
-
         return Optional.of(aclFilterRegex);
     }
 
