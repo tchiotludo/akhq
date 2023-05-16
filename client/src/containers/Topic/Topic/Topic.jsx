@@ -55,7 +55,7 @@ class Topic extends Root {
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'configs',
+        selectedTab: roles.TOPIC && roles.TOPIC.includes('CONSUME') ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
       },
       () => {
@@ -229,7 +229,7 @@ class Topic extends Root {
       case 'logs':
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
-        return roles.topic && roles.topic['topic/data/read'] ? (
+        return roles.TOPIC && roles.TOPIC.includes('CONSUME') ? (
           <TopicData history={history} match={match} location={location} />
         ) : (
           <TopicPartitions history={history} />
@@ -246,7 +246,7 @@ class Topic extends Root {
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
         <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
-            {roles.topic && roles.topic['topic/data/read'] && (
+            {roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/topic/${topicId}/data`}
@@ -280,7 +280,7 @@ class Topic extends Root {
                 Configs
               </Link>
             </li>
-            {roles.acls && roles.acls['acls/read'] && (
+            {roles.ACL && roles.ACL.includes('READ') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/topic/${topicId}/acls`}
@@ -306,7 +306,7 @@ class Topic extends Root {
             </div>
           </div>
         </div>
-        {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
+        {selectedTab !== 'configs' && roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (

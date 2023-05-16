@@ -164,9 +164,7 @@ class SchemaVersions extends Root {
             this.handleOnDelete(schema);
           }}
           actions={
-            roles.registry && roles.registry['registry/version/delete']
-              ? [constants.TABLE_DELETE]
-              : []
+            roles.SCHEMA && roles.SCHEMA.includes('DELETE_VERSION') ? [constants.TABLE_DELETE] : []
           }
           extraRow
           noStripes

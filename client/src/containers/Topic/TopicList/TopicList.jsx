@@ -468,11 +468,11 @@ class TopicList extends Root {
 
     let onDetailsFunction = undefined;
     const actions = [constants.TABLE_CONFIG];
-    if (roles.topic && roles.topic['topic/data/read']) {
+    if (roles.TOPIC && roles.TOPIC.includes('CONSUME')) {
       actions.push(constants.TABLE_DETAILS);
       onDetailsFunction = id => `/ui/${selectedCluster}/topic/${id}/data`;
     }
-    if (roles.topic && roles.topic['topic/delete']) {
+    if (roles.TOPIC && roles.TOPIC.includes('DELETE')) {
       actions.push(constants.TABLE_DELETE);
     }
 
@@ -541,7 +541,7 @@ class TopicList extends Root {
           actions={actions}
         />
 
-        {roles.topic['topic/insert'] && (
+        {roles.TOPIC.includes('CREATE') && (
           <aside>
             <Link
               to={{

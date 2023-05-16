@@ -25,9 +25,7 @@ import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -189,21 +187,20 @@ public class AkhqController extends AbstractController {
                 .orElseThrow(() -> new RuntimeException("No cluster found"));
     }
 
-    private Map<String, List<AuthUser.AuthPermissions>> expandRoles(List<?> groups) {
+    private List<AuthUser.AuthPermissions> expandRoles(List<?> groups) {
         SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
 
         return groups.stream()
             .map(m -> new ObjectMapper().convertValue(m, Group.class))
-            .collect(Collectors.toMap(
-                Group::getRole,
-                group -> securityProperties.getRoles().get(group.getRole())
-                    .stream()
-                    .map(r -> new AuthUser.AuthPermissions(r, group.getRestriction()))
-                    .collect(Collectors.toList())
-            ));
+            .map(group -> securityProperties.getRoles().get(group.getRole())
+                .stream()
+                .map(r -> new AuthUser.AuthPermissions(r, group.getRestriction()))
+                .collect(Collectors.toList()))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
     }
 
-    protected Map<String, List<AuthUser.AuthPermissions>> getRights() {
+    protected List<AuthUser.AuthPermissions> getRights() {
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
         return expandRoles(securityService.getAuthentication()
@@ -244,7 +241,7 @@ public class AkhqController extends AbstractController {
     public static class AuthUser {
         private boolean logged = false;
         private String username;
-        private Map<String, List<AuthPermissions>> roles = new HashMap<>();
+        private List<AuthPermissions> roles = new ArrayList<>();
 
         @AllArgsConstructor
         @NoArgsConstructor

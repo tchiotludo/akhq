@@ -113,7 +113,7 @@ class ConsumerGroup extends Component {
                 Members
               </Link>
             </li>
-            {roles.acls && roles.acls['acls/read'] && (
+            {roles.ACL && roles.ACL.includes('READ') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/group/${consumerGroupId}/acls`}
@@ -132,11 +132,12 @@ class ConsumerGroup extends Component {
           </div>
         </div>
 
-        {roles.group &&
-          (roles.group['group/offsets/delete'] || roles.group['group/offsets/update']) && (
+        {roles.CONSUMER_GROUP &&
+          (roles.CONSUMER_GROUP.includes('DELETE_OFFSET') ||
+            roles.CONSUMER_GROUP.includes('UPDATE_OFFSET')) && (
             <aside>
               <li className="aside-button">
-                {roles.group['group/offsets/delete'] && (
+                {roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
                   <Link
                     to={`/ui/${clusterId}/group/${consumerGroupId}/offsetsdelete`}
                     className="btn btn-secondary mr-2"
@@ -144,7 +145,7 @@ class ConsumerGroup extends Component {
                     Delete Offsets
                   </Link>
                 )}
-                {roles.group['group/offsets/update'] && (
+                {roles.CONSUMER_GROUP.includes('UPDATE_OFFSET') && (
                   <Link
                     to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`}
                     className="btn btn-primary"

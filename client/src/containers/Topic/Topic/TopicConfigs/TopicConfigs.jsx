@@ -212,7 +212,7 @@ class TopicConfigs extends Form {
   render() {
     const { data, loading } = this.state;
     const roles = this.state.roles || {};
-    const isUpdatable = roles.topic && roles.topic['topic/config/update'];
+    const isUpdatable = roles.TOPIC && roles.TOPIC.includes('ALTER_CONFIG');
     return (
       <form
         encType="multipart/form-data"
