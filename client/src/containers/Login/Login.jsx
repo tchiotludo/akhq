@@ -38,7 +38,13 @@ class Login extends Form {
         password: formData.password
       };
 
-      login(uriLogin(), body).then(() => {
+      login(uriLogin(), body).then(res => {
+        res.json().then(r => {
+          // Support JWT authentication through access_token
+          if (r.access_token) {
+            sessionStorage.setItem('jwtToken', r.access_token);
+          }
+        });
         this.getData();
       });
     } catch (err) {
