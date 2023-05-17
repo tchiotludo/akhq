@@ -1,18 +1,27 @@
 package org.akhq.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
+import org.akhq.configs.security.Group;
 import org.akhq.configs.security.SecurityProperties;
 import org.akhq.security.annotation.AKHQSecured;
 
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 abstract public class AbstractController {
 
     private static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
+    @Inject
+    SecurityService securityService;
 
     @Inject
     protected SecurityProperties securityProperties;
@@ -33,6 +42,9 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
+        if(securityService.getAuthentication().isEmpty())
+            throw new RuntimeException();
+
         StackWalker.StackFrame sf = walker.walk(frames ->
             frames.filter(frame -> frame.getDeclaringClass().equals(getClass()))
                 .findFirst()
@@ -51,13 +63,15 @@ abstract public class AbstractController {
                 annotation = sf.getDeclaringClass().getAnnotation(AKHQSecured.class);
             }
 
-            isAllowed = securityProperties.getGroups().entrySet()
-                .stream()
-                .flatMap(groups -> groups.getValue().stream())
+            isAllowed = ((Map<String, List<?>>)securityService.getAuthentication().get().getAttributes().get("groups")).values().stream()
+                .flatMap(Collection::stream)
+                .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 // Get only group with role matching the method annotation resource and action
-                .filter(group -> securityProperties.getRoles().get(group.getRole()).stream()
-                    .anyMatch(role -> role.getResources().contains(annotation.resource())
-                        && role.getActions().contains(annotation.action())))
+                .filter(groupBinding -> securityProperties.getRoles().entrySet().stream()
+                    .filter(role -> groupBinding.getRole().equals(role.getKey()))
+                    .flatMap(role -> role.getValue().stream())
+                    .anyMatch(roleBinding -> roleBinding.getResources().contains(annotation.resource())
+                        && roleBinding.getActions().contains(annotation.action())))
                 // Check that resource and cluster patterns match
                 .anyMatch(group -> {
                     boolean allowed = group.getRestriction().getClusters().stream()
@@ -74,6 +88,7 @@ abstract public class AbstractController {
         }
 
         if (!isAllowed)
+            // Throw appropriate exception
             throw new RuntimeException();
     }
 }

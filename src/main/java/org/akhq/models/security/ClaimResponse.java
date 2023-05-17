@@ -6,10 +6,11 @@ import lombok.Getter;
 import org.akhq.configs.security.Group;
 
 import java.util.List;
+import java.util.Map;
 
 @Introspected
 @Builder
 @Getter
 public class ClaimResponse {
-    private List<Group> groups;
+    private Map<String, List<Group>> groups;
 }

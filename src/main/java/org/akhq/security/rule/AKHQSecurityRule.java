@@ -21,8 +21,10 @@ import org.reactivestreams.Publisher;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
@@ -60,21 +62,23 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
         }
         String cluster = routeMatch.getVariableValues().get("cluster").toString();
 
-        // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
-        // Need to serialize Object to Group manually in the stream
-        List<?> userGroups = (List<?>) authentication.getAttributes().get("groups");
+        List<Group> userGroups = ((Map<String, List<?>>)authentication.getAttributes().get("groups")).values().stream()
+            .flatMap(Collection::stream)
+            // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
+            // Need to serialize Object to Group manually in the stream
+            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+            .collect(Collectors.toList());
 
         boolean allowed = userGroups.stream()
-            .map(m -> new ObjectMapper().convertValue(m, Group.class))
-            // Keep only groups matching on cluster name
-            .filter(group -> group.getRestriction().getClusters()
-                    .stream()
+            // Keep only bindings matching on cluster name
+            .filter(binding -> binding.getRestriction().getClusters().stream()
                     .anyMatch(regex -> Pattern.matches(regex, cluster))
             )
-            // Keep only groups matching role by name
-            .filter(group -> securityProperties.getRoles().containsKey(group.getRole()))
             // Map to roles
-            .map(group -> securityProperties.getRoles().get(group.getRole()))
+            .map(binding -> securityProperties.getRoles().entrySet().stream()
+                .filter(entry -> entry.getKey().equals(binding.getRole()))
+                .flatMap(rb -> rb.getValue().stream())
+                .collect(Collectors.toList()))
             // Flatten roles
             .flatMap(Collection::stream)
             // Match on Resource & Action

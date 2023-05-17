@@ -15,6 +15,7 @@ import org.akhq.models.security.ClaimResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,17 +88,9 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 break;
         }
 
-        List<Group> groups = akhqGroups.stream()
-            .flatMap(groupName -> {
-                if (securityProperties.getGroups().containsKey(groupName)) {
-                    return securityProperties.getGroups().get(groupName).stream();
-                } else {
-                    // TODO warn or fail ?
-                    log.warn("Group {} not found for user {}", groupName, request.getUsername());
-                    return Stream.empty();
-                }
-            })
-            .collect(Collectors.toList());
+        Map<String, List<Group>> groups = securityProperties.getGroups().entrySet().stream()
+            .filter(entry -> akhqGroups.contains(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         // translate akhq groups into roles and attributes
         return ClaimResponse.builder().groups(groups).build();

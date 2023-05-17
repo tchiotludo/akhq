@@ -3,14 +3,10 @@ package org.akhq.configs.security;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
 
-import java.io.Serializable;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Group implements Serializable {
+@Data
+public class Group {
     private String role;
 
     @JsonUnwrapped

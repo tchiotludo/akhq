@@ -6,7 +6,6 @@ import io.micronaut.core.naming.conventions.StringConvention;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,10 +13,11 @@ import java.util.Map;
 @Data
 public class SecurityProperties {
     private List<BasicAuth> basicAuth = new ArrayList<>();
+    private String defaultGroup;
 
     @MapFormat(keyFormat = StringConvention.RAW)
-    private Map<String, List<Role>> roles = new HashMap<>();
+    private Map<String, List<Role>> roles;
 
     @MapFormat(keyFormat = StringConvention.RAW)
-    private Map<String, List<Group>> groups = new HashMap<>();
+    private Map<String, List<Group>> groups;
 }

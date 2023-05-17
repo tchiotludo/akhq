@@ -25,7 +25,9 @@ import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -187,14 +189,15 @@ public class AkhqController extends AbstractController {
                 .orElseThrow(() -> new RuntimeException("No cluster found"));
     }
 
-    private List<AuthUser.AuthPermissions> expandRoles(List<?> groups) {
+    private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
         SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
 
-        return groups.stream()
-            .map(m -> new ObjectMapper().convertValue(m, Group.class))
-            .map(group -> securityProperties.getRoles().get(group.getRole())
-                .stream()
-                .map(r -> new AuthUser.AuthPermissions(r, group.getRestriction()))
+        return groupBindings.stream()
+            .map(binding -> securityProperties.getRoles().entrySet().stream()
+                    .filter(role -> role.getKey().equals(binding.getRole()))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .map(roleBinding -> new AuthUser.AuthPermissions(roleBinding, binding.getRestriction()))
                 .collect(Collectors.toList()))
             .flatMap(List::stream)
             .collect(Collectors.toList());
@@ -203,9 +206,16 @@ public class AkhqController extends AbstractController {
     protected List<AuthUser.AuthPermissions> getRights() {
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
-        return expandRoles(securityService.getAuthentication()
-            .map(authentication -> (List<?>) authentication.getAttributes().get("groups"))
-            .orElse(List.of()));
+        if(securityService.getAuthentication().isEmpty())
+            return List.of();
+
+        List<Group> groupBindings = ((Map<String, List<?>>)securityService.getAuthentication().get().getAttributes().get("groups"))
+            .values().stream()
+            .flatMap(Collection::stream)
+            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+            .collect(Collectors.toList());
+
+        return expandRoles(groupBindings);
     }
 
     @AllArgsConstructor
