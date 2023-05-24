@@ -42,9 +42,6 @@ public class ConnectRepository extends AbstractRepository {
         ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
-        if (!isMatchRegex(getConnectFilterRegex(), name)) {
-            throw new IllegalArgumentException(String.format("Not allowed to view Connector %s", name));
-        }
         return new ConnectDefinition(
             this.kafkaModule
                 .getConnectRestClient(clusterId)
@@ -61,17 +58,16 @@ public class ConnectRepository extends AbstractRepository {
             ConcurrentConfigModificationException.class,
             ResourceNotFoundException.class
     }, delay = "3s", attempts = "5")
-    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search)
+    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, List<String> filters)
             throws IOException, RestClientException, ExecutionException, InterruptedException{
-        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search);
+        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, filters);
 
         // I'm not sure of how to use the last parameter in this case
         // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
         return PagedList.of(definitions, pagination, list -> list);
     }
 
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search
-    )
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, List<String> filters)
     {
         ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
             .getConnectRestClient(clusterId)
@@ -80,13 +76,14 @@ public class ConnectRepository extends AbstractRepository {
 
         Collection<ConnectorDefinition> definitions = unfiltered.getAllDefinitions();
 
-        Collection<ConnectorDefinition> connectorsFilteredBySearch = search.map(
-                query -> definitions.stream().filter(connector -> connector.getName().contains(query))
-        ).orElse(definitions.stream()).collect(Collectors.toList());
+        Collection<ConnectorDefinition> connectorsFilteredBySearch =
+            definitions.stream().filter(connector -> isSearchMatch(search, connector.getName())
+                && isMatchRegex(filters, connector.getName())
+        ).collect(Collectors.toList());
 
         ArrayList<ConnectDefinition> filtered = new ArrayList<>();
         for (ConnectorDefinition item : connectorsFilteredBySearch) {
-            if (isMatchRegex(getConnectFilterRegex(), item.getName())) {
+            if (isMatchRegex(filters, item.getName())) {
                 filtered.add(new ConnectDefinition(
                     item,
                     unfiltered.getStatusForConnector(item.getName())
@@ -249,31 +246,5 @@ public class ConnectRepository extends AbstractRepository {
         String[] split = className.split("\\.");
 
         return split[split.length - 1];
-    }
-
-    private Optional<List<String>> getConnectFilterRegex() {
-
-        List<String> connectFilterRegex = new ArrayList<>();
-
-        if (applicationContext.containsBean(SecurityService.class)) {
-            SecurityService securityService = applicationContext.getBean(SecurityService.class);
-            Optional<Authentication> authentication = securityService.getAuthentication();
-            if (authentication.isPresent()) {
-                Authentication auth = authentication.get();
-                connectFilterRegex.addAll(getConnectFilterRegexFromAttributes(auth.getAttributes()));
-            }
-        }
-
-        return Optional.of(connectFilterRegex);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<String> getConnectFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("connectsFilterRegexp") != null) {
-            if (attributes.get("connectsFilterRegexp") instanceof List) {
-                return (List<String>)attributes.get("connectsFilterRegexp");
-            }
-        }
-        return new ArrayList<>();
     }
 }

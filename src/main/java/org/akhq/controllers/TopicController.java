@@ -100,7 +100,8 @@ public class TopicController extends AbstractController {
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
-            search
+            search,
+            buildUserBasedResourceFilters(cluster)
         ));
     }
 
@@ -113,7 +114,10 @@ public class TopicController extends AbstractController {
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
-        return this.topicRepository.all(cluster, show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL), Optional.empty());
+        return this.topicRepository.all(cluster,
+            show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
+            Optional.empty(),
+            buildUserBasedResourceFilters(cluster));
     }
 
 
@@ -256,7 +260,8 @@ public class TopicController extends AbstractController {
     public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
-        return this.consumerGroupRepository.findByTopic(cluster, topicName);
+        return this.consumerGroupRepository.findByTopic(cluster, topicName,
+            buildUserBasedResourceFilters(cluster));
     }
 
     @Get("api/{cluster}/topic/{topicName}/configs")

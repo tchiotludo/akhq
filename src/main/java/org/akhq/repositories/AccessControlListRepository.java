@@ -28,12 +28,12 @@ public class AccessControlListRepository extends AbstractRepository {
     @Inject
     private ApplicationContext applicationContext;
 
-    public List<AccessControl> findAll(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<AccessControl> findAll(String clusterId, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
         return toGroupedAcl(kafkaWrapper
             .describeAcls(clusterId, AclBindingFilter.ANY)
             .stream()
-            .filter(aclBinding -> isSearchMatch(search, aclBinding.entry().principal()))
-            .filter(aclBinding -> isMatchRegex(getAclFilterRegex(),aclBinding.entry().principal()))
+            .filter(aclBinding -> isSearchMatch(search, aclBinding.entry().principal())
+                && isMatchRegex(filters, aclBinding.entry().principal()))
             .collect(Collectors.toList())
         );
     }

@@ -1,7 +1,6 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
@@ -24,6 +23,7 @@ import org.akhq.security.annotation.HasAnyPermission;
 import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -100,7 +100,7 @@ public class AkhqController extends AbstractController {
             authDefinition.loginEnabled = true;
             // Display login form if there are LocalUsers OR Ldap is enabled
             authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
-                    applicationContext.containsBean(LdapConfiguration.class);
+                applicationContext.containsBean(LdapConfiguration.class);
 
             if (!authDefinition.formEnabled &&
                 authDefinition.oidcAuths == null &&
@@ -124,11 +124,11 @@ public class AkhqController extends AbstractController {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
             securityService
-                    .getAuthentication()
-                    .ifPresent(authentication -> {
-                        authUser.logged = true;
-                        authUser.username = authentication.getName();
-                    });
+                .getAuthentication()
+                .ifPresent(authentication -> {
+                    authUser.logged = true;
+                    authUser.username = authentication.getName();
+                });
         }
 
         authUser.roles = this.getRights();
@@ -184,9 +184,9 @@ public class AkhqController extends AbstractController {
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
     public Connection.UiOptions options(String cluster) {
         return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
-                .map(conn -> conn.mergeOptions(this.uIOptions))
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("No cluster found"));
+            .map(conn -> conn.mergeOptions(this.uIOptions))
+            .findAny()
+            .orElseThrow(() -> new RuntimeException("No cluster found"));
     }
 
     private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
@@ -194,10 +194,10 @@ public class AkhqController extends AbstractController {
 
         return groupBindings.stream()
             .map(binding -> securityProperties.getRoles().entrySet().stream()
-                    .filter(role -> role.getKey().equals(binding.getRole()))
+                .filter(role -> role.getKey().equals(binding.getRole()))
                 .map(Map.Entry::getValue)
                 .flatMap(Collection::stream)
-                .map(roleBinding -> new AuthUser.AuthPermissions(roleBinding, binding.getRestriction()))
+                .map(roleBinding -> new AuthUser.AuthPermissions(roleBinding, binding.getPatterns(), binding.getClusters()))
                 .collect(Collectors.toList()))
             .flatMap(List::stream)
             .collect(Collectors.toList());
@@ -206,16 +206,11 @@ public class AkhqController extends AbstractController {
     protected List<AuthUser.AuthPermissions> getRights() {
         SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
-        if(securityService.getAuthentication().isEmpty())
+        if (securityService.getAuthentication().isEmpty()) {
             return List.of();
+        }
 
-        List<Group> groupBindings = ((Map<String, List<?>>)securityService.getAuthentication().get().getAttributes().get("groups"))
-            .values().stream()
-            .flatMap(Collection::stream)
-            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
-            .collect(Collectors.toList());
-
-        return expandRoles(groupBindings);
+        return expandRoles(getUserGroups());
     }
 
     @AllArgsConstructor
@@ -259,9 +254,8 @@ public class AkhqController extends AbstractController {
         public static class AuthPermissions {
             @JsonUnwrapped
             private Role role;
-
-            @JsonUnwrapped
-            private Group.Restriction restriction;
+            private List<String> patterns = List.of(".*");
+            private List<String> clusters = List.of(".*");
         }
     }
 

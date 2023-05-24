@@ -2,6 +2,7 @@ package org.akhq.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 abstract public class AbstractController {
 
@@ -30,11 +32,85 @@ abstract public class AbstractController {
     protected String basePath;
 
     protected String getBasePath() {
-        return basePath.replaceAll("/$","");
+        return basePath.replaceAll("/$", "");
     }
 
     protected URI uri(String path) throws URISyntaxException {
         return new URI((this.basePath != null ? this.basePath : "") + path);
+    }
+
+    protected List<Group> getUserGroups() {
+        List<Group> groupBindings = ((Map<String, List<?>>) securityService.getAuthentication().get().getAttributes().get("groups"))
+            .values()
+            .stream()
+            .flatMap(Collection::stream)
+            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+            .collect(Collectors.toList());
+
+        // Add the default group if there is one
+        if (StringUtils.isNotEmpty(securityProperties.getDefaultGroup())) {
+            groupBindings.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
+        }
+
+        return groupBindings;
+    }
+
+    /**
+     * Build a list of regex based on the user's groups patterns attribute and the current cluster
+     *
+     * @param cluster
+     * @return
+     */
+    protected List<String> buildUserBasedResourceFilters(String cluster) {
+        if (securityService.getAuthentication().isEmpty())
+            return List.of();
+
+        AKHQSecured annotation;
+        try {
+            annotation = getCallingAKHQSecuredAnnotation();
+        } catch (NoSuchMethodException e) {
+            return List.of();
+        }
+
+        return getUserGroups().stream()
+            // Keep only group matching the cluster
+            .filter(group -> group.getClusters()
+                .stream()
+                .anyMatch(c -> Pattern.matches(c, cluster)))
+            // Iterate over all the roles of the user remaining groups to extract the restriction attribute for the
+            // given cluster and resource
+            .map(gb -> securityProperties.getRoles().get(gb.getRole())
+                .stream()
+                // Find roles with a resource and action matching the calling method AKHQSecured annotation
+                .filter(role -> role.getResources().contains(annotation.resource())
+                    && role.getActions().contains(annotation.action()))
+                // Keep only the restriction attribute containing the patterns
+                .map(role -> gb.getPatterns())
+                .collect(Collectors.toList()))
+            .flatMap(Collection::stream)
+            .flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private AKHQSecured getCallingAKHQSecuredAnnotation() throws NoSuchMethodException {
+        StackWalker.StackFrame sf = walker.walk(frames ->
+            frames.filter(frame -> frame.getDeclaringClass().equals(getClass()))
+                .findFirst()
+                .orElseThrow());
+
+        Method method = sf.getDeclaringClass().getDeclaredMethod(sf.getMethodName(), sf.getMethodType().parameterArray());
+        AKHQSecured annotation;
+
+        // Take the method annotation is present
+        if (method.isAnnotationPresent(AKHQSecured.class)) {
+            annotation = method.getAnnotation(AKHQSecured.class);
+        } else {
+            // Otherwise take the class annotation
+            annotation = sf.getDeclaringClass().getAnnotation(AKHQSecured.class);
+        }
+
+        return annotation;
     }
 
     protected void checkIfClusterAllowed(String cluster) {
@@ -42,8 +118,8 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
-        if(securityService.getAuthentication().isEmpty())
-            throw new RuntimeException();
+        if (securityService.getAuthentication().isEmpty())
+            return;
 
         StackWalker.StackFrame sf = walker.walk(frames ->
             frames.filter(frame -> frame.getDeclaringClass().equals(getClass()))
@@ -52,18 +128,9 @@ abstract public class AbstractController {
 
         boolean isAllowed;
         try {
-            Method method = sf.getDeclaringClass().getDeclaredMethod(sf.getMethodName(), sf.getMethodType().parameterArray());
-            AKHQSecured annotation;
+            AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
 
-            // Take the method annotation is present
-            if(method.isAnnotationPresent(AKHQSecured.class)) {
-                annotation = method.getAnnotation(AKHQSecured.class);
-            } else {
-                // Otherwise take the class annotation
-                annotation = sf.getDeclaringClass().getAnnotation(AKHQSecured.class);
-            }
-
-            isAllowed = ((Map<String, List<?>>)securityService.getAuthentication().get().getAttributes().get("groups")).values().stream()
+            isAllowed = ((Map<String, List<?>>) securityService.getAuthentication().get().getAttributes().get("groups")).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 // Get only group with role matching the method annotation resource and action
@@ -74,12 +141,13 @@ abstract public class AbstractController {
                         && roleBinding.getActions().contains(annotation.action())))
                 // Check that resource and cluster patterns match
                 .anyMatch(group -> {
-                    boolean allowed = group.getRestriction().getClusters().stream()
+                    boolean allowed = group.getClusters().stream()
                         .anyMatch(pattern -> Pattern.matches(pattern, cluster));
 
-                    if(resource != null)
-                        allowed = allowed && group.getRestriction().getPatterns().stream()
-                                .anyMatch(pattern -> Pattern.matches(pattern, resource));
+                    if (StringUtils.isNotEmpty(resource)) {
+                        allowed = allowed && group.getPatterns().stream()
+                            .anyMatch(pattern -> Pattern.matches(pattern, resource));
+                    }
 
                     return allowed;
                 });

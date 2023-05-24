@@ -71,7 +71,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
 
         boolean allowed = userGroups.stream()
             // Keep only bindings matching on cluster name
-            .filter(binding -> binding.getRestriction().getClusters().stream()
+            .filter(binding -> binding.getClusters().stream()
                     .anyMatch(regex -> Pattern.matches(regex, cluster))
             )
             // Map to roles

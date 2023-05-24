@@ -46,6 +46,6 @@ class AkhqControllerTest extends AbstractTest {
         );
 
         assertEquals("admin", result.getUsername());
-        assertEquals(38, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
     }
 }

@@ -64,25 +64,25 @@ public class GroupController extends AbstractController {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
-        return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search));
+        return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search, buildUserBasedResourceFilters(cluster)));
     }
 
     @Get("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group")
     public ConsumerGroup home(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName);
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster));
     }
 
     @Get("{groupName}/offsets")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsets(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getOffsets();
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getOffsets();
     }
 
     @Get("{groupName}/members")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
     public List<Consumer> members(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getMembers();
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getMembers();
     }
 
     @Get("{groupName}/acls")
@@ -98,7 +98,8 @@ public class GroupController extends AbstractController {
         return topics.map(
                 topicsName -> {
                     try {
-                        return this.consumerGroupRepository.findByTopics(cluster, topicsName);
+                        return this.consumerGroupRepository.findByTopics(cluster, topicsName,
+                            buildUserBasedResourceFilters(cluster));
                     } catch (ExecutionException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -134,7 +135,8 @@ public class GroupController extends AbstractController {
     @Get("{groupName}/offsets/start")
     @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(
+            cluster, groupName, buildUserBasedResourceFilters(cluster));
 
         return recordRepository.getOffsetForTime(
             cluster,

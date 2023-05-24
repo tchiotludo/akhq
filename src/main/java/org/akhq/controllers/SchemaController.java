@@ -55,12 +55,18 @@ public class SchemaController extends AbstractController {
         Optional<String> search,
         Optional<Integer> page
     ) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        checkIfClusterAllowed(cluster);
+        search.ifPresentOrElse(s -> checkIfClusterAndResourceAllowed(cluster, s),
+            () -> checkIfClusterAllowed(cluster));
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
-        return ResultPagedList.of(this.schemaRepository.list(cluster, pagination, search));
+        return ResultPagedList.of(this.schemaRepository.list(
+            cluster,
+            pagination,
+            search,
+            buildUserBasedResourceFilters(cluster))
+        );
     }
 
     @Get("api/{cluster}/schema/topic/{topic}")
@@ -72,7 +78,7 @@ public class SchemaController extends AbstractController {
     ) throws IOException, RestClientException {
         checkIfClusterAndResourceAllowed(cluster, topic);
 
-        List<Schema> schemas = this.schemaRepository.listAll(cluster, Optional.empty());
+        List<Schema> schemas = this.schemaRepository.listAll(cluster, Optional.empty(), List.of());
 
         return new TopicSchema(
             schemas.stream()

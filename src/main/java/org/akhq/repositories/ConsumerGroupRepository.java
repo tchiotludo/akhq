@@ -18,6 +18,7 @@ import org.apache.kafka.common.TopicPartition;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -34,16 +35,15 @@ public class ConsumerGroupRepository extends AbstractRepository {
     @Inject
     private ApplicationContext applicationContext;
 
-    public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search) throws ExecutionException, InterruptedException {
-        return PagedList.of(all(clusterId, search), pagination, groupsList -> this.findByName(clusterId, groupsList));
+    public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
+        return PagedList.of(all(clusterId, search, filters), pagination, groupsList -> this.findByName(clusterId, groupsList, filters));
     }
 
-    public List<String> all(String clusterId, Optional<String> search) throws ExecutionException, InterruptedException {
+    public List<String> all(String clusterId, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
         ArrayList<String> list = new ArrayList<>();
 
         for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups(clusterId)) {
-            if (isSearchMatch(search, item.groupId()) && isMatchRegex(
-                    getConsumerGroupFilterRegex(), item.groupId())) {
+            if (isSearchMatch(search, item.groupId()) && isMatchRegex(filters, item.groupId())) {
                 list.add(item.groupId());
             }
         }
@@ -53,19 +53,18 @@ public class ConsumerGroupRepository extends AbstractRepository {
         return list;
     }
 
-    public ConsumerGroup findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
+    public ConsumerGroup findByName(String clusterId, String name, List<String> filters) throws ExecutionException, InterruptedException {
         Optional<ConsumerGroup> consumerGroup = Optional.empty();
-        if(isMatchRegex(getConsumerGroupFilterRegex(),name)) {
-           consumerGroup = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
+        if (isMatchRegex(filters, name)) {
+            consumerGroup = this.findByName(clusterId, Collections.singletonList(name), filters).stream().findFirst();
         }
         return consumerGroup.orElseThrow(() -> new NoSuchElementException("Consumer Group '" + name + "' doesn't exist"));
     }
 
-    public List<ConsumerGroup> findByName(String clusterId, List<String> groups) throws ExecutionException, InterruptedException {
-        Optional<List<String>> consumerGroupRegex = getConsumerGroupFilterRegex();
+    public List<ConsumerGroup> findByName(String clusterId, List<String> groups, List<String> filters) throws ExecutionException, InterruptedException {
         List<String> filteredConsumerGroups = groups.stream()
-                .filter(t -> isMatchRegex(consumerGroupRegex, t))
-                .collect(Collectors.toList());
+            .filter(t -> isMatchRegex(filters, t))
+            .collect(Collectors.toList());
         Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups);
 
         Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
@@ -99,9 +98,9 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public List<ConsumerGroup> findByTopic(String clusterId, String topic) throws ExecutionException, InterruptedException {
-        List<String> groupName = this.all(clusterId, Optional.empty());
-        List<ConsumerGroup> list = this.findByName(clusterId, groupName);
+    public List<ConsumerGroup> findByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {
+        List<String> groupName = this.all(clusterId, Optional.empty(), filters);
+        List<ConsumerGroup> list = this.findByName(clusterId, groupName, filters);
 
         return list
             .stream()
@@ -116,21 +115,21 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public List<ConsumerGroup> findByTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroup> findByTopics(String clusterId, List<String> topics, List<String> filters) throws ExecutionException, InterruptedException {
 
-        List<String> groupName = this.all(clusterId, Optional.empty());
-        List<ConsumerGroup> list = this.findByName(clusterId, groupName);
+        List<String> groupName = this.all(clusterId, Optional.empty(), filters);
+        List<ConsumerGroup> list = this.findByName(clusterId, groupName, filters);
         return list
-                .stream()
-                .filter(consumerGroups ->
-                        consumerGroups.getActiveTopics()
-                                .stream()
-                                .anyMatch(s -> topics.contains(s) ) ||
-                                consumerGroups.getTopics()
-                                        .stream()
-                                        .anyMatch(s -> topics.contains(s))
-                )
-                .collect(Collectors.toList());
+            .stream()
+            .filter(consumerGroups ->
+                consumerGroups.getActiveTopics()
+                    .stream()
+                    .anyMatch(s -> topics.contains(s)) ||
+                    consumerGroups.getTopics()
+                        .stream()
+                        .anyMatch(s -> topics.contains(s))
+            )
+            .collect(Collectors.toList());
     }
 
     public void updateOffsets(String clusterId, String name, Map<org.akhq.models.TopicPartition, Long> offset) {
@@ -151,31 +150,5 @@ public class ConsumerGroupRepository extends AbstractRepository {
         consumer.close();
 
         kafkaWrapper.clearConsumerGroupsOffsets();
-    }
-
-    private Optional<List<String>> getConsumerGroupFilterRegex() {
-
-        List<String> consumerGroupFilterRegex = new ArrayList<>();
-
-        if (applicationContext.containsBean(SecurityService.class)) {
-            SecurityService securityService = applicationContext.getBean(SecurityService.class);
-            Optional<Authentication> authentication = securityService.getAuthentication();
-            if (authentication.isPresent()) {
-                Authentication auth = authentication.get();
-                consumerGroupFilterRegex.addAll(getConsumerGroupFilterRegexFromAttributes(auth.getAttributes()));
-            }
-        }
-
-        return Optional.of(consumerGroupFilterRegex);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<String> getConsumerGroupFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if (attributes.get("consumerGroupsFilterRegexp") != null) {
-            if (attributes.get("consumerGroupsFilterRegexp") instanceof List) {
-                return (List<String>)attributes.get("consumerGroupsFilterRegexp");
-            }
-        }
-        return new ArrayList<>();
     }
 }
