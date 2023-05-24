@@ -52,7 +52,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -62,7 +63,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -72,7 +74,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -82,7 +85,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_STREAM,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -93,7 +97,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -103,7 +108,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.of("ra do")
+            Optional.of("ra do"),
+            List.of()
         ).size());
     }
 
@@ -114,7 +120,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.of("stream")
+            Optional.of("stream"),
+            List.of()
         ).size());
     }
 
