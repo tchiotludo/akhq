@@ -306,7 +306,7 @@ class Topic extends Root {
             </div>
           </div>
         </div>
-        {selectedTab !== 'configs' && roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+        {selectedTab !== 'configs' && roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
@@ -321,7 +321,7 @@ class Topic extends Root {
                   </Dropdown>
                 </div>
               )}
-              {this.canEmptyTopic() ? (
+              {this.canEmptyTopic() && roles.TOPIC && roles.TOPIC.includes('PRODUCE') ? (
                 <div
                   onClick={() => {
                     this.handleOnEmpty();
@@ -339,25 +339,34 @@ class Topic extends Root {
                 </div>
               )}
 
-              <Link
-                to={{
-                  pathname: `/ui/${clusterId}/topic/${topicId}/copy`
-                }}
-                className="btn btn-secondary mr-2"
-              >
-                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
-              </Link>
+              {roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+                <Link
+                  to={{
+                    pathname: `/ui/${clusterId}/topic/${topicId}/copy`
+                  }}
+                  className="btn btn-secondary mr-2"
+                >
+                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
+                </Link>
+              )}
 
-              <Link
-                to={{ pathname: `/ui/${clusterId}/tail`, search: `?topicId=${topicId}` }}
-                className="btn btn-secondary mr-2"
-              >
-                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-              </Link>
+              {roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
+                <Link
+                  to={{
+                    pathname: `/ui/${clusterId}/tail`,
+                    search: `?topicId=${topicId}`
+                  }}
+                  className="btn btn-secondary mr-2"
+                >
+                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+                </Link>
+              )}
 
-              <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
-                <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
-              </Link>
+              {roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+                <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
+                  <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
+                </Link>
+              )}
             </li>
           </aside>
         )}
