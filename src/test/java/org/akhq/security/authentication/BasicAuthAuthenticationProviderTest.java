@@ -5,8 +5,9 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
 import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,13 +31,11 @@ class BasicAuthAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(4));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-
-        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+        assertThat(roles.keySet(), hasSize(1));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
     }
 
     @Test
@@ -52,13 +51,11 @@ class BasicAuthAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("MyUser3!@yàhöù.com", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(4));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-
-        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+        assertThat(roles.keySet(), hasSize(1));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
     }
 
     @Test

@@ -78,20 +78,13 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
     }
 
     private AuthenticationResponse createDirectClaimAuthenticationResponse(String oidcUsername, OpenIdClaims openIdClaims) {
-        String ROLES_KEY = "roles";
-        if(openIdClaims.contains(ROLES_KEY) && openIdClaims.get(ROLES_KEY) instanceof List){
-            List<String> roles = (List<String>) openIdClaims.get(ROLES_KEY);
-            Map<String, Object> attributes =  openIdClaims.getClaims()
-                .entrySet()
-                .stream()
-                // keep only topicsFilterRegexp, connectsFilterRegexp, consumerGroupsFilterRegexp and potential future filters
-                .filter(kv -> kv.getKey().matches(".*FilterRegexp$"))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            return AuthenticationResponse.success(oidcUsername, roles, attributes);
+        String GROUPS_KEY = "groups";
+        if(openIdClaims.contains(GROUPS_KEY) && openIdClaims.get(GROUPS_KEY) instanceof Map){
+            return AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", openIdClaims.get(GROUPS_KEY)));
         }
 
         return new AuthenticationFailed("Exception during Authentication: use-oidc-claim config requires attribute " +
-            ROLES_KEY + " in the OIDC claim");
+            GROUPS_KEY + " in the OIDC claim");
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.utils.SecurityService;
@@ -23,7 +24,7 @@ abstract public class AbstractController {
     private static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     @Inject
-    SecurityService securityService;
+    private ApplicationContext applicationContext;
 
     @Inject
     protected SecurityProperties securityProperties;
@@ -40,7 +41,12 @@ abstract public class AbstractController {
     }
 
     protected List<Group> getUserGroups() {
-        List<Group> groupBindings = ((Map<String, List<?>>) securityService.getAuthentication().get().getAttributes().get("groups"))
+        if (!applicationContext.containsBean(SecurityService.class)) {
+            return List.of();
+        }
+
+        List<Group> groupBindings = ((Map<String, List<?>>) applicationContext.getBean(SecurityService.class)
+            .getAuthentication().get().getAttributes().get("groups"))
             .values()
             .stream()
             .flatMap(Collection::stream)
@@ -62,7 +68,8 @@ abstract public class AbstractController {
      * @return
      */
     protected List<String> buildUserBasedResourceFilters(String cluster) {
-        if (securityService.getAuthentication().isEmpty())
+        if (!applicationContext.containsBean(SecurityService.class)
+            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty())
             return List.of();
 
         AKHQSecured annotation;
@@ -118,7 +125,8 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
-        if (securityService.getAuthentication().isEmpty())
+        if (!applicationContext.containsBean(SecurityService.class)
+            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty())
             return;
 
         StackWalker.StackFrame sf = walker.walk(frames ->
@@ -130,7 +138,8 @@ abstract public class AbstractController {
         try {
             AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
 
-            isAllowed = ((Map<String, List<?>>) securityService.getAuthentication().get().getAttributes().get("groups")).values().stream()
+            isAllowed = ((Map<String, List<?>>) applicationContext.getBean(SecurityService.class)
+                .getAuthentication().get().getAttributes().get("groups")).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 // Get only group with role matching the method annotation resource and action

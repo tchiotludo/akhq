@@ -45,7 +45,7 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             Optional.empty(),
-            List.of()
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -56,7 +56,7 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             Optional.empty(),
-            List.of()
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -77,7 +77,7 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             Optional.of("stream"),
-            List.of()
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -85,14 +85,14 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
     void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
         assertThrows(NoSuchElementException.class, () -> {
-            consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, "cgroup-1", List.of());
+            consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, "cgroup-1", List.of("consumer-.*"));
         });
 
-        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-6", "cgroup-1"), List.of()).size());
+        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-6", "cgroup-1"), List.of("consumer-.*")).size());
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("consumerGroupsFilterRegexp", new ArrayList<>(Arrays.asList("consumer-.*"))));
+        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

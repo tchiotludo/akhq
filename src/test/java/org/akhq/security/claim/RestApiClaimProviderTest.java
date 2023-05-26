@@ -25,8 +25,11 @@ import org.reactivestreams.Publisher;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.security.PermitAll;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest(environments = "rest-api")
@@ -47,15 +50,11 @@ public class RestApiClaimProviderTest {
         String jwtCookie = resultResponse.getCookie("JWT").get().getValue();
         JWT token = JWTParser.parse(jwtCookie);
 
-        assertTrue(token.getJWTClaimsSet().getClaims().containsKey("topicsFilterRegexp"));
-        assertTrue(token.getJWTClaimsSet().getClaims().containsKey("roles"));
+        assertTrue(token.getJWTClaimsSet().getClaims().containsKey("groups"));
 
-        //assertEquals(List.of("filter1", "filter2"), token.getJWTClaimsSet().getClaims().get("topicsFilterRegexp").toString());
-        List<String> actualTopicFilters = token.getJWTClaimsSet().getStringListClaim("topicsFilterRegexp");
-        assertLinesMatch(List.of("filter1", "filter2"), actualTopicFilters);
-
-        List<String> actualRoles = token.getJWTClaimsSet().getStringListClaim("roles");
-        assertLinesMatch(List.of("topic/read", "group/read", "registry/read", "connect/read"), actualRoles);
+        Map<String, List> actualRoles = (Map<String, List>) token.getJWTClaimsSet().getClaim("groups");
+        assertThat(actualRoles.keySet(), hasSize(1));
+        assertNotNull(actualRoles.get("limited"));
     }
 
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
@@ -76,11 +75,12 @@ public class RestApiClaimProviderTest {
         String generateClaim(ClaimRequest request) {
             return
                 "{\n" +
-                    "  \"roles\" : [ \"topic/read\", \"group/read\", \"registry/read\", \"connect/read\" ],\n" +
-                    "  \"consumerGroupsFilterRegexp\" : [ \".*\" ],\n" +
-                    "  \"connectsFilterRegexp\" : [ \".*\" ],\n" +
-                    "  \"topicsFilterRegexp\" : [ \"filter1\", \"filter2\" ]\n" +
-                    "}";
+                    "  \"groups\" : {" +
+                        "\"limited\": {" +
+                            "\"role\": \"topic-read\"" +
+                        "}" +
+                    "}"+
+                "}";
         }
     }
 }

@@ -12,21 +12,20 @@ akhq:
     groovy:
       enabled: true
       file: |
-        package org.akhq.utils;
+        package org.akhq.models.security;
+
+        import org.akhq.configs.security.Group;
+
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
             ClaimResponse generateClaim(ClaimRequest request) {
                 ClaimResponse a = ClaimResponse.builder().build();
-                a.roles = ["topic/read"]
-                if (request.username == "admin") {
-                    a.topicsFilterRegexp = [".*"]
-                    a.connectsFilterRegexp = [".*"]
-                    a.consumerGroupsFilterRegexp = [".*"]
-                } else {
-                    a.topicsFilterRegexp = ["single-topic"]
-                    a.connectsFilterRegexp = ["single-connect"]
-                    a.consumerGroupsFilterRegexp = ["single-consumer-group"]
-                }
+                a.groups = [:]
+                Group g = new Group();
+                g.role = "topic-read";
+                a.groups["limited"] = []
+                a.groups["limited"].add(g)
+
                 return a
             }
         }

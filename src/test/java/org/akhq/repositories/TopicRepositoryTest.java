@@ -98,7 +98,7 @@ class TopicRepositoryTest extends AbstractTest {
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
             Optional.empty(),
-            List.of()
+            List.of("rando.*")
         ).size());
     }
 
@@ -121,7 +121,7 @@ class TopicRepositoryTest extends AbstractTest {
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
             Optional.of("stream"),
-            List.of()
+            List.of("rando.*")
         ).size());
     }
 
@@ -183,7 +183,7 @@ class TopicRepositoryTest extends AbstractTest {
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
+        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

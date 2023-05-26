@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HeaderAuthControllerTest extends AbstractTest {
     @Inject
@@ -27,7 +28,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user", result.getUsername());
-        assertEquals(6, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
     }
 
     @Test
@@ -40,7 +41,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-admin", result.getUsername());
-        assertEquals(38, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
     }
 
     @Test
@@ -54,7 +55,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user-operator", result.getUsername());
-        assertEquals(11, result.getRoles().size());
+        assertEquals(5, result.getRoles().size());
     }
 
     @Test
@@ -69,7 +70,7 @@ class HeaderAuthControllerTest extends AbstractTest {
 
         assertEquals("header-user", result.getUsername());
         // operator from 'users' and externally provided 'limited'
-        assertEquals(11, result.getRoles().size());
+        assertEquals(5, result.getRoles().size());
     }
 
     @Test
@@ -82,7 +83,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-invalid", result.getUsername());
-        assertNull(result.getRoles());
+        assertTrue(result.getRoles().isEmpty());
     }
 
     @MicronautTest(environments = "header-ip-disallow")

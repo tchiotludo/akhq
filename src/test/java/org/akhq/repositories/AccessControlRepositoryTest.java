@@ -20,13 +20,13 @@ class AccessControlRepositoryTest extends AbstractTest {
 
     @Test
     void findAll() throws ExecutionException, InterruptedException {
-        List<AccessControl> all = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.empty(), List.of());
+        List<AccessControl> all = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.empty(), List.of("user.*"));
         assertEquals(2, all.size());
     }
 
     @Test
     void findAllWithFilter() throws ExecutionException, InterruptedException {
-        var searchResult = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.of("toto") ,List.of());
+        var searchResult = aclRepository.findAll(KafkaTestCluster.CLUSTER_ID, Optional.of("toto") ,List.of("user.*"));
         assertEquals(1, searchResult.size());
         assertEquals("user:toto", searchResult.get(0).getPrincipal());
     }

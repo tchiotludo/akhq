@@ -76,71 +76,52 @@ akhq:
     page-size: 5
 
   security:
-    default-group: no-filter
+    roles:
+      topic-read:
+        resources: [ "TOPIC" ]
+        actions: [ "READ" ]
+      topic-write:
+        resources: [ "TOPIC" ]
+        actions: [ "CREATE", "DELETE" ]
+      topic-data-admin:
+        resources: [ "TOPIC" ]
+        actions: [ "CONSUME", "PRODUCE", "DELETE_RECORD" ]
+      schema-delete:
+        resources: [ "SCHEMA" ]
+        actions: [ "DELETE_VERSION" ]
+      acl-read:
+        resources: [ "ACL" ]
+        actions: [ "READ"]
+      admin:
+        resources: [ "TOPIC", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "KSQLDB" ]
+        actions: [ "READ", "CREATE", "UPDATE", "DELETE", "CONSUME", "PRODUCE", "DELETE_RECORD", "UPDATE_OFFSET", "DELETE_OFFSET", "ALTER_CONFIG", "READ_CONFIG", "DELETE_VERSION", "UPDATE_STATE", "EXECUTE" ]
     groups:
       admin:
-        name: admin
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - topic/config/update
-          - node/read
-          - node/config/update
-          - topic/data/read
-          - topic/data/insert
-          - topic/data/delete
-          - group/read
-          - group/delete
-          - group/offsets/update
-          - registry/read
-          - registry/insert
-          - registry/update
-          - registry/delete
-          - registry/version/delete
-          - acls/read
-          - connect/read
-          - connect/insert
-          - connect/update
-          - connect/delete
-          - connect/state/update
-          - ksqldb/read
-          - ksqldb/execute
-        attributes:
-          acls-filter-regexp:
-            - "user.*"
+        - role: admin
+        - role: acl-read
+          patterns: [ "user.*" ]
       limited:
-        name: limited
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - registry/version/delete
-        attributes:
-          topics-filter-regexp:
-            - "test.*"
-          acls-filter-regexp:
-            - "user.*"
+        - role: topic-read
+          patterns: [ "test.*" ]
+        - role: topic-write
+          patterns: [ "test.*" ]
+        - role: schema-delete
+          patterns: [ "user.*" ]
+        - role: schema-delete
+          patterns: [ "user.*" ]
       operator:
-        name: operator
-        roles:
-          - topic/read
-          - topic/data/read
-          - topic/data/insert
-          - topic/data/delete
-        attributes:
-          topics-filter-regexp:
-            - "test-operator.*"
+        - role: topic-read
+          patterns: [ "test-operator.*" ]
+        - role: topic-data-admin
+          patterns: [ "test-operator.*" ]
       no-filter:
-        name: no-filter
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - registry/version/delete
-        attributes:
-          acls-filter-regexp:
-            - "user.*"
+        - role: topic-read
+        - role: topic-write
+        - role: schema-delete
+        - role: acl-read
+          patterns: [ "user.*" ]
+    default-group: no-filter
+
     basic-auth:
       - username: user
         password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1

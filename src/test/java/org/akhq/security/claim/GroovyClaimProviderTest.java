@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.inject.Inject;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest(environments = "groovy")
 class GroovyClaimProviderTest {
@@ -35,11 +34,9 @@ class GroovyClaimProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(1));
-        assertThat(roles, hasItem("topic/read"));
-
-        assertEquals("single-topic", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+        assertThat(roles.keySet(), hasSize(1));
+        assertNotNull(roles.get("limited"));
     }
 }

@@ -20,8 +20,8 @@ import org.mockito.Mockito;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -86,13 +86,11 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(4));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-
-        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+        assertThat(roles.keySet(), hasSize(1));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
     }
 
     @Test
@@ -118,13 +116,11 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(4));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-
-        assertEquals("test.*", ((List<?>) response.getAuthentication().get().getAttributes().get("topicsFilterRegexp")).get(0));
+        assertThat(roles.keySet(), hasSize(1));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
     }
 
     @SuppressWarnings("unchecked")
@@ -151,17 +147,13 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(7));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-        assertThat(roles, hasItem("topic/data/read"));
-
-        List<String> topicsFilterList = (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
-        assertThat(topicsFilterList, hasSize(2));
-        assertThat(topicsFilterList, hasItem("test.*"));
-        assertThat(topicsFilterList, hasItem("test-operator.*"));
+        assertThat(roles.keySet(), hasSize(2));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
+        assertNotNull(roles.get("operator"));
+        assertEquals(roles.get("operator").size(), 2);
     }
 
     @SuppressWarnings("unchecked")
@@ -188,17 +180,13 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user2", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles, hasSize(7));
-        assertThat(roles, hasItem("topic/read"));
-        assertThat(roles, hasItem("registry/version/delete"));
-        assertThat(roles, hasItem("topic/data/read"));
-
-        List<String> topicsFilterList = (List<String>) (response.getAuthentication().get().getAttributes().get("topicsFilterRegexp"));
-        assertThat(topicsFilterList, hasSize(2));
-        assertThat(topicsFilterList, hasItem("test.*"));
-        assertThat(topicsFilterList, hasItem("test-operator.*"));
+        assertThat(roles.keySet(), hasSize(2));
+        assertNotNull(roles.get("limited"));
+        assertEquals(roles.get("limited").size(), 4);
+        assertNotNull(roles.get("operator"));
+        assertEquals(roles.get("operator").size(), 2);
     }
 
     @Test
@@ -223,8 +211,9 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.isAuthenticated());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Collection<String> roles = response.getAuthentication().get().getRoles();
-        assertThat(roles, hasSize(0));
+        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+
+        assertThat(roles.keySet(), hasSize(0));
     }
 
     @Test
