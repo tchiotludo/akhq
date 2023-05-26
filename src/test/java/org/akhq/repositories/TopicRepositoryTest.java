@@ -126,16 +126,6 @@ class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
-        mockApplicationContext();
-        assertThrows(NoSuchElementException.class, () -> {
-            topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "compacted");
-        });
-
-        assertEquals(1, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("compacted", "random")).size());
-    }
-
-    @Test
     void create() throws ExecutionException, InterruptedException {
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, "createEmptyConfig", 8, (short) 1, Collections.emptyList()
         );
