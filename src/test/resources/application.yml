@@ -84,8 +84,8 @@ akhq:
         resources: [ "TOPIC" ]
         actions: [ "CREATE", "DELETE" ]
       topic-data-admin:
-        resources: [ "TOPIC" ]
-        actions: [ "CONSUME", "PRODUCE", "DELETE_RECORD" ]
+        resources: [ "TOPIC", "TOPIC_DATA" ]
+        actions: [ "READ", "CREATE", "DELETE" ]
       schema-delete:
         resources: [ "SCHEMA" ]
         actions: [ "DELETE_VERSION" ]
@@ -93,8 +93,8 @@ akhq:
         resources: [ "ACL" ]
         actions: [ "READ"]
       admin:
-        resources: [ "TOPIC", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "KSQLDB" ]
-        actions: [ "READ", "CREATE", "UPDATE", "DELETE", "CONSUME", "PRODUCE", "DELETE_RECORD", "UPDATE_OFFSET", "DELETE_OFFSET", "ALTER_CONFIG", "READ_CONFIG", "DELETE_VERSION", "UPDATE_STATE", "EXECUTE" ]
+        resources: [ "TOPIC", "TOPIC_DATA", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "KSQLDB" ]
+        actions: [ "READ", "CREATE", "UPDATE", "DELETE", "UPDATE_OFFSET", "DELETE_OFFSET", "ALTER_CONFIG", "READ_CONFIG", "DELETE_VERSION", "UPDATE_STATE", "EXECUTE" ]
     groups:
       admin:
         - role: admin
@@ -105,8 +105,6 @@ akhq:
           patterns: [ "test.*" ]
         - role: topic-write
           patterns: [ "test.*" ]
-        - role: schema-delete
-          patterns: [ "user.*" ]
         - role: schema-delete
           patterns: [ "user.*" ]
       operator:
