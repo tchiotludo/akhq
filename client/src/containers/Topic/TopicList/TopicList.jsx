@@ -215,7 +215,7 @@ class TopicList extends Root {
     let tableTopics = {};
     const collapseConsumerGroups = {};
 
-    const { selectedCluster, uiOptions } = this.state;
+    const { selectedCluster, uiOptions, roles } = this.state;
     const uiOptionsTopic = uiOptions.topic ?? {};
 
     const setState = () => {
@@ -261,7 +261,7 @@ class TopicList extends Root {
       );
     }
 
-    if (!uiOptionsTopic.skipLastRecord) {
+    if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName))).then(
         value => {
           topics.forEach(topic => {
@@ -371,7 +371,7 @@ class TopicList extends Root {
       }
     ];
 
-    if (!uiOptionsTopic.skipLastRecord) {
+    if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       topicCols.push({
         id: 'lastWrite',
         accessor: 'lastWrite',
@@ -468,7 +468,7 @@ class TopicList extends Root {
 
     let onDetailsFunction = undefined;
     const actions = [constants.TABLE_CONFIG];
-    if (roles.TOPIC && roles.TOPIC.includes('CONSUME')) {
+    if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
       onDetailsFunction = id => `/ui/${selectedCluster}/topic/${id}/data`;
     }

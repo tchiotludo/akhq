@@ -55,7 +55,8 @@ class Topic extends Root {
       {
         clusterId,
         topicId,
-        selectedTab: roles.TOPIC && roles.TOPIC.includes('CONSUME') ? tabSelected : 'configs',
+        selectedTab:
+          roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
       },
       () => {
@@ -229,7 +230,7 @@ class Topic extends Root {
       case 'logs':
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
-        return roles.TOPIC && roles.TOPIC.includes('CONSUME') ? (
+        return roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? (
           <TopicData history={history} match={match} location={location} />
         ) : (
           <TopicPartitions history={history} />
@@ -246,7 +247,7 @@ class Topic extends Root {
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
         <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
-            {roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
+            {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/topic/${topicId}/data`}
@@ -306,7 +307,7 @@ class Topic extends Root {
             </div>
           </div>
         </div>
-        {selectedTab !== 'configs' && roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
+        {selectedTab !== 'configs' && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
@@ -321,7 +322,7 @@ class Topic extends Root {
                   </Dropdown>
                 </div>
               )}
-              {this.canEmptyTopic() && roles.TOPIC && roles.TOPIC.includes('PRODUCE') ? (
+              {this.canEmptyTopic() && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') ? (
                 <div
                   onClick={() => {
                     this.handleOnEmpty();
@@ -339,7 +340,7 @@ class Topic extends Root {
                 </div>
               )}
 
-              {roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Link
                   to={{
                     pathname: `/ui/${clusterId}/topic/${topicId}/copy`
@@ -350,7 +351,7 @@ class Topic extends Root {
                 </Link>
               )}
 
-              {roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
                 <Link
                   to={{
                     pathname: `/ui/${clusterId}/tail`,
@@ -362,7 +363,7 @@ class Topic extends Root {
                 </Link>
               )}
 
-              {roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
                   <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
                 </Link>

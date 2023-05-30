@@ -342,8 +342,8 @@ class Sidebar extends Component {
             roles.TOPIC.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
           {roles &&
-            roles.TOPIC &&
-            roles.TOPIC.includes('CONSUME') &&
+            roles.TOPIC_DATA &&
+            roles.TOPIC_DATA.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
           {roles &&
             roles.CONSUMER_GROUP &&

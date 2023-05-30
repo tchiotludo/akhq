@@ -34,7 +34,7 @@ public class TailController extends AbstractController {
         this.recordRepository = recordRepository;
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get(value = "api/{cluster}/tail/sse", produces = MediaType.TEXT_EVENT_STREAM)
     @ExecuteOn(TaskExecutors.IO)
     @Operation(tags = {"topic data"}, summary = "Tail for data on multiple topic")

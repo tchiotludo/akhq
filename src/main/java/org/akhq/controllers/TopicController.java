@@ -148,7 +148,7 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, name);
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.PRODUCE)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.CREATE)
     @Post(value = "api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Produce data to a topic")
     public List<Record> produce(
@@ -190,7 +190,7 @@ public class TopicController extends AbstractController {
                     .collect(Collectors.toList());
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Read datas from a topic")
     public ResultNextList<Record> data(
@@ -227,7 +227,7 @@ public class TopicController extends AbstractController {
             data,
             options.after(data, uri),
             (options.getPartition() == null ? topic.getSize() : topic.getSize(options.getPartition())),
-            true // TODO: uncomment this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+            topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
@@ -239,6 +239,7 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, topicName);
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get("api/{cluster}/topic/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
     public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
@@ -309,7 +310,7 @@ public class TopicController extends AbstractController {
         return updated;
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.DELETE_RECORD)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")
     public HttpResponse<?> emptyTopic(String cluster, String topicName) throws ExecutionException, InterruptedException{
@@ -323,7 +324,7 @@ public class TopicController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.DELETE_RECORD)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data")
     @Operation(tags = {"topic data"}, summary = "Delete data from a topic by key")
     public Record deleteRecordApi(String cluster, String topicName, Integer partition, String key) throws ExecutionException, InterruptedException {
@@ -355,7 +356,7 @@ public class TopicController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @ExecuteOn(TaskExecutors.IO)
     @Get(value = "api/{cluster}/topic/{topicName}/data/search", produces = MediaType.TEXT_EVENT_STREAM)
     @Operation(tags = {"topic data"}, summary = "Search for data for a topic")
@@ -406,7 +407,7 @@ public class TopicController extends AbstractController {
             });
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")
     @Operation(tags = {"topic data"}, summary = "Get a single record by partition and offset")
     public ResultNextList<Record> record(
@@ -441,11 +442,11 @@ public class TopicController extends AbstractController {
                 data,
                 URIBuilder.empty(),
                 data.size(),
-                true // TODO: uncomment this.isAllowed(Role.ROLE_TOPIC_DATA_DELETE) && topic.canDeleteRecords(cluster, configRepository)
+                topic.canDeleteRecords(cluster, configRepository)
         );
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CONSUME)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/offsets/start")
     @Operation(tags = {"topic data"}, summary = "Get topic partition offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String topicName, Optional<Instant> timestamp) throws ExecutionException, InterruptedException {
@@ -464,7 +465,7 @@ public class TopicController extends AbstractController {
     }
 
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.PRODUCE)
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.CREATE)
     @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
     public RecordRepository.CopyResult copy(

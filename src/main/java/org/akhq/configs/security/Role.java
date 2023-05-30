@@ -11,6 +11,7 @@ public class Role {
 
     public enum Resource {
         TOPIC,
+        TOPIC_DATA,
         CONSUMER_GROUP,
         CONNECT_CLUSTER,
         CONNECTOR,
@@ -25,10 +26,6 @@ public class Role {
         CREATE,
         UPDATE,
         DELETE,
-        // TOPIC only
-        CONSUME,
-        PRODUCE,
-        DELETE_RECORD,
         // CONSUMER_GROUP only
         UPDATE_OFFSET,
         DELETE_OFFSET,
