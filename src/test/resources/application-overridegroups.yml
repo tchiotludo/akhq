@@ -2,11 +2,8 @@ akhq:
   security:
     groups:
       admin:
-        roles:
-          - topic/read
+        - role: acl-read
       limited:
-        roles:
-          - topic/read
+        - role: acl-read
       extra:
-        roles:
-          - topic/read
+        - role: acl-read

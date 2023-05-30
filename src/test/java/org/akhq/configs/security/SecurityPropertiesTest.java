@@ -6,6 +6,9 @@ import org.junit.platform.commons.util.CollectionUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 class SecurityPropertiesTest {
 
     @Test
@@ -42,12 +45,10 @@ class SecurityPropertiesTest {
                 CollectionUtils.toSet(new String[] {"admin", "limited", "operator", "no-filter", "extra"}),
                 securityProperties.getGroups().keySet()
         );
-        /* TODO fix
-        assertEquals(
-                Collections.singletonList("topic/read"),
-                securityProperties.getGroups().get("admin").roles
-        );
-        */
+
+        assertThat(securityProperties.getGroups().get("admin"), hasSize(1));
+        assertThat(securityProperties.getGroups().get("admin").get(0).getRole(), is("acl-read"));
+        assertThat(securityProperties.getGroups().get("admin").get(0).getPatterns(), containsInAnyOrder(".*"));
 
         ctx.close();
     }
