@@ -54,7 +54,7 @@ abstract public class AbstractController {
             .collect(Collectors.toList());
 
         // Add the default group if there is one
-        if (StringUtils.isNotEmpty(securityProperties.getDefaultGroup())) {
+        if (groupBindings.isEmpty() && StringUtils.isNotEmpty(securityProperties.getDefaultGroup())) {
             groupBindings.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 

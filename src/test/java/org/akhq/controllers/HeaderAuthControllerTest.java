@@ -28,7 +28,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user", result.getUsername());
-        assertEquals(6, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
     }
 
     @Test
@@ -41,7 +41,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-admin", result.getUsername());
-        assertEquals(6, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
     }
 
     @Test
@@ -55,7 +55,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user-operator", result.getUsername());
-        assertEquals(10, result.getRoles().size());
+        assertEquals(6, result.getRoles().size());
     }
 
     @Test
@@ -70,7 +70,7 @@ class HeaderAuthControllerTest extends AbstractTest {
 
         assertEquals("header-user", result.getUsername());
         // operator from 'users' and externally provided 'limited'
-        assertEquals(10, result.getRoles().size());
+        assertEquals(6, result.getRoles().size());
     }
 
     @Test
