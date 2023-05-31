@@ -4,6 +4,7 @@ import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
+import org.akhq.configs.security.Group;
 import org.akhq.security.authentication.BasicAuthAuthenticationProvider;
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +35,14 @@ class GroovyClaimProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+
+        Group limited = groups.get("limited").get(0);
+        assertThat(limited.getRole(), is("topic-read"));
+        assertThat(limited.getPatterns(), containsInAnyOrder("user.*"));
+        assertThat(limited.getClusters(), containsInAnyOrder("pub.*"));
     }
 }

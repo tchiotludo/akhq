@@ -9,10 +9,13 @@ import io.micronaut.security.ldap.group.LdapGroupProcessor;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
+import org.akhq.configs.security.Group;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import javax.naming.NamingException;
@@ -83,11 +86,17 @@ class LdapAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertEquals(groups.get("limited").size(), 3);
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
     }
 
     @SuppressWarnings("unchecked")
@@ -114,13 +123,26 @@ class LdapAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(2));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
-        assertNotNull(roles.get("operator"));
-        assertEquals(roles.get("operator").size(), 2);
+        assertThat(groups.keySet(), hasSize(2));
+        assertNotNull(groups.get("limited"));
+        assertEquals(groups.get("limited").size(), 3);
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
+
+        assertNotNull(groups.get("operator"));
+        assertEquals(groups.get("operator").size(), 2);
+        assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-data-admin"));
+        assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
+        assertThat(groups.get("operator").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test-operator.*", "test-operator.*"));
     }
 
     @SuppressWarnings("unchecked")
@@ -146,11 +168,26 @@ class LdapAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user2", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(2));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertThat(groups.keySet(), hasSize(2));
+        assertNotNull(groups.get("limited"));
+        assertEquals(groups.get("limited").size(), 3);
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
+
+        assertNotNull(groups.get("operator"));
+        assertEquals(groups.get("operator").size(), 2);
+        assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-data-admin"));
+        assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
+        assertThat(groups.get("operator").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test-operator.*", "test-operator.*"));
     }
 
     @Test
@@ -175,9 +212,9 @@ class LdapAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(0));
+        assertThat(groups.keySet(), hasSize(0));
     }
 
     @Test

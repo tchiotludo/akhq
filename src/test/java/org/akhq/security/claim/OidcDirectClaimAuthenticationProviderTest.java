@@ -23,6 +23,7 @@ import jakarta.inject.Named;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -62,12 +63,15 @@ class OidcDirectClaimAuthenticationProviderTest {
 
     @Test
     void successSingleOidcGroup() {
-        Group group = new Group();
-        group.setRole("topic-read");
+        Group g1 = new Group();
+        g1.setRole("topic-read");
+        Group g2 = new Group();
+        g2.setRole("acl-read");
+        g2.setPatterns(List.of("user.*"));
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .claim(OpenIdClaims.CLAIMS_PREFERRED_USERNAME, "user")
-                .claim("groups", Map.of("limited", List.of(group)))
+                .claim("groups", Map.of("limited", List.of(g1, g2)))
                 .build();
         JWT jwt = new PlainJWT(claimsSet);
 
@@ -86,10 +90,12 @@ class OidcDirectClaimAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()), containsInAnyOrder("topic-read", "acl-read"));
+        assertThat(groups.get("limited").get(1).getPatterns(), containsInAnyOrder("user.*"));
     }
 
     @Test

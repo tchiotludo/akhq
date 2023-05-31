@@ -63,16 +63,6 @@ akhq:
     page-size: 5
 
   security:
-    default-group: no-filter
-    basic-auth: []
-    groups:
-      no-filter:
-        name: no-filter
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - registry/version/delete
     oidc:
       enabled: true
       providers:

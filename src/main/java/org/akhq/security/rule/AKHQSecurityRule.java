@@ -58,9 +58,14 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
 
         if (!routeMatch.getVariableValues().containsKey("cluster")) {
             log.warn("Route matched AKHQSecured but no `cluster` provided");
-            return Flowable.just(SecurityRuleResult.UNKNOWN);
+            return Flowable.just(SecurityRuleResult.REJECTED);
         }
         String cluster = routeMatch.getVariableValues().get("cluster").toString();
+
+        if (authentication == null) {
+            log.warn("No authentication information provided");
+            return Flowable.just(SecurityRuleResult.REJECTED);
+        }
 
         List<Group> userGroups = ((Map<String, List<?>>)authentication.getAttributes().get("groups")).values().stream()
             .flatMap(Collection::stream)

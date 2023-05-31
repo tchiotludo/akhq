@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
@@ -16,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -125,8 +128,10 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
+        Optional<Authentication> authentication = applicationContext.getBean(SecurityService.class).getAuthentication();
+
         if (!applicationContext.containsBean(SecurityService.class)
-            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty())
+            || authentication.isEmpty())
             return;
 
         StackWalker.StackFrame sf = walker.walk(frames ->
@@ -135,11 +140,11 @@ abstract public class AbstractController {
                 .orElseThrow());
 
         boolean isAllowed;
+
         try {
             AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
 
-            isAllowed = ((Map<String, List<?>>) applicationContext.getBean(SecurityService.class)
-                .getAuthentication().get().getAttributes().get("groups")).values().stream()
+            isAllowed = ((Map<String, List<?>>)authentication.get().getAttributes().get("groups")).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 // Get only group with role matching the method annotation resource and action
@@ -164,8 +169,8 @@ abstract public class AbstractController {
             isAllowed = false;
         }
 
-        if (!isAllowed)
-            // Throw appropriate exception
-            throw new RuntimeException();
+        if (!isAllowed) {
+            throw new AuthorizationException(authentication.get());
+        }
     }
 }

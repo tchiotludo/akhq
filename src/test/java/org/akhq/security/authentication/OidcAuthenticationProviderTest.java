@@ -90,7 +90,7 @@ class OidcAuthenticationProviderTest {
 
         assertThat(roles.keySet(), hasSize(1));
         assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertEquals(roles.get("limited").size(), 3);
     }
 
     @Test
@@ -120,7 +120,7 @@ class OidcAuthenticationProviderTest {
 
         assertThat(roles.keySet(), hasSize(1));
         assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertEquals(roles.get("limited").size(), 3);
     }
 
     @SuppressWarnings("unchecked")
@@ -151,7 +151,7 @@ class OidcAuthenticationProviderTest {
 
         assertThat(roles.keySet(), hasSize(2));
         assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertEquals(roles.get("limited").size(), 3);
         assertNotNull(roles.get("operator"));
         assertEquals(roles.get("operator").size(), 2);
     }
@@ -184,7 +184,7 @@ class OidcAuthenticationProviderTest {
 
         assertThat(roles.keySet(), hasSize(2));
         assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertEquals(roles.get("limited").size(), 3);
         assertNotNull(roles.get("operator"));
         assertEquals(roles.get("operator").size(), 2);
     }

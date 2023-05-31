@@ -103,10 +103,13 @@ akhq:
       limited:
         - role: topic-read
           patterns: [ "test.*" ]
+          clusters: [ "pub.*" ]
         - role: topic-write
           patterns: [ "test.*" ]
+          clusters: [ "pub.*" ]
         - role: schema-delete
           patterns: [ "user.*" ]
+          clusters: [ "pub.*" ]
       operator:
         - role: topic-read
           patterns: [ "test-operator.*" ]

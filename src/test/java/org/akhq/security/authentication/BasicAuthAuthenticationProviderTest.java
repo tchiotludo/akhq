@@ -3,10 +3,13 @@ package org.akhq.security.authentication;
 import io.micronaut.security.authentication.*;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
+import org.akhq.configs.security.Group;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
@@ -31,11 +34,15 @@ class BasicAuthAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertEquals(groups.get("limited").size(), 3);
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
     }
 
     @Test
@@ -51,11 +58,15 @@ class BasicAuthAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("MyUser3!@yàhöù.com", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 4);
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertEquals(groups.get("limited").size(), 3);
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
     }
 
     @Test

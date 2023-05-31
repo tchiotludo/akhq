@@ -23,6 +23,8 @@ akhq:
                 a.groups = [:]
                 Group g = new Group();
                 g.role = "topic-read";
+                g.patterns = ["user.*"]
+                g.clusters = ["pub.*"]
                 a.groups["limited"] = []
                 a.groups["limited"].add(g)
 

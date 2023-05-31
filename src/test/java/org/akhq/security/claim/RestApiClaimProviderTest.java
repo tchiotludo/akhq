@@ -1,5 +1,6 @@
 package org.akhq.security.claim;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import io.micronaut.context.annotation.Replaces;
@@ -18,6 +19,7 @@ import io.micronaut.rxjava2.http.client.RxHttpClient;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+import org.akhq.configs.security.Group;
 import org.akhq.middlewares.KafkaWrapperFilter;
 import org.akhq.models.security.ClaimRequest;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,7 @@ import java.util.Map;
 import javax.annotation.security.PermitAll;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest(environments = "rest-api")
@@ -52,9 +54,14 @@ public class RestApiClaimProviderTest {
 
         assertTrue(token.getJWTClaimsSet().getClaims().containsKey("groups"));
 
-        Map<String, List> actualRoles = (Map<String, List>) token.getJWTClaimsSet().getClaim("groups");
-        assertThat(actualRoles.keySet(), hasSize(1));
-        assertNotNull(actualRoles.get("limited"));
+        Map<String, List<Group>> groups = (Map<String, List<Group>>) token.getJWTClaimsSet().getClaim("groups");
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+
+        Group limited = new ObjectMapper().convertValue(groups.get("limited").get(0), Group.class);
+        assertThat(limited.getRole(), is("topic-read"));
+        assertThat(limited.getPatterns(), containsInAnyOrder("user.*"));
+        assertThat(limited.getClusters(), containsInAnyOrder("pub.*"));
     }
 
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
@@ -76,9 +83,11 @@ public class RestApiClaimProviderTest {
             return
                 "{\n" +
                     "  \"groups\" : {" +
-                        "\"limited\": {" +
-                            "\"role\": \"topic-read\"" +
-                        "}" +
+                        "\"limited\": [{" +
+                            "\"role\": \"topic-read\"," +
+                            "\"patterns\": [\"user.*\"]," +
+                            "\"clusters\": [\"pub.*\"]" +
+                        "}]" +
                     "}"+
                 "}";
         }
