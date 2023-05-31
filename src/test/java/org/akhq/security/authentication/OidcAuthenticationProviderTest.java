@@ -13,6 +13,7 @@ import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTok
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
+import org.akhq.configs.security.Group;
 import org.akhq.controllers.AkhqController;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -20,9 +21,12 @@ import org.mockito.Mockito;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -86,11 +90,17 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 3);
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertEquals(3, groups.get("limited").size());
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
     }
 
     @Test
@@ -116,11 +126,17 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(1));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 3);
+        assertThat(groups.keySet(), hasSize(1));
+        assertNotNull(groups.get("limited"));
+        assertEquals(3, groups.get("limited").size());
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
     }
 
     @SuppressWarnings("unchecked")
@@ -147,13 +163,26 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(2));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 3);
-        assertNotNull(roles.get("operator"));
-        assertEquals(roles.get("operator").size(), 2);
+        assertThat(groups.keySet(), hasSize(2));
+        assertNotNull(groups.get("limited"));
+        assertEquals(3, groups.get("limited").size());
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
+
+        assertNotNull(groups.get("operator"));
+        assertEquals(2, groups.get("operator").size());
+        assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-data-admin"));
+        assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
+        assertThat(groups.get("operator").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test-operator.*", "test-operator.*"));
     }
 
     @SuppressWarnings("unchecked")
@@ -180,13 +209,26 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user2", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
 
-        assertThat(roles.keySet(), hasSize(2));
-        assertNotNull(roles.get("limited"));
-        assertEquals(roles.get("limited").size(), 3);
-        assertNotNull(roles.get("operator"));
-        assertEquals(roles.get("operator").size(), 2);
+        assertThat(groups.keySet(), hasSize(2));
+        assertNotNull(groups.get("limited"));
+        assertEquals(3, groups.get("limited").size());
+        assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
+        assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*"));
+        assertThat(groups.get("limited").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*"));
+
+        assertNotNull(groups.get("operator"));
+        assertEquals(2, groups.get("operator").size());
+        assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
+            containsInAnyOrder("topic-read", "topic-data-admin"));
+        assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
+        assertThat(groups.get("operator").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test-operator.*", "test-operator.*"));
     }
 
     @Test
