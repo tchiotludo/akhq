@@ -47,7 +47,7 @@ class SecurityPropertiesTest {
         );
 
         assertThat(securityProperties.getGroups().get("admin"), hasSize(1));
-        assertThat(securityProperties.getGroups().get("admin").get(0).getRole(), is("acl-read"));
+        assertThat(securityProperties.getGroups().get("admin").get(0).getRole(), is("topic-read"));
         assertThat(securityProperties.getGroups().get("admin").get(0).getPatterns(), containsInAnyOrder(".*"));
 
         ctx.close();

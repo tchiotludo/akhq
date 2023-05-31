@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
-@AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller
 public class TopicController extends AbstractController {
@@ -105,6 +104,7 @@ public class TopicController extends AbstractController {
         ));
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/name")
     @Operation(tags = {"topic"}, summary = "List all topics name")
     public List<String> listTopicNames(
@@ -231,6 +231,7 @@ public class TopicController extends AbstractController {
         );
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}")
     @Operation(tags = {"topic"}, summary = "Retrieve a topic")
     public Topic home(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -248,6 +249,7 @@ public class TopicController extends AbstractController {
         return this.recordRepository.getLastRecord(cluster, topics);
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/partitions")
     @Operation(tags = {"topic"}, summary = "List all partition from a topic")
     public List<Partition> partitions(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -256,6 +258,7 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, topicName).getPartitions();
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
     public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -265,6 +268,7 @@ public class TopicController extends AbstractController {
             buildUserBasedResourceFilters(cluster));
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "List all configs from a topic")
     public List<Config> config(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -273,6 +277,7 @@ public class TopicController extends AbstractController {
         return this.configRepository.findByTopic(cluster, topicName);
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/logs")
     @Operation(tags = {"topic"}, summary = "List all logs from a topic")
     public List<LogDir> logs(String cluster, String topicName) throws ExecutionException, InterruptedException {
@@ -281,6 +286,7 @@ public class TopicController extends AbstractController {
         return this.topicRepository.findByName(cluster, topicName).getLogDir();
     }
 
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/acls")
     @Operation(tags = {"topic"}, summary = "List all acls from a topic")
     public List<AccessControl> acls(String cluster, String topicName) throws ExecutionException, InterruptedException {
