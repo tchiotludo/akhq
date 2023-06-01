@@ -47,7 +47,7 @@ helm install akhq akhq/akhq --version 0.1.0
 ```sh
 git clone https://github.com/tchiotludo/akhq && cd akhq/helm/akhq
 ```
-* Update helm values located in [values.yaml](helm/akhq/values.yaml)
+* Update helm values located in [values.yaml](https://github.com/tchiotludo/akhq/blob/dev/helm/akhq/values.yaml)
   * `configuration` values will contains all related configuration that you can find in [application.example.yml](https://github.com/tchiotludo/akhq/blob/dev/application.example.yml) and will be store in a `ConfigMap`
   * `secrets` values will contains all sensitive configurations (with credentials) that you can find in [application.example.yml](https://github.com/tchiotludo/akhq/blob/dev/application.example.yml) and will be store in `Secret`
   * Both values will be merged at startup
