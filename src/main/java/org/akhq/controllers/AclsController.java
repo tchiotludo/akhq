@@ -13,6 +13,7 @@ import org.apache.kafka.common.resource.ResourceType;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+
 import jakarta.inject.Inject;
 
 @AKHQSecured(resource = Role.Resource.ACL, action = Role.Action.READ)
@@ -28,8 +29,10 @@ public class AclsController extends AbstractController {
     @Operation(tags = {"acls"}, summary = "List all acls")
     @Get
     public List<AccessControl> list(HttpRequest<?> request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
-        search.ifPresentOrElse(s -> checkIfClusterAndResourceAllowed(cluster, s),
-            () -> checkIfClusterAllowed(cluster));
+        if (search.isPresent())
+            checkIfClusterAndResourceAllowed(cluster, search.get());
+        else
+            checkIfClusterAllowed(cluster);
 
         return aclRepository.findAll(cluster, search, buildUserBasedResourceFilters(cluster));
     }

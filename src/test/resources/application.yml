@@ -78,7 +78,7 @@ akhq:
   security:
     roles:
       topic-read:
-        resources: [ "TOPIC" ]
+        resources: [ "TOPIC", "TOPIC-DATA" ]
         actions: [ "READ" ]
       topic-write:
         resources: [ "TOPIC" ]

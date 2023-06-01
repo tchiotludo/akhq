@@ -244,7 +244,7 @@ public class TopicController extends AbstractController {
     @Get("api/{cluster}/topic/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
     public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
-        topics.forEach(topic -> checkIfClusterAndResourceAllowed(cluster, topic));
+        checkIfClusterAndResourceAllowed(cluster, topics);
 
         return this.recordRepository.getLastRecord(cluster, topics);
     }
@@ -268,7 +268,7 @@ public class TopicController extends AbstractController {
             buildUserBasedResourceFilters(cluster));
     }
 
-    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ_CONFIG)
     @Get("api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "List all configs from a topic")
     public List<Config> config(String cluster, String topicName) throws ExecutionException, InterruptedException {

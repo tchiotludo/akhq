@@ -124,14 +124,21 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAllowed(String cluster) {
-        checkIfClusterAndResourceAllowed(cluster, null);
+        checkIfClusterAndResourceAllowed(cluster, StringUtils.EMPTY_STRING);
+    }
+
+    protected void checkIfClusterAndResourceAllowed(String cluster, List<String> resources) {
+        for(String resource : resources) {
+            checkIfClusterAndResourceAllowed(cluster, resource);
+        }
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
-        Optional<Authentication> authentication = applicationContext.getBean(SecurityService.class).getAuthentication();
+        Optional<Authentication> authentication = applicationContext.containsBean(SecurityService.class) ?
+            applicationContext.getBean(SecurityService.class).getAuthentication() :
+            Optional.empty();
 
-        if (!applicationContext.containsBean(SecurityService.class)
-            || authentication.isEmpty())
+        if (authentication.isEmpty())
             return;
 
         StackWalker.StackFrame sf = walker.walk(frames ->

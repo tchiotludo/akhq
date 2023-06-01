@@ -204,10 +204,8 @@ public class AkhqController extends AbstractController {
     }
 
     protected List<AuthUser.AuthPermissions> getRights() {
-        SecurityService securityService = applicationContext.getBean(SecurityService.class);
-
-        if (securityService.getAuthentication().isEmpty()) {
-            return List.of();
+        if (!applicationContext.containsBean(SecurityService.class)) {
+            return expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
         return expandRoles(getUserGroups());

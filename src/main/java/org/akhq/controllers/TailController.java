@@ -44,7 +44,7 @@ public class TailController extends AbstractController {
         Optional<String> search,
         Optional<List<String>> after
     ) {
-        topics.forEach(topic -> checkIfClusterAndResourceAllowed(cluster, topic));
+        checkIfClusterAndResourceAllowed(cluster, topics);
 
         RecordRepository.TailOptions options = new RecordRepository.TailOptions(cluster, topics);
         search.ifPresent(options::setSearch);

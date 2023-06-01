@@ -110,7 +110,8 @@ class Routes extends Root {
     let clusterId = this.state.clusterId;
     const roles = JSON.parse(sessionStorage.getItem('roles'));
     if (roles && roles.TOPIC && roles.TOPIC.includes('READ')) return `/ui/${clusterId}/topic`;
-    else if (roles && roles.NODE && roles.NODE.includes('READ')) return `/ui/${clusterId}/node`;
+    else if (roles && roles.NODE && roles.NODE.includes('READ_CONFIG'))
+      return `/ui/${clusterId}/node`;
     else if (roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ'))
       return `/ui/${clusterId}/group`;
     else if (roles && roles.ACL && roles.ACL.includes('READ')) return `/ui/${clusterId}/acls`;
@@ -156,7 +157,7 @@ class Routes extends Root {
               {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
               )}
-              {roles && roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
@@ -164,7 +165,7 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC.includes('PRODUCE') && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
               )}
 
@@ -172,14 +173,14 @@ class Routes extends Root {
                 <Route exact path="/ui/:clusterId/topic/:topicId/:tab?" component={Topic} />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC.includes('CONSUME') && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
                 <Route exact path="/ui/:clusterId/tail" component={Tail} />
               )}
 
-              {roles && roles.NODE && roles.NODE.includes('READ') && (
+              {roles && roles.NODE && roles.NODE.includes('READ_CONFIG') && (
                 <Route exact path="/ui/:clusterId/node" component={NodesList} />
               )}
-              {roles && roles.NODE && roles.NODE.includes('READ') && (
+              {roles && roles.NODE && roles.NODE.includes('READ_CONFIG') && (
                 <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" component={NodeDetails} />
               )}
 

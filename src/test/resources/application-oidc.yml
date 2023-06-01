@@ -72,8 +72,8 @@ akhq:
         resources: [ "TOPIC" ]
         actions: [ "CREATE", "DELETE" ]
       topic-data-admin:
-        resources: [ "TOPIC" ]
-        actions: [ "CONSUME", "PRODUCE", "DELETE_RECORD" ]
+        resources: [ "TOPIC_DATA" ]
+        actions: [ "READ", "CREATE", "DELETE" ]
       schema-delete:
         resources: [ "SCHEMA" ]
         actions: [ "DELETE_VERSION" ]
