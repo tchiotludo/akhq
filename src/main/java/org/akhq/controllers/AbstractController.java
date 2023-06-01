@@ -44,12 +44,15 @@ abstract public class AbstractController {
     }
 
     protected List<Group> getUserGroups() {
-        if (!applicationContext.containsBean(SecurityService.class)) {
+        Optional<Authentication> authentication = applicationContext.containsBean(SecurityService.class) ?
+            applicationContext.getBean(SecurityService.class).getAuthentication() :
+            Optional.empty();
+
+        if (authentication.isEmpty()) {
             return List.of();
         }
 
-        List<Group> groupBindings = ((Map<String, List<?>>) applicationContext.getBean(SecurityService.class)
-            .getAuthentication().get().getAttributes().get("groups"))
+        List<Group> groupBindings = ((Map<String, List<?>>) authentication.get().getAttributes().get("groups"))
             .values()
             .stream()
             .flatMap(Collection::stream)
