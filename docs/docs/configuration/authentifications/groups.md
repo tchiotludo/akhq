@@ -7,17 +7,10 @@ Define groups with specific roles for your users
 
 * `akhq.security.groups`: Groups map definition
   * `key:` a uniq key used as name if not specified
-    * `  name: group-name` Group identifier
-    * `roles`: Roles list for the group
-    * `attributes.topics-filter-regexp`: Regexp list to filter topics available for current group
-    * `attributes.connects-filter-regexp`: Regexp list to filter Connect tasks available for current group
-    * `attributes.consumer-groups-filter-regexp`: Regexp list to filter Consumer Groups available for current group
-    * `attributes.acls-filter-regexp`: Regexp list to filter acls available for current group
-
-::: warning
-`topics-filter-regexp`, `connects-filter-regexp`, `consumer-groups-filter-regexp` and `acls-filter-regexp` are only used when listing resources.
-If you have `topics/create` or `connect/create` roles and you try to create a resource that doesn't follow the regexp, that resource **WILL** be created.
-:::
+    * A list of role/patterns/clusters association
+      * `role`: name of an existing role
+      * `patterns`: list of regular expression that resources from the given role must match at least once get access
+      * `clusters`: list of regular expression that cluster must match at least once to get access
 
 ::: warning
 Please also set the `micronaut.security.token.jwt.signatures.secret.generator.secret` if you set a group.
@@ -25,34 +18,56 @@ If the secret is not set, the API will not enforce the group role, and the restr
 :::
 
 3 defaults group are available :
-- `admin` with all right
-- `reader` with only read access on all AKHQ
+- `admin` with all right and no patterns/clusters restrictions
+- `reader` with only read access on all AKHQ and no patterns/clusters restrictions
 - `no-roles` without any roles, that force user to login
+
+Here is an example of a `reader` group definition based on the default reader role with access on all the resources prefixed with `pub` and located the on `public` cluster
+```yaml
+    groups:
+      reader:
+        - role: reader
+          patterns: [ "pub.*" ]
+          clusters: [ "public" ]
+```
 
 ## Roles
 
-Here is the list of available roles to use with personalized groups
+Roles are based on Resource and Action association. A role can target one or several Resource and allow one or several Action.
+The resources and actions list + possible associations between them are detailed in the table below.
+You can still associate a resource with a non-supported action from the table. It will just be ignored
 
-- topic/read
-- topic/insert
-- topic/delete
-- topic/config/update
-- node/read
-- node/config/update
-- topic/data/read
-- topic/data/insert
-- topic/data/delete
-- group/read
-- group/delete
-- group/offsets/update
-- registry/read
-- registry/insert
-- registry/update
-- registry/delete
-- registry/version/delete
-- acls/read
-- connect/read
-- connect/insert
-- connect/update
-- connect/delete
-- connect/state/update
+<div style="text-align: center;">
+
+|                | TOPIC | TOPIC_DATA | CONSUMER_GROUP | CONNECT_CLUSTER | CONNECTOR | SCHEMA | NODE | ACL | KSQLDB |
+|----------------|-------|------------|----------------|-----------------|-----------|--------|------|-----|--------|
+| READ           | X     | X          | X              | X               | X         | X      | X    | X   | X      |
+| CREATE         | X     | X          |                |                 | X         | X      |      |     |        |
+| UPDATE         | X     | X          |                |                 |           | X      |      |     |        |
+| DELETE         | X     | X          |                |                 | X         | X      |      |     |        |
+| UPDATE_OFFSET  |       |            | X              |                 |           |        |      |     |        |
+| DELETE_OFFSET  |       |            | X              |                 |           |        |      |     |        |
+| READ_CONFIG    | X     |            |                |                 |           |        | X    |     |        |
+| ALTER_CONFIG   | X     |            |                |                 |           |        | X    |     |        |
+| DELETE_VERSION |       |            |                |                 |           | X      |      |     |        |
+| UPDATE_STATE   |       |            |                |                 | X         |        |      |     |        |
+| EXECUTE        |       |            |                |                 |           |        |      |     | X      |
+
+</div>
+
+A default roles list is predefined in `akhq.security.roles` but you can override it.
+A role contains:
+* `key:` a uniq key used as name
+  * A list of resources/actions associations
+    * `resources:` List of resources (ex: ```[ "TOPIC", "TOPIC_DATA"]```)
+    * `actions:` Actions allowed on the previous resources (ex: ```[ "READ", "CREATE"]```)
+
+The default configuration provides a topic-admin role defined as follows:
+```yaml
+topic-admin:
+  - resources: [ "TOPIC", "TOPIC_DATA" ]
+    actions: [ "READ", "CREATE", "DELETE" ]
+  - resources: [ "TOPIC" ]
+    actions: [ "UPDATE", "READ_CONFIG", "ALTER_CONFIG" ]
+
+```

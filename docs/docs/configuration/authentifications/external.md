@@ -48,10 +48,32 @@ In this mode, AKHQ will send to the ``akhq.security.rest.url`` endpoint a POST r
 and expect the following JSON as response :
 ````json
 {
-  "roles": ["topic/read", "topic/write", "..."],
-  "topicsFilterRegexp": [".*"],
-  "connectsFilterRegexp": [".*"],
-  "consumerGroupsFilterRegexp": [".*"]
+  "groups": {
+    "topic-writer-clusterA-projectA": [
+      {
+        "role": "topic-reader",
+        "patterns": [
+          "pub.*"
+        ]
+      }, {
+        "role": "topic-writer",
+        "patterns": [
+          "projectA.*"
+        ],
+        "clusters": [
+          "clusterA.*"
+        ]
+      }
+    ],
+    "acl-reader-clusterA": [
+      {
+        "role": "acl-reader",
+        "clusters": [
+          "clusterA.*"
+        ]
+      }
+    ]
+  }
 }
 ````
 

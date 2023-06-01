@@ -63,50 +63,44 @@ micronaut:
     enabled: true
 akhq:
   security:
-    groups:
+    roles:
       topic-reader:
-        name: topic-reader # Group name
-        roles:  # roles for the group
-          - topic/read
-        attributes:
-          # List of Regexp to filter topic available for group
-          # Single line String also allowed
-          # topics-filter-regexp: "^(projectA_topic|projectB_.*)$"
-          topics-filter-regexp:
-            - "^projectA_topic$" # Individual topic
-            - "^projectB_.*$" # Topic group
-          connects-filter-regexp:
-            - "^test.*$"
-          consumer-groups-filter-regexp:
-            - "consumer.*"
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "READ_CONFIG" ]
       topic-writer:
-        name: topic-writer # Group name
-        roles:
-          - topic/read
-          - topic/insert
-          - topic/delete
-          - topic/config/update
-        attributes:
-          topics-filter-regexp:
-            - "test.*"
-          connects-filter-regexp:
-            - "^test.*$"
-          consumer-groups-filter-regexp:
-            - "consumer.*"
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "CREATE", "UPDATE" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "ALTER_CONFIG" ]
+    groups:
+      topic-reader-pub:
+        - role: topic-reader
+          patterns: [ "pub.*" ]
+      topic-writer-clusterA-projectA:
+        - role: topic-reader
+          patterns: [ "projectA.*" ]
+        - role: topic-writer
+          patterns: [ "projectA.*" ]
+          clusters: [ "clusterA.*" ]
+      acl-reader-clusterA:
+        - role: acl-reader
+          clusters: [ "clusterA.*" ]
     ldap:
       groups:
         - name: mathematicians
           groups:
-            - topic-reader
+            - topic-reader-pub
         - name: scientists
           groups:
-            - topic-reader
-            - topic-writer
+            - topic-writer-clusterA-projectA
+            - acl-reader-clusterA
       users:
         - username: franz
           groups:
-            - topic-reader
-            - topic-writer
+            - topic-writer-clusterA-projectA
+            - acl-reader-clusterA
 
 ```
 

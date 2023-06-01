@@ -20,6 +20,30 @@ To further tell AKHQ to display OIDC options on the login page and customize cla
 ```yaml
 akhq:
   security:
+    roles:
+      topic-reader:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "READ_CONFIG" ]
+      topic-writer:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "CREATE", "UPDATE" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "ALTER_CONFIG" ]
+    groups:
+      topic-reader-pub:
+        - role: topic-reader
+          patterns: [ "pub.*" ]
+      topic-writer-clusterA-projectA:
+        - role: topic-reader
+          patterns: [ "projectA.*" ]
+        - role: topic-writer
+          patterns: [ "projectA.*" ]
+          clusters: [ "clusterA.*" ]
+      acl-reader-clusterA:
+        - role: acl-reader
+          clusters: [ "clusterA.*" ]
     oidc:
       enabled: true
       providers:
@@ -34,16 +58,16 @@ akhq:
             - name: mathematicians
               groups:
                 # the corresponding akhq groups (eg. topic-reader/writer or akhq default groups like admin/reader/no-role)
-                - topic-reader
+                - topic-reader-pub
             - name: scientists
               groups:
-                - topic-reader
-                - topic-writer
+                - topic-writer-clusterA-projectA
+                - acl-reader-clusterA
           users:
             - username: franz
               groups:
-                - topic-reader
-                - topic-writer
+                - topic-writer-clusterA-projectA
+                - acl-reader-clusterA
 ```
 
 The username field can be any string field, the roles field has to be a JSON array. The mapping is performed on the OIDC _ID token_.
@@ -73,22 +97,31 @@ In this scenario, you need to make the OIDC provider return a JWT which have the
   ...
   "scope": "openid email profile",
   // Mandatory AKHQ claims
-  "roles": [
-    "acls/read",
-    "topic/data/delete",
-    "topic/data/insert",
-    "..."
-  ],
-  // Optional AKHQ claims
-  // If not set, no filtering is applied (full access ".*")
-  "topicsFilterRegexp": [
-    "^json.*$"
-  ],
-  "connectsFilterRegexp": [
-    "^json.*$"
-  ],
-  "consumerGroupsFilterRegexp": [
-    "^json-consumer.*$"
-  ]
+  "groups": {
+    "topic-writer-clusterA-projectA": [
+      {
+        "role": "topic-reader",
+        "patterns": [
+          "pub.*"
+        ]
+      }, {
+        "role": "topic-writer",
+        "patterns": [
+          "projectA.*"
+        ],
+        "clusters": [
+          "clusterA.*"
+        ]
+      }
+    ],
+    "acl-reader-clusterA": [
+      {
+        "role": "acl-reader",
+        "clusters": [
+          "clusterA.*"
+        ]
+      }
+    ]
+  }
 }
 ````
