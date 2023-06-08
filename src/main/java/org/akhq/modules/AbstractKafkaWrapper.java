@@ -15,6 +15,7 @@ import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.ApiException;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.kafka.common.errors.UnsupportedVersionException;
 
@@ -262,7 +263,8 @@ abstract public class AbstractKafkaWrapper {
                             .allDescriptions()
                             .get();
                     } catch (ExecutionException e) {
-                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException || e.getCause() instanceof UnsupportedVersionException) {
+                        if (e.getCause() instanceof ClusterAuthorizationException || e.getCause() instanceof TopicAuthorizationException || e.getCause() instanceof UnsupportedVersionException ||
+                            e.getCause() instanceof TimeoutException) {
                             return new HashMap<>();
                         }
 
