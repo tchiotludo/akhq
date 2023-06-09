@@ -81,6 +81,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 
 
 ## Who's using AKHQ
+* [Archer Aviation](https://archer.com/)
 * [Adeo](https://www.adeo.com/)
 * [Avlino](https://avlino.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
