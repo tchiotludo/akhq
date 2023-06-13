@@ -12,16 +12,20 @@ import io.confluent.kafka.schemaregistry.utils.JacksonMapper;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.utils.SecurityService;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.models.Schema;
 import org.akhq.modules.KafkaModule;
+import org.akhq.utils.DefaultGroupUtils;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -34,6 +38,13 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private ApplicationContext applicationContext;
+
+    @Inject
+    private DefaultGroupUtils defaultGroupUtils;
+
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
@@ -89,7 +100,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return maybeRegistryRestClient.get()
             .getAllSubjects()
             .stream()
-            .filter(s -> isSearchMatch(search, s))
+            .filter(s -> isSearchMatch(search, s) && isMatchRegex(getSubjectsFilterRegex(), s))
             .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
     }
@@ -312,5 +323,36 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     static {
         JacksonMapper.INSTANCE.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+
+    private Optional<List<String>> getSubjectsFilterRegex() {
+
+        List<String> subjectsFilterRegex = new ArrayList<>();
+
+        if (applicationContext.containsBean(SecurityService.class)) {
+            SecurityService securityService = applicationContext.getBean(SecurityService.class);
+            Optional<Authentication> authentication = securityService.getAuthentication();
+            if (authentication.isPresent()) {
+                Authentication auth = authentication.get();
+                subjectsFilterRegex.addAll(getSubjectsFilterRegexFromAttributes(auth.getAttributes()));
+            }
+        }
+        // get schemas filter regex for default groups
+        subjectsFilterRegex.addAll(getSubjectsFilterRegexFromAttributes(
+            defaultGroupUtils.getDefaultAttributes()
+        ));
+
+        return Optional.of(subjectsFilterRegex);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getSubjectsFilterRegexFromAttributes(Map<String, Object> attributes) {
+        if (attributes.get("subjectsFilterRegexp") != null) {
+            if (attributes.get("subjectsFilterRegexp") instanceof List) {
+                return (List<String>)attributes.get("subjectsFilterRegexp");
+            }
+        }
+        return new ArrayList<>();
     }
 }

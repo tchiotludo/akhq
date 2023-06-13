@@ -225,6 +225,9 @@ akhq:
           # Regexp list to filter consumer groups visible for group
           consumer-groups-filter-regexp:
             - "consumer.*"
+          # Regexp list to filter schemas visible for group
+          subjects-filter-regexp:
+            - "subject.*"
       topic-reader: # unique key
         name: topic-reader # Other group
         roles:

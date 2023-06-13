@@ -2,6 +2,11 @@ package org.akhq.repositories;
 
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.authentication.ServerAuthentication;
+import io.micronaut.security.utils.DefaultSecurityService;
+import io.micronaut.security.utils.SecurityService;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Schema;
@@ -13,17 +18,29 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import jakarta.inject.Inject;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 public class SchemaRegistryRepositoryTest extends AbstractTest {
     @Inject
+    @InjectMocks
     private SchemaRegistryRepository repository;
+
+    @Mock
+    ApplicationContext applicationContext;
 
     public final static String SUBJECT_1 = "SCHEMA_1";
     public final static org.apache.avro.Schema SCHEMA_1_V1 = SchemaBuilder
@@ -61,6 +78,11 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     public final static String SCHEMA_4 = "{\"name\":\"Schema4\",\"namespace\":\"org.akhq\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":[\"null\",\"string\"]},{\"name\":\"schema3\",\"type\":\"Schema3\"}]}";
 
     @BeforeEach
+    void initMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @BeforeEach
     void cleanup() {
         try {
             repository.delete(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
@@ -79,6 +101,17 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
             Optional.empty()
         );
         assertEquals(3, all.size());
+    }
+
+    @Test
+    void getAllWithSubjectsRegex() throws IOException, RestClientException, ExecutionException, InterruptedException {
+        mockApplicationContext();
+        PagedList<Schema> all = repository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(100, URIBuilder.empty(), 1),
+            Optional.empty()
+        );
+        assertEquals(1, all.size());
     }
 
     @Test
@@ -167,5 +200,13 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     @Test
     void getDefaultConfig() throws IOException, RestClientException {
         assertEquals(Schema.Config.CompatibilityLevelConfig.BACKWARD, repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID).getCompatibilityLevel());
+    }
+
+    private void mockApplicationContext() {
+        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("subjectsFilterRegexp", new ArrayList<>(Arrays.asList("stream-count.*"))));
+        DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
+        when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
+        when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
+        when(applicationContext.getBean(SecurityService.class)).thenReturn(securityService);
     }
 }
