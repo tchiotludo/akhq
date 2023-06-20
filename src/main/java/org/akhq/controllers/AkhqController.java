@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
 import org.akhq.configs.security.*;
+import org.akhq.repositories.AbstractRepository;
 import org.akhq.security.annotation.HasAnyPermission;
 import org.akhq.utils.VersionProvider;
 
@@ -58,8 +59,17 @@ public class AkhqController extends AbstractController {
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
+        // Get all the clusters the logged user can access resources
+        List<String> clusters = this.getUserGroups().stream()
+            .map(Group::getClusters)
+            .flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
         return this.connections
             .stream()
+            // Keep only connections matching clusters the user has access
+            .filter(c -> AbstractRepository.isMatchRegex(clusters, c.getName()))
             .map(connection -> new ClusterDefinition(
                 connection.getName(),
                 connection.getSchemaRegistry() != null,

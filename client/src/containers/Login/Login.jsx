@@ -39,13 +39,17 @@ class Login extends Form {
       };
 
       login(uriLogin(), body).then(res => {
-        res.json().then(r => {
-          // Support JWT authentication through access_token
-          if (r.access_token) {
-            sessionStorage.setItem('jwtToken', r.access_token);
-          }
-        });
-        this.getData();
+        if (res.body) {
+          res.json().then(r => {
+            // Support JWT authentication through access_token
+            if (r.access_token) {
+              sessionStorage.setItem('jwtToken', r.access_token);
+              this.getData();
+            }
+          });
+        } else {
+          this.getData();
+        }
       });
     } catch (err) {
       toast.error('Wrong Username or Password!');
