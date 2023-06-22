@@ -15,6 +15,7 @@
     "bootstrap": "^4.6.1",
     "convert-units": "^2.3.4",
     "css-loader": "^3.4.1",
+    "event-source-polyfill": "^1.0.31",
     "font-awesome": "^4.7.0",
     "joi-validation": "^2.0.0",
     "lodash": "^4.17.21",
