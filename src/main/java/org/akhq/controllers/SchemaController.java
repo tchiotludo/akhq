@@ -52,7 +52,7 @@ public class SchemaController extends AbstractController {
     @Operation(tags = {"schema registry"}, summary = "List all schemas")
     public List<String> listAll(
         String cluster) throws RestClientException, IOException {
-        return this.schemaRepository.all(cluster, Optional.empty());
+        return this.schemaRepository.all(cluster, Optional.empty(), List.of());
     }
 
 
