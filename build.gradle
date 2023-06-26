@@ -10,6 +10,9 @@ plugins {
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.46.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.6.0"
+
+    // idea
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
 
 group "org.akhq"
@@ -42,6 +45,17 @@ configurations.all {
         force("org.slf4j:jul-to-slf4j:1.7.32")
         force("org.slf4j:log4j-over-slf4j:1.7.32")
         force("com.google.protobuf:protobuf-java:3.22.2")
+        force("net.minidev:json-smart:2.4.10")
+    }
+}
+
+/**********************************************************************************************************************\
+ * IntelliJ IDEA
+ **********************************************************************************************************************/
+idea.project.settings {
+    taskTriggers {
+        beforeBuild generateAvroJava
+        beforeRebuild generateAvroJava
     }
 }
 
@@ -97,6 +111,7 @@ dependencies {
     implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
     implementation 'org.sourcelab:kafka-connect-client:4.0.3'
+    implementation 'org.json:json:20230227'
 
     // strimzi
     implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.12.0'
@@ -241,4 +256,3 @@ shadowJar {
 processResources.dependsOn ":client:installFrontend"
 processResources.dependsOn ":client:assembleFrontend"
 processResources.dependsOn ":client:copyClientResources"
-

@@ -409,6 +409,22 @@
                                                     contributors.</p>
                                                 <div class="mu-about-info-companies text-center">
                                                     <span class="mu-about-image">
+                                                        <a href="https://infosupport.com/?utm_source=AKHQ"
+                                                           target="_blank">
+                                                            <img aria-hidden="true"
+                                                                 style="width:210px"
+                                                                 src="/assets/images/logo-infosupport.svg" alt="Info Support">
+                                                        </a>
+                                                    </span>
+                                                    <span class="mu-about-image">
+                                                        <a href="https://upstash.com/?utm_source=AKHQ"
+                                                           target="_blank">
+                                                            <img aria-hidden="true"
+                                                                 style="width:210px"
+                                                                 src="https://raw.githubusercontent.com/upstash/sponsorship/master/logo.png" alt="Upstash">
+                                                        </a>
+                                                    </span>
+                                                    <span class="mu-about-image">
                                                         <img aria-hidden="true"
                                                              style="width:210px"
                                                              src="/assets/images/using/la-redoute.jpg" alt="La Redoute">
@@ -419,14 +435,6 @@
                                                             <img aria-hidden="true"
                                                                  style="width:210px"
                                                                  src="/assets/images/polarising.png" alt="Polarising">
-                                                        </a>
-                                                    </span>
-                                                    <span class="mu-about-image">
-                                                        <a href="https://upstash.com/?utm_source=AKHQ"
-                                                           target="_blank">
-                                                            <img aria-hidden="true"
-                                                                 style="width:210px"
-                                                                 src="https://raw.githubusercontent.com/upstash/sponsorship/master/logo.png" alt="Upstash">
                                                         </a>
                                                     </span>
                                                 </div>

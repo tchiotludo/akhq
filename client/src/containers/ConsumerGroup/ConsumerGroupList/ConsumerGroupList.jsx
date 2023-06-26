@@ -248,7 +248,7 @@ class ConsumerGroupList extends Root {
           }}
           onDetails={id => `/ui/${selectedCluster}/group/${encodeURIComponent(id)}`}
           actions={
-            roles.group && roles.group['group/delete']
+            roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE')
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
               : [constants.TABLE_DETAILS]
           }

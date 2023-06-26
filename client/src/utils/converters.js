@@ -1,6 +1,5 @@
 import lowerCase from 'lodash/lowerCase';
 import moment from 'moment';
-import { ROLE_TYPE } from './constants';
 
 export function calculateTopicOffsetLag(topicOffsets, topicId) {
   let offsetLag = 0;
@@ -114,15 +113,6 @@ export function showBytes(bytes, decimals = 3) {
   );
 }
 
-function insertRole(roles, roleType, role) {
-  if (roles[roleType] === undefined) {
-    roles[roleType] = {};
-  }
-  roles[roleType][role] = true;
-
-  return roles;
-}
-
 export function organizeRoles(roles) {
   let newRoles = {};
 
@@ -131,31 +121,14 @@ export function organizeRoles(roles) {
   }
 
   roles.forEach(role => {
-    switch (role.substring(0, role.indexOf('/'))) {
-      case ROLE_TYPE.TOPIC:
-        newRoles = insertRole(newRoles, ROLE_TYPE.TOPIC, role);
-        break;
-      case ROLE_TYPE.NODE:
-        newRoles = insertRole(newRoles, ROLE_TYPE.NODE, role);
-        break;
-      case ROLE_TYPE.GROUP:
-        newRoles = insertRole(newRoles, ROLE_TYPE.GROUP, role);
-        break;
-      case ROLE_TYPE.REGISTRY:
-        newRoles = insertRole(newRoles, ROLE_TYPE.REGISTRY, role);
-        break;
-      case ROLE_TYPE.ACLS:
-        newRoles = insertRole(newRoles, ROLE_TYPE.ACLS, role);
-        break;
-      case ROLE_TYPE.CONNECT:
-        newRoles = insertRole(newRoles, ROLE_TYPE.CONNECT, role);
-        break;
-      case ROLE_TYPE.KSQLDB:
-        newRoles = insertRole(newRoles, ROLE_TYPE.KSQLDB, role);
-        break;
-      default:
-        break;
-    }
+    role.resources.forEach(resource => {
+      role.actions.forEach(action => {
+        if (newRoles[resource] === undefined) {
+          newRoles[resource] = [];
+        }
+        newRoles[resource].push(action);
+      });
+    });
   });
 
   return JSON.stringify(newRoles);

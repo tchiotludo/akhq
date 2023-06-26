@@ -9,8 +9,14 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.inject.Inject;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HeaderAuthControllerTest extends AbstractTest {
     @Inject
@@ -27,7 +33,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user", result.getUsername());
-        assertEquals(6, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test-operator.*", "test-operator.*"));
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
     }
 
     @Test
@@ -40,7 +50,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-admin", result.getUsername());
-        assertEquals(38, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", "user.*"));
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
     }
 
     @Test
@@ -54,7 +68,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user-operator", result.getUsername());
-        assertEquals(11, result.getRoles().size());
+        assertEquals(5, result.getRoles().size());
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*"));
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*"));
     }
 
     @Test
@@ -69,7 +87,11 @@ class HeaderAuthControllerTest extends AbstractTest {
 
         assertEquals("header-user", result.getUsername());
         // operator from 'users' and externally provided 'limited'
-        assertEquals(11, result.getRoles().size());
+        assertEquals(5, result.getRoles().size());
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*"));
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*"));
     }
 
     @Test
@@ -82,7 +104,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-invalid", result.getUsername());
-        assertNull(result.getRoles());
+        assertEquals(4, result.getRoles().size());
     }
 
     @MicronautTest(environments = "header-ip-disallow")
@@ -102,7 +124,7 @@ class HeaderAuthControllerTest extends AbstractTest {
             );
 
             assertNull(result.getUsername());
-            assertNull(result.getRoles());
+            assertTrue(result.getRoles().isEmpty());
         }
     }
 }

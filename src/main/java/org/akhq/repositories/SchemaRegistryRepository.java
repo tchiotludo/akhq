@@ -38,12 +38,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
 
-    public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        return PagedList.of(all(clusterId, search), pagination, list -> this.toSchemasLatestVersion(list, clusterId));
+    public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        return PagedList.of(all(clusterId, search, filters), pagination, list -> this.toSchemasLatestVersion(list, clusterId));
     }
 
-    public List<Schema> listAll(String clusterId, Optional<String> search) throws IOException, RestClientException {
-        return toSchemasLatestVersion(all(clusterId, search), clusterId);
+    public List<Schema> listAll(String clusterId, Optional<String> search, List<String> filters) throws IOException, RestClientException {
+        return toSchemasLatestVersion(all(clusterId, search, filters), clusterId);
     }
 
     private List<Schema> toSchemasLatestVersion(List<String> subjectList, String clusterId){
@@ -80,7 +80,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return parsedSchema;
     }
 
-    public List<String> all(String clusterId, Optional<String> search) throws  IOException, RestClientException {
+    public List<String> all(String clusterId, Optional<String> search, List<String> filters) throws  IOException, RestClientException {
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
                 .getRegistryRestClient(clusterId));
         if(maybeRegistryRestClient.isEmpty()){
@@ -89,7 +89,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return maybeRegistryRestClient.get()
             .getAllSubjects()
             .stream()
-            .filter(s -> isSearchMatch(search, s))
+            .filter(s -> isSearchMatch(search, s) && isMatchRegex(filters, s))
             .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
     }
@@ -110,7 +110,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        for (String subject: this.all(clusterId, Optional.empty())) {
+        for (String subject: this.all(clusterId, Optional.empty(), List.of())) {
             for (Schema version: this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
                     return Optional.of(version);

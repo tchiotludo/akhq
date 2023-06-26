@@ -335,30 +335,30 @@ class Sidebar extends Component {
             {listClusters}
           </NavItem>
           {roles &&
-            roles.node &&
+            roles.NODE &&
             this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
           {roles &&
-            roles.topic &&
-            roles.topic['topic/read'] &&
+            roles.TOPIC &&
+            roles.TOPIC.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
           {roles &&
-            roles.topic &&
-            roles.topic['topic/data/read'] &&
+            roles.TOPIC_DATA &&
+            roles.TOPIC_DATA.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
           {roles &&
-            roles.group &&
-            roles.group['group/read'] &&
+            roles.CONSUMER_GROUP &&
+            roles.CONSUMER_GROUP.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
           {roles &&
-            roles.acls &&
-            roles.acls['acls/read'] &&
+            roles.ACL &&
+            roles.ACL.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
           {enableRegistry &&
             roles &&
-            roles.registry &&
-            roles.registry['registry/read'] &&
+            roles.SCHEMA &&
+            roles.SCHEMA.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
-          {enableConnect && roles && roles.connect && roles.connect['connect/read'] && (
+          {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
@@ -383,7 +383,7 @@ class Sidebar extends Component {
               {listConnects}
             </NavItem>
           )}
-          {enableKsqlDB && roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
+          {enableKsqlDB && roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
             <NavItem
               eventKey="ksqlDBs"
               className={selectedTab === constants.KSQLDB ? 'active' : ''}

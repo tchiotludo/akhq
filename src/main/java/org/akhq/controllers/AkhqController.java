@@ -1,5 +1,6 @@
 package org.akhq.controllers;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
@@ -17,12 +18,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.akhq.configs.*;
-import org.akhq.modules.HasAnyPermission;
+import org.akhq.configs.security.*;
+import org.akhq.repositories.AbstractRepository;
+import org.akhq.security.annotation.HasAnyPermission;
 import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -32,9 +38,6 @@ public class AkhqController extends AbstractController {
 
     @Inject
     private ApplicationContext applicationContext;
-
-    @Inject
-    private SecurityProperties securityProperties;
 
     @Inject
     private Oidc oidc;
@@ -56,8 +59,17 @@ public class AkhqController extends AbstractController {
     @Get("api/cluster")
     @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
     public List<ClusterDefinition> list() {
+        // Get all the clusters the logged user can access resources
+        List<String> clusters = this.getUserGroups().stream()
+            .map(Group::getClusters)
+            .flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
         return this.connections
             .stream()
+            // Keep only connections matching clusters the user has access
+            .filter(c -> AbstractRepository.isMatchRegex(clusters, c.getName()))
             .map(connection -> new ClusterDefinition(
                 connection.getName(),
                 connection.getSchemaRegistry() != null,
@@ -98,7 +110,7 @@ public class AkhqController extends AbstractController {
             authDefinition.loginEnabled = true;
             // Display login form if there are LocalUsers OR Ldap is enabled
             authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
-                    applicationContext.containsBean(LdapConfiguration.class);
+                applicationContext.containsBean(LdapConfiguration.class);
 
             if (!authDefinition.formEnabled &&
                 authDefinition.oidcAuths == null &&
@@ -122,11 +134,11 @@ public class AkhqController extends AbstractController {
             SecurityService securityService = applicationContext.getBean(SecurityService.class);
 
             securityService
-                    .getAuthentication()
-                    .ifPresent(authentication -> {
-                        authUser.logged = true;
-                        authUser.username = authentication.getName();
-                    });
+                .getAuthentication()
+                .ifPresent(authentication -> {
+                    authUser.logged = true;
+                    authUser.username = authentication.getName();
+                });
         }
 
         authUser.roles = this.getRights();
@@ -182,9 +194,31 @@ public class AkhqController extends AbstractController {
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
     public Connection.UiOptions options(String cluster) {
         return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
-                .map(conn -> conn.mergeOptions(this.uIOptions) )
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("No cluster found"));
+            .map(conn -> conn.mergeOptions(this.uIOptions))
+            .findAny()
+            .orElseThrow(() -> new RuntimeException("No cluster found"));
+    }
+
+    private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
+        SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
+
+        return groupBindings.stream()
+            .map(binding -> securityProperties.getRoles().entrySet().stream()
+                .filter(role -> role.getKey().equals(binding.getRole()))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .map(roleBinding -> new AuthUser.AuthPermissions(roleBinding, binding.getPatterns(), binding.getClusters()))
+                .collect(Collectors.toList()))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    protected List<AuthUser.AuthPermissions> getRights() {
+        if (!applicationContext.containsBean(SecurityService.class)) {
+            return expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
+        }
+
+        return expandRoles(getUserGroups());
     }
 
     @AllArgsConstructor
@@ -220,7 +254,17 @@ public class AkhqController extends AbstractController {
     public static class AuthUser {
         private boolean logged = false;
         private String username;
-        private List<String> roles;
+        private List<AuthPermissions> roles = new ArrayList<>();
+
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @Getter
+        public static class AuthPermissions {
+            @JsonUnwrapped
+            private Role role;
+            private List<String> patterns = List.of(".*");
+            private List<String> clusters = List.of(".*");
+        }
     }
 
 

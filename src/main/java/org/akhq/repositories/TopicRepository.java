@@ -12,7 +12,6 @@ import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.akhq.utils.DefaultGroupUtils;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -36,9 +35,6 @@ public class TopicRepository extends AbstractRepository {
     @Inject
     private ApplicationContext applicationContext;
 
-    @Inject
-    private DefaultGroupUtils defaultGroupUtils;
-
     @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
 
@@ -52,27 +48,20 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
-    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        List<String> all = all(clusterId, view, search);
+    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
+        List<String> all = all(clusterId, view, search, filters);
 
         return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
     }
 
-    public List<String> all(String clusterId, TopicListView view, Optional<String> search) throws ExecutionException, InterruptedException {
-        ArrayList<String> list = new ArrayList<>();
-
-        Collection<TopicListing> listTopics = kafkaWrapper.listTopics(clusterId);
-
-        for (TopicListing item : listTopics) {
-            if (isSearchMatch(search, item.name()) && isListViewMatch(view, item.name()) && isMatchRegex(
-                getTopicFilterRegex(), item.name())) {
-                list.add(item.name());
-            }
-        }
-
-        list.sort(Comparator.comparing(String::toLowerCase));
-
-        return list;
+    public List<String> all(String clusterId, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
+        return kafkaWrapper.listTopics(clusterId)
+            .stream()
+            .map(TopicListing::name)
+            .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
+            .filter(name -> isListViewMatch(view, name))
+            .sorted(Comparator.comparing(String::toLowerCase))
+            .collect(Collectors.toList());
     }
 
     public boolean isListViewMatch(TopicListView view, String value) {
@@ -89,23 +78,16 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public Topic findByName(String clusterId, String name) throws ExecutionException, InterruptedException {
-        Optional<Topic> topic = Optional.empty();
-        if(isMatchRegex(getTopicFilterRegex(),name)) {
-            topic = this.findByName(clusterId, Collections.singletonList(name)).stream().findFirst();
-        }
-
-        return topic.orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
+        return this.findByName(clusterId, Collections.singletonList(name))
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("Topic '" + name + "' doesn't exist"));
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
         ArrayList<Topic> list = new ArrayList<>();
-        Optional<List<String>> topicRegex = getTopicFilterRegex();
-
-        List<String> filteredTopics = topics.stream()
-                .filter(t -> isMatchRegex(topicRegex, t))
-                .collect(Collectors.toList());
-        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, filteredTopics).entrySet();
-        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, filteredTopics);
+        Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
+        Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
                 list.add(
@@ -151,33 +133,4 @@ public class TopicRepository extends AbstractRepository {
     void checkIfTopicExists(String clusterId, String name) throws ExecutionException {
         kafkaWrapper.describeTopics(clusterId, Collections.singletonList(name));
     }
-
-    private Optional<List<String>> getTopicFilterRegex() {
-
-        List<String> topicFilterRegex = new ArrayList<>();
-
-        if (applicationContext.containsBean(SecurityService.class)) {
-            SecurityService securityService = applicationContext.getBean(SecurityService.class);
-            Optional<Authentication> authentication = securityService.getAuthentication();
-            if (authentication.isPresent()) {
-                Authentication auth = authentication.get();
-                topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(auth.getAttributes()));
-            }
-        }
-        // get topic filter regex for default groups
-        topicFilterRegex.addAll(getTopicFilterRegexFromAttributes(
-            defaultGroupUtils.getDefaultAttributes()
-        ));
-
-        return Optional.of(topicFilterRegex);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<String> getTopicFilterRegexFromAttributes(Map<String, Object> attributes) {
-        if ((attributes.get("topicsFilterRegexp") != null) && (attributes.get("topicsFilterRegexp") instanceof List)) {
-		    return (List<String>)attributes.get("topicsFilterRegexp");
-		}
-        return new ArrayList<>();
-    }
-
 }
