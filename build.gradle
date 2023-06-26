@@ -1,15 +1,15 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "3.7.5"
+    id "io.micronaut.application" version "3.7.10"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id 'com.adarshr.test-logger' version '3.2.0'
-    id 'org.gradle.test-retry' version '1.5.2'
+    id 'org.gradle.test-retry' version '1.5.3'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.46.0"
-    id "com.github.davidmc24.gradle.plugin.avro" version "1.6.0"
+    id "com.github.ben-manes.versions" version "0.47.0"
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.7.1"
 
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
@@ -122,7 +122,7 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.guava:guava:32.0.1-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 
@@ -146,7 +146,7 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.6'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '1.1.7'
 
     implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.3'
 }
@@ -195,10 +195,10 @@ dependencies {
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.16.0'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.2.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
     testImplementation 'com.fasterxml.jackson.core:jackson-core:'
     testImplementation 'com.fasterxml.jackson.core:jackson-annotations'

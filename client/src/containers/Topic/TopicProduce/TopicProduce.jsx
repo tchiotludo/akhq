@@ -124,7 +124,7 @@ class TopicProduce extends Form {
   }
 
   async initByTopicEvent(copyValues) {
-    const { headers, keySchemaId, valueSchemaId, ...topicValuesDefault } = copyValues;
+    const { headers, ...topicValuesDefault } = copyValues;
 
     this.setState({
       formData: {
