@@ -749,11 +749,13 @@ class TopicData extends Root {
       canDeleteRecords,
       canDownload,
       percent,
-      loading
+      loading,
+      roles
     } = this.state;
 
     let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
-    if (canDeleteRecords) actions.push(constants.TABLE_DELETE);
+    if (canDeleteRecords && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('DELETE'))
+      actions.push(constants.TABLE_DELETE);
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
     let date = moment(datetime);

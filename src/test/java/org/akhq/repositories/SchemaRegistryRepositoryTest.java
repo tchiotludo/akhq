@@ -76,7 +76,8 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         PagedList<Schema> all = repository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         );
         assertEquals(3, all.size());
     }
@@ -86,7 +87,8 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         PagedList<Schema> all = repository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.of("stream-count")
+            Optional.of("stream-count"),
+            List.of()
         );
         assertEquals(1, all.size());
     }
@@ -136,7 +138,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
 
     @Test
     void register() throws IOException, RestClientException, ExecutionException, InterruptedException {
-        int numberOfSchemasAlreadyStored = repository.listAll(KafkaTestCluster.CLUSTER_ID, Optional.empty()).size();
+        int numberOfSchemasAlreadyStored = repository.listAll(KafkaTestCluster.CLUSTER_ID, Optional.empty(), List.of()).size();
 
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
         repository.updateConfig(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, new Schema.Config(Schema.Config.CompatibilityLevelConfig.FORWARD));
@@ -144,7 +146,7 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
         repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_2, SCHEMA_2.toString(), Collections.emptyList());
 
         int expectedNumberAllSchemas = numberOfSchemasAlreadyStored + 2;
-        assertEquals(expectedNumberAllSchemas, repository.list(KafkaTestCluster.CLUSTER_ID, new Pagination(100, URIBuilder.empty(), 1), Optional.empty()).size());
+        assertEquals(expectedNumberAllSchemas, repository.list(KafkaTestCluster.CLUSTER_ID, new Pagination(100, URIBuilder.empty(), 1), Optional.empty(), List.of()).size());
 
         Schema subject1Schema = repository.getLatestVersion(KafkaTestCluster.CLUSTER_ID, SUBJECT_1);
         assertEquals(SCHEMA_1_V2, subject1Schema.getAvroSchema());

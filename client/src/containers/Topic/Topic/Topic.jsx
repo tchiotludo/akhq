@@ -55,7 +55,8 @@ class Topic extends Root {
       {
         clusterId,
         topicId,
-        selectedTab: roles.topic && roles.topic['topic/data/read'] ? tabSelected : 'configs',
+        selectedTab:
+          roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
       },
       () => {
@@ -229,7 +230,7 @@ class Topic extends Root {
       case 'logs':
         return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
       default:
-        return roles.topic && roles.topic['topic/data/read'] ? (
+        return roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? (
           <TopicData history={history} match={match} location={location} />
         ) : (
           <TopicPartitions history={history} />
@@ -246,7 +247,7 @@ class Topic extends Root {
         <Header title={`Topic: ${topicId}`} history={this.props.history} />
         <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
-            {roles.topic && roles.topic['topic/data/read'] && (
+            {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/topic/${topicId}/data`}
@@ -280,7 +281,7 @@ class Topic extends Root {
                 Configs
               </Link>
             </li>
-            {roles.acls && roles.acls['acls/read'] && (
+            {roles.ACL && roles.ACL.includes('READ') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/topic/${topicId}/acls`}
@@ -306,7 +307,7 @@ class Topic extends Root {
             </div>
           </div>
         </div>
-        {selectedTab !== 'configs' && roles.topic && roles.topic['topic/data/insert'] && (
+        {selectedTab !== 'configs' && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
@@ -321,7 +322,7 @@ class Topic extends Root {
                   </Dropdown>
                 </div>
               )}
-              {this.canEmptyTopic() ? (
+              {this.canEmptyTopic() && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') ? (
                 <div
                   onClick={() => {
                     this.handleOnEmpty();
@@ -339,25 +340,34 @@ class Topic extends Root {
                 </div>
               )}
 
-              <Link
-                to={{
-                  pathname: `/ui/${clusterId}/topic/${topicId}/copy`
-                }}
-                className="btn btn-secondary mr-2"
-              >
-                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
-              </Link>
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
+                <Link
+                  to={{
+                    pathname: `/ui/${clusterId}/topic/${topicId}/copy`
+                  }}
+                  className="btn btn-secondary mr-2"
+                >
+                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
+                </Link>
+              )}
 
-              <Link
-                to={{ pathname: `/ui/${clusterId}/tail`, search: `?topicId=${topicId}` }}
-                className="btn btn-secondary mr-2"
-              >
-                <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
-              </Link>
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
+                <Link
+                  to={{
+                    pathname: `/ui/${clusterId}/tail`,
+                    search: `?topicId=${topicId}`
+                  }}
+                  className="btn btn-secondary mr-2"
+                >
+                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+                </Link>
+              )}
 
-              <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
-                <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
-              </Link>
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
+                <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
+                  <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
+                </Link>
+              )}
             </li>
           </aside>
         )}

@@ -148,7 +148,7 @@ class SchemaUpdate extends Form {
             },
             'col-sm-10'
           )}
-          {roles.registry['registry/update'] &&
+          {roles.SCHEMA.includes('UPDATE') &&
             this.renderButton('Update', undefined, undefined, 'submit')}
         </fieldset>
       </form>

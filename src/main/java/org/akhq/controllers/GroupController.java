@@ -5,12 +5,11 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
-import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.akhq.configs.Role;
+import org.akhq.configs.security.Role;
 import org.akhq.models.AccessControl;
 import org.akhq.models.Consumer;
 import org.akhq.models.ConsumerGroup;
@@ -19,6 +18,7 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.AccessControlListRepository;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
+import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.resource.ResourceType;
@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
-@Secured(Role.ROLE_GROUP_READ)
+@AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.READ)
 @Controller("/api/{cluster}/group")
 public class GroupController extends AbstractController {
     private final AbstractKafkaWrapper kafkaWrapper;
@@ -64,25 +64,25 @@ public class GroupController extends AbstractController {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
-        return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search));
+        return ResultPagedList.of(this.consumerGroupRepository.list(cluster, pagination, search, buildUserBasedResourceFilters(cluster)));
     }
 
     @Get("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group")
     public ConsumerGroup home(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName);
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster));
     }
 
     @Get("{groupName}/offsets")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsets(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getOffsets();
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getOffsets();
     }
 
     @Get("{groupName}/members")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
     public List<Consumer> members(String cluster, String groupName) throws ExecutionException, InterruptedException {
-        return this.consumerGroupRepository.findByName(cluster, groupName).getMembers();
+        return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getMembers();
     }
 
     @Get("{groupName}/acls")
@@ -98,7 +98,8 @@ public class GroupController extends AbstractController {
         return topics.map(
                 topicsName -> {
                     try {
-                        return this.consumerGroupRepository.findByTopics(cluster, topicsName);
+                        return this.consumerGroupRepository.findByTopics(cluster, topicsName,
+                            buildUserBasedResourceFilters(cluster));
                     } catch (ExecutionException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -106,7 +107,7 @@ public class GroupController extends AbstractController {
         ).orElse(Collections.EMPTY_LIST);
     }
 
-    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.UPDATE_OFFSET)
     @Post(value = "{groupName}/offsets", consumes = MediaType.APPLICATION_JSON)
     @Operation(tags = {"consumer group"}, summary = "Update consumer group offsets")
     public HttpResponse<?> offsets(
@@ -130,11 +131,12 @@ public class GroupController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_GROUP_OFFSETS_UPDATE)
+    @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.UPDATE_OFFSET)
     @Get("{groupName}/offsets/start")
     @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
-        ConsumerGroup group = this.consumerGroupRepository.findByName(cluster, groupName);
+        ConsumerGroup group = this.consumerGroupRepository.findByName(
+            cluster, groupName, buildUserBasedResourceFilters(cluster));
 
         return recordRepository.getOffsetForTime(
             cluster,
@@ -146,7 +148,7 @@ public class GroupController extends AbstractController {
         );
     }
 
-    @Secured(Role.ROLE_GROUP_DELETE)
+    @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.DELETE)
     @Delete("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Delete a consumer group")
     public HttpResponse<?> delete(String cluster, String groupName) throws ExecutionException, InterruptedException {
@@ -155,7 +157,7 @@ public class GroupController extends AbstractController {
         return HttpResponse.noContent();
     }
 
-    @Secured(Role.ROLE_GROUP_OFFSETS_DELETE)
+    @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.DELETE_OFFSET)
     @Delete("{groupName}/topic/{topicName}")
     @Operation(tags = {"consumer group"}, summary = "Delete group offsets of given topic")
     public HttpResponse<?> deleteConsumerGroupOffsets(String cluster, String groupName, String topicName) throws ExecutionException {

@@ -109,11 +109,13 @@ class Routes extends Root {
   handleRedirect() {
     let clusterId = this.state.clusterId;
     const roles = JSON.parse(sessionStorage.getItem('roles'));
-    if (roles && roles.topic && roles.topic['topic/read']) return `/ui/${clusterId}/topic`;
-    else if (roles && roles.node && roles.node['node/read']) return `/ui/${clusterId}/node`;
-    else if (roles && roles.group && roles.group['group/read']) return `/ui/${clusterId}/group`;
-    else if (roles && roles.acls && roles.acls['acls/read']) return `/ui/${clusterId}/acls`;
-    else if (roles && roles.registry && roles.registry['registry/read'])
+    if (roles && roles.TOPIC && roles.TOPIC.includes('READ')) return `/ui/${clusterId}/topic`;
+    else if (roles && roles.NODE && roles.NODE.includes('READ_CONFIG'))
+      return `/ui/${clusterId}/node`;
+    else if (roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ'))
+      return `/ui/${clusterId}/group`;
+    else if (roles && roles.ACL && roles.ACL.includes('READ')) return `/ui/${clusterId}/acls`;
+    else if (roles && roles.SCHEMA && roles.SCHEMA.includes('READ'))
       return `/ui/${clusterId}/schema`;
     else if (roles && Object.keys(roles).length > 0) return `/ui/${clusterId}/topic`;
     else return '/ui/login';
@@ -148,14 +150,14 @@ class Routes extends Root {
           <Base clusters={clusters}>
             <Switch location={location}>
               <Route exact path="/ui/login" component={Login} />
-              {roles && roles.topic && roles.topic['topic/read'] && (
+              {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
                 <Route exact path="/ui/:clusterId/topic" component={TopicList} />
               )}
 
-              {roles && roles.topic && roles.topic['topic/insert'] && (
+              {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
               )}
-              {roles && roles.topic && roles.topic['topic/data/insert'] && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
@@ -163,30 +165,30 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.topic && roles.topic['topic/data/insert'] && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
               )}
 
-              {roles && roles.topic && roles.topic['topic/read'] && (
+              {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/:tab?" component={Topic} />
               )}
 
-              {roles && roles.topic && roles.topic['topic/data/read'] && (
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
                 <Route exact path="/ui/:clusterId/tail" component={Tail} />
               )}
 
-              {roles && roles.node && roles.node['node/read'] && (
+              {roles && roles.NODE && roles.NODE.includes('READ_CONFIG') && (
                 <Route exact path="/ui/:clusterId/node" component={NodesList} />
               )}
-              {roles && roles.node && roles.node['node/read'] && (
+              {roles && roles.NODE && roles.NODE.includes('READ_CONFIG') && (
                 <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" component={NodeDetails} />
               )}
 
-              {roles && roles.group && roles.group['group/read'] && (
+              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ') && (
                 <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
               )}
 
-              {roles && roles.group && roles.group['group/offsets/delete'] && (
+              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
@@ -194,7 +196,7 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.group && roles.group['group/offsets/update'] && (
+              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('UPDATE_OFFSET') && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsets"
@@ -202,7 +204,7 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.group && roles.group['group/read'] && (
+              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/:tab?"
@@ -210,10 +212,10 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.acls && roles.acls['acls/read'] && (
+              {roles && roles.ACL && roles.ACL.includes('READ') && (
                 <Route exact path="/ui/:clusterId/acls" component={Acls} />
               )}
-              {roles && roles.acls && roles.acls['acls/read'] && (
+              {roles && roles.ACL && roles.ACL.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/acls/:principalEncoded/:tab?"
@@ -221,14 +223,14 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.registry && roles.registry['registry/read'] && (
+              {roles && roles.SCHEMA && roles.SCHEMA.includes('READ') && (
                 <Route exact path="/ui/:clusterId/schema" component={SchemaList} />
               )}
-              {roles && roles.registry && roles.registry['registry/insert'] && (
+              {roles && roles.SCHEMA && roles.SCHEMA.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
               )}
 
-              {roles && roles.registry && roles.registry['registry/update'] && (
+              {roles && roles.SCHEMA && roles.SCHEMA.includes('UPDATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/update"
@@ -236,7 +238,7 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.registry && roles.registry['registry/read'] && (
+              {roles && roles.SCHEMA && roles.SCHEMA.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/:tab?"
@@ -244,34 +246,34 @@ class Routes extends Root {
                 />
               )}
 
-              {roles && roles.connect && roles.connect['connect/insert'] && (
+              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/create"
                   component={ConnectCreate}
                 />
               )}
-              {roles && roles.connect && roles.connect['connect/read'] && (
+              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
                 <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
               )}
-              {roles && roles.connect && roles.connect['connect/read'] && (
+              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
                   component={Connect}
                 />
               )}
-              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+              {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
                 <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/query" component={KsqlDBQuery} />
               )}
-              {roles && roles.ksqldb && roles.ksqldb['ksqldb/execute'] && (
+              {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/ksqldb/:ksqlDBId/statement"
                   component={KsqlDBStatement}
                 />
               )}
-              {roles && roles.ksqldb && roles.ksqldb['ksqldb/read'] && (
+              {roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
                 <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?" component={KsqlDBList} />
               )}
               <Route exact path="/ui/:clusterId/settings" component={Settings} />

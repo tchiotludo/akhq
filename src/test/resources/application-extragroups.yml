@@ -2,9 +2,7 @@ akhq:
   security:
     groups:
       extra:
-        roles:
-          - topic/read
+        - role: topic-read
       another:
-        roles:
-          - topic/read
+        - role: topic-read
 

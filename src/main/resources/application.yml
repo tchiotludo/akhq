@@ -129,47 +129,49 @@ akhq:
 
   security:
     default-group: admin
-    groups:
-      admin:
-        name: admin
-        roles:
-        - topic/read
-        - topic/insert
-        - topic/delete
-        - topic/config/update
-        - node/read
-        - node/config/update
-        - topic/data/read
-        - topic/data/insert
-        - topic/data/delete
-        - group/read
-        - group/delete
-        - group/offsets/update
-        - group/offsets/delete
-        - registry/read
-        - registry/insert
-        - registry/update
-        - registry/delete
-        - registry/version/delete
-        - acls/read
-        - connect/read
-        - connect/insert
-        - connect/update
-        - connect/delete
-        - connect/state/update
-        - ksqldb/read
-        - ksqldb/execute
+    roles:
       reader:
-        name: reader
-        roles:
-        - topic/read
-        - node/read
-        - topic/data/read
-        - group/read
-        - registry/read
-        - acls/read
-        - connect/read
-        - ksqldb/read
-      no-roles:
-        name: no-roles
-        roles: []
+        - resources: [ "TOPIC", "TOPIC_DATA", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "ACL", "KSQLDB" ]
+          actions: [ "READ" ]
+      topic-admin:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ", "CREATE", "UPDATE", "DELETE", "READ_CONFIG", "ALTER_CONFIG" ]
+      topic-data-admin:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ", "CREATE", "DELETE" ]
+      consumer-group-admin:
+        - resources: [ "CONSUMER_GROUP" ]
+          actions: [ "READ", "UPDATE_OFFSET", "DELETE_OFFSET" ]
+      connect-cluster-reader:
+        - resources: [ "CONNECT_CLUSTER" ]
+          actions: [ "READ" ]
+      connector-admin:
+        - resources: [ "CONNECTOR" ]
+          actions: [ "READ", "CREATE", "DELETE", "UPDATE_STATE" ]
+      schema-admin:
+        - resources: [ "SCHEMA" ]
+          actions: [ "READ", "CREATE", "UPDATE", "DELETE", "DELETE_VERSION" ]
+      node-admin:
+        - resources: [ "NODE" ]
+          actions: [ "READ_CONFIG", "ALTER_CONFIG" ]
+      acl-reader:
+        - resources: [ "ACL" ]
+          actions: [ "READ" ]
+      ksqldb-admin:
+        - resources: [ "READ", "KSQLDB" ]
+          actions: [ "EXECUTE" ]
+    groups:
+      reader:
+        - role: reader
+          # patterns: [ ".*" ]
+          # clusters: [ ".*" ]
+      admin:
+        - role: topic-admin
+        - role: topic-data-admin
+        - role: consumer-group-admin
+        - role: connect-cluster-reader
+        - role: connector-admin
+        - role: schema-admin
+        - role: node-admin
+        - role: acl-reader
+        - role: ksqldb-admin

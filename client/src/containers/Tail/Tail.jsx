@@ -13,6 +13,7 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
 import DateTime from '../../components/DateTime';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -85,8 +86,15 @@ class Tail extends Root {
   startEventSource = () => {
     const { clusterId } = this.props.match.params;
     const { search, selectedTopics, maxRecords } = this.state;
-    this.eventSource = new EventSource(
-      uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords))
+    this.eventSource = new EventSourcePolyfill(
+      uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords)),
+      sessionStorage.getItem('jwtToken')
+        ? {
+            headers: {
+              Authorization: 'Bearer ' + sessionStorage.getItem('jwtToken')
+            }
+          }
+        : {}
     );
     let self = this;
     this.eventSource.addEventListener('tailBody', function (e) {
