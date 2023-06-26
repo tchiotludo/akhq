@@ -436,8 +436,8 @@ class TopicData extends Root {
       partition: row.partition,
       key: row.key,
       headers: row.headers,
-      keySchemaId: row.schema.key,
-      valueSchemaId: row.schema.value,
+      keySchema: row.schema.key,
+      valueSchema: row.schema.value,
       value: row.value
     };
     setProduceToTopicValues(data);

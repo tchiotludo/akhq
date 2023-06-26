@@ -190,6 +190,10 @@ export const uriKsqlDBExecuteQuery = (clusterId, ksqlDBId) => {
   return `${apiUrl}/${clusterId}/ksqldb/${ksqlDBId}/queries/pull`;
 };
 
+export const uriAllSchema = clusterId => {
+  return `${apiUrl}/${clusterId}/schemas`;
+};
+
 export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };

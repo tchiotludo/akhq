@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
@@ -17,6 +18,7 @@ import org.akhq.models.KeyValue;
 import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
+import org.akhq.models.Schema;
 import org.akhq.modules.KafkaModule;
 import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
@@ -34,6 +36,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -240,19 +243,19 @@ public class RecordRepository extends AbstractRepository {
 
     private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options, KafkaConsumer<byte[], byte[]> consumer) {
         return topic
-                .getPartitions()
-                .stream()
-                .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
-                    .map(offsetBound -> offsetBound.withTopicPartition(
-                        new TopicPartition(
-                            partition.getTopic(),
-                            partition.getId()
-                        )
-                    ))
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
+            .getPartitions()
+            .stream()
+            .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
+                .map(offsetBound -> offsetBound.withTopicPartition(
+                    new TopicPartition(
+                        partition.getTopic(),
+                        partition.getId()
+                    )
+                ))
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
     }
 
     private List<Record> consumeNewest(Topic topic, Options options) {
@@ -491,17 +494,17 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public List<RecordMetadata> produce(
-            String clusterId,
-            String topic,
-            Optional<String> value,
-            List<KeyValue<String, String>> headers,
-            Optional<String> key,
-            Optional<Integer> partition,
-            Optional<Long> timestamp,
-            Optional<Integer> keySchemaId,
-            Optional<Integer> valueSchemaId,
-            Boolean multiMessage,
-            Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException {
+        String clusterId,
+        String topic,
+        Optional<String> value,
+        List<KeyValue<String, String>> headers,
+        Optional<String> key,
+        Optional<Integer> partition,
+        Optional<Long> timestamp,
+        Optional<String> keySchema,
+        Optional<String> valueSchema,
+        Boolean multiMessage,
+        Optional<String> keyValueSeparator) throws ExecutionException, InterruptedException, RestClientException, IOException {
 
         List<RecordMetadata> produceResults = new ArrayList<>();
 
@@ -510,11 +513,11 @@ public class RecordRepository extends AbstractRepository {
             // Split key-value pairs and produce them
             for (KeyValue<String, String> kvPair : splitMultiMessage(value.get(), keyValueSeparator.orElseThrow())) {
                 produceResults.add(produce(clusterId, topic, Optional.of(kvPair.getValue()), headers, Optional.of(kvPair.getKey()),
-                        partition, timestamp, keySchemaId, valueSchemaId));
+                    partition, timestamp, keySchema, valueSchema));
             }
         } else {
             produceResults.add(
-                    produce(clusterId, topic, value, headers, key, partition, timestamp, keySchemaId, valueSchemaId));
+                produce(clusterId, topic, value, headers, key, partition, timestamp, keySchema, valueSchema));
         }
         return produceResults;
     }
@@ -608,15 +611,16 @@ public class RecordRepository extends AbstractRepository {
         Optional<String> key,
         Optional<Integer> partition,
         Optional<Long> timestamp,
-        Optional<Integer> keySchemaId,
-        Optional<Integer> valueSchemaId
-    ) throws ExecutionException, InterruptedException {
+        Optional<String> keySchema,
+        Optional<String> valueSchema
+    ) throws ExecutionException, InterruptedException, RestClientException, IOException {
         byte[] keyAsBytes = null;
         byte[] valueAsBytes;
 
         if (key.isPresent()) {
-            if (keySchemaId.isPresent()) {
-                SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, keySchemaId.get());
+            if (keySchema.isPresent() && StringUtils.isNotEmpty(keySchema.get())) {
+                Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, keySchema.get());
+                SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, schema.getId());
                 keyAsBytes = keySerializer.serialize(key.get());
             } else {
                 keyAsBytes = key.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
@@ -631,8 +635,9 @@ public class RecordRepository extends AbstractRepository {
             }
         }
 
-        if (value.isPresent() && valueSchemaId.isPresent()) {
-            SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, valueSchemaId.get());
+        if (value.isPresent() && valueSchema.isPresent()) {
+            Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, valueSchema.get());
+            SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, schema.getId());
             valueAsBytes = valueSerializer.serialize(value.get());
         } else {
             valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
