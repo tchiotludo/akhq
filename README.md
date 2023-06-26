@@ -25,6 +25,23 @@
 <td>
   <img width="1000" height="0">
     <a href="https://upstash.com/?utm_source=AKHQ" >
+  <img src="./docs/.vuepress/public/assets/images/logo-infosupport.svg" alt="Upstash" width="260" align="right">
+  </a>
+
+<h3>InfoSupport</h3>
+
+  <p>Info Support is the specialist in developing high quality software<br />
+    solutions and leading in the field of artificial intelligence (AI), <br />
+    cloud architecture, managed services and IT training.
+</p>
+
+[Discover](https://infosupport.com/?utm_source=AKHQ)
+</td>
+</tr>
+<tr>
+<td>
+  <img width="1000" height="0">
+    <a href="https://upstash.com/?utm_source=AKHQ" >
   <img src="https://raw.githubusercontent.com/upstash/sponsorship/master/kafka.png" alt="Upstash" width="260" align="right">
   </a>
 
@@ -64,6 +81,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 
 
 ## Who's using AKHQ
+* [Archer Aviation](https://archer.com/)
 * [Adeo](https://www.adeo.com/)
 * [Avlino](https://avlino.com/)
 * [Auchan Retail](https://www.auchan-retail.com/)
