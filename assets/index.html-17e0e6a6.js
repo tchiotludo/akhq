@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-8daa1a0e","path":"/","title":"Home","lang":"en-US","frontmatter":{"home":true,"title":"Home","sidebar":false,"pageClass":"landing"},"headers":[],"git":{"updatedTime":1686286894000,"contributors":[{"name":"Hongbo Miao","email":"3375461+Hongbo-Miao@users.noreply.github.com","commits":1}]},"filePathRelative":"README.md"}');export{e as data};
