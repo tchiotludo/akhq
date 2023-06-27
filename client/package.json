@@ -13,6 +13,7 @@
     "axios": "^0.21.1",
     "axios-progress-bar": "^1.2.0",
     "bootstrap": "^4.6.1",
+    "buffer": "^6.0.3",
     "convert-units": "^2.3.4",
     "css-loader": "^3.4.1",
     "event-source-polyfill": "^1.0.31",

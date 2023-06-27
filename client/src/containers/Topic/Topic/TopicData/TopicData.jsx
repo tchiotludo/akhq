@@ -32,6 +32,7 @@ import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions'
 import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
+import { Buffer } from 'buffer';
 
 class TopicData extends Root {
   state = {
@@ -459,7 +460,7 @@ class TopicData extends Root {
   _deleteCompactMessage = () => {
     const { selectedCluster, selectedTopic, compactMessageToDelete: message } = this.state;
 
-    const encodedkey = new Buffer(message.key).toString('base64');
+    const encodedkey = Buffer.from(message.key).toString('base64');
     const deleteData = { partition: parseInt(message.partition), key: encodedkey };
     this.removeApi(
       uriTopicDataDelete(selectedCluster, selectedTopic, parseInt(message.partition), encodedkey),
