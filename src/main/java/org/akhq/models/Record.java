@@ -43,7 +43,9 @@ public class Record {
     @JsonIgnore
     private TimestampType timestampType;
     private Integer keySchemaId;
+    private String keySubject;
     private Integer valueSchemaId;
+    private String valueSubject;
     private List<KeyValue<String, String>> headers = new ArrayList<>();
     @JsonIgnore
     private Deserializer kafkaAvroDeserializer;
@@ -90,8 +92,10 @@ public class Record {
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.bytesKey = bytesKey;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId);
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         this.headers = headers;
         this.truncated = false;
     }
@@ -112,8 +116,10 @@ public class Record {
         this.timestampType = record.timestampType();
         this.bytesKey = record.key();
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId);
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         for (Header header: record.headers()) {
             String headerValue = String.valueOf(ContentUtils.convertToObject(header.value()));
             this.headers.add(new KeyValue<>(header.key(), headerValue));
@@ -296,6 +302,22 @@ public class Record {
             if (magicBytes == MAGIC_BYTE && schemaId >= 0) {
                 return schemaId;
             }
+        } catch (Exception ignore) {
+
+        }
+        return null;
+    }
+
+    private String getAvroSchemaSubject(Integer schemaId) {
+        if (schemaId == null || client == null) {
+            return null;
+        }
+        try {
+            ParsedSchema schemaById = client.getSchemaById(schemaId);
+            if (schemaById == null) {
+                return null;
+            }
+            return schemaById.name();
         } catch (Exception ignore) {
 
         }
