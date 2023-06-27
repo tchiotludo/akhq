@@ -24,6 +24,7 @@ import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/ext-searchbox';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
