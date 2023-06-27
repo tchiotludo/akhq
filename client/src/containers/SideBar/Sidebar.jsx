@@ -336,6 +336,7 @@ class Sidebar extends Component {
           </NavItem>
           {roles &&
             roles.NODE &&
+            roles.NODE.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
           {roles &&
             roles.TOPIC &&

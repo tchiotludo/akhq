@@ -13,17 +13,24 @@ class Node extends Component {
     data: [],
     clusterId: this.props.match.params.clusterId,
     selectedNode: this.props.match.params.nodeId,
-    selectedTab: 'configs'
+    selectedTab: 'logs',
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   tabs = ['configs', 'logs'];
 
   componentDidMount() {
     const { clusterId, nodeId } = this.props.match.params;
-    const tabSelected = getSelectedTab(this.props, this.tabs);
+    const { roles } = this.state;
+    let tabSelected = getSelectedTab(this.props, this.tabs);
+
+    if (tabSelected === 'configs' && roles.NODE && !roles.NODE.includes('READ_CONFIG')) {
+      tabSelected = 'logs';
+    }
+
     this.setState(
       {
-        selectedTab: tabSelected ? tabSelected : 'configs'
+        selectedTab: tabSelected
       },
       () => {
         this.props.history.replace(`/ui/${clusterId}/node/${nodeId}/${this.state.selectedTab}`);
@@ -75,20 +82,22 @@ class Node extends Component {
   }
 
   render() {
-    const { selectedNode, clusterId } = this.state;
+    const { selectedNode, clusterId, roles } = this.state;
     return (
       <div>
         <Header title={`Node ${selectedNode}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
-            <li className="nav-item">
-              <Link
-                to={`/ui/${clusterId}/node/${selectedNode}/configs`}
-                className={this.tabClassName('configs')}
-              >
-                Configs
-              </Link>
-            </li>
+            {roles.NODE && roles.NODE.includes('READ_CONFIG') && (
+              <li className="nav-item">
+                <Link
+                  to={`/ui/${clusterId}/node/${selectedNode}/configs`}
+                  className={this.tabClassName('configs')}
+                >
+                  Configs
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link
                 to={`/ui/${clusterId}/node/${selectedNode}/logs`}
