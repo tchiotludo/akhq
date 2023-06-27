@@ -14,6 +14,7 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
 import DateTime from '../../components/DateTime';
 import { EventSourcePolyfill } from 'event-source-polyfill';
+import * as LosslessJson from 'lossless-json';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -464,12 +465,19 @@ class Tail extends Root {
                 type: 'text',
                 extraRow: true,
                 extraRowContent: (obj, index) => {
+                  let value = obj.value;
+                  try {
+                    let json = LosslessJson.parse(obj.value);
+                    value = LosslessJson.stringify(json, undefined, '  ');
+                    // eslint-disable-next-line no-empty
+                  } catch (e) {}
+
                   return (
                     <AceEditor
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"
-                      value={obj.value}
+                      value={value || 'null'}
                       readOnly
                       name="UNIQUE_ID_OF_DIV"
                       editorProps={{ $blockScrolling: true }}
