@@ -502,10 +502,11 @@ class Tail extends Root {
             }}
             noContent={<tr />}
             onExpand={obj => {
-              return Object.keys(obj.headers).map((header, i) => {
+              return obj.headers.map((header, i) => {
                 return (
                   <tr
                     key={i}
+                    className={'table-sm'}
                     style={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -521,7 +522,7 @@ class Tail extends Root {
                         backgroundColor: '#171819'
                       }}
                     >
-                      {header}
+                      {header.key}
                     </td>
                     <td
                       style={{
@@ -532,7 +533,7 @@ class Tail extends Root {
                         backgroundColor: '#171819'
                       }}
                     >
-                      {obj.headers[header]}
+                      {header.value}
                     </td>
                   </tr>
                 );
