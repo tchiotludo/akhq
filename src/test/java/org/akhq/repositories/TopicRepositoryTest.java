@@ -52,7 +52,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -62,7 +63,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -72,7 +74,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -82,7 +85,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.HIDE_STREAM,
-            Optional.empty()
+            Optional.empty(),
+            List.of()
         ).size());
     }
 
@@ -93,7 +97,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.empty()
+            Optional.empty(),
+            List.of("rando.*")
         ).size());
     }
 
@@ -103,7 +108,8 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.of("ra do")
+            Optional.of("ra do"),
+            List.of()
         ).size());
     }
 
@@ -114,18 +120,9 @@ class TopicRepositoryTest extends AbstractTest {
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.of("stream")
+            Optional.of("stream"),
+            List.of("rando.*")
         ).size());
-    }
-
-    @Test
-    void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
-        mockApplicationContext();
-        assertThrows(NoSuchElementException.class, () -> {
-            topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "compacted");
-        });
-
-        assertEquals(1, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("compacted", "random")).size());
     }
 
     @Test
@@ -176,7 +173,7 @@ class TopicRepositoryTest extends AbstractTest {
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("topicsFilterRegexp", new ArrayList<>(Arrays.asList("rando.*"))));
+        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

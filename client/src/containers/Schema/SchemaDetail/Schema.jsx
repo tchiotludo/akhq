@@ -40,7 +40,7 @@ class Schema extends Root {
     const { clusterId, schemaId, roles } = this.state;
     let tabSelected = getSelectedTab(this.props, this.tabs);
 
-    if (!roles.registry['registry/update'] && tabSelected === 'update') {
+    if (!roles.SCHEMA.includes('UPDATE') && tabSelected === 'update') {
       tabSelected = 'versions';
     }
 
@@ -108,7 +108,7 @@ class Schema extends Root {
         <Header title={`Schema: ${decodeURIComponent(schemaId)}`} history={this.props.history} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
-            {roles.registry['registry/update'] && (
+            {roles.SCHEMA.includes('UPDATE') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/schema/details/${schemaId}/update`}

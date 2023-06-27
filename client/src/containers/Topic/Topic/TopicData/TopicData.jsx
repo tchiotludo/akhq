@@ -438,8 +438,8 @@ class TopicData extends Root {
       partition: row.partition,
       key: row.key,
       headers: row.headers,
-      keySchemaId: row.schema.key,
-      valueSchemaId: row.schema.value,
+      keySchema: row.schema.key,
+      valueSchema: row.schema.value,
       value: row.value
     };
     setProduceToTopicValues(data);
@@ -753,11 +753,13 @@ class TopicData extends Root {
       canDeleteRecords,
       canDownload,
       percent,
-      loading
+      loading,
+      roles
     } = this.state;
 
     let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
-    if (canDeleteRecords) actions.push(constants.TABLE_DELETE);
+    if (canDeleteRecords && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('DELETE'))
+      actions.push(constants.TABLE_DELETE);
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
     let date = moment(datetime);

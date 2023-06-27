@@ -44,7 +44,8 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
         assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.empty()
+            Optional.empty(),
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -54,7 +55,8 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
         assertEquals(KafkaTestCluster.CONSUMER_GROUP_COUNT, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.empty()
+            Optional.empty(),
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -63,7 +65,8 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
         assertEquals(1, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.of("consu 2")
+            Optional.of("consu 2"),
+            List.of()
         ).size());
     }
 
@@ -73,7 +76,8 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
         assertEquals(0, consumerGroupRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
-            Optional.of("stream")
+            Optional.of("stream"),
+            List.of("consumer-.*")
         ).size());
     }
 
@@ -81,14 +85,14 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
     void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
         mockApplicationContext();
         assertThrows(NoSuchElementException.class, () -> {
-            consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, "cgroup-1");
+            consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, "cgroup-1", List.of("consumer-.*"));
         });
 
-        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-6", "cgroup-1")).size());
+        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-6", "cgroup-1"), List.of("consumer-.*")).size());
     }
 
     private void mockApplicationContext() {
-        Authentication auth = new ServerAuthentication("test", List.of(), Collections.singletonMap("consumerGroupsFilterRegexp", new ArrayList<>(Arrays.asList("consumer-.*"))));
+        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
         DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);

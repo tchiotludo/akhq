@@ -27,16 +27,28 @@ class Root extends Component {
   }
 
   getApi(url) {
-    return get(url, { cancelToken: this.cancel.token });
+    return get(url, this.buildConfig());
   }
   postApi(url, body) {
-    return post(url, body, { cancelToken: this.cancel.token });
+    return post(url, body, this.buildConfig());
   }
   putApi(url, body) {
-    return put(url, body, { cancelToken: this.cancel.token });
+    return put(url, body, this.buildConfig());
   }
   removeApi(url, body) {
-    return remove(url, body, { cancelToken: this.cancel.token });
+    return remove(url, body, this.buildConfig());
+  }
+
+  buildConfig() {
+    let config = new Map();
+    config.cancelToken = this.cancel.token;
+
+    if (sessionStorage.getItem('jwtToken')) {
+      config.headers = {};
+      config.headers['Authorization'] = 'Bearer ' + sessionStorage.getItem('jwtToken');
+    }
+
+    return config;
   }
 }
 

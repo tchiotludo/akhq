@@ -7,9 +7,9 @@ import { formatDateTime } from '../../../utils/converters';
 import { popProduceToTopicValues } from '../../../utils/localstorage';
 import {
   uriTopics,
-  uriPreferredSchemaForTopic,
   uriTopicsPartitions,
-  uriTopicsProduce
+  uriTopicsProduce,
+  uriAllSchema
 } from '../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
@@ -109,28 +109,28 @@ class TopicProduce extends Form {
   }
 
   async getPreferredSchemaForTopic() {
-    const { clusterId } = this.props.match.params;
-    let schema = await this.getApi(uriPreferredSchemaForTopic(clusterId, this.state.topicId));
+    const { clusterId, topicId } = this.props.match.params;
+    let schema = await this.getApi(uriAllSchema(clusterId));
     let keySchema = [];
     let valueSchema = [];
-    schema.data && schema.data.key && schema.data.key.map(index => keySchema.push(index));
-    schema.data && schema.data.value && schema.data.value.map(index => valueSchema.push(index));
-    this.setState({ keySchema: keySchema, valueSchema: valueSchema });
+    schema.data.filter(s => s.includes('-key')).map(s => keySchema.push(s));
+    schema.data.filter(s => s.includes('-value')).map(s => valueSchema.push(s));
+    this.setState({
+      keySchema: keySchema,
+      valueSchema: valueSchema,
+      selectedKeySchema: keySchema.find(s => s === topicId + '-key'),
+      selectedValueSchema: valueSchema.find(s => s === topicId + '-value')
+    });
   }
 
   async initByTopicEvent(copyValues) {
-    const { headers, keySchemaId, valueSchemaId, ...topicValuesDefault } = copyValues;
-
-    const keySchema = this.state.keySchema.find(schema => schema.id === keySchemaId);
-    const valueSchema = this.state.valueSchema.find(schema => schema.id === valueSchemaId);
+    const { headers, ...topicValuesDefault } = copyValues;
 
     this.setState({
       formData: {
         ...this.state.formData,
         ...topicValuesDefault
       },
-      selectedKeySchema: keySchema ? keySchema.subject : '',
-      selectedValueSchema: valueSchema ? valueSchema.subject : '',
       nHeaders: headers.length === 0 ? 1 : 0
     });
 
@@ -144,15 +144,11 @@ class TopicProduce extends Form {
       datetime,
       selectedKeySchema,
       selectedValueSchema,
-      keySchema,
-      valueSchema,
       multiMessage,
       tombstone
     } = this.state;
     const { clusterId } = this.props.match.params;
 
-    let schemaKeyToSend = keySchema.find(key => key.subject === selectedKeySchema);
-    let schemaValueToSend = valueSchema.find(value => value.subject === selectedValueSchema);
     let value;
     if (tombstone) {
       value = null;
@@ -167,8 +163,8 @@ class TopicProduce extends Form {
       key: formData.key,
       timestamp: datetime.toISOString(),
       value: value,
-      keySchema: schemaKeyToSend ? schemaKeyToSend.id : '',
-      valueSchema: schemaValueToSend ? schemaValueToSend.id : '',
+      keySchema: selectedKeySchema,
+      valueSchema: selectedValueSchema,
       multiMessage: multiMessage,
       keyValueSeparator: formData.keyValueSeparator
     };
@@ -467,12 +463,7 @@ class TopicProduce extends Form {
                 selectedKeySchema: value.target.value
               });
             },
-            this.renderResults(
-              keySchema.map(key => key.subject),
-              keySchemaSearchValue,
-              selectedKeySchema,
-              'key'
-            )
+            this.renderResults(keySchema, keySchemaSearchValue, selectedKeySchema, 'key')
           )}
 
           {this.renderInput(
@@ -499,12 +490,7 @@ class TopicProduce extends Form {
                 selectedValueSchema: value.target.value
               });
             },
-            this.renderResults(
-              valueSchema.map(value => value.subject),
-              valueSchemaSearchValue,
-              selectedValueSchema,
-              'value'
-            )
+            this.renderResults(valueSchema, valueSchemaSearchValue, selectedValueSchema, 'value')
           )}
 
           {this.renderMultiMessage(tombstone)}

@@ -137,10 +137,10 @@ class ConnectList extends Root {
     const roles = this.state.roles || {};
     let actions = [];
 
-    if (roles.connect && roles.connect['connect/read']) {
+    if (roles.CONNECT && roles.CONNECT.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
     }
-    if (roles.connect && roles.connect['connect/delete']) {
+    if (roles.CONNECT && roles.CONNECT.includes('DELETE')) {
       actions.push(constants.TABLE_DELETE);
     }
 
@@ -356,7 +356,7 @@ class ConnectList extends Root {
           }}
           noContent={'No connectors available'}
         />
-        {roles.connect && roles.connect['connect/insert'] && (
+        {roles.CONNECT && roles.CONNECT.includes('CREATE') && (
           <aside>
             <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
               Create a definition

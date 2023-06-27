@@ -5,8 +5,12 @@ import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -46,6 +50,10 @@ class AkhqControllerTest extends AbstractTest {
         );
 
         assertEquals("admin", result.getUsername());
-        assertEquals(38, result.getRoles().size());
+        assertEquals(2, result.getRoles().size());
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", "user.*"));
+        assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
+            containsInAnyOrder(".*", ".*"));
     }
 }

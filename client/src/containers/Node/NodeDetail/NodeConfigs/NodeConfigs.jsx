@@ -269,7 +269,7 @@ class NodeConfigs extends Form {
               this.setState({ data });
             }}
           />
-          {roles.node['node/config/update'] &&
+          {roles.NODE.includes('ALTER_CONFIG') &&
             this.renderButton('Update configs', this.handleSubmit, undefined, 'submit')}
         </div>
       </form>

@@ -267,7 +267,7 @@ class SchemaList extends Root {
             return `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`;
           }}
           actions={
-            roles.registry && roles.registry['registry/delete']
+            roles.SCHEMA && roles.SCHEMA.includes('DELETE')
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
               : [constants.TABLE_DETAILS]
           }
@@ -297,7 +297,7 @@ class SchemaList extends Root {
           }}
           noContent={'No schemas available'}
         />
-        {roles.registry && roles.registry['registry/insert'] && (
+        {roles.SCHEMA && roles.SCHEMA.includes('CREATE') && (
           <aside>
             <Link
               to={{
