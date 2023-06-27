@@ -31,6 +31,7 @@ import Root from '../components/Root';
 import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
 import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
 import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
+import sortBy from 'lodash/sortBy';
 
 class Routes extends Root {
   state = {
@@ -50,9 +51,10 @@ class Routes extends Root {
     const { clusterId } = this.state;
     try {
       const resClusters = await this.getApi(uriClusters());
+      let sortedClusters = sortBy(resClusters.data || [], cluster => cluster.id);
       this.setState({
-        clusters: resClusters.data,
-        clusterId: resClusters.data ? resClusters.data[0].id : '',
+        clusters: sortedClusters,
+        clusterId: sortedClusters ? sortedClusters[0].id : '',
         loading: false
       });
     } catch (err) {
