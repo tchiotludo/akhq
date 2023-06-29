@@ -187,6 +187,12 @@ akhq:
   # Auth & Roles (optional)
   security:
     roles:
+      node-read:
+        - resources: [ "NODE" ]
+          actions: [ "READ", "READ_CONFIG" ]
+      node-admin:
+        - resources: [ "NODE" ]
+          actions: [ "READ", "READ_CONFIG", "ALTER_CONFIG" ]
       topic-read:
         - resources: [ "TOPIC", "TOPIC_DATA" ]
           actions: [ "READ" ]
@@ -223,6 +229,7 @@ akhq:
     # Groups definition
     groups:
       admin:
+        - role: node-admin
         - role: topic-admin
         - role: connect-admin
         - role: registry-admin

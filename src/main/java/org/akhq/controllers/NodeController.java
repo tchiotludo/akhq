@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.READ_CONFIG)
+@AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.READ)
 @Controller
 public class NodeController extends AbstractController {
     private final ClusterRepository clusterRepository;
@@ -108,6 +108,7 @@ public class NodeController extends AbstractController {
     }
 
     @Get("api/{cluster}/node/{nodeId}/configs")
+    @AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.READ_CONFIG)
     @Operation(tags = {"node"}, summary = "List all configs for a node")
     public List<Config> nodeConfig(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, nodeId.toString());

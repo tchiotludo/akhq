@@ -202,6 +202,10 @@ public class AkhqController extends AbstractController {
     private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
         SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
 
+        if (securityProperties.getRoles() == null) {
+            throw new RuntimeException("Roles has not been defined properly. Please check the documentation");
+        }
+
         return groupBindings.stream()
             .map(binding -> securityProperties.getRoles().entrySet().stream()
                 .filter(role -> role.getKey().equals(binding.getRole()))
