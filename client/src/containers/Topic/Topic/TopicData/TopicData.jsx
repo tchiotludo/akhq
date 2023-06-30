@@ -234,7 +234,9 @@ class TopicData extends Root {
           key: { text: '', type: 'C' },
           value: { text: '', type: 'C' },
           headerKey: { text: '', type: 'C' },
-          headerValue: { text: '', type: 'C' }
+          headerValue: { text: '', type: 'C' },
+          keySubject: { text: '', type: 'C' },
+          valueSubject: { text: '', type: 'C' }
         }
       },
       () => {
