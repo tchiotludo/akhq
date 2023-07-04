@@ -34,6 +34,7 @@ import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localst
 import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 class TopicData extends Root {
   state = {
@@ -175,13 +176,20 @@ class TopicData extends Root {
         } else {
           this._setUrlHistory(filters);
         }
-        this.eventSource = new EventSource(
+        this.eventSource = new EventSourcePolyfill(
           uriTopicDataSearch(
             selectedCluster,
             selectedTopic,
             filters,
             changePage ? nextPage : undefined
-          )
+          ),
+          sessionStorage.getItem('jwtToken')
+            ? {
+                headers: {
+                  Authorization: 'Bearer ' + sessionStorage.getItem('jwtToken')
+                }
+              }
+            : {}
         );
 
         this.eventSource.addEventListener('searchBody', function (e) {
