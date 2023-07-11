@@ -246,14 +246,15 @@ class ConnectTasks extends Root {
               this.setState({ tableData: data });
             }}
             actions={
-              roles.CONNECT && roles.CONNECT.includes('UPDATE_STATE') && [constants.TABLE_RESTART]
+              roles.CONNECTOR &&
+              roles.CONNECTOR.includes('UPDATE_STATE') && [constants.TABLE_RESTART]
             }
             onRestart={row => {
               this.handleAction(this.definitionState.RESTART_TASK, row.id);
             }}
           />
         </div>
-        {roles.CONNECT && roles.CONNECT.includes('UPDATE_STATE') && (
+        {roles.CONNECTOR && roles.CONNECTOR.includes('UPDATE_STATE') && (
           <aside>
             {definition.paused ? (
               <li className="aside-button">
