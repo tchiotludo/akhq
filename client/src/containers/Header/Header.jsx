@@ -39,7 +39,7 @@ class Header extends Root {
       sessionStorage.setItem('login', currentUserData.logged);
       sessionStorage.setItem('user', 'default');
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
-      sessionStorage.removeItem('jwtToken');
+      localStorage.removeItem('jwtToken');
       this.setState({ login: currentUserData.logged }, () => {
         this.props.history.replace({
           pathname: '/ui/login',
