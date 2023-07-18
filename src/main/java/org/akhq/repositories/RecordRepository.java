@@ -164,7 +164,7 @@ public class RecordRepository extends AbstractRepository {
 
             for (ConsumerRecord<byte[], byte[]> record : records) {
                 Record current = newRecord(record, options, topic);
-                if (searchFilter(options, current)) {
+                if (matchFilters(options, current)) {
                     filterMessageLength(current);
                     list.add(current);
                 }
@@ -323,7 +323,7 @@ public class RecordRepository extends AbstractRepository {
                             break;
                         }
                         Record current = newRecord(record, options, topic);
-                        if (searchFilter(options, current)) {
+                        if (matchFilters(options, current)) {
                             filterMessageLength(current);
                             list.add(current);
                         }
@@ -711,7 +711,7 @@ public class RecordRepository extends AbstractRepository {
                 currentEvent.updateProgress(record);
 
                 Record current = newRecord(record, options, topic);
-                if (searchFilter(options, current)) {
+                if (matchFilters(options, current)) {
                     list.add(current);
                     matchesCount.getAndIncrement();
 
@@ -741,49 +741,49 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    private static boolean searchFilter(BaseOptions options, Record record) {
+    private static boolean matchFilters(BaseOptions options, Record record) {
 
         if (options.getSearch() != null) {
-            return search(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
+            return matchFilter(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
         } else {
             if (options.getSearchByKey() != null) {
-                if (!search(options.getSearchByKey(), Collections.singletonList(record.getKey()))) {
+                if (!matchFilter(options.getSearchByKey(), Collections.singletonList(record.getKey()))) {
                     return false;
                 }
             }
 
             if (options.getSearchByValue() != null) {
-                if (!search(options.getSearchByValue(), Collections.singletonList(record.getValue()))) {
+                if (!matchFilter(options.getSearchByValue(), Collections.singletonList(record.getValue()))) {
                     return false;
                 }
             }
 
             if (options.getSearchByHeaderKey() != null) {
-                if (!search(options.getSearchByHeaderKey(), record.getHeadersKeySet())) {
+                if (!matchFilter(options.getSearchByHeaderKey(), record.getHeadersKeySet())) {
                     return false;
                 }
             }
 
             if (options.getSearchByHeaderValue() != null) {
-                if (!search(options.getSearchByHeaderValue(), record.getHeadersValues())) {
+                if (!matchFilter(options.getSearchByHeaderValue(), record.getHeadersValues())) {
                     return false;
                 }
             }
 
             if (options.getSearchByKeySubject() != null) {
-                if (!search(options.getSearchByKeySubject(), Collections.singletonList(record.getKeySubject()))) {
+                if (!matchFilter(options.getSearchByKeySubject(), Collections.singletonList(record.getKeySubject()))) {
                     return false;
                 }
             }
 
             if (options.getSearchByValueSubject() != null) {
-                return search(options.getSearchByValueSubject(), Collections.singletonList(record.getValueSubject()));
+                return matchFilter(options.getSearchByValueSubject(), Collections.singletonList(record.getValueSubject()));
             }
         }
         return true;
     }
 
-    private static boolean search(Search searchFilter, Collection<String> stringsToSearch) {
+    private static boolean matchFilter(Search searchFilter, Collection<String> stringsToSearch) {
         switch (searchFilter.searchMatchType) {
             case EQUALS:
                 return equalsAll(searchFilter.getText(), stringsToSearch);
@@ -794,6 +794,13 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
+    /**
+     * Check that at least one pattern in the search string is part of the list of strings
+     *
+     * @param search - the search string that will be splited on whitespace to build a patterns list
+     * @param in - all the input string to check
+     * @return true if we find one of the patterns in all the strings
+     */
     private static boolean containsAll(String search, Collection<String> in) {
         if (search.equals("null")) {
             return in
@@ -802,19 +809,18 @@ public class RecordRepository extends AbstractRepository {
         }
 
         String[] split = search.toLowerCase().split("\\s");
-        for (String s : in) {
-            if(s != null) {
-                s = s.toLowerCase();
-                for (String k : split) {
-                    if (s.contains(k)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+
+        return in.parallelStream().filter(Objects::nonNull)
+            .anyMatch(s -> Stream.of(split).anyMatch(s.toLowerCase()::contains));
     }
 
+    /**
+     * Check that at least one item of the list of strings matches the search string
+     *
+     * @param search - the search string
+     * @param in - all the input string to check
+     * @return true if there is one match
+     */
     private static boolean equalsAll(String search, Collection<String> in) {
         if (search.equals("null")) {
             return in
@@ -823,16 +829,9 @@ public class RecordRepository extends AbstractRepository {
         }
 
         String[] split = search.toLowerCase().split("\\s");
-        for (String s : in) {
-            if(s != null) {
-                final String lowerS = s.toLowerCase();
 
-                return Stream.of(split)
-                    .filter(lowerS::equals)
-                    .count() == split.length;
-            }
-        }
-        return false;
+        return in.parallelStream().filter(Objects::nonNull)
+            .anyMatch(s -> Arrays.asList(split).contains(s.toLowerCase()));
     }
 
     private static boolean notContainsAll(String search, Collection<String> in) {
@@ -843,16 +842,11 @@ public class RecordRepository extends AbstractRepository {
         }
 
         String[] split = search.toLowerCase().split("\\s");
-        for (String s : in) {
-            if(s != null) {
-                final String lowerS = s.toLowerCase();
 
-                return Stream.of(split)
-                    .filter(lowerS::contains)
-                    .count() == split.length;
-            }
-        }
-        return true;
+        return in.parallelStream()
+            .filter(Objects::nonNull)
+            .anyMatch(s -> Stream.of(split)
+                .noneMatch(s.toLowerCase()::contains));
     }
 
     @ToString
@@ -965,7 +959,7 @@ public class RecordRepository extends AbstractRepository {
                 );
 
                 Record current = newRecord(record, options, state.getTopics().get(record.topic()));
-                if (searchFilter(options, current)) {
+                if (matchFilters(options, current)) {
                     list.add(current);
                     log.trace(
                         "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
