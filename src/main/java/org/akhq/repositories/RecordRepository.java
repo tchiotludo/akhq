@@ -52,6 +52,7 @@ import jakarta.inject.Singleton;
 @Singleton
 @Slf4j
 public class RecordRepository extends AbstractRepository {
+    public static final String SEARCH_SPLIT_REGEX = " (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
     @Inject
     private KafkaModule kafkaModule;
 
@@ -741,7 +742,7 @@ public class RecordRepository extends AbstractRepository {
         });
     }
 
-    private static boolean matchFilters(BaseOptions options, Record record) {
+    private boolean matchFilters(BaseOptions options, Record record) {
 
         if (options.getSearch() != null) {
             return matchFilter(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
@@ -783,7 +784,7 @@ public class RecordRepository extends AbstractRepository {
         return true;
     }
 
-    private static boolean matchFilter(Search searchFilter, Collection<String> stringsToSearch) {
+    private boolean matchFilter(Search searchFilter, Collection<String> stringsToSearch) {
         switch (searchFilter.searchMatchType) {
             case EQUALS:
                 return equalsAll(searchFilter.getText(), stringsToSearch);
@@ -795,58 +796,81 @@ public class RecordRepository extends AbstractRepository {
     }
 
     /**
-     * Check that at least one pattern in the search string is part of the list of strings
-     *
-     * @param search - the search string that will be splited on whitespace to build a patterns list
-     * @param in - all the input string to check
-     * @return true if we find one of the patterns in all the strings
-     */
-    private static boolean containsAll(String search, Collection<String> in) {
-        if (search.equals("null")) {
-            return in
-                .stream()
-                .allMatch(Objects::isNull);
-        }
-
-        String[] split = search.toLowerCase().split("\\s");
-
-        return in.parallelStream().filter(Objects::nonNull)
-            .anyMatch(s -> Stream.of(split).anyMatch(s.toLowerCase()::contains));
-    }
-
-    /**
-     * Check that at least one item of the list of strings matches the search string
+     * Check that one of the input strings contains at least one time the patterns in the search string
+     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
      *
      * @param search - the search string
      * @param in - all the input string to check
-     * @return true if there is one match
+     * @return true if input matches at least one time the patterns
      */
-    private static boolean equalsAll(String search, Collection<String> in) {
+    private boolean containsAll(String search, Collection<String> in) {
         if (search.equals("null")) {
             return in
                 .stream()
                 .allMatch(Objects::isNull);
         }
 
-        String[] split = search.toLowerCase().split("\\s");
-
-        return in.parallelStream().filter(Objects::nonNull)
-            .anyMatch(s -> Arrays.asList(split).contains(s.toLowerCase()));
+        return in.parallelStream()
+            .anyMatch(s -> extractSearchPatterns(search)
+                .stream()
+                .anyMatch(s.toLowerCase()::contains));
     }
 
-    private static boolean notContainsAll(String search, Collection<String> in) {
+    /**
+     * Check that one of the input strings matches exactly at least one time the patterns in the search string
+     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
+     *
+     * @param search - the search string
+     * @param in - all the input string to check
+     * @return true if one of the input matches exactly at least one time the patterns
+     */
+    private boolean equalsAll(String search, Collection<String> in) {
+        if (search.equals("null")) {
+            return in
+                .stream()
+                .allMatch(Objects::isNull);
+        }
+
+        return in.parallelStream().filter(Objects::nonNull)
+            .anyMatch(s -> extractSearchPatterns(search).contains(s.toLowerCase()));
+    }
+
+    /**
+     * Check that one of the input strings does not contain at least one time the patterns in the search string
+     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
+     *
+     * @param search - the search string
+     * @param in - all the input string to check
+     * @return true if input does not contain at least one time the patterns
+     */
+    private boolean notContainsAll(String search, Collection<String> in) {
         if (search.equals("null")) {
             return in
                 .stream()
                 .noneMatch(Objects::isNull);
         }
 
-        String[] split = search.toLowerCase().split("\\s");
-
         return in.parallelStream()
             .filter(Objects::nonNull)
-            .anyMatch(s -> Stream.of(split)
+            .anyMatch(s -> extractSearchPatterns(search)
+                .stream()
                 .noneMatch(s.toLowerCase()::contains));
+    }
+
+    /**
+     * Extract search patterns from the search string by splitting on whitespace
+     * If a pattern is enclosed with double quotes, the white space will be ignored during splitting
+     *
+     * @param searchString the search string to split into patterns
+     * @return search patterns
+     */
+    private List<String> extractSearchPatterns(String searchString) {
+        return Arrays.stream(searchString.toLowerCase().split(SEARCH_SPLIT_REGEX, -1))
+            .map(s -> {
+                // Update pattern enclosed with double quotes by removing backslashes and start/end double quotes
+                s = s.replaceAll("\\\\", "");
+                return s.startsWith("\"") ? s.substring(1, s.length() - 1) : s;
+            }).collect(Collectors.toList());
     }
 
     @ToString
