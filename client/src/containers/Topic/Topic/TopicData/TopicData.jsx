@@ -712,6 +712,14 @@ class TopicData extends Root {
         {this._renderSearchFilter('keySubject', 'Key Subject')}
         {this._renderSearchFilter('valueSubject', 'Value Subject')}
 
+        <p style={{ fontStyle: 'italic' }}>
+          * Whitespaces in search string are considered as separators for search patterns unless
+          enclosed with double quotes
+          <br />
+          In case of multiple patterns, OR operator is applied for Contains / Equals. AND is applied
+          for Not contains
+        </p>
+
         <div style={{ display: 'flex' }}>
           <button
             className="btn btn-primary inline-block search"
