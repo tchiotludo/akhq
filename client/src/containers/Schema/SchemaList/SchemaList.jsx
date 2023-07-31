@@ -60,6 +60,11 @@ class SchemaList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
+
+    // Cancel previous requests is there are some to prevent UI issues
+    this.cancelAxiosRequests();
+    this.renewCancelToken();
+
     this.setState({ pageNumber: 1, searchData }, () => {
       this.getSchemaRegistry();
     });
