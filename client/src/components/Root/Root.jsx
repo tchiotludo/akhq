@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import axios from 'axios';
 import { get, put, post, remove } from '../../utils/api';
-import { uriLogin } from '../../utils/endpoints';
 
 class Root extends Component {
   cancel = axios.CancelToken.source();
@@ -15,19 +14,6 @@ class Root extends Component {
     }
 
     this.cancelAxiosRequests();
-
-    axios.interceptors.response.use(
-      response => {
-        return response;
-      },
-      error => {
-        // Used for token expiration by redirecting on login page
-        if (error.response.status === 401) {
-          window.location = uriLogin();
-        }
-        return error;
-      }
-    );
   }
 
   cancelAxiosRequests() {
