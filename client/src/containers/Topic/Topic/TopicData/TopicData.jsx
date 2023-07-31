@@ -183,10 +183,10 @@ class TopicData extends Root {
             filters,
             changePage ? nextPage : undefined
           ),
-          sessionStorage.getItem('jwtToken')
+          localStorage.getItem('jwtToken')
             ? {
                 headers: {
-                  Authorization: 'Bearer ' + sessionStorage.getItem('jwtToken')
+                  Authorization: 'Bearer ' + localStorage.getItem('jwtToken')
                 }
               }
             : {}

@@ -39,11 +39,17 @@ class Login extends Form {
       };
 
       login(uriLogin(), body).then(res => {
+        // Handle login failed for bearer auth
+        if (res.status === 500) {
+          toast.error('Wrong Username or Password!');
+          return;
+        }
+
         if (res.body) {
           res.json().then(r => {
             // Support JWT authentication through access_token
             if (r.access_token) {
-              sessionStorage.setItem('jwtToken', r.access_token);
+              localStorage.setItem('jwtToken', r.access_token);
               this.getData();
             }
           });
@@ -52,6 +58,7 @@ class Login extends Form {
         }
       });
     } catch (err) {
+      // Handle login failed for cookie auth
       toast.error('Wrong Username or Password!');
     }
   }

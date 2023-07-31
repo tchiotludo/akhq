@@ -43,9 +43,9 @@ class Root extends Component {
     let config = new Map();
     config.cancelToken = this.cancel.token;
 
-    if (sessionStorage.getItem('jwtToken')) {
+    if (localStorage.getItem('jwtToken')) {
       config.headers = {};
-      config.headers['Authorization'] = 'Bearer ' + sessionStorage.getItem('jwtToken');
+      config.headers['Authorization'] = 'Bearer ' + localStorage.getItem('jwtToken');
     }
 
     return config;

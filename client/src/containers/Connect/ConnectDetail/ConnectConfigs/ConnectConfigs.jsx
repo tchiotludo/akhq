@@ -189,7 +189,7 @@ class ConnectConfigs extends Form {
             disabled={
               plugin.name === 'name' ||
               plugin.name === 'connector.class' ||
-              !(roles.CONNECT && roles.CONNECT.includes('UPDATE'))
+              !(roles.CONNECTOR && roles.CONNECTOR.includes('UPDATE'))
             }
             placeholder={plugin.defaultValue > 0 ? plugin.defaultValue : ''}
             onChange={({ currentTarget: input }) => {
@@ -332,7 +332,7 @@ class ConnectConfigs extends Form {
                   <tbody>{display}</tbody>
                 </table>
               </div>
-              {roles.CONNECT && roles.CONNECT.include('UPDATE') && (
+              {roles.CONNECTOR && roles.CONNECTOR.includes('UPDATE') && (
                 <div style={{ left: 0, width: '100%' }} className="khq-submit">
                   <button
                     type={'submit'}

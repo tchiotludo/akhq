@@ -89,10 +89,10 @@ class Tail extends Root {
     const { search, selectedTopics, maxRecords } = this.state;
     this.eventSource = new EventSourcePolyfill(
       uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords)),
-      sessionStorage.getItem('jwtToken')
+      localStorage.getItem('jwtToken')
         ? {
             headers: {
-              Authorization: 'Bearer ' + sessionStorage.getItem('jwtToken')
+              Authorization: 'Bearer ' + localStorage.getItem('jwtToken')
             }
           }
         : {}
