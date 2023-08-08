@@ -21,7 +21,9 @@ RUN addgroup "akhq" \
     "akhq" 
 
 # Chown to write configuration
-RUN chown -R akhq:akhq /app
+# Chown to write configuration
+RUN chown -R akhq:akhq /app && \
+    chmod 777 /app
 # Use the 'akhq' user
 USER akhq
 ENTRYPOINT ["docker-entrypoint.sh"]
