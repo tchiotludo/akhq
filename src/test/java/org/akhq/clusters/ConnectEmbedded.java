@@ -9,9 +9,9 @@ import org.apache.kafka.connect.runtime.WorkerConfigTransformer;
 import org.apache.kafka.connect.runtime.distributed.DistributedConfig;
 import org.apache.kafka.connect.runtime.distributed.DistributedHerder;
 import org.apache.kafka.connect.runtime.isolation.Plugins;
+import org.apache.kafka.connect.runtime.rest.RestClient;
 import org.apache.kafka.connect.runtime.rest.RestServer;
 import org.apache.kafka.connect.storage.*;
-import org.apache.kafka.connect.util.ConnectUtils;
 
 import java.net.URI;
 import java.util.Map;
@@ -31,8 +31,8 @@ public class ConnectEmbedded {
         plugins.compareAndSwapWithDelegatingLoader();
         DistributedConfig config = new DistributedConfig(workerProps);
 
-
-        RestServer rest = new RestServer(config);
+        RestClient restClient = new RestClient(config);
+        RestServer rest = new RestServer(config, restClient);
         rest.initializeServer();
 
         URI advertisedUrl = rest.advertisedUrl();
@@ -61,6 +61,7 @@ public class ConnectEmbedded {
             statusBackingStore,
             configBackingStore,
             advertisedUrl.toString(),
+            restClient,
             new NoneConnectorClientConfigOverridePolicy()
         );
 

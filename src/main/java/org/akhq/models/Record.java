@@ -9,8 +9,8 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import kafka.coordinator.group.GroupMetadataManager;
+import kafka.coordinator.transaction.BaseKey;
 import kafka.coordinator.transaction.TransactionLog;
-import kafka.coordinator.transaction.TxnKey;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
@@ -231,12 +231,12 @@ public class Record {
         } else if (topic.isInternalTopic() && topic.getName().equals("__transaction_state")) {
             try {
                 if (isKey) {
-                    TxnKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
+                    BaseKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
                     return avroToJsonSerializer.getMapper().writeValueAsString(
                         Map.of("transactionalId", txnKey.transactionalId(), "version", txnKey.version())
                     );
                 } else {
-                    TxnKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(this.bytesKey));
+                    BaseKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(this.bytesKey));
                     return avroToJsonSerializer.getMapper().writeValueAsString(TransactionLog.readTxnRecordValue(txnKey.transactionalId(), ByteBuffer.wrap(payload)));
                 }
             } catch (Exception exception) {

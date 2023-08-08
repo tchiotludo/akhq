@@ -5,6 +5,7 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
+import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterSchemaResponse;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
@@ -179,14 +180,14 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema register(String clusterId, String subject, String type, String schema, List<SchemaReference> references) throws IOException, RestClientException {
-        int id = this.kafkaModule
+        RegisterSchemaResponse registerSchemaResponse = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .registerSchema(schema, type != null? type: "AVRO", references, subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
 
-        if (latestVersion.getId() != id) {
-            throw new IllegalArgumentException("Invalid id from registry expect " + id + " got last version " + latestVersion.getId());
+        if (latestVersion.getId() != registerSchemaResponse.getId()) {
+            throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId() + " got last version " + latestVersion.getId());
         }
 
         return latestVersion;
