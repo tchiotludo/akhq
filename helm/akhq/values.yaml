@@ -121,6 +121,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   paths:
     - /
+  pathType: "ImplementationSpecific"
   hosts:
     - akhq.demo.com
   tls: []
