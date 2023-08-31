@@ -2,6 +2,8 @@
 
 First you need a [configuration files](./configuration/README.md) in order to configure AKHQ connections to Kafka Brokers.
 
+Configuration file default path is `/app/application.yml` (for YML file), so expected to be at the same folder as AKHQ application files. Configuration file path can target any path through `MICRONAUT_CONFIG_FILES` environment variable, for example: `MICRONAUT_CONFIG_FILES=/somepath/application.yml`.
+
 ### Docker
 
 ```sh
