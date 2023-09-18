@@ -2,6 +2,12 @@
 
 Groups allow you to limit user
 
+::: warning
+With PR #1472 AKHQ introduced a new, better group management system. It was merged into main codebase after
+release 0.24.0. If you are using v0.24.0 or below, please refer to documentation in `docs/` subdirectory
+as shipped with your release.
+:::
+
 Define groups with specific roles for your users
 * `akhq.security.default-group`: Default group for all the user even unlogged user
 
