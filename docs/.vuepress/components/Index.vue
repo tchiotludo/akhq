@@ -500,6 +500,9 @@ export default {
             .then(value => {
                 this.contributors = value.data;
             })
+            .catch(reason => {
+                console.error(reason);
+            })
     },
     methods: {
     }
