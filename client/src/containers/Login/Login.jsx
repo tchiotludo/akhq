@@ -68,18 +68,22 @@ class Login extends Form {
     const currentUserData = res.data;
 
     if (currentUserData.logged) {
-      sessionStorage.setItem('login', true);
-      sessionStorage.setItem('user', currentUserData.username);
-      sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
+      if (currentUserData.roles) {
+        sessionStorage.setItem('login', true);
+        sessionStorage.setItem('user', currentUserData.username);
+        sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
 
-      const returnTo = sessionStorage.getItem('returnTo');
-      sessionStorage.removeItem('returnTo');
+        const returnTo = sessionStorage.getItem('returnTo');
+        sessionStorage.removeItem('returnTo');
 
-      this.props.history.push({
-        pathname: returnTo || '/ui'
-      });
+        this.props.history.push({
+          pathname: returnTo || '/ui'
+        });
 
-      window.location.reload(true);
+        window.location.reload(true);
+      } else {
+        toast.error('User logged in but no roles assigned');
+      }
     } else {
       toast.error('Wrong Username or Password!');
     }
