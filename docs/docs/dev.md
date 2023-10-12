@@ -13,7 +13,7 @@ The dev jar is not publish on GitHub, you have 2 solutions to have the `dev` jar
 Get it from docker image
 ```bash
 docker pull tchiotludo/akhq:dev
-docker run --rm --name=akhq -it tchiotludo/akhq:dev
+docker run --rm --name=akhq -v /tmp/akhq/application-dev.yml:/app/application.yml -it tchiotludo/akhq:dev
 docker cp akhq:/app/akhq.jar .
 ```
 Or build it with a `./gradlew shadowJar`, the jar will be located here `build/libs/akhq-*.jar`
