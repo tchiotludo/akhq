@@ -262,7 +262,7 @@ class TopicControllerTest extends AbstractTest {
     @Test
     @Order(7)
     void increasePartitionApi() {
-        this.exchange(HttpRequest.POST(TOPIC_URL + "/partitions",
+        this.exchange(HttpRequest.POST(CREATE_TOPIC_URL + "/partitions",
             ImmutableMap.of("partition", 4)));
     }
 
