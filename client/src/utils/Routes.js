@@ -13,6 +13,7 @@ import ConnectCreate from '../containers/Connect/ConnectCreate/ConnectCreate';
 import Connect from '../containers/Connect/ConnectDetail/Connect';
 import TopicCreate from '../containers/Topic/TopicCreate/TopicCreate';
 import TopicProduce from '../containers/Topic/TopicProduce';
+import TopicIncreaseParition from '../containers/Topic/Topic/TopicPartitions/TopicIncreaseParition';
 import TopicCopy from '../containers/Topic/TopicCopy';
 import Loading from '../containers/Loading';
 import ConsumerGroupList from '../containers/ConsumerGroup/ConsumerGroupList';
@@ -163,6 +164,14 @@ class Routes extends Root {
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
                   component={TopicProduce}
+                />
+              )}
+
+              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
+                <Route
+                  exact
+                  path="/ui/:clusterId/topic/:topicId/increasepartition"
+                  component={TopicIncreaseParition}
                 />
               )}
 
