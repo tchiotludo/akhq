@@ -48,7 +48,8 @@ class TopicProduce extends Form {
     topicsSearchValue: '',
     multiMessage: false,
     tombstone: false,
-    valuePlaceholder: '{"param": "value"}'
+    valuePlaceholder: '{"param": "value"}',
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   schema = {
@@ -62,6 +63,7 @@ class TopicProduce extends Form {
 
   async componentDidMount() {
     const { clusterId, topicId } = this.props.match.params;
+    const { roles } = this.state;
 
     let response = await this.getApi(uriTopicsPartitions(clusterId, topicId));
     let partitions = response.data.map(item => {
@@ -78,7 +80,10 @@ class TopicProduce extends Form {
       }
     });
 
-    await this.getPreferredSchemaForTopic();
+    if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
+      await this.getPreferredSchemaForTopic();
+    }
+
     const topicEventData = popProduceToTopicValues();
     if (Object.keys(topicEventData).length) {
       await this.initByTopicEvent(topicEventData);
@@ -353,6 +358,8 @@ class TopicProduce extends Form {
   }
 
   renderResults = (results, searchValue, selectedValue, tag) => {
+    const { roles } = this.state;
+
     return (
       <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
         <ul
@@ -391,7 +398,9 @@ class TopicProduce extends Form {
                         } else if (tag === 'topicId') {
                           if (selectedValue !== key) {
                             this.setState({ topicId: key });
-                            this.getPreferredSchemaForTopic();
+                            if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
+                              this.getPreferredSchemaForTopic();
+                            }
                           }
                         }
                       }}
