@@ -76,6 +76,9 @@ and expect the following JSON as response :
   }
 }
 ````
+::: warning
+The response must contain the `Content-Type: application/json` header to prevent any issue when reading the response.
+:::
 
 **Groovy API**
 ````yaml
