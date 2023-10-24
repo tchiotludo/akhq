@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigRepositoryTest extends AbstractTest {
     @Inject
@@ -18,6 +19,7 @@ class ConfigRepositoryTest extends AbstractTest {
 
     @Test
     void updateTopic() throws ExecutionException, InterruptedException {
+        // write config the first time
         repository.updateTopic(
             KafkaTestCluster.CLUSTER_ID,
             KafkaTestCluster.TOPIC_HUGE,
@@ -30,6 +32,7 @@ class ConfigRepositoryTest extends AbstractTest {
         assertEquals("1", getConfig("file.delete.delay.ms").getValue());
         assertEquals("2", getConfig("index.interval.bytes").getValue());
 
+        // update config 1
         repository.updateTopic(
             KafkaTestCluster.CLUSTER_ID,
             KafkaTestCluster.TOPIC_HUGE,
@@ -41,7 +44,7 @@ class ConfigRepositoryTest extends AbstractTest {
         assertEquals("3", getConfig("file.delete.delay.ms").getValue());
         assertEquals("2", getConfig("index.interval.bytes").getValue());
 
-
+        // update config 2
         repository.updateTopic(
             KafkaTestCluster.CLUSTER_ID,
             KafkaTestCluster.TOPIC_HUGE,
@@ -52,6 +55,21 @@ class ConfigRepositoryTest extends AbstractTest {
 
         assertEquals("3", getConfig("file.delete.delay.ms").getValue());
         assertEquals("4", getConfig("index.interval.bytes").getValue());
+
+        // reset config index.interval.bytes (leave config file.delete.delay.ms unchanged)
+        repository.updateTopic(
+            KafkaTestCluster.CLUSTER_ID,
+            KafkaTestCluster.TOPIC_HUGE,
+            Collections.singletonList(
+                new Config("index.interval.bytes", "")
+            )
+        );
+
+        Config unchangedConfig = getConfig("file.delete.delay.ms");
+        assertTrue(unchangedConfig.getSource().name().startsWith("DYNAMIC_"));
+
+        Config resettedConfig = getConfig("index.interval.bytes");
+        assertTrue(resettedConfig.getSource().name().startsWith("DEFAULT_"));
     }
 
     private Config getConfig(String name) throws ExecutionException, InterruptedException {

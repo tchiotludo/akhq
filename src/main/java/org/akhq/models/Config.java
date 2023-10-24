@@ -46,6 +46,10 @@ public class Config {
         }
     }
 
+    public boolean shouldResetToDefault() {
+        return this.getValue().isBlank();
+    }
+
     private String findDescription(String name) {
         String docName = name.toUpperCase().replace(".", "_") + "_DOC";
 
