@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Singleton
-public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
+public class BasicAuthAuthenticationProvider implements AuthenticationProvider<HttpRequest<?>> {
     @Inject
     private SecurityProperties securityProperties;
     @Inject

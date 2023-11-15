@@ -4,7 +4,7 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 

@@ -12,6 +12,7 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.utils.SecurityService;
+import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -228,6 +229,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
+    @Serdeable.Serializable
     public static class AuthDefinition {
         private boolean loginEnabled;
         private boolean formEnabled;
@@ -255,6 +257,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
+    @Serdeable.Serializable
     public static class AuthUser {
         private boolean logged = false;
         private String username;

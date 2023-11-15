@@ -7,7 +7,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import org.akhq.models.security.ClaimProvider;
 import org.akhq.models.security.ClaimRequest;

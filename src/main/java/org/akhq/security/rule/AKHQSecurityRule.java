@@ -1,6 +1,7 @@
 package org.akhq.security.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.AbstractSecurityRule;
@@ -28,11 +29,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public class AKHQSecurityRule extends AbstractSecurityRule {
+public abstract class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     /**
      * @param rolesFinder Roles Parser
      */
-    public AKHQSecurityRule(RolesFinder rolesFinder) {
+    protected AKHQSecurityRule(RolesFinder rolesFinder) {
         super(rolesFinder);
     }
 
@@ -40,7 +41,8 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
     SecurityProperties securityProperties;
 
     @Override
-    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, RouteMatch<?> routeMatch, Authentication authentication) {
+    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
+        RouteMatch<?> routeMatch = request.getAttribute(HttpAttributes.ROUTE_MATCH, RouteMatch.class).orElse(null);
         if (!(routeMatch instanceof MethodBasedRouteMatch)) {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }
@@ -71,8 +73,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
             .flatMap(Collection::stream)
             // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
             // Need to serialize Object to Group manually in the stream
-            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
-            .collect(Collectors.toList());
+            .map(gb -> new ObjectMapper().convertValue(gb, Group.class)).toList();
 
         boolean allowed = userGroups.stream()
             // Keep only bindings matching on cluster name
@@ -98,6 +99,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;
 
+    @Override
     public int getOrder() {
         return ORDER;
     }

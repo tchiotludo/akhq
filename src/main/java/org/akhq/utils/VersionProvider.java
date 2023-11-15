@@ -5,7 +5,7 @@ import io.micronaut.context.env.PropertiesPropertySourceLoader;
 import io.micronaut.core.util.StringUtils;
 import lombok.Getter;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.Objects;

@@ -1,6 +1,6 @@
 package org.akhq.utils;
 
-import io.micronaut.core.convert.ConversionService;
+import io.micronaut.core.convert.MutableConversionService;
 import io.micronaut.core.convert.TypeConverterRegistrar;
 
 import java.time.Instant;
@@ -11,7 +11,7 @@ import jakarta.inject.Singleton;
 @Singleton
 public class ConverterRegistrar implements TypeConverterRegistrar {
     @Override
-    public void register(ConversionService<?> conversionService) {
+    public void register(MutableConversionService conversionService) {
         // CharSequence -> Instant
         conversionService.addConverter(
                 CharSequence.class,

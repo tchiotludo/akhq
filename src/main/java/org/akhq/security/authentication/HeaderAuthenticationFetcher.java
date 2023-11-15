@@ -22,14 +22,14 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 @Requires(property = "akhq.security.header-auth.user-header")
 @Singleton
 @Slf4j
-public class HeaderAuthenticationFetcher implements AuthenticationFetcher {
+public abstract class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRequest<?>> {
     @Inject
     HeaderAuth headerAuth;
 
