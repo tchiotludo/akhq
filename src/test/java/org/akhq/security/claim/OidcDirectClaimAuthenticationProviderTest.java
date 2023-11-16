@@ -80,7 +80,7 @@ class OidcDirectClaimAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -110,7 +110,7 @@ class OidcDirectClaimAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"
@@ -132,7 +132,7 @@ class OidcDirectClaimAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"

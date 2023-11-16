@@ -75,7 +75,7 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList("ldap-admin")));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -113,7 +113,7 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-admin", "ldap-operator")));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -158,7 +158,7 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(List.of("ldap-admin")));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                         .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
                                         "user2",
                                         "pass"
@@ -202,7 +202,7 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList(("ldap-other-group"))));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"

@@ -22,10 +22,7 @@ import org.mockito.Mockito;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,7 +77,7 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -116,7 +113,7 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -153,7 +150,7 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -199,7 +196,7 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user2",
                         "pass"
@@ -244,7 +241,7 @@ class OidcAuthenticationProviderTest {
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.of(jwt));
 
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
@@ -265,12 +262,12 @@ class OidcAuthenticationProviderTest {
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .thenReturn(Optional.empty());
-
-        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
-                        "user",
-                        "pass"
-                ))).blockingFirst());
+        Flowable authenticateRequest = Flowable
+            .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                "user",
+                "pass"
+            )));
+        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> authenticateRequest.blockingFirst());
 
         assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
         assertNotNull(authenticationException.getResponse());
