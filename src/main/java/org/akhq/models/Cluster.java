@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class Cluster {
     private String id;
     private final List<Node> nodes = new ArrayList<>();

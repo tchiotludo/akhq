@@ -1,6 +1,7 @@
 package org.akhq.configs.security;
 
 import com.google.common.hash.Hashing;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -8,12 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Data
+@Serdeable
 public class BasicAuth {
-    String username;
-    String password;
-    PasswordHash passwordHash = PasswordHash.SHA256;
-    List<String> groups = new ArrayList<>();
+    private String username;
+    private String password;
+    private PasswordHash passwordHash = PasswordHash.SHA256;
+    private List<String> groups = new ArrayList<>();
 
     @SuppressWarnings("UnstableApiUsage")
     public boolean isValidPassword(String password) {

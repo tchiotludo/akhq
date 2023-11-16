@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 
 @ToString
@@ -7,6 +8,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Serdeable
 public class KsqlDbTable {
     private String name;
     private String topic;

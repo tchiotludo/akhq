@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class Node {
     private int id;
     private String host;

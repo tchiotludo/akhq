@@ -8,6 +8,7 @@ import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class Schema {
     @JsonIgnore
     private final Parser parser = new Parser().setValidateDefaults(false);

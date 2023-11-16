@@ -3,6 +3,7 @@ package org.akhq.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class ConnectDefinition {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 

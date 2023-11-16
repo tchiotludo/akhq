@@ -8,13 +8,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import java.lang.Runnable;
-
 @Singleton
 @Slf4j
 @Context
 public class JwtSecurityWarning {
-    protected static String DEFAULT = "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!" +
+    private static final String DEFAULT = "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!" +
         "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!" +
         "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!";
 
@@ -29,13 +27,13 @@ public class JwtSecurityWarning {
 
     @PostConstruct
     public void start() {
-        if (enabled && secret.equals(DEFAULT)) {
+        if (Boolean.TRUE.equals(enabled) && secret.equals(DEFAULT)) {
             logSecurityWarning(() -> {
                 log.warn("You still use the default jwt secret.");
                 log.warn("This known secret can be used to impersonate anyone.");
                 log.warn("Please change 'micronaut.security.token.jwt.signatures.secret.generator.secret' configuration, or ask your administrator to do it !");
             });
-        } else if (!enabled && securityProperties.getGroups() != null && !securityProperties.getGroups().isEmpty()){
+        } else if (Boolean.FALSE.equals(enabled) && securityProperties.getGroups() != null && !securityProperties.getGroups().isEmpty()){
             logSecurityWarning(() -> {
                 log.warn("You have set a security group config but did not set the jwt secret.");
                 log.warn("This means that the API request will not be checked against the security group config.");

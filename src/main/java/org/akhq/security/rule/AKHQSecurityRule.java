@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public abstract class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
+public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     /**
      * @param rolesFinder Roles Parser
      */
-    protected AKHQSecurityRule(RolesFinder rolesFinder) {
+    public AKHQSecurityRule(RolesFinder rolesFinder) {
         super(rolesFinder);
     }
 
@@ -84,7 +84,7 @@ public abstract class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<
             .map(binding -> securityProperties.getRoles().entrySet().stream()
                 .filter(entry -> entry.getKey().equals(binding.getRole()))
                 .flatMap(rb -> rb.getValue().stream())
-                .collect(Collectors.toList()))
+                .toList())
             // Flatten roles
             .flatMap(Collection::stream)
             // Match on Resource & Action
@@ -99,7 +99,7 @@ public abstract class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;
 
-    @Override
+
     public int getOrder() {
         return ORDER;
     }

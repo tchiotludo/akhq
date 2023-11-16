@@ -1,7 +1,6 @@
 package org.akhq.security.rule;
 
 import io.micronaut.context.annotation.Replaces;
-import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;

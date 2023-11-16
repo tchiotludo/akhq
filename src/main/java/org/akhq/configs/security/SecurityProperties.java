@@ -3,14 +3,17 @@ package org.akhq.configs.security;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.convert.format.MapFormat;
 import io.micronaut.core.naming.conventions.StringConvention;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
 @ConfigurationProperties("akhq.security")
 @Data
+@Serdeable
 public class SecurityProperties {
     private List<BasicAuth> basicAuth = new ArrayList<>();
     private String defaultGroup;

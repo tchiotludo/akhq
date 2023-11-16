@@ -1,5 +1,6 @@
 package org.akhq.models;
 
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.*;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class Partition {
     private Node.Partition leader;
     private int id;

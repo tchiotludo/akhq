@@ -1,6 +1,7 @@
 package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigValidationResults;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
+@Serdeable
 public class ConnectPlugin {
     private String className;
     private String type;

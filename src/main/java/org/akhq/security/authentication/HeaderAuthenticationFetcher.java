@@ -29,7 +29,7 @@ import jakarta.inject.Singleton;
 @Requires(property = "akhq.security.header-auth.user-header")
 @Singleton
 @Slf4j
-public abstract class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRequest<?>> {
+public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRequest<?>> {
     @Inject
     HeaderAuth headerAuth;
 
@@ -49,7 +49,7 @@ public abstract class HeaderAuthenticationFetcher implements AuthenticationFetch
         this.ipPatternList = headerAuth.getIpPatterns()
             .stream()
             .map(Pattern::compile)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override
@@ -94,7 +94,7 @@ public abstract class HeaderAuthenticationFetcher implements AuthenticationFetch
                 List<String> groups = groupsHeader
                     .stream()
                     .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())))
-                    .collect(Collectors.toList());
+                    .toList();
 
                 log.debug("Got groups [{}] from groupsHeader [{}] and separator [{}]", groups, groupsHeader, headerAuth.getGroupsHeaderSeparator());
 

@@ -25,6 +25,7 @@ public class ReactStaticResourceResolver extends StaticResourceResolver {
         }
     }
 
+    @Override
     public Optional<URL> resolve(String resourcePath) {
         Optional<URL> resolve = super.resolve(resourcePath);
 

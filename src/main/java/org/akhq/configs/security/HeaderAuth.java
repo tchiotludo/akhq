@@ -2,6 +2,7 @@ package org.akhq.configs.security;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.security.config.SecurityConfigurationProperties;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.akhq.configs.security.ldap.GroupMapping;
 import org.akhq.configs.security.ldap.UserMapping;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Data
+@Serdeable
 @ConfigurationProperties("akhq.security.header-auth")
 public class HeaderAuth {
     String userHeader;

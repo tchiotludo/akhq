@@ -2,6 +2,7 @@ package org.akhq.utils;
 
 import java.util.List;
 
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Serdeable
 public class ResultPagedList<T> {
     private List<T> results;
     private String before;
