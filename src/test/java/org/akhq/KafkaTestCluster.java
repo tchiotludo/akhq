@@ -86,11 +86,16 @@ public class KafkaTestCluster implements Runnable {
      */
     private KafkaTestCluster() {
         this.connectionString = new ConnectionString.ConnectionStringBuilder()
-            .schemaRegistry("http://schema-registry:8085")
+            /*.schemaRegistry("http://schema-registry:8085")
             .kafka("kafka:9092")
             .connect1("http://connect:8083")
             .connect2("http://connect:8084")
-            .ksqlDb("http://ksqldb:8088")
+            .ksqlDb("http://ksqldb:8088")*/
+            .schemaRegistry("http://schema-registry:9091")
+            .kafka("kafka:9092")
+            .connect1("http://connect:9093")
+            .connect2("http://connect:9095")
+            .ksqlDb("http://ksqldb:9096")
             .build();
 
         testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -170,7 +175,7 @@ public class KafkaTestCluster implements Runnable {
             injectTestData();
             log.info("Test data injected");
 
-            Thread.sleep(5000);
+            Thread.sleep(10000);
             log.info("Test data injected sleep done");
 
             if (reuse) {

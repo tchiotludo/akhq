@@ -8,7 +8,6 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
-import io.micronaut.serde.annotation.Serdeable;
 import kafka.coordinator.group.GroupMetadataManager;
 import kafka.coordinator.transaction.BaseKey;
 import kafka.coordinator.transaction.TransactionLog;
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
 public class Record {
     private Topic topic;
     private int partition;

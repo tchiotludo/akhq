@@ -8,7 +8,8 @@ import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
-import io.micronaut.serde.annotation.Serdeable;
+//import io.micronaut.serde.annotation.SerdeImport;
+//import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema.Parser;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
+//@Serdeable
 public class Schema {
     @JsonIgnore
     private final Parser parser = new Parser().setValidateDefaults(false);
@@ -92,6 +93,8 @@ public class Schema {
     @Getter
     @Builder
     @NoArgsConstructor
+    //@SerdeImport(Config.class)
+    //@SerdeImport(io.confluent.kafka.schemaregistry.client.rest.entities.Config.class)
     public static class Config {
         public enum CompatibilityLevelConfig {
             NONE,
@@ -112,6 +115,7 @@ public class Schema {
         }
 
         private CompatibilityLevelConfig compatibilityLevel;
+
 
         public Config(io.confluent.kafka.schemaregistry.client.rest.entities.Config config) {
             this.compatibilityLevel = CompatibilityLevelConfig.valueOf(config.getCompatibilityLevel());

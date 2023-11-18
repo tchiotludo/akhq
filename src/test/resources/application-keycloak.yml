@@ -69,3 +69,9 @@ akhq:
         oidc:
           username-field: preferred_username
           use-oidc-claim: true
+
+
+jackson:
+  bean-introspection-module: false
+  serialization:
+    writeDatesAsTimestamps: false

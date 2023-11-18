@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
@@ -129,7 +130,7 @@ public class NodeController extends AbstractController {
     @AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.ALTER_CONFIG)
     @Post("api/{cluster}/node/{nodeId}/configs")
     @Operation(tags = {"node"}, summary = "Update configs for a node")
-    public List<Config> nodeConfigUpdate(String cluster, Integer nodeId, Map<String, String> configs) throws ExecutionException, InterruptedException {
+    public List<Config> nodeConfigUpdate(String cluster, Integer nodeId, @Body Map<String, String> configs) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
 
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByBroker(cluster, nodeId), false);

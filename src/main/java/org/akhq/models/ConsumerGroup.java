@@ -1,6 +1,5 @@
 package org.akhq.models;
 
-import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
 public class ConsumerGroup {
     private String id;
     private boolean simpleConsumerGroup;

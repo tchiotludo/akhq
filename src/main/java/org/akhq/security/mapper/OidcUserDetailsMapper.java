@@ -118,7 +118,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
             groups = ((Collection<Object>) groupsField)
                     .stream()
                     .map(Objects::toString)
-                    .toList();
+                .collect(Collectors.toList());
         } else if (groupsField instanceof String) {
             groups.add((String) groupsField);
         }

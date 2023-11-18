@@ -2,6 +2,7 @@ package org.akhq.configs.security;
 
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Value;
+//import io.micronaut.serde.annotation.Serdeable;
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.annotation.PostConstruct;
@@ -11,6 +12,7 @@ import jakarta.inject.Singleton;
 @Singleton
 @Slf4j
 @Context
+//@Serdeable
 public class JwtSecurityWarning {
     private static final String DEFAULT = "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!" +
         "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!" +

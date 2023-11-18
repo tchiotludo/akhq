@@ -8,3 +8,8 @@ akhq:
         - description: "Masks last digits of phone numbers"
           search-regex: '"([\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?)[0-9]{4,6}"'
           replacement: '"$1xxxx"'
+
+jackson:
+  bean-introspection-module: false
+  serialization:
+    writeDatesAsTimestamps: false

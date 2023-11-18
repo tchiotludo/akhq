@@ -1,6 +1,7 @@
 package org.akhq.configs;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+//import io.micronaut.serde.annotation.Serdeable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
  * {@code akhq.server.access-log.enabled} or {@code akhq.server.access-log.format} which are directly referenced in that class.
  */
 @ConfigurationProperties("akhq.server")
+//@Serdeable
 public class Server {
 
     private static final String HEADER_KEY = "name";

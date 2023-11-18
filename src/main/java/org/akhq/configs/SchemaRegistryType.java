@@ -1,8 +1,10 @@
 package org.akhq.configs;
 
+//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 
 @Getter
+//@Serdeable
 public enum SchemaRegistryType {
     CONFLUENT((byte) 0x0),
     TIBCO((byte) 0x80);

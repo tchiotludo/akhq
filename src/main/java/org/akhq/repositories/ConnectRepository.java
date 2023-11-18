@@ -79,7 +79,7 @@ public class ConnectRepository extends AbstractRepository {
         Collection<ConnectorDefinition> connectorsFilteredBySearch =
             definitions.stream().filter(connector -> isSearchMatch(search, connector.getName())
                 && isMatchRegex(filters, connector.getName())
-        ).collect(Collectors.toList());
+        ).toList();
 
         ArrayList<ConnectDefinition> filtered = new ArrayList<>();
         for (ConnectorDefinition item : connectorsFilteredBySearch) {
@@ -112,7 +112,7 @@ public class ConnectRepository extends AbstractRepository {
             .getConnectorPlugins()
             .stream()
             .map(s -> mapToConnectPlugin(s, clusterId, connectId))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public ConnectDefinition create(String clusterId, String connectId, String name, Map<String, String> configs) {

@@ -12,7 +12,7 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.utils.SecurityService;
-import io.micronaut.serde.annotation.Serdeable;
+//import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -65,7 +65,7 @@ public class AkhqController extends AbstractController {
             .map(Group::getClusters)
             .flatMap(Collection::stream)
             .distinct()
-            .toList();
+            .collect(Collectors.toList());
 
         return this.connections
             .stream()
@@ -77,14 +77,14 @@ public class AkhqController extends AbstractController {
                 (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
                     .stream()
                     .map(Connect::getName)
-                    .toList(),
+                    .collect(Collectors.toList()),
                 (connection.getKsqldb() != null ? connection.getKsqldb() : new ArrayList<KsqlDb>())
                     .stream()
                     .map(KsqlDb::getName)
-                    .toList()
+                    .collect(Collectors.toList())
 
             ))
-            .toList();
+            .collect(Collectors.toList());
     }
 
     @Secured(SecurityRule.IS_ANONYMOUS)
@@ -97,14 +97,14 @@ public class AkhqController extends AbstractController {
             authDefinition.oidcAuths = oidc.getProviders().entrySet()
                 .stream()
                 .map(e -> new OidcAuth(e.getKey(), e.getValue().getLabel()))
-                .toList();
+                .collect(Collectors.toList());
         }
 
         if (oauth.isEnabled()) {
             authDefinition.oauthAuths = oauth.getProviders().entrySet()
                 .stream()
                 .map(e -> new OauthAuth(e.getKey(), e.getValue().getLabel()))
-                .toList();
+                .collect(Collectors.toList());
         }
 
         if (applicationContext.containsBean(SecurityService.class)) {
@@ -213,9 +213,9 @@ public class AkhqController extends AbstractController {
                 .map(Map.Entry::getValue)
                 .flatMap(Collection::stream)
                 .map(roleBinding -> new AuthUser.AuthPermissions(roleBinding, binding.getPatterns(), binding.getClusters()))
-                .toList())
+                .collect(Collectors.toList()))
             .flatMap(List::stream)
-            .toList();
+            .collect(Collectors.toList());
     }
 
     protected List<AuthUser.AuthPermissions> getRights() {
@@ -229,7 +229,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    @Serdeable
+    //@Serdeable
     public static class AuthDefinition {
         private boolean loginEnabled;
         private boolean formEnabled;
@@ -241,7 +241,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    @Serdeable
+    //@Serdeable
     public static class OidcAuth {
         private String key;
         private String label;
@@ -250,7 +250,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    @Serdeable
+    //@Serdeable
     public static class OauthAuth {
         private String key;
         private String label;
@@ -259,7 +259,7 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    @Serdeable
+    //@Serdeable
     public static class AuthUser {
         private boolean logged = false;
         private String username;
@@ -268,7 +268,7 @@ public class AkhqController extends AbstractController {
         @AllArgsConstructor
         @NoArgsConstructor
         @Getter
-        @Serdeable
+        //@Serdeable
         public static class AuthPermissions {
             @JsonUnwrapped
             private Role role;
@@ -282,7 +282,7 @@ public class AkhqController extends AbstractController {
     @NoArgsConstructor
     @Getter
     @Introspected
-    @Serdeable
+    //@Serdeable
     public static class ClusterDefinition {
         private String id;
         private boolean registry;

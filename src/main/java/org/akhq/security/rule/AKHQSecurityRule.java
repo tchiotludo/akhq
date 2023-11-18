@@ -84,7 +84,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             .map(binding -> securityProperties.getRoles().entrySet().stream()
                 .filter(entry -> entry.getKey().equals(binding.getRole()))
                 .flatMap(rb -> rb.getValue().stream())
-                .toList())
+                .collect(Collectors.toList()))
             // Flatten roles
             .flatMap(Collection::stream)
             // Match on Resource & Action

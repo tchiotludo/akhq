@@ -1,6 +1,5 @@
 package org.akhq.models;
 
-import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,14 +8,12 @@ import org.apache.kafka.clients.admin.DescribeClusterResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @ToString
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
 public class Cluster {
     private String id;
     private final List<Node> nodes = new ArrayList<>();

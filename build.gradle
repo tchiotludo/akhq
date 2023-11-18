@@ -1,7 +1,7 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "4.0.0"
+    id "io.micronaut.application" version "4.2.0"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
@@ -12,16 +12,21 @@ plugins {
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id("org.openrewrite.rewrite") version("latest.release")
+}
+rewrite {     activeRecipe("org.openrewrite.java.micronaut.Micronaut3to4Migration")
+
+        exclusion("**/gradle/**","**/helm/**","**/docs/**,**/docker/**")
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
     targetCompatibility = JavaVersion.toVersion("17")
 }
+application {
+    mainClass.set("org.akhq.App")
+}
 group "org.akhq"
 version "0.25.0"
-application {
-    mainClassName = "org.akhq.App"
-}
 
 repositories {
     mavenLocal()
@@ -74,6 +79,7 @@ micronaut {
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
+    rewrite("org.openrewrite.recipe:rewrite-micronaut:2.1.1")
     // lombok
     annotationProcessor("org.projectlombok:lombok:" + lombokVersion)
     compileOnly("org.projectlombok:lombok:" + lombokVersion)
@@ -82,15 +88,12 @@ dependencies {
     annotationProcessor("io.micronaut:micronaut-inject-java")
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
-    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     implementation("io.micronaut:micronaut-inject")
     implementation("io.micronaut.validation:micronaut-validation")
-    implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-http-server-netty")
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.swagger.core.v3:swagger-annotations")
-    implementation("io.micronaut.serde:micronaut-serde-jackson")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.yaml:snakeyaml")
     implementation("io.micronaut.security:micronaut-security-annotations")
@@ -98,6 +101,7 @@ dependencies {
     implementation("io.micronaut.security:micronaut-security-ldap")
     implementation("io.micronaut.security:micronaut-security-oauth2")
     implementation("io.micronaut:micronaut-management")
+    implementation("io.micronaut:micronaut-retry")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")
     implementation("io.micronaut.cache:micronaut-cache-core")
 
@@ -173,7 +177,7 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic:1.4.8'
+    testImplementation 'ch.qos.logback:logback-classic'
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
@@ -205,9 +209,6 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation 'com.fasterxml.jackson.core:jackson-core:'
-    testImplementation 'com.fasterxml.jackson.core:jackson-annotations'
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 testlogger {

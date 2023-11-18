@@ -7,12 +7,12 @@ micronaut:
       restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
   server:
     thread-selection: AUTO
-    max-request-size: 10MB
+    max-request-size: 10485760
     read-idle-timeout: 10m
     write-idle-timeout: 10m
     idle-timeout: 10m
     netty:
-      max-chunk-size: 10MB
+      max-chunk-size: 10485760
   router:
     static-resources:
       react:
@@ -70,6 +70,7 @@ micronaut:
 jackson:
   serialization:
     writeDatesAsTimestamps: false
+  bean-introspection-module: false
 
 endpoints:
   all:

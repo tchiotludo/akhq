@@ -1,7 +1,7 @@
 package org.akhq.configs.security;
 
 import com.google.common.hash.Hashing;
-import io.micronaut.serde.annotation.Serdeable;
+//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Data
-@Serdeable
+//@Serdeable
 public class BasicAuth {
     private String username;
     private String password;

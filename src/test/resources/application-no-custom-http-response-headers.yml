@@ -10,3 +10,9 @@ akhq:
     dummy-kafka-cluster:
       properties:
         bootstrap.servers: "localhost:9121"
+
+
+jackson:
+  bean-introspection-module: false
+  serialization:
+    writeDatesAsTimestamps: false

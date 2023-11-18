@@ -6,3 +6,8 @@ akhq:
       another:
         - role: topic-read
 
+jackson:
+  bean-introspection-module: false
+  serialization:
+    writeDatesAsTimestamps: false
+

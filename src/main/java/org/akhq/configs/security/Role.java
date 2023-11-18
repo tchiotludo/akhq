@@ -1,12 +1,12 @@
 package org.akhq.configs.security;
 
-import io.micronaut.serde.annotation.Serdeable;
+//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-@Serdeable
+//@Serdeable
 public class Role {
     private List<Resource> resources;
     private List<Action> actions;

@@ -1,6 +1,5 @@
 package org.akhq.models;
 
-import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,6 @@ import java.util.*;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
 public class Partition {
     private Node.Partition leader;
     private int id;
@@ -44,11 +42,11 @@ public class Partition {
         }
 
         if (this.leader == null) {
-            org.apache.kafka.common.Node leader = partitionInfo.leader();
+            org.apache.kafka.common.Node leaderNode = partitionInfo.leader();
             this.leader = new Node.Partition(
-                leader,
+                leaderNode,
                 true,
-                partitionInfo.isr().stream().anyMatch(node -> node.id() == leader.id())
+                partitionInfo.isr().stream().anyMatch(node -> node.id() == leaderNode.id())
             );
         }
     }

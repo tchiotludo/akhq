@@ -1,6 +1,5 @@
 package org.akhq.models;
 
-import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.SaslConfigs;
@@ -19,7 +18,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Serdeable
 public class Config {
     private String name;
     @With

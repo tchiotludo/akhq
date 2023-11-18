@@ -1,7 +1,6 @@
 micronaut:
   application:
     name: akhq
-
   security:
     enabled: true
     endpoints:
@@ -34,14 +33,17 @@ micronaut:
   caches:
     kafka-wrapper:
       maximum-size: 0
-
   server:
     netty:
       logLevel: TRACE
-
   http:
     client:
       read-timeout: 30s
+
+jackson:
+  bean-introspection-module: false
+  serialization:
+    writeDatesAsTimestamps: false
 
 akhq:
   server:
@@ -78,23 +80,23 @@ akhq:
   security:
     roles:
       topic-read:
-        resources: [ "TOPIC", "TOPIC_DATA" ]
-        actions: [ "READ" ]
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ" ]
       topic-write:
-        resources: [ "TOPIC" ]
-        actions: [ "CREATE", "DELETE" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "CREATE", "DELETE" ]
       topic-data-admin:
-        resources: [ "TOPIC", "TOPIC_DATA" ]
-        actions: [ "READ", "CREATE", "DELETE" ]
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ", "CREATE", "DELETE" ]
       schema-delete:
-        resources: [ "SCHEMA" ]
-        actions: [ "DELETE_VERSION" ]
+        - resources: [ "SCHEMA" ]
+          actions: [ "DELETE_VERSION" ]
       acl-read:
-        resources: [ "ACL" ]
-        actions: [ "READ"]
+        - resources: [ "ACL" ]
+          actions: [ "READ"]
       admin:
-        resources: [ "TOPIC", "TOPIC_DATA", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "KSQLDB" ]
-        actions: [ "READ", "CREATE", "UPDATE", "DELETE", "UPDATE_OFFSET", "DELETE_OFFSET", "ALTER_CONFIG", "READ_CONFIG", "DELETE_VERSION", "UPDATE_STATE", "EXECUTE" ]
+        - resources: [ "TOPIC", "TOPIC_DATA", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "KSQLDB" ]
+          actions: [ "READ", "CREATE", "UPDATE", "DELETE", "UPDATE_OFFSET", "DELETE_OFFSET", "ALTER_CONFIG", "READ_CONFIG", "DELETE_VERSION", "UPDATE_STATE", "EXECUTE" ]
     groups:
       admin:
         - role: admin

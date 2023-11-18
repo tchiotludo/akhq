@@ -1,6 +1,5 @@
 package org.akhq.models;
 
-import io.micronaut.serde.annotation.Serdeable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,6 @@ import org.apache.kafka.clients.admin.ReplicaInfo;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Serdeable
 public class LogDir {
     private Integer brokerId;
     private String path;

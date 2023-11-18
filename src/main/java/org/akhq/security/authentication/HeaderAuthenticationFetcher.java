@@ -49,7 +49,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
         this.ipPatternList = headerAuth.getIpPatterns()
             .stream()
             .map(Pattern::compile)
-            .toList();
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
                 List<String> groups = groupsHeader
                     .stream()
                     .flatMap(s -> Arrays.stream(s.split(headerAuth.getGroupsHeaderSeparator())))
-                    .toList();
+                    .collect(Collectors.toList());
 
                 log.debug("Got groups [{}] from groupsHeader [{}] and separator [{}]", groups, groupsHeader, headerAuth.getGroupsHeaderSeparator());
 
