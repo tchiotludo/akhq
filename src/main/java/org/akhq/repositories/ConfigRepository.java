@@ -68,14 +68,20 @@ public class ConfigRepository extends AbstractRepository {
     private void update(String clusterId, ConfigResource.Type type, String name, List<Config> configs) throws ExecutionException, InterruptedException {
         List<ConfigEntry> entries = new ArrayList<>();
 
+        List<String> configNamesToReset = configs.stream()
+            .filter(Config::shouldResetToDefault)
+            .map(Config::getName)
+            .collect(Collectors.toList());
+
         this.find(clusterId, type, Collections.singletonList(name))
             .get(name)
             .stream()
             .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
+            .filter(config -> !configNamesToReset.contains(config.getName()))
             .forEach(config -> entries.add(new ConfigEntry(config.getName(), config.getValue())));
 
-        configs
-            .stream()
+        configs.stream()
+            .filter(config -> !config.shouldResetToDefault())
             .map(config -> new ConfigEntry(config.getName(), config.getValue()))
             .forEach(entries::add);
 
