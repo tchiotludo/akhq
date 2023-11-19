@@ -126,6 +126,10 @@ public class TopicRepository extends AbstractRepository {
         kafkaWrapper.deleteTopics(clusterId, name);
     }
 
+    public void increasePartition(String clusterId, String name, int partitions) throws ExecutionException, InterruptedException {
+        kafkaWrapper.alterTopicPartition(clusterId, name, partitions);
+    }
+
     @Retryable(
         includes = {
             UnknownTopicOrPartitionException.class

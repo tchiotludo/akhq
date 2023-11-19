@@ -79,6 +79,9 @@ export const post = (url, body, config) =>
     axios
       .post(url, body, { ...configs, ...config })
       .then(res => {
+        if (res.status >= 400) {
+          reject(res);
+        }
         resolve(res);
       })
       .catch(err => {

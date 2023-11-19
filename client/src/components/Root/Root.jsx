@@ -42,6 +42,7 @@ class Root extends Component {
   buildConfig() {
     let config = new Map();
     config.cancelToken = this.cancel.token;
+    config.validateStatus = () => true;
 
     if (localStorage.getItem('jwtToken')) {
       config.headers = {};
