@@ -64,10 +64,7 @@ public class SchemaController extends AbstractController {
         Optional<String> search,
         Optional<Integer> page
     ) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        if (search.isPresent())
-            checkIfClusterAndResourceAllowed(cluster, search.get());
-        else
-            checkIfClusterAllowed(cluster);
+        checkIfClusterAllowed(cluster);
 
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
