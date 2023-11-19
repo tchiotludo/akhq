@@ -60,7 +60,8 @@ abstract public class AbstractController {
             .collect(Collectors.toList());
 
         // Add the default group if there is one
-        if (groupBindings.isEmpty() && StringUtils.isNotEmpty(securityProperties.getDefaultGroup())) {
+        if (groupBindings.isEmpty() && StringUtils.isNotEmpty(securityProperties.getDefaultGroup())
+            && securityProperties.getGroups().get(securityProperties.getDefaultGroup()) != null) {
             groupBindings.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
