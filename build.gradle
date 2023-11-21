@@ -12,11 +12,6 @@ plugins {
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
-    id("org.openrewrite.rewrite") version("latest.release")
-}
-rewrite {     activeRecipe("org.openrewrite.java.micronaut.Micronaut3to4Migration")
-
-        exclusion("**/gradle/**","**/helm/**","**/docs/**,**/docker/**")
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -79,7 +74,6 @@ micronaut {
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
-    rewrite("org.openrewrite.recipe:rewrite-micronaut:2.1.1")
     // lombok
     annotationProcessor("org.projectlombok:lombok:" + lombokVersion)
     compileOnly("org.projectlombok:lombok:" + lombokVersion)
@@ -89,6 +83,7 @@ dependencies {
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
     implementation("io.micronaut:micronaut-inject")
+    implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut.validation:micronaut-validation")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-http-server-netty")
@@ -189,6 +184,9 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "org.junit.jupiter:junit-jupiter-params"
     testImplementation "io.micronaut:micronaut-http-client"
+    testImplementation "io.micronaut:micronaut-runtime"
+    testImplementation "io.micronaut:micronaut-management"
+    testImplementation "io.micronaut:micronaut-inject"
     testImplementation "io.micronaut.rxjava2:micronaut-rxjava2-http-client"
 
     // test
@@ -209,6 +207,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
+    testImplementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.101.Final", classifier: "osx-aarch_64"
 }
 
 testlogger {

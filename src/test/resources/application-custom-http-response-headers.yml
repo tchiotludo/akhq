@@ -34,8 +34,3 @@ akhq:
         value: "REMOVE_HEADER"
       - name: "Server"
         value: "REMOVE_HEADER"
-
-jackson:
-  bean-introspection-module: false
-  serialization:
-    writeDatesAsTimestamps: false

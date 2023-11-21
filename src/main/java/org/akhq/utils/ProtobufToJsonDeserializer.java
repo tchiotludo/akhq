@@ -98,7 +98,7 @@ public class ProtobufToJsonDeserializer {
 
         return fileDescriptorsWithDependencies
                 .stream().flatMap(desc -> desc.getMessageTypes().stream())
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     /**
@@ -159,7 +159,7 @@ public class ProtobufToJsonDeserializer {
         List<Descriptor> descriptorsForConfiguredMessageTypes =
                 descriptorsWithDependencies.stream()
                         .filter(mp -> messageType.equals(mp.getFullName()))
-                        .toList();
+                        .collect(Collectors.toList());
 
         if (descriptorsForConfiguredMessageTypes.isEmpty()) {
             throw new SerializationException(String.format("Not found descriptors for topic regex [%s] " +

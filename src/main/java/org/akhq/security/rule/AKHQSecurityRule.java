@@ -73,7 +73,8 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             .flatMap(Collection::stream)
             // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
             // Need to serialize Object to Group manually in the stream
-            .map(gb -> new ObjectMapper().convertValue(gb, Group.class)).toList();
+            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+            .collect(Collectors.toList());
 
         boolean allowed = userGroups.stream()
             // Keep only bindings matching on cluster name
@@ -98,7 +99,6 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     }
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;
-
 
     public int getOrder() {
         return ORDER;

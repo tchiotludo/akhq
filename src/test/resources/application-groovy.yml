@@ -32,8 +32,3 @@ akhq:
             }
         }
 
-jackson:
-  bean-introspection-module: false
-  serialization:
-    writeDatesAsTimestamps: false
-

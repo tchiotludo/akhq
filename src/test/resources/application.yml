@@ -1,6 +1,7 @@
 micronaut:
   application:
     name: akhq
+
   security:
     enabled: true
     endpoints:
@@ -33,17 +34,14 @@ micronaut:
   caches:
     kafka-wrapper:
       maximum-size: 0
+
   server:
     netty:
       logLevel: TRACE
+
   http:
     client:
       read-timeout: 30s
-
-jackson:
-  bean-introspection-module: false
-  serialization:
-    writeDatesAsTimestamps: false
 
 akhq:
   server:

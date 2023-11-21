@@ -4,6 +4,8 @@ micronaut:
   http:
     client:
       follow-redirects: false # Required to ignore /login redirection
+      allow-block-event-loop: true
+      log-level: info
   security:
     enabled: true
     authentication: cookie
@@ -11,10 +13,10 @@ micronaut:
       login:
         path: "/login"
     token:
+      cookie:
+        enabled: true
       jwt:
         enabled: true
-        cookie:
-          enabled: true
         signatures:
           secret:
             generator:

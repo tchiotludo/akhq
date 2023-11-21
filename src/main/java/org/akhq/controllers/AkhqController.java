@@ -12,7 +12,6 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.ldap.configuration.LdapConfiguration;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.utils.SecurityService;
-//import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -229,7 +228,6 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    //@Serdeable
     public static class AuthDefinition {
         private boolean loginEnabled;
         private boolean formEnabled;
@@ -241,7 +239,6 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    //@Serdeable
     public static class OidcAuth {
         private String key;
         private String label;
@@ -250,7 +247,6 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    //@Serdeable
     public static class OauthAuth {
         private String key;
         private String label;
@@ -259,7 +255,6 @@ public class AkhqController extends AbstractController {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    //@Serdeable
     public static class AuthUser {
         private boolean logged = false;
         private String username;
@@ -268,7 +263,6 @@ public class AkhqController extends AbstractController {
         @AllArgsConstructor
         @NoArgsConstructor
         @Getter
-        //@Serdeable
         public static class AuthPermissions {
             @JsonUnwrapped
             private Role role;
@@ -282,7 +276,6 @@ public class AkhqController extends AbstractController {
     @NoArgsConstructor
     @Getter
     @Introspected
-    //@Serdeable
     public static class ClusterDefinition {
         private String id;
         private boolean registry;

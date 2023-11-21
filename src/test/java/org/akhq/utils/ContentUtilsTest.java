@@ -1,11 +1,8 @@
 package org.akhq.utils;
 
-import org.akhq.models.Record;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.text.AbstractDocument;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 

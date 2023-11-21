@@ -1,7 +1,6 @@
 package org.akhq.configs.security;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
-//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.akhq.configs.security.ldap.GroupMapping;
 import org.akhq.configs.security.ldap.UserMapping;
@@ -12,13 +11,11 @@ import java.util.Map;
 
 @ConfigurationProperties("akhq.security.oauth2")
 @Data
-//@Serdeable
 public class Oauth {
     private boolean enabled;
     private Map<String, Provider> providers;
 
     @Data
-    //@Serdeable
     public static class Provider {
         private String label = "Login with OAuth";
         private String usernameField = "login";

@@ -6,7 +6,6 @@ import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.convert.format.MapFormat;
 import io.micronaut.core.util.StringUtils;
-//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import lombok.Getter;
 
@@ -16,7 +15,6 @@ import java.util.Map;
 
 @EachProperty("akhq.connections")
 @Getter
-//@Serdeable
 public class Connection extends AbstractProperties {
     SchemaRegistry schemaRegistry;
     List<Connect> connect;
@@ -30,7 +28,6 @@ public class Connection extends AbstractProperties {
 
     @Getter
     @ConfigurationProperties("schema-registry")
-    //@Serdeable
     public static class SchemaRegistry {
         String url;
         String basicAuthUsername;
@@ -43,14 +40,12 @@ public class Connection extends AbstractProperties {
 
     @Getter
     @ConfigurationProperties("deserialization")
-    //@Serdeable
     public static class Deserialization {
         ProtobufDeserializationTopicsMapping protobuf;
         AvroDeserializationTopicsMapping avroRaw;
 
         @Data
         @ConfigurationProperties("protobuf")
-        //@Serdeable
         public static class ProtobufDeserializationTopicsMapping {
             String descriptorsFolder;
             List<TopicsMapping> topicsMapping = new ArrayList<>();
@@ -58,7 +53,6 @@ public class Connection extends AbstractProperties {
 
         @Data
         @ConfigurationProperties("avro-raw")
-        //@Serdeable
         public static class AvroDeserializationTopicsMapping {
             String schemasFolder;
             List<AvroTopicsMapping> topicsMapping = new ArrayList<>();
@@ -67,7 +61,6 @@ public class Connection extends AbstractProperties {
 
     @Data
     @ConfigurationProperties("ui-options")
-    //@Serdeable
     public static class UiOptions {
         @ConfigurationBuilder(configurationPrefix = "topic")
         private UiOptionsTopic topic = new UiOptionsTopic();

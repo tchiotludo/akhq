@@ -2,7 +2,6 @@ package org.akhq.configs.security;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
-//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.akhq.configs.security.ldap.GroupMapping;
 import org.akhq.configs.security.ldap.UserMapping;
@@ -13,13 +12,11 @@ import java.util.Map;
 
 @ConfigurationProperties("akhq.security.oidc")
 @Data
-//@Serdeable
 public class Oidc {
     private boolean enabled;
     private Map<String, Provider> providers;
 
     @Data
-    //@Serdeable
     public static class Provider {
         private String label = "Login with OIDC";
         private String usernameField = OpenIdClaims.CLAIMS_PREFERRED_USERNAME;

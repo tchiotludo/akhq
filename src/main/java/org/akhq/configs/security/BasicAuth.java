@@ -1,7 +1,6 @@
 package org.akhq.configs.security;
 
 import com.google.common.hash.Hashing;
-//import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -9,9 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Data
-//@Serdeable
 public class BasicAuth {
     private String username;
     private String password;

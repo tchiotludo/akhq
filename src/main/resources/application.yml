@@ -34,11 +34,11 @@ micronaut:
         path: "/logout"
         get-allowed: true
     token:
+      cookie:
+        enabled: true
+        cookie-same-site: strict
       jwt:
         enabled: true
-        cookie:
-          enabled: true
-          cookie-same-site: strict
         signatures:
           secret:
             generator:
@@ -70,7 +70,6 @@ micronaut:
 jackson:
   serialization:
     writeDatesAsTimestamps: false
-  bean-introspection-module: false
 
 endpoints:
   all:
