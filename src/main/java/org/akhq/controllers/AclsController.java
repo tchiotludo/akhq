@@ -29,10 +29,7 @@ public class AclsController extends AbstractController {
     @Operation(tags = {"acls"}, summary = "List all acls")
     @Get
     public List<AccessControl> list(HttpRequest<?> request, String cluster, Optional<String> search) throws ExecutionException, InterruptedException {
-        if (search.isPresent())
-            checkIfClusterAndResourceAllowed(cluster, search.get());
-        else
-            checkIfClusterAllowed(cluster);
+        checkIfClusterAllowed(cluster);
 
         return aclRepository.findAll(cluster, search, buildUserBasedResourceFilters(cluster));
     }

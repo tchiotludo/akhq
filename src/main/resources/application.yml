@@ -66,6 +66,9 @@ micronaut:
     kafka-wrapper:
       record-stats: true
       expire-after-write: 0s
+  http:
+    client:
+      github.api.url: https://api.github.com
 
 jackson:
   serialization:

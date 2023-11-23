@@ -322,6 +322,16 @@ public class TopicController extends AbstractController {
         return updated;
     }
 
+    @AKHQSecured(resource =  Role.Resource.TOPIC, action =  Role.Action.UPDATE)
+    @Post(value = "api/{cluster}/topic/{topicName}/partitions")
+    @Operation(tags = {"topic"}, summary = "Increase partition for a topic")
+    public HttpResponse<?> increasePartition(String cluster, String topicName, Map<String, Integer> config) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+        this.topicRepository.increasePartition(cluster, topicName, config.get("partition"));
+
+        return HttpResponse.accepted();
+    }
+
     @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.DELETE)
     @Delete("api/{cluster}/topic/{topicName}/data/empty")
     @Operation(tags = {"topic data"}, summary = "Empty data from a topic")

@@ -52,6 +52,9 @@ export const uriTopicsInfo = (clusterId, topicId) => `${apiUrl}/${clusterId}/top
 
 export const uriTopicsCreate = clusterId => `${apiUrl}/${clusterId}/topic`;
 
+export const uriTopicIncreasePartition = (clusterId, topicId) =>
+  `${apiUrl}/${clusterId}/topic/${topicId}/partitions`;
+
 export const uriTopicsProduce = (clusterId, topicName) =>
   `${apiUrl}/${clusterId}/topic/${topicName}/data`;
 
@@ -380,5 +383,6 @@ export default {
   uriLiveTail,
   uriTopicDataSearch,
   uriTopicDataDelete,
+  uriTopicIncreasePartition,
   uriDeleteGroupOffsets
 };

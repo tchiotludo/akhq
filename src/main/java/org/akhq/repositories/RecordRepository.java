@@ -636,7 +636,7 @@ public class RecordRepository extends AbstractRepository {
             }
         }
 
-        if (value.isPresent() && valueSchema.isPresent()) {
+        if (value.isPresent() && valueSchema.isPresent() && StringUtils.isNotEmpty(valueSchema.get())) {
             Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, valueSchema.get());
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, schema.getId());
             valueAsBytes = valueSerializer.serialize(value.get());

@@ -363,6 +363,17 @@ class Topic extends Root {
                 </Link>
               )}
 
+              {selectedTab === 'partitions' &&
+                roles.TOPIC_DATA &&
+                roles.TOPIC_DATA.includes('CREATE') && (
+                  <Link
+                    to={`/ui/${clusterId}/topic/${topicId}/increasepartition`}
+                    className="btn btn-secondary mr-2"
+                  >
+                    <i className="fa fa-plus" aria-hidden={true} /> Increase Partition
+                  </Link>
+                )}
+
               {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
                   <i className="fa fa-plus" aria-hidden={true} /> Produce to topic

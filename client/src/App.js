@@ -19,7 +19,7 @@ class App extends React.Component {
           window.location = uriLogin();
         }
 
-        return error;
+        return Promise.reject(error);
       } catch (e) {
         // Propagate cancel
         if (axios.isCancel(error)) {

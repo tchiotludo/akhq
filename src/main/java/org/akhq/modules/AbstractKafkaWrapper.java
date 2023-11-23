@@ -107,6 +107,18 @@ abstract public class AbstractKafkaWrapper {
         listTopics = new HashMap<>();
     }
 
+    public void alterTopicPartition(String clusterId, String name, int partitions) throws ExecutionException {
+        Map<String, NewPartitions> newPartitionMap = new HashMap<>();
+        newPartitionMap.put(name, NewPartitions.increaseTo(partitions));
+
+        Logger.call(kafkaModule
+            .getAdminClient(clusterId)
+            .createPartitions(newPartitionMap).all(),
+            "Increase Topic partition",
+            Collections.singletonList(name)
+        );
+    }
+
     public void deleteTopics(String clusterId, String name) throws ExecutionException {
         Logger.call(kafkaModule.getAdminClient(clusterId)
             .deleteTopics(Collections.singleton(name))
