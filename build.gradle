@@ -216,11 +216,6 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    //Only for MacOs test execution
-    //testImplementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.101.Final", classifier: "osx-aarch_64"
-    //testImplementation group: "io.netty", name: "netty-tcnative-boringssl-static", version: "2.0.62.Final", classifier: "osx-aarch_64"
-    //testImplementation group: "io.grpc", name: "grpc-netty-shaded", version: "1.59.0"
-    //testImplementation("io.grpc:grpc-all")
 }
 
 testlogger {

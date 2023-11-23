@@ -10,10 +10,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Filter;
-import io.micronaut.http.annotation.Post;
-import io.micronaut.http.annotation.Produces;
+import io.micronaut.http.annotation.*;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
@@ -84,8 +81,7 @@ public class RestApiClaimProviderTest {
     @Controller("/external-mock")
     static class RestApiExternalService {
         @Post
-        @Produces(MediaType.APPLICATION_JSON)
-        String generateClaim(ClaimRequest request) {
+        String generateClaim(@Body ClaimRequest request) {
             return
                 "{\n" +
                     "  \"groups\" : {" +
