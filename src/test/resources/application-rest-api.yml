@@ -4,8 +4,8 @@ micronaut:
   http:
     client:
       follow-redirects: false # Required to ignore /login redirection
-      allow-block-event-loop: true
-      log-level: info
+      allow-block-event-loop: false
+      log-level: trace
   security:
     enabled: true
     authentication: cookie
