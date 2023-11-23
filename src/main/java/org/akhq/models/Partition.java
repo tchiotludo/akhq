@@ -42,11 +42,11 @@ public class Partition {
         }
 
         if (this.leader == null) {
-            org.apache.kafka.common.Node leaderNode = partitionInfo.leader();
+            org.apache.kafka.common.Node leader = partitionInfo.leader();
             this.leader = new Node.Partition(
-                leaderNode,
+                leader,
                 true,
-                partitionInfo.isr().stream().anyMatch(node -> node.id() == leaderNode.id())
+                partitionInfo.isr().stream().anyMatch(node -> node.id() == leader.id())
             );
         }
     }

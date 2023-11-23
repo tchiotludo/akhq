@@ -36,7 +36,6 @@
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.apache" level="INFO" />
-    <logger name="io.micronaut" level="INFO"/>
-    <logger name="org.akhq" level="INFO"/>
+    <logger name="org.apache" level="WARN" />
+    <logger name="io.micronaut" level="WARN"/>
 </configuration>
