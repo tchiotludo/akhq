@@ -50,8 +50,8 @@ see [Kafka Getting started guide](https://kafka.apache.org/quickstart). In the n
 git clone https://github.com/tchiotludo/akhq.git
 ```
 
-Open the checked out directory in IntelliJ IDEA. The current version (0.16.0) of AKHQ is built with Java 11. If you
-don't have OpenJDK 11 installed already, do the following in IntelliJ IDEA:
+Open the checked out directory in IntelliJ IDEA. The current version (0.25.0) of AKHQ is built with Java 17. If you
+don't have OpenJDK 17 installed already, do the following in IntelliJ IDEA:
 * _File > Project Structure... > Platform Settings >
 SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 11)
 * download + install. Make sure
