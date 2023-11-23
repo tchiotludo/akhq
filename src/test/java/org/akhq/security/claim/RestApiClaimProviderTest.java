@@ -80,7 +80,7 @@ public class RestApiClaimProviderTest {
             return chain.proceed(request);
         }
     }
-    @ExecuteOn(TaskExecutors.IO)
+
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
     @PermitAll
     @Controller("/external-mock")
