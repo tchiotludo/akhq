@@ -8,10 +8,12 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
@@ -44,9 +46,6 @@ public class RestApiClaimProviderTest {
     @Inject
     @Client("/")
     protected RxHttpClient client;
-
-    @Inject
-    RestApiExternalService restApiExternalService;
 
     @Test
     void loginExternalClaim() throws ParseException {
@@ -81,16 +80,13 @@ public class RestApiClaimProviderTest {
             return chain.proceed(request);
         }
     }
+    @ExecuteOn(TaskExecutors.IO)
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
     @PermitAll
     @Controller("/external-mock")
-    @ExecuteOn(TaskExecutors.BLOCKING)
     static class RestApiExternalService {
-        public RestApiExternalService() {
-            log.info("I live !");
-        }
-
         @Post
+        @Produces(MediaType.APPLICATION_JSON)
         String generateClaim(ClaimRequest request) {
             return
                 "{\n" +

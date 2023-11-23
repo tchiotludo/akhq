@@ -3,7 +3,6 @@ package org.akhq.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-//import io.micronaut.serde.annotation.SerdeImport;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,9 +17,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-//@SerdeImport(ConnectDefinition.class)
-//@SerdeImport(org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition.class)
-//@SerdeImport(org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.class)
 public class ConnectDefinition {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -89,9 +85,6 @@ public class ConnectDefinition {
     @EqualsAndHashCode
     @Getter
     @NoArgsConstructor
-    //@SerdeImport(TaskDefinition.class)
-    //@SerdeImport(org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition.TaskDefinition.class)
-    //@SerdeImport(org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus.TaskStatus.class)
     public static final class TaskDefinition {
         private String connector;
         private int id;

@@ -165,6 +165,11 @@ test {
         exceptionFormat = 'full'
     }
 
+    //retry {
+    //    maxRetries = 5
+    //    maxFailures = 15
+    //}
+
     retry {
         maxRetries = 5
         maxFailures = 15
@@ -179,15 +184,19 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
 
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-    testImplementation "org.junit.jupiter:junit-jupiter-api"
-    testImplementation "org.junit.jupiter:junit-jupiter-params"
-    testImplementation "io.micronaut:micronaut-http-client"
-    testImplementation "io.micronaut:micronaut-runtime"
-    testImplementation "io.micronaut:micronaut-management"
-    testImplementation "io.micronaut:micronaut-inject"
-    testImplementation "io.micronaut.rxjava2:micronaut-rxjava2-http-client"
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("io.micronaut.test:micronaut-test-junit5")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation ("org.junit.jupiter:junit-jupiter-params")
+
+    testImplementation ("io.micronaut:micronaut-http-client")
+    testImplementation ("io.micronaut:micronaut-runtime")
+    testImplementation ("io.micronaut:micronaut-management")
+    testImplementation ("io.micronaut:micronaut-inject")
+    testImplementation ("io.micronaut.rxjava2:micronaut-rxjava2-http-client")
+    testImplementation("io.micronaut.test:micronaut-test-rest-assured")
 
     // test
     testImplementation "org.apache.kafka:kafka-clients:" + kafkaVersion + ":test"
@@ -207,7 +216,11 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.101.Final", classifier: "osx-aarch_64"
+    //Only for MacOs test execution
+    //testImplementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.101.Final", classifier: "osx-aarch_64"
+    //testImplementation group: "io.netty", name: "netty-tcnative-boringssl-static", version: "2.0.62.Final", classifier: "osx-aarch_64"
+    //testImplementation group: "io.grpc", name: "grpc-netty-shaded", version: "1.59.0"
+    //testImplementation("io.grpc:grpc-all")
 }
 
 testlogger {

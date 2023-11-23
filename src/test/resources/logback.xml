@@ -36,13 +36,13 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="STDERR" />
     </root>
 
-    <logger name="org.akhq" level="INFO" />
-    <logger name="io.micronaut" level="INFO" />
+    <logger name="org.akhq" level="TRACE" />
+    <logger name="io.micronaut" level="TRACE" />
 
 <!--    <logger name="io.netty.handler.logging" level="TRACE"/>-->
 
