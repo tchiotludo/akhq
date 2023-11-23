@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        java: ['11']
+        java: ['17']
 
     steps:
       - uses: actions/checkout@v2
