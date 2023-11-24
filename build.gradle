@@ -165,10 +165,10 @@ test {
         exceptionFormat = 'full'
     }
 
-    //retry {
-    //    maxRetries = 5
-    //    maxFailures = 15
-    //}
+    retry {
+        maxRetries = 5
+        maxFailures = 15
+    }
 
     retry {
         maxRetries = 5
