@@ -39,14 +39,14 @@ class TopicIncreasePartition extends Form {
       partition: formData.partition
     };
 
-    this.postApi(uriTopicIncreasePartition(selectedCluster, selectedTopic), partitionData)
-      .then(() => {
+    this.postApi(uriTopicIncreasePartition(selectedCluster, selectedTopic), partitionData).then(
+      () => {
         this.props.history.push({
           pathname: `/ui/${selectedCluster}/topic`
         });
         toast.success('Topic partition updated');
-      })
-      .catch(error => toast.error(error.data.message));
+      }
+    );
   }
   render() {
     return (

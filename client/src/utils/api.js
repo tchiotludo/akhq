@@ -23,9 +23,12 @@ const handleError = err => {
   };
 
   if (err.response && err.response.status < 500) {
-    toast.warn(error.message);
-    if (err.status === 401) {
-      history.replace('/ui/login');
+    if (err.response.status === 401 || err.response.status === 403) {
+      localStorage.setItem('toastMessage', error.message);
+      history.push('/ui/login');
+      history.go(0);
+    } else {
+      toast.warn(error.message);
     }
 
     return error;
@@ -79,9 +82,6 @@ export const post = (url, body, config) =>
     axios
       .post(url, body, { ...configs, ...config })
       .then(res => {
-        if (res.status >= 400) {
-          reject(res);
-        }
         resolve(res);
       })
       .catch(err => {

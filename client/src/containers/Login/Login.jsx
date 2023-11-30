@@ -99,6 +99,11 @@ class Login extends Form {
         pathname: '/ui'
       });
     }
+
+    if (localStorage.getItem('toastMessage')) {
+      toast.warn(localStorage.getItem('toastMessage'));
+      localStorage.removeItem('toastMessage');
+    }
   }
 
   _renderForm() {
