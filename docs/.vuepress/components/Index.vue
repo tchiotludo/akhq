@@ -147,6 +147,12 @@
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
+                                                    <img src="/assets/images/using/manomano.svg" alt="ManoMano">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
                                                     <img src="/assets/images/using/michelin.png" alt="Michelin">
                                                 </div>
                                             </div>
