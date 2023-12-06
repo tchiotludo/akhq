@@ -6,6 +6,7 @@ import io.micronaut.context.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
+import org.akhq.controllers.TopicController;
 import org.akhq.models.Record;
 import org.akhq.models.Schema;
 import org.akhq.models.Topic;
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -321,5 +323,37 @@ class RecordRepositoryTest extends AbstractTest {
         } while (hasNext.get());
 
         return size.get();
+    }
+
+    @Test
+    void copy() throws ExecutionException, InterruptedException, RestClientException, IOException {
+
+        RecordRepository.Options optionsFromAndTo = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+
+        Topic topicFromAndTo = topicRepository.findByName(optionsFromAndTo.getClusterId(), optionsFromAndTo.getTopic());
+
+        List<TopicController.OffsetCopy> offsets = topicFromAndTo.getPartitions()
+            .stream()
+            .map(partition -> new TopicController.OffsetCopy(partition.getId(), partition.getLastOffset()))
+            .collect(Collectors.toList());
+
+        // We simulate the case a record has been added after the method copy has been used
+        this.repository.produce(
+            KafkaTestCluster.CLUSTER_ID,
+            KafkaTestCluster.TOPIC_RANDOM,
+            Optional.of("value"),
+            Collections.emptyList(),
+            Optional.of("key"),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        RecordRepository.CopyResult copyResult = this.repository.copy(topicFromAndTo, KafkaTestCluster.CLUSTER_ID, topicFromAndTo, offsets, optionsFromAndTo);
+
+        log.info("Copied " + copyResult.records + " records");
+
+        assertEquals(300, copyResult.records);
     }
 }

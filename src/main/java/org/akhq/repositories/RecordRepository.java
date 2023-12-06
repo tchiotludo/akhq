@@ -1035,12 +1035,17 @@ public class RecordRepository extends AbstractRepository {
                 );
             }
 
+            Map<Partition, Long> partitionsLastOffsetMap = fromTopic.getPartitions()
+                .stream()
+                .collect(Collectors.toMap(Function.identity(), Partition::getLastOffset));
+
             boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
 
             KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
             ConsumerRecords<byte[], byte[]> records;
             do {
-                records = this.poll(consumer);
+                records = this.pollAndFilter(consumer, partitionsLastOffsetMap);
+
                 for (ConsumerRecord<byte[], byte[]> record : records) {
                     System.out.println(record.offset() + "-" + record.partition());
 
@@ -1062,6 +1067,31 @@ public class RecordRepository extends AbstractRepository {
         consumer.close();
 
         return new CopyResult(counter);
+    }
+
+    /**
+     * Polls the records and filters them with a maximum offset
+     *
+     * @param consumer
+     * @param partitionsLastOffsetMap key : partition, value : the maximum offset we want to reach
+     * @return filtered records after polled. And an empty one if there are no records polled
+     * or if every record has been filtered
+     */
+    private ConsumerRecords<byte[], byte[]> pollAndFilter(KafkaConsumer<byte[], byte[]> consumer, Map<Partition, Long> partitionsLastOffsetMap) {
+        ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+        return new ConsumerRecords<>(partitionsLastOffsetMap.entrySet()
+            .stream()
+            .map(entry ->
+                {
+                    // We filter records by partition
+                    TopicPartition topicPartition = new TopicPartition(entry.getKey().getTopic(), entry.getKey().getId());
+                    return Map.entry(topicPartition, records.records(topicPartition)
+                        .stream()
+                        .filter(consumerRecord -> consumerRecord.offset() < entry.getValue())
+                        .collect(Collectors.toList()));
+                }
+            ).filter(entry -> !entry.getValue().isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     @ToString
