@@ -109,7 +109,7 @@ public class AkhqController extends AbstractController {
         if (applicationContext.containsBean(SecurityService.class)) {
             authDefinition.loginEnabled = true;
             // Display login form if there are LocalUsers OR Ldap is enabled
-            authDefinition.formEnabled = securityProperties.getBasicAuth().size() > 0 ||
+            authDefinition.formEnabled = !securityProperties.getBasicAuth().isEmpty() ||
                 applicationContext.containsBean(LdapConfiguration.class);
 
             if (!authDefinition.formEnabled &&

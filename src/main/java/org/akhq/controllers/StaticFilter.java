@@ -11,8 +11,8 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
-import io.micronaut.http.server.netty.types.files.NettyStreamedFileCustomizableResponseType;
-import io.micronaut.http.server.netty.types.files.NettySystemFileCustomizableResponseType;
+import io.micronaut.http.server.types.files.StreamedFile;
+import io.micronaut.http.server.types.files.SystemFile;
 import org.reactivestreams.Publisher;
 
 import java.io.IOException;
@@ -35,11 +35,11 @@ public class StaticFilter implements HttpServerFilter {
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         return Publishers
             .map(chain.proceed(request), response -> {
-                boolean first = response.getBody(NettyStreamedFileCustomizableResponseType.class)
+                boolean first = response.getBody(StreamedFile.class)
                     .filter(n -> n.getMediaType().getName().equals(MediaType.TEXT_HTML))
                     .isPresent();
 
-                boolean second = response.getBody(NettySystemFileCustomizableResponseType.class)
+                boolean second = response.getBody(SystemFile.class)
                     .filter(n -> n.getFile().getAbsoluteFile().toString().endsWith("ui/index.html"))
                     .isPresent();
 

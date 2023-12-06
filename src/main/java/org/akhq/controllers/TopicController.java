@@ -304,7 +304,7 @@ public class TopicController extends AbstractController {
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.ALTER_CONFIG)
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "Update configs from a topic")
-    public List<Config> updateConfig(String cluster, String topicName, Map<String, String> configs) throws ExecutionException, InterruptedException {
+    public List<Config> updateConfig(String cluster, String topicName, @Body Map<String, String> configs) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
@@ -325,7 +325,7 @@ public class TopicController extends AbstractController {
     @AKHQSecured(resource =  Role.Resource.TOPIC, action =  Role.Action.UPDATE)
     @Post(value = "api/{cluster}/topic/{topicName}/partitions")
     @Operation(tags = {"topic"}, summary = "Increase partition for a topic")
-    public HttpResponse<?> increasePartition(String cluster, String topicName, Map<String, Integer> config) throws ExecutionException, InterruptedException {
+    public HttpResponse<?> increasePartition(String cluster, String topicName, @Body Map<String, Integer> config) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
         this.topicRepository.increasePartition(cluster, topicName, config.get("partition"));
 

@@ -2,8 +2,7 @@
 <configuration debug="false">
     <!-- Remove logback startup log -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
-    <property name="pattern" value="%d{ISO8601} %highlight(%-5.5level) %magenta(%-10.10thread) %cyan(%-26.26logger{26}) %msg%n" />
-    <withJansi>true</withJansi>
+    <property name="pattern" value="%d{ISO8601} %level %thread %logger{26} %msg%n" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>

@@ -9,7 +9,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Filter;
-import io.micronaut.http.filter.OncePerRequestHttpServerFilter;
+import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
 import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.security.utils.SecurityService;
@@ -30,7 +30,7 @@ import jakarta.inject.Singleton;
 @Singleton
 @Requires(property = "akhq.server.access-log.enabled", value = StringUtils.TRUE, defaultValue = StringUtils.FALSE)
 @Filter("/**")
-public class HttpServerAccessLogFilter extends OncePerRequestHttpServerFilter {
+public class HttpServerAccessLogFilter implements HttpServerFilter {
     private static final Integer ORDER = ServerFilterPhase.SECURITY.order() + 1;
 
     private final String logFormat;
@@ -56,7 +56,7 @@ public class HttpServerAccessLogFilter extends OncePerRequestHttpServerFilter {
     }
 
     @Override
-    public Publisher<MutableHttpResponse<?>> doFilterOnce(HttpRequest<?> request, ServerFilterChain chain) {
+    public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
         long start = System.nanoTime();
         Publisher<MutableHttpResponse<?>> responsePublisher = chain.proceed(request);
 

@@ -14,6 +14,7 @@ import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdAuthent
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import io.micronaut.security.rules.SecurityRule;
+import io.reactivex.Flowable;
 import org.akhq.configs.security.Oidc;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
@@ -22,6 +23,7 @@ import org.akhq.models.security.ClaimProvider;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.models.security.ClaimProviderType;
+import org.reactivestreams.Publisher;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,7 +48,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
     @NonNull
     @Override
-    public AuthenticationResponse createAuthenticationResponse(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims, @Nullable State state) {
+    public Publisher<AuthenticationResponse> createAuthenticationResponse(String providerName, OpenIdTokenResponse tokenResponse, OpenIdClaims openIdClaims, @Nullable State state) {
         // get the current OIDC provider
         Oidc.Provider provider = oidc.getProvider(providerName);
 
@@ -56,7 +58,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
         // Some OIDC providers like Keycloak can return a claim with roles and attributes directly,
         // so we don't use the AKHQ internal ClaimProvider mechanism
         if(provider.isUseOidcClaim()){
-            return createDirectClaimAuthenticationResponse(oidcUsername, openIdClaims);
+            return (Flowable.just(createDirectClaimAuthenticationResponse(oidcUsername, openIdClaims)));
         }
 
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
@@ -70,10 +72,10 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         try {
             ClaimResponse claim = claimProvider.generateClaim(request);
-            return AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups()));
+            return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups()))));
         } catch (Exception e) {
             String claimProviderClass = claimProvider.getClass().getName();
-            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+            return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
         }
     }
 

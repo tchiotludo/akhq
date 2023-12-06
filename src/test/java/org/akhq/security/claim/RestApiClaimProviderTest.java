@@ -9,6 +9,7 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Post;
@@ -19,6 +20,7 @@ import io.micronaut.rxjava2.http.client.RxHttpClient;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.Group;
 import org.akhq.middlewares.KafkaWrapperFilter;
 import org.akhq.models.security.ClaimRequest;
@@ -28,13 +30,14 @@ import org.reactivestreams.Publisher;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest(environments = "rest-api")
+@Slf4j
 public class RestApiClaimProviderTest {
 
     @Inject
@@ -74,12 +77,13 @@ public class RestApiClaimProviderTest {
             return chain.proceed(request);
         }
     }
+
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
     @PermitAll
     @Controller("/external-mock")
     static class RestApiExternalService {
-        @Post("/")
-        String generateClaim(ClaimRequest request) {
+        @Post
+        String generateClaim(@Body ClaimRequest request) {
             return
                 "{\n" +
                     "  \"groups\" : {" +

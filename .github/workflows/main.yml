@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        java: ['11']
+        java: ['17']
 
     steps:
       - uses: actions/checkout@v2
@@ -71,7 +71,7 @@ jobs:
 
       # Shadow Jar, Tar and Zip
       - name: Build jars and distribution archives
-        if: success() && matrix.java == '11'
+        if: success() && matrix.java == '17'
         run: ./gradlew shadowJar distTar distZip --no-daemon
 
       # Upload artifacts
@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload jar
         uses: actions/upload-artifact@v1
-        if: success() && matrix.java == '11'
+        if: success() && matrix.java == '17'
         with:
           name: jar
           path: build/libs/

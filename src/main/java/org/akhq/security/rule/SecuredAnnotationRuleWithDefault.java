@@ -1,7 +1,7 @@
 package org.akhq.security.rule;
 
 import io.micronaut.context.annotation.Replaces;
-import io.micronaut.core.annotation.Nullable;
+import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecuredAnnotationRule;
@@ -32,7 +32,8 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
     }
 
     @Override
-    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, @Nullable RouteMatch<?> routeMatch, Authentication authentication) {
+    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
+        RouteMatch<?> routeMatch = request.getAttribute(HttpAttributes.ROUTE_MATCH, RouteMatch.class).orElse(null);
         if (!(routeMatch instanceof MethodBasedRouteMatch)) {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }
@@ -49,6 +50,6 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
             }
         }
 
-        return super.check(request, routeMatch, authentication);
+        return super.check(request, authentication);
     }
 }

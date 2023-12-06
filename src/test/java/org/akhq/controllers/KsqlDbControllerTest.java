@@ -20,7 +20,7 @@ class KsqlDbControllerTest extends AbstractTest {
     void info() {
         KsqlDbServerInfo serverInfo = this.retrieve(HttpRequest.GET(BASE_URL + "/info"), KsqlDbServerInfo.class);
         assertNotNull(serverInfo.getKafkaClusterId());
-        assertEquals("7.4.1", serverInfo.getServerVersion());
+        assertEquals("7.4.2", serverInfo.getServerVersion());
         assertEquals("ksql", serverInfo.getKsqlServiceId());
     }
 

@@ -111,6 +111,7 @@ public class Schema {
 
         private CompatibilityLevelConfig compatibilityLevel;
 
+
         public Config(io.confluent.kafka.schemaregistry.client.rest.entities.Config config) {
             this.compatibilityLevel = CompatibilityLevelConfig.valueOf(config.getCompatibilityLevel());
         }

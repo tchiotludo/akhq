@@ -10,10 +10,10 @@ import java.util.List;
 
 @Data
 public class BasicAuth {
-    String username;
-    String password;
-    PasswordHash passwordHash = PasswordHash.SHA256;
-    List<String> groups = new ArrayList<>();
+    private String username;
+    private String password;
+    private PasswordHash passwordHash = PasswordHash.SHA256;
+    private List<String> groups = new ArrayList<>();
 
     @SuppressWarnings("UnstableApiUsage")
     public boolean isValidPassword(String password) {

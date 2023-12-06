@@ -1,6 +1,7 @@
 package org.akhq.security.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.AbstractSecurityRule;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public class AKHQSecurityRule extends AbstractSecurityRule {
+public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     /**
      * @param rolesFinder Roles Parser
      */
@@ -40,7 +41,8 @@ public class AKHQSecurityRule extends AbstractSecurityRule {
     SecurityProperties securityProperties;
 
     @Override
-    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, RouteMatch<?> routeMatch, Authentication authentication) {
+    public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
+        RouteMatch<?> routeMatch = request.getAttribute(HttpAttributes.ROUTE_MATCH, RouteMatch.class).orElse(null);
         if (!(routeMatch instanceof MethodBasedRouteMatch)) {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }

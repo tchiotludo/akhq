@@ -10,12 +10,8 @@ import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.common.config.TopicConfig;
 import org.junit.jupiter.api.*;
 import org.akhq.models.Record;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -200,6 +196,9 @@ class TopicControllerTest extends AbstractTest {
         paramMap.put("value", null);
         paramMap.put("key", "my-key-tomb");
         paramMap.put("multiMessage", false);
+        paramMap.put("headers", List.of(
+            new KeyValue<>("my-header-1", "1"),
+            new KeyValue<>("my-header-2", "2")));
         List<Record> response = this.retrieveList(HttpRequest.POST(
             CREATE_TOPIC_URL + "/data", paramMap
         ), Record.class);
@@ -249,6 +248,9 @@ class TopicControllerTest extends AbstractTest {
                             + "key3_{\"test_1\":3}");
         paramMap.put("multiMessage", true);
         paramMap.put("keyValueSeparator", "_");
+        paramMap.put("headers", List.of(
+            new KeyValue<>("my-header-1", "1"),
+            new KeyValue<>("my-header-2", "2")));
         List<Record> response = this.retrieveList(HttpRequest.POST(
             CREATE_TOPIC_URL + "/data", paramMap
         ), Record.class);
