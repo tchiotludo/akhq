@@ -590,7 +590,7 @@ class TopicData extends Root {
           key={option}
           onClick={() =>
             this.setState({ sortBy: option }, () => {
-              this._clearSearch();
+              this._searchMessages();
             })
           }
         >
