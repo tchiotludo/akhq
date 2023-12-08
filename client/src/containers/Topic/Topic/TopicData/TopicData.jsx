@@ -528,7 +528,7 @@ class TopicData extends Root {
       a.href = URL.createObjectURL(
         new Blob([JSON.stringify(response.data, null, 2)], { type: type, endings: 'native' })
       );
-      a.download = `file.${type}`;
+      a.download = `${selectedTopic}.json`;
 
       a.click();
       a.remove();
