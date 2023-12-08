@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class Record {
+    @JsonIgnore
     private Topic topic;
     private int partition;
     private long offset;
@@ -78,10 +79,13 @@ public class Record {
     @Setter(AccessLevel.NONE)
     private String value;
 
+    @JsonIgnore
     private final List<String> exceptions = new ArrayList<>();
 
+    @Getter(AccessLevel.NONE)
     private byte MAGIC_BYTE;
 
+    @JsonIgnore
     private Boolean truncated;
 
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic) {
@@ -276,6 +280,7 @@ public class Record {
         }
     }
 
+    @JsonIgnore
     public Collection<String> getHeadersKeySet() {
         return headers
             .stream()
@@ -283,6 +288,7 @@ public class Record {
             .collect(Collectors.toList());
     }
 
+    @JsonIgnore
     public Collection<String> getHeadersValues() {
         return headers
             .stream()
