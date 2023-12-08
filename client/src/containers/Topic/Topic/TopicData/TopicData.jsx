@@ -8,6 +8,7 @@ import {
   uriSchemaId,
   uriTopicData,
   uriTopicDataDelete,
+  uriTopicDataDownload,
   uriTopicDataSearch,
   uriTopicDataSingleRecord,
   uriTopicsPartitions,
@@ -62,6 +63,7 @@ class TopicData extends Root {
     recordCount: 0,
     showFilters: '',
     showDeleteModal: false,
+    showDownloadModal: false,
     deleteMessage: '',
     compactMessageToDelete: '',
     selectedCluster: this.props.clusterId,
@@ -513,6 +515,28 @@ class TopicData extends Root {
       }
     });
     return tableMessages;
+  };
+
+  _downloadAllMatchingFilters = () => {
+    const { selectedCluster, selectedTopic } = this.state;
+
+    const filters = this._buildFilters();
+
+    this.getApi(uriTopicDataDownload(selectedCluster, selectedTopic, filters)).then(response => {
+      const a = document.createElement('a');
+      const type = 'application/json';
+      a.href = URL.createObjectURL(
+        new Blob([JSON.stringify(response.data, null, 2)], { type: type, endings: 'native' })
+      );
+      a.download = `file.${type}`;
+
+      a.click();
+      a.remove();
+
+      this.setState({
+        showDownloadModal: false
+      });
+    });
   };
 
   _getNextPageOffsets = nextPage => {
@@ -975,6 +999,26 @@ class TopicData extends Root {
                   </Dropdown.Menu>
                 </Dropdown>
               </li>
+              <div
+                style={{ borderLeft: '1px solid ', padding: 0, margin: '0 10px' }}
+                className="nav-link"
+              ></div>
+              <li>
+                <button
+                  type="button"
+                  aria-label="Toggle navigation"
+                  onClick={() => {
+                    this.setState({
+                      showDownloadModal: true
+                    });
+                  }}
+                  className="nav-link"
+                  style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
+                >
+                  <i className="fa fa-fw fa fa-download" aria-hidden="true" />
+                  Download query result
+                </button>
+              </li>
             </ul>
           </div>
         </nav>
@@ -1205,6 +1249,18 @@ class TopicData extends Root {
           handleCancel={this._closeDeleteModal}
           handleConfirm={this._deleteCompactMessage}
           message={this.state.deleteMessage}
+        />
+
+        <ConfirmModal
+          show={this.state.showDownloadModal}
+          handleCancel={() =>
+            this.setState({
+              showDownloadModal: false
+            })
+          }
+          handleConfirm={this._downloadAllMatchingFilters}
+          message="Do you want to download all the messages matching your filters ? If you did not set any, it will
+            download all the topic messages. For large topics, it can be slow and lead to high memory consumption."
         />
       </React.Fragment>
     );
