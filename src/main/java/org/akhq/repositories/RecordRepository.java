@@ -784,6 +784,19 @@ public class RecordRepository extends AbstractRepository {
         return true;
     }
 
+    private boolean matchFilters(Options options, Record record) {
+        if (!matchFilters((BaseOptions) options, record)) {
+            return false;
+        }
+
+        if (options.getEndTimestamp() != null) {
+            return record.getTimestamp().toInstant().toEpochMilli() <= options.getEndTimestamp();
+        }
+
+        return true;
+    }
+
+
     private boolean matchFilter(Search searchFilter, Collection<String> stringsToSearch) {
         switch (searchFilter.searchMatchType) {
             case EQUALS:
@@ -1250,6 +1263,7 @@ public class RecordRepository extends AbstractRepository {
         private Sort sort;
         private Integer partition;
         private Long timestamp;
+        private Long endTimestamp;
 
         public Options(Environment environment, String clusterId, String topic) {
             this.sort = Sort.OLDEST;
