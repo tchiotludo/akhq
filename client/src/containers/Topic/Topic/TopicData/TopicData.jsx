@@ -69,6 +69,7 @@ class TopicData extends Root {
     selectedTopic: this.props.topicId,
     cleanupPolicy: '',
     datetime: '',
+    endDatetime: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0,
