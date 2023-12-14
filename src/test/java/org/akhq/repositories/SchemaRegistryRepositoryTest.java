@@ -170,4 +170,13 @@ public class SchemaRegistryRepositoryTest extends AbstractTest {
     void getDefaultConfig() throws IOException, RestClientException {
         assertEquals(Schema.Config.CompatibilityLevelConfig.BACKWARD, repository.getDefaultConfig(KafkaTestCluster.CLUSTER_ID).getCompatibilityLevel());
     }
+
+    @Test
+    void getById() throws IOException, RestClientException, ExecutionException, InterruptedException {
+        Schema registeredSchema = repository.register(KafkaTestCluster.CLUSTER_ID, SUBJECT_1, SCHEMA_1_V1.toString(), Collections.emptyList());
+
+        Optional<Schema> schemaById = repository.getById(KafkaTestCluster.CLUSTER_ID, registeredSchema.getId());
+        assertFalse(schemaById.isEmpty());
+        assertEquals(schemaById.get().getId(), registeredSchema.getId());
+    }
 }

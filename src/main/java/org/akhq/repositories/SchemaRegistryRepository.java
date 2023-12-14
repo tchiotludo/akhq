@@ -111,7 +111,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        for (String subject: this.all(clusterId, Optional.empty(), List.of())) {
+        for (String subject: this.subjectsBySchemaId(clusterId, id)) {
             for (Schema version: this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
                     return Optional.of(version);
@@ -313,5 +313,21 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     static {
         JacksonMapper.INSTANCE.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public List<String> subjectsBySchemaId(String clusterId, int id) throws  IOException, RestClientException {
+        Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
+            .getRegistryRestClient(clusterId));
+        if(maybeRegistryRestClient.isEmpty()){
+            return List.of();
+        }
+
+        List<String> result = maybeRegistryRestClient.get()
+            .getAllVersionsById(id)
+            .stream()
+            .map(s -> s.getSubject())
+            .collect(Collectors.toList());
+
+        return result;
     }
 }
