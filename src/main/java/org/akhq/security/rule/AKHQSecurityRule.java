@@ -1,6 +1,7 @@
 package org.akhq.security.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.impl.compression.GzipCompressionAlgorithm;
 import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
@@ -20,16 +21,16 @@ import org.akhq.configs.security.SecurityProperties;
 import org.akhq.security.annotation.AKHQSecured;
 import org.reactivestreams.Publisher;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
 public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final GzipCompressionAlgorithm gzip = new GzipCompressionAlgorithm();
+
     /**
      * @param rolesFinder Roles Parser
      */
@@ -69,7 +70,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             return Flowable.just(SecurityRuleResult.REJECTED);
         }
 
-        List<Group> userGroups = ((Map<String, List<?>>)authentication.getAttributes().get("groups")).values().stream()
+        List<Group> userGroups = decompressGroups(authentication).values().stream()
             .flatMap(Collection::stream)
             // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
             // Need to serialize Object to Group manually in the stream
@@ -96,6 +97,17 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             return Flowable.just(SecurityRuleResult.ALLOWED);
         else
             return Flowable.just(SecurityRuleResult.REJECTED);
+    }
+
+    public static Map<String, List<?>> decompressGroups(Authentication authentication) {
+        try {
+            String base64CompressedGroups = ((String) authentication.getAttributes().get("groups"));
+            String compressedGroups = new String(gzip.decompress(Base64.getDecoder().decode(base64CompressedGroups)));
+            return mapper.readValue(compressedGroups, Map.class);
+        } catch (Exception e) {
+            log.trace("JWT payload is not compressed, returning groups directly");
+            return (Map<String, List<?>>) authentication.getAttributes().get("groups");
+        }
     }
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;

@@ -11,14 +11,12 @@ import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
 import org.akhq.configs.security.SecurityProperties;
 import org.akhq.security.annotation.AKHQSecured;
+import org.akhq.security.rule.AKHQSecurityRule;
 
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -52,8 +50,7 @@ abstract public class AbstractController {
             return List.of();
         }
 
-        List<Group> groupBindings = ((Map<String, List<?>>) authentication.get().getAttributes().get("groups"))
-            .values()
+        List<Group> groupBindings = AKHQSecurityRule.decompressGroups(authentication.get()).values()
             .stream()
             .flatMap(Collection::stream)
             .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
@@ -155,7 +152,7 @@ abstract public class AbstractController {
         try {
             AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
 
-            isAllowed = ((Map<String, List<?>>)authentication.get().getAttributes().get("groups")).values().stream()
+            isAllowed = AKHQSecurityRule.decompressGroups(authentication.get()).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 // Get only group with role matching the method annotation resource and action
