@@ -43,11 +43,19 @@ class DatePicker extends Component {
 
   render = () => {
     const { value } = this.state;
-    const { showDateTimeInput, showTimeInput, showTimeSelect, onClear } = this.props;
+    const { showDateTimeInput, showTimeInput, showTimeSelect, onClear, label } = this.props;
     return (
       <div style={{ display: 'block', padding: 10 }}>
         {showDateTimeInput && (
-          <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'row' }}>
+          <div
+            style={{
+              marginBottom: 10,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}
+          >
+            {label && <div style={{ marginRight: 10 }}>{label}</div>}
             <input
               value={this.getDisplayValue(value)}
               className="form-control"
@@ -91,6 +99,7 @@ class DatePicker extends Component {
 }
 
 DatePicker.propTypes = {
+  label: PropTypes.string,
   value: PropTypes.string,
   onChange: PropTypes.func,
   showDateTimeInput: PropTypes.bool,

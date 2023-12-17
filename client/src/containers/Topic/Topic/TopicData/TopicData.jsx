@@ -45,6 +45,7 @@ class TopicData extends Root {
     partitionOptions: [],
     offsetsOptions: [],
     timestamp: '',
+    endTimestamp: '',
     search: {
       key: { text: '', type: 'C' },
       value: { text: '', type: 'C' },
@@ -68,6 +69,7 @@ class TopicData extends Root {
     selectedTopic: this.props.topicId,
     cleanupPolicy: '',
     datetime: '',
+    endDatetime: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     canDeleteRecords: false,
     percent: 0,
@@ -123,6 +125,9 @@ class TopicData extends Root {
           : this.state.sortBy,
         partition: query.get('partition') ? query.get('partition') : this.state.partition,
         datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : this.state.datetime,
+        endDatetime: query.get('endTimestamp')
+          ? new Date(query.get('endTimestamp'))
+          : this.state.endDatetime,
         offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
         search: this._buildSearchFromQueryString(query),
         offsets: query.get('offset')
@@ -259,7 +264,7 @@ class TopicData extends Root {
   }
 
   _buildFilters() {
-    const { sortBy, partition, datetime, offsetsSearch, search } = this.state;
+    const { sortBy, partition, datetime, endDatetime, offsetsSearch, search } = this.state;
 
     const filters = [];
 
@@ -268,21 +273,11 @@ class TopicData extends Root {
     if (partition) filters.push(`partition=${partition}`);
 
     if (datetime) {
-      let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-      timestamp =
-        formatDateTime(
-          {
-            year: timestamp.year(),
-            monthValue: timestamp.month(),
-            dayOfMonth: timestamp.date(),
-            hour: timestamp.hour(),
-            minute: timestamp.minute(),
-            second: timestamp.second(),
-            milli: timestamp.millisecond()
-          },
-          'YYYY-MM-DDTHH:mm:ss.SSS'
-        ) + 'Z';
-      filters.push(`timestamp=${timestamp}`);
+      filters.push(`timestamp=${this._buildTimestampFilter(datetime)}`);
+    }
+
+    if (endDatetime) {
+      filters.push(`endTimestamp=${this._buildTimestampFilter(endDatetime)}`);
     }
 
     Object.keys(search)
@@ -295,6 +290,24 @@ class TopicData extends Root {
         );
       });
     return filters.join('&');
+  }
+
+  _buildTimestampFilter(datetime) {
+    let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
+    return (
+      formatDateTime(
+        {
+          year: timestamp.year(),
+          monthValue: timestamp.month(),
+          dayOfMonth: timestamp.date(),
+          hour: timestamp.hour(),
+          minute: timestamp.minute(),
+          second: timestamp.second(),
+          milli: timestamp.millisecond()
+        },
+        'YYYY-MM-DDTHH:mm:ss.SSS'
+      ) + 'Z'
+    );
   }
 
   _searchMessages(changePage = false) {
@@ -769,6 +782,7 @@ class TopicData extends Root {
       recordCount,
       showFilters,
       datetime,
+      endDatetime,
       isSearching,
       canDeleteRecords,
       canDownload,
@@ -783,6 +797,7 @@ class TopicData extends Root {
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
     let date = moment(datetime);
+    let endDate = moment(endDatetime);
     const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
@@ -868,7 +883,7 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Timestamp UTC:</strong>
                     {datetime !== '' &&
-                      ' ' +
+                      ' From ' +
                         formatDateTime(
                           {
                             year: date.year(),
@@ -880,23 +895,59 @@ class TopicData extends Root {
                           },
                           'DD-MM-YYYY HH:mm'
                         )}
+                    {endDatetime !== '' &&
+                      ' To ' +
+                        formatDateTime(
+                          {
+                            year: endDate.year(),
+                            monthValue: endDate.month(),
+                            dayOfMonth: endDate.date(),
+                            hour: endDate.hour(),
+                            minute: endDate.minute(),
+                            second: endDate.second()
+                          },
+                          'DD-MM-YYYY HH:mm'
+                        )}
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div className="input-group">
-                        <DatePicker
-                          onClear={() => {
-                            this.setState({ datetime: '' });
-                          }}
-                          showDateTimeInput
-                          showTimeSelect
-                          value={datetime}
-                          onChange={value => {
-                            this.setState({ datetime: value }, () => {
-                              this._searchMessages();
-                            });
-                          }}
-                        />
+                      <div style={{ display: 'flex' }}>
+                        <div>
+                          <DatePicker
+                            label="Start"
+                            onClear={() => {
+                              this.setState({ datetime: '' }, () => {
+                                this._searchMessages();
+                              });
+                            }}
+                            showDateTimeInput
+                            showTimeSelect
+                            value={datetime}
+                            onChange={value => {
+                              this.setState({ datetime: value }, () => {
+                                this._searchMessages();
+                              });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <DatePicker
+                            label="End"
+                            onClear={() => {
+                              this.setState({ endDatetime: '' }, () => {
+                                this._searchMessages();
+                              });
+                            }}
+                            showDateTimeInput
+                            showTimeSelect
+                            value={endDatetime}
+                            onChange={value => {
+                              this.setState({ endDatetime: value }, () => {
+                                this._searchMessages();
+                              });
+                            }}
+                          />
+                        </div>
                       </div>
                     </Dropdown.Menu>
                   )}
