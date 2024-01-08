@@ -1,8 +1,10 @@
 package org.akhq.security.claim;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
+import io.jsonwebtoken.impl.compression.GzipCompressionAlgorithm;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import jakarta.annotation.security.PermitAll;
@@ -45,7 +48,7 @@ public class RestApiClaimProviderTest {
     protected RxHttpClient client;
 
     @Test
-    void loginExternalClaim() throws ParseException {
+    void loginExternalClaim() throws ParseException, JsonProcessingException {
         HttpResponse<?> resultResponse = client.toBlocking().exchange(
             HttpRequest.POST("/login", new UsernamePasswordCredentials("admin", "pass"))
         );
@@ -57,7 +60,11 @@ public class RestApiClaimProviderTest {
 
         assertTrue(token.getJWTClaimsSet().getClaims().containsKey("groups"));
 
-        Map<String, List<Group>> groups = (Map<String, List<Group>>) token.getJWTClaimsSet().getClaim("groups");
+        var gzip = new GzipCompressionAlgorithm();
+        String compressedGroups = new String(gzip.decompress(
+            Base64.getDecoder().decode((String) token.getJWTClaimsSet().getClaim("groups"))));
+
+        Map<String, List<Group>> groups = new ObjectMapper().readValue(compressedGroups, Map.class);
         assertThat(groups.keySet(), hasSize(1));
         assertNotNull(groups.get("limited"));
 

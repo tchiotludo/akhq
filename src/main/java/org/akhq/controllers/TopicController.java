@@ -207,6 +207,7 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
+        Optional<String> endTimestamp,
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
@@ -224,6 +225,7 @@ public class TopicController extends AbstractController {
                         partition,
                         sort,
                         timestamp,
+                        endTimestamp,
                         searchByKey,
                         searchByValue,
                         searchByHeaderKey,
@@ -393,6 +395,7 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
+        Optional<String> endTimestamp,
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
@@ -409,6 +412,7 @@ public class TopicController extends AbstractController {
             partition,
             sort,
             timestamp,
+            endTimestamp,
             searchByKey,
             searchByValue,
             searchByHeaderKey,
@@ -558,6 +562,7 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -636,6 +641,7 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -656,6 +662,7 @@ public class TopicController extends AbstractController {
         Optional<Integer> partition,
         Optional<RecordRepository.Options.Sort> sort,
         Optional<String> timestamp,
+        Optional<String> endTimestamp,
         Optional<String> searchByKey,
         Optional<String> searchByValue,
         Optional<String> searchByHeaderKey,
@@ -669,6 +676,7 @@ public class TopicController extends AbstractController {
         partition.ifPresent(options::setPartition);
         sort.ifPresent(options::setSort);
         timestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setTimestamp);
+        endTimestamp.map(r -> Instant.parse(r).toEpochMilli()).ifPresent(options::setEndTimestamp);
         after.ifPresent(options::setAfter);
         searchByKey.ifPresent(options::setSearchByKey);
         searchByValue.ifPresent(options::setSearchByValue);
