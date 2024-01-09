@@ -306,7 +306,7 @@ public class TopicController extends AbstractController {
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.ALTER_CONFIG)
     @Post(value = "api/{cluster}/topic/{topicName}/configs")
     @Operation(tags = {"topic"}, summary = "Update configs from a topic")
-    public List<Config> updateConfig(String cluster, String topicName, @Body Map<String, String> configs) throws ExecutionException, InterruptedException {
+    public List<Config> updateConfig(String cluster, String topicName, @Body("configs") Map<String, String> configs) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
         List<Config> updated = ConfigRepository.updatedConfigs(configs, this.configRepository.findByTopic(cluster, topicName), false);
