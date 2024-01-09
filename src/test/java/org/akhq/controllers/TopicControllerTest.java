@@ -106,7 +106,7 @@ class TopicControllerTest extends AbstractTest {
         List<Config> result = this.retrieveList(
             HttpRequest.POST(
                 TOPIC_URL + "/configs",
-                ImmutableMap.of("message.timestamp.difference.max.ms", s)
+                ImmutableMap.of("configs", ImmutableMap.of("message.timestamp.difference.max.ms", s))
             ),
             Config.class
         );

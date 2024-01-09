@@ -53,7 +53,7 @@ class NodeControllerTest extends AbstractTest {
         List<Config> result = this.retrieveList(
             HttpRequest.POST(
                 "/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/configs",
-                ImmutableMap.of("max.connections.per.ip", s)
+                ImmutableMap.of("configs", ImmutableMap.of("max.connections.per.ip", s))
             ),
             Config.class
         );
