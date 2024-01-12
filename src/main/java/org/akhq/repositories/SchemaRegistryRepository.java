@@ -321,14 +321,17 @@ public class SchemaRegistryRepository extends AbstractRepository {
     public Deserializer getAwsKafkaDeserializer(String clusterId) {
 
         if (!this.awsKafkaDeserializers.containsKey(clusterId)){
+            Connection.SchemaRegistry schemaRegistry = kafkaModule.getConnection(clusterId).getSchemaRegistry();
             Map<String, Object> params = new HashMap<>();
-            params.put(AWSSchemaRegistryConstants.REGISTRY_NAME,"MetisSchemaRegistry" );
-            params.put(AWSSchemaRegistryConstants.AWS_REGION,"eu-west-2" );
+            params.put(AWSSchemaRegistryConstants.REGISTRY_NAME, schemaRegistry.getGlueSchemaRegistryName());
+            params.put(AWSSchemaRegistryConstants.AWS_REGION,schemaRegistry.getAwsRegion());
             params.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+
+            // Adding secondary deserializer so that messages that aren't serialized using avro,proto or json are deserialized using StringDeserializer
             params.put(AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER, StringDeserializer.class.getName());
-            Map<String, String> otherProps = kafkaModule.getConnection(clusterId).getSchemaRegistry().getProperties();
-            if (otherProps != null) {
-                params.putAll(otherProps);
+            Map<String, String> otherParams = schemaRegistry.getProperties();
+            if (otherParams != null) {
+                params.putAll(otherParams);
             }
             this.awsKafkaDeserializers.put(clusterId, new AWSKafkaAvroDeserializer(DefaultCredentialsProvider.builder().build(), params));
         }
