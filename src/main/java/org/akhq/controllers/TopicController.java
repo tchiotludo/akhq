@@ -188,7 +188,7 @@ public class TopicController extends AbstractController {
                             key.map(String::getBytes).orElse(null),
                             value.map(String::getBytes).orElse(null),
                             headers,
-                            targetTopic))
+                            targetTopic, null))
                     .collect(Collectors.toList());
     }
 
@@ -365,7 +365,8 @@ public class TopicController extends AbstractController {
             Base64.getDecoder().decode(key),
             null,
             new ArrayList<>(),
-            topicRepository.findByName(cluster, topicName)
+            topicRepository.findByName(cluster, topicName),
+            null
         );
     }
 

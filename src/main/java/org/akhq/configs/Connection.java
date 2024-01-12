@@ -33,7 +33,8 @@ public class Connection extends AbstractProperties {
         String basicAuthUsername;
         String basicAuthPassword;
         SchemaRegistryType type = SchemaRegistryType.CONFLUENT;
-
+        String glueSchemaRegistryName;
+        String awsRegion;
         @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
         Map<String, String> properties;
     }

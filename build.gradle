@@ -152,6 +152,10 @@ dependencies {
     //AWS MSK IAM Auth
     implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.0.0'
 
+    // AWS Glue serde
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.15")
+
+
     implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.11'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'

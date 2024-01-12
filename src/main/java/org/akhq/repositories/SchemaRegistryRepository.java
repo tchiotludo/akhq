@@ -1,5 +1,8 @@
 package org.akhq.repositories;
 
+import com.amazonaws.services.schemaregistry.deserializers.avro.AWSKafkaAvroDeserializer;
+import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
+import com.amazonaws.services.schemaregistry.utils.AvroRecordType;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
@@ -23,6 +26,9 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -38,6 +44,8 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
+    private final Map<String, Deserializer> awsKafkaDeserializers = new HashMap<>();
+
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search, filters), pagination, list -> this.toSchemasLatestVersion(list, clusterId));
@@ -309,6 +317,22 @@ public class SchemaRegistryRepository extends AbstractRepository {
             schemaRegistryType = schemaRegistry.getType();
         }
         return schemaRegistryType;
+    }
+    public Deserializer getAwsKafkaDeserializer(String clusterId) {
+
+        if (!this.awsKafkaDeserializers.containsKey(clusterId)){
+            Map<String, Object> params = new HashMap<>();
+            params.put(AWSSchemaRegistryConstants.REGISTRY_NAME,"MetisSchemaRegistry" );
+            params.put(AWSSchemaRegistryConstants.AWS_REGION,"eu-west-2" );
+            params.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+            params.put(AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER, StringDeserializer.class.getName());
+            Map<String, String> otherProps = kafkaModule.getConnection(clusterId).getProperties();
+            if (otherProps != null) {
+                params.putAll(otherProps);
+            }
+            this.awsKafkaDeserializers.put(clusterId, new AWSKafkaAvroDeserializer(DefaultCredentialsProvider.builder().build(), params));
+        }
+        return this.awsKafkaDeserializers.get(clusterId);
     }
 
     static {

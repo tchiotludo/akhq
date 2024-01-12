@@ -83,8 +83,10 @@ public class Record {
     private byte MAGIC_BYTE;
 
     private Boolean truncated;
+    private Deserializer awsKafkaDeserializer;
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic) {
+
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsKafkaDeserializer) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
@@ -98,11 +100,12 @@ public class Record {
         this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         this.headers = headers;
         this.truncated = false;
+        this.awsKafkaDeserializer = awsKafkaDeserializer;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsKafkaDeserializer) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -132,6 +135,7 @@ public class Record {
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
         this.truncated = false;
+        this.awsKafkaDeserializer = awsKafkaDeserializer;
     }
 
     public String getKey() {
@@ -174,6 +178,10 @@ public class Record {
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
         if (payload == null) {
             return null;
+        }
+        else if (this.awsKafkaDeserializer != null) {
+            return this.awsKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
+
         } else if (schemaId != null) {
             try {
 
