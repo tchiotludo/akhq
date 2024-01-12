@@ -1,6 +1,6 @@
 package org.akhq.repositories;
 
-import com.amazonaws.services.schemaregistry.deserializers.avro.AWSKafkaAvroDeserializer;
+import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer;
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -44,7 +44,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
-    private final Map<String, Deserializer> awsKafkaDeserializers = new HashMap<>();
+    private final Map<String, Deserializer> awsGlueKafkaDeserializers = new HashMap<>();
 
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
@@ -318,9 +318,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
         }
         return schemaRegistryType;
     }
-    public Deserializer getAwsKafkaDeserializer(String clusterId) {
+    public Deserializer getAwsGlueKafkaDeserializer(String clusterId) {
 
-        if (!this.awsKafkaDeserializers.containsKey(clusterId)){
+        if (!this.awsGlueKafkaDeserializers.containsKey(clusterId)){
             Connection.SchemaRegistry schemaRegistry = kafkaModule.getConnection(clusterId).getSchemaRegistry();
             Map<String, Object> params = new HashMap<>();
             params.put(AWSSchemaRegistryConstants.REGISTRY_NAME, schemaRegistry.getGlueSchemaRegistryName());
@@ -333,9 +333,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
             if (otherParams != null) {
                 params.putAll(otherParams);
             }
-            this.awsKafkaDeserializers.put(clusterId, new AWSKafkaAvroDeserializer(DefaultCredentialsProvider.builder().build(), params));
+            this.awsGlueKafkaDeserializers.put(clusterId, new GlueSchemaRegistryKafkaDeserializer(DefaultCredentialsProvider.builder().build(), params));
         }
-        return this.awsKafkaDeserializers.get(clusterId);
+        return this.awsGlueKafkaDeserializers.get(clusterId);
     }
 
     static {

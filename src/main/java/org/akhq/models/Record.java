@@ -83,10 +83,10 @@ public class Record {
     private byte MAGIC_BYTE;
 
     private Boolean truncated;
-    private Deserializer awsKafkaDeserializer;
+    private Deserializer awsGlueKafkaDeserializer;
 
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsKafkaDeserializer) {
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
@@ -100,12 +100,12 @@ public class Record {
         this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         this.headers = headers;
         this.truncated = false;
-        this.awsKafkaDeserializer = awsKafkaDeserializer;
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsKafkaDeserializer) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -135,7 +135,7 @@ public class Record {
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
         this.truncated = false;
-        this.awsKafkaDeserializer = awsKafkaDeserializer;
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public String getKey() {
@@ -179,8 +179,8 @@ public class Record {
         if (payload == null) {
             return null;
         }
-        else if (this.awsKafkaDeserializer != null) {
-            return this.awsKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
+        else if (this.awsGlueKafkaDeserializer != null) {
+            return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
 
         } else if (schemaId != null) {
             try {
