@@ -326,7 +326,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             params.put(AWSSchemaRegistryConstants.AWS_REGION,"eu-west-2" );
             params.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
             params.put(AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER, StringDeserializer.class.getName());
-            Map<String, String> otherProps = kafkaModule.getConnection(clusterId).getProperties();
+            Map<String, String> otherProps = kafkaModule.getConnection(clusterId).getSchemaRegistry().getProperties();
             if (otherProps != null) {
                 params.putAll(otherProps);
             }
