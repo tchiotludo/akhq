@@ -45,19 +45,21 @@ micronaut:
               secret: "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!"
 
     redirect:
-      login-success: "${micronaut.server.context-path:}/ui"
+      login-success: "/ui"
       forbidden:
-        url: "${micronaut.server.context-path:}/ui/login/forbidden"
+        url: "/ui/login/forbidden"
       unauthorized:
-        url: "${micronaut.server.context-path:}/ui/login/unauthorized"
-      login-failure: "${micronaut.server.context-path:}/ui/login/failed"
-      logout:  "${micronaut.server.context-path:}/ui"
+        url: "/ui/login/unauthorized"
+      login-failure: "/ui/login/failed"
+      logout:  "/ui"
     intercept-url-map:
-      - pattern: "${micronaut.server.context-path:}/ui/**"
+      - pattern: "/ui/**"
         access: "isAnonymous()"
-      - pattern: "${micronaut.server.context-path:}/static/**"
+      - pattern: "/oauth/**"
         access: "isAnonymous()"
-      - pattern: "${micronaut.server.context-path:}/swagger/**"
+      - pattern: "/static/**"
+        access: "isAnonymous()"
+      - pattern: "/swagger/**"
         access: "isAnonymous()"
     oauth2:
       login-uri: "${micronaut.server.context-path:}/oauth/login{/provider}"
