@@ -109,6 +109,7 @@ service:
   port: 80
   managementPort: 28081
   #httpNodePort: 32551
+  #managementNodePort: 32552
   labels: {}
   annotations:
     # cloud.google.com/load-balancer-type: "Internal"
