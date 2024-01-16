@@ -1,1 +1,0 @@
-const t=JSON.parse('{"key":"v-63734767","path":"/docs/configuration/authentifications/ldap.html","title":"LDAP","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1705421932000,"contributors":[{"name":"Stephan Linkel","email":"stephan@linkel.de","commits":1}]},"filePathRelative":"docs/configuration/authentifications/ldap.md"}');export{t as data};
