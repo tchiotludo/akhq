@@ -688,7 +688,7 @@ public class RecordRepository extends AbstractRepository {
             KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
 
             // end
-            if (searchEvent == null || searchEvent.emptyPoll == 666) {
+            if (searchEvent == null || searchEvent.emptyPoll >= 1) {
                 emitter.onNext(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
                 emitter.onComplete();
                 consumer.close();
@@ -701,7 +701,7 @@ public class RecordRepository extends AbstractRepository {
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
             if (records.isEmpty()) {
-                currentEvent.emptyPoll++;
+                currentEvent.emptyPoll = 1;
             } else {
                 currentEvent.emptyPoll = 0;
             }
@@ -728,13 +728,17 @@ public class RecordRepository extends AbstractRepository {
 
             currentEvent.records = list;
 
-            if (currentEvent.emptyPoll >= 1) {
-                currentEvent.emptyPoll = 666;
+            // No more records, poll was empty: stop here
+            if (currentEvent.emptyPoll == 1) {
                 emitter.onNext(currentEvent.end(searchEvent.getAfter()));
-            } else if (matchesCount.get() >= options.getSize()) {
+            }
+            // More records than expected, send the records and then stop
+            else if (matchesCount.get() >= options.getSize()) {
                 currentEvent.emptyPoll = 666;
                 emitter.onNext(currentEvent.progress(options));
-            } else {
+            }
+            // Continue to search
+            else {
                 emitter.onNext(currentEvent.progress(options));
             }
 

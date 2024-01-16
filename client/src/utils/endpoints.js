@@ -77,6 +77,14 @@ export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
   return uri;
 };
 
+export const uriTopicDataDownload = (clusterId, topicId, filters) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/download`;
+  if (filters) {
+    uri = uri + `?${filters}`;
+  }
+  return uri;
+};
+
 export const uriTopicDataSingleRecord = (clusterId, topicId, partition, offset) => {
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/record/${partition}/${offset}`;
   return uri;
