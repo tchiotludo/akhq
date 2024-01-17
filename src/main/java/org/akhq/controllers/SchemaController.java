@@ -158,16 +158,19 @@ public class SchemaController extends AbstractController {
 
     @Get("api/{cluster}/schema/id/{id}")
     @Operation(tags = {"schema registry"}, summary = "Find a schema by id")
-    public Schema redirectId(
+    public Schema getSubjectBySchemaIdAndTopic(
         HttpRequest<?> request,
         String cluster,
-        Integer id
-    ) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        Integer id,
+        @QueryValue String topic
+    ) throws IOException, RestClientException {
         // TODO Do the check on the subject name too
         checkIfClusterAllowed(cluster);
 
-        return this.schemaRepository
-            .getById(cluster, id)
+        return this.schemaRepository.getSubjectsBySchemaId(cluster, id)
+            .stream()
+            .filter(s -> s.getSubject().contains(topic))
+            .findFirst()
             .orElse(null);
     }
 

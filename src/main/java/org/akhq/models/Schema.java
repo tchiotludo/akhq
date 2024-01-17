@@ -41,6 +41,12 @@ public class Schema {
 
     private String exception;
 
+    public Schema(int schemaId, String subject, int version) {
+        this.id = schemaId;
+        this.subject = subject;
+        this.version = version;
+    }
+
     public Schema(Schema schema, Schema.Config config) {
         this.id = schema.id;
         this.subject = schema.subject;

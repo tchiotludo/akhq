@@ -209,8 +209,8 @@ export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
 
-export const uriSchemaId = (clusterId, id) => {
-  return `${apiUrl}/${clusterId}/schema/id/${id}`;
+export const uriSchemaId = (clusterId, id, topic) => {
+  return `${apiUrl}/${clusterId}/schema/id/${id}?topic=${topic}`;
 };
 
 export const uriSchemaVersions = (clusterId, subject) => {
