@@ -104,4 +104,43 @@ class SchemaControllerTest extends AbstractTest {
         );
         assertTrue(e.getMessage().contains("doesn't exist"));
     }
+
+    @Test
+    void findSubjectBySchemaId() {
+        // Create 3 subjects (including 2 with the same schema)
+        var subject1Schema1 = new Schema("subjectTopic1-value", SchemaRegistryRepositoryTest.SCHEMA_1_V1,
+            Schema.Config.CompatibilityLevelConfig.FORWARD);
+        var subject1Schema1V2 = new Schema("subjectTopic1-value", SchemaRegistryRepositoryTest.SCHEMA_1_V2,
+            Schema.Config.CompatibilityLevelConfig.FORWARD);
+        var subject2Schema1 = new Schema("subjectTopic2-value", SchemaRegistryRepositoryTest.SCHEMA_1_V1,
+            Schema.Config.CompatibilityLevelConfig.FORWARD);
+
+        var subject1Schema1Response = this.retrieve(HttpRequest.POST(BASE_URL, subject1Schema1), Schema.class);
+        var subject1Schema1V2Response = this.retrieve(HttpRequest.POST(BASE_URL + "/subjectTopic1-value", subject1Schema1V2), Schema.class);
+        var subject2Schema1Response = this.retrieve(HttpRequest.POST(BASE_URL, subject2Schema1), Schema.class);
+
+        // Subject v1 and v2 should be different
+        assertNotEquals(subject1Schema1Response.getId(), subject1Schema1V2Response.getId());
+        assertNotEquals(subject1Schema1Response.getSchema(), subject1Schema1V2Response.getSchema());
+
+        // Subject 1 and 2 should have the same ID, schema but different subject
+        assertEquals(subject1Schema1Response.getId(), subject2Schema1Response.getId());
+        assertEquals(subject1Schema1Response.getSchema(), subject2Schema1Response.getSchema());
+        assertNotEquals(subject1Schema1Response.getSubject(), subject2Schema1Response.getSubject());
+
+        // Searching subject by schema ID should give the right subject depending on the topic
+        var subject1FromSchemaIdAndTopic =
+            this.retrieve(HttpRequest.GET(BASE_URL + "/id/" + subject1Schema1Response.getId() + "?topic=subjectTopic1"), Schema.class);
+        assertEquals(subject1Schema1Response.getId(), subject1FromSchemaIdAndTopic.getId());
+        assertEquals(subject1Schema1Response.getSubject(), subject1FromSchemaIdAndTopic.getSubject());
+
+        var subject2FromSchemaIdAndTopic =
+            this.retrieve(HttpRequest.GET(BASE_URL + "/id/" + subject1Schema1Response.getId() + "?topic=subjectTopic2"), Schema.class);
+        assertEquals(subject2Schema1Response.getId(), subject2FromSchemaIdAndTopic.getId());
+        assertEquals(subject2Schema1Response.getSubject(), subject2FromSchemaIdAndTopic.getSubject());
+
+        // Clean
+        this.exchange(HttpRequest.DELETE(BASE_URL + "/subjectTopic1-value"));
+        this.exchange(HttpRequest.DELETE(BASE_URL + "/subjectTopic2-value"));
+    }
 }

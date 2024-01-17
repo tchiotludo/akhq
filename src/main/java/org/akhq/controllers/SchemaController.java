@@ -6,6 +6,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.annotation.Nullable;
 import org.akhq.configs.security.Role;
 import org.akhq.middlewares.SchemaComparator;
 import org.akhq.models.Schema;
@@ -157,19 +158,19 @@ public class SchemaController extends AbstractController {
     }
 
     @Get("api/{cluster}/schema/id/{id}")
-    @Operation(tags = {"schema registry"}, summary = "Find a schema by id")
+    @Operation(tags = {"schema registry"}, summary = "Find a subject by the schema id")
     public Schema getSubjectBySchemaIdAndTopic(
         HttpRequest<?> request,
         String cluster,
         Integer id,
-        @QueryValue String topic
+        @Nullable @QueryValue String topic
     ) throws IOException, RestClientException {
         // TODO Do the check on the subject name too
         checkIfClusterAllowed(cluster);
 
         return this.schemaRepository.getSubjectsBySchemaId(cluster, id)
             .stream()
-            .filter(s -> s.getSubject().contains(topic))
+            .filter(s -> topic == null || s.getSubject().contains(topic))
             .findFirst()
             .orElse(null);
     }
