@@ -68,7 +68,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     void getServerInfo() {
         KsqlDbServerInfo serverInfo = repository.getServerInfo(KafkaTestCluster.CLUSTER_ID, "ksqldb");
         assertNotNull(serverInfo.getKafkaClusterId());
-        assertEquals("7.4.2", serverInfo.getServerVersion());
+        assertEquals("7.4.4", serverInfo.getServerVersion());
         assertEquals("ksql", serverInfo.getKsqlServiceId());
     }
 
