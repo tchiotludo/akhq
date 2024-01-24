@@ -3,6 +3,7 @@ import { registerComponentsPlugin } from '@vuepress/plugin-register-components';
 import { searchPlugin } from '@vuepress/plugin-search'
 import { googleAnalyticsPlugin } from '@vuepress/plugin-google-analytics'
 import { defaultTheme } from '@vuepress/theme-default'
+import { viteBundler } from '@vuepress/bundler-vite'
 
 module.exports = {
   lang: 'en-US',
@@ -73,5 +74,9 @@ module.exports = {
       '/docs/api.md',
       '/docs/dev.md',
     ]
-  })
+  }),
+  bundler: viteBundler({
+    viteOptions: {},
+    vuePluginOptions: {},
+  }),
 }
