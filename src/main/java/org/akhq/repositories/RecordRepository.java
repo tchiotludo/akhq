@@ -471,7 +471,8 @@ public class RecordRepository extends AbstractRepository {
             this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
-            topic
+            topic,
+            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(clusterId): null
         ));
     }
 
@@ -490,7 +491,8 @@ public class RecordRepository extends AbstractRepository {
             this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
             avroWireFormatConverter.convertValueToWireFormat(record, client,
                     this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
-            topic
+            topic,
+            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(options.getClusterId()): null
         ));
     }
 

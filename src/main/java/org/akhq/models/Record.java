@@ -87,8 +87,10 @@ public class Record {
 
     @JsonIgnore
     private Boolean truncated;
+    private Deserializer awsGlueKafkaDeserializer;
 
-    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic) {
+
+    public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
         this.partition = record.partition();
@@ -102,11 +104,12 @@ public class Record {
         this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         this.headers = headers;
         this.truncated = false;
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -136,6 +139,7 @@ public class Record {
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
         this.truncated = false;
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public String getKey() {
@@ -178,6 +182,10 @@ public class Record {
     private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
         if (payload == null) {
             return null;
+        }
+        else if (this.awsGlueKafkaDeserializer != null) {
+            return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
+
         } else if (schemaId != null) {
             try {
 
