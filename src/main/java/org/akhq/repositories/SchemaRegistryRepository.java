@@ -118,6 +118,20 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return found;
     }
 
+    public List<Schema> getSubjectsBySchemaId(String clusterId, int id) throws  IOException, RestClientException {
+        Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
+            .getRegistryRestClient(clusterId));
+        if(maybeRegistryRestClient.isEmpty()){
+            return List.of();
+        }
+
+        return maybeRegistryRestClient.get()
+            .getAllVersionsById(id)
+            .stream()
+            .map(v -> new Schema(id, v.getSubject(), v.getVersion()))
+            .collect(Collectors.toList());
+    }
+
     public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
         for (String subject: this.all(clusterId, Optional.empty(), List.of())) {
             for (Schema version: this.getAllVersions(clusterId, subject)) {

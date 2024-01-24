@@ -603,9 +603,9 @@ class TopicData extends Root {
   }
 
   _redirectToSchema(id) {
-    const { selectedCluster } = this.state;
+    const { selectedCluster, selectedTopic } = this.state;
 
-    this.getApi(uriSchemaId(selectedCluster, id)).then(response => {
+    this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
         this.props.history.push({
           pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
