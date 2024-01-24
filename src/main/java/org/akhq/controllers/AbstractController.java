@@ -50,7 +50,13 @@ abstract public class AbstractController {
             return List.of();
         }
 
-        List<Group> groupBindings = AKHQSecurityRule.decompressGroups(authentication.get()).values()
+        var groups = AKHQSecurityRule.decompressGroups(authentication.get());
+
+        if (groups == null) {
+           return List.of();
+        }
+
+        List<Group> groupBindings = groups.values()
             .stream()
             .flatMap(Collection::stream)
             .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
