@@ -21,6 +21,7 @@ client/node_modules
 client/node
 client/.env*.local
 client/build
+client/.frontend-gradle-plugin
 
 ### Ide ###
 .idea/*
