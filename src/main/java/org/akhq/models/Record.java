@@ -87,6 +87,7 @@ public class Record {
 
     @JsonIgnore
     private Boolean truncated;
+    @JsonIgnore
     private Deserializer awsGlueKafkaDeserializer;
 
 
