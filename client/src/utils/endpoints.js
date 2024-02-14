@@ -77,6 +77,14 @@ export const uriTopicDataSearch = (clusterId, topicId, filters, offsets) => {
   return uri;
 };
 
+export const uriTopicDataDownload = (clusterId, topicId, filters) => {
+  let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/download`;
+  if (filters) {
+    uri = uri + `?${filters}`;
+  }
+  return uri;
+};
+
 export const uriTopicDataSingleRecord = (clusterId, topicId, partition, offset) => {
   let uri = `${apiUrl}/${clusterId}/topic/${topicId}/data/record/${partition}/${offset}`;
   return uri;
@@ -201,8 +209,8 @@ export const uriSchemaRegistry = (clusterId, search, pageNumber) => {
   return `${apiUrl}/${clusterId}/schema?&search=${search}&page=${pageNumber}`;
 };
 
-export const uriSchemaId = (clusterId, id) => {
-  return `${apiUrl}/${clusterId}/schema/id/${id}`;
+export const uriSchemaId = (clusterId, id, topic) => {
+  return `${apiUrl}/${clusterId}/schema/id/${id}?topic=${topic}`;
 };
 
 export const uriSchemaVersions = (clusterId, subject) => {

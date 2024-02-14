@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
@@ -11,11 +12,13 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.server.types.files.StreamedFile;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
+import io.reactivex.schedulers.Schedulers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
 import org.akhq.configs.security.Role;
@@ -32,10 +35,11 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
 import org.akhq.models.Record;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
@@ -437,6 +441,102 @@ public class TopicController extends AbstractController {
                     .name(event.getName());
             });
     }
+
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
+    @ExecuteOn(TaskExecutors.IO)
+    @Get(value = "api/{cluster}/topic/{topicName}/data/download")
+    @Operation(tags = {"topic data download"}, summary = "Download data for a topic")
+    public HttpResponse<StreamedFile> download(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> endTimestamp,
+        Optional<String> searchByKey,
+        Optional<String> searchByValue,
+        Optional<String> searchByHeaderKey,
+        Optional<String> searchByHeaderValue,
+        Optional<String> searchByKeySubject,
+        Optional<String> searchByValueSubject
+    ) throws ExecutionException, InterruptedException, IOException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            searchByKey,
+            searchByValue,
+            searchByHeaderKey,
+            searchByHeaderValue,
+            searchByKeySubject,
+            searchByValueSubject
+        );
+
+        // Set in MAX_POLL_RECORDS_CONFIG, big number increases speed
+        options.setSize(10000);
+
+        Topic topic = topicRepository.findByName(cluster, topicName);
+
+        ObjectMapper mapper = new ObjectMapper();
+        // For ZonedDatetime serialization
+        mapper.findAndRegisterModules();
+
+        PipedOutputStream out = new PipedOutputStream();
+        PipedInputStream in = new PipedInputStream(out);
+
+        new Thread(() -> {
+            try (out) {
+                out.write('[');
+
+                AtomicBoolean continueSearch = new AtomicBoolean(true);
+                AtomicBoolean isFirstBatch = new AtomicBoolean(true);
+
+                while(continueSearch.get()) {
+                    recordRepository
+                        .search(topic, options)
+                        .observeOn(Schedulers.io())
+                        .map(event -> {
+                            if (!event.getData().getRecords().isEmpty()) {
+                                if (!isFirstBatch.getAndSet(false)) {
+                                    // Add a comma between batches records
+                                    out.write(',');
+                                }
+
+                                byte[] bytes = mapper.writeValueAsString(event.getData().getRecords()).getBytes();
+                                // Remove start [ and end ] to concatenate records in the same array
+                                out.write(Arrays.copyOfRange(bytes, 1, bytes.length - 1));
+
+                            } else {
+                                // No more records, add the end array ] and stop here
+                                if (event.getData().getEmptyPoll() == 1) {
+                                    out.write(']');
+                                    out.flush();
+                                    continueSearch.set(false);
+                                }
+                                else if (event.getData().getAfter() != null) {
+                                    // Continue to search from the last offsets
+                                    options.setAfter(event.getData().getAfter());
+                                }
+                            }
+
+                            return 0;
+                        }).blockingSubscribe();
+                }
+            } catch (IOException | ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        return HttpResponse.ok(new StreamedFile(in, MediaType.APPLICATION_JSON_TYPE));
+    }
+
 
     @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/data/record/{partition}/{offset}")

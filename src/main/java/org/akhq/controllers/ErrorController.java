@@ -84,10 +84,10 @@ public class ErrorController extends AbstractController {
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
         if (request.getUri().toString().startsWith("/api")) {
             if (e.isForbidden()) {
-                if (request.getAttribute(HttpAttributes.ROUTE_INFO).isPresent() &&
-                    ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_INFO).get()).hasAnnotation(AKHQSecured.class)) {
+                if (request.getAttribute(HttpAttributes.ROUTE_MATCH).isPresent() &&
+                    ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).hasAnnotation(AKHQSecured.class)) {
                     AnnotationValue<AKHQSecured> annotation =
-                        ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_INFO).get()).getAnnotation(AKHQSecured.class);
+                        ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).getAnnotation(AKHQSecured.class);
 
                     return HttpResponse.status(HttpStatus.FORBIDDEN)
                         .body(new JsonError(String.format("Unauthorized: missing permission on resource %s and action %s",

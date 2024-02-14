@@ -1,5 +1,5 @@
 plugins {
-    id 'org.siouan.frontend-jdk11' version '6.0.0'
+    id 'org.siouan.frontend-jdk11' version '8.0.0'
 }
 
 repositories {
@@ -8,8 +8,9 @@ repositories {
 }
 
 frontend {
-    nodeVersion = '18.12.1'
+    nodeVersion = '18.18.0'
     assembleScript = 'run build'
+    maxDownloadAttempts = 5
 }
 
 tasks.register('copyClientResources', Copy) {

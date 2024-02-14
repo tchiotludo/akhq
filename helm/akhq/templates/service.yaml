@@ -22,12 +22,15 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+      {{- if and (eq "NodePort" .Values.service.type) .Values.service.httpNodePort }}
+      nodePort: {{ .Values.service.httpNodePort }}
+      {{- end }}
     - port: {{ .Values.service.managementPort }}
       targetPort: management
       protocol: TCP
       name: management
-      {{- if and (eq "NodePort" .Values.service.type) .Values.service.httpNodePort }}
-      nodePort: {{ .Values.service.httpNodePort }}
+      {{- if and (eq "NodePort" .Values.service.type) .Values.service.managementNodePort }}
+      nodePort: {{ .Values.service.managementNodePort }}
       {{- end }}
   selector:
     app.kubernetes.io/name: {{ include "akhq.name" . }}

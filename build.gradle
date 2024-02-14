@@ -1,14 +1,14 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "4.2.0"
+    id "io.micronaut.application" version "4.2.1"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.5.6'
+    id 'org.gradle.test-retry' version '1.5.8'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.49.0"
+    id "com.github.ben-manes.versions" version "0.51.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
@@ -44,7 +44,7 @@ configurations.all {
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
 
-        force("com.google.protobuf:protobuf-java:3.22.2")
+        force("com.google.protobuf:protobuf-java:3.25.2")
     }
 }
 
@@ -126,12 +126,13 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:32.1.3-jre'
+    implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // avro
-    implementation 'org.apache.avro:avro:1.11.0'
+    implementation 'org.apache.avro:avro:1.11.3'
 
     // jackson-module-scala
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.13.4'
@@ -143,20 +144,20 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.15'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.18'
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.0.0'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.0.3'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.15")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.18")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.5.11'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.6.2'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 }

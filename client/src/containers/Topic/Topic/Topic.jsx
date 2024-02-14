@@ -322,22 +322,27 @@ class Topic extends Root {
                   </Dropdown>
                 </div>
               )}
-              {this.canEmptyTopic() && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') ? (
-                <div
-                  onClick={() => {
-                    this.handleOnEmpty();
-                  }}
-                  className="btn btn-secondary mr-2"
-                >
-                  <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-                </div>
+
+              {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('DELETE') ? (
+                this.canEmptyTopic() ? (
+                  <div
+                    onClick={() => {
+                      this.handleOnEmpty();
+                    }}
+                    className="btn btn-secondary mr-2"
+                  >
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+                ) : (
+                  <div
+                    title="Only enabled for topics with Delete Cleanup Policy"
+                    className="btn disabled-black-button mr-2"
+                  >
+                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                  </div>
+                )
               ) : (
-                <div
-                  title="Only enabled for topics with Delete Cleanup Policy"
-                  className="btn disabled-black-button mr-2"
-                >
-                  <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
-                </div>
+                <></>
               )}
 
               {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
