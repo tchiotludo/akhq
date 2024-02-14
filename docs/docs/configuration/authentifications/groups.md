@@ -13,10 +13,12 @@ Define groups with specific roles for your users
 
 * `akhq.security.groups`: Groups map definition
   * `key:` a uniq key used as name if not specified
-    * A list of role/patterns/clusters association
+    * A list of role/patterns/names/clusters association
       * `role`: name of an existing role
-      * `patterns`: list of regular expression that resources from the given role must match at least once get access
-      * `clusters`: list of regular expression that cluster must match at least once to get access
+      * `patterns`: list of regular expression that resources from the given role must match at least once get access (default `.*`)
+      * `names`: list of names that resources from the given role must match exactly, if both patterns and names are set
+         then akhq uses a logic `or`, to be use alone the `patterns` must be set to an empty list
+      * `clusters`: list of regular expression that cluster must match at least once to get access (default `.*`)
 
 ::: warning
 Please also set the `micronaut.security.token.jwt.signatures.secret.generator.secret` if you set a group.
@@ -34,6 +36,17 @@ Here is an example of a `reader` group definition based on the default reader ro
       reader:
         - role: reader
           patterns: [ "pub.*" ]
+          clusters: [ "public" ]
+```
+
+Hereafter is the same example including all topics matching the pattern `pub.*` and one single topic with name `subscriber`.
+
+```yaml
+    groups:
+      reader:
+        - role: reader
+          patterns: [ "pub.*" ]
+          names: ["subscriber"]
           clusters: [ "public" ]
 ```
 

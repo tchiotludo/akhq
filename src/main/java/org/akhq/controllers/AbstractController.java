@@ -53,7 +53,7 @@ abstract public class AbstractController {
         var groups = AKHQSecurityRule.decompressGroups(authentication.get());
 
         if (groups == null) {
-           return List.of();
+            return List.of();
         }
 
         List<Group> groupBindings = groups.values()
@@ -135,7 +135,7 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, List<String> resources) {
-        for(String resource : resources) {
+        for (String resource : resources) {
             checkIfClusterAndResourceAllowed(cluster, resource);
         }
     }
@@ -173,8 +173,9 @@ abstract public class AbstractController {
                         .anyMatch(pattern -> Pattern.matches(pattern, cluster));
 
                     if (StringUtils.isNotEmpty(resource)) {
-                        allowed = allowed && group.getPatterns().stream()
-                            .anyMatch(pattern -> Pattern.matches(pattern, resource));
+                        allowed = allowed && (group.getPatterns().stream()
+                            .anyMatch(pattern -> Pattern.matches(pattern, resource))
+                            || group.getNames().contains(resource));
                     }
 
                     return allowed;
