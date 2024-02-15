@@ -69,6 +69,12 @@
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
+                                                    <img src="/assets/images/using/baloise.png" alt="Baloise">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
                                                     <img src="/assets/images/using/barmer.png" alt="Barmer">
                                                 </div>
                                             </div>
@@ -147,13 +153,19 @@
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
+                                                    <img src="/assets/images/maif.svg" alt="ManoMano">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
                                                     <img src="/assets/images/using/manomano.svg" alt="ManoMano">
                                                 </div>
                                             </div>
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
-                                                    <img src="/assets/images/using/michelin.png" alt="Michelin">
+                                                    <img src="/assets/images/using/michelin.svg" alt="Michelin">
                                                 </div>
                                             </div>
 
@@ -184,12 +196,6 @@
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
                                                     <img src="/assets/images/using/tvg.png" alt="TVG">
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2 col-sm-4 col-6">
-                                                <div class="mu-single-using">
-                                                    <img src="/assets/images/using/baloise.png" alt="Baloise">
                                                 </div>
                                             </div>
 
@@ -415,29 +421,42 @@
                                                     contributors.</p>
                                                 <div class="mu-about-info-companies text-center">
                                                     <span class="mu-about-image">
-                                                        <a href="https://infosupport.com/?utm_source=AKHQ"
-                                                           target="_blank">
+                                                        <a href="https://maif.github.io/?utm_source=AKHQ" target="_blank">
+                                                            <img aria-hidden="true"
+                                                                style="width:210px"
+                                                                src="/assets/images/maif.svg" alt="MAIF">
+                                                        </a>
+                                                    </span>
+                                                    <span class="mu-about-image">
+                                                        <a href="https://infosupport.com/?utm_source=AKHQ" target="_blank">
                                                             <img aria-hidden="true"
                                                                  style="width:210px"
                                                                  src="/assets/images/logo-infosupport.svg" alt="Info Support">
                                                         </a>
                                                     </span>
                                                     <span class="mu-about-image">
-                                                        <a href="https://upstash.com/?utm_source=AKHQ"
-                                                           target="_blank">
+                                                        <a href="https://upstash.com/?utm_source=AKHQ" target="_blank">
                                                             <img aria-hidden="true"
                                                                  style="width:210px"
                                                                  src="https://raw.githubusercontent.com/upstash/sponsorship/master/logo.png" alt="Upstash">
                                                         </a>
                                                     </span>
                                                     <span class="mu-about-image">
-                                                        <img aria-hidden="true"
-                                                             style="width:210px"
-                                                             src="/assets/images/using/la-redoute.jpg" alt="La Redoute">
+                                                        <a href="https://www.michelin.fr/?utm_source=AKHQ" target="_blank">
+                                                            <img aria-hidden="true"
+                                                                style="width:210px"
+                                                                src="/assets/images/using/michelin.svg" alt="Michelin">
+                                                        </a>
                                                     </span>
                                                     <span class="mu-about-image">
-                                                        <a href="https://www.linkedin.com/company/polarising/"
-                                                           target="_blank">
+                                                        <a href="https://www.laredoute.fr/?utm_source=AKHQ" target="_blank">
+                                                            <img aria-hidden="true"
+                                                                 style="width:210px"
+                                                                 src="/assets/images/using/la-redoute.jpg" alt="La Redoute">
+                                                        </a>
+                                                    </span>
+                                                    <span class="mu-about-image">
+                                                        <a href="https://polarising.com/?utm_source=AKHQ" target="_blank">
                                                             <img aria-hidden="true"
                                                                  style="width:210px"
                                                                  src="/assets/images/polarising.png" alt="Polarising">
