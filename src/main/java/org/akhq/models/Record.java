@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class Record {
-    @JsonIgnore
     private Topic topic;
     private int partition;
     private long offset;
