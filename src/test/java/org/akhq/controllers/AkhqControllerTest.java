@@ -29,6 +29,7 @@ class AkhqControllerTest extends AbstractTest {
         assertEquals(1, result.get(0).getKsqldbs().size());
         assertEquals("ksqldb", result.get(0).getKsqldbs().get(0));
         assertTrue(result.get(0).isRegistry());
+        assertEquals("CONFLUENT", result.get(0).getRegistryType());
     }
 
     @Test

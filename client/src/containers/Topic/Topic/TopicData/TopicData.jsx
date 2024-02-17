@@ -518,7 +518,11 @@ class TopicData extends Root {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || [],
-        schema: { key: message.keySchemaId, value: message.valueSchemaId, registryType: this.state.registryType},
+        schema: {
+          key: message.keySchemaId,
+          value: message.valueSchemaId,
+          registryType: this.state.registryType
+        },
         exceptions: message.exceptions || []
       };
 
@@ -1207,9 +1211,13 @@ class TopicData extends Root {
                       {obj[col.accessor].key !== undefined && (
                         <span
                           className="badge badge-primary clickable"
-                          onClick={ obj[col.accessor].registryType !=="GLUE" ? () => {
-                            this._redirectToSchema(obj.schema.key);
-                          }: undefined}
+                          onClick={
+                            obj[col.accessor].registryType !== 'GLUE'
+                              ? () => {
+                                  this._redirectToSchema(obj.schema.key);
+                                }
+                              : undefined
+                          }
                         >
                           Key: {obj[col.accessor].key}
                         </span>
@@ -1218,9 +1226,13 @@ class TopicData extends Root {
                       {obj[col.accessor].value !== undefined && (
                         <span
                           className="badge badge-primary clickable schema-value"
-                          onClick={ obj[col.accessor].registryType !=="GLUE" ? () => {
-                            this._redirectToSchema(obj.schema.value);
-                          }: undefined}
+                          onClick={
+                            obj[col.accessor].registryType !== 'GLUE'
+                              ? () => {
+                                  this._redirectToSchema(obj.schema.value);
+                                }
+                              : undefined
+                          }
                         >
                           Value: {obj[col.accessor].value}
                         </span>

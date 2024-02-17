@@ -357,7 +357,8 @@ class Sidebar extends Component {
             roles.ACL &&
             roles.ACL.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {enableRegistry && registryType !== 'GLUE' &&
+          {enableRegistry &&
+            registryType !== 'GLUE' &&
             roles &&
             roles.SCHEMA &&
             roles.SCHEMA.includes('READ') &&
