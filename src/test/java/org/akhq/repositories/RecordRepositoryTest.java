@@ -278,7 +278,7 @@ class RecordRepositoryTest extends AbstractTest {
         Record recordToAssert = consumedRecord.get();
         assertEquals(recordToAssert.getKey(), keyJsonString);
         assertEquals(recordToAssert.getValue(), recordAsJsonString);
-        assertEquals(recordToAssert.getValueSchemaId(), valueJsonSchema.getId());
+        assertEquals(recordToAssert.getValueSchemaId(), String.valueOf(valueJsonSchema.getId()));
 
         // clear schema registry as it is shared between tests
         schemaRegistryRepository.delete(KafkaTestCluster.CLUSTER_ID, keyJsonSchema.getSubject());
