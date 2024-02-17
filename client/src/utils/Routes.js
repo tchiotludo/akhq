@@ -183,12 +183,7 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/:tab?"
-                  render={props => (
-                    <Topic
-                      registryType={clusters.find(el => el.id === clusterId).registryType}
-                      {...props}
-                    />
-                  )}
+                  render={props => <Topic clusters={clusters} {...props} />}
                 />
               )}
 
