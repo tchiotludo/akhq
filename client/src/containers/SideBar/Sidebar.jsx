@@ -21,6 +21,7 @@ class Sidebar extends Component {
     showConnects: false,
     showKsqlDBs: false,
     enableRegistry: false,
+    registryType: '',
     enableConnect: false,
     enableKsqlDB: false,
     roles: JSON.parse(sessionStorage.getItem('roles')),
@@ -95,6 +96,7 @@ class Sidebar extends Component {
     const enableKsqlDB = cluster.ksqldbs !== undefined;
     let newState = {
       enableRegistry: cluster.registry,
+      registryType: cluster.registryType,
       enableConnect: enableConnects,
       allConnects: [],
       selectedConnect: '',
@@ -284,6 +286,7 @@ class Sidebar extends Component {
       selectedTab,
       height,
       enableRegistry,
+      registryType,
       enableConnect,
       enableKsqlDB
     } = this.state;
@@ -354,7 +357,7 @@ class Sidebar extends Component {
             roles.ACL &&
             roles.ACL.includes('READ') &&
             this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
-          {enableRegistry &&
+          {enableRegistry && registryType !== 'GLUE' &&
             roles &&
             roles.SCHEMA &&
             roles.SCHEMA.includes('READ') &&

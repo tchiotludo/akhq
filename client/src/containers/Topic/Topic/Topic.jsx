@@ -18,6 +18,7 @@ class Topic extends Root {
   state = {
     clusterId: this.props.clusterId,
     topicId: this.props.topicId,
+    registryType: this.props.registryType,
     topic: {},
     selectedTab: '',
     showDeleteModal: false,
@@ -210,6 +211,7 @@ class Topic extends Root {
             location={location}
             isAllTopicDataSelected={this.state.isAllTopicDataSelected}
             onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
+            registryType={this.state.registryType}
           />
         );
       case 'partitions':

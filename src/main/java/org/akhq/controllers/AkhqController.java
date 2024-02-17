@@ -73,6 +73,7 @@ public class AkhqController extends AbstractController {
             .map(connection -> new ClusterDefinition(
                 connection.getName(),
                 connection.getSchemaRegistry() != null,
+                connection.getSchemaRegistry() != null ? connection.getSchemaRegistry().getType().name() : null,
                 (connection.getConnect() != null ? connection.getConnect() : new ArrayList<Connect>())
                     .stream()
                     .map(Connect::getName)
@@ -279,6 +280,7 @@ public class AkhqController extends AbstractController {
     public static class ClusterDefinition {
         private String id;
         private boolean registry;
+        private String registryType;
         private List<String> connects;
         private List<String> ksqldbs;
     }

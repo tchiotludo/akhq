@@ -1,5 +1,7 @@
 package org.akhq.models;
 
+import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser;
+import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.Message;
@@ -36,16 +38,15 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class Record {
-    @JsonIgnore
     private Topic topic;
     private int partition;
     private long offset;
     private ZonedDateTime timestamp;
     @JsonIgnore
     private TimestampType timestampType;
-    private Integer keySchemaId;
+    private String keySchemaId;
     private String keySubject;
-    private Integer valueSchemaId;
+    private String valueSchemaId;
     private String valueSubject;
     private List<KeyValue<String, String>> headers = new ArrayList<>();
     @JsonIgnore
@@ -90,7 +91,6 @@ public class Record {
     @JsonIgnore
     private Deserializer awsGlueKafkaDeserializer;
 
-
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
         this.topic = topic;
@@ -98,6 +98,7 @@ public class Record {
         this.offset = record.offset();
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.bytesKey = bytesKey;
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
         this.keySubject = getAvroSchemaSubject(this.keySchemaId);
         this.bytesValue = bytesValue;
@@ -105,7 +106,6 @@ public class Record {
         this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
         this.headers = headers;
         this.truncated = false;
-        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
@@ -123,6 +123,7 @@ public class Record {
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.timestampType = record.timestampType();
         this.bytesKey = record.key();
+        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
         this.keySubject = getAvroSchemaSubject(this.keySchemaId);
         this.bytesValue = bytesValue;
@@ -140,7 +141,6 @@ public class Record {
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
         this.truncated = false;
-        this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
     }
 
     public String getKey() {
@@ -180,20 +180,18 @@ public class Record {
         this.truncated = truncated;
     }
 
-    private String convertToString(byte[] payload, Integer schemaId, boolean isKey) {
+    private String convertToString(byte[] payload, String schemaId, boolean isKey) {
         if (payload == null) {
             return null;
-        }
-        else if (this.awsGlueKafkaDeserializer != null) {
-            return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
-
         } else if (schemaId != null) {
             try {
 
                 Object toType = null;
-
+                if (this.awsGlueKafkaDeserializer != null) {
+                    return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
+                }
                 if (client != null) {
-                    ParsedSchema schema = client.getSchemaById(schemaId);
+                    ParsedSchema schema = client.getSchemaById(Integer.valueOf(schemaId));
                     if ( schema.schemaType().equals(ProtobufSchema.TYPE) ) {
                        toType = kafkaProtoDeserializer.deserialize(topic.getName(), payload);
                        if (!(toType instanceof Message)) {
@@ -305,17 +303,26 @@ public class Record {
             .collect(Collectors.toList());
     }
 
-    private Integer getAvroSchemaId(byte[] payload) {
+    private String getAvroSchemaId(byte[] payload) {
         if (topic.isInternalTopic()) {
             return null;
         }
         try {
+
+            if (awsGlueKafkaDeserializer!= null) {
+                ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+                GlueSchemaRegistryDeserializerDataParser dataParser = GlueSchemaRegistryDeserializerDataParser.getInstance();
+
+                UUID schemaVersionId = dataParser.getSchemaVersionId(byteBuffer);
+                return schemaVersionId.toString();
+            }
+
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
             int schemaId = buffer.getInt();
 
             if (magicBytes == MAGIC_BYTE && schemaId >= 0) {
-                return schemaId;
+                return String.valueOf(schemaId);
             }
         } catch (Exception ignore) {
 
@@ -323,12 +330,16 @@ public class Record {
         return null;
     }
 
-    private String getAvroSchemaSubject(Integer schemaId) {
+    private String getAvroSchemaSubject(String schemaId) {
         if (schemaId == null || client == null) {
             return null;
         }
         try {
-            ParsedSchema schemaById = client.getSchemaById(schemaId);
+            if(awsGlueKafkaDeserializer!= null) {
+               return  ( (GlueSchemaRegistryKafkaDeserializer) awsGlueKafkaDeserializer).getGlueSchemaRegistryDeserializationFacade().getSchemaRegistryClient().getSchemaVersionResponse(schemaId).schemaArn();
+            }
+
+            ParsedSchema schemaById = client.getSchemaById(Integer.valueOf(schemaId));
             if (schemaById == null) {
                 return null;
             }

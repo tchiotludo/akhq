@@ -180,7 +180,16 @@ class Routes extends Root {
               )}
 
               {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
-                <Route exact path="/ui/:clusterId/topic/:topicId/:tab?" component={Topic} />
+                <Route
+                  exact
+                  path="/ui/:clusterId/topic/:topicId/:tab?"
+                  render={props => (
+                    <Topic
+                      registryType={clusters.find(el => el.id === clusterId).registryType}
+                      {...props}
+                    />
+                  )}
+                />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
