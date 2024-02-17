@@ -102,6 +102,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [Klarna](https://www.klarna.com)
 * [La Redoute](https://laredoute.io/)
 * [Leroy Merlin](https://www.leroymerlin.fr/)
+* [MAIF](https://www.maif.fr/)
 * [ManoMano](https://www.manomano.fr/)
 * [NEXT Technologies](https://www.nextapp.co/)
 * [Nuxeo](https://www.nuxeo.com/)
