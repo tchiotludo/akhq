@@ -191,7 +191,7 @@ public class Record {
                     return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
                 }
                 if (client != null) {
-                    ParsedSchema schema = client.getSchemaById(Integer.valueOf(schemaId));
+                    ParsedSchema schema = client.getSchemaById(Integer.parseInt(schemaId));
                     if ( schema.schemaType().equals(ProtobufSchema.TYPE) ) {
                        toType = kafkaProtoDeserializer.deserialize(topic.getName(), payload);
                        if (!(toType instanceof Message)) {
@@ -336,10 +336,13 @@ public class Record {
         }
         try {
             if(awsGlueKafkaDeserializer!= null) {
-               return  ( (GlueSchemaRegistryKafkaDeserializer) awsGlueKafkaDeserializer).getGlueSchemaRegistryDeserializationFacade().getSchemaRegistryClient().getSchemaVersionResponse(schemaId).schemaArn();
+                String[] schemaArnSplitted = ( (GlueSchemaRegistryKafkaDeserializer) awsGlueKafkaDeserializer)
+                    .getGlueSchemaRegistryDeserializationFacade()
+                    .getSchemaRegistryClient().getSchemaVersionResponse(schemaId).schemaArn().split("/");
+               return  schemaArnSplitted[schemaArnSplitted.length-1];
             }
 
-            ParsedSchema schemaById = client.getSchemaById(Integer.valueOf(schemaId));
+            ParsedSchema schemaById = client.getSchemaById(Integer.parseInt(schemaId));
             if (schemaById == null) {
                 return null;
             }
