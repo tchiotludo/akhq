@@ -18,6 +18,7 @@ class Topic extends Root {
   state = {
     clusterId: this.props.clusterId,
     topicId: this.props.topicId,
+    registryType: '',
     topic: {},
     selectedTab: '',
     showDeleteModal: false,
@@ -50,11 +51,12 @@ class Topic extends Root {
 
     const roles = this.state.roles || {};
     const tabSelected = getSelectedTab(this.props, this.tabs);
-
+    const registryType = this.props.clusters.find(el => el.id === clusterId).registryType;
     this.setState(
       {
         clusterId,
         topicId,
+        registryType,
         selectedTab:
           roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? tabSelected : 'configs',
         topicInternal: this.props.location.internal
@@ -210,6 +212,7 @@ class Topic extends Root {
             location={location}
             isAllTopicDataSelected={this.state.isAllTopicDataSelected}
             onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
+            registryType={this.state.registryType}
           />
         );
       case 'partitions':

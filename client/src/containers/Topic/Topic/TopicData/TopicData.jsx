@@ -68,6 +68,7 @@ class TopicData extends Root {
     deleteMessage: '',
     compactMessageToDelete: '',
     selectedCluster: this.props.clusterId,
+    registryType: this.props.registryType,
     selectedTopic: this.props.topicId,
     cleanupPolicy: '',
     datetime: '',
@@ -115,11 +116,11 @@ class TopicData extends Root {
     const { clusterId, topicId } = this.props.match.params;
     const query = new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
-
     this.setState(
       prevState => ({
         selectedCluster: clusterId,
         selectedTopic: topicId,
+        registryType: this.props.registryType,
         sortBy: query.get('sort')
           ? query.get('sort')
           : uiOptions && uiOptions.topicData && uiOptions.topicData.sort
@@ -517,7 +518,11 @@ class TopicData extends Root {
         partition: JSON.stringify(message.partition) || '',
         offset: JSON.stringify(message.offset) || '',
         headers: message.headers || [],
-        schema: { key: message.keySchemaId, value: message.valueSchemaId },
+        schema: {
+          key: message.keySchemaId,
+          value: message.valueSchemaId,
+          registryType: this.state.registryType
+        },
         exceptions: message.exceptions || []
       };
 
@@ -1206,9 +1211,13 @@ class TopicData extends Root {
                       {obj[col.accessor].key !== undefined && (
                         <span
                           className="badge badge-primary clickable"
-                          onClick={() => {
-                            this._redirectToSchema(obj.schema.key);
-                          }}
+                          onClick={
+                            obj[col.accessor].registryType !== 'GLUE'
+                              ? () => {
+                                  this._redirectToSchema(obj.schema.key);
+                                }
+                              : undefined
+                          }
                         >
                           Key: {obj[col.accessor].key}
                         </span>
@@ -1217,9 +1226,13 @@ class TopicData extends Root {
                       {obj[col.accessor].value !== undefined && (
                         <span
                           className="badge badge-primary clickable schema-value"
-                          onClick={() => {
-                            this._redirectToSchema(obj.schema.value);
-                          }}
+                          onClick={
+                            obj[col.accessor].registryType !== 'GLUE'
+                              ? () => {
+                                  this._redirectToSchema(obj.schema.value);
+                                }
+                              : undefined
+                          }
                         >
                           Value: {obj[col.accessor].value}
                         </span>
