@@ -1,6 +1,7 @@
 package org.akhq.modules;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;

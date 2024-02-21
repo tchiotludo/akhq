@@ -3,6 +3,7 @@ package org.akhq.modules;
 
 import com.google.common.collect.ImmutableMap;
 import org.akhq.models.Partition;
+import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
 import org.akhq.utils.Logger;
 import org.apache.kafka.clients.admin.*;
@@ -244,6 +245,8 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
+        auditModule.save(ConsumerGroupAuditEvent.deleteGroup(clusterId, name));
+
         describeConsumerGroups = new HashMap<>();
         consumerGroupOffset = new HashMap<>();
     }
@@ -427,6 +430,8 @@ abstract public class AbstractKafkaWrapper {
                 "Delete consumer group offsets from topic {}",
                 List.of(groupName, topicName)
             );
+
+            auditModule.save(ConsumerGroupAuditEvent.deleteGroupOffsets(clusterId, groupName, topicName));
         }
     }
 }
