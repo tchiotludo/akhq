@@ -3,6 +3,7 @@ package org.akhq.modules;
 
 import com.google.common.collect.ImmutableMap;
 import org.akhq.models.Partition;
+import org.akhq.models.audit.TopicAuditEvent;
 import org.akhq.utils.Logger;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -22,6 +23,7 @@ import org.apache.kafka.common.errors.UnsupportedVersionException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
 import jakarta.inject.Inject;
 
 import static java.util.stream.Collectors.*;
@@ -29,6 +31,9 @@ import static java.util.stream.Collectors.*;
 abstract public class AbstractKafkaWrapper {
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private AuditModule auditModule;
 
     private final Map<String, DescribeClusterResult> cluster = new HashMap<>();
 
@@ -104,6 +109,8 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
+        auditModule.save(TopicAuditEvent.newTopic(clusterId, name, partitions, kafkaTopicConfigs));
+
         listTopics = new HashMap<>();
     }
 
@@ -117,6 +124,8 @@ abstract public class AbstractKafkaWrapper {
             "Increase Topic partition",
             Collections.singletonList(name)
         );
+
+        auditModule.save(TopicAuditEvent.increasePartitions(clusterId, name, partitions));
     }
 
     public void deleteTopics(String clusterId, String name) throws ExecutionException {
@@ -126,6 +135,8 @@ abstract public class AbstractKafkaWrapper {
             "Delete Topic",
             Collections.singletonList(name)
         );
+
+        auditModule.save(TopicAuditEvent.deleteTopic(clusterId, name));
 
         listTopics = new HashMap<>();
     }
@@ -347,13 +358,22 @@ abstract public class AbstractKafkaWrapper {
     }
 
     public void alterConfigs(String clusterId, Map<ConfigResource, Config> configs) throws ExecutionException {
-         Logger.call(
-             kafkaModule.getAdminClient(clusterId)
-            .alterConfigs(configs)
-            .all(),
-             "Alter cofigs",
-             Collections.singletonList(clusterId)
-         );
+        Logger.call(
+            kafkaModule.getAdminClient(clusterId)
+                .alterConfigs(configs)
+                .all(),
+            "Alter configs",
+            Collections.singletonList(clusterId)
+        );
+
+        configs.forEach(
+            (k, v) -> {
+                if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
+                    auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
+                        v.entries().stream().collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+                }
+            }
+        );
 
         this.describeConfigs = new HashMap<>();
     }
