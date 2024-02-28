@@ -1,10 +1,10 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import { withRouter } from 'react-router-dom';
 import Form from '../../../../components/Form/Form';
 import Header from '../../../Header';
 import { uriTopicIncreasePartition } from '../../../../utils/endpoints';
 import { toast } from 'react-toastify';
+import { withRouter } from '../../../../utils/withRouter';
 
 class TopicIncreasePartition extends Form {
   state = {

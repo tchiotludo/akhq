@@ -1,11 +1,11 @@
 import './Base.scss';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import Loading from '../../containers/Loading';
 import { Helmet } from 'react-helmet';
+import { withRouter } from '../../utils/withRouter';
 
 class Base extends Component {
   state = {
@@ -18,10 +18,11 @@ class Base extends Component {
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const topicId = nextProps.match.params.topicId;
-    const action = nextProps.match.params.action;
-    const { loading, tab } = nextProps.location;
+    const clusterId = nextProps.match ? nextProps.match.params.clusterId : '';
+    const topicId = nextProps.match ? nextProps.match.params.topicId : '';
+    const action = nextProps.match ? nextProps.match.params.action : '';
+    const loading = nextProps.location ? nextProps.location.loading : false;
+    const tab = nextProps.location ? nextProps.location.tab : constants.CLUSTER;
     return {
       topicId: topicId,
       clusterId: clusterId,

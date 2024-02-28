@@ -4,6 +4,7 @@ import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Root from '../../../../components/Root';
 import { Link } from 'react-router-dom';
+import { Badge } from 'react-bootstrap';
 
 class TopicGroups extends Root {
   state = {
@@ -54,15 +55,11 @@ class TopicGroups extends Root {
   }
 
   handleState(state) {
-    return (
-      <span className={state === 'STABLE' ? 'badge badge-success' : 'badge badge-warning'}>
-        {state}
-      </span>
-    );
+    return <Badge bg={state === 'STABLE' ? 'success' : 'warning'}>{state}</Badge>;
   }
 
   handleCoordinator(coordinator) {
-    return <span className="badge badge-primary"> {coordinator}</span>;
+    return <span>{coordinator}</span>;
   }
 
   handleTopics(topics) {

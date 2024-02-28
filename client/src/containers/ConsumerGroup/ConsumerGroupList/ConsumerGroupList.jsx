@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { Link } from 'react-router-dom';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { withRouter } from '../../../utils/withRouter';
 
 class ConsumerGroupList extends Root {
   state = {
@@ -30,7 +31,7 @@ class ConsumerGroupList extends Root {
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const { search, pageNumber } = this.state;
     const query = new URLSearchParams(this.props.location.search);
 
@@ -68,7 +69,7 @@ class ConsumerGroupList extends Root {
     if (response.results) {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
-        this.props.history.push({
+        this.props.router.navigate({
           pathname: `/ui/${this.state.selectedCluster}/group`,
           search: `search=${this.state.search}&page=${pageNumber}`
         })
@@ -174,10 +175,7 @@ class ConsumerGroupList extends Root {
     return (
       <div>
         <Header title="Consumer Groups" history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={search}
@@ -264,4 +262,4 @@ class ConsumerGroupList extends Root {
     );
   }
 }
-export default ConsumerGroupList;
+export default withRouter(ConsumerGroupList);

@@ -1,10 +1,62 @@
-@import '../../variables.scss';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+#content {
+  min-height: 100vh;
+  padding: 20px 20px 65px;
+}
+
+.title {
+  display: flex;
+  position: relative;
+  width: calc(100% + 40px);
+  left: -20px;
+  top: -40px;
+  height: 94px;
+  border-bottom: 4px solid $yellow;
+  padding: 20px 20px 0;
+
+  .btn {
+    white-space: nowrap;
+  }
+}
+
 .expanded {
-  margin-left: $sidebar-expanded !important;
+  margin-left: 240px !important;
   width: calc(100% - 240px) !important;
 }
 
 .collapsed {
-  margin-left: $sidebar-collapsed !important;
+  margin-left: 64px !important;
   width: calc(100% - 64px) !important;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  padding: 5px 15px;
+  background: $black;
+  border-top: 1px solid $nav-tabs-border-color;
+  display: flex;
+  justify-content: flex-end;
+  width: calc(100vw - 15px);
+  z-index: $zindex-fixed;
+
+  > div {
+    flex: 1;
+
+    &:first-child {
+      flex-grow: 2;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+
+  .btn {
+    white-space: nowrap;
+  }
 }

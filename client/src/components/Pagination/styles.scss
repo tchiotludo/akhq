@@ -1,4 +1,4 @@
-@import '../../css/init';
+@import '../../variables.scss';
 
 input.page-input {
   width: 30px !important;
@@ -6,7 +6,7 @@ input.page-input {
   border: 0;
   padding: 0;
   background: transparent;
-  color: $white;
+  color: white;
 }
 
 /*remove arrows from input*/
@@ -20,4 +20,18 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+#result-per-page {
+  margin-right: 15px;
+}
+
+.page-link {
+  color: white;
+}
+
+.page-item.before, .page-item.after {
+  .page-link {
+    background-color: $primary;
+  }
 }

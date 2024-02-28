@@ -8,6 +8,9 @@ import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../utils/withRouter';
+import { Card } from 'react-bootstrap';
+import './styles.scss';
 // Adaptation of login.ftl
 
 class Login extends Form {
@@ -76,7 +79,7 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        this.props.history.push({
+        this.props.router.navigate({
           pathname: returnTo || '/ui'
         });
 
@@ -95,7 +98,7 @@ class Login extends Form {
       const { ...config } = auths;
       this.setState({ config });
     } else {
-      this.props.history.push({
+      this.props.router.navigate({
         pathname: '/ui'
       });
     }
@@ -109,7 +112,7 @@ class Login extends Form {
   _renderForm() {
     const { errors } = this.state;
     return (
-      <>
+      <div>
         <div className="input-group mb-3">
           <div className="input-group-prepend">
             <span className="input-group-text">
@@ -163,7 +166,7 @@ class Login extends Form {
             disabled={this.validate()}
           />
         </div>
-      </>
+      </div>
     );
   }
 
@@ -188,7 +191,7 @@ class Login extends Form {
 
     return (
       <div>
-        <main>
+        <Card>
           <form
             className="khq-login"
             onSubmit={e => {
@@ -206,10 +209,10 @@ class Login extends Form {
             {oidcAuths && this._renderOidc(oidcAuths)}
             {oauthAuths && this._renderOidc(oauthAuths)}
           </form>
-        </main>
+        </Card>
       </div>
     );
   }
 }
 
-export default Login;
+export default withRouter(Login);

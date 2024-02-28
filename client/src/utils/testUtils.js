@@ -3,8 +3,6 @@ import React from 'react';
 import { createMemoryHistory } from 'history';
 import { render } from '@testing-library/react';
 import Router from 'react-dom';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
 
 export function renderWithRouter(
   ui,

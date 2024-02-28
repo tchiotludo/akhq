@@ -7,6 +7,7 @@ import { setUIOptions } from '../../utils/localstorage';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import { getClusterUIOptions } from '../../utils/functions';
+import { withRouter } from '../../utils/withRouter';
 
 class Settings extends Form {
   state = {
@@ -44,7 +45,7 @@ class Settings extends Form {
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     this.setState({ clusterId }, () => {
       this._initializeVars(() => {
         this.setState({
@@ -226,4 +227,4 @@ class Settings extends Form {
   }
 }
 
-export default Settings;
+export default withRouter(Settings);

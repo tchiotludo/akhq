@@ -5,23 +5,27 @@ import ConnectTasks from './ConnectTasks/ConnectTasks';
 import ConnectConfigs from './ConnectConfigs/ConnectConfigs';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../../utils/withRouter';
 
 class Connect extends Component {
   state = {
-    clusterId: this.props.history.clusterId || this.props.match.params.clusterId,
-    connectId: this.props.history.connectId || this.props.match.params.connectId,
-    definitionId: this.props.history.definitionId || this.props.match.params.definitionId,
+    clusterId: this.props.params.clusterId,
+    connectId: this.props.params.connectId,
+    definitionId: this.props.params.definitionId,
     selectedTab: 'tasks'
   };
 
   tabs = ['tasks', 'configs'];
 
   componentDidMount() {
-    const { clusterId, connectId, definitionId } = this.props.match.params;
+    const { clusterId, connectId, definitionId } = this.props.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState({ selectedTab: tabSelected ? tabSelected : 'tasks' }, () => {
-      this.props.history.replace(
-        `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${this.state.selectedTab}`
+      this.props.router.navigate(
+        `/ui/${clusterId}/connect/${connectId}/definition/${definitionId}/${this.state.selectedTab}`,
+        {
+          replace: true
+        }
       );
     });
   }
@@ -114,9 +118,11 @@ class Connect extends Component {
 }
 
 Connect.propTypes = {
+  params: PropTypes.object,
+  router: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object
 };
 
-export default Connect;
+export default withRouter(Connect);

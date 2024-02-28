@@ -1,24 +1,20 @@
 /*eslint-disable*/
 import React, { Children } from 'react';
-import ReactDOM from 'react-dom';
 import { createMemoryHistory } from 'history';
 import TopicProduce from './TopicProduce';
-import App from '../../../App';
 import { render } from '@testing-library/react';
 
-import { MemoryRouter } from 'react-router-dom';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
-import { ExpansionPanelActions } from '@material-ui/core';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 describe('TopicProduce', () => {
   it('should add a new header to headers list', () => {
     const route = '/abs/topic/123/produce';
     const history = createMemoryHistory({ initialEntries: [route] });
     const { getByTestId } = render(
-      <MuiPickersUtilsProvider utils={MomentUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} history={history} />
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
     );
     const headers = getByTestId('headers');
     const button = getByTestId('button_0');
@@ -30,9 +26,9 @@ describe('TopicProduce', () => {
     const route = '/abs/topic/123/produce';
     const history = createMemoryHistory({ initialEntries: [route] });
     const { getByTestId } = render(
-      <MuiPickersUtilsProvider utils={MomentUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} history={history} />
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
     );
     const headers = getByTestId('headers');
     const button = getByTestId('button_0');

@@ -13,9 +13,9 @@ import {
 } from '../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
-import Tooltip from '@material-ui/core/Tooltip';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Tooltip } from '@mui/material';
 
 class TopicProduce extends Form {
   state = {

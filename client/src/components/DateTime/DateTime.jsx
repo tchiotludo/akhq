@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import TimeAgo from 'react-timeago';
-import { Tooltip } from '@material-ui/core';
 
 import { SETTINGS_VALUES } from '../../utils/constants';
+import { Tooltip } from '@mui/material';
 
 class DateTime extends Component {
   render() {

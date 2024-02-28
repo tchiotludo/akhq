@@ -2,7 +2,6 @@ import React from 'react';
 import Joi from 'joi-browser';
 import './styles.scss';
 import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
@@ -14,6 +13,7 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
 class ConnectCreate extends Root {
   state = {

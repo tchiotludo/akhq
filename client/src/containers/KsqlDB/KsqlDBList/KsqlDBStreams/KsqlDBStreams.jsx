@@ -10,6 +10,7 @@ import Pagination from '../../../../components/Pagination';
 import { handlePageChange, getPageNumber } from '../../../../utils/pagination';
 import { uriKsqlDBStreams } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../../../utils/withRouter';
 
 class KsqlDBStreams extends Root {
   state = {
@@ -26,8 +27,8 @@ class KsqlDBStreams extends Root {
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const ksqlDBId = nextProps.match.params.ksqlDBId;
+    const clusterId = nextProps.params.clusterId;
+    const ksqlDBId = nextProps.params.ksqlDBId;
 
     return {
       clusterId: clusterId,
@@ -115,10 +116,7 @@ class KsqlDBStreams extends Root {
 
     return (
       <div>
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -200,4 +198,4 @@ class KsqlDBStreams extends Root {
   }
 }
 
-export default KsqlDBStreams;
+export default withRouter(KsqlDBStreams);

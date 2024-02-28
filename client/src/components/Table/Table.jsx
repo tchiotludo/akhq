@@ -4,6 +4,8 @@ import * as constants from '../../utils/constants';
 import './styles.scss';
 import Spinner from '../Spinner';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
+import { Table as BootstrapTable } from 'react-bootstrap';
 
 class Table extends Component {
   state = {
@@ -131,12 +133,12 @@ class Table extends Component {
   }
 
   onDoubleClick(onDetails, row) {
-    const { history, idCol } = this.props;
+    const { router, idCol } = this.props;
 
     if (onDetails) {
       let url = onDetails(idCol ? row[this.props.idCol] : row.id, row);
       if (url) {
-        history.push({
+        router.navigate({
           pathname: url,
           internal: row.internal
         });
@@ -266,7 +268,7 @@ class Table extends Component {
           }}
           key={'row-expanded-' + row.id}
         >
-          <td style={{ backgroundColor: '#171819' }} colSpan={this.colspan()}>
+          <td colSpan={this.colspan()}>
             {' '}
             {extraExpanded &&
             JSON.stringify(
@@ -510,7 +512,7 @@ class Table extends Component {
   }
 
   render() {
-    const { noStripes, loading, rowId } = this.props;
+    const { loading, rowId } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 
@@ -526,20 +528,18 @@ class Table extends Component {
       allItemRows = allItemRows.concat(perItemRows);
     });
 
-    const stripesStyle = noStripes ? 'no-stripes' : 'table-striped';
-
     return (
       <div className="table-responsive">
-        <table className={`table table-bordered table-hover mb-0 ${stripesStyle}`}>
+        <BootstrapTable bordered hover>
           {this.renderHeader()}
           <tbody>
             {loading
               ? this.renderLoading()
               : data && data.length > 0
-              ? allItemRows
-              : this.renderNoContent()}
+                ? allItemRows
+                : this.renderNoContent()}
           </tbody>
-        </table>
+        </BootstrapTable>
       </div>
     );
   }
@@ -585,7 +585,7 @@ Table.propTypes = {
   handleExtraExpand: PropTypes.func,
   handleExtraCollapse: PropTypes.func,
   loading: PropTypes.bool,
-  history: PropTypes.object,
+  router: PropTypes.object,
   rowId: PropTypes.func,
 
   updateData: PropTypes.func,
@@ -596,4 +596,4 @@ Table.propTypes = {
   noStripes: PropTypes.bool
 };
 
-export default Table;
+export default withRouter(Table);

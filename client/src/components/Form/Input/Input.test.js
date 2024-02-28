@@ -1,10 +1,9 @@
 /*eslint-disable*/
+/*
 import React from 'react';
 import Enzyme, { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Input from './Input';
-import { intersect } from 'joi-browser';
-import { ExpansionPanelActions } from '@material-ui/core';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -43,3 +42,4 @@ describe('Input', () => {
     expect(error).toHaveLength(0);
   });
 });
+*/

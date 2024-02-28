@@ -14,12 +14,13 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../../utils/withRouter';
 
 class ConnectConfigs extends Form {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    connectId: this.props.match.params.connectId,
-    definitionId: this.props.match.params.definitionId,
+    clusterId: this.props.params.clusterId,
+    connectId: this.props.params.connectId,
+    definitionId: this.props.params.definitionId,
     formData: {},
     errors: {},
     configs: {},
@@ -352,4 +353,4 @@ class ConnectConfigs extends Form {
   }
 }
 
-export default ConnectConfigs;
+export default withRouter(ConnectConfigs);

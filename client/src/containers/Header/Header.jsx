@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 import { organizeRoles } from '../../utils/converters';
 import { logout } from '../../utils/api';
 import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
@@ -41,10 +42,15 @@ class Header extends Root {
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
       localStorage.removeItem('jwtToken');
       this.setState({ login: currentUserData.logged }, () => {
-        this.props.history.replace({
-          pathname: '/ui/login',
-          ...this.props.history
-        });
+        this.props.router.navigate(
+          {
+            pathname: '/ui/login',
+            ...this.props.history
+          },
+          {
+            replace: true
+          }
+        );
         window.location.reload(false);
         toast.success('Logged out successfully');
       });

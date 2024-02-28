@@ -3,7 +3,8 @@ import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
 import { SETTINGS_VALUES } from '../../utils/constants';
-import './styles.scss';
+//import './styles.scss';
+import { Button, Col, Form as BootstrapForm, Row } from 'react-bootstrap';
 
 class SearchBar extends Form {
   static propTypes = {
@@ -128,51 +129,65 @@ class SearchBar extends Form {
           <span className="navbar-toggler-icon" />
         </button>
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
-          <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
-            {showSearch &&
-              this.renderInput(
-                'search',
-                '',
-                'Search',
-                'text',
-                { autoComplete: 'off' },
-                '',
-                'topic-search-wrapper',
-                'topic-search-input'
+          <BootstrapForm
+            className="form-inline mr-auto khq-form-get"
+            onSubmit={e => this.handleSubmit(e)}
+          >
+            <Row className="align-items-center">
+              {showSearch && (
+                <Col>
+                  {this.renderInput(
+                    'search',
+                    '',
+                    'Search',
+                    'text',
+                    { autoComplete: 'off' },
+                    '',
+                    'topic-search-wrapper',
+                    'topic-search-input'
+                  )}
+                </Col>
               )}
-            {showTopicListView &&
-              this.renderSelect(
-                'topicListView',
-                '',
-                topicListViewOptions,
-                ({ currentTarget: input }) => {
-                  let { formData } = this.state;
-                  formData.topicListView = input.value;
-                  this.setState();
-                  this.props.onTopicListViewChange(input.value);
-                },
-                '',
-                'select-wrapper',
-                { className: 'form-control topic-select' }
+              {showTopicListView && (
+                <Col>
+                  {this.renderSelect(
+                    'topicListView',
+                    '',
+                    topicListViewOptions,
+                    ({ currentTarget: input }) => {
+                      let { formData } = this.state;
+                      formData.topicListView = input.value;
+                      this.setState();
+                      this.props.onTopicListViewChange(input.value);
+                    },
+                    '',
+                    'select-wrapper',
+                    { className: 'form-control topic-select' }
+                  )}
+                </Col>
               )}
-
-            <button className="btn btn-primary" type="submit">
-              <span className="d-md-none">Search </span>
-              <i className="fa fa-search" />
-            </button>
-            {showKeepSearch && (
-              <span>
-                <input
-                  type="checkbox"
-                  name="keepSearch"
-                  id="keepSearch"
-                  onClick={event => this.props.onKeepSearchChange(event.target.checked)}
-                  defaultChecked={formData['keepSearch']}
-                />{' '}
-                Keep search
-              </span>
-            )}
-          </form>
+              <Col xs="auto">
+                <Button type="submit">
+                  <span className="d-md-none">Search </span>
+                  <i className="fa fa-search" />
+                </Button>
+              </Col>
+              {showKeepSearch && (
+                <Col xs="auto">
+                  <span>
+                    <input
+                      type="checkbox"
+                      name="keepSearch"
+                      id="keepSearch"
+                      onClick={event => this.props.onKeepSearchChange(event.target.checked)}
+                      defaultChecked={formData['keepSearch']}
+                    />{' '}
+                    Keep search
+                  </span>
+                </Col>
+              )}
+            </Row>
+          </BootstrapForm>
         </div>
       </React.Fragment>
     );

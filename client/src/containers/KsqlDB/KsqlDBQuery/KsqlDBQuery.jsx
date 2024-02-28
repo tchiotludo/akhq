@@ -1,6 +1,5 @@
 import React from 'react';
 import { uriKsqlDBExecuteQuery } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
@@ -11,6 +10,7 @@ import Root from '../../../components/Root';
 import AceEditor from 'react-ace';
 import './styles.scss';
 import Table from '../../../components/Table';
+import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBQuery extends Root {
   state = {

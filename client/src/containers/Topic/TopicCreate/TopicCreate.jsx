@@ -1,10 +1,10 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { uriTopicsCreate, uriTopicDefaultConf } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
+import { withRouter } from '../../../utils/withRouter';
 
 class TopicCreate extends Form {
   state = {

@@ -1,119 +1,118 @@
-@import 'css/init';
-
-// vendor
+@import 'variables.scss';
 @import '~bootstrap/scss/bootstrap';
-$fa-font-path: '../fonts';
 @import '~font-awesome/scss/font-awesome';
 @import '~react-datepicker/dist/react-datepicker.css';
-@import '~axios-progress-bar/dist/nprogress.css';
 
-// old styles
-@import 'css/templates/bootstrap';
-@import 'css/templates/layout';
-@import 'css/templates/login';
-@import 'css/templates/sidebar';
-@import 'css/datas/filter';
-@import 'css/datas/highlight';
-@import 'css/datas/after-offset';
-@import 'css/forms/ace';
-@import 'css/forms/datetime';
-@import 'css/forms/multiple';
-@import 'css/forms/select';
-@import 'css/tables/table';
-@import 'css/tables/row-action';
+$theme-colors: (
+  "primary": $primary,
+  "warning": $warning
+);
 
-// components
-@import 'components/Base/Base.scss';
-@import 'components/Table/styles.scss';
-@import 'components/Form/styles.scss';
-@import 'components/Form/Select/styles.scss';
-@import 'components/DatePicker/styles.scss';
-@import 'components/Pagination/styles.scss';
-@import 'components/SearchBar/styles.scss';
-
-// containers
-@import 'containers/SideBar/styles.scss';
-@import 'containers/Tail/styles.scss';
-@import 'src/containers/Node/NodeDetail/styles.scss';
-@import 'src/containers/Topic/TopicProduce/styles.scss';
-@import 'containers/Login/styles.scss';
-
-#content {
-  transition: all 0.2s ease;
-
-  aside {
-    width: 100%;
-    left: 0;
-  }
+body {
+  background-color: $body-bg-dark;
+  color: $gray-100;
 }
 
-.khq-data-filter {
-  @include media-breakpoint-up(sm) {
-    select {
-      max-width: 100%;
+h1 {
+  color: $gray-100;
+}
+
+ul.nav-tabs {
+  .nav-link {
+    background-color: transparent;
+    border: 0 solid;
+    border-bottom-width: 4px;
+    border-bottom-color: transparent;
+    padding: 10px 30px;
+    color: white;
+
+    &.active,
+    &:hover.active {
+      font-weight: bold;
+      color: $primary;
+      border-bottom-color: $primary;
+      border-bottom-width: 4px;
+      background-color: transparent;
+    }
+
+    &:hover {
+      transition-duration: 0ms;
+      border-bottom-color: $gray-400;
+      border-bottom-width: 4px;
     }
   }
 }
 
-.table-hover tbody tr:hover code:after {
-  background: linear-gradient(transparent, $body-bg);
+.tabs-container {
+  .tab-content {
+    padding: 20px;
+    border: 1px solid $nav-tabs-border-color;
+    background: $gray-900;
+    border-top: 0;
+  }
 }
 
-#nprogress .bar {
-  background: $red;
-  height: 4px;
+footer {
+  width: 100% !important;
+}
+footer div, footer a {
+  margin-left: 8px;
 }
 
-#nprogress .peg {
-  box-shadow: 0 0 10px $red, 0 0 5px $red;
+.react-datepicker {
+  display: inline-flex !important;
 }
 
-#nprogress .spinner-icon {
-  border: solid 4px transparent;
-  border-top-color: $red;
-  border-left-color: $red;
+.settings-wrapper {
+  display: flex;
 }
 
-.Toastify__toast-container {
-  width: 98% !important;
-  top: 1% !important;
-  right: 1% !important;
+.form-group {
+  margin-bottom: 16px;
+}
 
-  .Toastify__toast {
-    width: 320px;
-    top: 1em;
-    right: 1em;
-    position: absolute;
+table {
+  tbody {
+    .key {
+      color: $warning;
+    }
 
-    &.internal-error {
-      width: 98% !important;
-      top: 1% !important;
-      right: 1% !important;
-      overflow: auto;
-      cursor: default;
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow: hidden;
+      max-height: 100px;
+      cursor: pointer;
+      position: relative;
 
-      > div {
-        overflow: auto;
-      }
+      code {
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        word-break: break-all;
+        display: block;
+        color: $gray-500;
+        font-size: 12px;
 
-      p {
-        font-weight: bold;
-      }
-
-      .Toastify__toast {
-        cursor: default;
-      }
-
-      .Toastify__close-button {
-        position: fixed;
-        background: $red;
-        border: 1px solid darken($red, 15);
-        border-radius: $border-radius;
-        width: 31px;
-        right: 25px;
-        padding: 4px;
-        opacity: 1;
+        &:after {
+          content: '';
+          width: 100%;
+          height: 35px;
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          background: linear-gradient(transparent, $body-bg-dark);
+        }
       }
     }
+  }
+}
+
+.table-responsive {
+  .action-hover {
+    text-align: center;
+  }
+
+  .fa {
+    color: white;
   }
 }

@@ -15,6 +15,7 @@ import Root from '../../../components/Root';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { withRouter } from '../../../utils/withRouter';
 
 class ConnectList extends Root {
   state = {
@@ -35,8 +36,8 @@ class ConnectList extends Root {
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const connectId = nextProps.match.params.connectId;
+    const clusterId = nextProps.params.clusterId;
+    const connectId = nextProps.params.connectId;
 
     return {
       clusterId: clusterId,
@@ -82,7 +83,7 @@ class ConnectList extends Root {
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        this.props.history.push({
+        this.props.router.navigate({
           pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
           search: `search=${this.state.searchData.search}&page=${pageNumber}`
         });
@@ -211,10 +212,7 @@ class ConnectList extends Root {
     return (
       <div>
         <Header title={`Connect: ${connectId}`} history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -357,11 +355,11 @@ class ConnectList extends Root {
           noContent={'No connectors available'}
         />
         {roles.CONNECTOR && roles.CONNECTOR.includes('CREATE') && (
-          <aside>
+          <footer>
             <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
               Create a definition
             </Link>
-          </aside>
+          </footer>
         )}
         <ConfirmModal
           show={this.state.showDeleteModal}
@@ -374,4 +372,4 @@ class ConnectList extends Root {
   }
 }
 
-export default ConnectList;
+export default withRouter(ConnectList);

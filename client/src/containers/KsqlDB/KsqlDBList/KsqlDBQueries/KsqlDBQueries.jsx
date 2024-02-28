@@ -11,6 +11,7 @@ import { handlePageChange, getPageNumber } from '../../../../utils/pagination';
 import { uriKsqlDBQueries } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../../../utils/withRouter';
 
 class KsqlDBQueries extends Root {
   state = {
@@ -27,8 +28,8 @@ class KsqlDBQueries extends Root {
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const ksqlDBId = nextProps.match.params.ksqlDBId;
+    const clusterId = nextProps.params.clusterId;
+    const ksqlDBId = nextProps.params.ksqlDBId;
 
     return {
       clusterId: clusterId,
@@ -115,10 +116,7 @@ class KsqlDBQueries extends Root {
     const { history } = this.props;
     return (
       <div>
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-l mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -214,4 +212,4 @@ class KsqlDBQueries extends Root {
   }
 }
 
-export default KsqlDBQueries;
+export default withRouter(KsqlDBQueries);

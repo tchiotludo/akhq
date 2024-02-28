@@ -7,11 +7,12 @@ import KsqlDBInfo from './KsqlDBInfo/KsqlDBInfo';
 import KsqlDBStreams from './KsqlDBStreams/KsqlDBStreams';
 import KsqlDBTables from './KsqlDBTables/KsqlDBTables';
 import KsqlDBQueries from './KsqlDBQueries/KsqlDBQueries';
+import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBList extends Component {
   state = {
-    clusterId: this.props.history.clusterId || this.props.match.params.clusterId,
-    ksqlDBId: this.props.history.ksqlDBId || this.props.match.params.ksqlDBId,
+    clusterId: this.props.params.clusterId,
+    ksqlDBId: this.props.params.ksqlDBId,
     selectedTab: 'streams',
     roles: JSON.parse(sessionStorage.getItem('roles'))
   };
@@ -24,10 +25,12 @@ class KsqlDBList extends Component {
   };
 
   componentDidMount() {
-    const { clusterId, ksqlDBId } = this.props.match.params;
+    const { clusterId, ksqlDBId } = this.props.params;
     const tabSelected = getSelectedTab(this.props, Object.keys(this.tabs));
     this.setState({ selectedTab: tabSelected ? tabSelected : 'streams' }, () => {
-      this.props.history.replace(`/ui/${clusterId}/ksqldb/${ksqlDBId}/${this.state.selectedTab}`);
+      this.props.router.navigate(`/ui/${clusterId}/ksqldb/${ksqlDBId}/${this.state.selectedTab}`, {
+        replace: true
+      });
     });
   }
 
@@ -133,9 +136,11 @@ class KsqlDBList extends Component {
 }
 
 KsqlDBList.propTypes = {
+  router: PropTypes.object,
+  params: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object
 };
 
-export default KsqlDBList;
+export default withRouter(KsqlDBList);

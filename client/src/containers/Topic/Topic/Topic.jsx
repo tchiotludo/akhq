@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
 class Topic extends Root {
   state = {
@@ -46,7 +47,7 @@ class Topic extends Root {
   }
 
   componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     const searchParams = this.props.location.search;
 
     const roles = this.state.roles || {};
@@ -67,7 +68,7 @@ class Topic extends Root {
         if (searchParams) {
           uri = uri + searchParams;
         }
-        this.props.history.replace(uri);
+        this.props.router.navigate(uri);
       }
     );
   }
@@ -157,7 +158,7 @@ class Topic extends Root {
   };
 
   emptyTopic = () => {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
 
     this.removeApi(uriTopicDataEmpty(clusterId, topicId))
       .then(() => {
@@ -311,7 +312,7 @@ class Topic extends Root {
           </div>
         </div>
         {selectedTab !== 'configs' && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
-          <aside>
+          <footer>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
                 <div className="btn mr-2">
@@ -388,7 +389,7 @@ class Topic extends Root {
                 </Link>
               )}
             </li>
-          </aside>
+          </footer>
         )}
         <ConfirmModal
           show={this.state.showDeleteModal}
@@ -401,4 +402,4 @@ class Topic extends Root {
   }
 }
 
-export default Topic;
+export default withRouter(Topic);

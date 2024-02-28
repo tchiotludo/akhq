@@ -66,19 +66,17 @@ class Form extends Root {
 
   renderButton = (label, click, className, type, children) => {
     return (
-      <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
-        <aside>
-          {children}
-          <button
-            type={type ? type : 'button'}
-            className={className ? className : 'btn btn-primary'}
-            disabled={this.validate()}
-            onClick={click}
-          >
-            {label}
-          </button>
-        </aside>
-      </div>
+      <footer>
+        {children}
+        <button
+          type={type ? type : 'button'}
+          className={className ? className : 'btn btn-primary'}
+          disabled={this.validate()}
+          onClick={click}
+        >
+          {label}
+        </button>
+      </footer>
     );
   };
 
