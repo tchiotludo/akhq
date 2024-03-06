@@ -45,12 +45,11 @@ public class AuditModule {
             log.error("Audit event cannot be serialized to JSON", e);
             return;
         }
-        kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(topicName, value), new Callback() {
-            @Override
-            public void onCompletion(RecordMetadata metadata, Exception exception) {
-                if (exception != null) {
-                    log.error("Audit data cannot be sent to Kafka", exception);
-                }
+        kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(topicName, value), (metadata, exception) -> {
+            if (exception != null) {
+                log.error("Audit data cannot be sent to Kafka", exception);
+            } else {
+                log.error("Audit data sent");
             }
         });
     }
