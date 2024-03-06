@@ -1,16 +1,23 @@
 package org.akhq.modules;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaClusterExtension;
 import org.akhq.KafkaTestCluster;
+import org.akhq.models.Topic;
+import org.akhq.models.audit.TopicAuditEvent;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -25,7 +33,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,56 +55,62 @@ class AuditModuleTest extends AbstractTest {
     @Mock
     ApplicationContext applicationContext;
 
+    private ObjectMapper mapper = new ObjectMapper();
+
     @BeforeEach
     void before() {
         MockitoAnnotations.initMocks(this);
     }
 
-//    @BeforeAll
-//    void init() throws ExecutionException, InterruptedException {
-//        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "audit", 1, (short) 1, Collections.emptyList());
-//    }
+    @BeforeAll
+    void init() {
+        kafkaModule
+            .getAdminClient(KafkaTestCluster.CLUSTER_ID)
+            .createTopics(List.of(new NewTopic("audit", 1, (short) 1)));
+    }
 
     @Test
-    void createTopicAudit() throws ExecutionException, InterruptedException {
+    void createTopicAudit() throws ExecutionException, InterruptedException, IOException {
         String generatedString = generateRandomString();
 
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, generatedString, 1, (short) 1, Collections.emptyList()
         );
 
-        await().atMost(Duration.ofSeconds(15)).until(() -> {
-            try {
-                topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "audit");
-                return true;
-            } catch (NoSuchElementException | UnknownTopicOrPartitionException e) {
-                return false;
-            }
-        });
-
         var consumer = kafkaModule.getConsumer(KafkaTestCluster.CLUSTER_ID);
-        consumer.assign(List.of(new TopicPartition("audit", 0)));
 
-        ConsumerRecords<byte[], byte[]> records = null;
+        assertTrue(consumer.listTopics().keySet().stream().anyMatch(t -> t.equals("audit")));
+
+        consumer.assign(List.of(new TopicPartition("audit", 0)));
+        consumer.seekToBeginning(List.of(new TopicPartition("audit", 0)));
+
+        TopicAuditEvent event = null;
 
         var start = LocalDateTime.now();
-        while (true) {
+        boolean isFound = false;
+        while (!isFound) {
 
-            if (Duration.between(start, LocalDateTime.now()).toSeconds() > 30) {
+            if (Duration.between(start, LocalDateTime.now()).toSeconds() > 5) {
                 break;
             }
 
-            records = consumer.poll(Duration.ofSeconds(5));
-            if (!records.isEmpty()) {
-                break;
+            var records = consumer.poll(Duration.ofSeconds(5));
+            for (ConsumerRecord<byte[], byte[]> record : records.records(new TopicPartition("audit", 1))) {
+                var raw = record.value();
+                var payload = mapper.readValue(raw, TopicAuditEvent.class);
+                if (payload.getTopicName().equals(generatedString)) {
+                    event = payload;
+                    isFound = true;
+                }
             }
 
         }
 
-
         consumer.close();
 
-        assert records != null;
-        assertEquals(1, records.count());
+        assertNotNull(event);
+        assertEquals(generatedString, event.getTopicName());
+        assertEquals(1, event.getPartitions());
+        assertEquals("some", event.getUserName());
 
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString);
     }

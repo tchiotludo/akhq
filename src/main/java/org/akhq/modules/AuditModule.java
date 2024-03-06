@@ -49,7 +49,7 @@ public class AuditModule {
             if (exception != null) {
                 log.error("Audit data cannot be sent to Kafka", exception);
             } else {
-                log.error("Audit data sent");
+                log.trace("Audit data sent");
             }
         });
     }

@@ -1,8 +1,10 @@
 package org.akhq.models.audit;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
 public class ConsumerGroupAuditEvent extends AuditEvent {
 
     private Type type;
