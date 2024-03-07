@@ -71,7 +71,7 @@ class AuditModuleTest extends AbstractTest {
     }
 
     @Test
-    void createAndDeleteTopicAudit() throws ExecutionException, InterruptedException, IOException {
+    void topicAudit() throws ExecutionException, InterruptedException, IOException {
         String generatedString = generateRandomString();
 
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, generatedString, 1, (short) 1, Collections.emptyList()
@@ -86,16 +86,27 @@ class AuditModuleTest extends AbstractTest {
 
         TopicAuditEvent event = null;
 
+        // Creation event tests
         event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.NEW_TOPIC, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
         assertEquals(1, event.getPartitions());
         assertEquals("test", event.getClusterId());
-        // userName is not set since security/auth is not enabled
+
+        topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, generatedString, 2);
+
+        // Increase partition event tests
+        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.INCREASE_PARTITION, generatedString);
+
+        assertNotNull(event);
+        assertEquals(generatedString, event.getTopicName());
+        assertEquals(2, event.getPartitions());
+        assertEquals("test", event.getClusterId());
 
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString);
 
+        // Deletion event tests
         event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.DELETE_TOPIC, generatedString);
 
         assertNotNull(event);
