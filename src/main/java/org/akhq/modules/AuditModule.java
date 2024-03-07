@@ -12,6 +12,8 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
+import java.time.LocalDateTime;
+
 @Singleton
 @Slf4j
 public class AuditModule {
@@ -48,8 +50,6 @@ public class AuditModule {
         kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(topicName, value), (metadata, exception) -> {
             if (exception != null) {
                 log.error("Audit data cannot be sent to Kafka", exception);
-            } else {
-                log.trace("Audit data sent");
             }
         });
     }

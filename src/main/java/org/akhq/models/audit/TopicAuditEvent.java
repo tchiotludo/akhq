@@ -35,7 +35,7 @@ public class TopicAuditEvent extends AuditEvent {
         return new TopicAuditEvent(Type.INCREASE_PARTITION, clusterId, topicName, partitions, null);
     }
 
-    private enum Type {
+    public enum Type {
         NEW_TOPIC,
         CONFIG_CHANGE,
         INCREASE_PARTITION,
