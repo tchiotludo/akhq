@@ -154,7 +154,10 @@ public class ConsumerGroupRepository extends AbstractRepository {
         consumer.commitSync(offsets);
         consumer.close();
 
-        auditModule.save(ConsumerGroupAuditEvent.updateOffsets(clusterId, name));
+        offset.forEach(
+            (k, v) -> auditModule.save(ConsumerGroupAuditEvent.updateOffsets(clusterId, name, k.getTopic()))
+        );
+
 
         kafkaWrapper.clearConsumerGroupsOffsets();
     }

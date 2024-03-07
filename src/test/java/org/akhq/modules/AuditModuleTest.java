@@ -8,13 +8,17 @@ import org.akhq.AbstractTest;
 import org.akhq.KafkaClusterExtension;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Config;
+import org.akhq.models.audit.AuditEvent;
+import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
 import org.akhq.repositories.ConfigRepository;
+import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,10 +33,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-import static org.awaitility.Awaitility.await;
+import static org.akhq.models.audit.AuditEvent.ActionType.UPDATE_OFFSETS_CONSUMER_GROUP;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(KafkaClusterExtension.class)
@@ -48,6 +53,10 @@ class AuditModuleTest extends AbstractTest {
     @Inject
     @InjectMocks
     protected ConfigRepository configRepository;
+
+    @Inject
+    @InjectMocks
+    protected ConsumerGroupRepository consumerGroupRepository;
 
     @Inject
     @InjectMocks
@@ -93,7 +102,7 @@ class AuditModuleTest extends AbstractTest {
         TopicAuditEvent event = null;
 
         // Creation event tests
-        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.NEW_TOPIC, generatedString);
+        event = (TopicAuditEvent) getTopicAuditEvent(consumer, AuditEvent.ActionType.NEW_TOPIC, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -103,7 +112,7 @@ class AuditModuleTest extends AbstractTest {
         topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, generatedString, 2);
 
         // Increase partition event tests
-        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.INCREASE_PARTITION, generatedString);
+        event = (TopicAuditEvent) getTopicAuditEvent(consumer, AuditEvent.ActionType.INCREASE_PARTITION, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -113,7 +122,7 @@ class AuditModuleTest extends AbstractTest {
         configRepository.updateTopic(KafkaTestCluster.CLUSTER_ID, generatedString, List.of(new Config("max.message.bytes", "2097164")));
 
         // Configuration change event tests
-        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.CONFIG_CHANGE, generatedString);
+        event = (TopicAuditEvent) getTopicAuditEvent(consumer, AuditEvent.ActionType.CONFIG_CHANGE, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -123,7 +132,7 @@ class AuditModuleTest extends AbstractTest {
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString);
 
         // Deletion event tests
-        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.DELETE_TOPIC, generatedString);
+        event = (TopicAuditEvent) getTopicAuditEvent(consumer, AuditEvent.ActionType.DELETE_TOPIC, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -131,7 +140,33 @@ class AuditModuleTest extends AbstractTest {
         consumer.close();
     }
 
-    private TopicAuditEvent getTopicAuditEvent(KafkaConsumer<byte[], byte[]> consumer, TopicAuditEvent.Type type, String generatedString) throws IOException {
+    @Test
+    public void consumerGroupAudit() throws ExecutionException, InterruptedException, IOException {
+        String generatedString = generateRandomString();
+
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, generatedString, 1, (short) 1, Collections.emptyList()
+        );
+
+        var consumer = kafkaModule.getConsumer(KafkaTestCluster.CLUSTER_ID);
+        consumer.assign(List.of(new TopicPartition(generatedString, 0)));
+        consumer.commitSync(Map.of(new TopicPartition(generatedString, 0), new OffsetAndMetadata(99)));
+
+        var consumerGroup = consumerGroupRepository.findByTopic(KafkaTestCluster.CLUSTER_ID, generatedString, Collections.emptyList());
+
+        assertTrue(consumerGroup.get(0).getOffsets().get(0).getOffset().isPresent());
+        assertEquals(99, consumerGroup.get(0).getOffsets().get(0).getOffset().get());
+
+        consumerGroupRepository.updateOffsets(KafkaTestCluster.CLUSTER_ID,
+            consumerGroup.get(0).getId(),
+            Map.of(new org.akhq.models.TopicPartition(generatedString, 0), 0L)
+        );
+
+        var event = getTopicAuditEvent(consumer, UPDATE_OFFSETS_CONSUMER_GROUP, generatedString);
+
+        consumer.close();
+    }
+
+    private AuditEvent getTopicAuditEvent(KafkaConsumer<byte[], byte[]> consumer, AuditEvent.ActionType actionType, String generatedString) throws IOException {
         var start = LocalDateTime.now();
         while (true) {
             if (Duration.between(start, LocalDateTime.now()).toSeconds() > 5) {
@@ -140,9 +175,26 @@ class AuditModuleTest extends AbstractTest {
             var records = consumer.poll(Duration.ofSeconds(5));
             for (ConsumerRecord<byte[], byte[]> record : records.records(new TopicPartition(AUDIT_TOPIC_NAME, 0))) {
                 var raw = record.value();
-                var payload = mapper.readValue(raw, TopicAuditEvent.class);
-                if (payload.getType().equals(type) && payload.getTopicName().equals(generatedString)) {
-                    return payload;
+
+                var payload = mapper.readValue(raw, AuditEvent.class);
+                if (payload.getType().equals("TOPIC")) {
+                    var event = (TopicAuditEvent) payload;
+                    if (event.getTopicName().equals(generatedString) && event.getActionType().equals(actionType)) {
+                        return payload;
+                    }
+                } else if (payload.getType().equals("CONSUMER_GROUP")) {
+                    var event = (ConsumerGroupAuditEvent) payload;
+                    if (event.getActionType().equals(actionType)) {
+                        if (generatedString == null) {
+                            if (event.getTopic() == null) {
+                                return payload;
+                            }
+                        } else {
+                            if (event.getTopic().equals(generatedString)) {
+                                return payload;
+                            }
+                        }
+                    }
                 }
             }
         }
