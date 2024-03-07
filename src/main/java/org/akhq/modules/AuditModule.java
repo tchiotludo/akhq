@@ -47,9 +47,14 @@ public class AuditModule {
             log.error("Audit event cannot be serialized to JSON", e);
             return;
         }
+
+        log.info("Sending audit event: {}", new String(value)); //todo: (emmanuel) remove me!
+
         kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(topicName, value), (metadata, exception) -> {
             if (exception != null) {
                 log.error("Audit data cannot be sent to Kafka", exception);
+            } else {
+                log.info("Audit data sent"); //todo: (emmanuel) change this to trace or remove
             }
         });
     }

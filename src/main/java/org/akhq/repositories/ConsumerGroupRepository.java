@@ -155,7 +155,7 @@ public class ConsumerGroupRepository extends AbstractRepository {
         consumer.close();
 
         offset.forEach(
-            (k, v) -> auditModule.save(ConsumerGroupAuditEvent.updateOffsets(clusterId, name, k.getTopic()))
+            (k, v) -> auditModule.save(ConsumerGroupAuditEvent.updateOffsets(clusterId, k.getTopic(), name))
         );
 
 
