@@ -73,20 +73,6 @@ class AuditModuleTest extends AbstractTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @BeforeAll
-    void init() {
-        kafkaModule
-            .getAdminClient(KafkaTestCluster.CLUSTER_ID)
-            .createTopics(List.of(new NewTopic(AUDIT_TOPIC_NAME, 1, (short) 1)));
-    }
-
-    @AfterAll
-    void after() {
-        kafkaModule
-            .getAdminClient(KafkaTestCluster.CLUSTER_ID)
-            .deleteTopics(List.of(AUDIT_TOPIC_NAME));
-    }
-
     @Test
     void topicAudit() throws ExecutionException, InterruptedException, IOException {
         String generatedString = generateRandomString();
@@ -145,7 +131,6 @@ class AuditModuleTest extends AbstractTest {
         for (int i = 0; i < 100; i++) {
             producer.send(new ProducerRecord<>(generatedString, new byte[]{})).get();
         }
-//        producer.close();
 
         var consumer = kafkaModule.getConsumer(KafkaTestCluster.CLUSTER_ID);
         consumer.assign(List.of(new TopicPartition(generatedString, 0)));
@@ -157,6 +142,7 @@ class AuditModuleTest extends AbstractTest {
         assertTrue(consumerGroup.get(0).getOffsets().get(0).getOffset().isPresent());
         assertEquals(99, consumerGroup.get(0).getOffsets().get(0).getOffset().get());
 
+        // Update consumer group
         consumerGroupRepository.updateOffsets(KafkaTestCluster.CLUSTER_ID,
             consumerGroup.get(0).getId(),
             Map.of(new org.akhq.models.TopicPartition(generatedString, 0), 0L)
@@ -168,6 +154,7 @@ class AuditModuleTest extends AbstractTest {
         assertNotNull(event.getConsumerGroupName());
         assertEquals(KafkaTestCluster.CLUSTER_ID, event.getClusterId());
         assertEquals(generatedString, event.getTopic());
+
     }
 
     private AuditEvent searchAuditEvent(AuditEvent.ActionType actionType, String topicName) throws IOException {
@@ -218,7 +205,7 @@ class AuditModuleTest extends AbstractTest {
     private String generateRandomString() {
         int leftLimit = 97;
         int rightLimit = 122;
-        int targetStringLength = 10;
+        int targetStringLength = 8;
         Random random = new Random();
         StringBuilder buffer = new StringBuilder(targetStringLength);
         for (int i = 0; i < targetStringLength; i++) {
@@ -226,7 +213,7 @@ class AuditModuleTest extends AbstractTest {
                 (random.nextFloat() * (rightLimit - leftLimit + 1));
             buffer.append((char) randomLimitedInt);
         }
-        return buffer.toString();
+        return "__" + buffer; // we mark it as internal so that we don't interfere we other tests
     }
 
 }
