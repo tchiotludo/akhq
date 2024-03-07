@@ -7,7 +7,9 @@ import jakarta.inject.Inject;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaClusterExtension;
 import org.akhq.KafkaTestCluster;
+import org.akhq.models.Config;
 import org.akhq.models.audit.TopicAuditEvent;
+import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -42,6 +44,10 @@ class AuditModuleTest extends AbstractTest {
     @Inject
     @InjectMocks
     protected TopicRepository topicRepository;
+
+    @Inject
+    @InjectMocks
+    protected ConfigRepository configRepository;
 
     @Inject
     @InjectMocks
@@ -102,6 +108,16 @@ class AuditModuleTest extends AbstractTest {
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
         assertEquals(2, event.getPartitions());
+        assertEquals("test", event.getClusterId());
+
+        configRepository.updateTopic(KafkaTestCluster.CLUSTER_ID, generatedString, List.of(new Config("max.message.bytes", "2097164")));
+
+        // Configuration change event tests
+        event = getTopicAuditEvent(consumer, TopicAuditEvent.Type.CONFIG_CHANGE, generatedString);
+
+        assertNotNull(event);
+        assertEquals(generatedString, event.getTopicName());
+        assertEquals("2097164", event.getConfig().get("max.message.bytes"));
         assertEquals("test", event.getClusterId());
 
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString);
