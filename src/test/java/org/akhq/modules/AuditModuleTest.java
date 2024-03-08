@@ -213,7 +213,7 @@ class AuditModuleTest extends AbstractTest {
                 (random.nextFloat() * (rightLimit - leftLimit + 1));
             buffer.append((char) randomLimitedInt);
         }
-        return "__" + buffer; // we mark it as internal so that we don't interfere we other tests
+        return "generated_" + buffer; // we mark it as internal so that we don't interfere we other tests
     }
 
 }

@@ -5,28 +5,33 @@ import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.utils.DefaultSecurityService;
 import io.micronaut.security.utils.SecurityService;
-import org.apache.kafka.common.config.TopicConfig;
-import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import jakarta.inject.Inject;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaClusterExtension;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Config;
 import org.akhq.models.Partition;
+import org.akhq.models.Topic;
 import org.akhq.utils.Pagination;
+import org.apache.kafka.common.config.TopicConfig;
+import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import jakarta.inject.Inject;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(KafkaClusterExtension.class)
@@ -42,6 +47,8 @@ class TopicRepositoryTest extends AbstractTest {
     @Mock
     ApplicationContext applicationContext;
 
+    private final FilterGenerated filterGenerated = new FilterGenerated();
+
     @BeforeEach
     void before() {
         MockitoAnnotations.initMocks(this);
@@ -55,7 +62,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.ALL,
             Optional.empty(),
             List.of()
-        ).size());
+        ).stream().filter(filterGenerated).toList().size());
     }
 
     @Test
@@ -66,7 +73,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_INTERNAL,
             Optional.empty(),
             List.of()
-        ).size());
+        ).stream().filter(filterGenerated).toList().size());
     }
 
     @Test
@@ -77,7 +84,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
             Optional.empty(),
             List.of()
-        ).size());
+        ).stream().filter(filterGenerated).toList().size());
     }
 
     @Test
@@ -88,7 +95,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_STREAM,
             Optional.empty(),
             List.of()
-        ).size());
+        ).stream().filter(filterGenerated).toList().size());
     }
 
     @Test
@@ -139,14 +146,14 @@ class TopicRepositoryTest extends AbstractTest {
     @Test
     void createWithConfig() throws ExecutionException, InterruptedException {
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, "createWithConfig", 8, (short) 1, Collections.singletonList(
-                new Config(TopicConfig.SEGMENT_MS_CONFIG, "1000")
+            new Config(TopicConfig.SEGMENT_MS_CONFIG, "1000")
         ));
 
         Optional<String> option = configRepository.findByTopic(KafkaTestCluster.CLUSTER_ID, "createWithConfig")
-                .stream()
-                .filter(r -> r.getName().equals(TopicConfig.SEGMENT_MS_CONFIG))
-                .findFirst()
-                .map(Config::getValue);
+            .stream()
+            .filter(r -> r.getName().equals(TopicConfig.SEGMENT_MS_CONFIG))
+            .findFirst()
+            .map(Config::getValue);
 
         assertEquals(8, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "createWithConfig").getPartitions().size());
         assertEquals("1000", option.get());
@@ -157,11 +164,11 @@ class TopicRepositoryTest extends AbstractTest {
     @Test
     void offset() throws ExecutionException, InterruptedException {
         Optional<Partition> compacted = topicRepository
-                .findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED)
-                .getPartitions()
-                .stream()
-                .filter(partition -> partition.getId() == 0)
-                .findFirst();
+            .findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED)
+            .getPartitions()
+            .stream()
+            .filter(partition -> partition.getId() == 0)
+            .findFirst();
 
         assertTrue(compacted.isPresent());
         assertEquals(0, compacted.get().getFirstOffset());
@@ -190,5 +197,14 @@ class TopicRepositoryTest extends AbstractTest {
         when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
         when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
         when(applicationContext.getBean(SecurityService.class)).thenReturn(securityService);
+    }
+
+    private static class FilterGenerated implements Predicate<Topic> {
+        private final static String PATTERN = "generated_";
+
+        @Override
+        public boolean test(Topic topic) {
+            return !topic.getName().startsWith(PATTERN);
+        }
     }
 }
