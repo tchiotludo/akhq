@@ -32,4 +32,5 @@ akhq:
     topic-name: audit
 ```
 
-To be able to identify the user who performed these actions, security must be turned ON.
+To be able to identify the user who performed these actions, security must be turned ON (otherwise the userName field is
+left empty).

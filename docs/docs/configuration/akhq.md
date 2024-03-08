@@ -82,3 +82,15 @@ akhq:
           search-regex: '"([\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?)[0-9]{4,6}"'
           replacement: '"$1xxxx"'
 ```
+
+## Audit
+If you want to audit user action that modified topics or consumer group state, you can configure akhq to send
+audit events to a pre-configured cluster:
+
+```yaml
+akhq:
+  audit:
+    enabled: true
+    cluster-id: my-audit-cluster-plain-text
+    topic-name: audit
+```
