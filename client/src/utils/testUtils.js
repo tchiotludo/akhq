@@ -11,7 +11,7 @@ export function renderWithRouter(
   return {
     ...render(
       //<MuiPickersUtilsProvider utils={MomentUtils}>
-      <Router history={history}>{ui}</Router>
+      <Router>{ui}</Router>
       //  </MuiPickersUtilsProvider>
     ),
     // adding `history` to the returned utilities to allow us

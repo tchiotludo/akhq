@@ -65,7 +65,6 @@ class Schema extends Root {
 
   renderSelectedTab() {
     const { selectedTab, schemaVersions } = this.state;
-    const { history, match } = this.props;
     const { clusterId } = this.props.params;
     const { schemaId } = this.props.params;
 
@@ -77,29 +76,15 @@ class Schema extends Root {
               this.getSchemaVersions();
             }}
             schemaId={schemaId}
-            history={history}
-            match={match}
           />
         );
       case 'versions':
         return (
-          <SchemaVersions
-            schemaName={schemaId}
-            clusterId={clusterId}
-            schemas={schemaVersions}
-            history={history}
-            match={match}
-          />
+          <SchemaVersions schemaName={schemaId} clusterId={clusterId} schemas={schemaVersions} />
         );
       default:
         return (
-          <SchemaVersions
-            schemaName={schemaId}
-            clusterId={clusterId}
-            schemas={schemaVersions}
-            history={history}
-            match={match}
-          />
+          <SchemaVersions schemaName={schemaId} clusterId={clusterId} schemas={schemaVersions} />
         );
     }
   }
@@ -109,7 +94,7 @@ class Schema extends Root {
 
     return (
       <div>
-        <Header title={`Schema: ${decodeURIComponent(schemaId)}`} history={this.props.history} />
+        <Header title={`Schema: ${decodeURIComponent(schemaId)}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {roles.SCHEMA.includes('UPDATE') && (

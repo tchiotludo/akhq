@@ -277,15 +277,10 @@ class ConnectConfigs extends Form {
 
     body.configs = configs;
 
-    const { history } = this.props;
-
     await this.postApi(uriUpdateDefinition(clusterId, connectId, definitionId), body);
 
-    history.push({
-      pathname: `/ui/${clusterId}/connect/${connectId}`
-    });
-
-    toast.success(`${`Definition '${formData.name}' is updated`}`);
+    toast.success(`Definition '${formData.name}' is updated`);
+    this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
   }
 
   render() {

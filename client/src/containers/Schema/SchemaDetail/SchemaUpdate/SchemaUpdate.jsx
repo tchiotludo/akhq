@@ -103,7 +103,7 @@ class SchemaUpdate extends Form {
     this.postApi(uriUpdateSchema(clusterId, formData.subject), body).then(() => {
       toast.success(`Schema '${formData.subject}' is updated`);
       this.props.getSchemaVersions();
-      window.location.reload(false);
+      window.location.reload();
     });
   }
 

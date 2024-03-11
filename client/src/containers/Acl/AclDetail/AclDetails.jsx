@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import Header from '../../Header';
 import AclGroups from './AclGroups/AclGroups';
 import AclTopics from './AclTopics/AclTopics';
@@ -7,27 +6,29 @@ import AclClusters from './AclClusters/AclClusters';
 import AclTransactionalIds from './AclTransactionalIds/AclTransactionalIds';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
+import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
-class AclDetails extends Component {
+class AclDetails extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    principalEncoded: this.props.match.params.principalEncoded,
+    clusterId: this.props.params.clusterId,
+    principalEncoded: this.props.params.principalEncoded,
     selectedTab: 'topics'
   };
 
   tabs = ['topics', 'groups', 'clusters', 'transactionalids'];
 
   componentDidMount() {
-    const { clusterId, principalEncoded } = this.props.match.params;
+    const { clusterId, principalEncoded } = this.props.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
       {
         selectedTab: tabSelected ? tabSelected : 'topics'
       },
       () => {
-        this.props.history.replace(
-          `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
-        );
+        this.props.router.navigate({
+          pathname: `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
+        });
       }
     );
   }
@@ -46,47 +47,27 @@ class AclDetails extends Component {
 
   renderSelectedTab() {
     const { selectedTab, clusterId, principalEncoded } = this.state;
-    const { history } = this.props;
 
     switch (selectedTab) {
       case 'groups':
-        return (
-          <AclGroups clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
-        );
+        return <AclGroups clusterId={clusterId} principalEncoded={principalEncoded} />;
       case 'topics':
-        return (
-          <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
-        );
+        return <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} />;
       case 'clusters':
-        return (
-          <AclClusters
-            clusterId={clusterId}
-            principalEncoded={principalEncoded}
-            history={history}
-          />
-        );
+        return <AclClusters clusterId={clusterId} principalEncoded={principalEncoded} />;
       case 'transactionalids':
-        return (
-          <AclTransactionalIds
-            clusterId={clusterId}
-            principalEncoded={principalEncoded}
-            history={history}
-          />
-        );
+        return <AclTransactionalIds clusterId={clusterId} principalEncoded={principalEncoded} />;
       default:
-        return (
-          <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} history={history} />
-        );
+        return <AclTopics clusterId={clusterId} principalEncoded={principalEncoded} />;
     }
   }
 
   render() {
     const { principalEncoded, clusterId } = this.state;
-    const { history } = this.props;
     const principal = atob(principalEncoded);
     return (
       <div>
-        <Header title={`Acl: ${principal}`} history={history} />
+        <Header title={`Acl: ${principal}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
@@ -134,10 +115,4 @@ class AclDetails extends Component {
   }
 }
 
-AclDetails.propTypes = {
-  match: PropTypes.object,
-  location: PropTypes.object,
-  history: PropTypes.object
-};
-
-export default AclDetails;
+export default withRouter(AclDetails);

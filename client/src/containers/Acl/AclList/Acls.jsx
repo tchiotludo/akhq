@@ -70,7 +70,7 @@ class Acls extends Root {
 
     return (
       <div>
-        <Header title="Acls" history={this.props.history} />
+        <Header title="Acls" />
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light mr-auto
          khq-data-filter khq-sticky khq-nav"
@@ -87,7 +87,6 @@ class Acls extends Root {
         </nav>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'user',

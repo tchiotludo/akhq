@@ -479,7 +479,7 @@ class TopicList extends Root {
 
     return (
       <div>
-        <Header title="Topics" history={this.props.history} />
+        <Header title="Topics" />
         <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
@@ -519,7 +519,6 @@ class TopicList extends Root {
 
         <Table
           loading={loading}
-          history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
           columns={topicCols.concat(

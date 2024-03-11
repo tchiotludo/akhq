@@ -12,8 +12,8 @@ import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBStatement extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    ksqlDBId: this.props.match.params.ksqlDBId,
+    clusterId: this.props.params.clusterId,
+    ksqlDBId: this.props.params.ksqlDBId,
     formData: {},
     errors: {}
   };
@@ -36,17 +36,13 @@ class KsqlDBStatement extends Root {
     };
 
     this.putApi(uriKsqlDBExecuteStatement(clusterId, ksqlDBId), body).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}`
-      });
-
       toast.success('Statement was executed successfully');
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}` });
     });
   }
 
   render() {
     const { formData } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -58,7 +54,7 @@ class KsqlDBStatement extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Execute statement'} history={history} />
+          <Header title={'Execute statement'} />
 
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">

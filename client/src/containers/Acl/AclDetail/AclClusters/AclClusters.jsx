@@ -56,7 +56,6 @@ class AclClusters extends Root {
     return (
       <Table
         loading={loading}
-        history={this.props.history}
         columns={[
           {
             id: 'cluster',

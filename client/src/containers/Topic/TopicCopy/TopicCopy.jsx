@@ -21,6 +21,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../components/DatePicker';
 import moment from 'moment';
 import Input from '../../../components/Form/Input';
+import { withRouter } from '../../../utils/withRouter';
 
 class TopicCopy extends Form {
   state = {
@@ -38,7 +39,7 @@ class TopicCopy extends Form {
   schema = {};
 
   componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
 
     this.schema['clusterListView'] = Joi.string().required();
     this.schema['topicListView'] = Joi.string().required();
@@ -298,7 +299,7 @@ class TopicCopy extends Form {
 
   renderResetButton = () => {
     const { timestamp, formData } = this.state;
-    const { loading } = this.props.history.location;
+    const loading = !!history.location;
 
     return (
       <span>
@@ -395,10 +396,7 @@ class TopicCopy extends Form {
 
     return (
       <div>
-        <Header
-          title={`Copy topic ${topicId} from cluster ${clusterId}`}
-          history={this.props.history}
-        />
+        <Header title={`Copy topic ${topicId} from cluster ${clusterId}`} />
         <form className="khq-form khq-copy-topic" onSubmit={() => this.handleSubmit()}>
           {this.renderTopicPartition()}
           <fieldset id="cluster" key="cluster">
@@ -449,4 +447,4 @@ class TopicCopy extends Form {
   }
 }
 
-export default TopicCopy;
+export default withRouter(TopicCopy);

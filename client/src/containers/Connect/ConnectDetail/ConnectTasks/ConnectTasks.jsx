@@ -14,12 +14,13 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
 import Root from '../../../../components/Root';
+import { withRouter } from '../../../../utils/withRouter';
 
 class ConnectTasks extends Root {
   state = {
-    clusterId: this.props.clusterId || this.props.match.params.clusterId,
-    connectId: this.props.connectId || this.props.match.params.connectId,
-    definitionId: this.props.definitionId || this.props.match.params.clusterId,
+    clusterId: this.props.clusterId || this.props.params.clusterId,
+    connectId: this.props.connectId || this.props.params.connectId,
+    definitionId: this.props.definitionId || this.props.params.clusterId,
     definition: {},
     definitionModifyMessage: '',
     definitionModifyData: {},
@@ -181,7 +182,6 @@ class ConnectTasks extends Root {
         <div className="table-responsive">
           <Table
             loading={loading}
-            history={this.props.history}
             columns={[
               {
                 id: 'id',
@@ -303,4 +303,4 @@ class ConnectTasks extends Root {
   }
 }
 
-export default ConnectTasks;
+export default withRouter(ConnectTasks);

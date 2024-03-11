@@ -426,8 +426,6 @@ class TopicData extends Root {
     }
 
     this.setState({ canDownload: true });
-
-    this.props.history.push(pathToShare);
     this._getSingleMessage(row.partition, row.offset);
   }
 
@@ -447,7 +445,7 @@ class TopicData extends Root {
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     this.setState({
       dateTimeFormat: newDateTimeFormat
     });
@@ -473,7 +471,7 @@ class TopicData extends Root {
     };
     setProduceToTopicValues(data);
 
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`);
   }
 
@@ -828,7 +826,6 @@ class TopicData extends Root {
 
     let date = moment(datetime);
     let endDate = moment(endDatetime);
-    const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -1078,7 +1075,6 @@ class TopicData extends Root {
         <div className="table-responsive">
           <Table
             loading={loading}
-            history={history}
             reduce={true}
             firstHeader={firstColumns}
             isChecked={this.props.isAllTopicDataSelected}
@@ -1091,7 +1087,7 @@ class TopicData extends Root {
                 expand: true,
                 cell: () => {
                   return (
-                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} readOnly />
+                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} disabled />
                   );
                 },
                 readOnly: true

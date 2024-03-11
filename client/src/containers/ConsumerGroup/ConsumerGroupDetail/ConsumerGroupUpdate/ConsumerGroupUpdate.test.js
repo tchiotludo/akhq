@@ -14,7 +14,6 @@ describe('ConsumerGroupUpdate', () => {
   const wrapper = shallow(
     <ConsumerGroupUpdate
       match={{ params: { clusterId: 'abc', groupId: '123' } }}
-      history={history}
     />
   );
   const instance = wrapper.instance();

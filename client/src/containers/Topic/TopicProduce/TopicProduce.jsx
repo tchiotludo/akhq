@@ -16,6 +16,7 @@ import DatePicker from '../../../components/DatePicker';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Tooltip } from '@mui/material';
+import { withRouter } from '../../../utils/withRouter';
 
 class TopicProduce extends Form {
   state = {
@@ -62,7 +63,7 @@ class TopicProduce extends Form {
   };
 
   async componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     const { roles } = this.state;
 
     let response = await this.getApi(uriTopicsPartitions(clusterId, topicId));
@@ -95,7 +96,7 @@ class TopicProduce extends Form {
   }
 
   async initAvailableTopics() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     const topics = [];
     let page = 0;
@@ -114,7 +115,7 @@ class TopicProduce extends Form {
   }
 
   async getPreferredSchemaForTopic() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     let schema = await this.getApi(uriAllSchema(clusterId));
     let keySchema = [];
     let valueSchema = [];
@@ -152,7 +153,7 @@ class TopicProduce extends Form {
       multiMessage,
       tombstone
     } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     let value;
     if (tombstone) {
@@ -188,10 +189,8 @@ class TopicProduce extends Form {
     topic.headers = headers;
 
     this.postApi(uriTopicsProduce(clusterId, topicId), topic).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/topic/${topicId}`
-      });
       toast.success(`Produced to ${topicId}.`);
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic/${topicId}` });
     });
   }
 
@@ -605,4 +604,4 @@ class TopicProduce extends Form {
   }
 }
 
-export default TopicProduce;
+export default withRouter(TopicProduce);

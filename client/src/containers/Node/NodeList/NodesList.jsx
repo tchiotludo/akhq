@@ -63,14 +63,12 @@ class NodesList extends Root {
   }
 
   render() {
-    const { history } = this.props;
     const { data, selectedCluster, loading } = this.state;
     return (
       <div>
-        <Header title="Nodes" history={history} />
+        <Header title="Nodes" />
         <Table
           loading={loading}
-          history={history}
           columns={[
             {
               id: 'id',

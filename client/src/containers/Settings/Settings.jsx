@@ -121,7 +121,7 @@ class Settings extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Settings" history={this.props.history} />
+          <Header title="Settings" />
           <fieldset id="topic" key="topic">
             <legend id="topic">Topic</legend>
             {this.renderSelect(

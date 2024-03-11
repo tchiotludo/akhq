@@ -11,8 +11,8 @@ class TopicIncreasePartition extends Form {
     formData: {
       partition: 1
     },
-    selectedCluster: this.props.match.params.clusterId,
-    selectedTopic: this.props.match.params.topicId,
+    selectedCluster: this.props.params.clusterId,
+    selectedTopic: this.props.params.topicId,
     errors: {}
   };
 
@@ -41,10 +41,8 @@ class TopicIncreasePartition extends Form {
 
     this.postApi(uriTopicIncreasePartition(selectedCluster, selectedTopic), partitionData).then(
       () => {
-        this.props.history.push({
-          pathname: `/ui/${selectedCluster}/topic`
-        });
         toast.success('Topic partition updated');
+        this.props.router.navigate({ pathname: `/ui/${selectedCluster}/topic` });
       }
     );
   }
@@ -56,7 +54,7 @@ class TopicIncreasePartition extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Increase topic partition" history={this.props.history} />
+          <Header title="Increase topic partition" />
           {this.renderInput('partition', 'Partition', 'Partition', 'number')}
           {this.renderButton(
             'Update',

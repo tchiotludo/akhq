@@ -82,8 +82,6 @@ class Login extends Form {
         this.props.router.navigate({
           pathname: returnTo || '/ui'
         });
-
-        window.location.reload(true);
       } else {
         toast.error('User logged in but no roles assigned');
       }

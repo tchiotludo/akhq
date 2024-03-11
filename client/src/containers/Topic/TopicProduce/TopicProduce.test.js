@@ -9,11 +9,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 describe('TopicProduce', () => {
   it('should add a new header to headers list', () => {
-    const route = '/abs/topic/123/produce';
-    const history = createMemoryHistory({ initialEntries: [route] });
     const { getByTestId } = render(
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} history={history} />
+        <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} />
       </LocalizationProvider>
     );
     const headers = getByTestId('headers');
@@ -23,11 +21,9 @@ describe('TopicProduce', () => {
   });
 
   it('should remove a header from headers list', () => {
-    const route = '/abs/topic/123/produce';
-    const history = createMemoryHistory({ initialEntries: [route] });
     const { getByTestId } = render(
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} history={history} />
+        <TopicProduce match={{ params: { clusterId: '123', topicId: '456' } }} />
       </LocalizationProvider>
     );
     const headers = getByTestId('headers');

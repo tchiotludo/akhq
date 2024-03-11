@@ -190,10 +190,6 @@ class Topic extends Root {
     }
   }
 
-  selectTab = tab => {
-    this.setState({ selectedTab: tab });
-  };
-
   tabClassName = tab => {
     const { selectedTab } = this.state;
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
@@ -201,15 +197,13 @@ class Topic extends Root {
 
   renderSelectedTab = () => {
     const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
-    const { history, match, location } = this.props;
+    const { location } = this.props;
 
     switch (selectedTab) {
       case 'data':
         return (
           <TopicData
             ref={this.topicData}
-            history={history}
-            match={match}
             location={location}
             isAllTopicDataSelected={this.state.isAllTopicDataSelected}
             onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
@@ -217,27 +211,20 @@ class Topic extends Root {
           />
         );
       case 'partitions':
-        return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
+        return <TopicPartitions clusterId={clusterId} topic={topicId} />;
       case 'groups':
-        return <TopicGroups clusterId={clusterId} topicId={topicId} history={history} />;
+        return <TopicGroups clusterId={clusterId} topicId={topicId} />;
       case 'configs':
-        return (
-          <TopicConfigs
-            internal={topicInternal}
-            history={history}
-            topicId={topicId}
-            clusterId={clusterId}
-          />
-        );
+        return <TopicConfigs internal={topicInternal} topicId={topicId} clusterId={clusterId} />;
       case 'acls':
-        return <TopicAcls history={history} topicId={topicId} clusterId={clusterId} />;
+        return <TopicAcls topicId={topicId} clusterId={clusterId} />;
       case 'logs':
-        return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
+        return <TopicLogs clusterId={clusterId} topic={topicId} />;
       default:
         return roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? (
-          <TopicData history={history} match={match} location={location} />
+          <TopicData location={location} />
         ) : (
-          <TopicPartitions history={history} />
+          <TopicPartitions />
         );
     }
   };
@@ -248,7 +235,7 @@ class Topic extends Root {
     const roles = this.state.roles || {};
     return (
       <div>
-        <Header title={`Topic: ${topicId}`} history={this.props.history} />
+        <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (

@@ -44,7 +44,6 @@ class AkhqRoutes extends Root {
   };
   static propTypes = {
     location: PropTypes.object,
-    history: PropTypes.object,
     clusterId: PropTypes.string,
     clusters: PropTypes.array
   };
@@ -189,11 +188,18 @@ class AkhqRoutes extends Root {
                 </>
               )}
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
-                <Route
-                  exact
-                  path="/ui/:clusterId/topic/:topicId/data"
-                  element={<Topic clusters={clusters} />}
-                />
+                <>
+                  <Route
+                    exact
+                    path="/ui/:clusterId/topic/:topicId"
+                    element={<Topic clusters={clusters} />}
+                  />
+                  <Route
+                    exact
+                    path="/ui/:clusterId/topic/:topicId/data"
+                    element={<Topic clusters={clusters} />}
+                  />
+                </>
               )}
 
               {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (

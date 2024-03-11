@@ -59,27 +59,15 @@ class Node extends Component {
     switch (selectedTab) {
       case 'configs':
         return (
-          <NodeConfigs
-            nodeId={this.props.params.nodeId}
-            clusterId={this.props.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeConfigs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
       case 'logs':
         return (
-          <NodeLogs
-            nodeId={this.props.params.nodeId}
-            clusterId={this.props.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeLogs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
       default:
         return (
-          <NodeConfigs
-            nodeId={this.props.params.nodeId}
-            clusterId={this.props.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeConfigs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
     }
   }
@@ -88,7 +76,7 @@ class Node extends Component {
     const { selectedNode, clusterId, roles } = this.state;
     return (
       <div>
-        <Header title={`Node ${selectedNode}`} history={this.props.history} />
+        <Header title={`Node ${selectedNode}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {roles.NODE && roles.NODE.includes('READ_CONFIG') && (
@@ -125,8 +113,6 @@ class Node extends Component {
 Node.propTypes = {
   router: PropTypes.object,
   params: PropTypes.object,
-  history: PropTypes.object,
-  match: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
   children: PropTypes.any

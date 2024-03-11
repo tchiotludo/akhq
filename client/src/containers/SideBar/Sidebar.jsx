@@ -8,7 +8,6 @@ import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
-import Dropdown from 'react-bootstrap/Dropdown';
 
 class Sidebar extends Component {
   state = {
@@ -293,17 +292,19 @@ class Sidebar extends Component {
         <SideNav.Toggle />
         <div className="logo-wrapper">
           <span className="logo" />
-          <p
-            style={{
-              color: 'white',
-              fontStyle: 'Italic',
-              textAlign: 'center',
-              margin: '20px 0 0 0'
-            }}
-          >
-            {''}
-            {tag}
-          </p>
+          {this.props.expanded && (
+            <p
+              style={{
+                color: 'white',
+                fontStyle: 'Italic',
+                textAlign: 'center',
+                margin: '20px 0 0 0'
+              }}
+            >
+              {''}
+              {tag}
+            </p>
+          )}
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
           <NavItem className="nav-clusters" eventKey="cluster">
@@ -410,8 +411,6 @@ class Sidebar extends Component {
 
 Sidebar.propTypes = {
   router: PropTypes.object,
-  history: PropTypes.object,
-  match: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
   children: PropTypes.any,

@@ -29,7 +29,6 @@ class ConnectList extends Root {
     loading: true,
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     searchData: {
       search: ''
     }
@@ -207,11 +206,10 @@ class ConnectList extends Root {
     const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } =
       this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
 
     return (
       <div>
-        <Header title={`Connect: ${connectId}`} history={history} />
+        <Header title={`Connect: ${connectId}`} />
         <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
@@ -231,7 +229,6 @@ class ConnectList extends Root {
 
         <Table
           loading={loading}
-          history={history}
           columns={[
             {
               id: 'id',

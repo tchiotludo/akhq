@@ -17,8 +17,8 @@ import { withRouter } from '../../../utils/withRouter';
 
 class ConnectCreate extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    connectId: this.props.match.params.connectId,
+    clusterId: this.props.params.clusterId,
+    connectId: this.props.params.connectId,
     formData: {},
     errors: {},
     plugins: [],
@@ -406,17 +406,13 @@ class ConnectCreate extends Root {
     body.configs = configs;
 
     this.postApi(uriCreateConnect(clusterId, connectId), body).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/connect/${connectId}`
-      });
-
-      toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
+      toast.success(`Connection '${formData.subject}' was created successfully`);
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
     });
   }
 
   render() {
     const { formData, selectedType } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -428,7 +424,7 @@ class ConnectCreate extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Create a definition'} history={history} />
+          <Header title={'Create a definition'} />
           {this.renderDropdown()}
           {selectedType.length > 0 && (
             <React.Fragment>

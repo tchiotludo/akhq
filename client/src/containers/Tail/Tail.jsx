@@ -392,7 +392,6 @@ class Tail extends Root {
         </BootstrapForm>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
-            history={this.props.history}
             rowId={data => {
               return data.topic.name + '-' + data.partition + '-' + data.offset;
             }}

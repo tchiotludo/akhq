@@ -14,8 +14,8 @@ import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBQuery extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    ksqlDBId: this.props.match.params.ksqlDBId,
+    clusterId: this.props.params.clusterId,
+    ksqlDBId: this.props.params.ksqlDBId,
     formData: {},
     properties: {},
     tableData: [],
@@ -91,7 +91,6 @@ class KsqlDBQuery extends Root {
 
   render() {
     const { formData, tableData, tableColumns, loading } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -103,7 +102,7 @@ class KsqlDBQuery extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Execute query'} history={history} />
+          <Header title={'Execute query'} />
 
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">
@@ -167,7 +166,6 @@ class KsqlDBQuery extends Root {
             <div className="col-sm-10">
               <Table
                 loading={loading}
-                history={history}
                 columns={tableColumns}
                 data={tableData}
                 updateData={data => {

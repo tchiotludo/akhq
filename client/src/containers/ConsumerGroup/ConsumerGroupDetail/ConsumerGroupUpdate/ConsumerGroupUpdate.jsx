@@ -14,6 +14,7 @@ import moment from 'moment';
 import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../../utils/withRouter';
 
 class ConsumerGroupUpdate extends Form {
   state = {
@@ -31,7 +32,7 @@ class ConsumerGroupUpdate extends Form {
   schema = {};
 
   componentDidMount() {
-    const { clusterId, consumerGroupId } = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.params;
 
     this.setState({ clusterId, consumerGroupId }, () => {
       this.getTopicOffset();
@@ -249,7 +250,7 @@ class ConsumerGroupUpdate extends Form {
 
   renderResetButton = () => {
     const { timestamp } = this.state;
-    const { loading } = this.props.history.location;
+    const loading = !!history.location;
 
     return (
       <span>
@@ -318,7 +319,7 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <div>
-        <Header title={`Update offsets: ${consumerGroupId}`} history={this.props.history} />
+        <Header title={`Update offsets: ${consumerGroupId}`} />
         <form
           className="khq-form khq-update-consumer-group-offsets"
           onSubmit={() => this.handleSubmit()}
@@ -337,4 +338,4 @@ class ConsumerGroupUpdate extends Form {
   }
 }
 
-export default ConsumerGroupUpdate;
+export default withRouter(ConsumerGroupUpdate);

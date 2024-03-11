@@ -48,18 +48,10 @@ class KsqlDBList extends Component {
 
   renderSelectedTab() {
     const { clusterId, ksqlDBId, selectedTab } = this.state;
-    const { history, match, location } = this.props;
+    const { location } = this.props;
     const SelectedTab = this.tabs[selectedTab] || KsqlDBStreams;
 
-    return (
-      <SelectedTab
-        clusterId={clusterId}
-        ksqlDBId={ksqlDBId}
-        history={history}
-        match={match}
-        location={location}
-      />
-    );
+    return <SelectedTab clusterId={clusterId} ksqlDBId={ksqlDBId} location={location} />;
   }
 
   render() {
@@ -67,7 +59,7 @@ class KsqlDBList extends Component {
     const roles = this.state.roles || {};
     return (
       <div>
-        <Header title={`KsqlDB: ${ksqlDBId}`} history={this.props.history} />
+        <Header title={`KsqlDB: ${ksqlDBId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
@@ -138,9 +130,7 @@ class KsqlDBList extends Component {
 KsqlDBList.propTypes = {
   router: PropTypes.object,
   params: PropTypes.object,
-  history: PropTypes.object,
-  location: PropTypes.object,
-  match: PropTypes.object
+  location: PropTypes.object
 };
 
 export default withRouter(KsqlDBList);

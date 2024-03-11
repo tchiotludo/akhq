@@ -2,7 +2,6 @@ import React from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import history from './history';
 
 const configs = {
   withCredentials: true
@@ -25,8 +24,7 @@ const handleError = err => {
   if (err.response && err.response.status < 500) {
     if (err.response.status === 401 || err.response.status === 403) {
       localStorage.setItem('toastMessage', error.message);
-      history.push('/ui/login');
-      history.go(0);
+      this.props.router.navigate({ pathname: '/ui/login' });
     } else {
       toast.warn(error.message);
     }

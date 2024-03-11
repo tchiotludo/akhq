@@ -229,7 +229,6 @@ class NodeConfigs extends Form {
         <div>
           <Table
             loading={loading}
-            history={this.props.history}
             columns={[
               {
                 id: 'nameAndDescription',

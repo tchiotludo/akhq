@@ -56,7 +56,6 @@ class AclTransactionalIds extends Root {
     return (
       <Table
         loading={loading}
-        history={this.props.history}
         columns={[
           {
             id: 'transactionalId',

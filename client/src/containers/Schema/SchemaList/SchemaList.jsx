@@ -29,7 +29,6 @@ class SchemaList extends Root {
     deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     searchData: {
       search: ''
     },
@@ -163,12 +162,11 @@ class SchemaList extends Root {
   render() {
     const { selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
     const { clusterId } = this.props.params;
 
     return (
       <div>
-        <Header title="Schema Registry" history={history} />
+        <Header title="Schema Registry" />
         <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
@@ -191,7 +189,6 @@ class SchemaList extends Root {
 
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',

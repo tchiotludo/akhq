@@ -73,7 +73,6 @@ class SchemaVersions extends Root {
 
   deleteSchemaRegistry = () => {
     const { selectedCluster, schemaToDelete, selectedSchema } = this.state;
-    const { history } = this.props;
     const deleteData = {
       clusterId: selectedCluster,
       subject: selectedSchema,
@@ -87,9 +86,7 @@ class SchemaVersions extends Root {
       .then(() => {
         toast.success(`Version'${schemaToDelete.version}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        history.push({
-          pathname: `/ui/${selectedCluster}/schema`
-        });
+        this.props.router.navigate({ pathname: `/ui/${selectedCluster}/schema` });
       })
       .catch(() => {
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
@@ -103,7 +100,6 @@ class SchemaVersions extends Root {
       <div>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',

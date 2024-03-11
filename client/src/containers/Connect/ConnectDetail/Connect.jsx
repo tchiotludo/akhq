@@ -44,38 +44,19 @@ class Connect extends Component {
 
   renderSelectedTab() {
     const { clusterId, connectId, definitionId, selectedTab } = this.state;
-    const { history, match } = this.props;
 
     switch (selectedTab) {
       case 'tasks':
         return (
-          <ConnectTasks
-            clusterId={clusterId}
-            connectId={connectId}
-            definitionId={definitionId}
-            history={history}
-            match={match}
-          />
+          <ConnectTasks clusterId={clusterId} connectId={connectId} definitionId={definitionId} />
         );
       case 'configs':
         return (
-          <ConnectConfigs
-            clusterId={clusterId}
-            connectId={connectId}
-            definitionId={definitionId}
-            history={history}
-            match={match}
-          />
+          <ConnectConfigs clusterId={clusterId} connectId={connectId} definitionId={definitionId} />
         );
       default:
         return (
-          <ConnectTasks
-            clusterId={clusterId}
-            connectId={connectId}
-            definitionId={definitionId}
-            history={history}
-            match={match}
-          />
+          <ConnectTasks clusterId={clusterId} connectId={connectId} definitionId={definitionId} />
         );
     }
   }
@@ -85,7 +66,7 @@ class Connect extends Component {
 
     return (
       <div>
-        <Header title={`Connect: ${definitionId}`} history={this.props.history} />
+        <Header title={`Connect: ${definitionId}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
@@ -120,9 +101,7 @@ class Connect extends Component {
 Connect.propTypes = {
   params: PropTypes.object,
   router: PropTypes.object,
-  history: PropTypes.object,
-  location: PropTypes.object,
-  match: PropTypes.object
+  location: PropTypes.object
 };
 
 export default withRouter(Connect);
