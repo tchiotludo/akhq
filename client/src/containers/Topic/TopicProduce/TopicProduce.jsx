@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Tooltip } from '@mui/material';
 import { withRouter } from '../../../utils/withRouter';
+import { Col, Row } from 'react-bootstrap';
 
 class TopicProduce extends Form {
   state = {
@@ -198,9 +199,11 @@ class TopicProduce extends Form {
     const { formData, multiMessage } = this.state;
 
     return (
-      <div className="form-group row">
-        <label className="col-sm-2 col-form-label">Multi message</label>
-        <div className="row khq-multiple col-sm-7">
+      <Row className="form-group align-items-center">
+        <Col xs="2">
+          <label>Multi message</label>
+        </Col>
+        <Col xs="auto">
           {this.renderCheckbox(
             'isMultiMessage',
             multiMessage,
@@ -216,14 +219,16 @@ class TopicProduce extends Form {
             false,
             { disabled: tombstone }
           )}
-
-          <label className="col-auto col-form-label">Separator</label>
+        </Col>
+        <Col xs="auto">
+          <label>Separator</label>
+        </Col>
+        <Col xs="2">
           <input
+            className="form-control"
             type="text"
-            name="keyValueSeparator"
             id="keyValueSeparator"
             placeholder=":"
-            className="col-sm-2 form-control"
             disabled={!multiMessage}
             onChange={event => {
               this.setState({
@@ -232,8 +237,8 @@ class TopicProduce extends Form {
               });
             }}
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 
@@ -241,9 +246,11 @@ class TopicProduce extends Form {
     const { tombstone } = this.state;
 
     return (
-      <div className="form-group row">
-        <label className="col-sm-2 col-form-label">Tombstone</label>
-        <div className="row khq-multiple col-sm-7">
+      <Row>
+        <Col xs="2">
+          <label className="col-sm-2 col-form-label">Tombstone</label>
+        </Col>
+        <Col xs="auto">
           {this.renderCheckbox(
             'isTombstone',
             tombstone,
@@ -253,8 +260,8 @@ class TopicProduce extends Form {
             false,
             { disabled: multiMessage }
           )}
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 
@@ -282,52 +289,39 @@ class TopicProduce extends Form {
         headers.push(this.renderHeader(Number(keyNumbers)));
       }
     });
-    return <div data-testId="headers">{headers.map(head => head)}</div>;
+    return (
+      <div data-testId="headers" className="form-group">
+        {headers.map(head => head)}
+      </div>
+    );
   }
 
   renderHeader(position) {
     return (
-      <div className="row header-wrapper">
-        <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
+      <Row>
+        <Col xs="2">
+          <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
+        </Col>
 
-        <div className="row col-sm-10 khq-multiple">
-          <div>
-            {this.renderInput(
-              `hKey${position}`,
-              '',
-              'Key',
-              'text',
-              true,
-              'col-sm-6 row',
-              'col-sm-12 p-0',
-              'input-class'
-            )}
-
-            {this.renderInput(
-              `hValue${position}`,
-              '',
-              'Value',
-              'text',
-              true,
-              'col-sm-6 row',
-              'col-sm-12 p-0',
-              'input-class'
-            )}
-          </div>
-          <div className="add-button">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              data-testId={`button_${position}`}
-              onClick={() => {
-                position === 0 ? this.handlePlus() : this.handleRemove(position);
-              }}
-            >
-              <i className={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
-            </button>
-          </div>
-        </div>
-      </div>
+        <Col>
+          {this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', '', 'input-class')}
+        </Col>
+        <Col>
+          {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', '', 'input-class')}
+        </Col>
+        <Col xs="auto">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-testId={`button_${position}`}
+            onClick={() => {
+              position === 0 ? this.handlePlus() : this.handleRemove(position);
+            }}
+          >
+            <i className={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
+          </button>
+        </Col>
+      </Row>
     );
   }
 
