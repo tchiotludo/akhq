@@ -203,12 +203,22 @@ class Form extends Root {
         <div className="form-group row">
           <label className="col-sm-2">{name}</label>
           <div className="col-sm-10">
-            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+            <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
+              <Dropdown.Toggle
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 0,
+                  margin: 0
+                }}
+                className="nav-link dropdown-toggle"
+              >
                 <input
                   type="text"
                   name="searchValue"
-                  className="form-control placeholder"
+                  className="form-control"
                   placeholder={name}
                   value={selectedKeySchema}
                 />
