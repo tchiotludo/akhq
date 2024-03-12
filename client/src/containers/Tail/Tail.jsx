@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Col, Dropdown, Form as BootstrapForm, Row } from 'react-bootstrap';
+import { Col, Dropdown, Form as BootstrapForm, Row } from 'react-bootstrap';
 import remove from 'lodash/remove';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
@@ -8,7 +8,6 @@ import { getClusterUIOptions } from '../../utils/functions';
 import { uriLiveTail, uriTopicsName } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
@@ -472,6 +471,7 @@ class Tail extends Root {
 
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"

@@ -1,7 +1,6 @@
 import React from 'react';
 import { uriKsqlDBExecuteQuery } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
@@ -124,6 +123,7 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
                 theme="merbivore_soft"
@@ -146,6 +146,7 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="properties"
                 id={'properties'}
                 theme="merbivore_soft"

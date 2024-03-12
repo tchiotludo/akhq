@@ -1,6 +1,6 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/mixins';
-@import '~bootstrap/scss/variables';
+@import 'node_modules/bootstrap/scss/functions';
+@import 'node_modules/bootstrap/scss/mixins';
+@import 'node_modules/bootstrap/scss/variables';
 
 $sidebarWidth: 70px;
 $sidebarExpandedWidth: 250px;
@@ -65,7 +65,7 @@ $sidebarTransition: 0.5s;
   &:hover {
     background-color: $body-bg-dark;
   }
-  &.active  {
+  &.active {
     background-color: $body-bg-dark;
   }
   &.nav-clusters {

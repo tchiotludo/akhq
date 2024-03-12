@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
@@ -248,6 +247,7 @@ class ConnectList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
                     theme="merbivore_soft"

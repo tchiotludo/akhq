@@ -1,11 +1,9 @@
 /*eslint-disable*/
-/*
 import React from 'react';
-import Enzyme, { shallow } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import { describe, it } from 'vitest';
 import RadioGroup from './RadioGroup';
-
-Enzyme.configure({ adapter: new Adapter() });
+import { render } from '@testing-library/react';
+import { Simulate } from 'react-dom/test-utils';
 
 describe('RadioGroup', () => {
   let testOption = '';
@@ -42,22 +40,25 @@ describe('RadioGroup', () => {
       testOption = value;
     }
   };
-  const wrapper = shallow(<RadioGroup {...props} />);
 
-  it('should render radio group successfully', () => {
-    const options = wrapper.find('input');
+  const { container } = render(<RadioGroup {...props} />);
+
+  it('should render radio group successfully', ({ expect }) => {
+    const options = container.querySelectorAll('input');
     expect(options.length).toBe(4);
   });
 
-  it('should change options successfully', () => {
-    const radio = wrapper.find('input');
-    const opt1 = radio.at(1);
-    const opt2 = radio.at(2);
-    opt1.simulate('change', opt1.getElement().props.value);
-    expect(opt1.getElement().props.value).toBe(testOption);
-    opt2.simulate('change', opt2.getElement().props.value);
-    expect(opt2.getElement().props.value).toBe(testOption);
+  it('should change options successfully', ({ expect }) => {
+    const radio = container.querySelectorAll('input');
+
+    const opt1 = radio.item(1);
+    opt1.value = '';
+    Simulate.change(opt1);
+    expect(radio.item(1).value).toBe(testOption);
+
+    const opt2 = radio.item(2);
+    opt2.value = '';
+    Simulate.change(opt2);
+    expect(radio.item(2).value).toBe(testOption);
   });
 });
-
- */

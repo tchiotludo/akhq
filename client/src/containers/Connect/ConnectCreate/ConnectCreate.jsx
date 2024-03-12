@@ -7,7 +7,6 @@ import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import AceEditor from 'react-ace';
 import filter from 'lodash/filter';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
@@ -281,6 +280,7 @@ class ConnectCreate extends Root {
             </td>
             <td>
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="json"
                 id={'transformsprops'}
                 theme="merbivore_soft"

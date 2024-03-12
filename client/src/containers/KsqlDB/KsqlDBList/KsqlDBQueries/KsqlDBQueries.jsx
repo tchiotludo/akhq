@@ -1,6 +1,5 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import 'react-toastify/dist/ReactToastify.css';
@@ -183,6 +182,7 @@ class KsqlDBQueries extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode="sql"
                     id={'value' + index}
                     theme="merbivore_soft"

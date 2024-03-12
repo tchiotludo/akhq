@@ -6,7 +6,6 @@ import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../../../components/Root';
@@ -128,6 +127,7 @@ class SchemaVersions extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
                     theme="merbivore_soft"

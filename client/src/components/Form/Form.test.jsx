@@ -1,12 +1,7 @@
 /*eslint-disable*/
-/*
-import React from 'react';
-import Enzyme, { shallow } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import { describe, it } from 'vitest';
 import Form from './Form';
 import Joi from 'joi-browser';
-
-Enzyme.configure({ adapter: new Adapter() });
 
 describe('Form', () => {
   const TestForm = new Form();
@@ -17,22 +12,22 @@ describe('Form', () => {
     test: 12
   };
 
-  it('should validate schema property successfully', () => {
+  it('should validate schema property successfully', ({ expect }) => {
     let validatePropertyResponse = TestForm.validateProperty({ name: 'test', value: 12 });
     expect(validatePropertyResponse).toBe(null);
   });
 
-  it('should send error at validate schema property', () => {
+  it('should send error at validate schema property', ({ expect }) => {
     let validatePropertyResponse = TestForm.validateProperty({ name: 'test', value: 'testinho ' });
     expect(validatePropertyResponse).not.toBe(null);
   });
 
-  it('should validate schema successfully', () => {
+  it('should validate schema successfully', ({ expect }) => {
     let validatePropertyResponse = TestForm.validate();
     expect(validatePropertyResponse).toBe(null);
   });
 
-  it('should send error at validate schema', () => {
+  it('should send error at validate schema', ({ expect }) => {
     TestForm.state.formData = {
       test: 'test'
     };
@@ -40,4 +35,3 @@ describe('Form', () => {
     expect(validatePropertyResponse).not.toBe(null);
   });
 });
- */

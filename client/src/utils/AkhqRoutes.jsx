@@ -33,7 +33,6 @@ import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
 import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
 import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
 import sortBy from 'lodash/sortBy';
-import { withRouter } from './withRouter';
 
 class AkhqRoutes extends Root {
   state = {
@@ -367,4 +366,4 @@ class AkhqRoutes extends Root {
   }
 }
 
-export default withRouter(AkhqRoutes);
+export default AkhqRoutes;

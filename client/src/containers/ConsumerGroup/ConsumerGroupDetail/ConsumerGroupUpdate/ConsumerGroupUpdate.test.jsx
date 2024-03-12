@@ -1,22 +1,20 @@
 /*eslint-disable*/
-/*
 import React from 'react';
-import Enzyme, { shallow } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import { describe, it, vi } from 'vitest';
 import ConsumerGroupUpdate from './ConsumerGroupUpdate';
-import { createMemoryHistory } from 'history';
+import { render } from '@testing-library/react';
 
-Enzyme.configure({ adapter: new Adapter() });
+// noinspection JSUnusedGlobalSymbols
+vi.mock('react-router-dom', () => ({
+  useLocation: vi.fn(),
+  useNavigate: vi.fn(),
+  useParams: vi.fn()
+}));
 
 describe('ConsumerGroupUpdate', () => {
-  const route = '/abc/group/123/update';
-  const history = createMemoryHistory({ initialEntries: [route] });
-  const wrapper = shallow(
-    <ConsumerGroupUpdate
-      match={{ params: { clusterId: 'abc', groupId: '123' } }}
-    />
-  );
-  const instance = wrapper.instance();
+  it('empty test', ({ expect }) => {});
+  /*
+  const { container } = render(<ConsumerGroupUpdate />);
   const groupedTopicOffset = {
     test1: [
       {
@@ -61,10 +59,11 @@ describe('ConsumerGroupUpdate', () => {
       }
     ]
   };
-  instance.setState({ groupedTopicOffset });
+
+  container.setState({ groupedTopicOffset });
 
   it('should return processed consummer group offset formData', () => {
-    instance.createValidationSchema(groupedTopicOffset);
+    container.createValidationSchema(groupedTopicOffset);
 
     let expectedFormData = {};
     expectedFormData['offset[test1][0]'] = 3;
@@ -74,7 +73,7 @@ describe('ConsumerGroupUpdate', () => {
     expectedFormData['offset[test3][1]'] = 8;
     expectedFormData['offset[test3][2]'] = 3;
 
-    const actualFormData = instance.state.formData;
+    const actualFormData = container.state.formData;
 
     expect(actualFormData).toStrictEqual(expectedFormData);
   });
@@ -88,23 +87,22 @@ describe('ConsumerGroupUpdate', () => {
     formData['offset[test3][1]'] = 0;
     formData['offset[test3][2]'] = 0;
 
-    instance.setState({ formData }, () => {
-      expect(wrapper.find('#fieldset-test1')).toHaveLength(1);
-      expect(wrapper.find('#legend-test1')).toHaveLength(1);
-      expect(wrapper.find('#test1-0-input')).toHaveLength(1);
+    container.setState({ formData }, () => {
+      expect(container.querySelectorAll('#fieldset-test1')).toHaveLength(1);
+      expect(container.querySelectorAll('#legend-test1')).toHaveLength(1);
+      expect(container.querySelectorAll('#test1-0-input')).toHaveLength(1);
 
-      expect(wrapper.find('#fieldset-test2')).toHaveLength(1);
-      expect(wrapper.find('#legend-test2')).toHaveLength(1);
-      expect(wrapper.find('#test2-0-input')).toHaveLength(1);
-      expect(wrapper.find('#test2-1-input')).toHaveLength(1);
+      expect(container.querySelectorAll('#fieldset-test2')).toHaveLength(1);
+      expect(container.querySelectorAll('#legend-test2')).toHaveLength(1);
+      expect(container.querySelectorAll('#test2-0-input')).toHaveLength(1);
+      expect(container.querySelectorAll('#test2-1-input')).toHaveLength(1);
 
-      expect(wrapper.find('#fieldset-test3')).toHaveLength(1);
-      expect(wrapper.find('#legend-test3')).toHaveLength(1);
-      expect(wrapper.find('#test3-0-input')).toHaveLength(1);
-      expect(wrapper.find('#test3-1-input')).toHaveLength(1);
-      expect(wrapper.find('#test3-2-input')).toHaveLength(1);
+      expect(container.querySelectorAll('#fieldset-test3')).toHaveLength(1);
+      expect(container.querySelectorAll('#legend-test3')).toHaveLength(1);
+      expect(container.querySelectorAll('#test3-0-input')).toHaveLength(1);
+      expect(container.querySelectorAll('#test3-1-input')).toHaveLength(1);
+      expect(container.querySelectorAll('#test3-2-input')).toHaveLength(1);
     });
   });
+*/
 });
-
- */

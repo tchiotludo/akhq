@@ -1,11 +1,13 @@
+$fa-font-path: 'font-awesome/fonts';
+
 @import 'variables.scss';
-@import '~bootstrap/scss/bootstrap';
-@import '~font-awesome/scss/font-awesome';
-@import '~react-datepicker/dist/react-datepicker.css';
+@import 'node_modules/bootstrap/scss/bootstrap';
+@import 'node_modules/font-awesome/scss/font-awesome';
+@import 'node_modules/react-datepicker/dist/react-datepicker';
 
 $theme-colors: (
-  "primary": $primary,
-  "warning": $warning
+  'primary': $primary,
+  'warning': $warning
 );
 
 body {
@@ -55,7 +57,8 @@ ul.nav-tabs {
 footer {
   width: 100% !important;
 }
-footer div, footer a {
+footer div,
+footer a {
   margin-left: 8px;
 }
 
@@ -63,7 +66,8 @@ footer div, footer a {
   display: inline-flex !important;
 }
 
-.settings-wrapper, .select-wrapper {
+.settings-wrapper,
+.select-wrapper {
   display: flex;
 }
 

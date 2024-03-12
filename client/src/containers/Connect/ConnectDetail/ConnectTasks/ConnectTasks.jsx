@@ -219,6 +219,7 @@ class ConnectTasks extends Root {
                 extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="text"
                       id={'value' + index}
                       theme="merbivore_soft"

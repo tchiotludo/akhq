@@ -30,7 +30,8 @@ input[type='number'] {
   color: white;
 }
 
-.page-item.before, .page-item.after {
+.page-item.before,
+.page-item.after {
   .page-link {
     background-color: $primary;
   }

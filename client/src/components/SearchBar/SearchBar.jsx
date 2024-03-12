@@ -141,10 +141,9 @@ class SearchBar extends Form {
                     '',
                     'Search',
                     'text',
-                    { autoComplete: 'off' },
+                    false,
                     '',
-                    'topic-search-wrapper',
-                    'topic-search-input'
+                    'topic-search-wrapper'
                   )}
                 </Col>
               )}
@@ -162,7 +161,7 @@ class SearchBar extends Form {
                     },
                     '',
                     'select-wrapper',
-                    { className: 'form-control topic-select' }
+                    false
                   )}
                 </Col>
               )}

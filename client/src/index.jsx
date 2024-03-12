@@ -2,10 +2,9 @@ import React from 'react';
 import './index.scss';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import prefix from './prefix';
 import { createRoot } from 'react-dom/client';
 
-let pathPrefix = prefix() + '/ui';
+let pathPrefix = '/ui';
 
 const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ReactComponent as Logo } from '../../images/logo.svg';
+import logoUrl from '../../images/logo.svg';
 import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
@@ -187,6 +187,10 @@ class Login extends Form {
   render() {
     const { formEnabled, oidcAuths, oauthAuths } = this.state.config;
 
+    console.log(formEnabled);
+    console.log(oidcAuths);
+    console.log(oauthAuths);
+
     return (
       <div>
         <Card>
@@ -199,11 +203,15 @@ class Login extends Form {
           >
             <div>
               <h3 className="logo">
-                <Logo />
+                <svg width="100%" height="100%">
+                  <image width="100%" height="100%" xlinkHref={logoUrl}></image>
+                </svg>
               </h3>
             </div>
             {formEnabled && this._renderForm()}
-            {formEnabled && oidcAuths && this._renderSeparator()}
+            {formEnabled &&
+              (!!oidcAuths?.length || !!oauthAuths?.length) &&
+              this._renderSeparator()}
             {oidcAuths && this._renderOidc(oidcAuths)}
             {oauthAuths && this._renderOidc(oauthAuths)}
           </form>

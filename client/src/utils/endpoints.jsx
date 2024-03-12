@@ -1,12 +1,5 @@
-import prefix from './../prefix';
-
-const baseUrl =
-  process.env.REACT_APP_BASE_URL ||
-  `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-
-export const basePath = prefix();
-
-export const apiUrl = baseUrl + prefix() + '/api';
+export const basePath = '/ui';
+export const apiUrl = '/api';
 
 export const uriLogin = () => {
   return `${basePath}/login`;
@@ -17,11 +10,11 @@ export const uriAuths = () => {
 };
 
 export const uriOidc = provider => {
-  return `${baseUrl}${basePath}/oauth/login/${provider}`;
+  return `${basePath}/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {
-  return `${basePath}/logout`;
+  return `${apiUrl}/logout`;
 };
 
 export const uriCurrentUser = () => {

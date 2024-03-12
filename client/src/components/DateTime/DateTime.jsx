@@ -18,7 +18,7 @@ class DateTime extends Component {
             ? TimeAgoComp
             : isoDate
         }
-        interactive
+        interactive={'true'}
       >
         <span>
           {this.props.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO

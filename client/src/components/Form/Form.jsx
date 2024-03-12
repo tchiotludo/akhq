@@ -123,6 +123,7 @@ class Form extends Root {
         )}
         <div className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
+            setOptions={{ ...options, useWorker: false }}
             mode={inputMode}
             id={name}
             theme="merbivore_soft"
@@ -132,7 +133,6 @@ class Form extends Root {
             }}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
-            setOptions={options}
             style={{ width: '100%', minHeight: '25vh' }}
             {...rest}
           />

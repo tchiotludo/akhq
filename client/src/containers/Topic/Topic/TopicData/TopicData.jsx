@@ -10,8 +10,7 @@ import {
   uriTopicDataDownload,
   uriTopicDataSearch,
   uriTopicDataSingleRecord,
-  uriTopicsPartitions,
-  basePath
+  uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
@@ -21,7 +20,6 @@ import constants from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import 'ace-builds/src-noconflict/ext-searchbox';
@@ -416,7 +414,7 @@ class TopicData extends Root {
   _handleOnShare(row) {
     const { selectedCluster, selectedTopic } = this.state;
 
-    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
+    const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
 
     try {
       this._copyToClipboard(`${window.location.host}${pathToShare}`);
@@ -1122,6 +1120,7 @@ class TopicData extends Root {
 
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"

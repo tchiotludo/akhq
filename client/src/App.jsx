@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { basePath } from './utils/endpoints';
 import Routes from './utils/AkhqRoutes';
 import { ToastContainer } from 'react-toastify';
 //import { loadProgressBar } from 'axios-progress-bar';
@@ -15,7 +14,7 @@ class App extends React.Component {
   render() {
     return (
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Router basename={basePath}>
+        <Router>
           <Routes />
           <ToastContainer draggable={false} closeOnClick={false} />
         </Router>
