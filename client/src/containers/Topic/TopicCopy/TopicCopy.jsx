@@ -22,6 +22,7 @@ import DatePicker from '../../../components/DatePicker';
 import moment from 'moment';
 import Input from '../../../components/Form/Input';
 import { withRouter } from '../../../utils/withRouter';
+import { Col, Row } from 'react-bootstrap';
 
 class TopicCopy extends Form {
   state = {
@@ -185,16 +186,16 @@ class TopicCopy extends Form {
       const checkName = `check-${name}`;
 
       renderedInputs.push(
-        <div className="form-group row row-checkbox" key={name}>
-          {
+        <Row key={name}>
+          <Col xs="auto">
             <input
               type="checkbox"
               value={checkName}
               checked={checked[checkName] || false}
               onChange={this.checkedTopicOffset}
             />
-          }
-          <div className="col-sm-10 partition-input">
+          </Col>
+          <Col>
             <span id={`partition-${partition.id}-input`}>
               {this.renderInput(
                 name,
@@ -202,13 +203,13 @@ class TopicCopy extends Form {
                 'Offset',
                 'number',
                 undefined,
-                true,
-                'partition-input-div',
+                '',
+                '',
                 `partition-input ${name}-input`
               )}
             </span>
-          </div>
-        </div>
+          </Col>
+        </Row>
       );
     });
 

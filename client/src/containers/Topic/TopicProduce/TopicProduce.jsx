@@ -18,6 +18,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Tooltip } from '@mui/material';
 import { withRouter } from '../../../utils/withRouter';
 import { Col, Row } from 'react-bootstrap';
+import './styles.scss';
 
 class TopicProduce extends Form {
   state = {
@@ -355,60 +356,53 @@ class TopicProduce extends Form {
 
     return (
       <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
-        <ul
-          className="dropdown-menu inner show"
-          role="presentation"
-          style={{ marginTop: '0px', marginBottom: '0px' }}
-        >
-          {results
-            .filter(key => {
-              if (searchValue.length > 0) {
-                return key.includes(searchValue);
-              }
-              return results;
-            })
-            .map((key, index) => {
-              let selected = selectedValue === key ? 'selected' : '';
-              return (
-                <li key={index}>
-                  <Tooltip
-                    title={
-                      selectedValue === key && tag !== 'topicId'
-                        ? 'Click to unselect option'
-                        : 'Click to select option'
-                    }
-                  >
-                    <div
-                      onClick={() => {
-                        if (tag === 'key') {
-                          selectedValue === key
-                            ? this.setState({ selectedKeySchema: '' })
-                            : this.setState({ selectedKeySchema: key });
-                        } else if (tag === 'value') {
-                          selectedValue === key
-                            ? this.setState({ selectedValueSchema: '' })
-                            : this.setState({ selectedValueSchema: key });
-                        } else if (tag === 'topicId') {
-                          if (selectedValue !== key) {
-                            this.setState({ topicId: key });
-                            if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
-                              this.getPreferredSchemaForTopic();
-                            }
+        {results
+          .filter(key => {
+            if (searchValue.length > 0) {
+              return key.includes(searchValue);
+            }
+            return results;
+          })
+          .map((key, index) => {
+            let selected = selectedValue === key ? 'selected' : '';
+            return (
+              <Dropdown.Item key={index} active={selected}>
+                <Tooltip
+                  title={
+                    selectedValue === key && tag !== 'topicId'
+                      ? 'Click to unselect option'
+                      : 'Click to select option'
+                  }
+                >
+                  <div
+                    onClick={() => {
+                      if (tag === 'key') {
+                        selectedValue === key
+                          ? this.setState({ selectedKeySchema: '' })
+                          : this.setState({ selectedKeySchema: key });
+                      } else if (tag === 'value') {
+                        selectedValue === key
+                          ? this.setState({ selectedValueSchema: '' })
+                          : this.setState({ selectedValueSchema: key });
+                      } else if (tag === 'topicId') {
+                        if (selectedValue !== key) {
+                          this.setState({ topicId: key });
+                          if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
+                            this.getPreferredSchemaForTopic();
                           }
                         }
-                      }}
-                      role="option"
-                      className={`dropdown-item ${selected}`}
-                      id={`bs-select-${index}-0`}
-                      aria-selected="false"
-                    >
-                      <span className="text">{key}</span>
-                    </div>
-                  </Tooltip>
-                </li>
-              );
-            })}
-        </ul>{' '}
+                      }
+                    }}
+                    role="option"
+                    id={`bs-select-${index}-0`}
+                    aria-selected="false"
+                  >
+                    <span className="text">{key}</span>
+                  </div>
+                </Tooltip>
+              </Dropdown.Item>
+            );
+          })}
       </div>
     );
   };
