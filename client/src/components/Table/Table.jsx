@@ -566,7 +566,7 @@ Table.propTypes = {
       colName: PropTypes.string,
       type: PropTypes.string,
       readOnly: PropTypes.bool,
-      cell: PropTypes.function
+      cell: PropTypes.func
     })
   ),
   actions: PropTypes.array,

@@ -41,7 +41,7 @@ describe('Table', () => {
             onChange={e => {
               text = e.target.value;
             }}
-            data-testId={'test-name'}
+            data-testid={'test-name'}
             key={'test'}
             name={'name'}
             id={'name'}

@@ -1,16 +1,15 @@
-export const basePath = '/ui';
-export const apiUrl = '/api';
+const apiUrl = (import.meta.env.REACT_APP_BASE_URL || '') + '/api';
 
 export const uriLogin = () => {
-  return `${basePath}/login`;
+  return '/ui/login';
+};
+
+export const uriOidc = provider => {
+  return `/ui/oauth/login/${provider}`;
 };
 
 export const uriAuths = () => {
   return `${apiUrl}/auths`;
-};
-
-export const uriOidc = provider => {
-  return `${basePath}/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {

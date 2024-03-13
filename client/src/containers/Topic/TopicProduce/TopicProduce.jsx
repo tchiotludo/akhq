@@ -220,7 +220,6 @@ class TopicProduce extends Form {
                 )
               });
             },
-            false,
             { disabled: tombstone }
           )}
         </Col>
@@ -261,7 +260,6 @@ class TopicProduce extends Form {
             () => {
               this.setState({ tombstone: !tombstone });
             },
-            false,
             { disabled: multiMessage }
           )}
         </Col>
@@ -294,7 +292,7 @@ class TopicProduce extends Form {
       }
     });
     return (
-      <div data-testId="headers" className="form-group">
+      <div data-testid="headers" className="form-group">
         {headers.map(head => head)}
       </div>
     );
@@ -307,17 +305,15 @@ class TopicProduce extends Form {
           <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
         </Col>
 
+        <Col>{this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', 'input-class')}</Col>
         <Col>
-          {this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', '', 'input-class')}
-        </Col>
-        <Col>
-          {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', '', 'input-class')}
+          {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', 'input-class')}
         </Col>
         <Col xs="auto">
           <button
             type="button"
             className="btn btn-secondary"
-            data-testId={`button_${position}`}
+            data-testid={`button_${position}`}
             onClick={() => {
               position === 0 ? this.handlePlus() : this.handleRemove(position);
             }}
@@ -532,7 +528,7 @@ class TopicProduce extends Form {
               >
                 <input
                   className="form-control"
-                  value={
+                  defaultValue={
                     datetime !== '' &&
                     ' ' +
                       formatDateTime(

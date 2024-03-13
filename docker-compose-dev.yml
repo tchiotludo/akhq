@@ -32,8 +32,8 @@ services:
       - schema-registry
 
   ui:
-    image: node:12
-    command: 'sh -c "npm install && npm start"'
+    image: node:lts
+    command: 'sh -c "npm run build && npm run preview"'
     working_dir: /app/client
     tty: true
     volumes:

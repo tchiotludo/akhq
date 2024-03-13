@@ -27,9 +27,9 @@ describe('TopicProduce', () => {
     const element = <TopicProduce />;
 
     const { container, rerender } = render(element);
-    const headers = container.querySelector('[data-testId="headers"]');
+    const headers = container.querySelector('[data-testid="headers"]');
 
-    const button = container.querySelector('[data-testId="button_0"]');
+    const button = container.querySelector('[data-testid="button_0"]');
     button.click();
 
     rerender(element);
@@ -41,16 +41,16 @@ describe('TopicProduce', () => {
     const element = <TopicProduce />;
 
     const { container, rerender } = render(element);
-    const headers = container.querySelector('[data-testId="headers"]');
+    const headers = container.querySelector('[data-testid="headers"]');
 
-    const button = container.querySelector('[data-testId="button_0"]');
+    const button = container.querySelector('[data-testid="button_0"]');
     button.click();
 
     rerender(element);
 
     expect(headers.children.length).toBe(2);
 
-    const button2 = container.querySelector('[data-testId="button_1"]');
+    const button2 = container.querySelector('[data-testid="button_1"]');
     button2.click();
 
     rerender(element);

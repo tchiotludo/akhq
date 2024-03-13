@@ -220,7 +220,7 @@ class Form extends Root {
                   name="searchValue"
                   className="form-control"
                   placeholder={name}
-                  value={selectedKeySchema}
+                  defaultValue={selectedKeySchema}
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu>
@@ -249,7 +249,7 @@ class Form extends Root {
     );
   };
 
-  renderCheckbox = (name, isChecked, onChange, isDefaultChecked, rest) => {
+  renderCheckbox = (name, isChecked, onChange, rest) => {
     return (
       <input
         type="checkbox"
@@ -258,7 +258,6 @@ class Form extends Root {
         className="form-input-check"
         checked={isChecked}
         onChange={onChange}
-        defaultChecked={isDefaultChecked ? isDefaultChecked : false}
         {...rest}
       />
     );

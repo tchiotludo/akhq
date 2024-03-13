@@ -19,6 +19,10 @@ export default defineConfig(() => {
         }
       }
     },
+    preview: {
+      port: 3000,
+      open: false
+    },
     plugins: [react()],
     test: {
       environment: 'jsdom'
