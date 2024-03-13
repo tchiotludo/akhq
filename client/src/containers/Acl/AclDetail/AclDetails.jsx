@@ -26,9 +26,12 @@ class AclDetails extends Root {
         selectedTab: tabSelected ? tabSelected : 'topics'
       },
       () => {
-        this.props.router.navigate({
-          pathname: `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
+          },
+          { replace: true }
+        );
       }
     );
   }

@@ -71,10 +71,13 @@ class KsqlDBQueries extends Root {
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        this.props.router.navigate({
-          pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/queries`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/queries`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: true }
+        );
       });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
@@ -113,7 +116,7 @@ class KsqlDBQueries extends Root {
     const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     return (
       <div>
-        <nav className="navbar navbar-expand-l me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-l me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={searchData.search}

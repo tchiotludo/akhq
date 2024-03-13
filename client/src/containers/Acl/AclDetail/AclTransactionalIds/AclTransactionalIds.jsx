@@ -45,7 +45,7 @@ class AclTransactionalIds extends Root {
   handlePermission = permission => {
     return (
       <React.Fragment>
-        <span className="badge bg-light-subtle">{permission.permissionType}</span>{' '}
+        <span className="badge bg-primary-subtle">{permission.permissionType}</span>{' '}
         {permission.operation}
       </React.Fragment>
     );

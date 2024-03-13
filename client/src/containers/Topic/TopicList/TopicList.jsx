@@ -57,10 +57,13 @@ class TopicList extends Root {
   componentDidMount() {
     this._initializeVars(() => {
       this.getTopics();
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: this.props.location.search
+        },
+        { replace: true }
+      );
     });
   }
 
@@ -153,10 +156,13 @@ class TopicList extends Root {
       const { topicListView } = this.state.searchData;
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
+        },
+        { replace: true }
+      );
     });
   };
 
@@ -166,10 +172,13 @@ class TopicList extends Root {
     this.setState({ pageNumber: pageNumber }, () => {
       const { search, topicListView } = this.state.searchData;
       this.getTopics();
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
+        },
+        { replace: true }
+      );
     });
   };
 
@@ -178,10 +187,13 @@ class TopicList extends Root {
     this.setState({ currentPageSize: value, pageNumber: pageNumber }, () => {
       const { search, topicListView } = this.state.searchData;
       this.getTopics();
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
+        },
+        { replace: true }
+      );
     });
   };
 
@@ -480,7 +492,7 @@ class TopicList extends Root {
     return (
       <div>
         <Header title="Topics" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={searchData.search}

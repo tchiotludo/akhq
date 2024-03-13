@@ -64,7 +64,7 @@ class TopicCreate extends Form {
 
     this.postApi(uriTopicsCreate(clusterId), topic).then(() => {
       toast.success(`Topic '${formData.name}' created`);
-      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic` });
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic` }, { replace: true });
     });
   }
   render() {

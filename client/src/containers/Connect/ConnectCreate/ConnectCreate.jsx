@@ -405,10 +405,13 @@ class ConnectCreate extends Root {
 
     body.configs = configs;
 
-    this.postApi(uriCreateConnect(clusterId, connectId), body).then(() => {
-      toast.success(`Connection '${formData.subject}' was created successfully`);
-      this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
-    });
+    this.postApi(uriCreateConnect(clusterId, connectId), body).then(
+      () => {
+        toast.success(`Connection '${formData.subject}' was created successfully`);
+        this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
+      },
+      { replace: true }
+    );
   }
 
   render() {

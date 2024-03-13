@@ -81,10 +81,13 @@ class ConnectList extends Root {
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        this.props.router.navigate({
-          pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: true }
+        );
       });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
@@ -209,7 +212,7 @@ class ConnectList extends Root {
     return (
       <div>
         <Header title={`Connect: ${connectId}`} />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={searchData.search}

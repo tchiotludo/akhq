@@ -68,10 +68,13 @@ class ConsumerGroupList extends Root {
     if (response.results) {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
-        this.props.router.navigate({
-          pathname: `/ui/${this.state.selectedCluster}/group`,
-          search: `search=${this.state.search}&page=${pageNumber}`
-        })
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.selectedCluster}/group`,
+            search: `search=${this.state.search}&page=${pageNumber}`
+          },
+          { replace: true }
+        )
       );
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 1, loading: false });
@@ -173,7 +176,7 @@ class ConsumerGroupList extends Root {
     return (
       <div>
         <Header title="Consumer Groups" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={search}

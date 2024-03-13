@@ -90,10 +90,13 @@ class SchemaList extends Root {
     if (data.results) {
       this.handleSchemaRegistry(data.results);
       this.setState({ selectedCluster, totalPageNumber: data.page }, () => {
-        this.props.router.navigate({
-          pathname: `/ui/${this.state.selectedCluster}/schema`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.selectedCluster}/schema`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: true }
+        );
       });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
@@ -166,7 +169,7 @@ class SchemaList extends Root {
     return (
       <div>
         <Header title="Schema Registry" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={searchData.search}

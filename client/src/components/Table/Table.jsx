@@ -50,7 +50,7 @@ class Table extends Component {
     return (
       <>
         {has2Headers && (
-          <thead id="firstHeader" className="thead-dark">
+          <thead id="firstHeader">
             <tr key="firstHeader">
               {firstHeader.map((column, index) => {
                 return (
@@ -70,7 +70,7 @@ class Table extends Component {
             </tr>
           </thead>
         )}
-        <thead id="secondHeader" className="thead-dark">
+        <thead id="secondHeader">
           <tr key="secondHeader">
             {columns.map((column, index) => {
               if (!column.extraRow) {
@@ -138,10 +138,13 @@ class Table extends Component {
     if (onDetails) {
       let url = onDetails(idCol ? row[this.props.idCol] : row.id, row);
       if (url) {
-        router.navigate({
-          pathname: url,
-          internal: row.internal
-        });
+        router.navigate(
+          {
+            pathname: url,
+            internal: row.internal
+          },
+          { replace: true }
+        );
       }
     }
   }
@@ -530,7 +533,7 @@ class Table extends Component {
 
     return (
       <div className="table-responsive">
-        <BootstrapTable bordered hover>
+        <BootstrapTable bordered hover striped>
           {this.renderHeader()}
           <tbody>
             {loading

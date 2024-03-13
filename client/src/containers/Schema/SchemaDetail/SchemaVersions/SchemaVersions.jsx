@@ -85,7 +85,10 @@ class SchemaVersions extends Root {
       .then(() => {
         toast.success(`Version'${schemaToDelete.version}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        this.props.router.navigate({ pathname: `/ui/${selectedCluster}/schema` });
+        this.props.router.navigate(
+          { pathname: `/ui/${selectedCluster}/schema` },
+          { replace: true }
+        );
       })
       .catch(() => {
         this.setState({ showDeleteModal: false, schemaToDelete: {} });

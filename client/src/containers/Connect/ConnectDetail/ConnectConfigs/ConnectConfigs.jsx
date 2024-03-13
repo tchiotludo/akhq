@@ -279,7 +279,10 @@ class ConnectConfigs extends Form {
     await this.postApi(uriUpdateDefinition(clusterId, connectId, definitionId), body);
 
     toast.success(`Definition '${formData.name}' is updated`);
-    this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
+    this.props.router.navigate(
+      { pathname: `/ui/${clusterId}/connect/${connectId}` },
+      { replace: true }
+    );
   }
 
   render() {

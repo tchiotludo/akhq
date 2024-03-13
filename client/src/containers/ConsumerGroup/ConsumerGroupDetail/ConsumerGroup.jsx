@@ -28,9 +28,12 @@ class ConsumerGroup extends Root {
         selectedTab: tabSelected ? tabSelected : 'topics'
       },
       () => {
-        this.props.router.navigate({
-          pathname: `/ui/${clusterId}/group/${consumerGroupId}/${this.state.selectedTab}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${clusterId}/group/${consumerGroupId}/${this.state.selectedTab}`
+          },
+          { replace: true }
+        );
       }
     );
   }

@@ -57,10 +57,13 @@ class Acls extends Root {
     const { searchData } = data;
     this.setState({ searchData, loading: true }, () => {
       this.getAcls();
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/acls`,
-        search: `search=${searchData.search}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/acls`,
+          search: `search=${searchData.search}`
+        },
+        { replace: true }
+      );
     });
   };
 
@@ -71,7 +74,7 @@ class Acls extends Root {
     return (
       <div>
         <Header title="Acls" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <SearchBar
             showSearch={true}
             search={searchData.search}

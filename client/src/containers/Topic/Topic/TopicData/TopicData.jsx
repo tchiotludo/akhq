@@ -470,7 +470,7 @@ class TopicData extends Root {
     setProduceToTopicValues(data);
 
     const { clusterId, topicId } = this.props.params;
-    this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`);
+    this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`, { replace: true });
   }
 
   _showDeleteModal = deleteMessage => {
@@ -598,10 +598,13 @@ class TopicData extends Root {
   _setUrlHistory(filters) {
     const { selectedCluster, selectedTopic } = this.state;
 
-    this.props.router.navigate({
-      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
-      search: filters
-    });
+    this.props.router.navigate(
+      {
+        pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+        search: filters
+      },
+      { replace: true }
+    );
   }
 
   _redirectToSchema(id) {
@@ -609,10 +612,13 @@ class TopicData extends Root {
 
     this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
-        this.props.router.navigate({
-          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
-          schemaId: response.data.subject
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+            schemaId: response.data.subject
+          },
+          { replace: true }
+        );
       } else {
         toast.warn(`Unable to find the registry schema with id  ${id} !`);
       }
@@ -743,7 +749,7 @@ class TopicData extends Root {
     const { isSearching } = this.state;
 
     return (
-      <div style={{ minWidth: '400px' }} className="input-group">
+      <div style={{ minWidth: '400px' }} className="p-2 input-group">
         {this._renderSearchFilter('key', 'Key')}
         {this._renderSearchFilter('value', 'Value')}
         {this._renderSearchFilter('headerKey', 'Header Key')}
@@ -835,7 +841,7 @@ class TopicData extends Root {
     ];
     return (
       <React.Fragment>
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
           <button
             className="navbar-toggler"
             type="button"
@@ -963,7 +969,7 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">Offsets:</Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                      <div style={{ minWidth: '300px' }} className="ps-2 khq-offset-navbar">
                         <div className="input-group">
                           <table>{this._renderOffsetsOptions()}</table>
                           <div className="input-group-append">

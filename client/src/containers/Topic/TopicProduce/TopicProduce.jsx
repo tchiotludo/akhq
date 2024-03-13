@@ -192,7 +192,10 @@ class TopicProduce extends Form {
 
     this.postApi(uriTopicsProduce(clusterId, topicId), topic).then(() => {
       toast.success(`Produced to ${topicId}.`);
-      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic/${topicId}` });
+      this.props.router.navigate(
+        { pathname: `/ui/${clusterId}/topic/${topicId}` },
+        { replace: true }
+      );
     });
   }
 
@@ -355,7 +358,7 @@ class TopicProduce extends Form {
     const { roles } = this.state;
 
     return (
-      <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
+      <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', minHeight: '89px' }}>
         {results
           .filter(key => {
             if (searchValue.length > 0) {

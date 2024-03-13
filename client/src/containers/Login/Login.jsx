@@ -79,9 +79,12 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        this.props.router.navigate({
-          pathname: returnTo || '/ui'
-        });
+        this.props.router.navigate(
+          {
+            pathname: returnTo || '/ui'
+          },
+          { replace: true }
+        );
       } else {
         toast.error('User logged in but no roles assigned');
       }
@@ -96,9 +99,12 @@ class Login extends Form {
       const { ...config } = auths;
       this.setState({ config });
     } else {
-      this.props.router.navigate({
-        pathname: '/ui'
-      });
+      this.props.router.navigate(
+        {
+          pathname: '/ui'
+        },
+        { replace: true }
+      );
     }
 
     if (localStorage.getItem('toastMessage')) {

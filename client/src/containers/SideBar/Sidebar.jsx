@@ -191,10 +191,13 @@ class Sidebar extends Component {
       },
       () => {
         const { selectedCluster } = this.state;
-        this.props.router.navigate({
-          pathname: `/ui/${selectedCluster}/topic`,
-          selectedCluster
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${selectedCluster}/topic`,
+            selectedCluster
+          },
+          { replace: true }
+        );
 
         this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       }
@@ -204,20 +207,26 @@ class Sidebar extends Component {
   changeSelectedConnect(connect) {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
-      this.props.router.navigate({
-        pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
-        selectedCluster
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
+          selectedCluster
+        },
+        { replace: true }
+      );
     });
   }
 
   changeSelectedKsqlDB(ksqlDB) {
     this.setState({ selectedKsqlDB: ksqlDB, showKsqlDBs: false }, () => {
       const { selectedKsqlDB, selectedCluster } = this.state;
-      this.props.router.navigate({
-        pathname: `/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`,
-        selectedCluster
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`,
+          selectedCluster
+        },
+        { replace: true }
+      );
     });
   }
 
@@ -231,7 +240,7 @@ class Sidebar extends Component {
         onClick={() => {
           this.setState({ selectedTab: tab });
           /* eslint-disable react/prop-types */
-          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`);
+          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: true });
           return false;
         }}
       >

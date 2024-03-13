@@ -72,10 +72,13 @@ class ConsumerGroupMembers extends Root {
         <div
           key={i}
           onClick={() => {
-            this.props.router.navigate({
-              pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,
-              tab: constants.TOPIC
-            });
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,
+                tab: constants.TOPIC
+              },
+              { replace: true }
+            );
           }}
         >
           <Link

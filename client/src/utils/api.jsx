@@ -24,7 +24,7 @@ const handleError = err => {
   if (err.response && err.response.status < 500) {
     if (err.response.status === 401 || err.response.status === 403) {
       localStorage.setItem('toastMessage', error.message);
-      this.props.router.navigate({ pathname: '/ui/login' });
+      this.props.router.navigate({ pathname: '/ui/login' }, { replace: true });
     } else {
       toast.warn(error.message);
     }

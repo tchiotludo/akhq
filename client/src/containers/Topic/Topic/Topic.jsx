@@ -68,7 +68,7 @@ class Topic extends Root {
         if (searchParams) {
           uri = uri + searchParams;
         }
-        this.props.router.navigate(uri);
+        this.props.router.navigate(uri, { replace: true });
       }
     );
   }
