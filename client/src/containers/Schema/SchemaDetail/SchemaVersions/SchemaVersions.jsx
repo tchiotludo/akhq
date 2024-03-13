@@ -114,7 +114,7 @@ class SchemaVersions extends Root {
               type: 'text',
               sortable: true,
               cell: (obj, col) => {
-                return <span className="badge badge-primary">{obj[col.accessor] || ''}</span>;
+                return <span className="badge bg-primary">{obj[col.accessor] || ''}</span>;
               }
             },
             {

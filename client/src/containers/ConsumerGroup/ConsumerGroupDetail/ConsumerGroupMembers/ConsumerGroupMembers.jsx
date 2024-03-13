@@ -43,7 +43,7 @@ class ConsumerGroupMembers extends Root {
   handlePartitions(partitions) {
     return partitions.map(partition => {
       return (
-        <div key={partition} className="badge badge-secondary partition">
+        <div key={partition} className="badge bg-light-subtle partition">
           {partition}
         </div>
       );

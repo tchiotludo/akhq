@@ -124,7 +124,7 @@ class SchemaList extends Root {
   }
 
   handleVersion(version) {
-    return <span className="badge badge-primary"> {version}</span>;
+    return <span className="badge bg-primary"> {version}</span>;
   }
 
   handleOnDelete(schema) {
@@ -166,7 +166,7 @@ class SchemaList extends Root {
     return (
       <div>
         <Header title="Schema Registry" />
-        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}

@@ -67,7 +67,7 @@ class TopicAcls extends Root {
               cell: (obj, col) => {
                 return (
                   <React.Fragment>
-                    <span className="badge badge-secondary">
+                    <span className="badge bg-light-subtle">
                       {obj[col.accessor].permissionType}
                     </span>{' '}
                     {obj[col.accessor].operation}

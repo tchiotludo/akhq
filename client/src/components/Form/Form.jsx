@@ -228,7 +228,7 @@ class Form extends Root {
                   <input
                     type="text"
                     name="searchValue"
-                    className="form-control col-sm-9 mr-2"
+                    className="form-control col-sm-9 me-2"
                     autoComplete="off"
                     role="combobox"
                     aria-expanded="false"

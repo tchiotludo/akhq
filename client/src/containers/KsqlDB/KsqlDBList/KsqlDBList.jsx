@@ -107,7 +107,7 @@ class KsqlDBList extends Component {
             <li className="aside-button">
               <Link
                 to={`/ui/${clusterId}/ksqldb/${ksqlDBId}/query`}
-                className="btn btn-primary mr-2"
+                className="btn btn-primary me-2"
               >
                 Execute queries
               </Link>
@@ -115,7 +115,7 @@ class KsqlDBList extends Component {
             <li className="aside-button">
               <Link
                 to={`/ui/${clusterId}/ksqldb/${ksqlDBId}/statement`}
-                className="btn btn-primary mr-2"
+                className="btn btn-primary me-2"
               >
                 Execute statements
               </Link>

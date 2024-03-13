@@ -191,7 +191,7 @@ class ConnectList extends Root {
         <React.Fragment>
           <span className={`btn btn-sm mb-1 ${className}`}>
             {`${task.workerId} (${task.id}) `}
-            <span className="badge badge-light">{task.state}</span>
+            <span className="badge bg-light-subtle">{task.state}</span>
           </span>
           <br />
         </React.Fragment>
@@ -209,7 +209,7 @@ class ConnectList extends Root {
     return (
       <div>
         <Header title={`Connect: ${connectId}`} />
-        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}

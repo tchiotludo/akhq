@@ -302,7 +302,7 @@ class Topic extends Root {
           <footer>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
-                <div className="btn mr-2">
+                <div className="btn me-2">
                   <Dropdown>
                     <Dropdown.Toggle>
                       <strong>Download Format:</strong> ({this.state.downloadFormat})
@@ -320,14 +320,14 @@ class Topic extends Root {
                     onClick={() => {
                       this.handleOnEmpty();
                     }}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
                     <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
                   </div>
                 ) : (
                   <div
                     title="Only enabled for topics with Delete Cleanup Policy"
-                    className="btn disabled-black-button mr-2"
+                    className="btn disabled-black-button me-2"
                   >
                     <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
                   </div>
@@ -341,7 +341,7 @@ class Topic extends Root {
                   to={{
                     pathname: `/ui/${clusterId}/topic/${topicId}/copy`
                   }}
-                  className="btn btn-secondary mr-2"
+                  className="btn btn-secondary me-2"
                 >
                   <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
                 </Link>
@@ -353,7 +353,7 @@ class Topic extends Root {
                     pathname: `/ui/${clusterId}/tail`,
                     search: `?topicId=${topicId}`
                   }}
-                  className="btn btn-secondary mr-2"
+                  className="btn btn-secondary me-2"
                 >
                   <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
                 </Link>
@@ -364,7 +364,7 @@ class Topic extends Root {
                 roles.TOPIC_DATA.includes('CREATE') && (
                   <Link
                     to={`/ui/${clusterId}/topic/${topicId}/increasepartition`}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
                     <i className="fa fa-plus" aria-hidden={true} /> Increase Partition
                   </Link>

@@ -45,7 +45,7 @@ class AclClusters extends Root {
   handlePermission = permission => {
     return (
       <React.Fragment>
-        <span className="badge badge-secondary">{permission.permissionType}</span>{' '}
+        <span className="badge bg-light-subtle">{permission.permissionType}</span>{' '}
         {permission.operation}
       </React.Fragment>
     );

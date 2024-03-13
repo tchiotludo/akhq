@@ -130,12 +130,23 @@ class SearchBar extends Form {
         </button>
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
           <BootstrapForm
-            className="form-inline mr-auto khq-form-get"
+            className="form-inline me-auto khq-form-get"
             onSubmit={e => this.handleSubmit(e)}
           >
             <Row className="align-items-center">
-              {showSearch &&
-                this.renderInput('search', '', 'Search', 'text', false, '', 'topic-search-wrapper')}
+              {showSearch && (
+                <Col>
+                  {this.renderInput(
+                    'search',
+                    '',
+                    'Search',
+                    'text',
+                    true,
+                    '',
+                    'topic-search-wrapper'
+                  )}
+                </Col>
+              )}
               {showTopicListView && (
                 <Col>
                   {this.renderSelect(

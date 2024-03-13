@@ -69,11 +69,11 @@ class TopicGroups extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
-          className="btn btn-secondary btn-sm mb-1 mr-1"
+          className="me-1 btn btn-secondary btn-sm mb-1"
           onClick={noPropagation}
         >
           {topic}
-          <div className="badge badge-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
+          <div className="badge bg-light-subtle">Lag: {Number(topics[topic]).toLocaleString()}</div>
         </Link>
       );
     });

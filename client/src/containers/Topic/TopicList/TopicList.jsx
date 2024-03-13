@@ -279,7 +279,7 @@ class TopicList extends Root {
   handleConsumerGroups = (consumerGroups, topicId) => {
     if (consumerGroups && consumerGroups.length > 0) {
       return consumerGroups.map(consumerGroup => {
-        let className = 'btn btn-sm mb-1 mr-1 btn-';
+        let className = 'btn btn-sm mb-1 me-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
 
         const activeTopic =
@@ -297,7 +297,7 @@ class TopicList extends Root {
             onClick={noPropagation}
           >
             {consumerGroup.id}{' '}
-            <div className="badge badge-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
+            <div className="badge bg-light-subtle"> Lag: {Number(offsetLag).toLocaleString()}</div>
           </Link>
         );
       });
@@ -438,7 +438,7 @@ class TopicList extends Root {
                         <i className="fa fa-fw fa-chevron-down" />
                       )}
                     </span>
-                    <span className="badge badge-secondary">{consumerGroups.length}</span>
+                    <span className="badge bg-light-subtle">{consumerGroups.length}</span>
                     <Collapse in={collapseConsumerGroups[obj.id]}>
                       <div>
                         {consumerGroups.splice(1, consumerGroups.length).map(group => {
@@ -480,7 +480,7 @@ class TopicList extends Root {
     return (
       <div>
         <Header title="Topics" />
-        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}

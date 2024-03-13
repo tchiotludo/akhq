@@ -1,5 +1,6 @@
 import lowerCase from 'lodash/lowerCase';
 import moment from 'moment';
+import convert from 'convert-units';
 
 export function calculateTopicOffsetLag(topicOffsets, topicId) {
   let offsetLag = 0;
@@ -54,7 +55,6 @@ export function formatDateTime(value, format, utc = true) {
 
 export function handleConvert(value, unit, exclude) {
   exclude = exclude || '';
-  const convert = require('convert-units');
   return convert(value).from(unit).toBest(exclude);
 }
 

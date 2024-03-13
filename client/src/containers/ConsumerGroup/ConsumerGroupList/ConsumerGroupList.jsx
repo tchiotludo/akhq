@@ -98,13 +98,13 @@ class ConsumerGroupList extends Root {
 
     switch (state) {
       case 'STABLE':
-        className = 'badge badge-success';
+        className = 'badge bg-success';
         break;
       case 'PREPARING_REBALANCE':
-        className = 'badge badge-primary';
+        className = 'badge bg-primary';
         break;
       default:
-        className = 'badge badge-warning';
+        className = 'badge bg-warning';
         break;
     }
 
@@ -112,7 +112,7 @@ class ConsumerGroupList extends Root {
   }
 
   handleCoordinator(coordinator) {
-    return <span className="badge badge-primary"> {coordinator}</span>;
+    return <span className="badge bg-primary"> {coordinator}</span>;
   }
 
   handleTopics(group, groupedTopicOffset) {
@@ -125,12 +125,12 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-secondary btn-sm mb-1 mr-1"
+          className="btn btn-secondary btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
           {topicId + ' '}
 
-          <div className="badge badge-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
+          <div className="badge bg-light-subtle">Lag: {Number(offsetLag).toLocaleString()}</div>
         </Link>
       );
     });
@@ -173,7 +173,7 @@ class ConsumerGroupList extends Root {
     return (
       <div>
         <Header title="Consumer Groups" />
-        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={search}

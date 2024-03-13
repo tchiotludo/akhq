@@ -261,7 +261,7 @@ class ConnectTasks extends Root {
               <li className="aside-button">
                 <div
                   //href="#"
-                  className="btn btn-primary mr-2"
+                  className="btn btn-primary me-2"
                   onClick={() => this.handleAction(this.definitionState.RESUME)}
                 >
                   <i className="fa fa-play" aria-hidden="true" /> Resume Definition
@@ -273,7 +273,7 @@ class ConnectTasks extends Root {
                   <div
                     //href="#"
                     type="pause"
-                    className="btn btn-primary mr-2"
+                    className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.PAUSE)}
                   >
                     <i className="fa fa-pause" aria-hidden="true" /> Pause Definition
@@ -283,7 +283,7 @@ class ConnectTasks extends Root {
                 <li className="aside-button">
                   <div
                     //href="#"
-                    className="btn btn-primary mr-2"
+                    className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.RESTART)}
                   >
                     <i className="fa fa-refresh" aria-hidden="true" /> Restart Definition

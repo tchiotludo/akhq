@@ -40,7 +40,7 @@ class TopicPartitions extends Root {
   }
 
   handleLeader(leader) {
-    return <span className="badge badge-primary"> {leader}</span>;
+    return <span className="badge bg-primary"> {leader}</span>;
   }
 
   handleReplicas(replicas) {
@@ -48,7 +48,7 @@ class TopicPartitions extends Root {
       return (
         <span
           key={replica.id}
-          className={replica.inSyncReplicas ? 'badge badge-success' : 'badge badge-danger'}
+          className={'me-1 ' + (replica.inSyncReplicas ? 'badge bg-success' : 'badge bg-danger')}
         >
           {' '}
           {replica.id}

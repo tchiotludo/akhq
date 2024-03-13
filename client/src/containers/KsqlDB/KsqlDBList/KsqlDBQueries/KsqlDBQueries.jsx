@@ -113,7 +113,7 @@ class KsqlDBQueries extends Root {
     const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
     return (
       <div>
-        <nav className="navbar navbar-expand-l mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-l me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}

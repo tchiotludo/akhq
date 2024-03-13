@@ -835,7 +835,7 @@ class TopicData extends Root {
     ];
     return (
       <React.Fragment>
-        <nav className="navbar navbar-expand-lg mr-auto khq-data-filter khq-sticky khq-nav">
+        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav">
           <button
             className="navbar-toggler"
             type="button"
@@ -852,7 +852,7 @@ class TopicData extends Root {
           </button>
 
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
-            <ul className="navbar-nav mr-auto">
+            <ul className="navbar-nav me-auto">
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">

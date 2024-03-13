@@ -181,9 +181,12 @@ class NodeConfigs extends Form {
     const type = configType === 'DEFAULT_CONFIG' ? 'secondary' : 'warning';
     return (
       <div>
-        <span className={'badge badge-' + type}> {configType}</span>
+        <span className={'badge bg-' + type}> {configType}</span>
         {configSensitive ? (
-          <i className="sensitive fa fa-exclamation-triangle text-danger" aria-hidden="true"></i>
+          <i
+            className="p-1 sensitive fa fa-exclamation-triangle text-danger"
+            aria-hidden="true"
+          ></i>
         ) : (
           ''
         )}

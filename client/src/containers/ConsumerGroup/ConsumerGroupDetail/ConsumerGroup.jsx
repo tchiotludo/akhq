@@ -114,7 +114,7 @@ class ConsumerGroup extends Root {
                 {roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
                   <Link
                     to={`/ui/${clusterId}/group/${consumerGroupId}/offsetsdelete`}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
                     Delete Offsets
                   </Link>
