@@ -69,7 +69,7 @@ class TopicGroups extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
-          className="btn btn-dark btn-sm mb-1 mr-1"
+          className="btn btn-secondary btn-sm mb-1 mr-1"
           onClick={noPropagation}
         >
           {topic}

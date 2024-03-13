@@ -134,19 +134,8 @@ class SearchBar extends Form {
             onSubmit={e => this.handleSubmit(e)}
           >
             <Row className="align-items-center">
-              {showSearch && (
-                <Col>
-                  {this.renderInput(
-                    'search',
-                    '',
-                    'Search',
-                    'text',
-                    false,
-                    '',
-                    'topic-search-wrapper'
-                  )}
-                </Col>
-              )}
+              {showSearch &&
+                this.renderInput('search', '', 'Search', 'text', false, '', 'topic-search-wrapper')}
               {showTopicListView && (
                 <Col>
                   {this.renderSelect(

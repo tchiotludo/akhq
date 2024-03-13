@@ -125,7 +125,7 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-dark btn-sm mb-1 mr-1"
+          className="btn btn-secondary btn-sm mb-1 mr-1"
           onClick={noPropagation}
         >
           {topicId + ' '}
