@@ -470,7 +470,7 @@ class TopicData extends Root {
     setProduceToTopicValues(data);
 
     const { clusterId, topicId } = this.props.params;
-    this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`, { replace: true });
+    this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`);
   }
 
   _showDeleteModal = deleteMessage => {
@@ -1282,7 +1282,8 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: '#171819',
+                        padding: '0.25rem'
                       }}
                     >
                       {header.key}
@@ -1293,7 +1294,8 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: '#171819',
+                        padding: '0.25rem'
                       }}
                     >
                       {header.value}

@@ -521,7 +521,8 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: '#171819',
+                        padding: '0.25rem'
                       }}
                     >
                       {header.key}
@@ -532,7 +533,8 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: '#171819',
+                        padding: '0.25rem'
                       }}
                     >
                       {header.value}

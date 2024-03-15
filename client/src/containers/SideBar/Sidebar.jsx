@@ -296,7 +296,13 @@ class Sidebar extends Component {
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black', height: height, position: 'fixed' }}
+        style={{
+          background: 'black',
+          height: height,
+          position: 'fixed',
+          overflowX: 'hidden',
+          overflowY: 'auto'
+        }}
       >
         <SideNav.Toggle />
         <div className="logo-wrapper">

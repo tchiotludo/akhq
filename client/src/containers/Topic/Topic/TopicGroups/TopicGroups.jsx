@@ -72,7 +72,7 @@ class TopicGroups extends Root {
           className="me-1 btn btn-secondary btn-sm mb-1"
           onClick={noPropagation}
         >
-          {topic}
+          {topic}{' '}
           <div className="badge bg-light-subtle">Lag: {Number(topics[topic]).toLocaleString()}</div>
         </Link>
       );

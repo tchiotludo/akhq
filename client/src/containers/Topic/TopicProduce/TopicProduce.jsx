@@ -134,15 +134,30 @@ class TopicProduce extends Form {
   async initByTopicEvent(copyValues) {
     const { headers, ...topicValuesDefault } = copyValues;
 
-    this.setState({
-      formData: {
-        ...this.state.formData,
-        ...topicValuesDefault
-      },
-      nHeaders: headers.length === 0 ? 1 : 0
-    });
+    let nHeaders = headers.length === 0 ? 1 : 0;
 
-    headers.forEach(({ key, value }) => this.handlePlus(key, value));
+    let newFormData = {
+      ...this.state.formData,
+      ...topicValuesDefault
+    };
+
+    for (const { key, value } of headers) {
+      newFormData[`hKey${nHeaders}`] = key;
+      newFormData[`hValue${nHeaders}`] = value;
+
+      this.schema = {
+        ...this.schema,
+        [`hKey${nHeaders}`]: Joi.string().min(1).label(`hKey${nHeaders}`),
+        [`hValue${nHeaders}`]: Joi.string().min(1).label(`hValue${nHeaders}`)
+      };
+
+      nHeaders++;
+    }
+
+    this.setState({
+      formData: newFormData,
+      nHeaders: nHeaders
+    });
   }
 
   doSubmit() {
