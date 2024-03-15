@@ -19,6 +19,7 @@ import { Tooltip } from '@mui/material';
 import { withRouter } from '../../../utils/withRouter';
 import { Col, Row } from 'react-bootstrap';
 import './styles.scss';
+import { format } from 'date-fns';
 
 class TopicProduce extends Form {
   state = {
@@ -524,7 +525,7 @@ class TopicProduce extends Form {
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
               className="col-sm-2 col-form-label"
             >
-              Timestamp UTC
+              Timestamp {format(new Date(), 'z')}
             </label>
             <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
               <Dropdown.Toggle

@@ -68,7 +68,7 @@ class ConnectList extends Root {
     }
   }
 
-  async getConnectDefinitions() {
+  async getConnectDefinitions(replaceInNavigation = true) {
     const { clusterId, connectId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -86,7 +86,7 @@ class ConnectList extends Root {
             pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
             search: `search=${this.state.searchData.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         );
       });
     } else {
@@ -166,10 +166,10 @@ class ConnectList extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getConnectDefinitions();
+      this.getConnectDefinitions(replaceInNavigation);
     });
   };
 
@@ -225,7 +225,7 @@ class ConnectList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

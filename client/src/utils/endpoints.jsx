@@ -1,11 +1,7 @@
 const apiUrl = (import.meta.env.REACT_APP_BASE_URL || '') + '/api';
 
 export const uriLogin = () => {
-  return '/ui/login';
-};
-
-export const uriOidc = provider => {
-  return `/ui/oauth/login/${provider}`;
+  return '/login';
 };
 
 export const uriAuths = () => {
@@ -104,7 +100,7 @@ export const uriTopicsUpdateConfigs = (clusterId, topicId) => {
 };
 
 export const uriTopicsOffsetsByTimestamp = (clusterId, topicId, timestamp) => {
-  return `${apiUrl}/${clusterId}/topic/${topicId}/offsets/start?timestamp=${timestamp}`;
+  return `${apiUrl}/${clusterId}/topic/${topicId}/offsets/start?timestamp=${encodeURIComponent(timestamp)}`;
 };
 
 export const uriTopicsCopy = (fromClusterId, fromTopicId, toClusterId, toTopicId) => {
@@ -280,7 +276,7 @@ export const uriConsumerGroupOffsets = (clusterId, groupId) => {
 export const uriConsumerGroupOffsetsByTimestamp = (clusterId, groupId, timestamp) => {
   return `${apiUrl}/${clusterId}/group/${encodeURIComponent(
     groupId
-  )}/offsets/start?timestamp=${timestamp}`;
+  )}/offsets/start?timestamp=${encodeURIComponent(timestamp)}`;
 };
 
 export const uriConsumerGroupDelete = (clusterId, groupId) => {

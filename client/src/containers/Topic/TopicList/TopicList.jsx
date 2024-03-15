@@ -166,7 +166,7 @@ class TopicList extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation = true) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
     this.setState({ pageNumber: pageNumber }, () => {
@@ -177,7 +177,7 @@ class TopicList extends Root {
           pathname: `/ui/${this.state.selectedCluster}/topic`,
           search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
         },
-        { replace: true }
+        { replace: replaceInNavigation }
       );
     });
   };
@@ -525,7 +525,7 @@ class TopicList extends Root {
             totalPageNumber={totalPageNumber}
             currentPageSize={currentPageSize}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

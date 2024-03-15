@@ -35,6 +35,7 @@ import { Buffer } from 'buffer';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { withRouter } from '../../../../utils/withRouter';
 import { Badge } from 'react-bootstrap';
+import { format } from 'date-fns';
 
 class TopicData extends Root {
   state = {
@@ -179,7 +180,7 @@ class TopicData extends Root {
       () => {
         const filters = this._buildFilters();
         if (changePage) {
-          this._setUrlHistory(filters + '&after=' + nextPage);
+          this._setUrlHistory(filters + '&after=' + nextPage, false);
         } else {
           this._setUrlHistory(filters);
         }
@@ -275,11 +276,11 @@ class TopicData extends Root {
     if (partition) filters.push(`partition=${partition}`);
 
     if (datetime) {
-      filters.push(`timestamp=${this._buildTimestampFilter(datetime)}`);
+      filters.push(`timestamp=${encodeURIComponent(this._buildTimestampFilter(datetime))}`);
     }
 
     if (endDatetime) {
-      filters.push(`endTimestamp=${this._buildTimestampFilter(endDatetime)}`);
+      filters.push(`endTimestamp=${encodeURIComponent(this._buildTimestampFilter(endDatetime))}`);
     }
 
     Object.keys(search)
@@ -296,19 +297,17 @@ class TopicData extends Root {
 
   _buildTimestampFilter(datetime) {
     let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-    return (
-      formatDateTime(
-        {
-          year: timestamp.year(),
-          monthValue: timestamp.month(),
-          dayOfMonth: timestamp.date(),
-          hour: timestamp.hour(),
-          minute: timestamp.minute(),
-          second: timestamp.second(),
-          milli: timestamp.millisecond()
-        },
-        'YYYY-MM-DDTHH:mm:ss.SSS'
-      ) + 'Z'
+    return formatDateTime(
+      {
+        year: timestamp.year(),
+        monthValue: timestamp.month(),
+        dayOfMonth: timestamp.date(),
+        hour: timestamp.hour(),
+        minute: timestamp.minute(),
+        second: timestamp.second(),
+        milli: timestamp.millisecond()
+      },
+      'YYYY-MM-DDTHH:mm:ss.SSSZ'
     );
   }
 
@@ -346,7 +345,7 @@ class TopicData extends Root {
     this._fetchMessages(requests, changePage);
 
     if (changePage) {
-      this._setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
+      this._setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length), false);
     } else {
       this._setUrlHistory(filters);
     }
@@ -595,7 +594,7 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  _setUrlHistory(filters) {
+  _setUrlHistory(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
 
     this.props.router.navigate(
@@ -603,7 +602,7 @@ class TopicData extends Root {
         pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
         search: filters
       },
-      { replace: true }
+      { replace: replaceInNavigation }
     );
   }
 
@@ -884,7 +883,7 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Timestamp UTC:
+                    Timestamp {format(new Date(), 'z')}:
                     {datetime !== '' &&
                       ' From ' +
                         formatDateTime(

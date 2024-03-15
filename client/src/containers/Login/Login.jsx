@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logoUrl from '../../images/logo.svg';
-import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
+import { uriCurrentUser, uriLogin } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
@@ -184,7 +184,7 @@ class Login extends Form {
 
   _renderOidc(oidcsAuths) {
     return oidcsAuths.map((auth, i) => (
-      <a key={i} href={uriOidc(auth.key)} className="btn btn-primary btn-block">
+      <a key={i} href={`/ui/oauth/login/${auth.key}`} className="btn btn-primary btn-block">
         {auth.label}
       </a>
     ));
@@ -209,8 +209,8 @@ class Login extends Form {
           >
             <div>
               <h3 className="logo">
-                <svg width="100%" height="100%">
-                  <image width="100%" height="100%" xlinkHref={logoUrl}></image>
+                <svg width="100%" height="77px">
+                  <image width="100%" height="77px" xlinkHref={logoUrl}></image>
                 </svg>
               </h3>
             </div>

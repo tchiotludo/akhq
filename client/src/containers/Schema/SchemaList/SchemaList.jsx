@@ -69,14 +69,14 @@ class SchemaList extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getSchemaRegistry();
+      this.getSchemaRegistry(replaceInNavigation);
     });
   };
 
-  async getSchemaRegistry() {
+  async getSchemaRegistry(replaceInNavigation = true) {
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -95,7 +95,7 @@ class SchemaList extends Root {
             pathname: `/ui/${this.state.selectedCluster}/schema`,
             search: `search=${this.state.searchData.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         );
       });
     } else {
@@ -185,7 +185,7 @@ class SchemaList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

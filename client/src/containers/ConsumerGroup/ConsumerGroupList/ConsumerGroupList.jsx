@@ -52,14 +52,14 @@ class ConsumerGroupList extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getConsumerGroup();
+      this.getConsumerGroup(replaceInNavigation);
     });
   };
 
-  async getConsumerGroup() {
+  async getConsumerGroup(replaceInNavigation = true) {
     const { selectedCluster, pageNumber, search } = this.state;
     this.setState({ loading: true });
 
@@ -73,7 +73,7 @@ class ConsumerGroupList extends Root {
             pathname: `/ui/${this.state.selectedCluster}/group`,
             search: `search=${this.state.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         )
       );
     } else {
@@ -192,7 +192,7 @@ class ConsumerGroupList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

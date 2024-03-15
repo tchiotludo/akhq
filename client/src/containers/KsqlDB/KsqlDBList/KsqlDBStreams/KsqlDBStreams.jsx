@@ -59,7 +59,7 @@ class KsqlDBStreams extends Root {
     }
   }
 
-  async getKsqlDBStreams() {
+  async getKsqlDBStreams(replaceInNavigation = true) {
     const { clusterId, ksqlDBId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -75,7 +75,7 @@ class KsqlDBStreams extends Root {
             pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/streams`,
             search: `search=${this.state.searchData.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         );
       });
     } else {
@@ -104,10 +104,10 @@ class KsqlDBStreams extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getKsqlDBStreams();
+      this.getKsqlDBStreams(replaceInNavigation);
     });
   };
 
@@ -129,7 +129,7 @@ class KsqlDBStreams extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

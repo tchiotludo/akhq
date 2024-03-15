@@ -287,12 +287,13 @@ class Sidebar extends Component {
       enableConnect,
       enableKsqlDB
     } = this.state;
+    const { expanded } = this.props;
     const roles = this.state.roles || {};
     const tag = sessionStorage.getItem('version');
     const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
     return (
       <SideNav
-        expanded={this.props.expanded}
+        expanded={expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
@@ -300,8 +301,7 @@ class Sidebar extends Component {
           background: 'black',
           height: height,
           position: 'fixed',
-          overflowX: 'hidden',
-          overflowY: 'auto'
+          ...(expanded ? { overflowY: 'auto' } : {})
         }}
       >
         <SideNav.Toggle />

@@ -60,7 +60,7 @@ class KsqlDBQueries extends Root {
     }
   }
 
-  async getKsqlDBQueries() {
+  async getKsqlDBQueries(replaceInNavigation = true) {
     const { clusterId, ksqlDBId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -76,7 +76,7 @@ class KsqlDBQueries extends Root {
             pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/queries`,
             search: `search=${this.state.searchData.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         );
       });
     } else {
@@ -105,10 +105,10 @@ class KsqlDBQueries extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getKsqlDBQueries();
+      this.getKsqlDBQueries(replaceInNavigation);
     });
   };
 
@@ -129,7 +129,7 @@ class KsqlDBQueries extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 

@@ -59,7 +59,7 @@ class KsqlDBTables extends Root {
     }
   }
 
-  async getKsqlDBTables() {
+  async getKsqlDBTables(replaceInNavigation = true) {
     const { clusterId, ksqlDBId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -75,7 +75,7 @@ class KsqlDBTables extends Root {
             pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/tables`,
             search: `search=${this.state.searchData.search}&page=${pageNumber}`
           },
-          { replace: true }
+          { replace: replaceInNavigation }
         );
       });
     } else {
@@ -104,10 +104,10 @@ class KsqlDBTables extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getKsqlDBTables();
+      this.getKsqlDBTables(replaceInNavigation);
     });
   };
 
@@ -129,7 +129,7 @@ class KsqlDBTables extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
