@@ -1,4 +1,4 @@
-const apiUrl = (import.meta.env.REACT_APP_BASE_URL || '') + '/api';
+const apiUrl = '/api';
 
 export const uriLogin = () => {
   return '/login';

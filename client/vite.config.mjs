@@ -20,8 +20,13 @@ export default defineConfig(() => {
       }
     },
     preview: {
-      port: 3000,
-      open: false
+      port: 4000,
+      open: false,
+      proxy: {
+        '/api': {
+          target: 'http://akhq:8080'
+        }
+      }
     },
     plugins: [react()],
     test: {
