@@ -36,10 +36,7 @@ class KsqlDBStatement extends Root {
 
     this.putApi(uriKsqlDBExecuteStatement(clusterId, ksqlDBId), body).then(() => {
       toast.success('Statement was executed successfully');
-      this.props.router.navigate(
-        { pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}` },
-        { replace: true }
-      );
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}` });
     });
   }
 

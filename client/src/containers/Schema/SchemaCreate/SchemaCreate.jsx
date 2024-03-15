@@ -75,7 +75,7 @@ class SchemaCreate extends Form {
 
     this.postApi(uriSchemaCreate(clusterId), schema).then(() => {
       toast.success(`Schema '${formData.subject}' created`);
-      this.props.router.navigate({ pathname: `/ui/${clusterId}/schema` }, { replace: true });
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/schema` });
     });
   }
 

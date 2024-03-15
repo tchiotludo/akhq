@@ -207,10 +207,7 @@ class TopicProduce extends Form {
 
     this.postApi(uriTopicsProduce(clusterId, topicId), topic).then(() => {
       toast.success(`Produced to ${topicId}.`);
-      this.props.router.navigate(
-        { pathname: `/ui/${clusterId}/topic/${topicId}` },
-        { replace: true }
-      );
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic/${topicId}` });
     });
   }
 
