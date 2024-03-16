@@ -1050,6 +1050,7 @@ class TopicData extends Root {
                   style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
                 >
                   <FontAwesomeIcon icon={faDownload} aria-hidden={true} />
+                  {' '}
                   Download query result
                 </button>
               </li>

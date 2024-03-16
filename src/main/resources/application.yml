@@ -172,6 +172,7 @@ akhq:
           # patterns: [ ".*" ]
           # clusters: [ ".*" ]
       admin:
+        - role: reader
         - role: node-admin
         - role: topic-admin
         - role: topic-data-admin

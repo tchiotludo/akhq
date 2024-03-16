@@ -56,8 +56,8 @@ class Header extends Root {
       return login === 'false' || !login ? (
         <Link to="/ui/login">
           <button className="btn btn-primary">
-            {' '}
             <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
+            {' '}
             Login
           </button>
         </Link>
@@ -78,8 +78,8 @@ class Header extends Root {
     } else if (auths && username) {
       return (
         <button className="btn btn-primary" disabled>
-          {' '}
           <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
+          {' '}
           {username}
         </button>
       );
