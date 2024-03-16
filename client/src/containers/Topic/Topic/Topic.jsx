@@ -14,6 +14,8 @@ import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 import Root from '../../../components/Root';
 import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEraser, faLevelDown, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 class Topic extends Root {
   state = {
@@ -103,7 +105,7 @@ class Topic extends Root {
             })
           }
         >
-          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+          {option}
         </Dropdown.Item>
       );
     }
@@ -322,14 +324,14 @@ class Topic extends Root {
                     }}
                     className="btn btn-secondary me-2"
                   >
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                    <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 ) : (
                   <div
                     title="Only enabled for topics with Delete Cleanup Policy"
                     className="btn disabled-black-button me-2"
                   >
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                    <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 )
               ) : (
@@ -343,7 +345,7 @@ class Topic extends Root {
                   }}
                   className="btn btn-secondary me-2"
                 >
-                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
+                  <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Copy Topic
                 </Link>
               )}
 
@@ -355,7 +357,7 @@ class Topic extends Root {
                   }}
                   className="btn btn-secondary me-2"
                 >
-                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+                  <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Live Tail
                 </Link>
               )}
 
@@ -366,13 +368,13 @@ class Topic extends Root {
                     to={`/ui/${clusterId}/topic/${topicId}/increasepartition`}
                     className="btn btn-secondary me-2"
                   >
-                    <i className="fa fa-plus" aria-hidden={true} /> Increase Partition
+                    <FontAwesomeIcon icon={faPlus} aria-hidden={true} /> Increase Partition
                   </Link>
                 )}
 
               {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
-                  <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
+                  <FontAwesomeIcon icon={faPlus} aria-hidden={true} /> Produce to topic
                 </Link>
               )}
             </li>

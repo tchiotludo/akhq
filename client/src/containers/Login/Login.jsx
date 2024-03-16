@@ -11,6 +11,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../utils/withRouter';
 import { Card } from 'react-bootstrap';
 import './styles.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 // Adaptation of login.ftl
 
 class Login extends Form {
@@ -120,7 +122,7 @@ class Login extends Form {
         <div className="input-group mb-3">
           <div className="input-group-prepend">
             <span className="input-group-text">
-              <i className="fa fa-user" />
+              <FontAwesomeIcon icon={faUser} />
             </span>
           </div>
           <input
@@ -143,7 +145,7 @@ class Login extends Form {
         <div className="input-group mb-3">
           <div className="input-group-prepend">
             <span className="input-group-text">
-              <i className="fa fa-lock" />
+              <FontAwesomeIcon icon={faLock} />
             </span>
           </div>
           <input

@@ -15,6 +15,8 @@ import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectList extends Root {
   state = {
@@ -281,14 +283,14 @@ class ConnectList extends Root {
                 if (obj[col.accessor].type === 'source') {
                   return (
                     <React.Fragment>
-                      <i className="fa fa-forward" aria-hidden="true" />
+                      <FontAwesomeIcon icon={faForward} aria-hidden={true} />
                       {` ${obj[col.accessor].shortClassName}`}
                     </React.Fragment>
                   );
                 }
                 return (
                   <React.Fragment>
-                    <i className="fa fa-backward" aria-hidden="true" />
+                    <FontAwesomeIcon icon={faBackward} aria-hidden={true} />
                     {` ${obj[col.accessor].shortClassName}`}
                   </React.Fragment>
                 );
@@ -309,7 +311,14 @@ class ConnectList extends Root {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}`}
+          onDetails={name => {
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`
+              },
+              { replace: true }
+            );
+          }}
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}

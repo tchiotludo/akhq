@@ -14,6 +14,8 @@ import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamation, faInfo } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectConfigs extends Form {
   state = {
@@ -135,8 +137,9 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i
-              className="fa fa-exclamation text-danger"
+            <FontAwesomeIcon
+              icon={faExclamation}
+              className={'text-danger'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />
@@ -147,8 +150,9 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i
-              className="fa fa-info text-warning"
+            <FontAwesomeIcon
+              icon={faInfo}
+              className={'text-warning'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />

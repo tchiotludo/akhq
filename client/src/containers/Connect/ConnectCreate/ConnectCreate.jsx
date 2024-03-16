@@ -13,6 +13,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamation, faInfo } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectCreate extends Root {
   state = {
@@ -132,8 +134,9 @@ class ConnectCreate extends Root {
           <span>
             {plugin.displayName}
             {''}
-            <i
-              className="fa fa-exclamation text-danger"
+            <FontAwesomeIcon
+              icon={faExclamation}
+              className={'text-danger'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />
@@ -144,8 +147,9 @@ class ConnectCreate extends Root {
         title = (
           <span>
             {plugin.displayName}
-            <i
-              className="fa fa-info text-warning"
+            <FontAwesomeIcon
+              icon={faInfo}
+              className={'text-warning'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />

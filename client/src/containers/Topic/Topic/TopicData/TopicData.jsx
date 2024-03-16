@@ -36,6 +36,13 @@ import { EventSourcePolyfill } from 'event-source-polyfill';
 import { withRouter } from '../../../../utils/withRouter';
 import { Badge } from 'react-bootstrap';
 import { format } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faDownload,
+  faSearch,
+  faSortNumericDesc,
+  faSpinner
+} from '@fortawesome/free-solid-svg-icons';
 
 class TopicData extends Root {
   state = {
@@ -638,7 +645,7 @@ class TopicData extends Root {
             })
           }
         >
-          <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
+          <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
         </Dropdown.Item>
       );
     }
@@ -659,7 +666,7 @@ class TopicData extends Root {
             })
           }
         >
-          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+          {option}
         </Dropdown.Item>
       );
     }
@@ -771,9 +778,9 @@ class TopicData extends Root {
             onClick={() => this._searchMessages()}
           >
             {isSearching ? (
-              <i className="fa fa-spinner fa-spin"></i>
+              <FontAwesomeIcon icon={faSpinner} spin={true} />
             ) : (
-              <i className="fa fa-search"></i>
+              <FontAwesomeIcon icon={faSearch} />
             )}
           </button>
           <button
@@ -1042,7 +1049,7 @@ class TopicData extends Root {
                   className="nav-link"
                   style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
                 >
-                  <i className="fa fa-fw fa fa-download" aria-hidden="true" />
+                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} />
                   Download query result
                 </button>
               </li>

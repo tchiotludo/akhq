@@ -7,6 +7,9 @@ import converters from '../../../../utils/converters';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+
 class NodeConfigs extends Form {
   state = {
     host: '',
@@ -183,10 +186,11 @@ class NodeConfigs extends Form {
       <div>
         <span className={'badge bg-' + type}> {configType}</span>
         {configSensitive ? (
-          <i
-            className="p-1 sensitive fa fa-exclamation-triangle text-danger"
-            aria-hidden="true"
-          ></i>
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className={'p-1 sensitive text-danger'}
+            aria-hidden={true}
+          />
         ) : (
           ''
         )}
@@ -197,7 +201,7 @@ class NodeConfigs extends Form {
   handleNameAndDescription(name, description) {
     const descript = description ? (
       <span className="text-secondary" data-toggle="tooltip" title={description}>
-        <i className="fa fa-question-circle" aria-hidden="true"></i>
+        <FontAwesomeIcon icon={faQuestionCircle} aria-hidden={true} />
       </span>
     ) : (
       ''

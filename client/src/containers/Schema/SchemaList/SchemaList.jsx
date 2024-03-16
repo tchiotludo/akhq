@@ -267,7 +267,12 @@ class SchemaList extends Root {
           }}
           idCol="subject"
           onDetails={subject => {
-            return `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`;
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`
+              },
+              { replace: true }
+            );
           }}
           actions={
             roles.SCHEMA && roles.SCHEMA.includes('DELETE')

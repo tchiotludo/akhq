@@ -5,6 +5,8 @@ import Form from '../Form/Form';
 import { SETTINGS_VALUES } from '../../utils/constants';
 //import './styles.scss';
 import { Button, Col, Form as BootstrapForm, Row } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 class SearchBar extends Form {
   static propTypes = {
@@ -168,7 +170,7 @@ class SearchBar extends Form {
               <Col xs="auto">
                 <Button type="submit">
                   <span className="d-md-none">Search </span>
-                  <i className="fa fa-search" />
+                  <FontAwesomeIcon icon={faSearch} />
                 </Button>
               </Col>
               {showKeepSearch && (

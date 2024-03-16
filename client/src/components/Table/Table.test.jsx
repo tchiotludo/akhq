@@ -135,17 +135,17 @@ describe('Table', () => {
     expect(value).toEqual(TABLE_EDIT);
   });
 
-  // it('does details logic', ({ expect }) => {
-  //   let details = container.querySelector(`#${TABLE_DETAILS}`);
-  //   Simulate.click(details);
-  //   expect(value).toEqual(TABLE_DETAILS);
-  // });
-  //
-  // it('does config logic', ({ expect }) => {
-  //   let config = container.querySelector(`#${TABLE_CONFIG}`);
-  //   Simulate.click(config);
-  //   expect(value).toEqual(TABLE_CONFIG);
-  // });
+  it('does details logic', ({ expect }) => {
+    let details = container.querySelector(`#${TABLE_DETAILS}`);
+    Simulate.click(details);
+    expect(value).toEqual(TABLE_DETAILS);
+  });
+
+  it('does config logic', ({ expect }) => {
+    let config = container.querySelector(`#${TABLE_CONFIG}`);
+    Simulate.click(config);
+    expect(value).toEqual(TABLE_CONFIG);
+  });
 
   it('does delete logic', ({ expect }) => {
     let remove = container.querySelector(`#${TABLE_DELETE}`);

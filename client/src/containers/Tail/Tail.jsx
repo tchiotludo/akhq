@@ -15,6 +15,8 @@ import DateTime from '../../components/DateTime';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import * as LosslessJson from 'lossless-json';
 import { withRouter } from '../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPause, faPlay, faRemove, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -348,7 +350,7 @@ class Tail extends Root {
                   type="submit"
                 >
                   <span className="d-md-none">Search </span>
-                  <i className="fa fa-search" />
+                  <FontAwesomeIcon icon={faSearch} />
                 </button>
               </li>
               <li>
@@ -362,7 +364,7 @@ class Tail extends Root {
                       this.setState({ selectedStatus: STATUS.PAUSED });
                     }}
                   >
-                    <i className={'fa fa-pause'} />
+                    <FontAwesomeIcon icon={faPause} />
                     <span> Pause</span>
                   </button>
                   <button
@@ -374,7 +376,7 @@ class Tail extends Root {
                       this.setState({ selectedStatus: STATUS.STARTED });
                     }}
                   >
-                    <i className="fa fa-play" /> <span> Resume</span>
+                    <FontAwesomeIcon icon={faPlay} /> <span> Resume</span>
                   </button>
                   <button
                     className={`btn btn-secondary empty ${
@@ -386,7 +388,7 @@ class Tail extends Root {
                       this.setState({ data: [] });
                     }}
                   >
-                    <i className="fa fa-remove" /> <span> Clear</span>
+                    <FontAwesomeIcon icon={faRemove} /> <span> Clear</span>
                   </button>
                 </div>
               </li>

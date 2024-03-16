@@ -15,6 +15,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
 import Root from '../../../../components/Root';
 import { withRouter } from '../../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPause, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectTasks extends Root {
   state = {
@@ -264,7 +266,7 @@ class ConnectTasks extends Root {
                   className="btn btn-primary me-2"
                   onClick={() => this.handleAction(this.definitionState.RESUME)}
                 >
-                  <i className="fa fa-play" aria-hidden="true" /> Resume Definition
+                  <FontAwesomeIcon icon={faPlay} aria-hidden={true} /> Resume Definition
                 </div>
               </li>
             ) : (
@@ -276,7 +278,7 @@ class ConnectTasks extends Root {
                     className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.PAUSE)}
                   >
-                    <i className="fa fa-pause" aria-hidden="true" /> Pause Definition
+                    <FontAwesomeIcon icon={faPause} aria-hidden={true} /> Pause Definition
                   </div>
                 </li>
 
@@ -286,7 +288,7 @@ class ConnectTasks extends Root {
                     className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.RESTART)}
                   >
-                    <i className="fa fa-refresh" aria-hidden="true" /> Restart Definition
+                    <FontAwesomeIcon icon={faRefresh} aria-hidden={true} /> Restart Definition
                   </div>
                 </li>
               </React.Fragment>

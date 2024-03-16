@@ -23,6 +23,8 @@ import { getClusterUIOptions } from '../../../utils/functions';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import PageSize from '../../../components/PageSize';
 import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 class TopicList extends Root {
   state = {
@@ -445,10 +447,8 @@ class TopicList extends Root {
                       onClick={() => this.handleCollapseConsumerGroups(obj.id)}
                       aria-expanded={collapseConsumerGroups[obj.id]}
                     >
-                      {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up" />}
-                      {!collapseConsumerGroups[obj.id] && (
-                        <i className="fa fa-fw fa-chevron-down" />
-                      )}
+                      {collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronUp} />}
+                      {!collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronDown} />}
                     </span>
                     <span className="badge bg-light-subtle">{consumerGroups.length}</span>
                     <Collapse in={collapseConsumerGroups[obj.id]}>
@@ -483,7 +483,14 @@ class TopicList extends Root {
     const actions = [constants.TABLE_CONFIG];
     if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
-      onDetailsFunction = id => `/ui/${selectedCluster}/topic/${id}/data`;
+      onDetailsFunction = id => {
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${selectedCluster}/topic/${id}/data`
+          },
+          { replace: true }
+        );
+      };
     }
     if (roles.TOPIC && roles.TOPIC.includes('DELETE')) {
       actions.push(constants.TABLE_DELETE);
@@ -546,7 +553,16 @@ class TopicList extends Root {
             this.handleOnDelete(topic);
           }}
           onDetails={onDetailsFunction}
-          onConfig={id => `/ui/${selectedCluster}/topic/${id}/configs`}
+          onConfig={id => {
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${selectedCluster}/topic/${id}/configs`
+              },
+              {
+                replace: true
+              }
+            );
+          }}
           actions={actions}
         />
 

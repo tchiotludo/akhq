@@ -121,11 +121,10 @@ class Form extends Root {
         ) : (
           <div></div>
         )}
-        <div className="col-sm-10" style={{ height: '100%' }}>
+        <div id={name} className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
             setOptions={{ ...options, useWorker: false }}
             mode={inputMode}
-            id={name}
             theme="merbivore_soft"
             value={formData[name]}
             onChange={value => {

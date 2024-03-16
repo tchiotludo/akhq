@@ -1,8 +1,5 @@
-$fa-font-path: 'font-awesome/fonts';
-
 @import 'variables.scss';
 @import 'node_modules/bootstrap/scss/bootstrap';
-@import 'node_modules/font-awesome/scss/font-awesome';
 @import 'node_modules/react-datepicker/dist/react-datepicker';
 
 $theme-colors: (
@@ -114,9 +111,5 @@ table {
 .table-responsive {
   .action-hover {
     text-align: center;
-  }
-
-  .fa {
-    color: white;
   }
 }

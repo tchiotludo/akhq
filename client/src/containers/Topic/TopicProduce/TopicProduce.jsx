@@ -20,6 +20,8 @@ import { withRouter } from '../../../utils/withRouter';
 import { Col, Row } from 'react-bootstrap';
 import './styles.scss';
 import { format } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 class TopicProduce extends Form {
   state = {
@@ -331,7 +333,7 @@ class TopicProduce extends Form {
               position === 0 ? this.handlePlus() : this.handleRemove(position);
             }}
           >
-            <i className={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
+            <FontAwesomeIcon icon={position === 0 ? faPlus : faTrash} />
           </button>
         </Col>
       </Row>

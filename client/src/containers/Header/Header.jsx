@@ -8,6 +8,8 @@ import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../components/Root';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignIn } from '@fortawesome/free-solid-svg-icons';
 
 class Header extends Root {
   state = {
@@ -55,7 +57,7 @@ class Header extends Root {
         <Link to="/ui/login">
           <button className="btn btn-primary">
             {' '}
-            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
             Login
           </button>
         </Link>
@@ -68,7 +70,7 @@ class Header extends Root {
             }}
           >
             {' '}
-            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
             {username} (Logout)
           </button>
         </Link>
@@ -77,7 +79,7 @@ class Header extends Root {
       return (
         <button className="btn btn-primary" disabled>
           {' '}
-          <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
+          <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
           {username}
         </button>
       );

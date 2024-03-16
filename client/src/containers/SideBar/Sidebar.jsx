@@ -8,6 +8,19 @@ import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCogs,
+  faDatabase,
+  faExchange,
+  faGear,
+  faKey,
+  faLaptop,
+  faLevelDown,
+  faList,
+  faObjectGroup,
+  faRocket
+} from '@fortawesome/free-solid-svg-icons';
 
 class Sidebar extends Component {
   state = {
@@ -230,7 +243,7 @@ class Sidebar extends Component {
     });
   }
 
-  renderMenuItem(iconClassName, tab, label) {
+  renderMenuItem(icon, tab, label) {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
@@ -253,7 +266,7 @@ class Sidebar extends Component {
               e.preventDefault();
             }}
           >
-            <i className={iconClassName} aria-hidden="true" />
+            <FontAwesomeIcon icon={icon} aria-hidden={true} />
           </Link>
         </NavIcon>
         <NavText>
@@ -324,7 +337,7 @@ class Sidebar extends Component {
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
           <NavItem className="nav-clusters" eventKey="cluster">
             <NavIcon>
-              <i className="fa fa-fw fa fa-database" aria-hidden="true" />
+              <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
             </NavIcon>
             <NavText>
               <div
@@ -344,36 +357,36 @@ class Sidebar extends Component {
           {roles &&
             roles.NODE &&
             roles.NODE.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+            this.renderMenuItem(faLaptop, constants.NODE, 'Nodes')}
           {roles &&
             roles.TOPIC &&
             roles.TOPIC.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+            this.renderMenuItem(faList, constants.TOPIC, 'Topics')}
           {roles &&
             roles.TOPIC_DATA &&
             roles.TOPIC_DATA.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
+            this.renderMenuItem(faLevelDown, constants.TAIL, 'Live Tail')}
           {roles &&
             roles.CONSUMER_GROUP &&
             roles.CONSUMER_GROUP.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
+            this.renderMenuItem(faObjectGroup, constants.GROUP, 'Consumer Groups')}
           {roles &&
             roles.ACL &&
             roles.ACL.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
+            this.renderMenuItem(faKey, constants.ACLS, 'ACLS')}
           {enableRegistry &&
             registryType !== 'GLUE' &&
             roles &&
             roles.SCHEMA &&
             roles.SCHEMA.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+            this.renderMenuItem(faCogs, constants.SCHEMA, 'Schema Registry')}
           {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
             >
               <NavIcon>
-                <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
+                <FontAwesomeIcon icon={faExchange} aria-hidden={true} />
               </NavIcon>
               <NavText>
                 <div
@@ -398,7 +411,7 @@ class Sidebar extends Component {
               className={selectedTab === constants.KSQLDB ? 'active' : ''}
             >
               <NavIcon>
-                <i className="fa fa-fw fa fa-rocket" aria-hidden="true" />
+                <FontAwesomeIcon icon={faRocket} aria-hidden={true} />
               </NavIcon>
               <NavText>
                 <div
@@ -417,7 +430,7 @@ class Sidebar extends Component {
               {listKsqlDBs}
             </NavItem>
           )}
-          {this.renderMenuItem('fa fa-fw fa-gear', constants.SETTINGS, 'Settings')}
+          {this.renderMenuItem(faGear, constants.SETTINGS, 'Settings')}
         </SideNav.Nav>
       </SideNav>
     );
