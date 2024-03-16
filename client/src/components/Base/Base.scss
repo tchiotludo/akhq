@@ -1,3 +1,4 @@
+@import '../../variables.scss';
 @import 'node_modules/bootstrap/scss/functions';
 @import 'node_modules/bootstrap/scss/variables';
 @import 'node_modules/bootstrap/scss/mixins';
@@ -23,8 +24,8 @@
 }
 
 .expanded {
-  margin-left: 240px !important;
-  width: calc(100% - 240px) !important;
+  margin-left: $menu-width !important;
+  width: calc(100% - $menu-width) !important;
 }
 
 .collapsed {

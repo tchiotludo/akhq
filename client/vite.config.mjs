@@ -5,7 +5,19 @@ export default defineConfig(() => {
   return {
     base: '/ui',
     build: {
-      outDir: 'build'
+      outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('react')) {
+              return 'react';
+            }
+            if (id.includes('joi')) {
+              return 'joi';
+            }
+          }
+        }
+      }
     },
     define: {
       global: 'window'

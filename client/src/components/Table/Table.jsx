@@ -528,7 +528,7 @@ class Table extends Component {
   }
 
   render() {
-    const { loading, rowId } = this.props;
+    const { loading, rowId, noStripes } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 
@@ -546,7 +546,7 @@ class Table extends Component {
 
     return (
       <div className="table-responsive">
-        <BootstrapTable bordered hover striped>
+        <BootstrapTable bordered hover striped={!noStripes}>
           {this.renderHeader()}
           <tbody>
             {loading

@@ -301,7 +301,7 @@ class Topic extends Root {
           </div>
         </div>
         {selectedTab !== 'configs' && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
-          <footer>
+          <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
                 <div className="btn me-2">
@@ -378,7 +378,7 @@ class Topic extends Root {
                 </Link>
               )}
             </li>
-          </footer>
+          </aside>
         )}
         <ConfirmModal
           show={this.state.showDeleteModal}

@@ -258,7 +258,7 @@ class ConnectTasks extends Root {
           />
         </div>
         {roles.CONNECTOR && roles.CONNECTOR.includes('UPDATE_STATE') && (
-          <footer>
+          <aside>
             {definition.paused ? (
               <li className="aside-button">
                 <div
@@ -293,7 +293,7 @@ class ConnectTasks extends Root {
                 </li>
               </React.Fragment>
             )}
-          </footer>
+          </aside>
         )}
         <ConfirmModal
           show={this.state.showActionModal}

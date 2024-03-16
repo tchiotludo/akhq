@@ -93,7 +93,7 @@ function checkValidServiceWorker(swUrl, config) {
 export function register(config) {
   if (import.meta.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      const swUrl = '/service-worker.js';
+      const swUrl = `${import.meta.env.PUBLIC_URL}/service-worker.js`;
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.

@@ -364,11 +364,11 @@ class ConnectList extends Root {
           noContent={'No connectors available'}
         />
         {roles.CONNECTOR && roles.CONNECTOR.includes('CREATE') && (
-          <footer>
+          <aside>
             <Link to={`/ui/${clusterId}/connect/${connectId}/create`} className="btn btn-primary">
               Create a definition
             </Link>
-          </footer>
+          </aside>
         )}
         <ConfirmModal
           show={this.state.showDeleteModal}

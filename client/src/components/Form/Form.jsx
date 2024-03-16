@@ -66,7 +66,7 @@ class Form extends Root {
 
   renderButton = (label, click, className, type, children) => {
     return (
-      <footer>
+      <aside>
         {children}
         <button
           type={type ? type : 'button'}
@@ -76,7 +76,7 @@ class Form extends Root {
         >
           {label}
         </button>
-      </footer>
+      </aside>
     );
   };
 

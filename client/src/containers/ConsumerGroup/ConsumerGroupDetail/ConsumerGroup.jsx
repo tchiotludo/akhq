@@ -112,28 +112,26 @@ class ConsumerGroup extends Root {
         {roles.CONSUMER_GROUP &&
           (roles.CONSUMER_GROUP.includes('DELETE_OFFSET') ||
             roles.CONSUMER_GROUP.includes('UPDATE_OFFSET')) && (
-            <footer>
-              <aside>
-                <li className="aside-button">
-                  {roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
-                    <Link
-                      to={`/ui/${clusterId}/group/${consumerGroupId}/offsetsdelete`}
-                      className="btn btn-secondary me-2"
-                    >
-                      Delete Offsets
-                    </Link>
-                  )}
-                  {roles.CONSUMER_GROUP.includes('UPDATE_OFFSET') && (
-                    <Link
-                      to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`}
-                      className="btn btn-primary"
-                    >
-                      Update Offsets
-                    </Link>
-                  )}
-                </li>
-              </aside>
-            </footer>
+            <aside>
+              <li className="aside-button">
+                {roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
+                  <Link
+                    to={`/ui/${clusterId}/group/${consumerGroupId}/offsetsdelete`}
+                    className="btn btn-secondary me-2"
+                  >
+                    Delete Offsets
+                  </Link>
+                )}
+                {roles.CONSUMER_GROUP.includes('UPDATE_OFFSET') && (
+                  <Link
+                    to={`/ui/${clusterId}/group/${consumerGroupId}/offsets`}
+                    className="btn btn-primary"
+                  >
+                    Update Offsets
+                  </Link>
+                )}
+              </li>
+            </aside>
           )}
       </div>
     );

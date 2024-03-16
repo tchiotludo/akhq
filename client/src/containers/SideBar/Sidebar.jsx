@@ -314,6 +314,7 @@ class Sidebar extends Component {
           background: 'black',
           height: height,
           position: 'fixed',
+          paddingBottom: '60px',
           ...(expanded ? { overflowY: 'auto' } : {})
         }}
       >

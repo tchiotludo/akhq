@@ -567,7 +567,7 @@ class TopicList extends Root {
         />
 
         {roles.TOPIC.includes('CREATE') && (
-          <footer>
+          <aside>
             <Link
               to={{
                 pathname: `/ui/${clusterId}/topic/create`,
@@ -577,7 +577,7 @@ class TopicList extends Root {
             >
               Create a topic
             </Link>
-          </footer>
+          </aside>
         )}
 
         <ConfirmModal

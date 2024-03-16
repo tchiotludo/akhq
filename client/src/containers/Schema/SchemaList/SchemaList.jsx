@@ -306,7 +306,7 @@ class SchemaList extends Root {
           noContent={'No schemas available'}
         />
         {roles.SCHEMA && roles.SCHEMA.includes('CREATE') && (
-          <footer>
+          <aside>
             <Link
               to={{
                 pathname: `/ui/${clusterId}/schema/create`,
@@ -316,7 +316,7 @@ class SchemaList extends Root {
             >
               Create a Subject
             </Link>
-          </footer>
+          </aside>
         )}
 
         <ConfirmModal
