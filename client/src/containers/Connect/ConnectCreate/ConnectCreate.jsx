@@ -1,6 +1,5 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import './styles.scss';
 import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';

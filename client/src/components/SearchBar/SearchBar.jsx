@@ -3,7 +3,6 @@ import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
 import { SETTINGS_VALUES } from '../../utils/constants';
-//import './styles.scss';
 import { Button, Col, Form as BootstrapForm, Row } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';

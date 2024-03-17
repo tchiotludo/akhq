@@ -13,7 +13,6 @@ import {
 } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Collapse } from 'react-bootstrap';

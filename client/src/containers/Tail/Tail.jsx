@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dropdown, Form as BootstrapForm } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import remove from 'lodash/remove';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
@@ -162,7 +162,7 @@ class Tail extends Root {
         <ul
           className="dropdown-menu inner show"
           role="presentation"
-          style={{ marginTop: '0px', marginBottom: '0px', position: 'static' }}
+          style={{ marginTop: '0px', marginBottom: '0px' }}
         >
           {topics
             .filter(topic => {
@@ -220,181 +220,181 @@ class Tail extends Root {
     return (
       <div>
         <Header title="Live Tail" history={this.props.history} />
-        <BootstrapForm>
-          <nav className="navbar navbar-expand me-auto bg-secondary-subtle">
-            <ul className="navbar-nav me-auto">
-              <li>
-                <Input
-                  type="text"
-                  name="search"
-                  id="search"
-                  value={search}
-                  label={''}
-                  placeholder={'Search...'}
-                  onChange={e => {
-                    this.onStop();
-                    this.setState({ data: [] });
-                    this.handleChange(e);
-                  }}
-                  wrapperClass={'tail-search-wrapper'}
-                  inputClass={'tail-search-input'}
-                />
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown className="dropdown bootstrap-select show-tick khq-select show">
-                  <Dropdown.Toggle className="btn dropdown-toggle btn-white">
-                    {selectedTopics.length === 0
-                      ? 'Topics'
-                      : selectedTopics.length === 1
-                        ? selectedTopics[0]
-                        : `${selectedTopics.length} Topics Selected`}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu
-                    style={{
-                      maxHeight: 'calc(100vh - 200px)',
-                      overflow: 'hidden',
-                      minHeight: '182px'
-                    }}
-                  >
-                    <div className="bs-searchbox">
-                      <input
-                        type="text"
-                        name="dropdownSearch"
-                        id="dropdownSearch"
-                        className="form-control"
-                        autoComplete="off"
-                        role="combobox"
-                        aria-label="Search"
-                        aria-controls="bs-select-1"
-                        aria-autocomplete="list"
-                        aria-expanded="false"
-                        placeholder={'search'}
-                        onChange={this.handleChange}
-                        value={dropdownSearch}
-                      />
-                    </div>
-                    <div className="bs-actionsbox p-2">
-                      <div className="btn-group btn-group-sm btn-block">
-                        <button
-                          onClick={() => {
-                            this.onStop();
-
-                            this.setState({
-                              data: [],
-                              selectedTopics: JSON.parse(JSON.stringify(topics)).filter(topic => {
-                                if (dropdownSearch.length > 0) {
-                                  return topic.includes(dropdownSearch);
-                                }
-                                return topic;
-                              })
-                            });
-                          }}
-                          type="button"
-                          className="actions-btn bs-select-all btn btn-outline-light"
-                        >
-                          Select All
-                        </button>
-                        <button
-                          onClick={() => {
-                            this.onStop();
-                            this.setState({ data: [], selectedTopics: [] });
-                          }}
-                          type="button"
-                          className="actions-btn bs-deselect-all btn btn-outline-light"
-                        >
-                          Deselect All
-                        </button>
-                      </div>
-                    </div>
-                    {this.renderTopicList()}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown className="dropdown bootstrap-select show-tick khq-select show">
-                  <Dropdown.Toggle className="btn dropdown-toggle btn-white">
-                    Max Records: {maxRecords}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu
-                    style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}
-                  >
-                    {MAX_RECORDS.map(maxRecord => {
-                      return (
-                        <li key={`record_${maxRecord}`}>
-                          <div
-                            onClick={() => {
-                              this.onStop();
-                              this.setState({ maxRecords: maxRecord, data: [] });
-                            }}
-                            role="option"
-                            className="dropdown-item"
-                            aria-selected="false"
-                          >
-                            {maxRecord}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    this.onStop();
-                    this.setState({ selectedStatus: STATUS.STARTED }, () => {
-                      this.onStart();
-                    });
-                  }}
-                  className="btn btn-primary"
-                  type="submit"
-                >
-                  <span className="d-md-none">Search </span>
-                  <FontAwesomeIcon icon={faSearch} />
-                </button>
-              </li>
-              <li>
-                <div className="ms-3 btn-group actions" role="group">
-                  <button
-                    className={`btn btn-secondary pause ${
-                      selectedStatus === STATUS.STARTED ? '' : 'd-none'
-                    }`}
-                    onClick={() => {
-                      this.onStop();
-                      this.setState({ selectedStatus: STATUS.PAUSED });
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPause} />
-                    <span> Pause</span>
-                  </button>
-                  <button
-                    className={`btn btn-secondary resume ${
-                      selectedStatus === STATUS.PAUSED ? '' : 'd-none'
-                    }`}
-                    onClick={() => {
-                      this.onStart();
-                      this.setState({ selectedStatus: STATUS.STARTED });
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPlay} /> <span> Resume</span>
-                  </button>
-                  <button
-                    className={`btn btn-secondary empty ${
-                      selectedStatus === STATUS.STARTED || selectedStatus === STATUS.PAUSED
-                        ? ''
-                        : 'd-none'
-                    }`}
-                    onClick={() => {
-                      this.setState({ data: [] });
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faRemove} /> <span> Clear</span>
-                  </button>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbar-search"
+            aria-controls="navbar-search"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+            onClick={() => {
+              this.openAndCloseFilters();
+            }}
+          >
+            <span className="navbar-toggler-icon" />
+          </button>
+          <div className={`form-inline collapse navbar-collapse ${showFilters}`} id="navbar-search">
+            <Input
+              type="text"
+              name="search"
+              id="search"
+              value={search}
+              label={''}
+              placeholder={'Search...'}
+              onChange={e => {
+                this.onStop();
+                this.setState({ data: [] });
+                this.handleChange(e);
+              }}
+              wrapperClass={'tail-search-wrapper'}
+              inputClass={'tail-search-input'}
+            />
+            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+                {selectedTopics.length === 0
+                  ? 'Topics'
+                  : selectedTopics.length === 1
+                    ? selectedTopics[0]
+                    : `${selectedTopics.length} Topics Selected`}
+              </Dropdown.Toggle>
+              <Dropdown.Menu
+                style={{
+                  maxHeight: 'calc(100vh - 200px)',
+                  overflow: 'hidden',
+                  minHeight: '182px'
+                }}
+              >
+                <div className="bs-searchbox">
+                  <input
+                    type="text"
+                    name="dropdownSearch"
+                    id="dropdownSearch"
+                    className="form-control"
+                    autoComplete="off"
+                    role="combobox"
+                    aria-label="Search"
+                    aria-controls="bs-select-1"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    placeholder={'search'}
+                    onChange={this.handleChange}
+                    value={dropdownSearch}
+                  />
                 </div>
-              </li>
-            </ul>
-          </nav>
-        </BootstrapForm>
+                <div className="bs-actionsbox p-2">
+                  <div className="btn-group btn-group-sm btn-block">
+                    <button
+                      onClick={() => {
+                        this.onStop();
+
+                        this.setState({
+                          data: [],
+                          selectedTopics: JSON.parse(JSON.stringify(topics)).filter(topic => {
+                            if (dropdownSearch.length > 0) {
+                              return topic.includes(dropdownSearch);
+                            }
+                            return topic;
+                          })
+                        });
+                      }}
+                      type="button"
+                      className="actions-btn bs-select-all btn btn-light"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      onClick={() => {
+                        this.onStop();
+                        this.setState({ data: [], selectedTopics: [] });
+                      }}
+                      type="button"
+                      className="actions-btn bs-deselect-all btn btn-light"
+                    >
+                      Deselect All
+                    </button>
+                  </div>
+                </div>
+                {this.renderTopicList()}
+              </Dropdown.Menu>
+            </Dropdown>
+            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+                Max Records: {maxRecords}
+              </Dropdown.Toggle>
+              <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
+                {MAX_RECORDS.map(maxRecord => {
+                  return (
+                    <li key={`record_${maxRecord}`}>
+                      <div
+                        onClick={() => {
+                          this.onStop();
+                          this.setState({ maxRecords: maxRecord, data: [] });
+                        }}
+                        role="option"
+                        className="dropdown-item"
+                        aria-selected="false"
+                      >
+                        {maxRecord}
+                      </div>
+                    </li>
+                  );
+                })}
+              </Dropdown.Menu>
+            </Dropdown>
+            <button
+              onClick={() => {
+                this.onStop();
+                this.setState({ selectedStatus: STATUS.STARTED }, () => {
+                  this.onStart();
+                });
+              }}
+              className="btn btn-primary"
+              type="submit"
+            >
+              <span className="d-md-none">Search </span>
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+            <div className="ms-3 btn-group actions" role="group">
+              <button
+                className={`btn btn-secondary pause ${
+                  selectedStatus === STATUS.STARTED ? '' : 'd-none'
+                }`}
+                onClick={() => {
+                  this.onStop();
+                  this.setState({ selectedStatus: STATUS.PAUSED });
+                }}
+              >
+                <FontAwesomeIcon icon={faPause} />
+                <span> Pause</span>
+              </button>
+              <button
+                className={`btn btn-secondary resume ${
+                  selectedStatus === STATUS.PAUSED ? '' : 'd-none'
+                }`}
+                onClick={() => {
+                  this.onStart();
+                  this.setState({ selectedStatus: STATUS.STARTED });
+                }}
+              >
+                <FontAwesomeIcon icon={faPlay} /> <span> Resume</span>
+              </button>
+              <button
+                className={`btn btn-secondary empty ${
+                  selectedStatus === STATUS.STARTED || selectedStatus === STATUS.PAUSED
+                    ? ''
+                    : 'd-none'
+                }`}
+                onClick={() => {
+                  this.setState({ data: [] });
+                }}
+              >
+                <FontAwesomeIcon icon={faRemove} /> <span> Clear</span>
+              </button>
+            </div>
+          </div>
+        </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
             rowId={data => {

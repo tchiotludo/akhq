@@ -11,7 +11,6 @@ import {
   uriConsumerGroupUpdate
 } from '../../../../utils/endpoints';
 import moment from 'moment';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../../../utils/withRouter';

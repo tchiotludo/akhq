@@ -1,9 +1,3 @@
-@import 'node_modules/bootstrap/scss/functions';
-@import 'node_modules/bootstrap/scss/mixins';
-@import 'node_modules/bootstrap/scss/variables';
-
-$sidebarWidth: 70px;
-$sidebarExpandedWidth: 250px;
 $sidebarTransition: 0.5s;
 
 .sidenav---sidenav---_2tBP {
@@ -17,18 +11,24 @@ $sidebarTransition: 0.5s;
     width: calc(100% - 8px);
     height: 65px;
     display: block;
-    background: url('../../images/logo.svg') no-repeat 16px;
-    background-size: cover;
     margin-top: 60px;
     margin-left: 4px;
     margin-right: 4px;
     transition: all 0.2s ease;
   }
+  span.logo svg {
+    margin-left: 10px;
+    width: calc($sidebar-collapsed - 18px);
+  }
+  span.logo svg image {
+    width: calc($sidebar-expanded - 8px);
+  }
 }
 
 .sidenav---expanded---1KdUL {
-  span.logo {
-    background-position: 0;
+  span.logo svg {
+    margin-left: 0;
+    width: calc($sidebar-expanded - 8px);
   }
 }
 

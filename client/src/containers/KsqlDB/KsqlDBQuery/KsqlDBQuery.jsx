@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import AceEditor from 'react-ace';
-import './styles.scss';
 import Table from '../../../components/Table';
 import { withRouter } from '../../../utils/withRouter';
 

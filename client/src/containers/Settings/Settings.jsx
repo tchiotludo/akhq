@@ -4,7 +4,6 @@ import Form from '../../components/Form/Form';
 import Header from '../Header';
 import { SETTINGS_VALUES } from '../../utils/constants';
 import { setUIOptions } from '../../utils/localstorage';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import { getClusterUIOptions } from '../../utils/functions';
 import { withRouter } from '../../utils/withRouter';

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
-import './styles.scss';
 import Spinner from '../Spinner';
 import { withRouter } from '../../utils/withRouter';
 import { Table as BootstrapTable } from 'react-bootstrap';
@@ -272,7 +271,7 @@ class Table extends Component {
           }}
           key={'row-expanded-' + row.id}
         >
-          <td colSpan={this.colspan()}>
+          <td style={{ '--bs-table-bg-state': '#171819' }} colSpan={this.colspan()}>
             {' '}
             {extraExpanded &&
             JSON.stringify(

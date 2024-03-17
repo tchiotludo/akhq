@@ -1,11 +1,84 @@
 @import 'variables.scss';
-@import 'node_modules/bootstrap/scss/bootstrap';
-@import 'node_modules/react-datepicker/dist/react-datepicker';
 
 $theme-colors: (
   'primary': $primary,
-  'warning': $warning
+  'secondary': $secondary,
+  'success': $success,
+  'info': $info,
+  'warning': $warning,
+  'danger': $danger,
+  'light': $light,
+  'dark': $dark,
+  'tertiary': $tertiary,
+  'white': $white
 );
+
+@import 'bootstrap/scss/bootstrap';
+@import 'react-datepicker/dist/react-datepicker';
+
+// old styles
+@import 'css/datas/after-offset';
+@import 'css/datas/filter';
+@import 'css/datas/highlight';
+@import 'css/forms/ace';
+@import 'css/forms/multiple';
+@import 'css/forms/datetime';
+@import 'css/forms/select';
+@import 'css/tables/row-action';
+@import 'css/tables/table';
+@import 'css/templates/bootstrap';
+@import 'css/templates/layout';
+@import 'css/templates/login';
+@import 'css/templates/sidebar';
+
+// components
+@import 'components/Base/Base';
+@import 'components/DatePicker/styles';
+@import 'components/Form/Select/styles';
+@import 'components/Form/styles';
+@import 'components/Modal/styles';
+@import 'components/PageSize/styles';
+@import 'components/Pagination/styles';
+@import 'components/SearchBar/styles';
+@import 'components/Spinner/Spinner';
+@import 'components/Table/styles';
+
+// containers
+@import 'containers/Connect/ConnectCreate/styles';
+@import 'containers/Connect/ConnectDetail/ConnectConfigs/styles';
+@import 'containers/Connect/ConnectDetail/ConnectTasks/styles';
+@import 'containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupMembers/styles';
+@import 'containers/ConsumerGroup/ConsumerGroupDetail/ConsumerGroupUpdate/styles';
+@import 'containers/KsqlDB/KsqlDBQuery/styles';
+@import 'containers/Loading/styles';
+@import 'containers/Login/styles';
+@import 'src/containers/Node/NodeDetail/styles';
+@import 'containers/Schema/SchemaList/styles';
+@import 'containers/Settings/styles';
+@import 'containers/SideBar/styles';
+@import 'containers/Tail/styles';
+@import 'src/containers/Topic/Topic/styles';
+@import 'src/containers/Topic/Topic/TopicAcls/styles';
+@import 'src/containers/Topic/Topic/TopicConfigs/styles';
+@import 'src/containers/Topic/Topic/TopicData/styles';
+@import 'src/containers/Topic/Topic/TopicGroups/styles';
+@import 'src/containers/Topic/Topic/TopicLogs/styles';
+@import 'src/containers/Topic/Topic/TopicPartitions/styles';
+@import 'src/containers/Topic/TopicCopy/styles';
+@import 'src/containers/Topic/TopicList/styles';
+@import 'src/containers/Topic/TopicProduce/styles';
+
+.khq-data-filter {
+  @include media-breakpoint-up(sm) {
+    select {
+      max-width: 100%;
+    }
+  }
+}
+
+.table-hover tbody tr:hover code:after {
+  background: linear-gradient(transparent, $body-bg);
+}
 
 #content {
   transition: all 0.2s ease;
@@ -46,15 +119,6 @@ $theme-colors: (
   }
 }
 
-body {
-  background-color: $body-bg-dark;
-  color: $gray-100;
-}
-
-h1 {
-  color: $gray-100;
-}
-
 ul.nav-tabs {
   .nav-link {
     background-color: transparent;
@@ -85,7 +149,6 @@ ul.nav-tabs {
   .tab-content {
     padding: 20px;
     border: 1px solid $nav-tabs-border-color;
-    background: $gray-900;
     border-top: 0;
   }
 }

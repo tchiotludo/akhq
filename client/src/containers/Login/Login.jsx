@@ -10,7 +10,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../utils/withRouter';
 import { Card } from 'react-bootstrap';
-import './styles.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 // Adaptation of login.ftl

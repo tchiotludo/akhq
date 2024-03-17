@@ -1,0 +1,33 @@
+.khq-login {
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  text-align: center;
+
+  padding: 40px;
+  background: $gray-900;
+  box-shadow: 0 0 40px 5px rgba($tertiary, 0.4);
+
+  > div:first-child {
+    margin-bottom: 40px;
+  }
+
+  .form-separator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 1rem 0;
+
+    span {
+      padding: 0 10px;
+    }
+
+    &:before,
+    &:after {
+      content: ' ';
+      height: 1px;
+      background: currentColor;
+      flex: 1 1 auto;
+    }
+  }
+}

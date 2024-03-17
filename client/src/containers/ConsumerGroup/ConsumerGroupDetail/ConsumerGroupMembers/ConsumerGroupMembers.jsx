@@ -3,7 +3,6 @@ import Table from '../../../../components/Table';
 import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
-import './styles.scss';
 import Root from '../../../../components/Root';
 
 class ConsumerGroupMembers extends Root {

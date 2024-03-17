@@ -14,7 +14,6 @@ import {
   uriTopicsName,
   uriTopicsOffsetsByTimestamp
 } from '../../../utils/endpoints';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Dropdown from 'react-bootstrap/Dropdown';

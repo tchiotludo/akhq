@@ -97,7 +97,7 @@ class Header extends Root {
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
           {' '}
-          <h2 aria-level={1}>{title}</h2>{' '}
+          <h1>{title}</h1>{' '}
           <div>
             {this._renderLogin()}
             {children}

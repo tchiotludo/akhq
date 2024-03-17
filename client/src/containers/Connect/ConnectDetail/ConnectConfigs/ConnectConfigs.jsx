@@ -1,6 +1,5 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import './styles.scss';
 import {
   uriConnectDefinitionConfigs,
   uriUpdateDefinition,

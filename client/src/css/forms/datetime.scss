@@ -1,0 +1,49 @@
+.khq-datetime,
+.khq-data-datetime {
+  min-width: 18.5rem;
+  padding-bottom: 0;
+
+  .datetime-container {
+    .col-md-6 {
+      max-width: none;
+      flex: auto;
+
+      .timepicker-picker {
+        border-top: 2px solid $gray-700;
+      }
+    }
+  }
+
+  .bootstrap-datetimepicker-widget {
+    .timepicker-hour,
+    .timepicker-minute,
+    .timepicker-second {
+      width: 16px;
+      font-weight: normal;
+    }
+
+    table {
+      & td {
+        height: 16px;
+        line-height: 16px;
+        width: 16px;
+
+        span {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+        }
+      }
+    }
+  }
+}
+
+.khq-datetime {
+  .input-group {
+    padding: $input-padding-y $input-padding-x;
+    input {
+      border: 0;
+    }
+  }
+}

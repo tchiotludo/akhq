@@ -18,7 +18,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Tooltip } from '@mui/material';
 import { withRouter } from '../../../utils/withRouter';
 import { Col, Row } from 'react-bootstrap';
-import './styles.scss';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';

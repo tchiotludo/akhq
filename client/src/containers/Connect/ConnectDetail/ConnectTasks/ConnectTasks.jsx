@@ -1,5 +1,4 @@
 import React from 'react';
-import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import constants from '../../../../utils/constants';
 import {

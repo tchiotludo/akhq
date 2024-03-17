@@ -7,7 +7,6 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import './styles.scss';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/mode-protobuf';

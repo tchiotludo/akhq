@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
+import logoUrl from '../../images/logo.svg';
 import sortBy from 'lodash/sortBy';
-import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
@@ -320,20 +320,22 @@ class Sidebar extends Component {
       >
         <SideNav.Toggle />
         <div className="logo-wrapper">
-          <span className="logo" />
-          {this.props.expanded && (
-            <p
-              style={{
-                color: 'white',
-                fontStyle: 'Italic',
-                textAlign: 'center',
-                margin: '20px 0 0 0'
-              }}
-            >
-              {''}
-              {tag}
-            </p>
-          )}
+          <span className="logo">
+            <svg>
+              <image xlinkHref={logoUrl}></image>
+            </svg>
+          </span>
+          <p
+            style={{
+              color: 'white',
+              fontStyle: 'Italic',
+              textAlign: 'center',
+              margin: '20px 0 0 0'
+            }}
+          >
+            {''}
+            {this.props.expanded && tag}
+          </p>
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
           <NavItem className="nav-clusters" eventKey="cluster">
