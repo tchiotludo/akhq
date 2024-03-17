@@ -195,10 +195,6 @@ class Login extends Form {
   render() {
     const { formEnabled, oidcAuths, oauthAuths } = this.state.config;
 
-    console.log(formEnabled);
-    console.log(oidcAuths);
-    console.log(oauthAuths);
-
     return (
       <div>
         <Card>
