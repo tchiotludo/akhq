@@ -164,15 +164,14 @@ akhq:
         - resources: [ "ACL" ]
           actions: [ "READ" ]
       ksqldb-admin:
-        - resources: [ "READ", "KSQLDB" ]
-          actions: [ "EXECUTE" ]
+        - resources: [ "KSQLDB" ]
+          actions: [ "READ", "EXECUTE" ]
     groups:
       reader:
         - role: reader
           # patterns: [ ".*" ]
           # clusters: [ ".*" ]
       admin:
-        - role: reader
         - role: node-admin
         - role: topic-admin
         - role: topic-data-admin
