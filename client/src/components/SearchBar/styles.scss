@@ -1,11 +1,17 @@
 #navbar-search {
+  .form-inline {
+    align-items: center;
+    display: flex;
+    flex-flow: row wrap;
+  }
+
   .topic-search-wrapper,
   .select-wrapper {
     display: flex;
     justify-content: space-between;
-    margin-left: 0px !important;
+    margin-left: 0 !important;
 
-    @media (max-width: 991.98px) {
+    @include media-breakpoint-down(lg) {
       width: 100%;
       margin: 0 !important;
 
@@ -16,14 +22,14 @@
     }
   }
 
-  @media (min-width: 991.98px) {
+  @include media-breakpoint-up(lg) {
     .topic-search-input,
     .select-class {
-      margin-right: 1rem;
+      margin-right: 0.5rem;
     }
     .select-wrapper {
       margin-left: 0;
-      margin-right: 0;
+      margin-right: 0.5rem;
     }
   }
 

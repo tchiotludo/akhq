@@ -129,60 +129,48 @@ class SearchBar extends Form {
           <span className="navbar-toggler-icon" />
         </button>
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
-          <form className="form-inline me-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
-            <div className={'row align-items-center'}>
-              {showSearch && (
-                <div className={'col'}>
-                  {this.renderInput(
-                    'search',
-                    '',
-                    'Search',
-                    'text',
-                    true,
-                    '',
-                    'topic-search-wrapper'
-                  )}
-                </div>
+          <form className="form-inline me-auto" onSubmit={e => this.handleSubmit(e)}>
+            {showSearch &&
+              this.renderInput(
+                'search',
+                '',
+                'Search',
+                'text',
+                true,
+                'topic-search-wrapper',
+                'topic-search-input'
               )}
-              {showTopicListView && (
-                <div className={'col'}>
-                  {this.renderSelect(
-                    'topicListView',
-                    '',
-                    topicListViewOptions,
-                    ({ currentTarget: input }) => {
-                      let { formData } = this.state;
-                      formData.topicListView = input.value;
-                      this.setState();
-                      this.props.onTopicListViewChange(input.value);
-                    },
-                    '',
-                    'select-wrapper',
-                    false
-                  )}
-                </div>
+            {showTopicListView &&
+              this.renderSelect(
+                'topicListView',
+                '',
+                topicListViewOptions,
+                ({ currentTarget: input }) => {
+                  let { formData } = this.state;
+                  formData.topicListView = input.value;
+                  this.setState();
+                  this.props.onTopicListViewChange(input.value);
+                },
+                '',
+                'select-wrapper',
+                false
               )}
-              <div className={'col-auto'}>
-                <button className="btn btn-primary" type="submit">
-                  <span className="d-md-none">Search </span>
-                  <FontAwesomeIcon icon={faSearch} />
-                </button>
-              </div>
-              {showKeepSearch && (
-                <div className={'col-auto'}>
-                  <span>
-                    <input
-                      type="checkbox"
-                      name="keepSearch"
-                      id="keepSearch"
-                      onClick={event => this.props.onKeepSearchChange(event.target.checked)}
-                      defaultChecked={formData['keepSearch']}
-                    />{' '}
-                    Keep search
-                  </span>
-                </div>
-              )}
-            </div>
+            <button className="btn btn-primary" type="submit">
+              <FontAwesomeIcon icon={faSearch} />
+              <span className="d-lg-none"> Search</span>
+            </button>
+            {showKeepSearch && (
+              <span>
+                <input
+                  type="checkbox"
+                  name="keepSearch"
+                  id="keepSearch"
+                  onClick={event => this.props.onKeepSearchChange(event.target.checked)}
+                  defaultChecked={formData['keepSearch']}
+                />{' '}
+                Keep search
+              </span>
+            )}
           </form>
         </div>
       </React.Fragment>

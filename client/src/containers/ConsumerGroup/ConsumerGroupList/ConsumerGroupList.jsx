@@ -131,8 +131,7 @@ class ConsumerGroupList extends Root {
           className="btn btn-dark btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
-          {topicId + ' '}
-
+          {topicId}{' '}
           <div className="badge bg-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
         </Link>
       );

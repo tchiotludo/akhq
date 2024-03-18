@@ -354,8 +354,8 @@ class Tail extends Root {
               className="btn btn-primary"
               type="submit"
             >
-              <span className="d-md-none">Search </span>
               <FontAwesomeIcon icon={faSearch} />
+              <span className="d-lg-none"> Search</span>
             </button>
             <div className="btn-group actions" role="group">
               <button

@@ -63,7 +63,7 @@ class DatePicker extends Component {
             />
             {onClear && (
               <button
-                className="ms-2 btn btn-primary"
+                className="btn btn-primary me-0"
                 onClick={() => {
                   this.setState(
                     {

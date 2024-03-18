@@ -152,58 +152,13 @@ class AkhqRoutes extends Root {
             <Routes location={location}>
               <Route exact path="/ui/login" element={<Login />} />
               {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
-                <>
-                  <Route exact path="/ui/:clusterId/topic" element={<TopicList />} />
-
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/partitions"
-                    element={<Topic clusters={clusters} />}
-                  />
-
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/groups"
-                    element={<Topic clusters={clusters} />}
-                  />
-
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/configs"
-                    element={<Topic clusters={clusters} />}
-                  />
-
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/acls"
-                    element={<Topic clusters={clusters} />}
-                  />
-
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/logs"
-                    element={<Topic clusters={clusters} />}
-                  />
-                </>
-              )}
-              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
-                <>
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId"
-                    element={<Topic clusters={clusters} />}
-                  />
-                  <Route
-                    exact
-                    path="/ui/:clusterId/topic/:topicId/data"
-                    element={<Topic clusters={clusters} />}
-                  />
-                </>
+                <Route exact path="/ui/:clusterId/topic" element={<TopicList />} />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/create" element={<TopicCreate />} />
               )}
+
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
@@ -228,7 +183,7 @@ class AkhqRoutes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/:tab?"
-                  render={props => <Topic clusters={clusters} {...props} />}
+                  element={<Topic clusters={clusters} />}
                 />
               )}
 

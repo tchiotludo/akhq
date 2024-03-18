@@ -544,18 +544,16 @@ class Table extends Component {
     });
 
     return (
-      <div className="table-responsive">
-        <BootstrapTable bordered hover striped={!noStripes}>
-          {this.renderHeader()}
-          <tbody>
-            {loading
-              ? this.renderLoading()
-              : data && data.length > 0
-                ? allItemRows
-                : this.renderNoContent()}
-          </tbody>
-        </BootstrapTable>
-      </div>
+      <BootstrapTable bordered hover responsive striped={!noStripes} className={'m-0'}>
+        {this.renderHeader()}
+        <tbody>
+          {loading
+            ? this.renderLoading()
+            : data && data.length > 0
+              ? allItemRows
+              : this.renderNoContent()}
+        </tbody>
+      </BootstrapTable>
     );
   }
 }

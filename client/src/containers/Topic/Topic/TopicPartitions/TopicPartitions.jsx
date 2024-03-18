@@ -48,7 +48,7 @@ class TopicPartitions extends Root {
       return (
         <span
           key={replica.id}
-          className={replica.inSyncReplicas ? 'badge bg-success' : 'badge bg-danger'}
+          className={'me-1 ' + (replica.inSyncReplicas ? 'badge bg-success' : 'badge bg-danger')}
         >
           {' '}
           {replica.id}
