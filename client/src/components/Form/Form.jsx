@@ -205,7 +205,7 @@ class Form extends Root {
           <label className="col-sm-2">{name}</label>
           <div className="col-sm-10">
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
                 <input
                   type="text"
                   name="searchValue"

@@ -232,7 +232,7 @@ class TopicProduce extends Form {
               });
             },
             false,
-            { disabled: tombstone }
+            { disabled: tombstone, className: 'col-auto ms-2' }
           )}
 
           <label className="col-auto col-form-label">Separator</label>
@@ -241,7 +241,7 @@ class TopicProduce extends Form {
             name="keyValueSeparator"
             id="keyValueSeparator"
             placeholder=":"
-            className="col-sm-2 form-control"
+            className="col-sm-2"
             disabled={!multiMessage}
             onChange={event => {
               this.setState({
@@ -269,7 +269,7 @@ class TopicProduce extends Form {
               this.setState({ tombstone: !tombstone });
             },
             false,
-            { disabled: multiMessage }
+            { disabled: multiMessage, className: 'col-auto ms-2' }
           )}
         </div>
       </div>
@@ -308,12 +308,28 @@ class TopicProduce extends Form {
       <div className="row header-wrapper">
         <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div className="row col-sm-10 khq-multiple">
-          <div>
-            {this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', 'input-class')}
-            {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', 'input-class')}
+        <div className="row col-sm-10 khq-multiple pe-0">
+          <div className="col-auto">
+            {this.renderInput(
+              `hKey${position}`,
+              '',
+              'Key',
+              'text',
+              true,
+              'col-sm-6 row',
+              'input-class'
+            )}
+            {this.renderInput(
+              `hValue${position}`,
+              '',
+              'Value',
+              'text',
+              true,
+              'col-sm-6 row',
+              'input-class'
+            )}
           </div>
-          <div className="add-button">
+          <div className="col-auto p-0 add-button">
             <button
               type="button"
               className="btn btn-secondary"

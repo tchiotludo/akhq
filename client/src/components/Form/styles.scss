@@ -11,8 +11,13 @@
   padding: 0.375rem 0.75rem !important;
 }
 
-.btn.dropdown-toggle.btn-white.dropdown-toggle.btn.btn-primary {
+.btn.dropdown-toggle.btn-secondary.dropdown-toggle.btn.btn-primary {
   height: 35px;
+}
+
+.btn.dropdown-toggle.btn-secondary.dropdown-toggle.btn.btn-primary > input {
+  color: white;
+  background-color: $secondary;
 }
 
 input.placeholder {

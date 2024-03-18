@@ -306,7 +306,7 @@ class Topic extends Root {
               {this.state.isAllTopicDataSelected && (
                 <div className="btn btn-secondary me-2 p-0">
                   <Dropdown>
-                    <Dropdown.Toggle className={'btn-secondary'}>
+                    <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
                       <strong>Download Format:</strong> ({this.state.downloadFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>

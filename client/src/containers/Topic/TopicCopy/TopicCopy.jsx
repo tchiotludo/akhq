@@ -341,7 +341,9 @@ class TopicCopy extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Filter Timestamp {format(new Date(), 'z')}</Dropdown.Toggle>
+            <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
+              Filter Timestamp {format(new Date(), 'z')}
+            </Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>
@@ -366,7 +368,9 @@ class TopicCopy extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Last x messages per partition</Dropdown.Toggle>
+            <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
+              Last x messages per partition
+            </Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>

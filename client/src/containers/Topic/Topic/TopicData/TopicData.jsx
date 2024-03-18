@@ -16,7 +16,7 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
-import constants from '../../../../utils/constants';
+import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
@@ -1164,7 +1164,10 @@ class TopicData extends Root {
               {
                 id: 'timestamp',
                 accessor: 'timestamp',
-                colName: 'Timestamp',
+                colName:
+                  this.state.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                    ? 'Timestamp ' + format(new Date(), 'z')
+                    : 'Timestamp',
                 type: 'text',
                 cell: (obj, col) => {
                   return (
