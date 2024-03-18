@@ -188,7 +188,7 @@ class NodeConfigs extends Form {
         {configSensitive ? (
           <FontAwesomeIcon
             icon={faExclamationTriangle}
-            className={'p-1 sensitive text-danger'}
+            className={'sensitive text-danger'}
             aria-hidden={true}
           />
         ) : (

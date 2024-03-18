@@ -3,7 +3,6 @@ import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
 import { SETTINGS_VALUES } from '../../utils/constants';
-import { Button, Col, Form as BootstrapForm, Row } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
@@ -130,13 +129,10 @@ class SearchBar extends Form {
           <span className="navbar-toggler-icon" />
         </button>
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
-          <BootstrapForm
-            className="form-inline me-auto khq-form-get"
-            onSubmit={e => this.handleSubmit(e)}
-          >
-            <Row className="align-items-center">
+          <form className="form-inline me-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
+            <div className={'row align-items-center'}>
               {showSearch && (
-                <Col>
+                <div className={'col'}>
                   {this.renderInput(
                     'search',
                     '',
@@ -146,10 +142,10 @@ class SearchBar extends Form {
                     '',
                     'topic-search-wrapper'
                   )}
-                </Col>
+                </div>
               )}
               {showTopicListView && (
-                <Col>
+                <div className={'col'}>
                   {this.renderSelect(
                     'topicListView',
                     '',
@@ -164,16 +160,16 @@ class SearchBar extends Form {
                     'select-wrapper',
                     false
                   )}
-                </Col>
+                </div>
               )}
-              <Col xs="auto">
-                <Button type="submit">
+              <div className={'col-auto'}>
+                <button className="btn btn-primary" type="submit">
                   <span className="d-md-none">Search </span>
                   <FontAwesomeIcon icon={faSearch} />
-                </Button>
-              </Col>
+                </button>
+              </div>
               {showKeepSearch && (
-                <Col xs="auto">
+                <div className={'col-auto'}>
                   <span>
                     <input
                       type="checkbox"
@@ -184,10 +180,10 @@ class SearchBar extends Form {
                     />{' '}
                     Keep search
                   </span>
-                </Col>
+                </div>
               )}
-            </Row>
-          </BootstrapForm>
+            </div>
+          </form>
         </div>
       </React.Fragment>
     );

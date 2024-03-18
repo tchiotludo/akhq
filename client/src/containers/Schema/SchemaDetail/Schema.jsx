@@ -112,7 +112,7 @@ class Schema extends Root {
                 to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
                 className={this.tabClassName('versions')}
               >
-                Versions <span className="badge bg-light-subtle">{totalVersions}</span>
+                Versions <span className="badge bg-secondary">{totalVersions}</span>
               </Link>
             </li>
           </ul>

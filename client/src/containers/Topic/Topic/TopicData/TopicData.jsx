@@ -34,7 +34,6 @@ import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { withRouter } from '../../../../utils/withRouter';
-import { Badge } from 'react-bootstrap';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -755,7 +754,7 @@ class TopicData extends Root {
     const { isSearching } = this.state;
 
     return (
-      <div style={{ minWidth: '400px' }} className="p-2 input-group">
+      <div style={{ minWidth: '400px' }} className="input-group">
         {this._renderSearchFilter('key', 'Key')}
         {this._renderSearchFilter('value', 'Value')}
         {this._renderSearchFilter('headerKey', 'Header Key')}
@@ -847,7 +846,7 @@ class TopicData extends Root {
     ];
     return (
       <React.Fragment>
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <button
             className="navbar-toggler"
             type="button"
@@ -863,12 +862,37 @@ class TopicData extends Root {
             <span className="navbar-toggler-icon" />
           </button>
 
+          <nav className="pagination-data">
+            <div>
+              <Pagination
+                pageNumber={pageNumber}
+                totalRecords={recordCount}
+                totalPageNumber={messages.length === 0 ? pageNumber : undefined}
+                onChange={({ currentTarget: input }) => {
+                  this.setState({ pageNumber: input.value });
+                }}
+                onSubmit={() => {
+                  this.setState(
+                    {
+                      pageNumber: pageNumber + 1
+                    },
+                    () => {
+                      this._searchMessages(true);
+                    }
+                  );
+                }}
+                editPageNumber={false}
+                showTotalPageNumber={false}
+              />
+            </div>
+          </nav>
+
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
             <ul className="navbar-nav me-auto">
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Sort: ({sortBy})
+                    <strong>Sort:</strong> ({sortBy})
                   </Dropdown.Toggle>
                   {!loading && <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>}
                 </Dropdown>
@@ -876,7 +900,7 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Partition: ({partition})
+                    <strong>Partition:</strong> ({partition})
                   </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
@@ -890,7 +914,7 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Timestamp {format(new Date(), 'z')}:
+                    <strong>Timestamp {format(new Date(), 'z')}:</strong>
                     {datetime !== '' &&
                       ' From ' +
                         formatDateTime(
@@ -965,17 +989,19 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Search: {this._renderCurrentSearchText()}
+                    <strong>Search:</strong> {this._renderCurrentSearchText()}
                   </Dropdown.Toggle>
                   {!loading && <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
                 <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">Offsets:</Dropdown.Toggle>
+                  <Dropdown.Toggle className="nav-link dropdown-toggle">
+                    <strong>Offsets:</strong>
+                  </Dropdown.Toggle>
                   {!loading && (
                     <Dropdown.Menu>
-                      <div style={{ minWidth: '300px' }} className="ps-2 khq-offset-navbar">
+                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                         <div className="input-group">
                           <table>{this._renderOffsetsOptions()}</table>
                           <div className="input-group-append">
@@ -1049,38 +1075,11 @@ class TopicData extends Root {
                   className="nav-link"
                   style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
                 >
-                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} />
-                  {' '}
-                  Download query result
+                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
                 </button>
               </li>
             </ul>
           </div>
-
-          <nav className="pagination-data">
-            <div>
-              <Pagination
-                pageNumber={pageNumber}
-                totalRecords={recordCount}
-                totalPageNumber={messages.length === 0 ? pageNumber : undefined}
-                onChange={({ currentTarget: input }) => {
-                  this.setState({ pageNumber: input.value });
-                }}
-                onSubmit={() => {
-                  this.setState(
-                    {
-                      pageNumber: pageNumber + 1
-                    },
-                    () => {
-                      this._searchMessages(true);
-                    }
-                  );
-                }}
-                editPageNumber={false}
-                showTotalPageNumber={false}
-              />
-            </div>
-          </nav>
         </nav>
         {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
@@ -1213,8 +1212,8 @@ class TopicData extends Root {
                   return (
                     <div className="justify-items">
                       {obj[col.accessor].key !== undefined && (
-                        <Badge
-                          bg="primary"
+                        <span
+                          className="badge bg-primary clickable"
                           onClick={
                             obj[col.accessor].registryType !== 'GLUE'
                               ? () => {
@@ -1224,12 +1223,12 @@ class TopicData extends Root {
                           }
                         >
                           Key: {obj[col.accessor].key}
-                        </Badge>
+                        </span>
                       )}
 
                       {obj[col.accessor].value !== undefined && (
-                        <Badge
-                          bg="primary"
+                        <span
+                          className="badge bg-primary clickable schema-value"
                           onClick={
                             obj[col.accessor].registryType !== 'GLUE'
                               ? () => {
@@ -1239,7 +1238,7 @@ class TopicData extends Root {
                           }
                         >
                           Value: {obj[col.accessor].value}
-                        </Badge>
+                        </span>
                       )}
                     </div>
                   );
@@ -1289,8 +1288,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819',
-                        padding: '0.25rem'
+                        backgroundColor: '#171819'
                       }}
                     >
                       {header.key}
@@ -1301,8 +1299,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819',
-                        padding: '0.25rem'
+                        backgroundColor: '#171819'
                       }}
                     >
                       {header.value}

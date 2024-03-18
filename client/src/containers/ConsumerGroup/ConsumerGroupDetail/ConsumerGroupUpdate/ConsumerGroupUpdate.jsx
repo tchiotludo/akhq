@@ -233,8 +233,8 @@ class ConsumerGroupUpdate extends Form {
                 `Partition: ${offset.partition}`,
                 'Offset',
                 'number',
-                undefined,
                 true,
+                '',
                 'partition-input-div',
                 `partition-input ${name}-input`,
                 { disabled: disabled }

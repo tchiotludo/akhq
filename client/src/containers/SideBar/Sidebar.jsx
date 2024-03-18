@@ -160,7 +160,12 @@ class Sidebar extends Component {
         <NavText style={{ color: '#32a9d4' }}>
           {' '}
           <Link to={`/ui/${cluster.id}/topic`}>
-            <div className={selectedCluster === cluster.id ? ' active' : ''}>{cluster.id}</div>
+            <div
+              className={selectedCluster === cluster.id ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {cluster.id}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -173,7 +178,12 @@ class Sidebar extends Component {
       >
         <NavText>
           <Link to={`/ui/${selectedCluster}/connect/${connect}`}>
-            <div>{connect}</div>
+            <div
+              className={selectedConnect === connect ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {connect}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -187,7 +197,12 @@ class Sidebar extends Component {
       >
         <NavText>
           <Link to={`/ui/${selectedCluster}/ksqldb/${ksqlDB}`}>
-            <div>{ksqlDB}</div>
+            <div
+              className={selectedKsqlDB === ksqlDB ? ' active' : ''}
+              style={{ color: '#759dac' }}
+            >
+              {ksqlDB}
+            </div>
           </Link>
         </NavText>
       </NavItem>
@@ -338,7 +353,7 @@ class Sidebar extends Component {
           </p>
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
-          <NavItem className="nav-clusters" eventKey="cluster">
+          <NavItem eventKey="cluster">
             <NavIcon>
               <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
             </NavIcon>
@@ -351,7 +366,7 @@ class Sidebar extends Component {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                <span className="clusters">{selectedCluster}</span>
+                <span className="badge bg-primary clusters">{selectedCluster}</span>
               </div>
             </NavText>
             {listClusters}
@@ -401,7 +416,7 @@ class Sidebar extends Component {
                     this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
                 >
-                  <span className="clusters">{selectedConnect}</span>
+                  <span className="badge bg-primary clusters">{selectedConnect}</span>
                 </div>
               </NavText>
 
@@ -426,7 +441,7 @@ class Sidebar extends Component {
                     this.setState({ showKsqlDBs: !showKsqlDBs, selectedTab: constants.KSQLDB });
                   }}
                 >
-                  <span className="clusters">{selectedKsqlDB}</span>
+                  <span className="badge bg-primary clusters">{selectedKsqlDB}</span>
                 </div>
               </NavText>
 

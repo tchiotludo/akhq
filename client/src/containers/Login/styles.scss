@@ -1,38 +1,22 @@
-.card {
-  width: 100%;
-  max-width: 330px;
-  margin: 0 auto;
-  text-align: center;
-  margin-top: calc(50vh - 165px) !important;
+main {
+  margin-top: calc((100vh - 330px) / 2) !important;
+}
 
-  padding: 40px;
-  background: #222;
-  box-shadow: 0 0 40px 5px rgba(#005f81, 0.4);
+.khq-login-separator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 1rem 0;
 
-  .logo {
-    margin-bottom: 40px;
+  span {
+    padding: 0 10px;
   }
 
-  .form-separator {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 1rem 0;
-
-    span {
-      padding: 0 10px;
-    }
-
-    &:before,
-    &:after {
-      content: ' ';
-      height: 1px;
-      background: currentColor;
-      flex: 1 1 auto;
-    }
-  }
-
-  .input-group-text {
-    height: 100%;
+  &:before,
+  &:after {
+    content: ' ';
+    height: 1px;
+    background: currentColor;
+    flex: 1 1 auto;
   }
 }

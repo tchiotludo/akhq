@@ -66,17 +66,19 @@ class Form extends Root {
 
   renderButton = (label, click, className, type, children) => {
     return (
-      <aside>
-        {children}
-        <button
-          type={type ? type : 'button'}
-          className={className ? className : 'btn btn-primary'}
-          disabled={this.validate()}
-          onClick={click}
-        >
-          {label}
-        </button>
-      </aside>
+      <div className="khq-submit button-footer" style={{ marginRight: 0 }}>
+        <aside>
+          {children}
+          <button
+            type={type ? type : 'button'}
+            className={className ? className : 'btn btn-primary'}
+            disabled={this.validate()}
+            onClick={click}
+          >
+            {label}
+          </button>
+        </aside>
+      </div>
     );
   };
 
@@ -202,22 +204,12 @@ class Form extends Root {
         <div className="form-group row">
           <label className="col-sm-2">{name}</label>
           <div className="col-sm-10">
-            <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
-              <Dropdown.Toggle
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: 0,
-                  margin: 0
-                }}
-                className="nav-link dropdown-toggle"
-              >
+            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
                 <input
                   type="text"
                   name="searchValue"
-                  className="form-control"
+                  className="form-control placeholder"
                   placeholder={name}
                   defaultValue={selectedKeySchema}
                 />
@@ -248,7 +240,7 @@ class Form extends Root {
     );
   };
 
-  renderCheckbox = (name, isChecked, onChange, rest) => {
+  renderCheckbox = (name, isChecked, onChange, isDefaultChecked, rest) => {
     return (
       <input
         type="checkbox"
@@ -257,6 +249,7 @@ class Form extends Root {
         className="form-input-check"
         checked={isChecked}
         onChange={onChange}
+        defaultChecked={isDefaultChecked ? isDefaultChecked : false}
         {...rest}
       />
     );

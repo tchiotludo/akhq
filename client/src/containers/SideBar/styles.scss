@@ -2,7 +2,7 @@ $sidebarTransition: 0.5s;
 
 .sidenav---sidenav---_2tBP {
   .logo-wrapper {
-    background: #005f81;
+    background: $tertiary;
     border-bottom: 4px solid $yellow;
     padding-bottom: 10px;
     padding-top: 1px;
@@ -43,32 +43,4 @@ $sidebarTransition: 0.5s;
 }
 .sidenav-subnav---1EN61 {
   background-color: $primary !important;
-}
-
-.sidenav---sidenav-subnav---1EN61 {
-  background-color: $gray-600 !important;
-  max-height: calc(30vh);
-  overflow: auto !important;
-}
-
-.sidenav---navtext---1AE_f {
-  a {
-    text-decoration: none;
-    color: $gray-100;
-  }
-  .active {
-    font-weight: bold;
-  }
-}
-
-.sidenav---sidenav-navitem---uwIJ- {
-  &:hover {
-    background-color: $body-bg-dark;
-  }
-  &.active {
-    background-color: $body-bg-dark;
-  }
-  &.nav-clusters {
-    background-color: $gray-600;
-  }
 }

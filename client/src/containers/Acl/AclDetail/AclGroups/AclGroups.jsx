@@ -45,7 +45,7 @@ class AclGroups extends Root {
   handlePermission = permission => {
     return (
       <React.Fragment>
-        <span className="badge bg-light-subtle">{permission.permissionType}</span>{' '}
+        <span className="badge bg-secondary">{permission.permissionType}</span>{' '}
         {permission.operation}
       </React.Fragment>
     );

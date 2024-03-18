@@ -10,9 +10,9 @@ export default defineConfig(() => {
       rollupOptions: {
         onLog(level, log, handler) {
           if (log.cause && log.cause.message === `Can't resolve original location of error.`) {
-            return
+            return;
           }
-          handler(level, log)
+          handler(level, log);
         },
         output: {
           manualChunks(id) {

@@ -310,7 +310,7 @@ class TopicList extends Root {
             onClick={noPropagation}
           >
             {consumerGroup.id}{' '}
-            <div className="badge bg-light-subtle"> Lag: {Number(offsetLag).toLocaleString()}</div>
+            <div className="badge bg-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
           </Link>
         );
       });
@@ -449,7 +449,7 @@ class TopicList extends Root {
                       {collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronUp} />}
                       {!collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronDown} />}
                     </span>
-                    <span className="badge bg-light-subtle">{consumerGroups.length}</span>
+                    <span className="badge bg-secondary">{consumerGroups.length}</span>
                     <Collapse in={collapseConsumerGroups[obj.id]}>
                       <div>
                         {consumerGroups.splice(1, consumerGroups.length).map(group => {
@@ -498,7 +498,7 @@ class TopicList extends Root {
     return (
       <div>
         <Header title="Topics" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}

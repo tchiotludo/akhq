@@ -5,7 +5,6 @@ import * as constants from '../../../utils/constants';
 import { uriNodes, uriNodePartitions } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
 import { withRouter } from '../../../utils/withRouter';
-import { Badge } from 'react-bootstrap';
 
 class NodesList extends Root {
   state = {
@@ -77,7 +76,7 @@ class NodesList extends Root {
               type: 'text',
               sortable: true,
               cell: (obj, col) => {
-                return <Badge bg="primary">{obj[col.accessor] || ''}</Badge>;
+                return <span className="badge bg-info">{obj[col.accessor] || ''}</span>;
               }
             },
             {

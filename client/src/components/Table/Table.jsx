@@ -59,7 +59,7 @@ class Table extends Component {
     return (
       <>
         {has2Headers && (
-          <thead id="firstHeader">
+          <thead id="firstHeader" className="thead-dark">
             <tr key="firstHeader">
               {firstHeader.map((column, index) => {
                 return (
@@ -79,7 +79,7 @@ class Table extends Component {
             </tr>
           </thead>
         )}
-        <thead id="secondHeader">
+        <thead id="secondHeader" className="thead-dark">
           <tr key="secondHeader">
             {columns.map((column, index) => {
               if (!column.extraRow) {
@@ -527,7 +527,7 @@ class Table extends Component {
   }
 
   render() {
-    const { loading, rowId, noStripes } = this.props;
+    const { noStripes, loading, rowId } = this.props;
     let allItemRows = [];
     let data = this.props.data || [];
 

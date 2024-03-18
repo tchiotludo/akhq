@@ -304,9 +304,9 @@ class Topic extends Root {
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
-                <div className="btn me-2">
+                <div className="btn btn-secondary me-2">
                   <Dropdown>
-                    <Dropdown.Toggle>
+                    <Dropdown.Toggle className={'btn btn-secondary'}>
                       <strong>Download Format:</strong> ({this.state.downloadFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>

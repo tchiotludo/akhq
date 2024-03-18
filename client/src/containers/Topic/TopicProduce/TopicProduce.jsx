@@ -17,7 +17,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Tooltip } from '@mui/material';
 import { withRouter } from '../../../utils/withRouter';
-import { Col, Row } from 'react-bootstrap';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -217,11 +216,9 @@ class TopicProduce extends Form {
     const { formData, multiMessage } = this.state;
 
     return (
-      <Row className="form-group align-items-center">
-        <Col xs="2">
-          <label>Multi message</label>
-        </Col>
-        <Col xs="auto">
+      <div className="form-group row">
+        <label className="col-sm-2 col-form-label">Multi message</label>
+        <div className="row khq-multiple col-sm-7">
           {this.renderCheckbox(
             'isMultiMessage',
             multiMessage,
@@ -234,18 +231,17 @@ class TopicProduce extends Form {
                 )
               });
             },
+            false,
             { disabled: tombstone }
           )}
-        </Col>
-        <Col xs="auto">
-          <label>Separator</label>
-        </Col>
-        <Col xs="2">
+
+          <label className="col-auto col-form-label">Separator</label>
           <input
-            className="form-control"
             type="text"
+            name="keyValueSeparator"
             id="keyValueSeparator"
             placeholder=":"
+            className="col-sm-2 form-control"
             disabled={!multiMessage}
             onChange={event => {
               this.setState({
@@ -254,8 +250,8 @@ class TopicProduce extends Form {
               });
             }}
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
     );
   }
 
@@ -263,21 +259,20 @@ class TopicProduce extends Form {
     const { tombstone } = this.state;
 
     return (
-      <Row>
-        <Col xs="2">
-          <label className="col-sm-2 col-form-label">Tombstone</label>
-        </Col>
-        <Col xs="auto">
+      <div className="form-group row">
+        <label className="col-sm-2 col-form-label">Tombstone</label>
+        <div className="row khq-multiple col-sm-7">
           {this.renderCheckbox(
             'isTombstone',
             tombstone,
             () => {
               this.setState({ tombstone: !tombstone });
             },
+            false,
             { disabled: multiMessage }
           )}
-        </Col>
-      </Row>
+        </div>
+      </div>
     );
   }
 
@@ -305,37 +300,33 @@ class TopicProduce extends Form {
         headers.push(this.renderHeader(Number(keyNumbers)));
       }
     });
-    return (
-      <div data-testid="headers" className="form-group">
-        {headers.map(head => head)}
-      </div>
-    );
+    return <div data-testid="headers">{headers.map(head => head)}</div>;
   }
 
   renderHeader(position) {
     return (
-      <Row>
-        <Col xs="2">
-          <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
-        </Col>
+      <div className="row header-wrapper">
+        <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <Col>{this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', 'input-class')}</Col>
-        <Col>
-          {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', 'input-class')}
-        </Col>
-        <Col xs="auto">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            data-testid={`button_${position}`}
-            onClick={() => {
-              position === 0 ? this.handlePlus() : this.handleRemove(position);
-            }}
-          >
-            <FontAwesomeIcon icon={position === 0 ? faPlus : faTrash} />
-          </button>
-        </Col>
-      </Row>
+        <div className="row col-sm-10 khq-multiple">
+          <div>
+            {this.renderInput(`hKey${position}`, '', 'Key', 'text', true, '', 'input-class')}
+            {this.renderInput(`hValue${position}`, '', 'Value', 'text', true, '', 'input-class')}
+          </div>
+          <div className="add-button">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid={`button_${position}`}
+              onClick={() => {
+                position === 0 ? this.handlePlus() : this.handleRemove(position);
+              }}
+            >
+              <FontAwesomeIcon icon={position === 0 ? faPlus : faTrash} />
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -369,53 +360,60 @@ class TopicProduce extends Form {
 
     return (
       <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', minHeight: '89px' }}>
-        {results
-          .filter(key => {
-            if (searchValue.length > 0) {
-              return key.includes(searchValue);
-            }
-            return results;
-          })
-          .map((key, index) => {
-            let selected = selectedValue === key ? 'selected' : '';
-            return (
-              <Dropdown.Item key={index} active={selected}>
-                <Tooltip
-                  title={
-                    selectedValue === key && tag !== 'topicId'
-                      ? 'Click to unselect option'
-                      : 'Click to select option'
-                  }
-                >
-                  <div
-                    onClick={() => {
-                      if (tag === 'key') {
-                        selectedValue === key
-                          ? this.setState({ selectedKeySchema: '' })
-                          : this.setState({ selectedKeySchema: key });
-                      } else if (tag === 'value') {
-                        selectedValue === key
-                          ? this.setState({ selectedValueSchema: '' })
-                          : this.setState({ selectedValueSchema: key });
-                      } else if (tag === 'topicId') {
-                        if (selectedValue !== key) {
-                          this.setState({ topicId: key });
-                          if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
-                            this.getPreferredSchemaForTopic();
+        <ul
+          className="dropdown-menu inner show"
+          role="presentation"
+          style={{ marginTop: '0px', marginBottom: '0px' }}
+        >
+          {results
+            .filter(key => {
+              if (searchValue.length > 0) {
+                return key.includes(searchValue);
+              }
+              return results;
+            })
+            .map((key, index) => {
+              let selected = selectedValue === key ? 'selected' : '';
+              return (
+                <li key={index}>
+                  <Tooltip
+                    title={
+                      selectedValue === key && tag !== 'topicId'
+                        ? 'Click to unselect option'
+                        : 'Click to select option'
+                    }
+                  >
+                    <div
+                      onClick={() => {
+                        if (tag === 'key') {
+                          selectedValue === key
+                            ? this.setState({ selectedKeySchema: '' })
+                            : this.setState({ selectedKeySchema: key });
+                        } else if (tag === 'value') {
+                          selectedValue === key
+                            ? this.setState({ selectedValueSchema: '' })
+                            : this.setState({ selectedValueSchema: key });
+                        } else if (tag === 'topicId') {
+                          if (selectedValue !== key) {
+                            this.setState({ topicId: key });
+                            if (roles.SCHEMA && roles.SCHEMA.includes('READ')) {
+                              this.getPreferredSchemaForTopic();
+                            }
                           }
                         }
-                      }
-                    }}
-                    role="option"
-                    id={`bs-select-${index}-0`}
-                    aria-selected="false"
-                  >
-                    <span className="text">{key}</span>
-                  </div>
-                </Tooltip>
-              </Dropdown.Item>
-            );
-          })}
+                      }}
+                      role="option"
+                      className={`dropdown-item ${selected}`}
+                      id={`bs-select-${index}-0`}
+                      aria-selected="false"
+                    >
+                      <span className="text">{key}</span>
+                    </div>
+                  </Tooltip>
+                </li>
+              );
+            })}
+        </ul>{' '}
       </div>
     );
   };

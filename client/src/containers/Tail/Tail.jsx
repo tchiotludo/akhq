@@ -219,8 +219,8 @@ class Tail extends Root {
 
     return (
       <div>
-        <Header title="Live Tail" history={this.props.history} />
-        <nav className="navbar navbar-expand-lg navbar-light bg-light mr-auto khq-data-filter khq-sticky khq-nav">
+        <Header title="Live Tail" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <button
             className="navbar-toggler"
             type="button"
@@ -283,7 +283,7 @@ class Tail extends Root {
                     value={dropdownSearch}
                   />
                 </div>
-                <div className="bs-actionsbox p-2">
+                <div className="bs-actionsbox">
                   <div className="btn-group btn-group-sm btn-block">
                     <button
                       onClick={() => {
@@ -319,6 +319,7 @@ class Tail extends Root {
                 {this.renderTopicList()}
               </Dropdown.Menu>
             </Dropdown>
+
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
               <Dropdown.Toggle className="btn dropdown-toggle btn-white">
                 Max Records: {maxRecords}
@@ -356,7 +357,7 @@ class Tail extends Root {
               <span className="d-md-none">Search </span>
               <FontAwesomeIcon icon={faSearch} />
             </button>
-            <div className="ms-3 btn-group actions" role="group">
+            <div className="btn-group actions" role="group">
               <button
                 className={`btn btn-secondary pause ${
                   selectedStatus === STATUS.STARTED ? '' : 'd-none'
@@ -523,8 +524,7 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819',
-                        padding: '0.25rem'
+                        backgroundColor: '#171819'
                       }}
                     >
                       {header.key}
@@ -535,8 +535,7 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819',
-                        padding: '0.25rem'
+                        backgroundColor: '#171819'
                       }}
                     >
                       {header.value}

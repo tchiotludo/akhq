@@ -117,17 +117,9 @@ class SchemaUpdate extends Form {
         onSubmit={e => this.handleSubmit(e)}
       >
         <fieldset>
-          {this.renderInput(
-            'subject',
-            'Subject',
-            'Subject',
-            undefined,
-            undefined,
-            false,
-            false,
-            false,
-            { disabled: true }
-          )}
+          {this.renderInput('subject', 'Subject', 'Subject', undefined, false, '', false, false, {
+            disabled: true
+          })}
           {this.renderSelect(
             'compatibility',
             'Compatibility Level',

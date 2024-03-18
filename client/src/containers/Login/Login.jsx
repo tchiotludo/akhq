@@ -9,7 +9,6 @@ import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../utils/withRouter';
-import { Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 // Adaptation of login.ftl
@@ -117,7 +116,7 @@ class Login extends Form {
   _renderForm() {
     const { errors } = this.state;
     return (
-      <div>
+      <>
         <div className="input-group mb-3">
           <div className="input-group-prepend">
             <span className="input-group-text">
@@ -171,7 +170,7 @@ class Login extends Form {
             disabled={this.validate()}
           />
         </div>
-      </div>
+      </>
     );
   }
 
@@ -196,7 +195,7 @@ class Login extends Form {
 
     return (
       <div>
-        <Card>
+        <main>
           <form
             className="khq-login"
             onSubmit={e => {
@@ -218,7 +217,7 @@ class Login extends Form {
             {oidcAuths && this._renderOidc(oidcAuths)}
             {oauthAuths && this._renderOidc(oauthAuths)}
           </form>
-        </Card>
+        </main>
       </div>
     );
   }

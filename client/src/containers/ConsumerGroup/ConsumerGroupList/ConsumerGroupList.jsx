@@ -128,12 +128,12 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-secondary btn-sm mb-1 me-1"
+          className="btn btn-dark btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
           {topicId + ' '}
 
-          <div className="badge bg-light-subtle">Lag: {Number(offsetLag).toLocaleString()}</div>
+          <div className="badge bg-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
         </Link>
       );
     });
@@ -176,7 +176,7 @@ class ConsumerGroupList extends Root {
     return (
       <div>
         <Header title="Consumer Groups" />
-        <nav className="navbar navbar-expand-lg me-auto khq-data-filter khq-sticky khq-nav bg-secondary-subtle">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={search}

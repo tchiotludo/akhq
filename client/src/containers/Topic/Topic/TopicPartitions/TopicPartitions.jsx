@@ -48,7 +48,7 @@ class TopicPartitions extends Root {
       return (
         <span
           key={replica.id}
-          className={'me-1 ' + (replica.inSyncReplicas ? 'badge bg-success' : 'badge bg-danger')}
+          className={replica.inSyncReplicas ? 'badge bg-success' : 'badge bg-danger'}
         >
           {' '}
           {replica.id}
@@ -71,6 +71,7 @@ class TopicPartitions extends Root {
       <div>
         <Table
           loading={loading}
+          history={this.props.history}
           columns={[
             {
               id: 'id',

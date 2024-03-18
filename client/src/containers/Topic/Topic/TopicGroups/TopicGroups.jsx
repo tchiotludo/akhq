@@ -4,7 +4,6 @@ import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Root from '../../../../components/Root';
 import { Link } from 'react-router-dom';
-import { Badge } from 'react-bootstrap';
 
 class TopicGroups extends Root {
   state = {
@@ -55,11 +54,13 @@ class TopicGroups extends Root {
   }
 
   handleState(state) {
-    return <Badge bg={state === 'STABLE' ? 'success' : 'warning'}>{state}</Badge>;
+    return (
+      <span className={state === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>{state}</span>
+    );
   }
 
   handleCoordinator(coordinator) {
-    return <span>{coordinator}</span>;
+    return <span className="badge bg-primary"> {coordinator}</span>;
   }
 
   handleTopics(topics) {
@@ -69,11 +70,11 @@ class TopicGroups extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
-          className="me-1 btn btn-secondary btn-sm mb-1"
+          className="btn btn-dark btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
-          {topic}{' '}
-          <div className="badge bg-light-subtle">Lag: {Number(topics[topic]).toLocaleString()}</div>
+          {topic}
+          <div className="badge bg-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
         </Link>
       );
     });

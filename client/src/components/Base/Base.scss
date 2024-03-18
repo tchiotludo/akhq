@@ -1,29 +1,9 @@
-#content {
-  min-height: 100vh;
-  padding: 20px 20px 65px;
-}
-
-.title {
-  display: flex;
-  position: relative;
-  width: calc(100% + 40px);
-  left: -20px;
-  top: -40px;
-  height: 94px;
-  border-bottom: 4px solid $yellow;
-  padding: 20px 20px 0;
-
-  .btn {
-    white-space: nowrap;
-  }
-}
-
 .expanded {
   margin-left: $sidebar-expanded !important;
   width: calc(100% - $sidebar-expanded) !important;
 }
 
 .collapsed {
-  margin-left: 64px !important;
-  width: calc(100% - 64px) !important;
+  margin-left: $sidebar-collapsed !important;
+  width: calc(100% - $sidebar-collapsed) !important;
 }
