@@ -118,10 +118,8 @@ class Login extends Form {
     return (
       <>
         <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text">
-              <FontAwesomeIcon icon={faUser} />
-            </span>
+          <div className="input-group-text">
+            <FontAwesomeIcon icon={faUser} />
           </div>
           <input
             type="text"
@@ -141,10 +139,8 @@ class Login extends Form {
         </div>
 
         <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text">
-              <FontAwesomeIcon icon={faLock} />
-            </span>
+          <div className="input-group-text">
+            <FontAwesomeIcon icon={faLock} />
           </div>
           <input
             type="password"

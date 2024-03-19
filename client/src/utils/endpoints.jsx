@@ -1,7 +1,7 @@
 const apiUrl = '/api';
 
 export const uriLogin = () => {
-  return '/login';
+  return `${apiUrl}/login`;
 };
 
 export const uriAuths = () => {
