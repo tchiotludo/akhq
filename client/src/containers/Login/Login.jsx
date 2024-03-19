@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logoUrl from '../../images/logo.svg';
-import { uriCurrentUser, uriLogin } from '../../utils/endpoints';
+import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
@@ -180,7 +180,7 @@ class Login extends Form {
 
   _renderOidc(oidcsAuths) {
     return oidcsAuths.map((auth, i) => (
-      <a key={i} href={`/ui/oauth/login/${auth.key}`} className="btn btn-primary btn-block">
+      <a key={i} href={uriOidc(auth.key)} className="btn btn-primary btn-block">
         {auth.label}
       </a>
     ));

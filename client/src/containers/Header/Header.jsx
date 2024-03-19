@@ -67,9 +67,7 @@ class Header extends Root {
               this.logout();
             }}
           >
-            {' '}
-            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} />
-            {username} (Logout)
+            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} /> {username} (Logout)
           </button>
         </Link>
       );

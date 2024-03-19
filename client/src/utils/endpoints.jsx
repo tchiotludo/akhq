@@ -1,11 +1,15 @@
 const apiUrl = '/api';
 
 export const uriLogin = () => {
-  return `${apiUrl}/login`;
+  return '/login';
 };
 
 export const uriAuths = () => {
   return `${apiUrl}/auths`;
+};
+
+export const uriOidc = provider => {
+  return `/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {
