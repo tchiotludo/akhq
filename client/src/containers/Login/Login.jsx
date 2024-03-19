@@ -79,12 +79,9 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        this.props.router.navigate(
-          {
-            pathname: returnTo || '/ui'
-          },
-          { replace: true }
-        );
+        this.props.router.navigate({
+          pathname: returnTo || '/ui'
+        });
       } else {
         toast.error('User logged in but no roles assigned');
       }

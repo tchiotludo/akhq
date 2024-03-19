@@ -13,7 +13,7 @@ export const uriOidc = provider => {
 };
 
 export const uriLogout = () => {
-  return `${apiUrl}/logout`;
+  return '/logout';
 };
 
 export const uriCurrentUser = () => {
