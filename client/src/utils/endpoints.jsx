@@ -1,7 +1,15 @@
-const apiUrl = '/api';
+import prefix from './../prefix';
+
+const baseUrl =
+  import.meta.env.VITE_BASE_URL ||
+  `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+export const basePath = prefix();
+
+export const apiUrl = `${baseUrl + basePath}/api`;
 
 export const uriLogin = () => {
-  return '/login';
+  return `${basePath}/login`;
 };
 
 export const uriAuths = () => {
@@ -9,11 +17,11 @@ export const uriAuths = () => {
 };
 
 export const uriOidc = provider => {
-  return `/oauth/login/${provider}`;
+  return `${baseUrl + basePath}/oauth/login/${provider}`;
 };
 
 export const uriLogout = () => {
-  return '/logout';
+  return `${basePath}/logout`;
 };
 
 export const uriCurrentUser = () => {

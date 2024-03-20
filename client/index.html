@@ -9,6 +9,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#33b5e5" />
     <meta name="html-head" content="replace" />
+
+    <!--
+      The AKHQ_PREFIX_PATH placeholder magic value is replaced during serving by server
+      and set to ${micronaut.server.context-path:} external URL path. It gets prepended to all links back
+      to Prometheus, both for asset loading as well as API accesses.
+    -->
+    <script>
+      const AKHQ_PREFIX_UI = '%BASE_URL%';
+
+      const AKHQ_PREFIX_PATH = (function () {
+        const split = AKHQ_PREFIX_UI.split('/');
+        split.pop();
+        return split.join('/');
+      })();
+    </script>
+
     <meta
       name="description"
       content="Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more..."

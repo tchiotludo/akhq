@@ -1,7 +1,7 @@
 import React from 'react';
 
 import logoUrl from '../../images/logo.svg';
-import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
+import { basePath, uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
@@ -79,9 +79,7 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        this.props.router.navigate({
-          pathname: returnTo || '/ui'
-        });
+        window.location.replace(basePath + (returnTo || '/ui'));
       } else {
         toast.error('User logged in but no roles assigned');
       }

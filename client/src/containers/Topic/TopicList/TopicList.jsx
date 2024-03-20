@@ -449,8 +449,8 @@ class TopicList extends Root {
                       {collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronUp} />}
                       {!collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronDown} />}
                     </span>
-                    <span className="badge bg-secondary">{consumerGroups.length}</span>
-                    <Collapse in={collapseConsumerGroups[obj.id]}>
+                    <span className="ms-1 badge bg-secondary">{consumerGroups.length}</span>
+                    <Collapse in={collapseConsumerGroups[obj.id]} className={'mt-2'}>
                       <div>
                         {consumerGroups.splice(1, consumerGroups.length).map(group => {
                           return <div key={i++}>{group}</div>;
