@@ -382,8 +382,8 @@ class TopicCopy extends Form {
                     label=""
                     placeholder="Last x messages"
                     onChange={this.resetToCalculatedOffsets}
-                    noStyle=""
-                    wrapperClass="input-nr-messages"
+                    noStyle={true}
+                    wrapperClass="px-2"
                     inputClass=""
                   />
                 </div>

@@ -1,6 +1,17 @@
 $sidebarTransition: 0.5s;
 
 .sidenav---sidenav---_2tBP {
+  a {
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .sidenav---navitem---9uL5T:hover {
+    a {
+      text-decoration: underline;
+    }
+  }
   .logo-wrapper {
     background: $tertiary;
     border-bottom: 4px solid $yellow;

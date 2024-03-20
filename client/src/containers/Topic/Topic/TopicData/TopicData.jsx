@@ -726,7 +726,7 @@ class TopicData extends Root {
       <div className="search-input-fields">
         <label>{label}</label>
         <input
-          className="form-control"
+          className="form-group form-control"
           name={`${name}_text`}
           type="text"
           value={search[name].text}

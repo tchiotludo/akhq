@@ -44,10 +44,6 @@ nav.navbar {
       margin: $dropdown-item-padding-y $dropdown-item-padding-x;
       width: calc(100% - 3rem);
       min-width: 200px;
-
-      input {
-        border: 0;
-      }
     }
   }
 }
