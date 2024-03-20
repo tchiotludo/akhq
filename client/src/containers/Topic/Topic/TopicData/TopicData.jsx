@@ -153,8 +153,10 @@ class TopicData extends Root {
         if (query.get('single') !== null) {
           this._getSingleMessage(query.get('partition'), query.get('offset'));
           this.setState({ canDownload: true });
-        } else {
+        } else if (Object.keys(this.state.offsets).length) {
           this._getMessages();
+        } else {
+          this._searchMessages();
         }
       }
     );
