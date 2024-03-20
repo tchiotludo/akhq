@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-8daa1a0e","path":"/","title":"Home","lang":"en-US","frontmatter":{"home":true,"title":"Home","sidebar":false,"pageClass":"landing"},"headers":[],"git":{"updatedTime":1710934731000,"contributors":[{"name":"Nard Théo","email":"58373303+PandeoF1@users.noreply.github.com","commits":1}]},"filePathRelative":"README.md"}');export{e as data};
