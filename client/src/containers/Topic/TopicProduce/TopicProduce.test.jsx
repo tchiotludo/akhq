@@ -4,6 +4,10 @@ import { describe, it, vi } from 'vitest';
 import TopicProduce from './TopicProduce';
 import { render } from '@testing-library/react';
 
+vi.mock('./../../../prefix', () => ({
+  default: () => ''
+}));
+
 // noinspection JSUnusedGlobalSymbols
 vi.mock('react-router-dom', () => ({
   useLocation: vi.fn(),
