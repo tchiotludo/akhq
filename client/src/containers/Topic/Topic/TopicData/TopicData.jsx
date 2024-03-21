@@ -510,33 +510,32 @@ class TopicData extends Root {
       });
   };
 
-  _handleMessages = (messages, append = false, insertAtEnd = true) => {
+  _handleMessages = (messages, append = false, startWithOldest = true) => {
     let tableMessages = append ? [...this.state.messages] : [];
-    messages.forEach(message => {
-      let messageToPush = {
-        key: message.key || '',
-        value: message.truncated
-          ? message.value + '...\nToo large message. Full body in share button.' || ''
-          : message.value || '',
-        timestamp: message.timestamp,
-        partition: JSON.stringify(message.partition) || '',
-        offset: JSON.stringify(message.offset) || '',
-        headers: message.headers || [],
-        schema: {
-          key: message.keySchemaId,
-          value: message.valueSchemaId,
-          registryType: this.state.registryType
-        },
-        exceptions: message.exceptions || []
-      };
 
-      if (insertAtEnd) {
-        tableMessages.push(messageToPush);
-      } else {
-        tableMessages.unshift(messageToPush);
-      }
-    });
-    return tableMessages;
+    let mappedMessages = messages.map(message => ({
+      key: message.key || '',
+      value: message.truncated
+        ? message.value + '...\nToo large message. Full body in share button.' || ''
+        : message.value || '',
+      timestamp: message.timestamp,
+      partition: JSON.stringify(message.partition) || '',
+      offset: JSON.stringify(message.offset) || '',
+      headers: message.headers || [],
+      schema: {
+        key: message.keySchemaId,
+        value: message.valueSchemaId,
+        registryType: this.state.registryType
+      },
+      exceptions: message.exceptions || []
+    }));
+
+    tableMessages.push(...mappedMessages);
+
+    const isBefore = startWithOldest ? 1 : -1;
+    const isAfter = startWithOldest ? -1 : 1;
+
+    return tableMessages.sort((a, b) => (a.timestamp > b.timestamp ? isAfter : isBefore));
   };
 
   _downloadAllMatchingFilters = () => {
