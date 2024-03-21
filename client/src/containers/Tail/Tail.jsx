@@ -17,6 +17,7 @@ import * as LosslessJson from 'lossless-json';
 import { withRouter } from '../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPause, faPlay, faRemove, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { fromEvent, map, scan } from 'rxjs';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -34,7 +35,7 @@ class Tail extends Root {
     showDropdown: false,
     selectedTopics: [],
     selectedStatus: 'STOPPED',
-    maxRecords: 50,
+    maxRecords: 2,
     data: [],
     showFilters: '',
     dateTimeFormat: SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
@@ -99,21 +100,24 @@ class Tail extends Root {
           }
         : {}
     );
+
     let self = this;
-    this.eventSource.addEventListener('tailBody', function (e) {
-      let res = JSON.parse(e.data);
-      let { data } = self.state;
+    fromEvent(this.eventSource, 'tailBody')
+      .pipe(map(e => JSON.parse(e.data) || {}))
+      .pipe(scan((acc, one) => [...acc, one], []))
+      .subscribe(results => {
+        const records = results
+          .map(result => result.records)
+          .filter(records => records?.length > 0)
+          .reduce((acc, all) => [...acc, ...all], [])
+          .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
 
-      if (res.records) {
-        data = data.concat(res.records);
-        if (data.length > maxRecords) {
-          data = data.slice(data.length - maxRecords);
-        }
-      }
+        const data =
+          records.length > maxRecords ? records.slice(records.length - maxRecords) : records;
 
-      self.setState({ data: data });
-      self.scrollToBottom();
-    });
+        self.setState({ data: data });
+        self.scrollToBottom();
+      });
 
     this.eventSource.onerror = () => {
       this.setState({ selectedStatus: STATUS.STOPPED });
