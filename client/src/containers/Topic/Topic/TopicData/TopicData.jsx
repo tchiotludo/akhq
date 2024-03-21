@@ -360,7 +360,7 @@ class TopicData extends Root {
   };
 
   _fetchMessages(requests, changePage = false) {
-    const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
+    const { nextPage, pageNumber, partitionCount, recordCount, offsets, sortBy } = this.state;
 
     Promise.all(requests).then(data => {
       let tableMessages = [],
@@ -374,7 +374,7 @@ class TopicData extends Root {
       const partitionData = data[1].data;
 
       if (messagesData.results) {
-        tableMessages = this._handleMessages(messagesData.results);
+        tableMessages = this._handleMessages(messagesData.results, false, sortBy === 'Oldest');
       } else {
         pageNumberTemp = 1;
       }
@@ -532,8 +532,8 @@ class TopicData extends Root {
 
     tableMessages.push(...mappedMessages);
 
-    const isBefore = startWithOldest ? 1 : -1;
-    const isAfter = startWithOldest ? -1 : 1;
+    const isBefore = startWithOldest ? -1 : 1;
+    const isAfter = startWithOldest ? 1 : -1;
 
     return tableMessages.sort((a, b) => (a.timestamp > b.timestamp ? isAfter : isBefore));
   };
