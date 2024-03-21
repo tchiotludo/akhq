@@ -69,6 +69,7 @@
     "moment": "^2.30.1",
     "prettier": "^3.2.5",
     "react-test-renderer": "^18.2.0",
+    "rxjs": "^7.8.1",
     "sass": "^1.72.0",
     "style-loader": "^3.3.4",
     "vite": "^5.1.6",

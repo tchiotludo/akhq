@@ -42,6 +42,7 @@ import {
   faSortNumericDesc,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
+import { fromEvent, map, scan } from 'rxjs';
 
 class TopicData extends Root {
   state = {
@@ -208,38 +209,40 @@ class TopicData extends Root {
             : {}
         );
 
-        this.eventSource.addEventListener('searchBody', function (e) {
-          const res = JSON.parse(e.data);
-          const records = res.records || [];
+        fromEvent(this.eventSource, 'searchBody')
+          .pipe(map(e => JSON.parse(e.data) || {}))
+          .pipe(scan((acc, one) => [...acc, one], []))
+          .subscribe(results => {
+            const lastResult = results.slice(-1);
+            const percentDiff = lastResult.percent - lastPercentVal;
 
-          const percentDiff = res.percent - lastPercentVal;
+            // to avoid UI slowdowns, only update the percentage in fixed increments
+            if (percentDiff >= percentUpdateDelta) {
+              lastPercentVal = lastResult.percent;
+              self.setState({
+                recordCount: self.state.recordCount + lastResult.records.length,
+                percent: lastResult.percent.toFixed(2)
+              });
+            }
 
-          // to avoid UI slowdowns, only update the percentage in fixed increments
-          if (percentDiff >= percentUpdateDelta) {
-            lastPercentVal = res.percent;
-            self.setState({
-              recordCount: self.state.recordCount + records.length,
-              percent: res.percent.toFixed(2)
-            });
-          }
+            const records = results
+              .map(result => result.records)
+              .filter(records => records?.length > 0)
+              .reduce((acc, all) => [...acc, ...all], []);
 
-          if (records.length) {
-            const tableMessages = self._handleMessages(
-              records,
-              true,
-              self.state.sortBy === 'Oldest'
-            );
-            self.setState({ messages: tableMessages });
-          }
-        });
+            if (records.length) {
+              const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
+              self.setState({ recordCount: tableMessages.length, messages: tableMessages });
+            }
+          });
 
-        this.eventSource.addEventListener('searchEnd', function (e) {
-          const res = JSON.parse(e.data);
-          const nextPage = res.after ? res.after : self.state.nextPage;
-          self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
-
-          self.eventSource.close();
-        });
+        fromEvent(this.eventSource, 'searchEnd')
+          .pipe(map(e => JSON.parse(e.data) || []))
+          .subscribe(result => {
+            const nextPage = result.after ? result.after : self.state.nextPage;
+            self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
+            self.eventSource.close();
+          });
       }
     );
   };
@@ -374,7 +377,7 @@ class TopicData extends Root {
       const partitionData = data[1].data;
 
       if (messagesData.results) {
-        tableMessages = this._handleMessages(messagesData.results, false, sortBy === 'Oldest');
+        tableMessages = this._handleMessages(messagesData.results, sortBy === 'Oldest');
       } else {
         pageNumberTemp = 1;
       }
@@ -510,8 +513,8 @@ class TopicData extends Root {
       });
   };
 
-  _handleMessages = (messages, append = false, startWithOldest = true) => {
-    let tableMessages = append ? [...this.state.messages] : [];
+  _handleMessages = (messages, startWithOldest = true) => {
+    let tableMessages = [];
 
     let mappedMessages = messages.map(message => ({
       key: message.key || '',
