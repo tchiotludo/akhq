@@ -217,7 +217,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId() + " got last version " + latestVersion.getId());
         }
 
-        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(subject, registerSchemaResponse.getId(), registerSchemaResponse.getVersion()));
+        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(subject, latestVersion.getId(), latestVersion.getVersion()));
 
         return latestVersion;
     }
@@ -273,7 +273,6 @@ public class SchemaRegistryRepository extends AbstractRepository {
         if (!configUpdateRequest.getCompatibilityLevel().equals(config.getCompatibilityLevel().name())) {
             throw new IllegalArgumentException("Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel() + "' expected: " + config.getCompatibilityLevel().name());
         }
-
         auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(subject, null, config.getCompatibilityLevel().name()));
     }
 

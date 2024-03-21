@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = TopicAuditEvent.class, name = "TOPIC"),
-    @JsonSubTypes.Type(value = ConsumerGroupAuditEvent.class, name = "CONSUMER_GROUP")
+    @JsonSubTypes.Type(value = ConsumerGroupAuditEvent.class, name = "CONSUMER_GROUP"),
+    @JsonSubTypes.Type(value = SchemaAuditEvent.class, name = "SCHEMA")
 })
 @Data
 @NoArgsConstructor
@@ -27,6 +28,7 @@ public abstract class AuditEvent {
         TOPIC_DELETE,
         SCHEMA_CREATE,
         SCHEMA_UPDATE,
+        SCHEMA_COMPATIBILITY_UPDATE,
         SCHEMA_DELETE
     }
 

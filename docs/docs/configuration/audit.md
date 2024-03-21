@@ -11,6 +11,11 @@ akhq can be configured to emit audit event to a kafka cluster for the following 
   - Update offsets
   - Delete offsets
   - Delete consumer group
+- Schema registry
+  - Create new schema for a subject
+  - Update existing schema for a subject
+  - Change compatibility level of a subject
+  - Delete a subject
 
 The following configuration is an example of akhq with audit turned ON. All events mentioned above
 will be sent to the `my-audit-cluster-plain-text` cluster in the topic `audit`.

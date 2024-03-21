@@ -20,6 +20,8 @@ public class SchemaAuditEvent extends AuditEvent {
     public static SchemaAuditEvent createOrUpdateSchema(String subject, Integer schemaId, Integer version) {
         ActionType type;
 
+        System.out.println("Schema: " + subject + " version:" + version);
+
         if (version == null) {
             type = ActionType.SCHEMA_CREATE;
         } else {
@@ -38,7 +40,11 @@ public class SchemaAuditEvent extends AuditEvent {
     }
 
     public static SchemaAuditEvent updateSchemaCompatibility(String subject, Integer schemaId, String newCompatibility) {
-        return new SchemaAuditEvent(subject, schemaId, null, ActionType.SCHEMA_UPDATE, newCompatibility);
+        return new SchemaAuditEvent(subject, schemaId, null, ActionType.SCHEMA_COMPATIBILITY_UPDATE, newCompatibility);
     }
 
+    @Override
+    public String getType() {
+        return "SCHEMA";
+    }
 }

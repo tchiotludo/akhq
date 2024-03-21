@@ -1,4 +1,4 @@
-package org.akhq.modules;
+package org.akhq.modules.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
@@ -11,10 +11,8 @@ import org.akhq.models.Config;
 import org.akhq.models.audit.AuditEvent;
 import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
-import org.akhq.repositories.ConfigRepository;
-import org.akhq.repositories.ConsumerGroupRepository;
-import org.akhq.repositories.RecordRepository;
-import org.akhq.repositories.TopicRepository;
+import org.akhq.modules.KafkaModule;
+import org.akhq.repositories.*;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -39,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(KafkaClusterExtension.class)
 @MicronautTest(environments = "audit")
-class AuditModuleTest extends AbstractTest {
+class KafkaAuditModuleTest extends AbstractTest {
 
     private static final String AUDIT_TOPIC_NAME = "audit";
 
@@ -65,7 +63,7 @@ class AuditModuleTest extends AbstractTest {
     @Mock
     ApplicationContext applicationContext;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
     void before() {
@@ -170,8 +168,6 @@ class AuditModuleTest extends AbstractTest {
             var records = consumer.poll(Duration.ofSeconds(5));
             for (ConsumerRecord<byte[], byte[]> record : records.records(new TopicPartition(AUDIT_TOPIC_NAME, 0))) {
                 var raw = record.value();
-
-                System.out.println(new String(raw));
 
                 var payload = mapper.readValue(raw, AuditEvent.class);
 
