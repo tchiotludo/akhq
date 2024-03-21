@@ -35,7 +35,7 @@ class Tail extends Root {
     showDropdown: false,
     selectedTopics: [],
     selectedStatus: 'STOPPED',
-    maxRecords: 2,
+    maxRecords: 50,
     data: [],
     showFilters: '',
     dateTimeFormat: SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
