@@ -17,15 +17,15 @@ public class ConsumerGroupAuditEvent extends AuditEvent {
     private String topic;
 
     public static ConsumerGroupAuditEvent updateOffsets(String clusterId, String topicName, String consumerGroupName) {
-        return new ConsumerGroupAuditEvent(ActionType.UPDATE_OFFSETS_CONSUMER_GROUP, clusterId, consumerGroupName, topicName);
+        return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_UPDATE_OFFSETS, clusterId, consumerGroupName, topicName);
     }
 
     public static ConsumerGroupAuditEvent deleteGroup(String clusterId, String consumerGroupName) {
-        return new ConsumerGroupAuditEvent(ActionType.DELETE_CONSUMER_GROUP, clusterId, consumerGroupName, null);
+        return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_DELETE, clusterId, consumerGroupName, null);
     }
 
     public static ConsumerGroupAuditEvent deleteGroupOffsets(String clusterId, String consumerGroupName, String topicName) {
-        return new ConsumerGroupAuditEvent(ActionType.DELETE_OFFSETS_CONSUMER_GROUP, clusterId, consumerGroupName, topicName);
+        return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_DELETE_OFFSETS, clusterId, consumerGroupName, topicName);
     }
 
     @Override

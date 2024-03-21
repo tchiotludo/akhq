@@ -15,7 +15,6 @@ import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -35,7 +34,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-import static org.akhq.models.audit.AuditEvent.ActionType.UPDATE_OFFSETS_CONSUMER_GROUP;
+import static org.akhq.models.audit.AuditEvent.ActionType.CONSUMER_GROUP_UPDATE_OFFSETS;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(KafkaClusterExtension.class)
@@ -83,7 +82,7 @@ class AuditModuleTest extends AbstractTest {
         TopicAuditEvent event = null;
 
         // Creation event tests
-        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.NEW_TOPIC, generatedString);
+        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.TOPIC_CREATE, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -93,7 +92,7 @@ class AuditModuleTest extends AbstractTest {
         topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, generatedString, 2);
 
         // Increase partition event tests
-        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.INCREASE_PARTITION, generatedString);
+        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.TOPIC_INCREASE_PARTITION, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -103,7 +102,7 @@ class AuditModuleTest extends AbstractTest {
         configRepository.updateTopic(KafkaTestCluster.CLUSTER_ID, generatedString, List.of(new Config("max.message.bytes", "2097164")));
 
         // Configuration change event tests
-        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.CONFIG_CHANGE, generatedString);
+        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.TOPIC_CONFIG_CHANGE, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -113,7 +112,7 @@ class AuditModuleTest extends AbstractTest {
         topicRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString);
 
         // Deletion event tests
-        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.DELETE_TOPIC, generatedString);
+        event = (TopicAuditEvent) searchAuditEvent(AuditEvent.ActionType.TOPIC_DELETE, generatedString);
 
         assertNotNull(event);
         assertEquals(generatedString, event.getTopicName());
@@ -148,7 +147,7 @@ class AuditModuleTest extends AbstractTest {
             Map.of(new org.akhq.models.TopicPartition(generatedString, 0), 0L)
         );
 
-        var event = (ConsumerGroupAuditEvent) searchAuditEvent(UPDATE_OFFSETS_CONSUMER_GROUP, generatedString);
+        var event = (ConsumerGroupAuditEvent) searchAuditEvent(CONSUMER_GROUP_UPDATE_OFFSETS, generatedString);
 
         assertNotNull(event);
         assertNotNull(event.getConsumerGroupName());
