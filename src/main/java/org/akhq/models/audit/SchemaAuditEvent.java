@@ -11,13 +11,14 @@ import lombok.NoArgsConstructor;
 @Data
 public class SchemaAuditEvent extends AuditEvent {
 
+    private String clusterId;
     private String subject;
     private Integer schemaId;
     private Integer version;
     private ActionType actionType;
     private String newCompatibility;
 
-    public static SchemaAuditEvent createOrUpdateSchema(String subject, Integer schemaId, Integer version) {
+    public static SchemaAuditEvent createOrUpdateSchema(String clusterId, String subject, Integer schemaId, Integer version) {
         ActionType type;
 
         System.out.println("Schema: " + subject + " version:" + version);
@@ -32,15 +33,15 @@ public class SchemaAuditEvent extends AuditEvent {
             }
         }
 
-        return new SchemaAuditEvent(subject, schemaId, version, type, null);
+        return new SchemaAuditEvent(clusterId, subject, schemaId, version, type, null);
     }
 
-    public static SchemaAuditEvent deleteSchema(String subject, Integer schemaId) {
-        return new SchemaAuditEvent(subject, schemaId, null, ActionType.SCHEMA_DELETE, null);
+    public static SchemaAuditEvent deleteSchema(String clusterId, String subject, Integer schemaId) {
+        return new SchemaAuditEvent(clusterId, subject, schemaId, null, ActionType.SCHEMA_DELETE, null);
     }
 
-    public static SchemaAuditEvent updateSchemaCompatibility(String subject, Integer schemaId, String newCompatibility) {
-        return new SchemaAuditEvent(subject, schemaId, null, ActionType.SCHEMA_COMPATIBILITY_UPDATE, newCompatibility);
+    public static SchemaAuditEvent updateSchemaCompatibility(String clusterId, String subject, Integer schemaId, String newCompatibility) {
+        return new SchemaAuditEvent(clusterId, subject, schemaId, null, ActionType.SCHEMA_COMPATIBILITY_UPDATE, newCompatibility);
     }
 
     @Override

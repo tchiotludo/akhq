@@ -217,7 +217,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId() + " got last version " + latestVersion.getId());
         }
 
-        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(subject, latestVersion.getId(), latestVersion.getVersion()));
+        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(clusterId, subject, latestVersion.getId(), latestVersion.getVersion()));
 
         return latestVersion;
     }
@@ -231,7 +231,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             throw new IllegalArgumentException("Invalid subject '" + subject + "'");
         }
 
-        auditModule.save(SchemaAuditEvent.deleteSchema(subject, list.get(0)));
+        auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, list.get(0)));
 
         return list.get(0);
     }
@@ -239,7 +239,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     public int deleteVersion(String clusterId, String subject, int version) throws IOException, RestClientException {
         var deletedVersion = this.kafkaModule.getRegistryRestClient(clusterId)
             .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
-        auditModule.save(SchemaAuditEvent.deleteSchema(subject, deletedVersion));
+        auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
         return deletedVersion;
     }
 
@@ -273,7 +273,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         if (!configUpdateRequest.getCompatibilityLevel().equals(config.getCompatibilityLevel().name())) {
             throw new IllegalArgumentException("Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel() + "' expected: " + config.getCompatibilityLevel().name());
         }
-        auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(subject, null, config.getCompatibilityLevel().name()));
+        auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(clusterId, subject, null, config.getCompatibilityLevel().name()));
     }
 
     public Deserializer getKafkaAvroDeserializer(String clusterId) {
