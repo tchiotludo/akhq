@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = TopicAuditEvent.class, name = "TOPIC"),
     @JsonSubTypes.Type(value = ConsumerGroupAuditEvent.class, name = "CONSUMER_GROUP"),
-    @JsonSubTypes.Type(value = SchemaAuditEvent.class, name = "SCHEMA")
+    @JsonSubTypes.Type(value = SchemaAuditEvent.class, name = "SCHEMA"),
+    @JsonSubTypes.Type(value = ConnectAuditEvent.class, name = "CONNECT")
 })
 @Data
 @NoArgsConstructor
@@ -29,7 +30,14 @@ public abstract class AuditEvent {
         SCHEMA_CREATE,
         SCHEMA_UPDATE,
         SCHEMA_COMPATIBILITY_UPDATE,
-        SCHEMA_DELETE
+        SCHEMA_DELETE,
+        CONNECT_CREATE,
+        CONNECT_UPDATE,
+        CONNECT_DELETE,
+        CONNECT_RESTART,
+        CONNECT_TASK_RESTART,
+        CONNECT_PAUSE,
+        CONNECT_RESUME,
     }
 
 }
