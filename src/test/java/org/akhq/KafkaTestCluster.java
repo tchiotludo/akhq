@@ -54,11 +54,12 @@ public class KafkaTestCluster implements Runnable {
     public static final String TOPIC_STREAM_COUNT = "stream-count";
     public static final String TOPIC_CONNECT = "connect-sink";
     public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
+    public static final String TOPIC_AUDIT = "audit";
 
-    public static final int TOPIC_ALL_COUNT = 22;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 12;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 10;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 20;
+    public static final int TOPIC_ALL_COUNT = 23;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 13;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 11;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 21;
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
@@ -182,7 +183,7 @@ public class KafkaTestCluster implements Runnable {
                     }
                 }));
             }
-        } catch (Exception  e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -215,6 +216,7 @@ public class KafkaTestCluster implements Runnable {
         testUtils.createTopic(TOPIC_STREAM_IN, 3, (short) 1);
         testUtils.createTopic(TOPIC_STREAM_MAP, 3, (short) 1);
         testUtils.createTopic(TOPIC_STREAM_COUNT, 3, (short) 1);
+        testUtils.createTopic(TOPIC_AUDIT, 1, (short) 1);
         stream = new StreamTest(this.connectionString.getKafka(), this.connectionString.getSchemaRegistry());
         stream.run();
 
@@ -317,40 +319,40 @@ public class KafkaTestCluster implements Runnable {
         // acls
         List<AclBinding> bindings = new ArrayList<>();
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
+            new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "testAcl", PatternType.PREFIXED),
-                new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.DENY))
+            new ResourcePattern(ResourceType.TOPIC, "testAcl", PatternType.PREFIXED),
+            new AccessControlEntry("user:toto", "*", AclOperation.READ, AclPermissionType.DENY))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:tata", "my-host", AclOperation.WRITE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.TOPIC, "testAclTopic", PatternType.LITERAL),
+            new AccessControlEntry("user:tata", "my-host", AclOperation.WRITE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
+            new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
-                new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.TOPIC, "anotherAclTestTopic", PatternType.LITERAL),
+            new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
+            new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
-                new AccessControlEntry("user:tata", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.GROUP, "groupConsumer", PatternType.LITERAL),
+            new AccessControlEntry("user:tata", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
-                new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
+            new AccessControlEntry("user:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         bindings.add(new AclBinding(
-                new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
-                new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
+            new ResourcePattern(ResourceType.GROUP, "groupConsumer2", PatternType.LITERAL),
+            new AccessControlEntry("test:toto", "*", AclOperation.DESCRIBE, AclPermissionType.ALLOW))
         );
         testUtils.getAdminClient().createAcls(bindings).all().get();
         log.debug("bindings acls added");

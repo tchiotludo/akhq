@@ -5,7 +5,9 @@ import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.models.ConsumerGroup;
 import org.akhq.models.Partition;
+import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
@@ -34,6 +36,9 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
+
+    @Inject
+    private AuditModule auditModule;
 
     public PagedList<ConsumerGroup> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
         return PagedList.of(all(clusterId, search, filters), pagination, groupsList -> this.findByName(clusterId, groupsList, filters));
@@ -148,6 +153,11 @@ public class ConsumerGroupRepository extends AbstractRepository {
 
         consumer.commitSync(offsets);
         consumer.close();
+
+        offset.forEach(
+            (k, v) -> auditModule.save(ConsumerGroupAuditEvent.updateOffsets(clusterId, k.getTopic(), name))
+        );
+
 
         kafkaWrapper.clearConsumerGroupsOffsets();
     }
