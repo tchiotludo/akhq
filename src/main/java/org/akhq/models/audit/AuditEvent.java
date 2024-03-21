@@ -24,7 +24,10 @@ public abstract class AuditEvent {
         TOPIC_CREATE,
         TOPIC_CONFIG_CHANGE,
         TOPIC_INCREASE_PARTITION,
-        TOPIC_DELETE
+        TOPIC_DELETE,
+        SCHEMA_CREATE,
+        SCHEMA_UPDATE,
+        SCHEMA_DELETE
     }
 
 }
