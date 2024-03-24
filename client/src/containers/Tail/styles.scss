@@ -503,6 +503,14 @@ select.selectpicker {
   float: none;
 }
 
+.btn-block {
+  width: 100%;
+
+  .bs-select-all {
+    margin-right: 8px !important;
+  }
+}
+
 .bootstrap-select {
   width: auto !important;
 }
