@@ -5,6 +5,7 @@ import Form from '../../../components/Form/Form';
 import { uriSchemaCreate } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../utils/withRouter';
 
 class SchemaCreate extends Form {
   state = {
@@ -47,7 +48,7 @@ class SchemaCreate extends Form {
 
   async doSubmit() {
     const { formData } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     const schemaType = formData.schemaType;
     let schemaData;
@@ -73,10 +74,8 @@ class SchemaCreate extends Form {
     };
 
     this.postApi(uriSchemaCreate(clusterId), schema).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/schema`
-      });
       toast.success(`Schema '${formData.subject}' created`);
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/schema` });
     });
   }
 
@@ -89,7 +88,7 @@ class SchemaCreate extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Create a schema" history={this.props.history} />
+          <Header title="Create a schema" />
           {this.renderInput('subject', 'Subject', 'Subject')}
 
           {this.renderSelect(
@@ -134,4 +133,4 @@ class SchemaCreate extends Form {
   }
 }
 
-export default SchemaCreate;
+export default withRouter(SchemaCreate);

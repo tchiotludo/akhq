@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import './styles.scss';
 import image from '../../images/icon.svg';
 
 class Loading extends Component {

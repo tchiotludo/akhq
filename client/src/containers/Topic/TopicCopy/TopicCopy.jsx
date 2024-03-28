@@ -14,13 +14,14 @@ import {
   uriTopicsName,
   uriTopicsOffsetsByTimestamp
 } from '../../../utils/endpoints';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../components/DatePicker';
 import moment from 'moment';
 import Input from '../../../components/Form/Input';
+import { withRouter } from '../../../utils/withRouter';
+import { format } from 'date-fns';
 
 class TopicCopy extends Form {
   state = {
@@ -38,7 +39,7 @@ class TopicCopy extends Form {
   schema = {};
 
   componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
 
     this.schema['clusterListView'] = Joi.string().required();
     this.schema['topicListView'] = Joi.string().required();
@@ -185,24 +186,24 @@ class TopicCopy extends Form {
 
       renderedInputs.push(
         <div className="form-group row row-checkbox" key={name}>
-          {
+          <div className={'col-auto'}>
             <input
               type="checkbox"
               value={checkName}
               checked={checked[checkName] || false}
               onChange={this.checkedTopicOffset}
             />
-          }
-          <div className="col-sm-10 partition-input">
+          </div>
+          <div className={'col-sm-10 partition-input'}>
             <span id={`partition-${partition.id}-input`}>
               {this.renderInput(
                 name,
                 `Partition: ${partition.id}`,
                 'Offset',
                 'number',
-                undefined,
-                true,
-                'partition-input-div',
+                false,
+                '',
+                '',
                 `partition-input ${name}-input`
               )}
             </span>
@@ -275,8 +276,8 @@ class TopicCopy extends Form {
               second: momentValue.second(),
               milli: momentValue.millisecond()
             },
-            'YYYY-MM-DDTHH:mm:ss.SSS'
-          ) + 'Z'
+            'YYYY-MM-DDTHH:mm:ss.SSSZ'
+          )
         : '';
 
     let data = {};
@@ -298,7 +299,7 @@ class TopicCopy extends Form {
 
   renderResetButton = () => {
     const { timestamp, formData } = this.state;
-    const { loading } = this.props.history.location;
+    const loading = !!history.location;
 
     return (
       <span>
@@ -340,7 +341,9 @@ class TopicCopy extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Filter Timestamp UTC</Dropdown.Toggle>
+            <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
+              Filter Timestamp {format(new Date(), 'z')}
+            </Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>
@@ -365,7 +368,9 @@ class TopicCopy extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Last x messages per partition</Dropdown.Toggle>
+            <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
+              Last x messages per partition
+            </Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>
@@ -377,8 +382,8 @@ class TopicCopy extends Form {
                     label=""
                     placeholder="Last x messages"
                     onChange={this.resetToCalculatedOffsets}
-                    noStyle=""
-                    wrapperClass="input-nr-messages"
+                    noStyle={true}
+                    wrapperClass="px-2"
                     inputClass=""
                   />
                 </div>
@@ -395,10 +400,7 @@ class TopicCopy extends Form {
 
     return (
       <div>
-        <Header
-          title={`Copy topic ${topicId} from cluster ${clusterId}`}
-          history={this.props.history}
-        />
+        <Header title={`Copy topic ${topicId} from cluster ${clusterId}`} />
         <form className="khq-form khq-copy-topic" onSubmit={() => this.handleSubmit()}>
           {this.renderTopicPartition()}
           <fieldset id="cluster" key="cluster">
@@ -449,4 +451,4 @@ class TopicCopy extends Form {
   }
 }
 
-export default TopicCopy;
+export default withRouter(TopicCopy);

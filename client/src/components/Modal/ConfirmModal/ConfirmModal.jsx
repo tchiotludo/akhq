@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import '../styles.scss';
-
 function ConfirmModal({ handleConfirm, handleCancel, show, message, confirmLabel, cancelLabel }) {
   return (
     <div className={show ? 'modal display-block' : 'modal display-none'}>

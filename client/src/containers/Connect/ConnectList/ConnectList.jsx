@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
@@ -15,6 +14,9 @@ import Root from '../../../components/Root';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectList extends Root {
   state = {
@@ -28,15 +30,14 @@ class ConnectList extends Root {
     loading: true,
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     searchData: {
       search: ''
     }
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const connectId = nextProps.match.params.connectId;
+    const clusterId = nextProps.params.clusterId;
+    const connectId = nextProps.params.connectId;
 
     return {
       clusterId: clusterId,
@@ -69,7 +70,7 @@ class ConnectList extends Root {
     }
   }
 
-  async getConnectDefinitions() {
+  async getConnectDefinitions(replaceInNavigation = true) {
     const { clusterId, connectId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -82,10 +83,13 @@ class ConnectList extends Root {
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        this.props.history.push({
-          pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: replaceInNavigation }
+        );
       });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
@@ -164,10 +168,10 @@ class ConnectList extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getConnectDefinitions();
+      this.getConnectDefinitions(replaceInNavigation);
     });
   };
 
@@ -192,7 +196,7 @@ class ConnectList extends Root {
         <React.Fragment>
           <span className={`btn btn-sm mb-1 ${className}`}>
             {`${task.workerId} (${task.id}) `}
-            <span className="badge badge-light">{task.state}</span>
+            <span className="badge bg-light">{task.state}</span>
           </span>
           <br />
         </React.Fragment>
@@ -206,15 +210,11 @@ class ConnectList extends Root {
     const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } =
       this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
 
     return (
       <div>
-        <Header title={`Connect: ${connectId}`} history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title={`Connect: ${connectId}`} />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -227,13 +227,12 @@ class ConnectList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
         <Table
           loading={loading}
-          history={history}
           columns={[
             {
               id: 'id',
@@ -253,6 +252,7 @@ class ConnectList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
                     theme="merbivore_soft"
@@ -283,14 +283,14 @@ class ConnectList extends Root {
                 if (obj[col.accessor].type === 'source') {
                   return (
                     <React.Fragment>
-                      <i className="fa fa-forward" aria-hidden="true" />
+                      <FontAwesomeIcon icon={faForward} aria-hidden={true} />
                       {` ${obj[col.accessor].shortClassName}`}
                     </React.Fragment>
                   );
                 }
                 return (
                   <React.Fragment>
-                    <i className="fa fa-backward" aria-hidden="true" />
+                    <FontAwesomeIcon icon={faBackward} aria-hidden={true} />
                     {` ${obj[col.accessor].shortClassName}`}
                   </React.Fragment>
                 );
@@ -311,7 +311,14 @@ class ConnectList extends Root {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}`}
+          onDetails={name => {
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`
+              },
+              { replace: true }
+            );
+          }}
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}
@@ -374,4 +381,4 @@ class ConnectList extends Root {
   }
 }
 
-export default ConnectList;
+export default withRouter(ConnectList);

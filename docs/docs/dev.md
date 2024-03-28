@@ -27,6 +27,8 @@ Dev server is a java server & webpack-dev-server with live reload.
 
 The configuration for the dev server is in `application.dev.yml`.
 
+Once it started, you can visit http://localhost:4000, additionally it is possible to run `npm start` inside the client-folder which contains hot reload.
+
 ## Setup local dev environment on Windows
 
 In case you want to develop for AKHQ on Windows with IntelliJ IDEA without Docker (for any reason) you can follow this

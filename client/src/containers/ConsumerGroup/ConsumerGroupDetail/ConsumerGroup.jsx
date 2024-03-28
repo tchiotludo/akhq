@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Header from '../../Header';
 import ConsumerGroupTopics from './ConsumerGroupTopics/ConsumerGroupTopics';
@@ -6,11 +6,13 @@ import ConsumerGroupMembers from './ConsumerGroupMembers/ConsumerGroupMembers';
 import { Link } from 'react-router-dom';
 import ConsumerGroupAcls from './ConsumerGroupAcls/ConsumerGroupAcls';
 import { getSelectedTab } from '../../../utils/functions';
+import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
-class ConsumerGroup extends Component {
+class ConsumerGroup extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    consumerGroupId: this.props.match.params.consumerGroupId,
+    clusterId: this.props.params.clusterId,
+    consumerGroupId: this.props.params.consumerGroupId,
     consumerGroup: {},
     selectedTab: 'topics',
     roles: JSON.parse(sessionStorage.getItem('roles'))
@@ -19,15 +21,18 @@ class ConsumerGroup extends Component {
   tabs = ['topics', 'members', 'acls'];
 
   componentDidMount() {
-    const { clusterId, consumerGroupId } = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.params;
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
       {
         selectedTab: tabSelected ? tabSelected : 'topics'
       },
       () => {
-        this.props.history.replace(
-          `/ui/${clusterId}/group/${consumerGroupId}/${this.state.selectedTab}`
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${clusterId}/group/${consumerGroupId}/${this.state.selectedTab}`
+          },
+          { replace: true }
         );
       }
     );
@@ -47,42 +52,17 @@ class ConsumerGroup extends Component {
 
   renderSelectedTab() {
     const { selectedTab } = this.state;
-    const { history } = this.props;
-    const { clusterId, consumerGroupId } = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.params;
     switch (selectedTab) {
       case 'topics':
-        return (
-          <ConsumerGroupTopics
-            clusterId={clusterId}
-            consumerGroupId={consumerGroupId}
-            history={history}
-          />
-        );
+        return <ConsumerGroupTopics clusterId={clusterId} consumerGroupId={consumerGroupId} />;
       case 'members':
-        return (
-          <ConsumerGroupMembers
-            clusterId={clusterId}
-            consumerGroupId={consumerGroupId}
-            history={history}
-          />
-        );
+        return <ConsumerGroupMembers clusterId={clusterId} consumerGroupId={consumerGroupId} />;
       case 'acls':
-        return (
-          <ConsumerGroupAcls
-            clusterId={clusterId}
-            consumerGroupId={consumerGroupId}
-            history={history}
-          />
-        );
+        return <ConsumerGroupAcls clusterId={clusterId} consumerGroupId={consumerGroupId} />;
 
       default:
-        return (
-          <ConsumerGroupTopics
-            clusterId={clusterId}
-            consumerGroupId={consumerGroupId}
-            history={history}
-          />
-        );
+        return <ConsumerGroupTopics clusterId={clusterId} consumerGroupId={consumerGroupId} />;
     }
   }
 
@@ -91,10 +71,7 @@ class ConsumerGroup extends Component {
     const roles = this.state.roles || {};
     return (
       <div>
-        <Header
-          title={`Consumer Group: ${decodeURIComponent(consumerGroupId)}`}
-          history={this.props.history}
-        />
+        <Header title={`Consumer Group: ${decodeURIComponent(consumerGroupId)}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
@@ -140,7 +117,7 @@ class ConsumerGroup extends Component {
                 {roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
                   <Link
                     to={`/ui/${clusterId}/group/${consumerGroupId}/offsetsdelete`}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
                     Delete Offsets
                   </Link>
@@ -162,11 +139,9 @@ class ConsumerGroup extends Component {
 }
 
 ConsumerGroup.propTypes = {
-  history: PropTypes.object,
-  match: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
   children: PropTypes.any
 };
 
-export default ConsumerGroup;
+export default withRouter(ConsumerGroup);

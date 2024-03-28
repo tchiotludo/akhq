@@ -1,5 +1,4 @@
 import React from 'react';
-import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import constants from '../../../../utils/constants';
 import {
@@ -14,12 +13,15 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AceEditor from 'react-ace';
 import Root from '../../../../components/Root';
+import { withRouter } from '../../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPause, faPlay, faRefresh } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectTasks extends Root {
   state = {
-    clusterId: this.props.clusterId || this.props.match.params.clusterId,
-    connectId: this.props.connectId || this.props.match.params.connectId,
-    definitionId: this.props.definitionId || this.props.match.params.clusterId,
+    clusterId: this.props.clusterId || this.props.params.clusterId,
+    connectId: this.props.connectId || this.props.params.connectId,
+    definitionId: this.props.definitionId || this.props.params.clusterId,
     definition: {},
     definitionModifyMessage: '',
     definitionModifyData: {},
@@ -181,7 +183,6 @@ class ConnectTasks extends Root {
         <div className="table-responsive">
           <Table
             loading={loading}
-            history={this.props.history}
             columns={[
               {
                 id: 'id',
@@ -219,6 +220,7 @@ class ConnectTasks extends Root {
                 extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="text"
                       id={'value' + index}
                       theme="merbivore_soft"
@@ -260,10 +262,10 @@ class ConnectTasks extends Root {
               <li className="aside-button">
                 <div
                   //href="#"
-                  className="btn btn-primary mr-2"
+                  className="btn btn-primary me-2"
                   onClick={() => this.handleAction(this.definitionState.RESUME)}
                 >
-                  <i className="fa fa-play" aria-hidden="true" /> Resume Definition
+                  <FontAwesomeIcon icon={faPlay} aria-hidden={true} /> Resume Definition
                 </div>
               </li>
             ) : (
@@ -272,20 +274,20 @@ class ConnectTasks extends Root {
                   <div
                     //href="#"
                     type="pause"
-                    className="btn btn-primary mr-2"
+                    className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.PAUSE)}
                   >
-                    <i className="fa fa-pause" aria-hidden="true" /> Pause Definition
+                    <FontAwesomeIcon icon={faPause} aria-hidden={true} /> Pause Definition
                   </div>
                 </li>
 
                 <li className="aside-button">
                   <div
                     //href="#"
-                    className="btn btn-primary mr-2"
+                    className="btn btn-primary me-2"
                     onClick={() => this.handleAction(this.definitionState.RESTART)}
                   >
-                    <i className="fa fa-refresh" aria-hidden="true" /> Restart Definition
+                    <FontAwesomeIcon icon={faRefresh} aria-hidden={true} /> Restart Definition
                   </div>
                 </li>
               </React.Fragment>
@@ -303,4 +305,4 @@ class ConnectTasks extends Root {
   }
 }
 
-export default ConnectTasks;
+export default withRouter(ConnectTasks);

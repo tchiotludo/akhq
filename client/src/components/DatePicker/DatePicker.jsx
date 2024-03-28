@@ -63,7 +63,7 @@ class DatePicker extends Component {
             />
             {onClear && (
               <button
-                className="btn btn-primary"
+                className="btn btn-primary me-0"
                 onClick={() => {
                   this.setState(
                     {
@@ -91,6 +91,7 @@ class DatePicker extends Component {
           showTimeSelect={showTimeSelect}
           showTimeInput={showTimeInput}
           dateFormat="MM/dd/yyyy h:mm aa"
+          timeIntervals={15}
           inline
         />
       </div>

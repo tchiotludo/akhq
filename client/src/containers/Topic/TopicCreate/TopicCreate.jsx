@@ -1,10 +1,10 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import { withRouter } from 'react-router-dom';
 import Form from '../../../components/Form/Form';
 import Header from '../../Header';
 import { uriTopicsCreate, uriTopicDefaultConf } from '../../../utils/endpoints';
 import { toast } from 'react-toastify';
+import { withRouter } from '../../../utils/withRouter';
 
 class TopicCreate extends Form {
   state = {
@@ -50,7 +50,7 @@ class TopicCreate extends Form {
 
   async doSubmit() {
     const { formData } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const topic = {
       cluster: clusterId,
       name: formData.name,
@@ -63,10 +63,8 @@ class TopicCreate extends Form {
     };
 
     this.postApi(uriTopicsCreate(clusterId), topic).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/topic`
-      });
       toast.success(`Topic '${formData.name}' created`);
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic` });
     });
   }
   render() {
@@ -77,7 +75,7 @@ class TopicCreate extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Create a topic" history={this.props.history} />
+          <Header title="Create a topic" />
           {this.renderInput('name', 'Name', 'Name')}
           {this.renderInput('partition', 'Partition', 'Partition', 'number')}
           {this.renderInput('replication', 'Replicator Factor', 'Replicator Factor', 'number')}

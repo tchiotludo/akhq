@@ -164,8 +164,8 @@ akhq:
         - resources: [ "ACL" ]
           actions: [ "READ" ]
       ksqldb-admin:
-        - resources: [ "READ", "KSQLDB" ]
-          actions: [ "EXECUTE" ]
+        - resources: [ "KSQLDB" ]
+          actions: [ "READ", "EXECUTE" ]
     groups:
       reader:
         - role: reader

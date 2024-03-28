@@ -1,12 +1,15 @@
 import React from 'react';
 
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 import { organizeRoles } from '../../utils/converters';
 import { logout } from '../../utils/api';
 import { uriCurrentUser, uriLogout } from '../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../components/Root';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignIn } from '@fortawesome/free-solid-svg-icons';
 
 class Header extends Root {
   state = {
@@ -29,7 +32,7 @@ class Header extends Root {
   // }
 
   // goBack() {
-  //   this.props.history.goBack();
+  //   history.back();
   // }
 
   async logout() {
@@ -41,12 +44,8 @@ class Header extends Root {
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
       localStorage.removeItem('jwtToken');
       this.setState({ login: currentUserData.logged }, () => {
-        this.props.history.replace({
-          pathname: '/ui/login',
-          ...this.props.history
-        });
-        window.location.reload(false);
         toast.success('Logged out successfully');
+        this.props.router.navigate({ pathname: '/ui/login' }, { replace: true });
       });
     });
   }
@@ -57,9 +56,7 @@ class Header extends Root {
       return login === 'false' || !login ? (
         <Link to="/ui/login">
           <button className="btn btn-primary">
-            {' '}
-            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-            Login
+            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} /> Login
           </button>
         </Link>
       ) : (
@@ -70,18 +67,14 @@ class Header extends Root {
               this.logout();
             }}
           >
-            {' '}
-            <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-            {username} (Logout)
+            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} /> {username} (Logout)
           </button>
         </Link>
       );
     } else if (auths && username) {
       return (
         <button className="btn btn-primary" disabled>
-          {' '}
-          <i className="fa fa-fw fa-sign-in" aria-hidden="true" />
-          {username}
+          <FontAwesomeIcon icon={faSignIn} aria-hidden={true} /> {username}
         </button>
       );
     } else {

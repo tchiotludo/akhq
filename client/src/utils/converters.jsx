@@ -1,5 +1,6 @@
 import lowerCase from 'lodash/lowerCase';
 import moment from 'moment';
+import convert from 'convert-units';
 
 export function calculateTopicOffsetLag(topicOffsets, topicId) {
   let offsetLag = 0;
@@ -35,7 +36,7 @@ export function groupedTopicOffset(offsets) {
  * If utc is false, the date and time will be formatted in the local time zone.
  * Finally, the formatted date and time string is returned as a string
  */
-export function formatDateTime(value, format, utc = true) {
+export function formatDateTime(value, format, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,
@@ -54,7 +55,6 @@ export function formatDateTime(value, format, utc = true) {
 
 export function handleConvert(value, unit, exclude) {
   exclude = exclude || '';
-  const convert = require('convert-units');
   return convert(value).from(unit).toBest(exclude);
 }
 

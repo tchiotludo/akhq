@@ -1,21 +1,19 @@
 import React from 'react';
 import { uriKsqlDBExecuteQuery } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import AceEditor from 'react-ace';
-import './styles.scss';
 import Table from '../../../components/Table';
+import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBQuery extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    ksqlDBId: this.props.match.params.ksqlDBId,
+    clusterId: this.props.params.clusterId,
+    ksqlDBId: this.props.params.ksqlDBId,
     formData: {},
     properties: {},
     tableData: [],
@@ -91,7 +89,6 @@ class KsqlDBQuery extends Root {
 
   render() {
     const { formData, tableData, tableColumns, loading } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -103,7 +100,7 @@ class KsqlDBQuery extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Execute query'} history={history} />
+          <Header title={'Execute query'} />
 
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">
@@ -125,6 +122,7 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
                 theme="merbivore_soft"
@@ -147,6 +145,7 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="properties"
                 id={'properties'}
                 theme="merbivore_soft"
@@ -167,7 +166,6 @@ class KsqlDBQuery extends Root {
             <div className="col-sm-10">
               <Table
                 loading={loading}
-                history={history}
                 columns={tableColumns}
                 data={tableData}
                 updateData={data => {

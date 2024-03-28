@@ -13,6 +13,9 @@ import { toast } from 'react-toastify';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEraser, faLevelDown, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 class Topic extends Root {
   state = {
@@ -46,7 +49,7 @@ class Topic extends Root {
   }
 
   componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     const searchParams = this.props.location.search;
 
     const roles = this.state.roles || {};
@@ -67,7 +70,7 @@ class Topic extends Root {
         if (searchParams) {
           uri = uri + searchParams;
         }
-        this.props.history.replace(uri);
+        this.props.router.navigate(uri, { replace: true });
       }
     );
   }
@@ -102,7 +105,7 @@ class Topic extends Root {
             })
           }
         >
-          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+          {option}
         </Dropdown.Item>
       );
     }
@@ -157,7 +160,7 @@ class Topic extends Root {
   };
 
   emptyTopic = () => {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
 
     this.removeApi(uriTopicDataEmpty(clusterId, topicId))
       .then(() => {
@@ -189,10 +192,6 @@ class Topic extends Root {
     }
   }
 
-  selectTab = tab => {
-    this.setState({ selectedTab: tab });
-  };
-
   tabClassName = tab => {
     const { selectedTab } = this.state;
     return selectedTab === tab ? 'nav-link active' : 'nav-link';
@@ -200,15 +199,13 @@ class Topic extends Root {
 
   renderSelectedTab = () => {
     const { selectedTab, topicId, clusterId, roles, topicInternal } = this.state;
-    const { history, match, location } = this.props;
+    const { location } = this.props;
 
     switch (selectedTab) {
       case 'data':
         return (
           <TopicData
             ref={this.topicData}
-            history={history}
-            match={match}
             location={location}
             isAllTopicDataSelected={this.state.isAllTopicDataSelected}
             onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
@@ -216,27 +213,20 @@ class Topic extends Root {
           />
         );
       case 'partitions':
-        return <TopicPartitions clusterId={clusterId} topic={topicId} history={history} />;
+        return <TopicPartitions clusterId={clusterId} topic={topicId} />;
       case 'groups':
-        return <TopicGroups clusterId={clusterId} topicId={topicId} history={history} />;
+        return <TopicGroups clusterId={clusterId} topicId={topicId} />;
       case 'configs':
-        return (
-          <TopicConfigs
-            internal={topicInternal}
-            history={history}
-            topicId={topicId}
-            clusterId={clusterId}
-          />
-        );
+        return <TopicConfigs internal={topicInternal} topicId={topicId} clusterId={clusterId} />;
       case 'acls':
-        return <TopicAcls history={history} topicId={topicId} clusterId={clusterId} />;
+        return <TopicAcls topicId={topicId} clusterId={clusterId} />;
       case 'logs':
-        return <TopicLogs clusterId={clusterId} topic={topicId} history={history} />;
+        return <TopicLogs clusterId={clusterId} topic={topicId} />;
       default:
         return roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') ? (
-          <TopicData history={history} match={match} location={location} />
+          <TopicData location={location} />
         ) : (
-          <TopicPartitions history={history} />
+          <TopicPartitions />
         );
     }
   };
@@ -247,7 +237,7 @@ class Topic extends Root {
     const roles = this.state.roles || {};
     return (
       <div>
-        <Header title={`Topic: ${topicId}`} history={this.props.history} />
+        <Header title={`Topic: ${topicId}`} />
         <div className="tabs-container" style={{ marginBottom: '4%' }}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
@@ -314,9 +304,9 @@ class Topic extends Root {
           <aside>
             <li className="aside-button">
               {this.state.isAllTopicDataSelected && (
-                <div className="btn mr-2">
+                <div className="btn btn-secondary me-2 p-0">
                   <Dropdown>
-                    <Dropdown.Toggle>
+                    <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
                       <strong>Download Format:</strong> ({this.state.downloadFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
@@ -332,16 +322,16 @@ class Topic extends Root {
                     onClick={() => {
                       this.handleOnEmpty();
                     }}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                    <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 ) : (
                   <div
                     title="Only enabled for topics with Delete Cleanup Policy"
-                    className="btn disabled-black-button mr-2"
+                    className="btn disabled-black-button me-2"
                   >
-                    <i className="fa fa-fw fa-eraser" aria-hidden={true} /> Empty Topic
+                    <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 )
               ) : (
@@ -353,9 +343,9 @@ class Topic extends Root {
                   to={{
                     pathname: `/ui/${clusterId}/topic/${topicId}/copy`
                   }}
-                  className="btn btn-secondary mr-2"
+                  className="btn btn-secondary me-2"
                 >
-                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Copy Topic
+                  <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Copy Topic
                 </Link>
               )}
 
@@ -365,9 +355,9 @@ class Topic extends Root {
                     pathname: `/ui/${clusterId}/tail`,
                     search: `?topicId=${topicId}`
                   }}
-                  className="btn btn-secondary mr-2"
+                  className="btn btn-secondary me-2"
                 >
-                  <i className="fa fa-fw fa-level-down" aria-hidden={true} /> Live Tail
+                  <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Live Tail
                 </Link>
               )}
 
@@ -376,15 +366,15 @@ class Topic extends Root {
                 roles.TOPIC_DATA.includes('CREATE') && (
                   <Link
                     to={`/ui/${clusterId}/topic/${topicId}/increasepartition`}
-                    className="btn btn-secondary mr-2"
+                    className="btn btn-secondary me-2"
                   >
-                    <i className="fa fa-plus" aria-hidden={true} /> Increase Partition
+                    <FontAwesomeIcon icon={faPlus} aria-hidden={true} /> Increase Partition
                   </Link>
                 )}
 
               {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Link to={`/ui/${clusterId}/topic/${topicId}/produce`} className="btn btn-primary">
-                  <i className="fa fa-plus" aria-hidden={true} /> Produce to topic
+                  <FontAwesomeIcon icon={faPlus} aria-hidden={true} /> Produce to topic
                 </Link>
               )}
             </li>
@@ -401,4 +391,4 @@ class Topic extends Root {
   }
 }
 
-export default Topic;
+export default withRouter(Topic);

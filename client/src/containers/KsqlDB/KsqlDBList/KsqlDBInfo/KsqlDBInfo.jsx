@@ -3,11 +3,12 @@ import Table from '../../../../components/Table/Table';
 import { uriKsqlDBInfo } from '../../../../utils/endpoints';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
+import { withRouter } from '../../../../utils/withRouter';
 
 class KsqlDBInfo extends Root {
   state = {
-    clusterId: this.props.clusterId || this.props.match.params.clusterId,
-    ksqlDBId: this.props.ksqlDBId || this.props.match.params.ksqlDBId,
+    clusterId: this.props.clusterId || this.props.params.clusterId,
+    ksqlDBId: this.props.ksqlDBId || this.props.params.ksqlDBId,
     info: {},
     tableData: [],
     loading: true
@@ -51,7 +52,6 @@ class KsqlDBInfo extends Root {
         <div className="table-responsive">
           <Table
             loading={loading}
-            history={this.props.history}
             columns={[
               {
                 id: 'title',
@@ -80,4 +80,4 @@ class KsqlDBInfo extends Root {
   }
 }
 
-export default KsqlDBInfo;
+export default withRouter(KsqlDBInfo);

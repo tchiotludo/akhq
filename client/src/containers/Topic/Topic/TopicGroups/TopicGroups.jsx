@@ -55,14 +55,12 @@ class TopicGroups extends Root {
 
   handleState(state) {
     return (
-      <span className={state === 'STABLE' ? 'badge badge-success' : 'badge badge-warning'}>
-        {state}
-      </span>
+      <span className={state === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>{state}</span>
     );
   }
 
   handleCoordinator(coordinator) {
-    return <span className="badge badge-primary"> {coordinator}</span>;
+    return <span className="badge bg-primary"> {coordinator}</span>;
   }
 
   handleTopics(topics) {
@@ -72,11 +70,11 @@ class TopicGroups extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key="lagTopic.topicId"
-          className="btn btn-dark btn-sm mb-1 mr-1"
+          className="btn btn-dark btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
-          {topic}
-          <div className="badge badge-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
+          {topic}{' '}
+          <div className="badge bg-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
         </Link>
       );
     });
@@ -89,7 +87,6 @@ class TopicGroups extends Root {
       <div>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -134,7 +131,14 @@ class TopicGroups extends Root {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => `/ui/${selectedCluster}/group/${id}`}
+          onDetails={id => {
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${selectedCluster}/group/${id}`
+              },
+              { replace: true }
+            );
+          }}
           actions={[constants.TABLE_DETAILS]}
         />
       </div>

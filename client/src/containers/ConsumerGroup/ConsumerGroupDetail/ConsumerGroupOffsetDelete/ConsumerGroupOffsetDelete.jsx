@@ -7,6 +7,7 @@ import Table from '../../../../components/Table';
 import constants from '../../../../utils/constants';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { toast } from 'react-toastify';
+import { withRouter } from '../../../../utils/withRouter';
 
 class ConsumerGroupOffsetDelete extends Root {
   state = {
@@ -19,7 +20,7 @@ class ConsumerGroupOffsetDelete extends Root {
   };
 
   componentDidMount() {
-    const { clusterId, consumerGroupId } = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.params;
 
     this.setState({ clusterId, consumerGroupId }, () => {
       this.getTopics();
@@ -83,11 +84,10 @@ class ConsumerGroupOffsetDelete extends Root {
     return (
       <div>
         <div>
-          <Header title={`Delete offsets: ${consumerGroupId}`} history={this.props.history} />
+          <Header title={`Delete offsets: ${consumerGroupId}`} />
         </div>
         <div>
           <Table
-            history={this.props.history}
             columns={[
               {
                 id: 'topic',
@@ -124,4 +124,4 @@ class ConsumerGroupOffsetDelete extends Root {
   }
 }
 
-export default ConsumerGroupOffsetDelete;
+export default withRouter(ConsumerGroupOffsetDelete);

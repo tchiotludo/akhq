@@ -1,5 +1,5 @@
 import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
+import { Dropdown } from 'react-bootstrap';
 import remove from 'lodash/remove';
 import Input from '../../components/Form/Input';
 import Header from '../Header';
@@ -8,13 +8,16 @@ import { getClusterUIOptions } from '../../utils/functions';
 import { uriLiveTail, uriTopicsName } from '../../utils/endpoints';
 import Table from '../../components/Table';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../components/Root';
 import DateTime from '../../components/DateTime';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import * as LosslessJson from 'lossless-json';
+import { withRouter } from '../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPause, faPlay, faRemove, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { fromEvent, map, scan } from 'rxjs';
 
 const STATUS = {
   STOPPED: 'STOPPED',
@@ -40,7 +43,7 @@ class Tail extends Root {
   eventSource;
 
   componentDidMount = async () => {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const query = new URLSearchParams(this.props.location.search);
 
     let data = await this.getApi(uriTopicsName(clusterId));
@@ -70,7 +73,7 @@ class Tail extends Root {
   };
 
   initDateTimeFormat = async () => {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const uiOptions = await getClusterUIOptions(clusterId);
     if (uiOptions.topicData && uiOptions.topicData.dateTimeFormat) {
       this.setState({
@@ -85,7 +88,7 @@ class Tail extends Root {
   };
 
   startEventSource = () => {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const { search, selectedTopics, maxRecords } = this.state;
     this.eventSource = new EventSourcePolyfill(
       uriLiveTail(clusterId, search, selectedTopics, JSON.stringify(maxRecords)),
@@ -97,21 +100,24 @@ class Tail extends Root {
           }
         : {}
     );
+
     let self = this;
-    this.eventSource.addEventListener('tailBody', function (e) {
-      let res = JSON.parse(e.data);
-      let { data } = self.state;
+    fromEvent(this.eventSource, 'tailBody')
+      .pipe(map(e => JSON.parse(e.data) || {}))
+      .pipe(scan((acc, one) => [...acc, one], []))
+      .subscribe(results => {
+        const records = results
+          .map(result => result.records)
+          .filter(records => records?.length > 0)
+          .reduce((acc, all) => [...acc, ...all], [])
+          .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
 
-      if (res.records) {
-        data = data.concat(res.records);
-        if (data.length > maxRecords) {
-          data = data.slice(data.length - maxRecords);
-        }
-      }
+        const data =
+          records.length > maxRecords ? records.slice(records.length - maxRecords) : records;
 
-      self.setState({ data: data });
-      self.scrollToBottom();
-    });
+        self.setState({ data: data });
+        self.scrollToBottom();
+      });
 
     this.eventSource.onerror = () => {
       this.setState({ selectedStatus: STATUS.STOPPED });
@@ -217,11 +223,8 @@ class Tail extends Root {
 
     return (
       <div>
-        <Header title="Live Tail" history={this.props.history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light
-        bg-light mr-auto khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title="Live Tail" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <button
             className="navbar-toggler"
             type="button"
@@ -253,14 +256,20 @@ class Tail extends Root {
               inputClass={'tail-search-input'}
             />
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+              <Dropdown.Toggle className="btn dropdown-toggle">
                 {selectedTopics.length === 0
                   ? 'Topics'
                   : selectedTopics.length === 1
-                  ? selectedTopics[0]
-                  : `${selectedTopics.length} Topics Selected`}
+                    ? selectedTopics[0]
+                    : `${selectedTopics.length} Topics Selected`}
               </Dropdown.Toggle>
-              <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
+              <Dropdown.Menu
+                style={{
+                  maxHeight: 'calc(100vh - 200px)',
+                  overflow: 'hidden',
+                  minHeight: '182px'
+                }}
+              >
                 <div className="bs-searchbox">
                   <input
                     type="text"
@@ -316,7 +325,7 @@ class Tail extends Root {
             </Dropdown>
 
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+              <Dropdown.Toggle className="btn dropdown-toggle">
                 Max Records: {maxRecords}
               </Dropdown.Toggle>
               <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
@@ -349,8 +358,8 @@ class Tail extends Root {
               className="btn btn-primary"
               type="submit"
             >
-              <span className="d-md-none">Search </span>
-              <i className="fa fa-search" />
+              <FontAwesomeIcon icon={faSearch} />
+              <span className="d-lg-none"> Search</span>
             </button>
             <div className="btn-group actions" role="group">
               <button
@@ -362,7 +371,7 @@ class Tail extends Root {
                   this.setState({ selectedStatus: STATUS.PAUSED });
                 }}
               >
-                <i className={'fa fa-pause'} />
+                <FontAwesomeIcon icon={faPause} />
                 <span> Pause</span>
               </button>
               <button
@@ -374,7 +383,7 @@ class Tail extends Root {
                   this.setState({ selectedStatus: STATUS.STARTED });
                 }}
               >
-                <i className="fa fa-play" /> <span> Resume</span>
+                <FontAwesomeIcon icon={faPlay} /> <span> Resume</span>
               </button>
               <button
                 className={`btn btn-secondary empty ${
@@ -386,14 +395,13 @@ class Tail extends Root {
                   this.setState({ data: [] });
                 }}
               >
-                <i className="fa fa-remove" /> <span> Clear</span>
+                <FontAwesomeIcon icon={faRemove} /> <span> Clear</span>
               </button>
             </div>
           </div>
         </nav>
         {selectedStatus !== STATUS.STOPPED && (
           <Table
-            history={this.props.history}
             rowId={data => {
               return data.topic.name + '-' + data.partition + '-' + data.offset;
             }}
@@ -474,6 +482,7 @@ class Tail extends Root {
 
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"
@@ -551,4 +560,4 @@ class Tail extends Root {
   }
 }
 
-export default Tail;
+export default withRouter(Tail);

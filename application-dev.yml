@@ -1,12 +1,3 @@
-micronaut:
-  server:
-    cors:
-      enabled: true
-      configurations:
-        all:
-          allowedOrigins:
-            - http://localhost:3000
-
 akhq:
   connections:
     local:

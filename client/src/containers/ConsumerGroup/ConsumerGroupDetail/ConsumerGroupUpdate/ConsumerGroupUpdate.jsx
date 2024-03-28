@@ -11,9 +11,10 @@ import {
   uriConsumerGroupUpdate
 } from '../../../../utils/endpoints';
 import moment from 'moment';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../../utils/withRouter';
+import { format } from 'date-fns';
 
 class ConsumerGroupUpdate extends Form {
   state = {
@@ -31,7 +32,7 @@ class ConsumerGroupUpdate extends Form {
   schema = {};
 
   componentDidMount() {
-    const { clusterId, consumerGroupId } = this.props.match.params;
+    const { clusterId, consumerGroupId } = this.props.params;
 
     this.setState({ clusterId, consumerGroupId }, () => {
       this.getTopicOffset();
@@ -54,8 +55,8 @@ class ConsumerGroupUpdate extends Form {
               second: momentValue.second(),
               milli: momentValue.millisecond()
             },
-            'YYYY-MM-DDTHH:mm:ss.SSS'
-          ) + 'Z'
+            'YYYY-MM-DDTHH:mm:ss.SSSZ'
+          )
         : '';
 
     let data = {};
@@ -232,8 +233,8 @@ class ConsumerGroupUpdate extends Form {
                 `Partition: ${offset.partition}`,
                 'Offset',
                 'number',
-                undefined,
                 true,
+                '',
                 'partition-input-div',
                 `partition-input ${name}-input`,
                 { disabled: disabled }
@@ -249,7 +250,7 @@ class ConsumerGroupUpdate extends Form {
 
   renderResetButton = () => {
     const { timestamp } = this.state;
-    const { loading } = this.props.history.location;
+    const loading = !!history.location;
 
     return (
       <span>
@@ -291,7 +292,9 @@ class ConsumerGroupUpdate extends Form {
           style={{ marginRight: '0.5rem', padding: 0 }}
         >
           <Dropdown>
-            <Dropdown.Toggle>Filter Timestamp UTC</Dropdown.Toggle>
+            <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
+              Filter Timestamp {format(new Date(), 'z')}
+            </Dropdown.Toggle>
             {!loading && (
               <Dropdown.Menu>
                 <div>
@@ -318,7 +321,7 @@ class ConsumerGroupUpdate extends Form {
 
     return (
       <div>
-        <Header title={`Update offsets: ${consumerGroupId}`} history={this.props.history} />
+        <Header title={`Update offsets: ${consumerGroupId}`} />
         <form
           className="khq-form khq-update-consumer-group-offsets"
           onSubmit={() => this.handleSubmit()}
@@ -337,4 +340,4 @@ class ConsumerGroupUpdate extends Form {
   }
 }
 
-export default ConsumerGroupUpdate;
+export default withRouter(ConsumerGroupUpdate);

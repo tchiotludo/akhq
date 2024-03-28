@@ -76,7 +76,7 @@ h3.logo {
     }
   }
 
-  @include media-breakpoint-down(md) {
+  @include media-breakpoint-down(lg) {
     input,
     button,
     select {
@@ -132,12 +132,12 @@ h3.logo {
 }
 
 #content {
-  @include media-breakpoint-up(md) {
-    width: calc(100% - #{$menu-width});
+  @include media-breakpoint-up(lg) {
+    width: calc(100% - #{$sidebar-expanded});
   }
 
-  @include media-breakpoint-up(md) {
-    margin-left: $menu-width;
+  @include media-breakpoint-up(lg) {
+    margin-left: $sidebar-expanded;
   }
 
   @include media-breakpoint-down(sm) {
@@ -184,9 +184,9 @@ form.khq-form div.khq-submit,
   width: calc(100vw - 15px);
   z-index: $zindex-fixed;
 
-  @include media-breakpoint-up(md) {
-    left: $menu-width;
-    width: calc(100vw - #{$menu-width} - 15px);
+  @include media-breakpoint-up(lg) {
+    left: $sidebar-expanded;
+    width: calc(100vw - #{$sidebar-expanded} - 15px);
   }
 
   > div {
@@ -208,8 +208,8 @@ form.khq-form div.khq-submit,
 
 .tab-pane form.khq-form div.khq-submit {
   width: calc(100vw - 15px);
-  @include media-breakpoint-up(md) {
-    width: calc(100vw - #{$menu-width} - 15px);
+  @include media-breakpoint-up(lg) {
+    width: calc(100vw - #{$sidebar-expanded} - 15px);
   }
 }
 

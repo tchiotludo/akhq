@@ -13,9 +13,13 @@ import {
 } from '../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
-import Tooltip from '@material-ui/core/Tooltip';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Tooltip } from '@mui/material';
+import { withRouter } from '../../../utils/withRouter';
+import { format } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 class TopicProduce extends Form {
   state = {
@@ -62,7 +66,7 @@ class TopicProduce extends Form {
   };
 
   async componentDidMount() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     const { roles } = this.state;
 
     let response = await this.getApi(uriTopicsPartitions(clusterId, topicId));
@@ -95,7 +99,7 @@ class TopicProduce extends Form {
   }
 
   async initAvailableTopics() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     const topics = [];
     let page = 0;
@@ -114,7 +118,7 @@ class TopicProduce extends Form {
   }
 
   async getPreferredSchemaForTopic() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     let schema = await this.getApi(uriAllSchema(clusterId));
     let keySchema = [];
     let valueSchema = [];
@@ -131,15 +135,30 @@ class TopicProduce extends Form {
   async initByTopicEvent(copyValues) {
     const { headers, ...topicValuesDefault } = copyValues;
 
-    this.setState({
-      formData: {
-        ...this.state.formData,
-        ...topicValuesDefault
-      },
-      nHeaders: headers.length === 0 ? 1 : 0
-    });
+    let nHeaders = headers.length === 0 ? 1 : 0;
 
-    headers.forEach(({ key, value }) => this.handlePlus(key, value));
+    let newFormData = {
+      ...this.state.formData,
+      ...topicValuesDefault
+    };
+
+    for (const { key, value } of headers) {
+      newFormData[`hKey${nHeaders}`] = key;
+      newFormData[`hValue${nHeaders}`] = value;
+
+      this.schema = {
+        ...this.schema,
+        [`hKey${nHeaders}`]: Joi.string().min(1).label(`hKey${nHeaders}`),
+        [`hValue${nHeaders}`]: Joi.string().min(1).label(`hValue${nHeaders}`)
+      };
+
+      nHeaders++;
+    }
+
+    this.setState({
+      formData: newFormData,
+      nHeaders: nHeaders
+    });
   }
 
   doSubmit() {
@@ -152,7 +171,7 @@ class TopicProduce extends Form {
       multiMessage,
       tombstone
     } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     let value;
     if (tombstone) {
@@ -188,10 +207,8 @@ class TopicProduce extends Form {
     topic.headers = headers;
 
     this.postApi(uriTopicsProduce(clusterId, topicId), topic).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/topic/${topicId}`
-      });
       toast.success(`Produced to ${topicId}.`);
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/topic/${topicId}` });
     });
   }
 
@@ -215,7 +232,7 @@ class TopicProduce extends Form {
               });
             },
             false,
-            { disabled: tombstone }
+            { disabled: tombstone, className: 'col-auto ms-2' }
           )}
 
           <label className="col-auto col-form-label">Separator</label>
@@ -224,7 +241,7 @@ class TopicProduce extends Form {
             name="keyValueSeparator"
             id="keyValueSeparator"
             placeholder=":"
-            className="col-sm-2 form-control"
+            className="col-sm-2"
             disabled={!multiMessage}
             onChange={event => {
               this.setState({
@@ -252,7 +269,7 @@ class TopicProduce extends Form {
               this.setState({ tombstone: !tombstone });
             },
             false,
-            { disabled: multiMessage }
+            { disabled: multiMessage, className: 'col-auto ms-2' }
           )}
         </div>
       </div>
@@ -283,7 +300,7 @@ class TopicProduce extends Form {
         headers.push(this.renderHeader(Number(keyNumbers)));
       }
     });
-    return <div data-testId="headers">{headers.map(head => head)}</div>;
+    return <div data-testid="headers">{headers.map(head => head)}</div>;
   }
 
   renderHeader(position) {
@@ -291,8 +308,8 @@ class TopicProduce extends Form {
       <div className="row header-wrapper">
         <label className="col-sm-2 col-form-label">{position === 0 ? 'Header' : ''}</label>
 
-        <div className="row col-sm-10 khq-multiple">
-          <div>
+        <div className="row col-sm-10 khq-multiple pe-0">
+          <div className="col-auto">
             {this.renderInput(
               `hKey${position}`,
               '',
@@ -300,10 +317,8 @@ class TopicProduce extends Form {
               'text',
               true,
               'col-sm-6 row',
-              'col-sm-12 p-0',
               'input-class'
             )}
-
             {this.renderInput(
               `hValue${position}`,
               '',
@@ -311,20 +326,19 @@ class TopicProduce extends Form {
               'text',
               true,
               'col-sm-6 row',
-              'col-sm-12 p-0',
               'input-class'
             )}
           </div>
-          <div className="add-button">
+          <div className="col-auto p-0 add-button">
             <button
               type="button"
               className="btn btn-secondary"
-              data-testId={`button_${position}`}
+              data-testid={`button_${position}`}
               onClick={() => {
                 position === 0 ? this.handlePlus() : this.handleRemove(position);
               }}
             >
-              <i className={`fa ${position === 0 ? 'fa-plus' : 'fa-trash'}`}></i>
+              <FontAwesomeIcon icon={position === 0 ? faPlus : faTrash} />
             </button>
           </div>
         </div>
@@ -361,7 +375,7 @@ class TopicProduce extends Form {
     const { roles } = this.state;
 
     return (
-      <div style={{ maxHeight: '678px', overflowY: 'auto', minHeight: '89px' }}>
+      <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', minHeight: '89px' }}>
         <ul
           className="dropdown-menu inner show"
           role="presentation"
@@ -526,7 +540,7 @@ class TopicProduce extends Form {
               style={{ padding: 0, alignItems: 'center', display: 'flex' }}
               className="col-sm-2 col-form-label"
             >
-              Timestamp UTC
+              Timestamp {format(new Date(), 'z')}
             </label>
             <Dropdown style={{ width: '100%', padding: 0, margin: 0 }}>
               <Dropdown.Toggle
@@ -542,7 +556,7 @@ class TopicProduce extends Form {
               >
                 <input
                   className="form-control"
-                  value={
+                  defaultValue={
                     datetime !== '' &&
                     ' ' +
                       formatDateTime(
@@ -605,4 +619,4 @@ class TopicProduce extends Form {
   }
 }
 
-export default TopicProduce;
+export default withRouter(TopicProduce);

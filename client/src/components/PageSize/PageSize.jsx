@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './styles.scss';
 
 const PageSize = ({ currentPageSize, ranges = [10, 25, 50, 100, 150, 200], onChange }) => {
   let pageSizeOptions = [];

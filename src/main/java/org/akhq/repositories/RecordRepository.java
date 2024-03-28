@@ -260,8 +260,6 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private List<Record> consumeNewest(Topic topic, Options options) {
-        int pollSizePerPartition = pollSizePerPartition(topic, options);
-
         return topic
             .getPartitions()
             .parallelStream()
@@ -269,11 +267,11 @@ public class RecordRepository extends AbstractRepository {
                 KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
                     options.clusterId,
                     new Properties() {{
-                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(pollSizePerPartition));
+                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(options.size));
                     }}
                 );
 
-                return getOffsetForSortNewest(consumer, partition, options, pollSizePerPartition)
+                return getOffsetForSortNewest(consumer, partition, options)
                         .map(offset -> offset.withTopicPartition(
                             new TopicPartition(
                                 partition.getTopic(),
@@ -346,15 +344,8 @@ public class RecordRepository extends AbstractRepository {
             })
             .flatMap(List::stream)
             .sorted(Comparator.comparing(Record::getTimestamp).reversed())
+            .limit(options.size)
             .collect(Collectors.toList());
-    }
-
-    private int pollSizePerPartition(Topic topic, Options options) {
-        if (options.partition != null) {
-            return options.size;
-        } else {
-            return (int) Math.ceil(options.size * 1.0 / topic.getPartitions().size());
-        }
     }
 
     private Optional<Long> getFirstOffset(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
@@ -401,22 +392,22 @@ public class RecordRepository extends AbstractRepository {
             });
     }
 
-    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options, int pollSizePerPartition) {
+    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
         return getFirstOffset(consumer, partition, options)
             .map(first -> {
                 // Take end offset - 1 to get the last record offset
                 long last = partition.getLastOffset() - 1;
 
                 // If there is an after parameter in the request use this one
-                if (pollSizePerPartition > 0 && options.after.containsKey(partition.getId())) {
+                if (options.after.containsKey(partition.getId())) {
                     last = options.after.get(partition.getId()) - 1;
                 }
 
                 if (last < 0) {
                     consumer.close();
                     return null;
-                } else if (!(last - pollSizePerPartition < first)) {
-                    first = last - pollSizePerPartition + 1;
+                } else if (!(last - options.getSize() < first)) {
+                    first = last - options.getSize() + 1;
                 }
 
                 return EndOffsetBound.builder()

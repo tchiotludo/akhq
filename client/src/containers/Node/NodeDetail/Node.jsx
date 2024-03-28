@@ -5,14 +5,15 @@ import NodeConfigs from './/NodeConfigs/NodeConfigs';
 import NodeLogs from './/NodeLogs/NodeLogs';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../../utils/withRouter';
 
 class Node extends Component {
   state = {
     host: '',
     port: '',
     data: [],
-    clusterId: this.props.match.params.clusterId,
-    selectedNode: this.props.match.params.nodeId,
+    clusterId: this.props.params.clusterId,
+    selectedNode: this.props.params.nodeId,
     selectedTab: 'logs',
     roles: JSON.parse(sessionStorage.getItem('roles'))
   };
@@ -20,7 +21,7 @@ class Node extends Component {
   tabs = ['configs', 'logs'];
 
   componentDidMount() {
-    const { clusterId, nodeId } = this.props.match.params;
+    const { clusterId, nodeId } = this.props.params;
     const { roles } = this.state;
     let tabSelected = getSelectedTab(this.props, this.tabs);
 
@@ -33,7 +34,9 @@ class Node extends Component {
         selectedTab: tabSelected
       },
       () => {
-        this.props.history.replace(`/ui/${clusterId}/node/${nodeId}/${this.state.selectedTab}`);
+        this.props.router.navigate(`/ui/${clusterId}/node/${nodeId}/${this.state.selectedTab}`, {
+          replace: true
+        });
       }
     );
   }
@@ -56,27 +59,15 @@ class Node extends Component {
     switch (selectedTab) {
       case 'configs':
         return (
-          <NodeConfigs
-            nodeId={this.props.match.params.nodeId}
-            clusterId={this.props.match.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeConfigs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
       case 'logs':
         return (
-          <NodeLogs
-            nodeId={this.props.match.params.nodeId}
-            clusterId={this.props.match.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeLogs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
       default:
         return (
-          <NodeConfigs
-            nodeId={this.props.match.params.nodeId}
-            clusterId={this.props.match.params.clusterId}
-            history={this.props.history}
-          />
+          <NodeConfigs nodeId={this.props.params.nodeId} clusterId={this.props.params.clusterId} />
         );
     }
   }
@@ -85,7 +76,7 @@ class Node extends Component {
     const { selectedNode, clusterId, roles } = this.state;
     return (
       <div>
-        <Header title={`Node ${selectedNode}`} history={this.props.history} />
+        <Header title={`Node ${selectedNode}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {roles.NODE && roles.NODE.includes('READ_CONFIG') && (
@@ -120,11 +111,11 @@ class Node extends Component {
 }
 
 Node.propTypes = {
-  history: PropTypes.object,
-  match: PropTypes.object,
+  router: PropTypes.object,
+  params: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
   children: PropTypes.any
 };
 
-export default Node;
+export default withRouter(Node);
