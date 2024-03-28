@@ -23,8 +23,10 @@
   background-color: white !important;
 }
 
-.show > .btn-secondary.dropdown-toggle {
-  background-color: $secondary !important;
+nav {
+  .show > .btn-secondary.dropdown-toggle {
+    background-color: $secondary !important;
+  }
 }
 
 select.bs-select-hidden,

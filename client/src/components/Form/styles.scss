@@ -40,3 +40,25 @@ input.placeholder {
 .form-input-check {
   margin-block: auto;
 }
+
+form {
+  .dropdown {
+    width: 100%;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    button {
+      padding-left: 0;
+
+      input {
+        padding: 0.375rem 0.75rem;
+        background-color: transparent !important;
+        color: white;
+        opacity: 1;
+      }
+    }
+  }
+}
