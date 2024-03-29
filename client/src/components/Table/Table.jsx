@@ -199,7 +199,6 @@ class Table extends Component {
 
                   column.expand && this.handleExpand(row);
                 }}
-                id={`row_${column.id}_${colIndex}`}
               >
                 {this.renderContent(column.cell(row, column))}
               </td>
@@ -222,7 +221,6 @@ class Table extends Component {
 
                 column.expand && this.handleExpand(row);
               }}
-              id={`row_${column.id}_${colIndex}`}
             >
               {this.renderContent(row[column.accessor])}
             </td>
