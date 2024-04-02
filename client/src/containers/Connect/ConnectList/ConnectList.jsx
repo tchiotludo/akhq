@@ -59,7 +59,7 @@ class ConnectList extends Root {
     );
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       this.cancelAxiosRequests();
       this.renewCancelToken();
@@ -67,6 +67,36 @@ class ConnectList extends Root {
       this.setState({ pageNumber: 1 }, () => {
         this.componentDidMount();
       });
+    }
+
+    if (this.props.location.search !== prevProps.location.search) {
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const { searchData, pageNumber } = this.state;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            searchData: { search: query.get('search') },
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+          },
+          () => {
+            this.getConnectDefinitions(false);
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on schema registry from the component
+        this.setState(
+          {
+            searchData: { search: '' },
+            pageNumber: 1
+          },
+          () => {
+            this.getConnectDefinitions(false);
+          }
+        );
+      }
     }
   }
 
@@ -164,7 +194,7 @@ class ConnectList extends Root {
   handleSearch = data => {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
-      this.getConnectDefinitions();
+      this.getConnectDefinitions(false);
     });
   };
 
@@ -312,12 +342,7 @@ class ConnectList extends Root {
           }}
           actions={this.getTableActions()}
           onDetails={name => {
-            this.props.router.navigate(
-              {
-                pathname: `/ui/${clusterId}/connect/${connectId}/definition/${name}`
-              },
-              { replace: true }
-            );
+            this.props.router.navigate(`/ui/${clusterId}/connect/${connectId}/definition/${name}`);
           }}
           onDelete={row => {
             this.handleOnDelete(row.id);

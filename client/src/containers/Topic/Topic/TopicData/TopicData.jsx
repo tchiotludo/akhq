@@ -114,6 +114,33 @@ class TopicData extends Root {
     this._checkProps();
   };
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    // Handle back navigation
+    if (
+      this.props.location.search !== prevProps.location.search &&
+      this.props.router.navigationType === 'POP'
+    ) {
+      const { clusterId, topicId } = this.props.params;
+      const query = new URLSearchParams(this.props.location.search);
+
+      this.setState(
+        {
+          selectedCluster: clusterId,
+          selectedTopic: topicId,
+          sortBy: query.get('sort'),
+          partition: query.get('partition'),
+          datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : '',
+          endDatetime: query.get('endTimestamp') ? new Date(query.get('endTimestamp')) : '',
+          offsetsSearch: query.get('after'),
+          search: this._buildSearchFromQueryString(query)
+        },
+        () => {
+          this._searchMessages(false, true);
+        }
+      );
+    }
+  }
+
   componentWillUnmount = () => {
     super.componentWillUnmount();
     this._stopEventSource();
@@ -155,9 +182,9 @@ class TopicData extends Root {
           this._getSingleMessage(query.get('partition'), query.get('offset'));
           this.setState({ canDownload: true });
         } else if (Object.keys(this.state.offsets).length) {
-          this._getMessages();
+          this._getMessages(false, true);
         } else {
-          this._searchMessages();
+          this._searchMessages(false, true);
         }
       }
     );
@@ -172,12 +199,15 @@ class TopicData extends Root {
         const pos = searchFilter.lastIndexOf('_');
         search[value].text = searchFilter.substr(0, pos);
         search[value].type = searchFilter.substr(pos + 1);
+      } else {
+        search[value].text = '';
+        search[value].type = 'C';
       }
     });
     return search;
   }
 
-  _startEventSource = changePage => {
+  _startEventSource = (changePage, replaceInNavigation = false) => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
     let lastPercentVal = 0.0;
@@ -189,9 +219,9 @@ class TopicData extends Root {
       () => {
         const filters = this._buildFilters();
         if (changePage) {
-          this._setUrlHistory(filters + '&after=' + nextPage, false);
+          this._setUrlHistory(filters + '&after=' + nextPage, replaceInNavigation);
         } else {
-          this._setUrlHistory(filters);
+          this._setUrlHistory(filters, replaceInNavigation);
         }
         this.eventSource = new EventSourcePolyfill(
           uriTopicDataSearch(
@@ -322,13 +352,13 @@ class TopicData extends Root {
     );
   }
 
-  _searchMessages(changePage = false) {
+  _searchMessages(changePage = false, replaceInNavigation = false) {
     this._stopEventSource();
-    this.setState({loading: true});
+    this.setState({ loading: true });
     if (this._hasAnyFilterFilled()) {
-      this._startEventSource(changePage);
+      this._startEventSource(changePage, replaceInNavigation);
     } else {
-      this._getMessages(changePage);
+      this._getMessages(changePage, replaceInNavigation);
     }
   }
 
@@ -343,7 +373,7 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  _getMessages = changePage => {
+  _getMessages = (changePage = false, replaceInNavigation = false) => {
     const { selectedCluster, selectedTopic, nextPage } = this.state;
 
     const filters = this._buildFilters();
@@ -357,9 +387,12 @@ class TopicData extends Root {
     this._fetchMessages(requests, changePage);
 
     if (changePage) {
-      this._setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length), false);
+      this._setUrlHistory(
+        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
+        replaceInNavigation
+      );
     } else {
-      this._setUrlHistory(filters);
+      this._setUrlHistory(filters, replaceInNavigation);
     }
   };
 

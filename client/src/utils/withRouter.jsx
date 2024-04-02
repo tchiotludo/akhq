@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 
 /* eslint-disable */
 export function withRouter(Component) {
@@ -7,12 +7,13 @@ export function withRouter(Component) {
     const location = useLocation();
     const navigate = useNavigate();
     const params = useParams();
+    const navigationType = useNavigationType();
 
     return (
       <Component
         {...props}
         location={{ ...location }}
-        router={{ navigate }}
+        router={{ navigate, navigationType }}
         params={{ ...params }}
       />
     );

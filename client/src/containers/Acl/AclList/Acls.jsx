@@ -112,12 +112,7 @@ class Acls extends Root {
             </tr>
           }
           onDetails={acl => {
-            this.props.router.navigate(
-              {
-                pathname: `/ui/${clusterId}/acls/${acl.principalEncoded}`
-              },
-              { replace: true }
-            );
+            this.props.router.navigate(`/ui/${clusterId}/acls/${acl.principalEncoded}`);
           }}
         />
       </div>

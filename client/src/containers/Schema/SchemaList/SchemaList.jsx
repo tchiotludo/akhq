@@ -51,9 +51,41 @@ class SchemaList extends Root {
         pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
       },
       () => {
-        this.getSchemaRegistry();
+        this.getSchemaRegistry(true);
       }
     );
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.location.search !== prevProps.location.search) {
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const { searchData, pageNumber } = this.state;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            searchData: { search: query.get('search') },
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+          },
+          () => {
+            this.getSchemaRegistry(false);
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on schema registry from the component
+        this.setState(
+          {
+            searchData: { search: '' },
+            pageNumber: 1
+          },
+          () => {
+            this.getSchemaRegistry(false);
+          }
+        );
+      }
+    }
   }
 
   handleSearch = data => {
@@ -64,7 +96,7 @@ class SchemaList extends Root {
     this.renewCancelToken();
 
     this.setState({ pageNumber: 1, searchData }, () => {
-      this.getSchemaRegistry();
+      this.getSchemaRegistry(false);
     });
   };
 
@@ -270,7 +302,7 @@ class SchemaList extends Root {
               {
                 pathname: `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`
               },
-              { replace: true }
+              { replace: false }
             );
           }}
           actions={

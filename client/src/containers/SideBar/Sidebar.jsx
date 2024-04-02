@@ -267,8 +267,7 @@ class Sidebar extends Component {
         className={pathname.includes(tab) ? 'active' : ''}
         onClick={() => {
           this.setState({ selectedTab: tab });
-          /* eslint-disable react/prop-types */
-          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: true });
+          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: false });
           return false;
         }}
       >

@@ -77,6 +77,30 @@ class TopicList extends Root {
         this._initializeVars(this.getTopics);
       });
     }
+
+    if (this.props.location.search !== prevProps.location.search) {
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const { searchData } = this.state;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            searchData: { ...searchData, search: query.get('search') ? query.get('search') : '' },
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : 1
+          },
+          () => {
+            this.getTopics();
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on topics from the component
+        this.setState({ pageNumber: 1 }, () => {
+          this._initializeVars(this.getTopics);
+        });
+      }
+    }
   }
 
   async _initializeVars(callBackFunction) {
@@ -157,13 +181,10 @@ class TopicList extends Root {
       const { topicListView } = this.state.searchData;
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${this.state.selectedCluster}/topic`,
-          search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
-        },
-        { replace: true }
-      );
+      this.props.router.navigate({
+        pathname: `/ui/${this.state.selectedCluster}/topic`,
+        search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
+      });
     });
   };
 
@@ -483,12 +504,7 @@ class TopicList extends Root {
     if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
       onDetailsFunction = id => {
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${selectedCluster}/topic/${id}/data`
-          },
-          { replace: true }
-        );
+        this.props.router.navigate(`/ui/${selectedCluster}/topic/${id}/data`);
       };
     }
     if (roles.TOPIC && roles.TOPIC.includes('DELETE')) {
