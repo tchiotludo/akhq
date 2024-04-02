@@ -72,7 +72,7 @@ public class StaticFilter implements HttpServerFilter {
     private String replace(String line) {
         line = line.replace("/ui", (basePath == null ? "" : basePath) + "/ui");
 
-        line = line.replace("<meta name=\"html-head\" content=\"replace\">", this.htmlHead == null ? "" : this.htmlHead);
+        line = line.replace("<meta name=\"html-head\" content=\"replace\" />", this.htmlHead == null ? "" : this.htmlHead);
 
         return line;
     }
