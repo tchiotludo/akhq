@@ -1,7 +1,9 @@
 package org.akhq.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.annotation.Value;
@@ -484,9 +486,12 @@ public class TopicController extends AbstractController {
 
         Topic topic = topicRepository.findByName(cluster, topicName);
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
+            .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
+            .build();
         // For ZonedDatetime serialization
         mapper.findAndRegisterModules();
+        mapper.setConfig(mapper.getSerializationConfig().withView(Record.Views.Download.class));
 
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
