@@ -139,6 +139,8 @@ akhq:
       reader:
         - resources: [ "TOPIC", "TOPIC_DATA", "CONSUMER_GROUP", "CONNECT_CLUSTER", "CONNECTOR", "SCHEMA", "NODE", "ACL", "KSQLDB" ]
           actions: [ "READ" ]
+        - resources: [ "TOPIC", "NODE" ]
+          actions: [ "READ_CONFIG" ]
       topic-admin:
         - resources: [ "TOPIC", "TOPIC_DATA" ]
           actions: [ "READ", "CREATE", "UPDATE", "DELETE", "READ_CONFIG", "ALTER_CONFIG" ]
