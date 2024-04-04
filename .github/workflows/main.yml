@@ -77,10 +77,10 @@ jobs:
       # Upload artifacts
       - name: Copy jar to docker
         run: |
-          cp build/libs/*-all.jar docker/app/akhq.jar
-          mkdir -p build/distributions
-          cp build/distributions/akhq-*.tar build/distributions/akhq.tar
-          cp build/distributions/akhq-*.zip build/distributions/akhq.zip
+          cp build/libs/akhq-*-all.jar docker/app/akhq.jar
+          mkdir -p build/dist/
+          find build/distributions/akhq-*.tar -type f -exec cp "{}" build/dist/ ";"
+          find build/distributions/akhq-*.zip -type f -exec cp "{}" build/dist/ ";"
 
       - name: Upload jar
         uses: actions/upload-artifact@v1
@@ -108,8 +108,8 @@ jobs:
           prerelease: false
           files: |
             build/libs/*-all.jar
-            build/distributions/akhq-*.tar
-            build/distributions/akhq-*.zip
+            build/dist/akhq-*.tar
+            build/dist/akhq-*.zip
 
       # Docker
       - name: Set up QEMU
