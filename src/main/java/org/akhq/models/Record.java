@@ -3,6 +3,7 @@ package org.akhq.models;
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser;
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
@@ -39,15 +40,21 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Record {
     private Topic topic;
+    @JsonView(Views.Download.class)
     private int partition;
+    @JsonView(Views.Download.class)
     private long offset;
+    @JsonView(Views.Download.class)
     private ZonedDateTime timestamp;
     @JsonIgnore
     private TimestampType timestampType;
+    @JsonView(Views.Download.class)
     private String keySchemaId;
     private String keySubject;
+    @JsonView(Views.Download.class)
     private String valueSchemaId;
     private String valueSubject;
+    @JsonView(Views.Download.class)
     private List<KeyValue<String, String>> headers = new ArrayList<>();
     @JsonIgnore
     private Deserializer kafkaAvroDeserializer;
@@ -70,12 +77,14 @@ public class Record {
     @Getter(AccessLevel.NONE)
     private byte[] bytesKey;
 
+    @JsonView(Views.Download.class)
     @Getter(AccessLevel.NONE)
     private String key;
 
     @Getter(AccessLevel.NONE)
     private byte[] bytesValue;
 
+    @JsonView(Views.Download.class)
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private String value;
@@ -353,4 +362,10 @@ public class Record {
         return null;
     }
 
+    /**
+     * Jackson views declaration
+     */
+    public static class Views {
+        public static class Download {}
+    }
 }
