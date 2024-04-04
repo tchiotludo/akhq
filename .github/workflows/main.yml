@@ -78,6 +78,7 @@ jobs:
       - name: Copy jar to docker
         run: |
           cp build/libs/*-all.jar docker/app/akhq.jar
+          mkdir -p build/distributions
           cp build/distributions/akhq-*.tar build/distributions/akhq.tar
           cp build/distributions/akhq-*.zip build/distributions/akhq.zip
 
