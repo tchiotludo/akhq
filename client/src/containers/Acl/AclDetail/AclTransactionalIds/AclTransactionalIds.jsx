@@ -45,7 +45,7 @@ class AclTransactionalIds extends Root {
   handlePermission = permission => {
     return (
       <React.Fragment>
-        <span className="badge badge-secondary">{permission.permissionType}</span>{' '}
+        <span className="badge bg-secondary">{permission.permissionType}</span>{' '}
         {permission.operation}
       </React.Fragment>
     );
@@ -56,7 +56,6 @@ class AclTransactionalIds extends Root {
     return (
       <Table
         loading={loading}
-        history={this.props.history}
         columns={[
           {
             id: 'transactionalId',

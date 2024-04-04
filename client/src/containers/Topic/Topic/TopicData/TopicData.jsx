@@ -1,7 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import './styles.scss';
 import Table from '../../../../components/Table/Table';
 import { formatDateTime } from '../../../../utils/converters';
 import {
@@ -11,18 +10,16 @@ import {
   uriTopicDataDownload,
   uriTopicDataSearch,
   uriTopicDataSingleRecord,
-  uriTopicsPartitions,
-  basePath
+  uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
 import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
-import constants from '../../../../utils/constants';
+import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
 import AceEditor from 'react-ace';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-dracula';
 import 'ace-builds/src-noconflict/ext-searchbox';
@@ -36,6 +33,16 @@ import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
 import { EventSourcePolyfill } from 'event-source-polyfill';
+import { withRouter } from '../../../../utils/withRouter';
+import { format } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faDownload,
+  faSearch,
+  faSortNumericDesc,
+  faSpinner
+} from '@fortawesome/free-solid-svg-icons';
+import { fromEvent, map, scan } from 'rxjs';
 
 class TopicData extends Root {
   state = {
@@ -107,13 +114,40 @@ class TopicData extends Root {
     this._checkProps();
   };
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    // Handle back navigation
+    if (
+      this.props.location.search !== prevProps.location.search &&
+      this.props.router.navigationType === 'POP'
+    ) {
+      const { clusterId, topicId } = this.props.params;
+      const query = new URLSearchParams(this.props.location.search);
+
+      this.setState(
+        {
+          selectedCluster: clusterId,
+          selectedTopic: topicId,
+          sortBy: query.get('sort'),
+          partition: query.get('partition'),
+          datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : '',
+          endDatetime: query.get('endTimestamp') ? new Date(query.get('endTimestamp')) : '',
+          offsetsSearch: query.get('after'),
+          search: this._buildSearchFromQueryString(query)
+        },
+        () => {
+          this._searchMessages(false, true);
+        }
+      );
+    }
+  }
+
   componentWillUnmount = () => {
     super.componentWillUnmount();
     this._stopEventSource();
   };
 
   async _checkProps() {
-    const { clusterId, topicId } = this.props.match.params;
+    const { clusterId, topicId } = this.props.params;
     const query = new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
     this.setState(
@@ -124,8 +158,8 @@ class TopicData extends Root {
         sortBy: query.get('sort')
           ? query.get('sort')
           : uiOptions && uiOptions.topicData && uiOptions.topicData.sort
-          ? uiOptions.topicData.sort
-          : this.state.sortBy,
+            ? uiOptions.topicData.sort
+            : this.state.sortBy,
         partition: query.get('partition') ? query.get('partition') : this.state.partition,
         datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : this.state.datetime,
         endDatetime: query.get('endTimestamp')
@@ -136,8 +170,8 @@ class TopicData extends Root {
         offsets: query.get('offset')
           ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
           : query.get('after')
-          ? this._getOffsetsByAfterString(query.get('after'))
-          : this.state.offsets,
+            ? this._getOffsetsByAfterString(query.get('after'))
+            : this.state.offsets,
         dateTimeFormat:
           uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat
             ? uiOptions.topicData.dateTimeFormat
@@ -147,8 +181,10 @@ class TopicData extends Root {
         if (query.get('single') !== null) {
           this._getSingleMessage(query.get('partition'), query.get('offset'));
           this.setState({ canDownload: true });
+        } else if (Object.keys(this.state.offsets).length) {
+          this._getMessages(false, true);
         } else {
-          this._getMessages();
+          this._searchMessages(false, true);
         }
       }
     );
@@ -163,12 +199,15 @@ class TopicData extends Root {
         const pos = searchFilter.lastIndexOf('_');
         search[value].text = searchFilter.substr(0, pos);
         search[value].type = searchFilter.substr(pos + 1);
+      } else {
+        search[value].text = '';
+        search[value].type = 'C';
       }
     });
     return search;
   }
 
-  _startEventSource = changePage => {
+  _startEventSource = (changePage, replaceInNavigation = false) => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
     let lastPercentVal = 0.0;
@@ -180,9 +219,9 @@ class TopicData extends Root {
       () => {
         const filters = this._buildFilters();
         if (changePage) {
-          this._setUrlHistory(filters + '&after=' + nextPage);
+          this._setUrlHistory(filters + '&after=' + nextPage, replaceInNavigation);
         } else {
-          this._setUrlHistory(filters);
+          this._setUrlHistory(filters, replaceInNavigation);
         }
         this.eventSource = new EventSourcePolyfill(
           uriTopicDataSearch(
@@ -200,38 +239,40 @@ class TopicData extends Root {
             : {}
         );
 
-        this.eventSource.addEventListener('searchBody', function (e) {
-          const res = JSON.parse(e.data);
-          const records = res.records || [];
+        fromEvent(this.eventSource, 'searchBody')
+          .pipe(map(e => JSON.parse(e.data) || {}))
+          .pipe(scan((acc, one) => [...acc, one], []))
+          .subscribe(results => {
+            const lastResult = results.slice(-1);
+            const percentDiff = lastResult.percent - lastPercentVal;
 
-          const percentDiff = res.percent - lastPercentVal;
+            // to avoid UI slowdowns, only update the percentage in fixed increments
+            if (percentDiff >= percentUpdateDelta) {
+              lastPercentVal = lastResult.percent;
+              self.setState({
+                recordCount: self.state.recordCount + lastResult.records.length,
+                percent: lastResult.percent.toFixed(2)
+              });
+            }
 
-          // to avoid UI slowdowns, only update the percentage in fixed increments
-          if (percentDiff >= percentUpdateDelta) {
-            lastPercentVal = res.percent;
-            self.setState({
-              recordCount: self.state.recordCount + records.length,
-              percent: res.percent.toFixed(2)
-            });
-          }
+            const records = results
+              .map(result => result.records)
+              .filter(records => records?.length > 0)
+              .reduce((acc, all) => [...acc, ...all], []);
 
-          if (records.length) {
-            const tableMessages = self._handleMessages(
-              records,
-              true,
-              self.state.sortBy === 'Oldest'
-            );
-            self.setState({ messages: tableMessages });
-          }
-        });
+            if (records.length) {
+              const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
+              self.setState({ recordCount: tableMessages.length, messages: tableMessages });
+            }
+          });
 
-        this.eventSource.addEventListener('searchEnd', function (e) {
-          const res = JSON.parse(e.data);
-          const nextPage = res.after ? res.after : self.state.nextPage;
-          self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
-
-          self.eventSource.close();
-        });
+        fromEvent(this.eventSource, 'searchEnd')
+          .pipe(map(e => JSON.parse(e.data) || []))
+          .subscribe(result => {
+            const nextPage = result.after ? result.after : self.state.nextPage;
+            self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
+            self.eventSource.close();
+          });
       }
     );
   };
@@ -276,11 +317,11 @@ class TopicData extends Root {
     if (partition) filters.push(`partition=${partition}`);
 
     if (datetime) {
-      filters.push(`timestamp=${this._buildTimestampFilter(datetime)}`);
+      filters.push(`timestamp=${encodeURIComponent(this._buildTimestampFilter(datetime))}`);
     }
 
     if (endDatetime) {
-      filters.push(`endTimestamp=${this._buildTimestampFilter(endDatetime)}`);
+      filters.push(`endTimestamp=${encodeURIComponent(this._buildTimestampFilter(endDatetime))}`);
     }
 
     Object.keys(search)
@@ -297,28 +338,27 @@ class TopicData extends Root {
 
   _buildTimestampFilter(datetime) {
     let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-    return (
-      formatDateTime(
-        {
-          year: timestamp.year(),
-          monthValue: timestamp.month(),
-          dayOfMonth: timestamp.date(),
-          hour: timestamp.hour(),
-          minute: timestamp.minute(),
-          second: timestamp.second(),
-          milli: timestamp.millisecond()
-        },
-        'YYYY-MM-DDTHH:mm:ss.SSS'
-      ) + 'Z'
+    return formatDateTime(
+      {
+        year: timestamp.year(),
+        monthValue: timestamp.month(),
+        dayOfMonth: timestamp.date(),
+        hour: timestamp.hour(),
+        minute: timestamp.minute(),
+        second: timestamp.second(),
+        milli: timestamp.millisecond()
+      },
+      'YYYY-MM-DDTHH:mm:ss.SSSZ'
     );
   }
 
-  _searchMessages(changePage = false) {
+  _searchMessages(changePage = false, replaceInNavigation = false) {
     this._stopEventSource();
+    this.setState({ loading: true });
     if (this._hasAnyFilterFilled()) {
-      this._startEventSource(changePage);
+      this._startEventSource(changePage, replaceInNavigation);
     } else {
-      this._getMessages(changePage);
+      this._getMessages(changePage, replaceInNavigation);
     }
   }
 
@@ -333,7 +373,7 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  _getMessages = changePage => {
+  _getMessages = (changePage = false, replaceInNavigation = false) => {
     const { selectedCluster, selectedTopic, nextPage } = this.state;
 
     const filters = this._buildFilters();
@@ -347,14 +387,17 @@ class TopicData extends Root {
     this._fetchMessages(requests, changePage);
 
     if (changePage) {
-      this._setUrlHistory(nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length));
+      this._setUrlHistory(
+        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
+        replaceInNavigation
+      );
     } else {
-      this._setUrlHistory(filters);
+      this._setUrlHistory(filters, replaceInNavigation);
     }
   };
 
   _fetchMessages(requests, changePage = false) {
-    const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
+    const { nextPage, pageNumber, partitionCount, recordCount, offsets, sortBy } = this.state;
 
     Promise.all(requests).then(data => {
       let tableMessages = [],
@@ -368,7 +411,7 @@ class TopicData extends Root {
       const partitionData = data[1].data;
 
       if (messagesData.results) {
-        tableMessages = this._handleMessages(messagesData.results);
+        tableMessages = this._handleMessages(messagesData.results, sortBy === 'Oldest');
       } else {
         pageNumberTemp = 1;
       }
@@ -415,7 +458,7 @@ class TopicData extends Root {
   _handleOnShare(row) {
     const { selectedCluster, selectedTopic } = this.state;
 
-    const pathToShare = `${basePath}/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
+    const pathToShare = `/ui/${selectedCluster}/topic/${selectedTopic}/data?single=true&partition=${row.partition}&offset=${row.offset}`; // eslint-disable-line max-len
 
     try {
       this._copyToClipboard(`${window.location.host}${pathToShare}`);
@@ -425,8 +468,6 @@ class TopicData extends Root {
     }
 
     this.setState({ canDownload: true });
-
-    this.props.history.push(pathToShare);
     this._getSingleMessage(row.partition, row.offset);
   }
 
@@ -446,7 +487,7 @@ class TopicData extends Root {
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     this.setState({
       dateTimeFormat: newDateTimeFormat
     });
@@ -472,8 +513,8 @@ class TopicData extends Root {
     };
     setProduceToTopicValues(data);
 
-    const { clusterId, topicId } = this.props.match.params;
-    this.props.history.push(`/ui/${clusterId}/topic/${topicId}/produce`);
+    const { clusterId, topicId } = this.props.params;
+    this.props.router.navigate(`/ui/${clusterId}/topic/${topicId}/produce`);
   }
 
   _showDeleteModal = deleteMessage => {
@@ -506,33 +547,32 @@ class TopicData extends Root {
       });
   };
 
-  _handleMessages = (messages, append = false, insertAtEnd = true) => {
-    let tableMessages = append ? [...this.state.messages] : [];
-    messages.forEach(message => {
-      let messageToPush = {
-        key: message.key || '',
-        value: message.truncated
-          ? message.value + '...\nToo large message. Full body in share button.' || ''
-          : message.value || '',
-        timestamp: message.timestamp,
-        partition: JSON.stringify(message.partition) || '',
-        offset: JSON.stringify(message.offset) || '',
-        headers: message.headers || [],
-        schema: {
-          key: message.keySchemaId,
-          value: message.valueSchemaId,
-          registryType: this.state.registryType
-        },
-        exceptions: message.exceptions || []
-      };
+  _handleMessages = (messages, startWithOldest = true) => {
+    let tableMessages = [];
 
-      if (insertAtEnd) {
-        tableMessages.push(messageToPush);
-      } else {
-        tableMessages.unshift(messageToPush);
-      }
-    });
-    return tableMessages;
+    let mappedMessages = messages.map(message => ({
+      key: message.key || '',
+      value: message.truncated
+        ? message.value + '...\nToo large message. Full body in share button.' || ''
+        : message.value || '',
+      timestamp: message.timestamp,
+      partition: JSON.stringify(message.partition) || '',
+      offset: JSON.stringify(message.offset) || '',
+      headers: message.headers || [],
+      schema: {
+        key: message.keySchemaId,
+        value: message.valueSchemaId,
+        registryType: this.state.registryType
+      },
+      exceptions: message.exceptions || []
+    }));
+
+    tableMessages.push(...mappedMessages);
+
+    const isBefore = startWithOldest ? -1 : 1;
+    const isAfter = startWithOldest ? 1 : -1;
+
+    return tableMessages.sort((a, b) => (a.timestamp > b.timestamp ? isAfter : isBefore));
   };
 
   _downloadAllMatchingFilters = () => {
@@ -598,13 +638,16 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  _setUrlHistory(filters) {
+  _setUrlHistory(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
 
-    this.props.history.push({
-      pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
-      search: filters
-    });
+    this.props.router.navigate(
+      {
+        pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+        search: filters
+      },
+      { replace: replaceInNavigation }
+    );
   }
 
   _redirectToSchema(id) {
@@ -612,10 +655,13 @@ class TopicData extends Root {
 
     this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
-        this.props.history.push({
-          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
-          schemaId: response.data.subject
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+            schemaId: response.data.subject
+          },
+          { replace: true }
+        );
       } else {
         toast.warn(`Unable to find the registry schema with id  ${id} !`);
       }
@@ -636,7 +682,7 @@ class TopicData extends Root {
             })
           }
         >
-          <i className="fa fa-fw fa-sort-numeric-desc pull-left" aria-hidden="true" /> {option}
+          <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
         </Dropdown.Item>
       );
     }
@@ -657,7 +703,7 @@ class TopicData extends Root {
             })
           }
         >
-          <i className="fa fa-fw pull-left" aria-hidden="true" /> {option}
+          {option}
         </Dropdown.Item>
       );
     }
@@ -718,7 +764,7 @@ class TopicData extends Root {
       <div className="search-input-fields">
         <label>{label}</label>
         <input
-          className="form-control"
+          className="form-group form-control"
           name={`${name}_text`}
           type="text"
           value={search[name].text}
@@ -769,9 +815,9 @@ class TopicData extends Root {
             onClick={() => this._searchMessages()}
           >
             {isSearching ? (
-              <i className="fa fa-spinner fa-spin"></i>
+              <FontAwesomeIcon icon={faSpinner} spin={true} />
             ) : (
-              <i className="fa fa-search"></i>
+              <FontAwesomeIcon icon={faSearch} />
             )}
           </button>
           <button
@@ -827,7 +873,6 @@ class TopicData extends Root {
 
     let date = moment(datetime);
     let endDate = moment(endDatetime);
-    const { history } = this.props;
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -839,10 +884,7 @@ class TopicData extends Root {
     ];
     return (
       <React.Fragment>
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light
-         mr-auto khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <button
             className="navbar-toggler"
             type="button"
@@ -884,7 +926,7 @@ class TopicData extends Root {
           </nav>
 
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
-            <ul className="navbar-nav mr-auto">
+            <ul className="navbar-nav me-auto">
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
@@ -910,7 +952,7 @@ class TopicData extends Root {
               <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp UTC:</strong>
+                    <strong>Timestamp {format(new Date(), 'z')}:</strong>
                     {datetime !== '' &&
                       ' From ' +
                         formatDateTime(
@@ -1031,7 +1073,7 @@ class TopicData extends Root {
               <li>
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Time Format:</strong> ({this.state.dateTimeFormat})
+                    Time Format: ({this.state.dateTimeFormat})
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
                     <Dropdown.Item
@@ -1071,8 +1113,7 @@ class TopicData extends Root {
                   className="nav-link"
                   style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
                 >
-                  <i className="fa fa-fw fa fa-download" aria-hidden="true" />
-                  Download query result
+                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
                 </button>
               </li>
             </ul>
@@ -1082,7 +1123,6 @@ class TopicData extends Root {
         <div className="table-responsive">
           <Table
             loading={loading}
-            history={history}
             reduce={true}
             firstHeader={firstColumns}
             isChecked={this.props.isAllTopicDataSelected}
@@ -1095,7 +1135,7 @@ class TopicData extends Root {
                 expand: true,
                 cell: () => {
                   return (
-                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} readOnly />
+                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} disabled />
                   );
                 },
                 readOnly: true
@@ -1130,6 +1170,7 @@ class TopicData extends Root {
 
                   return (
                     <AceEditor
+                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"
@@ -1161,7 +1202,10 @@ class TopicData extends Root {
               {
                 id: 'timestamp',
                 accessor: 'timestamp',
-                colName: 'Timestamp',
+                colName:
+                  this.state.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                    ? 'Timestamp ' + format(new Date(), 'z')
+                    : 'Timestamp',
                 type: 'text',
                 cell: (obj, col) => {
                   return (
@@ -1210,7 +1254,7 @@ class TopicData extends Root {
                     <div className="justify-items">
                       {obj[col.accessor].key !== undefined && (
                         <span
-                          className="badge badge-primary clickable"
+                          className="badge bg-primary clickable"
                           onClick={
                             obj[col.accessor].registryType !== 'GLUE'
                               ? () => {
@@ -1225,7 +1269,7 @@ class TopicData extends Root {
 
                       {obj[col.accessor].value !== undefined && (
                         <span
-                          className="badge badge-primary clickable schema-value"
+                          className="badge bg-primary clickable schema-value"
                           onClick={
                             obj[col.accessor].registryType !== 'GLUE'
                               ? () => {
@@ -1331,4 +1375,4 @@ class TopicData extends Root {
   }
 }
 
-export default TopicData;
+export default withRouter(TopicData);

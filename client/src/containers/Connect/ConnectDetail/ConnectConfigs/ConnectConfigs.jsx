@@ -1,6 +1,5 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import './styles.scss';
 import {
   uriConnectDefinitionConfigs,
   uriUpdateDefinition,
@@ -9,17 +8,19 @@ import {
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import filter from 'lodash/filter';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamation, faInfo } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectConfigs extends Form {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    connectId: this.props.match.params.connectId,
-    definitionId: this.props.match.params.definitionId,
+    clusterId: this.props.params.clusterId,
+    connectId: this.props.params.connectId,
+    definitionId: this.props.params.definitionId,
     formData: {},
     errors: {},
     configs: {},
@@ -135,9 +136,10 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i
-              className="fa fa-exclamation text-danger"
-              style={{ marginleft: '2%' }}
+            <FontAwesomeIcon
+              icon={faExclamation}
+              className={'text-danger'}
+              style={{ marginleft: '1%' }}
               aria-hidden="true"
             />
           </span>
@@ -147,8 +149,9 @@ class ConnectConfigs extends Form {
         title = (
           <span>
             {plugin.displayName}{' '}
-            <i
-              className="fa fa-info text-warning"
+            <FontAwesomeIcon
+              icon={faInfo}
+              className={'text-warning'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />
@@ -276,15 +279,10 @@ class ConnectConfigs extends Form {
 
     body.configs = configs;
 
-    const { history } = this.props;
-
     await this.postApi(uriUpdateDefinition(clusterId, connectId, definitionId), body);
 
-    history.push({
-      pathname: `/ui/${clusterId}/connect/${connectId}`
-    });
-
-    toast.success(`${`Definition '${formData.name}' is updated`}`);
+    toast.success(`Definition '${formData.name}' is updated`);
+    this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
   }
 
   render() {
@@ -352,4 +350,4 @@ class ConnectConfigs extends Form {
   }
 }
 
-export default ConnectConfigs;
+export default withRouter(ConnectConfigs);

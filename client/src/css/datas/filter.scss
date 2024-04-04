@@ -5,7 +5,7 @@
   }
 
   > .navbar-collapse {
-    @include media-breakpoint-down(md) {
+    @include media-breakpoint-down(lg) {
       order: 3;
     }
   }

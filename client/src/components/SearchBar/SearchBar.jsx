@@ -3,7 +3,8 @@ import Joi from 'joi-browser';
 import PropTypes from 'prop-types';
 import Form from '../Form/Form';
 import { SETTINGS_VALUES } from '../../utils/constants';
-import './styles.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 class SearchBar extends Form {
   static propTypes = {
@@ -128,15 +129,14 @@ class SearchBar extends Form {
           <span className="navbar-toggler-icon" />
         </button>
         <div className={`collapse navbar-collapse ${showFilters}`} id="navbar-search">
-          <form className="form-inline mr-auto khq-form-get" onSubmit={e => this.handleSubmit(e)}>
+          <form className="form-inline me-auto" onSubmit={e => this.handleSubmit(e)}>
             {showSearch &&
               this.renderInput(
                 'search',
                 '',
                 'Search',
                 'text',
-                { autoComplete: 'off' },
-                '',
+                true,
                 'topic-search-wrapper',
                 'topic-search-input'
               )}
@@ -153,12 +153,11 @@ class SearchBar extends Form {
                 },
                 '',
                 'select-wrapper',
-                { className: 'form-control topic-select' }
+                false
               )}
-
             <button className="btn btn-primary" type="submit">
-              <span className="d-md-none">Search </span>
-              <i className="fa fa-search" />
+              <FontAwesomeIcon icon={faSearch} />
+              <span className="d-lg-none"> Search</span>
             </button>
             {showKeepSearch && (
               <span>

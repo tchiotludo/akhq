@@ -1,15 +1,13 @@
 .khq-multiple {
-  margin-left: 0;
   > div {
     display: flex;
-    margin-bottom: $form-group-margin-bottom;
+    margin-bottom: 1rem;
 
     &:first-child {
       flex-grow: 1;
     }
 
     .row {
-      margin-bottom: 0;
       &:last-child {
         margin-left: 0;
         margin-right: 0;

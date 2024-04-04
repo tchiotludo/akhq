@@ -1,24 +1,24 @@
 import React from 'react';
 import Joi from 'joi-browser';
-import './styles.scss';
 import { uriConnectPlugins, uriCreateConnect } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
 import constants from '../../../utils/constants';
 import Select from '../../../components/Form/Select';
 import AceEditor from 'react-ace';
 import filter from 'lodash/filter';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamation, faInfo } from '@fortawesome/free-solid-svg-icons';
 
 class ConnectCreate extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    connectId: this.props.match.params.connectId,
+    clusterId: this.props.params.clusterId,
+    connectId: this.props.params.connectId,
     formData: {},
     errors: {},
     plugins: [],
@@ -133,9 +133,10 @@ class ConnectCreate extends Root {
           <span>
             {plugin.displayName}
             {''}
-            <i
-              className="fa fa-exclamation text-danger"
-              style={{ marginleft: '2%' }}
+            <FontAwesomeIcon
+              icon={faExclamation}
+              className={'text-danger'}
+              style={{ marginleft: '1%' }}
               aria-hidden="true"
             />
           </span>
@@ -145,8 +146,9 @@ class ConnectCreate extends Root {
         title = (
           <span>
             {plugin.displayName}
-            <i
-              className="fa fa-info text-warning"
+            <FontAwesomeIcon
+              icon={faInfo}
+              className={'text-warning'}
               style={{ marginleft: '2%' }}
               aria-hidden="true"
             />
@@ -281,6 +283,7 @@ class ConnectCreate extends Root {
             </td>
             <td>
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="json"
                 id={'transformsprops'}
                 theme="merbivore_soft"
@@ -405,18 +408,17 @@ class ConnectCreate extends Root {
 
     body.configs = configs;
 
-    this.postApi(uriCreateConnect(clusterId, connectId), body).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/connect/${connectId}`
-      });
-
-      toast.success(`${`Connection '${formData.subject}' was created successfully`}`);
-    });
+    this.postApi(uriCreateConnect(clusterId, connectId), body).then(
+      () => {
+        toast.success(`Connection '${formData.subject}' was created successfully`);
+        this.props.router.navigate({ pathname: `/ui/${clusterId}/connect/${connectId}` });
+      },
+      { replace: true }
+    );
   }
 
   render() {
     const { formData, selectedType } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -428,7 +430,7 @@ class ConnectCreate extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Create a definition'} history={history} />
+          <Header title={'Create a definition'} />
           {this.renderDropdown()}
           {selectedType.length > 0 && (
             <React.Fragment>

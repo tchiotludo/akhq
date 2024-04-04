@@ -16,7 +16,7 @@ volumes:
 
 services:
   akhq:
-    image: gradle:8-jdk11
+    image: gradle:8-jdk17
     command: 'gradle run -x installFrontend -x assembleFrontend -t'
     working_dir: /app
     volumes:
@@ -32,18 +32,16 @@ services:
       - schema-registry
 
   ui:
-    image: node:12
-    command: 'sh -c "npm install && npm start"'
+    image: node:lts
+    command: 'sh -c "npm install && npm run build && npm run preview"'
     working_dir: /app/client
     tty: true
     volumes:
       - ./:/app:z
       - ui-modules:/app/client/node_modules:Z
       - ui-build:/app/client/build:Z
-    environment:
-      REACT_APP_BASE_URL: "http://localhost:8080"
     ports:
-      - 3000:3000
+      - 4000:4000
     depends_on:
       - akhq
 

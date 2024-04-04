@@ -7,9 +7,7 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import './styles.scss';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/mode-protobuf';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
@@ -17,6 +15,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { withRouter } from '../../../utils/withRouter';
 
 class SchemaList extends Root {
   state = {
@@ -28,7 +27,6 @@ class SchemaList extends Root {
     deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     searchData: {
       search: ''
     },
@@ -42,7 +40,7 @@ class SchemaList extends Root {
   };
 
   componentDidMount() {
-    let { clusterId } = this.props.match.params;
+    let { clusterId } = this.props.params;
     const { searchData, pageNumber } = this.state;
     const query = new URLSearchParams(this.props.location.search);
 
@@ -53,9 +51,41 @@ class SchemaList extends Root {
         pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
       },
       () => {
-        this.getSchemaRegistry();
+        this.getSchemaRegistry(true);
       }
     );
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.location.search !== prevProps.location.search) {
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const { searchData, pageNumber } = this.state;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            searchData: { search: query.get('search') },
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+          },
+          () => {
+            this.getSchemaRegistry(false);
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on schema registry from the component
+        this.setState(
+          {
+            searchData: { search: '' },
+            pageNumber: 1
+          },
+          () => {
+            this.getSchemaRegistry(false);
+          }
+        );
+      }
+    }
   }
 
   handleSearch = data => {
@@ -66,18 +96,18 @@ class SchemaList extends Root {
     this.renewCancelToken();
 
     this.setState({ pageNumber: 1, searchData }, () => {
-      this.getSchemaRegistry();
+      this.getSchemaRegistry(false);
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getSchemaRegistry();
+      this.getSchemaRegistry(replaceInNavigation);
     });
   };
 
-  async getSchemaRegistry() {
+  async getSchemaRegistry(replaceInNavigation = true) {
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -91,10 +121,13 @@ class SchemaList extends Root {
     if (data.results) {
       this.handleSchemaRegistry(data.results);
       this.setState({ selectedCluster, totalPageNumber: data.page }, () => {
-        this.props.history.push({
-          pathname: `/ui/${this.state.selectedCluster}/schema`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.selectedCluster}/schema`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: replaceInNavigation }
+        );
       });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
@@ -117,15 +150,15 @@ class SchemaList extends Root {
           schema.schemaType === 'PROTOBUF'
             ? schema.schema
             : schema.schema
-            ? JSON.stringify(JSON.parse(schema.schema), null, 2)
-            : null
+              ? JSON.stringify(JSON.parse(schema.schema), null, 2)
+              : null
       });
     });
     this.setState({ schemasRegistry: tableSchemaRegistry, loading: false });
   }
 
   handleVersion(version) {
-    return <span className="badge badge-primary"> {version}</span>;
+    return <span className="badge bg-primary"> {version}</span>;
   }
 
   handleOnDelete(schema) {
@@ -162,16 +195,12 @@ class SchemaList extends Root {
   render() {
     const { selectedCluster, searchData, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     return (
       <div>
-        <Header title="Schema Registry" history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title="Schema Registry" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -187,13 +216,12 @@ class SchemaList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -228,6 +256,7 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode={obj.schemaType === 'PROTOBUF' ? 'protobuf' : 'json'}
                     id={'value' + index}
                     theme="merbivore_soft"
@@ -269,7 +298,12 @@ class SchemaList extends Root {
           }}
           idCol="subject"
           onDetails={subject => {
-            return `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`;
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`
+              },
+              { replace: false }
+            );
           }}
           actions={
             roles.SCHEMA && roles.SCHEMA.includes('DELETE')
@@ -327,4 +361,4 @@ class SchemaList extends Root {
   }
 }
 
-export default SchemaList;
+export default withRouter(SchemaList);

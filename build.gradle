@@ -45,6 +45,7 @@ configurations.all {
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
 
         force("com.google.protobuf:protobuf-java:3.25.2")
+        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
     }
 }
 

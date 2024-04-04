@@ -1,10 +1,17 @@
-@import '../../css/init';
-
-$sidebarWidth: 70px;
-$sidebarExpandedWidth: 250px;
 $sidebarTransition: 0.5s;
 
 .sidenav---sidenav---_2tBP {
+  a {
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .sidenav---navitem---9uL5T:hover {
+    a {
+      text-decoration: underline;
+    }
+  }
   .logo-wrapper {
     background: $tertiary;
     border-bottom: 4px solid $yellow;
@@ -15,18 +22,24 @@ $sidebarTransition: 0.5s;
     width: calc(100% - 8px);
     height: 65px;
     display: block;
-    background: url('../../images/logo.svg') no-repeat 16px;
-    background-size: cover;
     margin-top: 60px;
     margin-left: 4px;
     margin-right: 4px;
     transition: all 0.2s ease;
   }
+  span.logo svg {
+    margin-left: 10px;
+    width: calc($sidebar-collapsed - 18px);
+  }
+  span.logo svg image {
+    width: calc($sidebar-expanded - 8px);
+  }
 }
 
 .sidenav---expanded---1KdUL {
-  span.logo {
-    background-position: 0;
+  span.logo svg {
+    margin-left: 0;
+    width: calc($sidebar-expanded - 8px);
   }
 }
 
@@ -41,9 +54,4 @@ $sidebarTransition: 0.5s;
 }
 .sidenav-subnav---1EN61 {
   background-color: $primary !important;
-}
-
-.sidenav---sidenav-subnav---1EN61 {
-  max-height: calc(30vh);
-  overflow: auto !important;
 }

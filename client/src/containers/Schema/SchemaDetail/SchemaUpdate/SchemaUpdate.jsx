@@ -4,6 +4,7 @@ import Joi from 'joi-browser';
 import { uriLatestSchemaVersion, uriUpdateSchema } from '../../../../utils/endpoints';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../../../utils/withRouter';
 
 class SchemaUpdate extends Form {
   state = {
@@ -58,8 +59,8 @@ class SchemaUpdate extends Form {
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
-    const { schemaId } = this.props || this.props.match.params;
+    const { clusterId } = this.props.params;
+    const { schemaId } = this.props || this.props.params;
     this.setState({ clusterId, schemaId }, () => this.getLatestSchemaVersion(clusterId, schemaId));
   }
 
@@ -102,7 +103,7 @@ class SchemaUpdate extends Form {
     this.postApi(uriUpdateSchema(clusterId, formData.subject), body).then(() => {
       toast.success(`Schema '${formData.subject}' is updated`);
       this.props.getSchemaVersions();
-      window.location.reload(false);
+      window.location.reload();
     });
   }
 
@@ -116,17 +117,9 @@ class SchemaUpdate extends Form {
         onSubmit={e => this.handleSubmit(e)}
       >
         <fieldset>
-          {this.renderInput(
-            'subject',
-            'Subject',
-            'Subject',
-            undefined,
-            undefined,
-            false,
-            false,
-            false,
-            { disabled: true }
-          )}
+          {this.renderInput('subject', 'Subject', 'Subject', undefined, false, '', false, false, {
+            disabled: true
+          })}
           {this.renderSelect(
             'compatibility',
             'Compatibility Level',
@@ -156,4 +149,4 @@ class SchemaUpdate extends Form {
   }
 }
 
-export default SchemaUpdate;
+export default withRouter(SchemaUpdate);

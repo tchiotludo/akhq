@@ -6,11 +6,12 @@ import endpoints from '../../../utils/endpoints';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
 class Schema extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    schemaId: this.props.history.schemaId || this.props.match.params.schemaId,
+    clusterId: this.props.params.clusterId,
+    schemaId: this.props.params.schemaId,
     selectedTab: 'update',
     totalVersions: 0,
     schemaVersions: [],
@@ -52,8 +53,11 @@ class Schema extends Root {
         selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
       },
       () => {
-        this.props.history.replace(
-          `/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`
+        this.props.router.navigate(
+          `/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`,
+          {
+            replace: true
+          }
         );
       }
     );
@@ -61,9 +65,8 @@ class Schema extends Root {
 
   renderSelectedTab() {
     const { selectedTab, schemaVersions } = this.state;
-    const { history, match } = this.props;
-    const { clusterId } = this.props.match.params;
-    const { schemaId } = this.props.history.state || this.props.match.params;
+    const { clusterId } = this.props.params;
+    const { schemaId } = this.props.params;
 
     switch (selectedTab) {
       case 'update':
@@ -73,29 +76,15 @@ class Schema extends Root {
               this.getSchemaVersions();
             }}
             schemaId={schemaId}
-            history={history}
-            match={match}
           />
         );
       case 'versions':
         return (
-          <SchemaVersions
-            schemaName={schemaId}
-            clusterId={clusterId}
-            schemas={schemaVersions}
-            history={history}
-            match={match}
-          />
+          <SchemaVersions schemaName={schemaId} clusterId={clusterId} schemas={schemaVersions} />
         );
       default:
         return (
-          <SchemaVersions
-            schemaName={schemaId}
-            clusterId={clusterId}
-            schemas={schemaVersions}
-            history={history}
-            match={match}
-          />
+          <SchemaVersions schemaName={schemaId} clusterId={clusterId} schemas={schemaVersions} />
         );
     }
   }
@@ -105,7 +94,7 @@ class Schema extends Root {
 
     return (
       <div>
-        <Header title={`Schema: ${decodeURIComponent(schemaId)}`} history={this.props.history} />
+        <Header title={`Schema: ${decodeURIComponent(schemaId)}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
             {roles.SCHEMA.includes('UPDATE') && (
@@ -123,7 +112,7 @@ class Schema extends Root {
                 to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
                 className={this.tabClassName('versions')}
               >
-                Versions <span className="badge badge-secondary">{totalVersions}</span>
+                Versions <span className="badge bg-secondary">{totalVersions}</span>
               </Link>
             </li>
           </ul>
@@ -139,4 +128,4 @@ class Schema extends Root {
   }
 }
 
-export default Schema;
+export default withRouter(Schema);

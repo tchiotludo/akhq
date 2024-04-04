@@ -45,7 +45,6 @@ class TopicAcls extends Root {
       <div>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'principal',
@@ -69,9 +68,7 @@ class TopicAcls extends Root {
               cell: (obj, col) => {
                 return (
                   <React.Fragment>
-                    <span className="badge badge-secondary">
-                      {obj[col.accessor].permissionType}
-                    </span>{' '}
+                    <span className="badge bg-secondary">{obj[col.accessor].permissionType}</span>{' '}
                     {obj[col.accessor].operation}
                   </React.Fragment>
                 );

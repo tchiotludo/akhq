@@ -339,7 +339,9 @@ body.swal2-toast-column .swal2-toast .swal2-validation-message {
 }
 
 .swal2-popup.swal2-toast .swal2-styled:focus {
-  box-shadow: 0 0 0 0.0625em #fff, 0 0 0 0.125em rgba(50, 100, 150, 0.4);
+  box-shadow:
+    0 0 0 0.0625em #fff,
+    0 0 0 0.125em rgba(50, 100, 150, 0.4);
 }
 
 .swal2-popup.swal2-toast .swal2-success {
@@ -687,7 +689,13 @@ body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
   justify-content: center;
 }
 
-.swal2-container:not(.swal2-top):not(.swal2-top-start):not(.swal2-top-end):not(.swal2-top-left):not(.swal2-top-right):not(.swal2-center-start):not(.swal2-center-end):not(.swal2-center-left):not(.swal2-center-right):not(.swal2-bottom):not(.swal2-bottom-start):not(.swal2-bottom-end):not(.swal2-bottom-left):not(.swal2-bottom-right):not(.swal2-grow-fullscreen)
+.swal2-container:not(.swal2-top):not(.swal2-top-start):not(.swal2-top-end):not(.swal2-top-left):not(
+    .swal2-top-right
+  ):not(.swal2-center-start):not(.swal2-center-end):not(.swal2-center-left):not(
+    .swal2-center-right
+  ):not(.swal2-bottom):not(.swal2-bottom-start):not(.swal2-bottom-end):not(.swal2-bottom-left):not(
+    .swal2-bottom-right
+  ):not(.swal2-grow-fullscreen)
   > .swal2-modal {
   margin: auto;
 }
@@ -834,7 +842,9 @@ body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
 
 .swal2-popup .swal2-styled:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(50, 100, 150, 0.4);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px rgba(50, 100, 150, 0.4);
 }
 
 .swal2-popup .swal2-styled::-moz-focus-inner {
@@ -919,7 +929,9 @@ body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
 .swal2-popup .swal2-file,
 .swal2-popup .swal2-textarea {
   width: 100%;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
   border: 1px solid #d9d9d9;
   border-radius: 0.1875em;
   font-size: 0.875rem;

@@ -6,7 +6,6 @@ import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
 import AceEditor from 'react-ace';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../../../components/Root';
@@ -73,7 +72,6 @@ class SchemaVersions extends Root {
 
   deleteSchemaRegistry = () => {
     const { selectedCluster, schemaToDelete, selectedSchema } = this.state;
-    const { history } = this.props;
     const deleteData = {
       clusterId: selectedCluster,
       subject: selectedSchema,
@@ -87,9 +85,10 @@ class SchemaVersions extends Root {
       .then(() => {
         toast.success(`Version'${schemaToDelete.version}' is deleted`);
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
-        history.push({
-          pathname: `/ui/${selectedCluster}/schema`
-        });
+        this.props.router.navigate(
+          { pathname: `/ui/${selectedCluster}/schema` },
+          { replace: true }
+        );
       })
       .catch(() => {
         this.setState({ showDeleteModal: false, schemaToDelete: {} });
@@ -103,7 +102,6 @@ class SchemaVersions extends Root {
       <div>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -119,7 +117,7 @@ class SchemaVersions extends Root {
               type: 'text',
               sortable: true,
               cell: (obj, col) => {
-                return <span className="badge badge-primary">{obj[col.accessor] || ''}</span>;
+                return <span className="badge bg-primary">{obj[col.accessor] || ''}</span>;
               }
             },
             {
@@ -132,6 +130,7 @@ class SchemaVersions extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
+                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
                     theme="merbivore_soft"

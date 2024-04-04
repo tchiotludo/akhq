@@ -1,19 +1,18 @@
 import React from 'react';
 import { uriKsqlDBExecuteStatement } from '../../../utils/endpoints';
-import { withRouter } from 'react-router-dom';
 import Header from '../../Header/Header';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import AceEditor from 'react-ace';
+import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBStatement extends Root {
   state = {
-    clusterId: this.props.match.params.clusterId,
-    ksqlDBId: this.props.match.params.ksqlDBId,
+    clusterId: this.props.params.clusterId,
+    ksqlDBId: this.props.params.ksqlDBId,
     formData: {},
     errors: {}
   };
@@ -36,17 +35,13 @@ class KsqlDBStatement extends Root {
     };
 
     this.putApi(uriKsqlDBExecuteStatement(clusterId, ksqlDBId), body).then(() => {
-      this.props.history.push({
-        pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}`
-      });
-
       toast.success('Statement was executed successfully');
+      this.props.router.navigate({ pathname: `/ui/${clusterId}/ksqldb/${ksqlDBId}` });
     });
   }
 
   render() {
     const { formData } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
@@ -58,7 +53,7 @@ class KsqlDBStatement extends Root {
             this.doSubmit();
           }}
         >
-          <Header title={'Execute statement'} history={history} />
+          <Header title={'Execute statement'} />
 
           <div className="form-group row">
             <label className="col-sm-2 col-form-label">
@@ -80,6 +75,7 @@ class KsqlDBStatement extends Root {
 
             <div className="col-sm-10">
               <AceEditor
+                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
                 theme="merbivore_soft"

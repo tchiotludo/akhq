@@ -1,6 +1,5 @@
 .tail-search-wrapper {
   width: 240px;
-  display: flex;
   justify-content: space-between;
   padding-right: 20px;
 
@@ -22,6 +21,12 @@
 
 .show > .btn-white.dropdown-toggle {
   background-color: white !important;
+}
+
+nav {
+  .show > .btn-secondary.dropdown-toggle {
+    background-color: $secondary !important;
+  }
 }
 
 select.bs-select-hidden,
@@ -498,6 +503,14 @@ select.selectpicker {
   margin-bottom: 0;
   width: 100%;
   float: none;
+}
+
+.btn-block {
+  width: 100%;
+
+  .bs-select-all {
+    margin-right: 8px !important;
+  }
 }
 
 .bootstrap-select {

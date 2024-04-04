@@ -1,6 +1,5 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +9,7 @@ import Pagination from '../../../../components/Pagination';
 import { handlePageChange, getPageNumber } from '../../../../utils/pagination';
 import { uriKsqlDBTables } from '../../../../utils/endpoints';
 import { Link } from 'react-router-dom';
+import { withRouter } from '../../../../utils/withRouter';
 
 class KsqlDBTables extends Root {
   state = {
@@ -19,15 +19,14 @@ class KsqlDBTables extends Root {
     loading: true,
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     searchData: {
       search: ''
     }
   };
 
   static getDerivedStateFromProps(nextProps) {
-    const clusterId = nextProps.match.params.clusterId;
-    const ksqlDBId = nextProps.match.params.ksqlDBId;
+    const clusterId = nextProps.params.clusterId;
+    const ksqlDBId = nextProps.params.ksqlDBId;
 
     return {
       clusterId: clusterId,
@@ -60,7 +59,7 @@ class KsqlDBTables extends Root {
     }
   }
 
-  async getKsqlDBTables() {
+  async getKsqlDBTables(replaceInNavigation = true) {
     const { clusterId, ksqlDBId, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -71,10 +70,13 @@ class KsqlDBTables extends Root {
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        this.props.history.push({
-          pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/tables`,
-          search: `search=${this.state.searchData.search}&page=${pageNumber}`
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.clusterId}/ksqldb/${this.state.ksqlDBId}/tables`,
+            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+          },
+          { replace: replaceInNavigation }
+        );
       });
     } else {
       this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
@@ -102,23 +104,19 @@ class KsqlDBTables extends Root {
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getKsqlDBTables();
+      this.getKsqlDBTables(replaceInNavigation);
     });
   };
 
   render() {
     const { clusterId, tableData, loading, searchData, pageNumber, totalPageNumber } = this.state;
-    const { history } = this.props;
 
     return (
       <div>
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -131,13 +129,12 @@ class KsqlDBTables extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
         <Table
           loading={loading}
-          history={history}
           columns={[
             {
               id: 'id',
@@ -200,4 +197,4 @@ class KsqlDBTables extends Root {
   }
 }
 
-export default KsqlDBTables;
+export default withRouter(KsqlDBTables);

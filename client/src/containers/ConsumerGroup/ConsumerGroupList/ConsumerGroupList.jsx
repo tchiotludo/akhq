@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { Link } from 'react-router-dom';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { withRouter } from '../../../utils/withRouter';
 
 class ConsumerGroupList extends Root {
   state = {
@@ -23,14 +24,13 @@ class ConsumerGroupList extends Root {
     deleteData: {},
     pageNumber: 1,
     totalPageNumber: 1,
-    history: this.props,
     search: '',
     roles: JSON.parse(sessionStorage.getItem('roles')),
     loading: true
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const { search, pageNumber } = this.state;
     const query = new URLSearchParams(this.props.location.search);
 
@@ -46,20 +46,52 @@ class ConsumerGroupList extends Root {
     );
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.location.search !== prevProps.location.search) {
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const { search, pageNumber } = this.state;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            search: query.get('search'),
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+          },
+          () => {
+            this.getConsumerGroup(false);
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on schema registry from the component
+        this.setState(
+          {
+            searchData: { search: '' },
+            pageNumber: 1
+          },
+          () => {
+            this.getConsumerGroup(false);
+          }
+        );
+      }
+    }
+  }
+
   handleSearch = data => {
     this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
-      this.getConsumerGroup();
+      this.getConsumerGroup(false);
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getConsumerGroup();
+      this.getConsumerGroup(replaceInNavigation);
     });
   };
 
-  async getConsumerGroup() {
+  async getConsumerGroup(replaceInNavigation = true) {
     const { selectedCluster, pageNumber, search } = this.state;
     this.setState({ loading: true });
 
@@ -68,10 +100,13 @@ class ConsumerGroupList extends Root {
     if (response.results) {
       this.handleConsumerGroup(response.results);
       this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
-        this.props.history.push({
-          pathname: `/ui/${this.state.selectedCluster}/group`,
-          search: `search=${this.state.search}&page=${pageNumber}`
-        })
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${this.state.selectedCluster}/group`,
+            search: `search=${this.state.search}&page=${pageNumber}`
+          },
+          { replace: replaceInNavigation }
+        )
       );
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 1, loading: false });
@@ -98,13 +133,13 @@ class ConsumerGroupList extends Root {
 
     switch (state) {
       case 'STABLE':
-        className = 'badge badge-success';
+        className = 'badge bg-success';
         break;
       case 'PREPARING_REBALANCE':
-        className = 'badge badge-primary';
+        className = 'badge bg-primary';
         break;
       default:
-        className = 'badge badge-warning';
+        className = 'badge bg-warning';
         break;
     }
 
@@ -112,7 +147,7 @@ class ConsumerGroupList extends Root {
   }
 
   handleCoordinator(coordinator) {
-    return <span className="badge badge-primary"> {coordinator}</span>;
+    return <span className="badge bg-primary"> {coordinator}</span>;
   }
 
   handleTopics(group, groupedTopicOffset) {
@@ -125,12 +160,11 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-dark btn-sm mb-1 mr-1"
+          className="btn btn-dark btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
-          {topicId + ' '}
-
-          <div className="badge badge-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
+          {topicId}{' '}
+          <div className="badge bg-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
         </Link>
       );
     });
@@ -169,15 +203,11 @@ class ConsumerGroupList extends Root {
   render() {
     const { selectedCluster, search, pageNumber, totalPageNumber, loading } = this.state;
     const roles = this.state.roles || {};
-    const { history } = this.props;
 
     return (
       <div>
-        <Header title="Consumer Groups" history={history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title="Consumer Groups" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={search}
@@ -193,13 +223,12 @@ class ConsumerGroupList extends Root {
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'id',
@@ -246,7 +275,9 @@ class ConsumerGroupList extends Root {
           onDelete={group => {
             this.handleOnDelete(group);
           }}
-          onDetails={id => `/ui/${selectedCluster}/group/${encodeURIComponent(id)}`}
+          onDetails={id => {
+            this.props.router.navigate(`/ui/${selectedCluster}/group/${encodeURIComponent(id)}`);
+          }}
           actions={
             roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE')
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]
@@ -264,4 +295,4 @@ class ConsumerGroupList extends Root {
     );
   }
 }
-export default ConsumerGroupList;
+export default withRouter(ConsumerGroupList);
