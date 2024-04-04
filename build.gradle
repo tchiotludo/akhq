@@ -256,7 +256,13 @@ task testInjectData(type:JavaExec) {
 
 test.dependsOn "startTestKafkaCluster"
 
-task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'testClasses') {
+task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
+    dependsOn 'testClasses'
+    dependsOn 'buildLayers'
+    dependsOn 'shadowDistZip'
+    dependsOn 'shadowDistTar'
+    dependsOn 'distZip'
+    dependsOn 'distTar'
     group = 'verification'
     description = 'Start a global standalone test Kafka cluster during tests'
     classpath = sourceSets.test.runtimeClasspath
