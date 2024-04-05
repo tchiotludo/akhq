@@ -143,6 +143,13 @@ jobs:
           images: |
             tchiotludo/akhq
             ghcr.io/${{ github.repository }}
+          tags: |
+            # set latest tag for master branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
 
       - name: Publish to registries
         uses: docker/build-push-action@v2
@@ -166,4 +173,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
