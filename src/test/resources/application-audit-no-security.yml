@@ -1,6 +1,6 @@
 micronaut:
   security:
-    enabled: false
+    enabled: true
 akhq:
   audit:
     enabled: true
