@@ -8,8 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
-import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.utils.SecurityService;
+import jakarta.annotation.PostConstruct;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.models.audit.ConnectAuditEvent;
@@ -36,12 +35,18 @@ public class ConnectRepository extends AbstractRepository {
     private KafkaModule kafkaModule;
 
     @Inject
-    private AuditModule auditModule;
-
-    @Inject
     private ApplicationContext applicationContext;
 
+    private AuditModule auditModule;
+
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    @PostConstruct
+    public void init() {
+        if (applicationContext.containsBean(AuditModule.class)) {
+            auditModule = applicationContext.getBean(AuditModule.class);
+        }
+    }
 
     @Retryable(includes = {
         ConcurrentConfigModificationException.class,
@@ -131,7 +136,10 @@ public class ConnectRepository extends AbstractRepository {
             throw new IllegalArgumentException(e);
         }
 
-        auditModule.save(ConnectAuditEvent.newConnector(clusterId, connectId, name));
+        if (auditModule != null) {
+            auditModule.save(ConnectAuditEvent.newConnector(clusterId, connectId, name));
+        }
+
         return getDefinition(clusterId, connectId, name);
     }
 
@@ -145,7 +153,10 @@ public class ConnectRepository extends AbstractRepository {
             throw new IllegalArgumentException(e);
         }
 
-        auditModule.save(ConnectAuditEvent.updateConnector(clusterId, connectId, name));
+        if (auditModule != null) {
+            auditModule.save(ConnectAuditEvent.updateConnector(clusterId, connectId, name));
+        }
+
         return getDefinition(clusterId, connectId, name);
     }
 
@@ -155,9 +166,11 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .deleteConnector(name);
-            if (isSuccess) {
+
+            if (isSuccess && auditModule != null) {
                 auditModule.save(ConnectAuditEvent.deleteConnector(clusterId, connectId, name));
             }
+
             return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
@@ -170,9 +183,11 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .pauseConnector(name);
-            if (isSuccess) {
+
+            if (isSuccess && auditModule != null) {
                 auditModule.save(ConnectAuditEvent.pauseConnector(clusterId, connectId, name));
             }
+
             return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
@@ -185,9 +200,11 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .resumeConnector(name);
-            if (isSuccess) {
+
+            if (isSuccess && auditModule != null) {
                 auditModule.save(ConnectAuditEvent.resumeConnector(clusterId, connectId, name));
             }
+
             return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
@@ -200,9 +217,11 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnector(name);
-            if (isSuccess) {
+
+            if (isSuccess && auditModule != null) {
                 auditModule.save(ConnectAuditEvent.restartConnector(clusterId, connectId, name));
             }
+
             return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
@@ -215,9 +234,11 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnectorTask(name, task);
-            if (isSuccess) {
+
+            if (isSuccess && auditModule != null) {
                 auditModule.save(ConnectAuditEvent.restartTaskConnector(clusterId, connectId, name, task));
             }
+
             return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);

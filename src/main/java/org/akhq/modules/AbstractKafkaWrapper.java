@@ -2,6 +2,8 @@ package org.akhq.modules;
 
 
 import com.google.common.collect.ImmutableMap;
+import io.micronaut.context.ApplicationContext;
+import jakarta.annotation.PostConstruct;
 import org.akhq.models.Partition;
 import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
@@ -34,9 +36,18 @@ abstract public class AbstractKafkaWrapper {
     private KafkaModule kafkaModule;
 
     @Inject
+    private ApplicationContext applicationContext;
+
     private AuditModule auditModule;
 
     private final Map<String, DescribeClusterResult> cluster = new HashMap<>();
+
+    @PostConstruct
+    public void init() {
+        if (applicationContext.containsBean(AuditModule.class)) {
+            auditModule = applicationContext.getBean(AuditModule.class);
+        }
+    }
 
     public DescribeClusterResult describeCluster(String clusterId) throws ExecutionException {
         if (!this.cluster.containsKey(clusterId)) {
@@ -110,7 +121,9 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
-        auditModule.save(TopicAuditEvent.newTopic(clusterId, name, partitions, kafkaTopicConfigs));
+        if (auditModule != null) {
+            auditModule.save(TopicAuditEvent.newTopic(clusterId, name, partitions, kafkaTopicConfigs));
+        }
 
         listTopics = new HashMap<>();
     }
@@ -126,7 +139,9 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
-        auditModule.save(TopicAuditEvent.increasePartitions(clusterId, name, partitions));
+        if (auditModule != null) {
+            auditModule.save(TopicAuditEvent.increasePartitions(clusterId, name, partitions));
+        }
     }
 
     public void deleteTopics(String clusterId, String name) throws ExecutionException {
@@ -137,7 +152,9 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
-        auditModule.save(TopicAuditEvent.deleteTopic(clusterId, name));
+        if (auditModule != null) {
+            auditModule.save(TopicAuditEvent.deleteTopic(clusterId, name));
+        }
 
         listTopics = new HashMap<>();
     }
@@ -245,7 +262,9 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(name)
         );
 
-        auditModule.save(ConsumerGroupAuditEvent.deleteGroup(clusterId, name));
+        if (auditModule != null) {
+            auditModule.save(ConsumerGroupAuditEvent.deleteGroup(clusterId, name));
+        }
 
         describeConsumerGroups = new HashMap<>();
         consumerGroupOffset = new HashMap<>();
@@ -369,14 +388,16 @@ abstract public class AbstractKafkaWrapper {
             Collections.singletonList(clusterId)
         );
 
-        configs.forEach(
-            (k, v) -> {
-                if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
-                    auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
-                        v.entries().stream().collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+        if (auditModule != null) {
+            configs.forEach(
+                (k, v) -> {
+                    if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
+                        auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
+                            v.entries().stream().collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+                    }
                 }
-            }
-        );
+            );
+        }
 
         this.describeConfigs = new HashMap<>();
     }
@@ -431,7 +452,9 @@ abstract public class AbstractKafkaWrapper {
                 List.of(groupName, topicName)
             );
 
-            auditModule.save(ConsumerGroupAuditEvent.deleteGroupOffsets(clusterId, groupName, topicName));
+            if (auditModule != null) {
+                auditModule.save(ConsumerGroupAuditEvent.deleteGroupOffsets(clusterId, groupName, topicName));
+            }
         }
     }
 }
