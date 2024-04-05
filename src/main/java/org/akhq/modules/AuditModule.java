@@ -2,20 +2,19 @@ package org.akhq.modules;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Audit;
 import org.akhq.models.audit.AuditEvent;
 import io.micronaut.security.utils.SecurityService;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-
-import java.time.LocalDateTime;
 
 @Singleton
 @Slf4j
+@Requires(property = "akhq.audit.enabled", value = StringUtils.TRUE)
+@Requires(property = "micronaut.security.enabled", value = StringUtils.TRUE)
 public class AuditModule {
 
     @Inject
@@ -30,14 +29,8 @@ public class AuditModule {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public void save(AuditEvent event) {
-
         final String clusterId = auditConfig.getClusterId();
         final String topicName = auditConfig.getTopicName();
-
-        if (!auditConfig.getEnabled()) {
-            return;
-        }
-
 
         byte[] value;
         securityService.username().ifPresent(event::setUserName);
