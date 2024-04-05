@@ -1,0 +1,8 @@
+micronaut:
+  security:
+    enabled: false
+akhq:
+  audit:
+    enabled: true
+    cluster-id: test
+    topic-name: audit
