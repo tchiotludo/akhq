@@ -22,7 +22,8 @@ import java.util.Optional;
 @Singleton
 @Slf4j
 public class AuditModule {
-    SecurityService securityService;
+    @Inject
+    Optional<SecurityService> securityService;
 
     @Inject
     KafkaModule kafkaModule;
@@ -30,20 +31,9 @@ public class AuditModule {
     @Inject
     Audit auditConfig;
 
-    @Value("${micronaut.security.enabled}")
-    Boolean securityEnabled;
-
     @Inject
     ApplicationContext applicationContext;
 
-    @PostConstruct
-    public void init() {
-        if (securityEnabled) {
-            securityService = applicationContext.getBean(SecurityService.class);
-        } else {
-            securityService = new NoOpSecurityService();
-        }
-    }
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -58,7 +48,7 @@ public class AuditModule {
 
 
         byte[] value;
-        securityService.username().ifPresent(event::setUserName);
+        securityService.flatMap(SecurityService::username).ifPresent(event::setUserName);
         try {
             value = mapper.writeValueAsBytes(event);
         } catch (Exception e) {
@@ -71,29 +61,6 @@ public class AuditModule {
                 log.error("Audit data cannot be sent to Kafka", exception);
             }
         });
-    }
-
-    private static class NoOpSecurityService implements SecurityService {
-
-        @Override
-        public Optional<String> username() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Authentication> getAuthentication() {
-            return Optional.empty();
-        }
-
-        @Override
-        public boolean isAuthenticated() {
-            return false;
-        }
-
-        @Override
-        public boolean hasRole(String role) {
-            return false;
-        }
     }
 
 }
