@@ -1,25 +1,21 @@
 package org.akhq.modules;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micronaut.context.annotation.Requires;
+import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Audit;
 import org.akhq.models.audit.AuditEvent;
-import io.micronaut.security.utils.SecurityService;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Singleton
 @Slf4j
 public class AuditModule {
-
     @Inject
-    SecurityService securityService;
+    Optional<SecurityService> securityService;
 
     @Inject
     KafkaModule kafkaModule;
@@ -40,7 +36,7 @@ public class AuditModule {
 
 
         byte[] value;
-        securityService.username().ifPresent(event::setUserName);
+        securityService.flatMap(SecurityService::username).ifPresent(event::setUserName);
         try {
             value = mapper.writeValueAsBytes(event);
         } catch (Exception e) {
