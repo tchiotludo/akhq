@@ -354,7 +354,6 @@ class TopicData extends Root {
 
   _searchMessages(changePage = false, replaceInNavigation = false) {
     this._stopEventSource();
-    this.setState({ loading: true });
     if (this._hasAnyFilterFilled()) {
       this._startEventSource(changePage, replaceInNavigation);
     } else {
