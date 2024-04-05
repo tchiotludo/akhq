@@ -40,7 +40,7 @@ public class KafkaAuditModuleNoSecTest extends AbstractTest  {
 
     @Test
     void topicAuditNoSec() throws ExecutionException, InterruptedException {
-        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "dummy-no-sec", 1, (short) 1, Collections.emptyList()
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "generated_dummy-no-sec", 1, (short) 1, Collections.emptyList()
         );
     }
 
