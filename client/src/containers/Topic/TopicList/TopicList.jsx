@@ -79,10 +79,10 @@ class TopicList extends Root {
     }
 
     if (this.props.location.search !== prevProps.location.search) {
+      const { searchData } = this.state;
       // Handle back navigation
       if (this.props.router.navigationType === 'POP') {
         let { clusterId } = this.props.params;
-        const { searchData } = this.state;
         const query = new URLSearchParams(this.props.location.search);
         this.setState(
           {
@@ -96,7 +96,10 @@ class TopicList extends Root {
         );
       } else if (this.props.location.search === '') {
         // Handle sidebar click on topics from the component
-        this.setState({ pageNumber: 1 }, () => {
+        this.setState({
+          pageNumber: 1,
+          searchData : { ...searchData, search: '' }
+        }, () => {
           this._initializeVars(this.getTopics);
         });
       }
@@ -176,6 +179,10 @@ class TopicList extends Root {
 
   handleSearch = data => {
     const { searchData } = data;
+
+    // Cancel previous requests if there are some to prevent UI issues
+    this.cancelAxiosRequests();
+    this.renewCancelToken();
 
     this.setState({ pageNumber: 1, searchData }, () => {
       const { topicListView } = this.state.searchData;

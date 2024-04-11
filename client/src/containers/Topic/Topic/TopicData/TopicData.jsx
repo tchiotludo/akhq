@@ -262,7 +262,7 @@ class TopicData extends Root {
 
             if (records.length) {
               const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
-              self.setState({ recordCount: tableMessages.length, messages: tableMessages });
+              self.setState({ recordCount: tableMessages.length, messages: tableMessages, loading: false });
             }
           });
 
@@ -281,7 +281,11 @@ class TopicData extends Root {
     if (this.eventSource) {
       this.eventSource.close();
     }
-    this.setState({ isSearching: false });
+
+    this.cancelAxiosRequests();
+    this.renewCancelToken();
+
+    this.setState({ isSearching: false, loading: false });
   };
 
   _clearSearch = () => {
@@ -354,6 +358,7 @@ class TopicData extends Root {
 
   _searchMessages(changePage = false, replaceInNavigation = false) {
     this._stopEventSource();
+    this.setState({ loading: true });
     if (this._hasAnyFilterFilled()) {
       this._startEventSource(changePage, replaceInNavigation);
     } else {
@@ -931,7 +936,7 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Sort:</strong> ({sortBy})
                   </Dropdown.Toggle>
-                  {!loading && <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>}
+                  <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -939,13 +944,11 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Partition:</strong> ({partition})
                   </Dropdown.Toggle>
-                  {!loading && (
                     <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                         {this._renderPartitionOptions()}
                       </div>
                     </Dropdown.Menu>
-                  )}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -979,7 +982,6 @@ class TopicData extends Root {
                           'DD-MM-YYYY HH:mm'
                         )}
                   </Dropdown.Toggle>
-                  {!loading && (
                     <Dropdown.Menu>
                       <div style={{ display: 'flex' }}>
                         <div>
@@ -1020,7 +1022,6 @@ class TopicData extends Root {
                         </div>
                       </div>
                     </Dropdown.Menu>
-                  )}
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -1028,7 +1029,7 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Search:</strong> {this._renderCurrentSearchText()}
                   </Dropdown.Toggle>
-                  {!loading && <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>}
+                  <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -1036,7 +1037,6 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Offsets:</strong>
                   </Dropdown.Toggle>
-                  {!loading && (
                     <Dropdown.Menu>
                       <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
                         <div className="input-group">
@@ -1066,7 +1066,6 @@ class TopicData extends Root {
                         </div>
                       </div>
                     </Dropdown.Menu>
-                  )}
                 </Dropdown>
               </li>
               <li>
