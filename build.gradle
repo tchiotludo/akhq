@@ -160,7 +160,7 @@ dependencies {
 
     implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.6.2'
 
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
 }
 
 /**********************************************************************************************************************\
