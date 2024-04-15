@@ -1172,7 +1172,7 @@ class TopicData extends Root {
                       mode="json"
                       id={'value' + index}
                       theme="merbivore_soft"
-                      value={value || 'null'}
+                      value={value ?? 'null'}
                       readOnly
                       name="UNIQUE_ID_OF_DIV"
                       editorProps={{ $blockScrolling: true }}
@@ -1191,7 +1191,7 @@ class TopicData extends Root {
                         ></div>
                       )}
                       <pre className="mb-0 khq-data-highlight">
-                        <code>{obj.value || 'null'}</code>
+                        <code>{obj.value ?? 'null'}</code>
                       </pre>
                     </div>
                   );
