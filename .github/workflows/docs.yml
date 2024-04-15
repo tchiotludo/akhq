@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup
       - name: Setup Node
@@ -45,7 +45,7 @@ jobs:
 
       # Clone helm charts
       - name: Clone helm charts
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: helm
           path: tmp-helm
