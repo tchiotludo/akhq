@@ -118,7 +118,7 @@ dependencies {
 
     // strimzi
     implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.14.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.14.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.15.0'
 
     // log
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0-alpha5'
