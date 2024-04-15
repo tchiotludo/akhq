@@ -29,28 +29,28 @@ jobs:
 
       # Caches
       - name: Gradle cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Gradle wrapper cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-wrapper-
       - name: Npm cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node
           key: ${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}
