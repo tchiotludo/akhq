@@ -83,7 +83,7 @@ jobs:
           find build/distributions/akhq-*.zip -type f -exec cp "{}" build/dist/ ";"
 
       - name: Upload jar
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         if: success() && matrix.java == '17'
         with:
           name: jar
