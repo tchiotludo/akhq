@@ -66,6 +66,13 @@ jobs:
           ./gradlew classes testClasses --parallel --no-daemon
           ./gradlew check --no-daemon
 
+      # report test
+      - name: Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: '**/build/test-results/**/TEST-*.xml'
+
       # Shadow Jar, Tar and Zip
       - name: Build jars and distribution archives
         if: success()

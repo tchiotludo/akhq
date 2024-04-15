@@ -5,6 +5,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.security.authentication.*;
+import io.micronaut.security.authentication.provider.ReactiveAuthenticationProvider;
 import io.micronaut.security.oauth2.client.DefaultOpenIdProviderMetadata;
 import io.micronaut.security.oauth2.endpoint.token.request.TokenEndpointClient;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
@@ -36,9 +37,10 @@ import static org.mockito.Mockito.mock;
 @MicronautTest(environments = "oidc")
 class OidcAuthenticationProviderTest {
 
+    @SuppressWarnings("rawtypes")
     @Named("oidc")
     @Inject
-    AuthenticationProvider oidcProvider;
+    ReactiveAuthenticationProvider oidcProvider;
 
     @Inject
     TokenEndpointClient tokenEndpointClient;
