@@ -109,10 +109,10 @@ public class Record {
         this.bytesKey = bytesKey;
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
-        this.keySubject = getAvroSchemaSubject(this.keySchemaId);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
-        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
         this.headers = headers;
         this.truncated = false;
     }
@@ -134,10 +134,10 @@ public class Record {
         this.bytesKey = record.key();
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
         this.keySchemaId = getAvroSchemaId(this.bytesKey);
-        this.keySubject = getAvroSchemaSubject(this.keySchemaId);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
         this.bytesValue = bytesValue;
         this.valueSchemaId = getAvroSchemaId(this.bytesValue);
-        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
         for (Header header: record.headers()) {
             String headerValue = String.valueOf(ContentUtils.convertToObject(header.value()));
             this.headers.add(new KeyValue<>(header.key(), headerValue));
@@ -339,16 +339,14 @@ public class Record {
         return null;
     }
 
-    private String getAvroSchemaSubject(String schemaId) {
+    private String getAvroSchemaSubject(String schemaId, byte[] payload) {
         if (schemaId == null || client == null) {
             return null;
         }
         try {
             if(awsGlueKafkaDeserializer!= null) {
-                String[] schemaArnSplitted = ( (GlueSchemaRegistryKafkaDeserializer) awsGlueKafkaDeserializer)
-                    .getGlueSchemaRegistryDeserializationFacade()
-                    .getSchemaRegistryClient().getSchemaVersionResponse(schemaId).schemaArn().split("/");
-               return  schemaArnSplitted[schemaArnSplitted.length-1];
+                return  ( (GlueSchemaRegistryKafkaDeserializer) awsGlueKafkaDeserializer)
+                    .getGlueSchemaRegistryDeserializationFacade().getSchema(payload).getSchemaName();
             }
 
             ParsedSchema schemaById = client.getSchemaById(Integer.parseInt(schemaId));
