@@ -3,7 +3,6 @@ import Table from '../../../../components/Table';
 import { uriConsumerGroupMembers } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import { Link } from 'react-router-dom';
-import './styles.scss';
 import Root from '../../../../components/Root';
 
 class ConsumerGroupMembers extends Root {
@@ -43,7 +42,7 @@ class ConsumerGroupMembers extends Root {
   handlePartitions(partitions) {
     return partitions.map(partition => {
       return (
-        <div key={partition} className="badge badge-secondary partition">
+        <div key={partition} className="badge bg-secondary partition">
           {partition}
         </div>
       );
@@ -51,7 +50,6 @@ class ConsumerGroupMembers extends Root {
   }
 
   handleAssignments(assignments) {
-    const { history } = this.props;
     let topics = [];
 
     if (assignments) {
@@ -73,10 +71,13 @@ class ConsumerGroupMembers extends Root {
         <div
           key={i}
           onClick={() => {
-            history.push({
-              pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,
-              tab: constants.TOPIC
-            });
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${this.state.selectedCluster}/topic/${topic}`,
+                tab: constants.TOPIC
+              },
+              { replace: true }
+            );
           }}
         >
           <Link
@@ -100,7 +101,6 @@ class ConsumerGroupMembers extends Root {
       <div>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'clientId',

@@ -1,12 +1,26 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
+import logoUrl from '../../images/logo.svg';
 import sortBy from 'lodash/sortBy';
-import './styles.scss';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
+import { withRouter } from '../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCogs,
+  faDatabase,
+  faExchange,
+  faGear,
+  faKey,
+  faLaptop,
+  faLevelDown,
+  faList,
+  faObjectGroup,
+  faRocket
+} from '@fortawesome/free-solid-svg-icons';
 
 class Sidebar extends Component {
   state = {
@@ -57,11 +71,14 @@ class Sidebar extends Component {
   }
 
   handleGetClusters(clusters, callback = () => {}) {
-    const match = matchPath(this.props.history.location.pathname, {
-      path: '/ui/:clusterId/',
-      exact: false,
-      strict: false
-    });
+    const match = matchPath(
+      {
+        path: '/ui/:clusterId/',
+        end: false,
+        caseSensitive: false
+      },
+      this.props.location.pathname
+    );
 
     const clusterId = match ? match.params.clusterId || '' : '';
     const allClusters = sortBy(clusters || [], cluster => cluster.id);
@@ -202,10 +219,13 @@ class Sidebar extends Component {
       },
       () => {
         const { selectedCluster } = this.state;
-        this.props.history.push({
-          pathname: `/ui/${selectedCluster}/topic`,
-          selectedCluster
-        });
+        this.props.router.navigate(
+          {
+            pathname: `/ui/${selectedCluster}/topic`,
+            selectedCluster
+          },
+          { replace: true }
+        );
 
         this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       }
@@ -215,24 +235,30 @@ class Sidebar extends Component {
   changeSelectedConnect(connect) {
     this.setState({ selectedConnect: connect, showConnects: false }, () => {
       const { selectedConnect, selectedCluster } = this.state;
-      this.props.history.push({
-        pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
-        selectedCluster
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
+          selectedCluster
+        },
+        { replace: true }
+      );
     });
   }
 
   changeSelectedKsqlDB(ksqlDB) {
     this.setState({ selectedKsqlDB: ksqlDB, showKsqlDBs: false }, () => {
       const { selectedKsqlDB, selectedCluster } = this.state;
-      this.props.history.push({
-        pathname: `/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`,
-        selectedCluster
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`,
+          selectedCluster
+        },
+        { replace: true }
+      );
     });
   }
 
-  renderMenuItem(iconClassName, tab, label) {
+  renderMenuItem(icon, tab, label) {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
@@ -241,9 +267,7 @@ class Sidebar extends Component {
         className={pathname.includes(tab) ? 'active' : ''}
         onClick={() => {
           this.setState({ selectedTab: tab });
-          this.props.history.push({
-            pathname: `/ui/${selectedCluster}/${tab}`
-          });
+          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: false });
           return false;
         }}
       >
@@ -256,7 +280,7 @@ class Sidebar extends Component {
               e.preventDefault();
             }}
           >
-            <i className={iconClassName} aria-hidden="true" />
+            <FontAwesomeIcon icon={icon} aria-hidden={true} />
           </Link>
         </NavIcon>
         <NavText>
@@ -290,38 +314,47 @@ class Sidebar extends Component {
       enableConnect,
       enableKsqlDB
     } = this.state;
+    const { expanded } = this.props;
     const roles = this.state.roles || {};
     const tag = sessionStorage.getItem('version');
     const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
     return (
       <SideNav
-        expanded={this.props.expanded}
+        expanded={expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
-        style={{ background: 'black', height: height, position: 'fixed' }}
+        style={{
+          background: 'black',
+          height: height,
+          position: 'fixed',
+          paddingBottom: '60px',
+          ...(expanded ? { overflowY: 'auto' } : {})
+        }}
       >
         <SideNav.Toggle />
         <div className="logo-wrapper">
-          <span className="logo" />
+          <span className="logo">
+            <svg>
+              <image xlinkHref={logoUrl}></image>
+            </svg>
+          </span>
+          <p
+            style={{
+              color: 'white',
+              fontStyle: 'Italic',
+              textAlign: 'center',
+              margin: '20px 0 0 0'
+            }}
+          >
+            {''}
+            {this.props.expanded && tag}
+          </p>
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
-          <NavItem style={{ backgroundColor: 'Black', cursor: 'default' }}>
-            <NavIcon />
-            <NavText
-              style={{
-                color: 'grey',
-                fontStyle: 'Italic',
-                paddingLeft: '9%'
-              }}
-            >
-              {''}
-              {tag}
-            </NavText>
-          </NavItem>
           <NavItem eventKey="cluster">
             <NavIcon>
-              <i className="fa fa-fw fa fa-database" aria-hidden="true" />
+              <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
             </NavIcon>
             <NavText>
               <div
@@ -332,44 +365,45 @@ class Sidebar extends Component {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
               >
-                <span className="badge badge-primary clusters">{selectedCluster}</span>
+                <span className="badge bg-primary clusters">{selectedCluster}</span>
               </div>
             </NavText>
             {listClusters}
           </NavItem>
+
           {roles &&
             roles.NODE &&
             roles.NODE.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-laptop', constants.NODE, 'Nodes')}
+            this.renderMenuItem(faLaptop, constants.NODE, 'Nodes')}
           {roles &&
             roles.TOPIC &&
             roles.TOPIC.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-list', constants.TOPIC, 'Topics')}
+            this.renderMenuItem(faList, constants.TOPIC, 'Topics')}
           {roles &&
             roles.TOPIC_DATA &&
             roles.TOPIC_DATA.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-level-down', constants.TAIL, 'Live Tail')}
+            this.renderMenuItem(faLevelDown, constants.TAIL, 'Live Tail')}
           {roles &&
             roles.CONSUMER_GROUP &&
             roles.CONSUMER_GROUP.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-object-group', constants.GROUP, 'Consumer Groups')}
+            this.renderMenuItem(faObjectGroup, constants.GROUP, 'Consumer Groups')}
           {roles &&
             roles.ACL &&
             roles.ACL.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-key', constants.ACLS, 'ACLS')}
+            this.renderMenuItem(faKey, constants.ACLS, 'ACLS')}
           {enableRegistry &&
             registryType !== 'GLUE' &&
             roles &&
             roles.SCHEMA &&
             roles.SCHEMA.includes('READ') &&
-            this.renderMenuItem('fa fa-fw fa-cogs', constants.SCHEMA, 'Schema Registry')}
+            this.renderMenuItem(faCogs, constants.SCHEMA, 'Schema Registry')}
           {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
             >
               <NavIcon>
-                <i className="fa fa-fw fa fa-exchange" aria-hidden="true" />
+                <FontAwesomeIcon icon={faExchange} aria-hidden={true} />
               </NavIcon>
               <NavText>
                 <div
@@ -381,7 +415,7 @@ class Sidebar extends Component {
                     this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
                 >
-                  <span className="badge badge-primary clusters">{selectedConnect}</span>
+                  <span className="badge bg-primary clusters">{selectedConnect}</span>
                 </div>
               </NavText>
 
@@ -394,7 +428,7 @@ class Sidebar extends Component {
               className={selectedTab === constants.KSQLDB ? 'active' : ''}
             >
               <NavIcon>
-                <i className="fa fa-fw fa fa-rocket" aria-hidden="true" />
+                <FontAwesomeIcon icon={faRocket} aria-hidden={true} />
               </NavIcon>
               <NavText>
                 <div
@@ -406,14 +440,14 @@ class Sidebar extends Component {
                     this.setState({ showKsqlDBs: !showKsqlDBs, selectedTab: constants.KSQLDB });
                   }}
                 >
-                  <span className="badge badge-primary clusters">{selectedKsqlDB}</span>
+                  <span className="badge bg-primary clusters">{selectedKsqlDB}</span>
                 </div>
               </NavText>
 
               {listKsqlDBs}
             </NavItem>
           )}
-          {this.renderMenuItem('fa fa-fw fa-gear', constants.SETTINGS, 'Settings')}
+          {this.renderMenuItem(faGear, constants.SETTINGS, 'Settings')}
         </SideNav.Nav>
       </SideNav>
     );
@@ -421,8 +455,7 @@ class Sidebar extends Component {
 }
 
 Sidebar.propTypes = {
-  history: PropTypes.object,
-  match: PropTypes.object,
+  router: PropTypes.object,
   location: PropTypes.object,
   clusters: PropTypes.array,
   children: PropTypes.any,

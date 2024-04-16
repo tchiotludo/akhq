@@ -60,14 +60,27 @@ secrets: {}
 #            basic-auth-username: basic-auth-user
 #            basic-auth-password: basic-auth-pass
 
-kafkaSecrets: []
 #Provide extra base64 encoded kubernetes secrets (keystore/truststore)
+kafkaSecrets: {}
+#  truststore.jks: MIIIE...
+#  keystore.jks: MIIIE...
 
 # Any extra volumes to define for the pod (like keystore/truststore)
 extraVolumes: []
+#   - name: certstore-secret
+#     secret:
+#       secretName: akhq-secrets
+#       items:
+#         - key: "truststore.jks"
+#           path: "truststore.jks"
+#         - key: "keystore.jks"
+#           path: "keystore.jks"
 
 # Any extra volume mounts to define for the akhq container
 extraVolumeMounts: []
+#   - name: certstore-secret
+#     mountPath: "/secrets"
+#     readOnly: true
 
 # Specify ServiceAccount for pod
 serviceAccountName: null

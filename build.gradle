@@ -1,7 +1,7 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "4.2.1"
+    id "io.micronaut.application" version "4.3.6"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
@@ -11,7 +11,7 @@ plugins {
     id "com.github.ben-manes.versions" version "0.51.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -43,8 +43,12 @@ configurations.all {
         force("org.apache.kafka:kafka-streams:" + kafkaVersion)
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-
         force("com.google.protobuf:protobuf-java:3.25.2")
+        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
+        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
+        force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
+        force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
+        force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
     }
 }
 
@@ -113,11 +117,11 @@ dependencies {
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
-    implementation ("org.sourcelab:kafka-connect-client:4.0.3")
+    implementation ("org.sourcelab:kafka-connect-client:4.0.4")
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.14.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.14.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.15.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.15.0'
 
     // log
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0-alpha5'
@@ -126,7 +130,7 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:33.0.0-jre'
+    implementation 'com.google.guava:guava:33.1.0-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -144,22 +148,22 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.18'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.21'
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.0.3'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.1.0'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.18")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.19")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.6.2'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.6.5'
 
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
 }
 
 /**********************************************************************************************************************\
@@ -218,11 +222,13 @@ dependencies {
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.16.0'
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.16.1'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
+
+    testImplementation 'org.awaitility:awaitility:4.2.1'
 }
 
 testlogger {
@@ -253,7 +259,13 @@ task testInjectData(type:JavaExec) {
 
 test.dependsOn "startTestKafkaCluster"
 
-task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'testClasses') {
+task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
+    dependsOn 'testClasses'
+    dependsOn 'buildLayers'
+    dependsOn 'shadowDistZip'
+    dependsOn 'shadowDistTar'
+    dependsOn 'distZip'
+    dependsOn 'distTar'
     group = 'verification'
     description = 'Start a global standalone test Kafka cluster during tests'
     classpath = sourceSets.test.runtimeClasspath

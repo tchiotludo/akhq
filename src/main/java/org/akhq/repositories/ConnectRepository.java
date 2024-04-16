@@ -12,6 +12,8 @@ import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.utils.SecurityService;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
+import org.akhq.models.audit.ConnectAuditEvent;
+import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
@@ -22,6 +24,7 @@ import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundExc
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -31,6 +34,9 @@ import java.util.stream.Collectors;
 public class ConnectRepository extends AbstractRepository {
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private AuditModule auditModule;
 
     @Inject
     private ApplicationContext applicationContext;
@@ -67,8 +73,7 @@ public class ConnectRepository extends AbstractRepository {
         return PagedList.of(definitions, pagination, list -> list);
     }
 
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, List<String> filters)
-    {
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, List<String> filters) {
         ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
@@ -93,6 +98,7 @@ public class ConnectRepository extends AbstractRepository {
 
         return filtered;
     }
+
     public Optional<ConnectPlugin> validatePlugin(String clusterId, String connectId, String className,
                                                   Map<String, String> configs) {
         return this.kafkaModule
@@ -125,6 +131,7 @@ public class ConnectRepository extends AbstractRepository {
             throw new IllegalArgumentException(e);
         }
 
+        auditModule.save(ConnectAuditEvent.newConnector(clusterId, connectId, name));
         return getDefinition(clusterId, connectId, name);
     }
 
@@ -138,15 +145,20 @@ public class ConnectRepository extends AbstractRepository {
             throw new IllegalArgumentException(e);
         }
 
+        auditModule.save(ConnectAuditEvent.updateConnector(clusterId, connectId, name));
         return getDefinition(clusterId, connectId, name);
     }
 
     public boolean delete(String clusterId, String connectId, String name) {
         try {
-            return this.kafkaModule
+            var isSuccess = this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .deleteConnector(name);
+            if (isSuccess) {
+                auditModule.save(ConnectAuditEvent.deleteConnector(clusterId, connectId, name));
+            }
+            return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -154,10 +166,14 @@ public class ConnectRepository extends AbstractRepository {
 
     public boolean pause(String clusterId, String connectId, String name) {
         try {
-            return this.kafkaModule
+            var isSuccess = this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .pauseConnector(name);
+            if (isSuccess) {
+                auditModule.save(ConnectAuditEvent.pauseConnector(clusterId, connectId, name));
+            }
+            return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -165,10 +181,14 @@ public class ConnectRepository extends AbstractRepository {
 
     public boolean resume(String clusterId, String connectId, String name) {
         try {
-            return this.kafkaModule
+            var isSuccess = this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .resumeConnector(name);
+            if (isSuccess) {
+                auditModule.save(ConnectAuditEvent.resumeConnector(clusterId, connectId, name));
+            }
+            return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -176,10 +196,14 @@ public class ConnectRepository extends AbstractRepository {
 
     public boolean restart(String clusterId, String connectId, String name) {
         try {
-            return this.kafkaModule
+            var isSuccess = this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnector(name);
+            if (isSuccess) {
+                auditModule.save(ConnectAuditEvent.restartConnector(clusterId, connectId, name));
+            }
+            return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -187,10 +211,14 @@ public class ConnectRepository extends AbstractRepository {
 
     public boolean restartTask(String clusterId, String connectId, String name, int task) {
         try {
-            return this.kafkaModule
+            var isSuccess = this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnectorTask(name, task);
+            if (isSuccess) {
+                auditModule.save(ConnectAuditEvent.restartTaskConnector(clusterId, connectId, name, task));
+            }
+            return isSuccess;
         } catch (InvalidRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -222,7 +250,7 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
-        Map<String,String> config = ImmutableMap.of(
+        Map<String, String> config = ImmutableMap.of(
             "connector.class", plugin.getClassName(),
             "topics", "getPlugins"
         );

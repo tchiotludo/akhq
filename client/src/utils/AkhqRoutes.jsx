@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Switch, Route, Redirect } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import TopicList from '../containers/Topic/TopicList';
 import Topic from '../containers/Topic/Topic';
 import NodesList from '../containers/Node/NodeList/NodesList';
@@ -34,7 +34,7 @@ import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
 import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
 import sortBy from 'lodash/sortBy';
 
-class Routes extends Root {
+class AkhqRoutes extends Root {
   state = {
     clusters: [],
     clusterId: '',
@@ -43,7 +43,6 @@ class Routes extends Root {
   };
   static propTypes = {
     location: PropTypes.object,
-    history: PropTypes.object,
     clusterId: PropTypes.string,
     clusters: PropTypes.array
   };
@@ -150,20 +149,21 @@ class Routes extends Root {
       if (clusterId) {
         return (
           <Base clusters={clusters}>
-            <Switch location={location}>
-              <Route exact path="/ui/login" component={Login} />
+            <Routes location={location}>
+              <Route exact path="/ui/login" element={<Login />} />
               {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
-                <Route exact path="/ui/:clusterId/topic" component={TopicList} />
+                <Route exact path="/ui/:clusterId/topic" element={<TopicList />} />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (
-                <Route exact path="/ui/:clusterId/topic/create" component={TopicCreate} />
+                <Route exact path="/ui/:clusterId/topic/create" element={<TopicCreate />} />
               )}
+
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
-                  component={TopicProduce}
+                  element={<TopicProduce />}
                 />
               )}
 
@@ -171,42 +171,42 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/increasepartition"
-                  component={TopicIncreaseParition}
+                  element={<TopicIncreaseParition />}
                 />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
-                <Route exact path="/ui/:clusterId/topic/:topicId/copy" component={TopicCopy} />
+                <Route exact path="/ui/:clusterId/topic/:topicId/copy" element={<TopicCopy />} />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/:tab?"
-                  render={props => <Topic clusters={clusters} {...props} />}
+                  element={<Topic clusters={clusters} />}
                 />
               )}
 
               {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
-                <Route exact path="/ui/:clusterId/tail" component={Tail} />
+                <Route exact path="/ui/:clusterId/tail" element={<Tail />} />
               )}
 
               {roles && roles.NODE && roles.NODE.includes('READ') && (
-                <Route exact path="/ui/:clusterId/node" component={NodesList} />
+                <Route exact path="/ui/:clusterId/node" element={<NodesList />} />
               )}
               {roles && roles.NODE && roles.NODE.includes('READ') && (
-                <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" component={NodeDetails} />
+                <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" element={<NodeDetails />} />
               )}
 
               {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ') && (
-                <Route exact path="/ui/:clusterId/group" component={ConsumerGroupList} />
+                <Route exact path="/ui/:clusterId/group" element={<ConsumerGroupList />} />
               )}
 
               {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
-                  component={ConsumerGroupOffsetDelete}
+                  element={<ConsumerGroupOffsetDelete />}
                 />
               )}
 
@@ -214,7 +214,7 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsets"
-                  component={ConsumerGroupUpdate}
+                  element={<ConsumerGroupUpdate />}
                 />
               )}
 
@@ -222,33 +222,33 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/:tab?"
-                  component={ConsumerGroup}
+                  element={<ConsumerGroup />}
                 />
               )}
 
               {roles && roles.ACL && roles.ACL.includes('READ') && (
-                <Route exact path="/ui/:clusterId/acls" component={Acls} />
+                <Route exact path="/ui/:clusterId/acls" element={<Acls />} />
               )}
               {roles && roles.ACL && roles.ACL.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/acls/:principalEncoded/:tab?"
-                  component={AclDetails}
+                  element={<AclDetails />}
                 />
               )}
 
               {roles && roles.SCHEMA && roles.SCHEMA.includes('READ') && (
-                <Route exact path="/ui/:clusterId/schema" component={SchemaList} />
+                <Route exact path="/ui/:clusterId/schema" element={<SchemaList />} />
               )}
               {roles && roles.SCHEMA && roles.SCHEMA.includes('CREATE') && (
-                <Route exact path="/ui/:clusterId/schema/create" component={SchemaCreate} />
+                <Route exact path="/ui/:clusterId/schema/create" element={<SchemaCreate />} />
               )}
 
               {roles && roles.SCHEMA && roles.SCHEMA.includes('UPDATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/update"
-                  component={Schema}
+                  element={<Schema />}
                 />
               )}
 
@@ -256,7 +256,7 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/:tab?"
-                  component={Schema}
+                  element={<Schema />}
                 />
               )}
 
@@ -264,46 +264,54 @@ class Routes extends Root {
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/create"
-                  component={ConnectCreate}
+                  element={<ConnectCreate />}
                 />
               )}
               {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
-                <Route exact path="/ui/:clusterId/connect/:connectId" component={ConnectList} />
+                <Route exact path="/ui/:clusterId/connect/:connectId" element={<ConnectList />} />
               )}
               {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
-                  component={Connect}
+                  element={<Connect />}
                 />
               )}
               {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
-                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/query" component={KsqlDBQuery} />
+                <Route
+                  exact
+                  path="/ui/:clusterId/ksqldb/:ksqlDBId/query"
+                  element={<KsqlDBQuery />}
+                />
               )}
               {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/ksqldb/:ksqlDBId/statement"
-                  component={KsqlDBStatement}
+                  element={<KsqlDBStatement />}
                 />
               )}
               {roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
-                <Route exact path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?" component={KsqlDBList} />
+                <Route
+                  exact
+                  path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?"
+                  element={<KsqlDBList />}
+                />
               )}
-              <Route exact path="/ui/:clusterId/settings" component={Settings} />
-              <Redirect from="/" to={this.handleRedirect()} />
-              <Redirect from="/ui" to={this.handleRedirect()} />
-              <Redirect from="/ui/401" to={this.handleRedirect()} />
-            </Switch>
+              <Route exact path="/ui/:clusterId/settings" element={<Settings />} />
+              <Route path="/" element={<Navigate to={this.handleRedirect()} />} />
+              <Route path="/ui" element={<Navigate to={this.handleRedirect()} />} />
+              <Route path="/ui/401" element={<Navigate to={this.handleRedirect()} />} />
+            </Routes>
           </Base>
         );
       } else if (sessionStorage.getItem('login') === 'false' && this.state.user !== 'default') {
         return (
-          <Switch>
-            <Route exact path="/ui/login" component={Login} />
-            <Redirect from="/ui" to={'/ui/login'} />
-            <Redirect from="/" to={'/ui/login'} />
-          </Switch>
+          <Routes>
+            <Route exact path="/ui/login" element={<Login />} />
+            <Route path="/ui" element={<Navigate to="/ui/login" replace />} />
+            <Route path="/*" element={<Login />} />
+          </Routes>
         );
       }
       return <Loading show />;
@@ -313,4 +321,4 @@ class Routes extends Root {
   }
 }
 
-export default withRouter(Routes);
+export default AkhqRoutes;

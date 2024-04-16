@@ -1,13 +1,16 @@
 import React from 'react';
 
-import { ReactComponent as Logo } from '../../images/logo.svg';
-import { uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
+import logoUrl from '../../images/logo.svg';
+import { basePath, uriCurrentUser, uriLogin, uriOidc } from '../../utils/endpoints';
 import { organizeRoles } from '../../utils/converters';
 import { login } from '../../utils/api';
 import Form from '../../components/Form/Form';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withRouter } from '../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 // Adaptation of login.ftl
 
 class Login extends Form {
@@ -76,11 +79,7 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        this.props.history.push({
-          pathname: returnTo || '/ui'
-        });
-
-        window.location.reload(true);
+        window.location.replace(basePath + (returnTo || '/ui'));
       } else {
         toast.error('User logged in but no roles assigned');
       }
@@ -95,9 +94,12 @@ class Login extends Form {
       const { ...config } = auths;
       this.setState({ config });
     } else {
-      this.props.history.push({
-        pathname: '/ui'
-      });
+      this.props.router.navigate(
+        {
+          pathname: '/ui'
+        },
+        { replace: true }
+      );
     }
 
     if (localStorage.getItem('toastMessage')) {
@@ -111,10 +113,8 @@ class Login extends Form {
     return (
       <>
         <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text">
-              <i className="fa fa-user" />
-            </span>
+          <div className="input-group-text">
+            <FontAwesomeIcon icon={faUser} />
           </div>
           <input
             type="text"
@@ -134,10 +134,8 @@ class Login extends Form {
         </div>
 
         <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text">
-              <i className="fa fa-lock" />
-            </span>
+          <div className="input-group-text">
+            <FontAwesomeIcon icon={faLock} />
           </div>
           <input
             type="password"
@@ -198,11 +196,15 @@ class Login extends Form {
           >
             <div>
               <h3 className="logo">
-                <Logo />
+                <svg width="100%" height="77px">
+                  <image width="100%" height="77px" xlinkHref={logoUrl}></image>
+                </svg>
               </h3>
             </div>
             {formEnabled && this._renderForm()}
-            {formEnabled && oidcAuths && this._renderSeparator()}
+            {formEnabled &&
+              (!!oidcAuths?.length || !!oauthAuths?.length) &&
+              this._renderSeparator()}
             {oidcAuths && this._renderOidc(oidcAuths)}
             {oauthAuths && this._renderOidc(oauthAuths)}
           </form>
@@ -212,4 +214,4 @@ class Login extends Form {
   }
 }
 
-export default Login;
+export default withRouter(Login);

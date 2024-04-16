@@ -20,48 +20,45 @@ jobs:
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-    strategy:
-      matrix:
-        java: ['17']
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Caches
       - name: Gradle cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Gradle wrapper cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}
+          key: "${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-wrapper-
       - name: Npm cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node
-          key: ${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}
+          key: "${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-node-
 
       # JDK
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          java-version: 17
 
       # Gradle check
       - name: Build with Gradle
@@ -69,21 +66,29 @@ jobs:
           ./gradlew classes testClasses --parallel --no-daemon
           ./gradlew check --no-daemon
 
+      # report test
+      - name: Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: '**/build/test-results/**/TEST-*.xml'
+
       # Shadow Jar, Tar and Zip
       - name: Build jars and distribution archives
-        if: success() && matrix.java == '17'
+        if: success()
         run: ./gradlew shadowJar distTar distZip --no-daemon
 
       # Upload artifacts
       - name: Copy jar to docker
         run: |
-          cp build/libs/*-all.jar docker/app/akhq.jar
-          cp build/distributions/akhq-*.tar build/distributions/akhq.tar
-          cp build/distributions/akhq-*.zip build/distributions/akhq.zip
+          cp build/libs/akhq-*-all.jar docker/app/akhq.jar
+          mkdir -p build/dist/
+          find build/distributions/akhq-*.tar -type f -exec cp "{}" build/dist/ ";"
+          find build/distributions/akhq-*.zip -type f -exec cp "{}" build/dist/ ";"
 
       - name: Upload jar
-        uses: actions/upload-artifact@v1
-        if: success() && matrix.java == '17'
+        uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: jar
           path: build/libs/
@@ -100,34 +105,34 @@ jobs:
 
       # GitHub Release
       - name: Create GitHub release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@latest
         if: startsWith(github.ref, 'refs/tags/')
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
             build/libs/*-all.jar
-            build/distributions/akhq-*.tar
-            build/distributions/akhq-*.zip
+            build/dist/akhq-*.tar
+            build/dist/akhq-*.zip
 
       # Docker
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v3
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Login to GHCR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           registry: ghcr.io
@@ -136,15 +141,22 @@ jobs:
 
       - name: Extract metadata for Docker
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           images: |
             tchiotludo/akhq
             ghcr.io/${{ github.repository }}
+          tags: |
+            # set latest tag for master branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
 
       - name: Publish to registries
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           push: true
@@ -155,7 +167,7 @@ jobs:
 
       # Slack
       - name: Slack notification
-        uses: 8398a7/action-slack@v2
+        uses: 8398a7/action-slack@v3
         if: ${{ always() && env.SLACK_WEBHOOK_URL != 0 }}
         with:
           status: ${{ job.status }}
@@ -165,4 +177,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-

@@ -99,6 +99,12 @@
 
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
+                                                    <img src="/assets/images/using/booking.svg" alt="Booking">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
                                                     <img src="/assets/images/using/boulanger.jpg" alt="Boulanger">
                                                 </div>
                                             </div>
@@ -130,6 +136,24 @@
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
                                                     <img src="/assets/images/using/get-your-guide.png" alt="Get Your Guide">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
+                                                    <img src="/assets/images/using/gladly.svg" alt="Gladly">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
+                                                    <img src="/assets/images/using/iadvize.png" alt="iAdvize">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
+                                                    <img src="/assets/images/using/indeed.svg" alt="Indeed">
                                                 </div>
                                             </div>
 
@@ -178,6 +202,12 @@
                                             <div class="col-md-2 col-sm-4 col-6">
                                                 <div class="mu-single-using">
                                                     <img src="/assets/images/using/nuxeo-platform.png" alt="Nuxeo">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 col-sm-4 col-6">
+                                                <div class="mu-single-using">
+                                                    <img src="/assets/images/using/pagerduty.svg" alt="PagerDuty">
                                                 </div>
                                             </div>
 

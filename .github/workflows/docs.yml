@@ -1,4 +1,4 @@
-name: Main
+name: Docs
 
 on:
   push:
@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -45,7 +45,7 @@ jobs:
 
       # Clone helm charts
       - name: Clone helm charts
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: helm
           path: tmp-helm
@@ -58,15 +58,14 @@ jobs:
 
       # Deploy
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: docs/.vuepress/dist/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
+          publish_dir: docs/.vuepress/dist/
 
       # Slack
       - name: Slack notification
-        uses: 8398a7/action-slack@v2
+        uses: 8398a7/action-slack@v3
         if: always()
         with:
           status: ${{ job.status }}

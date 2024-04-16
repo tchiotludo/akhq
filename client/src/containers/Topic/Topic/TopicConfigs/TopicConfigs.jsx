@@ -7,6 +7,9 @@ import Joi from 'joi-browser';
 import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+
 class TopicConfigs extends Form {
   state = {
     host: '',
@@ -173,9 +176,13 @@ class TopicConfigs extends Form {
     const type = configType === 'DEFAULT_CONFIG' ? 'secondary' : 'warning';
     return (
       <div>
-        <span className={'badge badge-' + type}> {configType}</span>
+        <span className={'badge bg-' + type}> {configType}</span>
         {configSensitive ? (
-          <i className="sensitive fa fa-exclamation-triangle text-danger" aria-hidden="true"></i>
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className={'sensitive text-danger'}
+            aria-hidden={true}
+          />
         ) : (
           ''
         )}
@@ -186,7 +193,7 @@ class TopicConfigs extends Form {
   handleNameAndDescription(name, description) {
     const descript = description ? (
       <span className="text-secondary" data-toggle="tooltip" title={description}>
-        <i className="fa fa-question-circle" aria-hidden="true"></i>
+        <FontAwesomeIcon icon={faQuestionCircle} aria-hidden={true} />
       </span>
     ) : (
       ''
@@ -222,7 +229,6 @@ class TopicConfigs extends Form {
         <div>
           <Table
             loading={loading}
-            history={this.props.history}
             columns={[
               {
                 id: 'nameAndDescription',

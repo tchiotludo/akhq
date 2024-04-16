@@ -4,7 +4,10 @@ import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import io.micronaut.core.async.publisher.Publishers;
-import io.micronaut.security.authentication.*;
+import io.micronaut.security.authentication.AuthenticationFailed;
+import io.micronaut.security.authentication.AuthenticationResponse;
+import io.micronaut.security.authentication.UsernamePasswordCredentials;
+import io.micronaut.security.authentication.provider.ReactiveAuthenticationProvider;
 import io.micronaut.security.oauth2.client.DefaultOpenIdProviderMetadata;
 import io.micronaut.security.oauth2.endpoint.token.request.TokenEndpointClient;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
@@ -13,13 +16,13 @@ import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTok
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.akhq.configs.security.Group;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,9 +36,10 @@ import static org.mockito.Mockito.mock;
 @MicronautTest(environments = "keycloak")
 class OidcDirectClaimAuthenticationProviderTest {
 
+    @SuppressWarnings("rawtypes")
     @Named("oidc")
     @Inject
-    AuthenticationProvider oidcProvider;
+    ReactiveAuthenticationProvider oidcProvider;
 
     @Inject
     TokenEndpointClient tokenEndpointClient;

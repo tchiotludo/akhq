@@ -19,6 +19,8 @@ import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.models.Schema;
+import org.akhq.models.audit.SchemaAuditEvent;
+import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
@@ -41,6 +43,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private AuditModule auditModule;
     private final Map<String, Deserializer> kafkaAvroDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
@@ -121,7 +126,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     public List<Schema> getSubjectsBySchemaId(String clusterId, int id) throws  IOException, RestClientException {
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
             .getRegistryRestClient(clusterId));
-        if(maybeRegistryRestClient.isEmpty()){
+        if (maybeRegistryRestClient.isEmpty()) {
             return List.of();
         }
 
@@ -212,6 +217,8 @@ public class SchemaRegistryRepository extends AbstractRepository {
             throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId() + " got last version " + latestVersion.getId());
         }
 
+        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(clusterId, subject, latestVersion.getId(), latestVersion.getVersion()));
+
         return latestVersion;
     }
 
@@ -224,12 +231,16 @@ public class SchemaRegistryRepository extends AbstractRepository {
             throw new IllegalArgumentException("Invalid subject '" + subject + "'");
         }
 
+        auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, list.get(0)));
+
         return list.get(0);
     }
 
     public int deleteVersion(String clusterId, String subject, int version) throws IOException, RestClientException {
-        return this.kafkaModule.getRegistryRestClient(clusterId)
+        var deletedVersion = this.kafkaModule.getRegistryRestClient(clusterId)
             .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
+        auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
+        return deletedVersion;
     }
 
     public Schema.Config getDefaultConfig(String clusterId) throws IOException, RestClientException {
@@ -262,6 +273,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
         if (!configUpdateRequest.getCompatibilityLevel().equals(config.getCompatibilityLevel().name())) {
             throw new IllegalArgumentException("Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel() + "' expected: " + config.getCompatibilityLevel().name());
         }
+        auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(clusterId, subject, null, config.getCompatibilityLevel().name()));
     }
 
     public Deserializer getKafkaAvroDeserializer(String clusterId) {

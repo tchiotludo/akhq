@@ -4,9 +4,9 @@ import Form from '../../components/Form/Form';
 import Header from '../Header';
 import { SETTINGS_VALUES } from '../../utils/constants';
 import { setUIOptions } from '../../utils/localstorage';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import { getClusterUIOptions } from '../../utils/functions';
+import { withRouter } from '../../utils/withRouter';
 
 class Settings extends Form {
   state = {
@@ -44,7 +44,7 @@ class Settings extends Form {
   };
 
   componentDidMount() {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     this.setState({ clusterId }, () => {
       this._initializeVars(() => {
         this.setState({
@@ -120,7 +120,7 @@ class Settings extends Form {
           className="khq-form khq-form-config"
           onSubmit={() => this.doSubmit()}
         >
-          <Header title="Settings" history={this.props.history} />
+          <Header title="Settings" />
           <fieldset id="topic" key="topic">
             <legend id="topic">Topic</legend>
             {this.renderSelect(
@@ -226,4 +226,4 @@ class Settings extends Form {
   }
 }
 
-export default Settings;
+export default withRouter(Settings);

@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <base href="%PUBLIC_URL%/" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta content="dark" name="color-scheme" />
+    <base href="/" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#33b5e5" />
     <meta name="html-head" content="replace" />
@@ -15,7 +16,7 @@
       to Prometheus, both for asset loading as well as API accesses.
     -->
     <script>
-      const AKHQ_PREFIX_UI = '%PUBLIC_URL%';
+      const AKHQ_PREFIX_UI = '%BASE_URL%';
 
       const AKHQ_PREFIX_PATH = (function () {
         const split = AKHQ_PREFIX_UI.split('/');
@@ -32,6 +33,7 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root" data-bs-theme="dark"></div>
+    <script type="module" src="src/index.jsx"></script>
   </body>
 </html>

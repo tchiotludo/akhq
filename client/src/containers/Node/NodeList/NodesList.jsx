@@ -4,6 +4,7 @@ import Table from '../../../components/Table';
 import * as constants from '../../../utils/constants';
 import { uriNodes, uriNodePartitions } from '../../../utils/endpoints';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
 class NodesList extends Root {
   state = {
@@ -18,14 +19,14 @@ class NodesList extends Root {
 
   async getNodes() {
     let nodes = [];
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     nodes = await this.getApi(uriNodes(clusterId));
     this.handleData(nodes.data);
     this.setState({ selectedCluster: clusterId });
   }
 
   handleData(nodes) {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     let tableNodes = {};
     const setState = () => {
       this.setState({ data: Object.values(tableNodes), loading: false });
@@ -61,14 +62,12 @@ class NodesList extends Root {
   }
 
   render() {
-    const { history } = this.props;
     const { data, selectedCluster, loading } = this.state;
     return (
       <div>
-        <Header title="Nodes" history={history} />
+        <Header title="Nodes" />
         <Table
           loading={loading}
-          history={history}
           columns={[
             {
               id: 'id',
@@ -77,7 +76,7 @@ class NodesList extends Root {
               type: 'text',
               sortable: true,
               cell: (obj, col) => {
-                return <span className="badge badge-info">{obj[col.accessor] || ''}</span>;
+                return <span className="badge bg-info">{obj[col.accessor] || ''}</span>;
               }
             },
             {
@@ -114,11 +113,13 @@ class NodesList extends Root {
             this.setState({ data });
           }}
           actions={[constants.TABLE_DETAILS]}
-          onDetails={id => `/ui/${selectedCluster}/node/${id}`}
+          onDetails={id => {
+            this.props.router.navigate(`/ui/${selectedCluster}/node/${id}`);
+          }}
         />
       </div>
     );
   }
 }
 
-export default NodesList;
+export default withRouter(NodesList);

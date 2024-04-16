@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as constants from '../../utils/constants';
-import './styles.scss';
 import Spinner from '../Spinner';
-import { Link } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
+import { Table as BootstrapTable } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faClone,
+  faDownload,
+  faGear,
+  faRefresh,
+  faSearch,
+  faShare,
+  faSort,
+  faTrash
+} from '@fortawesome/free-solid-svg-icons';
 
 class Table extends Component {
   state = {
@@ -89,8 +100,8 @@ class Table extends Component {
                         column.colName
                       )}
                       {column.sortable && (
-                        <i
-                          className="fa fa-sort clickable"
+                        <FontAwesomeIcon
+                          icon={faSort}
                           onClick={() => {
                             let data = [];
                             this.setState(
@@ -131,16 +142,10 @@ class Table extends Component {
   }
 
   onDoubleClick(onDetails, row) {
-    const { history, idCol } = this.props;
+    const { idCol } = this.props;
 
     if (onDetails) {
-      let url = onDetails(idCol ? row[this.props.idCol] : row.id, row);
-      if (url) {
-        history.push({
-          pathname: url,
-          internal: row.internal
-        });
-      }
+      onDetails(idCol ? row[idCol] : row.id);
     }
   }
 
@@ -194,7 +199,6 @@ class Table extends Component {
 
                   column.expand && this.handleExpand(row);
                 }}
-                id={`row_${column.id}_${colIndex}`}
               >
                 {this.renderContent(column.cell(row, column))}
               </td>
@@ -217,7 +221,6 @@ class Table extends Component {
 
                 column.expand && this.handleExpand(row);
               }}
-              id={`row_${column.id}_${colIndex}`}
             >
               {this.renderContent(row[column.accessor])}
             </td>
@@ -266,7 +269,7 @@ class Table extends Component {
           }}
           key={'row-expanded-' + row.id}
         >
-          <td style={{ backgroundColor: '#171819' }} colSpan={this.colspan()}>
+          <td style={{ '--bs-table-bg-state': '#171819' }} colSpan={this.colspan()}>
             {' '}
             {extraExpanded &&
             JSON.stringify(
@@ -363,22 +366,34 @@ class Table extends Component {
                 onAdd && onAdd();
               }}
             >
-              <i className="fa fa-search" />
+              <FontAwesomeIcon icon={faSearch} />
             </span>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link to={onDetails && onDetails(idColVal, row)} id="details" title="Details">
-              <i className="fa fa-search" />
-            </Link>
+            <span
+              title="Details"
+              id="details"
+              onClick={() => {
+                onDetails && onDetails(idColVal);
+              }}
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <Link to={onConfig && onConfig(idColVal, row)} id="config" title="Config">
-              <i className="fa fa-gear" />
-            </Link>
+            <span
+              title="Config"
+              id="config"
+              onClick={() => {
+                onConfig && onConfig(idColVal);
+              }}
+            >
+              <FontAwesomeIcon icon={faGear} />
+            </span>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
@@ -390,7 +405,7 @@ class Table extends Component {
                 onDelete && onDelete(row);
               }}
             >
-              <i className="fa fa-trash" />
+              <FontAwesomeIcon icon={faTrash} />
             </span>
           </td>
         )}
@@ -403,7 +418,7 @@ class Table extends Component {
                 onEdit && onEdit();
               }}
             >
-              <i className="fa fa-search" />
+              <FontAwesomeIcon icon={faSearch} />
             </span>
           </td>
         )}
@@ -416,7 +431,7 @@ class Table extends Component {
                 onRestart && onRestart(row);
               }}
             >
-              <i className="fa fa-refresh" />
+              <FontAwesomeIcon icon={faRefresh} />
             </span>
           </td>
         )}
@@ -429,7 +444,7 @@ class Table extends Component {
                 onCopy && onCopy(row);
               }}
             >
-              <i className="fa fa-clone" />
+              <FontAwesomeIcon icon={faClone} />
             </span>
           </td>
         )}
@@ -442,7 +457,7 @@ class Table extends Component {
                 onShare && onShare(row);
               }}
             >
-              <i className="fa fa-share" />
+              <FontAwesomeIcon icon={faShare} />
             </span>
           </td>
         )}
@@ -455,7 +470,7 @@ class Table extends Component {
                 onDownload && onDownload(row);
               }}
             >
-              <i className="fa fa-download" />
+              <FontAwesomeIcon icon={faDownload} />
             </span>
           </td>
         )}
@@ -526,21 +541,17 @@ class Table extends Component {
       allItemRows = allItemRows.concat(perItemRows);
     });
 
-    const stripesStyle = noStripes ? 'no-stripes' : 'table-striped';
-
     return (
-      <div className="table-responsive">
-        <table className={`table table-bordered table-hover mb-0 ${stripesStyle}`}>
-          {this.renderHeader()}
-          <tbody>
-            {loading
-              ? this.renderLoading()
-              : data && data.length > 0
+      <BootstrapTable bordered hover responsive striped={!noStripes} className={'m-0'}>
+        {this.renderHeader()}
+        <tbody>
+          {loading
+            ? this.renderLoading()
+            : data && data.length > 0
               ? allItemRows
               : this.renderNoContent()}
-          </tbody>
-        </table>
-      </div>
+        </tbody>
+      </BootstrapTable>
     );
   }
 }
@@ -563,7 +574,7 @@ Table.propTypes = {
       colName: PropTypes.string,
       type: PropTypes.string,
       readOnly: PropTypes.bool,
-      cell: PropTypes.function
+      cell: PropTypes.func
     })
   ),
   actions: PropTypes.array,
@@ -585,7 +596,7 @@ Table.propTypes = {
   handleExtraExpand: PropTypes.func,
   handleExtraCollapse: PropTypes.func,
   loading: PropTypes.bool,
-  history: PropTypes.object,
+  router: PropTypes.object,
   rowId: PropTypes.func,
 
   updateData: PropTypes.func,
@@ -596,4 +607,4 @@ Table.propTypes = {
   noStripes: PropTypes.bool
 };
 
-export default Table;
+export default withRouter(Table);

@@ -123,10 +123,10 @@ class Form extends Root {
         ) : (
           <div></div>
         )}
-        <div className="col-sm-10" style={{ height: '100%' }}>
+        <div id={name} className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
+            setOptions={{ ...options, useWorker: false }}
             mode={inputMode}
-            id={name}
             theme="merbivore_soft"
             value={formData[name]}
             onChange={value => {
@@ -134,7 +134,6 @@ class Form extends Root {
             }}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
-            setOptions={options}
             style={{ width: '100%', minHeight: '25vh' }}
             {...rest}
           />
@@ -205,14 +204,14 @@ class Form extends Root {
         <div className="form-group row">
           <label className="col-sm-2">{name}</label>
           <div className="col-sm-10">
-            <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle btn-white">
+            <Dropdown className="dropdown bootstrap-select show-tick khq-select show">
+              <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
                 <input
                   type="text"
                   name="searchValue"
                   className="form-control placeholder"
                   placeholder={name}
-                  value={selectedKeySchema}
+                  defaultValue={selectedKeySchema}
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu>
@@ -220,7 +219,7 @@ class Form extends Root {
                   <input
                     type="text"
                     name="searchValue"
-                    className="form-control col-sm-9 mr-2"
+                    className="form-control col-sm-9 me-2"
                     autoComplete="off"
                     role="combobox"
                     aria-expanded="false"

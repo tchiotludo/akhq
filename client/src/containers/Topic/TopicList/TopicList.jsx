@@ -13,7 +13,6 @@ import {
 } from '../../../utils/endpoints';
 import constants from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
-import './styles.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Collapse } from 'react-bootstrap';
@@ -22,6 +21,9 @@ import DateTime from '../../../components/DateTime';
 import { getClusterUIOptions } from '../../../utils/functions';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import PageSize from '../../../components/PageSize';
+import { withRouter } from '../../../utils/withRouter';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 class TopicList extends Root {
   state = {
@@ -56,10 +58,13 @@ class TopicList extends Root {
   componentDidMount() {
     this._initializeVars(() => {
       this.getTopics();
-      this.props.history.replace({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: this.props.location.search
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: this.props.location.search
+        },
+        { replace: true }
+      );
     });
   }
 
@@ -72,10 +77,37 @@ class TopicList extends Root {
         this._initializeVars(this.getTopics);
       });
     }
+
+    if (this.props.location.search !== prevProps.location.search) {
+      const { searchData } = this.state;
+      // Handle back navigation
+      if (this.props.router.navigationType === 'POP') {
+        let { clusterId } = this.props.params;
+        const query = new URLSearchParams(this.props.location.search);
+        this.setState(
+          {
+            selectedCluster: clusterId,
+            searchData: { ...searchData, search: query.get('search') ? query.get('search') : '' },
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : 1
+          },
+          () => {
+            this.getTopics();
+          }
+        );
+      } else if (this.props.location.search === '') {
+        // Handle sidebar click on topics from the component
+        this.setState({
+          pageNumber: 1,
+          searchData : { ...searchData, search: '' }
+        }, () => {
+          this._initializeVars(this.getTopics);
+        });
+      }
+    }
   }
 
   async _initializeVars(callBackFunction) {
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
     const query = new URLSearchParams(this.props.location.search);
     const { searchData, keepSearch } = this.state;
     let { pageNumber } = this.state;
@@ -94,8 +126,8 @@ class TopicList extends Root {
         topicListView: query.get('topicListView')
           ? query.get('topicListView')
           : uiOptions && uiOptions.topic && uiOptions.topic.defaultView
-          ? uiOptions.topic.defaultView
-          : searchData.topicListView
+            ? uiOptions.topic.defaultView
+            : searchData.topicListView
       };
       pageNumber = query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber);
       currentPageSize = query.get('uiPageSize')
@@ -148,27 +180,34 @@ class TopicList extends Root {
   handleSearch = data => {
     const { searchData } = data;
 
+    // Cancel previous requests if there are some to prevent UI issues
+    this.cancelAxiosRequests();
+    this.renewCancelToken();
+
     this.setState({ pageNumber: 1, searchData }, () => {
       const { topicListView } = this.state.searchData;
       this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
-      this.props.history.push({
+      this.props.router.navigate({
         pathname: `/ui/${this.state.selectedCluster}/topic`,
         search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
       });
     });
   };
 
-  handlePageChangeSubmission = value => {
+  handlePageChangeSubmission = (value, replaceInNavigation = true) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
 
     this.setState({ pageNumber: pageNumber }, () => {
       const { search, topicListView } = this.state.searchData;
       this.getTopics();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
+        },
+        { replace: replaceInNavigation }
+      );
     });
   };
 
@@ -177,10 +216,13 @@ class TopicList extends Root {
     this.setState({ currentPageSize: value, pageNumber: pageNumber }, () => {
       const { search, topicListView } = this.state.searchData;
       this.getTopics();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/topic`,
+          search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
+        },
+        { replace: true }
+      );
     });
   };
 
@@ -278,7 +320,7 @@ class TopicList extends Root {
   handleConsumerGroups = (consumerGroups, topicId) => {
     if (consumerGroups && consumerGroups.length > 0) {
       return consumerGroups.map(consumerGroup => {
-        let className = 'btn btn-sm mb-1 mr-1 btn-';
+        let className = 'btn btn-sm mb-1 me-1 btn-';
         let offsetLag = calculateTopicOffsetLag(consumerGroup.offsets, topicId);
 
         const activeTopic =
@@ -296,7 +338,7 @@ class TopicList extends Root {
             onClick={noPropagation}
           >
             {consumerGroup.id}{' '}
-            <div className="badge badge-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
+            <div className="badge bg-secondary"> Lag: {Number(offsetLag).toLocaleString()}</div>
           </Link>
         );
       });
@@ -345,7 +387,7 @@ class TopicList extends Root {
         ? uiOptions.topicData.dateTimeFormat
         : constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE;
     const roles = this.state.roles || {};
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     const topicCols = [
       {
@@ -432,13 +474,11 @@ class TopicList extends Root {
                       onClick={() => this.handleCollapseConsumerGroups(obj.id)}
                       aria-expanded={collapseConsumerGroups[obj.id]}
                     >
-                      {collapseConsumerGroups[obj.id] && <i className="fa fa-fw fa-chevron-up" />}
-                      {!collapseConsumerGroups[obj.id] && (
-                        <i className="fa fa-fw fa-chevron-down" />
-                      )}
+                      {collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronUp} />}
+                      {!collapseConsumerGroups[obj.id] && <FontAwesomeIcon icon={faChevronDown} />}
                     </span>
-                    <span className="badge badge-secondary">{consumerGroups.length}</span>
-                    <Collapse in={collapseConsumerGroups[obj.id]}>
+                    <span className="ms-1 badge bg-secondary">{consumerGroups.length}</span>
+                    <Collapse in={collapseConsumerGroups[obj.id]} className={'mt-2'}>
                       <div>
                         {consumerGroups.splice(1, consumerGroups.length).map(group => {
                           return <div key={i++}>{group}</div>;
@@ -470,7 +510,9 @@ class TopicList extends Root {
     const actions = [constants.TABLE_CONFIG];
     if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
-      onDetailsFunction = id => `/ui/${selectedCluster}/topic/${id}/data`;
+      onDetailsFunction = id => {
+        this.props.router.navigate(`/ui/${selectedCluster}/topic/${id}/data`);
+      };
     }
     if (roles.TOPIC && roles.TOPIC.includes('DELETE')) {
       actions.push(constants.TABLE_DELETE);
@@ -478,11 +520,8 @@ class TopicList extends Root {
 
     return (
       <div>
-        <Header title="Topics" history={this.props.history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light
-        bg-light mr-auto khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title="Topics" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -515,13 +554,12 @@ class TopicList extends Root {
             totalPageNumber={totalPageNumber}
             currentPageSize={currentPageSize}
             onChange={handlePageChange}
-            onSubmit={this.handlePageChangeSubmission}
+            onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
 
         <Table
           loading={loading}
-          history={this.props.history}
           has2Headers
           firstHeader={firstColumns}
           columns={topicCols.concat(
@@ -537,7 +575,16 @@ class TopicList extends Root {
             this.handleOnDelete(topic);
           }}
           onDetails={onDetailsFunction}
-          onConfig={id => `/ui/${selectedCluster}/topic/${id}/configs`}
+          onConfig={id => {
+            this.props.router.navigate(
+              {
+                pathname: `/ui/${selectedCluster}/topic/${id}/configs`
+              },
+              {
+                replace: true
+              }
+            );
+          }}
           actions={actions}
         />
 
@@ -566,4 +613,4 @@ class TopicList extends Root {
   }
 }
 
-export default TopicList;
+export default withRouter(TopicList);

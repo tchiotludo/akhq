@@ -5,6 +5,7 @@ import * as constants from '../../../utils/constants';
 import { uriAclsList } from '../../../utils/endpoints';
 import SearchBar from '../../../components/SearchBar';
 import Root from '../../../components/Root';
+import { withRouter } from '../../../utils/withRouter';
 
 class Acls extends Root {
   state = {
@@ -19,7 +20,7 @@ class Acls extends Root {
   componentDidMount() {
     const { searchData } = this.state;
     const query = new URLSearchParams(this.props.location.search);
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     this.setState(
       {
@@ -56,24 +57,24 @@ class Acls extends Root {
     const { searchData } = data;
     this.setState({ searchData, loading: true }, () => {
       this.getAcls();
-      this.props.history.push({
-        pathname: `/ui/${this.state.selectedCluster}/acls`,
-        search: `search=${searchData.search}`
-      });
+      this.props.router.navigate(
+        {
+          pathname: `/ui/${this.state.selectedCluster}/acls`,
+          search: `search=${searchData.search}`
+        },
+        { replace: true }
+      );
     });
   };
 
   render() {
     const { data, searchData, loading } = this.state;
-    const { clusterId } = this.props.match.params;
+    const { clusterId } = this.props.params;
 
     return (
       <div>
-        <Header title="Acls" history={this.props.history} />
-        <nav
-          className="navbar navbar-expand-lg navbar-light bg-light mr-auto
-         khq-data-filter khq-sticky khq-nav"
-        >
+        <Header title="Acls" />
+        <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -86,7 +87,6 @@ class Acls extends Root {
         </nav>
         <Table
           loading={loading}
-          history={this.props.history}
           columns={[
             {
               id: 'user',
@@ -111,11 +111,13 @@ class Acls extends Root {
               </td>
             </tr>
           }
-          onDetails={acl => `/ui/${clusterId}/acls/${acl.principalEncoded}`}
+          onDetails={acl => {
+            this.props.router.navigate(`/ui/${clusterId}/acls/${acl.principalEncoded}`);
+          }}
         />
       </div>
     );
   }
 }
 
-export default Acls;
+export default withRouter(Acls);

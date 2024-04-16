@@ -18,12 +18,10 @@ const Input = props => {
 
   return (
     <div className={`${wrapperClassRender}`}>
-      {label !== '' ? (
+      {label !== '' && (
         <label htmlFor={name} className="col-sm-2 col-form-label">
           {label}
         </label>
-      ) : (
-        <div />
       )}
       <div className={`${inputClassRender}`}>
         <input
