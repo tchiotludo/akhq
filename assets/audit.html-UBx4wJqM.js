@@ -1,0 +1,1 @@
+const a=JSON.parse('{"key":"v-04a77cdc","path":"/docs/configuration/audit.html","title":"Audit configuration","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1713255434000,"contributors":[{"name":"arindampatra33","email":"65240174+arindampatra33@users.noreply.github.com","commits":1}]},"filePathRelative":"docs/configuration/audit.md"}');export{a as data};
