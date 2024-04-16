@@ -1,0 +1,1 @@
+const a=JSON.parse('{"key":"v-d2e3fc0c","path":"/docs/api.html","title":"Api","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1713255457000,"contributors":[{"name":"Akshaykumar Chaudhary","email":"33665212+akshay232@users.noreply.github.com","commits":1}]},"filePathRelative":"docs/api.md"}');export{a as data};
