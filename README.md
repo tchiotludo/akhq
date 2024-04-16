@@ -111,6 +111,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [TVG](https://www.tvg.com)
 * [Vodeno](https://www.vodeno.com/)
 * [Baloise](https://www.baloise.ch/)
+* [Michelin](https://www.michelin.com)
 
 
 
