@@ -250,6 +250,7 @@ class TopicData extends Root {
             if (percentDiff >= percentUpdateDelta) {
               lastPercentVal = lastResult.percent;
               self.setState({
+                nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
                 recordCount: self.state.recordCount + lastResult.records.length,
                 percent: lastResult.percent.toFixed(2)
               });
@@ -262,7 +263,11 @@ class TopicData extends Root {
 
             if (records.length) {
               const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
-              self.setState({ recordCount: tableMessages.length, messages: tableMessages, loading: false });
+              self.setState({
+                recordCount: tableMessages.length,
+                messages: tableMessages,
+                loading: false
+              });
             }
           });
 
@@ -944,11 +949,11 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Partition:</strong> ({partition})
                   </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                        {this._renderPartitionOptions()}
-                      </div>
-                    </Dropdown.Menu>
+                  <Dropdown.Menu>
+                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                      {this._renderPartitionOptions()}
+                    </div>
+                  </Dropdown.Menu>
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -982,46 +987,46 @@ class TopicData extends Root {
                           'DD-MM-YYYY HH:mm'
                         )}
                   </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <div style={{ display: 'flex' }}>
-                        <div>
-                          <DatePicker
-                            label="Start"
-                            onClear={() => {
-                              this.setState({ datetime: '' }, () => {
-                                this._searchMessages();
-                              });
-                            }}
-                            showDateTimeInput
-                            showTimeSelect
-                            value={datetime}
-                            onChange={value => {
-                              this.setState({ datetime: value }, () => {
-                                this._searchMessages();
-                              });
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <DatePicker
-                            label="End"
-                            onClear={() => {
-                              this.setState({ endDatetime: '' }, () => {
-                                this._searchMessages();
-                              });
-                            }}
-                            showDateTimeInput
-                            showTimeSelect
-                            value={endDatetime}
-                            onChange={value => {
-                              this.setState({ endDatetime: value }, () => {
-                                this._searchMessages();
-                              });
-                            }}
-                          />
-                        </div>
+                  <Dropdown.Menu>
+                    <div style={{ display: 'flex' }}>
+                      <div>
+                        <DatePicker
+                          label="Start"
+                          onClear={() => {
+                            this.setState({ datetime: '' }, () => {
+                              this._searchMessages();
+                            });
+                          }}
+                          showDateTimeInput
+                          showTimeSelect
+                          value={datetime}
+                          onChange={value => {
+                            this.setState({ datetime: value }, () => {
+                              this._searchMessages();
+                            });
+                          }}
+                        />
                       </div>
-                    </Dropdown.Menu>
+                      <div>
+                        <DatePicker
+                          label="End"
+                          onClear={() => {
+                            this.setState({ endDatetime: '' }, () => {
+                              this._searchMessages();
+                            });
+                          }}
+                          showDateTimeInput
+                          showTimeSelect
+                          value={endDatetime}
+                          onChange={value => {
+                            this.setState({ endDatetime: value }, () => {
+                              this._searchMessages();
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </Dropdown.Menu>
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
@@ -1037,35 +1042,35 @@ class TopicData extends Root {
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Offsets:</strong>
                   </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                        <div className="input-group">
-                          <table>{this._renderOffsetsOptions()}</table>
-                          <div className="input-group-append">
-                            <button
-                              className="btn btn-primary offsets-ok"
-                              type="button"
-                              onClick={() => {
-                                let offsetsSearch = '';
-                                for (let i = 0; i < Object.keys(offsets).length; i++) {
-                                  if (Object.values(offsets)[i] !== '') {
-                                    if (offsetsSearch !== '') {
-                                      offsetsSearch += '_';
-                                    }
-                                    offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
+                  <Dropdown.Menu>
+                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
+                      <div className="input-group">
+                        <table>{this._renderOffsetsOptions()}</table>
+                        <div className="input-group-append">
+                          <button
+                            className="btn btn-primary offsets-ok"
+                            type="button"
+                            onClick={() => {
+                              let offsetsSearch = '';
+                              for (let i = 0; i < Object.keys(offsets).length; i++) {
+                                if (Object.values(offsets)[i] !== '') {
+                                  if (offsetsSearch !== '') {
+                                    offsetsSearch += '_';
                                   }
+                                  offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
                                 }
-                                this.setState({ offsetsSearch }, () => {
-                                  this._searchMessages();
-                                });
-                              }}
-                            >
-                              OK
-                            </button>
-                          </div>
+                              }
+                              this.setState({ offsetsSearch }, () => {
+                                this._searchMessages();
+                              });
+                            }}
+                          >
+                            OK
+                          </button>
                         </div>
                       </div>
-                    </Dropdown.Menu>
+                    </div>
+                  </Dropdown.Menu>
                 </Dropdown>
               </li>
               <li>
