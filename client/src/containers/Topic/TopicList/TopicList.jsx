@@ -96,12 +96,15 @@ class TopicList extends Root {
         );
       } else if (this.props.location.search === '') {
         // Handle sidebar click on topics from the component
-        this.setState({
-          pageNumber: 1,
-          searchData : { ...searchData, search: '' }
-        }, () => {
-          this._initializeVars(this.getTopics);
-        });
+        this.setState(
+          {
+            pageNumber: 1,
+            searchData: { ...searchData, search: '' }
+          },
+          () => {
+            this._initializeVars(this.getTopics);
+          }
+        );
       }
     }
   }
