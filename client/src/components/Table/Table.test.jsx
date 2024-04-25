@@ -16,6 +16,7 @@ import { Simulate } from 'react-dom/test-utils';
 vi.mock('react-router-dom', () => ({
   useLocation: vi.fn(),
   useNavigate: vi.fn(),
+  useNavigationType: vi.fn(),
   useParams: vi.fn(),
   Link: el => <div {...el}></div>
 }));
