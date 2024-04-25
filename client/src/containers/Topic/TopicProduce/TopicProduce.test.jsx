@@ -12,6 +12,7 @@ vi.mock('./../../../prefix', () => ({
 vi.mock('react-router-dom', () => ({
   useLocation: vi.fn(),
   useNavigate: vi.fn(),
+  useNavigationType: vi.fn(),
   useParams: () => ({ clusterId: '123', topicId: '456' })
 }));
 

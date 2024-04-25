@@ -243,31 +243,33 @@ class TopicData extends Root {
           .pipe(map(e => JSON.parse(e.data) || {}))
           .pipe(scan((acc, one) => [...acc, one], []))
           .subscribe(results => {
-            const lastResult = results.slice(-1);
-            const percentDiff = lastResult.percent - lastPercentVal;
+            if (results.length > 0) {
+              const lastResult = results[results.length - 1];
+              const percentDiff = lastResult.percent - lastPercentVal;
 
-            // to avoid UI slowdowns, only update the percentage in fixed increments
-            if (percentDiff >= percentUpdateDelta) {
-              lastPercentVal = lastResult.percent;
-              self.setState({
-                nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
-                recordCount: self.state.recordCount + lastResult.records.length,
-                percent: lastResult.percent.toFixed(2)
-              });
-            }
+              // to avoid UI slowdowns, only update the percentage in fixed increments
+              if (percentDiff >= percentUpdateDelta) {
+                lastPercentVal = lastResult.percent;
+                self.setState({
+                  nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
+                  recordCount: self.state.recordCount + lastResult.records.length,
+                  percent: lastResult.percent.toFixed(2)
+                });
+              }
 
-            const records = results
-              .map(result => result.records)
-              .filter(records => records?.length > 0)
-              .reduce((acc, all) => [...acc, ...all], []);
+              const records = results
+                .map(result => result.records)
+                .filter(records => records?.length > 0)
+                .reduce((acc, all) => [...acc, ...all], []);
 
-            if (records.length) {
-              const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
-              self.setState({
-                recordCount: tableMessages.length,
-                messages: tableMessages,
-                loading: false
-              });
+              if (records.length) {
+                const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
+                self.setState({
+                  recordCount: tableMessages.length,
+                  messages: tableMessages,
+                  loading: false
+                });
+              }
             }
           });
 
