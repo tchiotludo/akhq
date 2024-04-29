@@ -4,6 +4,7 @@ import io.micronaut.context.annotation.Primary;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.scheduling.TaskExecutors;
@@ -16,6 +17,7 @@ import org.akhq.models.security.ClaimResponse;
 @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
 @Client("${akhq.security.rest.url}")
 @ExecuteOn(TaskExecutors.BLOCKING)
+@Header(name = "${akhq.security.rest.token-header.name}", value = "${akhq.security.rest.token-header.value}")
 public interface RestApiClaimProvider extends ClaimProvider {
     @Post
     @Override

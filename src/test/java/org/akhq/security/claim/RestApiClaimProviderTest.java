@@ -14,6 +14,7 @@ import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Filter;
+import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.filter.HttpServerFilter;
@@ -33,6 +34,7 @@ import java.text.ParseException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.annotation.security.PermitAll;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -90,7 +92,11 @@ public class RestApiClaimProviderTest {
     @Controller("/external-mock")
     static class RestApiExternalService {
         @Post
-        String generateClaim(@Body ClaimRequest request) {
+        String generateClaim(@Body ClaimRequest request, @Header("X-Custom-Authentication") Optional<String> authHeader) {
+            if (authHeader.isEmpty() || !"Bearer custom-authentication".equals(authHeader)) {
+                throw new RuntimeException("Invalid custom authentication header.");
+            }
+
             return
                 "{\n" +
                     "  \"groups\" : {" +
@@ -104,4 +110,3 @@ public class RestApiClaimProviderTest {
         }
     }
 }
-
