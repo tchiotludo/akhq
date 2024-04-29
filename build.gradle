@@ -4,7 +4,7 @@ plugins {
     id "io.micronaut.application" version "4.3.6"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.4.1"
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'org.gradle.test-retry' version '1.5.8'
     id 'com.github.psxpaul.execfork' version '0.2.2'
