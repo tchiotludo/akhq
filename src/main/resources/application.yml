@@ -152,7 +152,7 @@ akhq:
           actions: [ "READ", "CREATE", "DELETE" ]
       consumer-group-admin:
         - resources: [ "CONSUMER_GROUP" ]
-          actions: [ "READ", "UPDATE_OFFSET", "DELETE_OFFSET" ]
+          actions: [ "READ", "UPDATE_OFFSET", "DELETE", "DELETE_OFFSET" ]
       connect-cluster-reader:
         - resources: [ "CONNECT_CLUSTER" ]
           actions: [ "READ" ]
