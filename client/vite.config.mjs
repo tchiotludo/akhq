@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(() => {
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
   return {
     base: '/ui',
     build: {
@@ -34,16 +36,16 @@ export default defineConfig(() => {
       open: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/login': {
-          target: 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/logout': {
-          target: 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/oauth': {
-          target: 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         }
       }
     },
