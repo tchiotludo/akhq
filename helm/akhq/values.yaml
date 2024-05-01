@@ -124,6 +124,7 @@ service:
   #httpNodePort: 32551
   #managementNodePort: 32552
   labels: {}
+  loadBalancerIP: ""
   annotations:
     # cloud.google.com/load-balancer-type: "Internal"
 

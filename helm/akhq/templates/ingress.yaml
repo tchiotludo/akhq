@@ -18,6 +18,9 @@ spec:
 {{- if and .Values.ingress.ingressClassName (eq (include "akhq.ingress.apiVersion" $) "networking.k8s.io/v1") }}
   ingressClassName: {{ .Values.ingress.ingressClassName }}
 {{- end }}
+{{- if and .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+{{- end }}
 {{- if .Values.ingress.tls }}
   tls:
   {{- range .Values.ingress.tls }}
