@@ -84,9 +84,9 @@ akhq:
     rest:
       enabled: true
       url: https://external.service/get-roles-and-attributes
-      token:
-        header: "Authorization"
-        value: Bearer your-token
+      headers:
+        - name: Authorization
+          value: Bearer your-token
 ````
 
 ::: warning

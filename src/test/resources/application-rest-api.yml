@@ -34,7 +34,7 @@ akhq:
           - admin
     rest:
       enabled: true
-      token-header:
-        name: X-Custom-Authentication
-        value: Bearer custom-authentication
+      headers:
+        - name: X-Custom-Authentication
+          value: Bearer custom-authentication
       url: /external-mock
