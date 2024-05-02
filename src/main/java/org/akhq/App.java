@@ -24,6 +24,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 )
 public class App {
     public static void main(String[] args) {
-        Micronaut.run(App.class);
+        Micronaut.build(args)
+            .banner(false)
+            .start();
     }
 }
