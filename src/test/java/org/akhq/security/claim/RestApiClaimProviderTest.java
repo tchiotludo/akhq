@@ -92,21 +92,21 @@ public class RestApiClaimProviderTest {
     @Controller("/external-mock")
     static class RestApiExternalService {
         @Post
-        String generateClaim(@Body ClaimRequest request, @Header("X-Custom-Authentication") Optional<String> authHeader) {
-            if (authHeader.isEmpty() || !"Bearer custom-authentication".equals(authHeader)) {
+        String generateClaim(@Body ClaimRequest request,
+                @Header("X-Custom-Authentication") Optional<String> authHeader) {
+            if (authHeader.isEmpty() || !authHeader.get().equals("Bearer custom-authentication")) {
                 throw new RuntimeException("Invalid custom authentication header.");
             }
 
-            return
-                "{\n" +
+            return "{\n" +
                     "  \"groups\" : {" +
-                        "\"limited\": [{" +
-                            "\"role\": \"topic-read\"," +
-                            "\"patterns\": [\"user.*\"]," +
-                            "\"clusters\": [\"pub.*\"]" +
-                        "}]" +
-                    "}"+
-                "}";
+                    "\"limited\": [{" +
+                    "\"role\": \"topic-read\"," +
+                    "\"patterns\": [\"user.*\"]," +
+                    "\"clusters\": [\"pub.*\"]" +
+                    "}]" +
+                    "}" +
+                    "}";
         }
     }
 }
