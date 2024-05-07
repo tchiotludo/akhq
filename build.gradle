@@ -1,12 +1,12 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "4.3.6"
+    id "io.micronaut.application" version "4.3.8"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.4.1"
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.5.8'
+    id 'org.gradle.test-retry' version '1.5.9'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.51.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
@@ -222,7 +222,7 @@ dependencies {
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.16.1'
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-junit-jupiter'
