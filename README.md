@@ -91,6 +91,7 @@ Kestra is an infinitely scalable orchestration and scheduling platform, creating
 * [BMW Group](https://www.bmwgroup.com)
 * [Boulanger](https://www.boulanger.com/)
 * [BPCE-IT](https://www.bpce-it.fr/)
+* [CEVA Logistics](https://www.cevalogistics.com)
 * [Decathlon](https://www.decathlon.fr/)
 * [Depop](https://www.depop.com)
 * [Doximity](https://www.doximity.com)
