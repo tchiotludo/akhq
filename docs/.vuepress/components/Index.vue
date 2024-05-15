@@ -465,13 +465,6 @@
                                                         </a>
                                                     </span>
                                                     <span class="mu-about-image">
-                                                        <a href="https://upstash.com/?utm_source=AKHQ" target="_blank">
-                                                            <img aria-hidden="true"
-                                                                 style="width:210px"
-                                                                 src="https://raw.githubusercontent.com/upstash/sponsorship/master/logo.png" alt="Upstash">
-                                                        </a>
-                                                    </span>
-                                                    <span class="mu-about-image">
                                                         <a href="https://www.michelin.fr/?utm_source=AKHQ" target="_blank">
                                                             <img aria-hidden="true"
                                                                 style="width:210px"
