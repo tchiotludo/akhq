@@ -22,6 +22,12 @@ micronaut:
             auth-method: client-secret-post
 ```
 
+You can also override the GitHub API url if needed. Default value is https://api.github.com
+
+```yaml
+github.api.url: https://override.api.github.com
+```
+
 To further tell AKHQ to display GitHub SSO options on the login page and customize claim mapping, configure Oauth in the AKHQ config:
 
 ```yaml
