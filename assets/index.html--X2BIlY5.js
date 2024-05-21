@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-b3a08698","path":"/docs/configuration/","title":"Configuration","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1716274921000,"contributors":[{"name":"jipipayo","email":"1165+jipipayo@users.noreply.github.com","commits":1}]},"filePathRelative":"docs/configuration/README.md"}');export{t as data};
