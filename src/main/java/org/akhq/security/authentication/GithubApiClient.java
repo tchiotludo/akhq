@@ -8,7 +8,7 @@ import org.reactivestreams.Publisher;
 
 @Header(name = "User-Agent", value = "Micronaut")
 @Header(name = "Accept", value = "application/vnd.github.v3+json, application/json")
-@Client("${github.api.url}")
+@Client("${github.api.url:`https://api.github.com`}")
 public interface GithubApiClient {
 
     @Get("/user")
