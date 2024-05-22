@@ -3,9 +3,7 @@
 Groups allow you to limit user
 
 ::: warning
-With PR #1472 AKHQ introduced a new, better group management system. It was merged into main codebase after
-release 0.24.0. If you are using v0.24.0 or below, please refer to documentation in `docs/` subdirectory
-as shipped with your release.
+With PR #1472 AKHQ introduced a new, better group management system in 0.25.0. It's a breaking change, so you need to rewrite your ACLS
 :::
 
 Define groups with specific roles for your users

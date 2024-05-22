@@ -71,7 +71,7 @@ micronaut:
   http:
     client:
       allow-block-event-loop: true
-      github.api.url: https://api.github.com
+
 
 jackson:
   serialization:

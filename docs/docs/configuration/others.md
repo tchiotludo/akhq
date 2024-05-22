@@ -13,3 +13,18 @@
 > Since AKHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
+## JSON Logging
+In order to configure AKHQ to output log in JSON format, a logback configuration needs to be provided, e.g. `logback.xml`
+```
+<configuration>
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.JsonEncoder">
+    </encoder>
+  </appender>
+
+  <root level="debug">
+    <appender-ref ref="stdout"/>
+  </root>
+</configuration>
+```
+This file then needs to be mounted to `/app/logback.xml` and referenced in `JAVA_OPTS` via `-Dlogback.configurationFile=/app/logback.xml` (see [docker](docker.md) for more information).
