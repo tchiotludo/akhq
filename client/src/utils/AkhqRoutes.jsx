@@ -159,7 +159,7 @@ class AkhqRoutes extends Root {
                 <Route exact path="/ui/:clusterId/topic/create" element={<TopicCreate />} />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
+              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
@@ -167,7 +167,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
+              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/increasepartition"
@@ -175,7 +175,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('CREATE') && (
+              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/copy" element={<TopicCopy />} />
               )}
 
@@ -187,7 +187,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC_DATA.includes('READ') && (
+              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
                 <Route exact path="/ui/:clusterId/tail" element={<Tail />} />
               )}
 
