@@ -98,7 +98,8 @@ public class RestApiClaimProviderTest {
                 throw new RuntimeException("Invalid custom authentication header.");
             }
 
-            return "{\n" +
+            return
+                "{\n" +
                     "  \"groups\" : {" +
                         "\"limited\": [{" +
                             "\"role\": \"topic-read\"," +
@@ -106,7 +107,7 @@ public class RestApiClaimProviderTest {
                             "\"clusters\": [\"pub.*\"]" +
                         "}]" +
                     "}" +
-                    "}";
+                "}";
         }
     }
 }
