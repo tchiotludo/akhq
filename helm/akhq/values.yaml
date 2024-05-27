@@ -3,7 +3,8 @@
 image:
   repository: tchiotludo/akhq
   tag: "" # uses Chart.AppVersion by default
-
+# Number of old deployment ReplicaSets to retain. The rest will be garbage collected.
+revisionHistoryLimit: 10
 # custom annotations (example: for prometheus)
 annotations: {}
   #prometheus.io/scrape: 'true'
