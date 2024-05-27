@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-8daa1a0e","path":"/","title":"Home","lang":"en-US","frontmatter":{"home":true,"title":"Home","sidebar":false,"pageClass":"landing"},"headers":[],"git":{"updatedTime":1716842172000,"contributors":[{"name":"Serhii Plesovskykh","email":"47846911+PLeS207@users.noreply.github.com","commits":1}]},"filePathRelative":"README.md"}');export{e as data};
