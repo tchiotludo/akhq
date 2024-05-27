@@ -100,11 +100,11 @@ public class RestApiClaimProviderTest {
 
             return "{\n" +
                     "  \"groups\" : {" +
-                    "\"limited\": [{" +
-                    "\"role\": \"topic-read\"," +
-                    "\"patterns\": [\"user.*\"]," +
-                    "\"clusters\": [\"pub.*\"]" +
-                    "}]" +
+                        "\"limited\": [{" +
+                            "\"role\": \"topic-read\"," +
+                            "\"patterns\": [\"user.*\"]," +
+                            "\"clusters\": [\"pub.*\"]" +
+                        "}]" +
                     "}" +
                     "}";
         }
