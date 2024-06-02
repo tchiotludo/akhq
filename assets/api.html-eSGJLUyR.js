@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-d2e3fc0c","path":"/docs/api.html","title":"Api","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1717153083000,"contributors":[{"name":"Jonas Voelcker","email":"47037735+jonasvoelcker@users.noreply.github.com","commits":1}]},"filePathRelative":"docs/api.md"}');export{e as data};
