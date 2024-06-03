@@ -32,8 +32,9 @@ public class RestApiClaimProviderFilter implements HttpClientFilter {
 
     @Override
     public Publisher<? extends HttpResponse<?>> doFilter(MutableHttpRequest<?> request, ClientFilterChain chain) {
-        LOG.trace("Modifying outgoing authentication request. from muttable");
+        LOG.trace("Modifying outgoing authentication request.");
         headers.forEach(header -> request.header(header.get(HEADER_KEY), header.get(HEADER_VALUE)));
+
         return Mono.from(chain.proceed(request));
     }
 }
