@@ -13,6 +13,22 @@
 > Since AKHQ is based on [Micronaut](https://micronaut.io/), you can customize configurations (server port, ssl, ...) with [Micronaut configuration](https://docs.micronaut.io/snapshot/guide/configurationreference.html#io.micronaut.http.server.HttpServerConfiguration).
 > More information can be found on [Micronaut documentation](https://docs.micronaut.io/snapshot/guide/index.html#config)
 
+### Activating SSL
+
+When using HTTPS for communication, Micronaut will need to get the certificate within Netty. This uses classes of the java.base package which are no longer activated inside the JDK we use. The configuration at the bottom needs to be extended by this environment variable:
+
+```
+JDK_JAVA_OPTIONS: --add-exports\=java.base/sun.security.x509\=ALL-UNNAMED
+```
+
+```yaml
+micronaut:
+  server:
+    ssl:
+      enabled: true
+      build-self-signed: true
+```
+
 ## JSON Logging
 In order to configure AKHQ to output log in JSON format, a logback configuration needs to be provided, e.g. `logback.xml`
 ```
