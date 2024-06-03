@@ -122,8 +122,8 @@ class TopicProduce extends Form {
     let schema = await this.getApi(uriAllSchema(clusterId));
     let keySchema = [];
     let valueSchema = [];
-    schema.data.filter(s => s.includes('-key')).map(s => keySchema.push(s));
-    schema.data.filter(s => s.includes('-value')).map(s => valueSchema.push(s));
+    schema.data.filter(s => !s.includes('-value')).map(s => keySchema.push(s));
+    schema.data.filter(s => !s.includes('-key')).map(s => valueSchema.push(s));
     this.setState({
       keySchema: keySchema,
       valueSchema: valueSchema,
