@@ -145,6 +145,15 @@ dependencies {
     implementation group: "com.google.protobuf", name: "protobuf-java", version: '3.25.0'
     implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '3.25.0'
 
+    //cenk is testing
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-inject")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("jakarta.inject:jakarta.inject-api")
+    implementation("org.reactivestreams:reactive-streams")
+
+
+
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
