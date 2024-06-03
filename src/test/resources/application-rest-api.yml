@@ -35,3 +35,6 @@ akhq:
     rest:
       enabled: true
       url: /external-mock
+      headers:
+        - name: X-Custom-Authentication
+          value: Bearer custom-authentication

@@ -52,10 +52,12 @@ docker-compose.override.yml
 helm/akhq/README.md
 helm/akhq/LICENSE
 
-
 ## Docs
 docs/node_modules
 docs/.vuepress/.temp
 docs/.vuepress/.cache
 docs/.vuepress/public/contributors.html
 docs/.vuepress/dist
+
+/.factorypath
+/client/.settings

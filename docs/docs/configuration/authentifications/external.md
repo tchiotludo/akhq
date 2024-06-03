@@ -76,6 +76,19 @@ and expect the following JSON as response :
   }
 }
 ````
+
+If you want to send a static authentication token to the external service where it might be public, you can extend the configuration for the rest interface as follows:
+````yaml
+akhq:
+  security:
+    rest:
+      enabled: true
+      url: https://external.service/get-roles-and-attributes
+      headers:
+        - name: Authorization
+          value: Bearer your-token
+````
+
 ::: warning
 The response must contain the `Content-Type: application/json` header to prevent any issue when reading the response.
 :::
