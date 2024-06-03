@@ -43,7 +43,7 @@ configurations.all {
         force("org.apache.kafka:kafka-streams:" + kafkaVersion)
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-        force("com.google.protobuf:protobuf-java:3.25.2")
+        force("com.google.protobuf:protobuf-java:4.27.0")
         force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
         force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
