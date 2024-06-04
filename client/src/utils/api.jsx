@@ -2,15 +2,12 @@ import React from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
 
 const configs = {
   withCredentials: true
 };
 
 const handleError = err => {
-  const navigate = useNavigate();
-
   let error = {
     status: err.response ? err.response.status : '',
     message: err.response ? err.response.data.message : 'Internal Server Error',
@@ -27,7 +24,7 @@ const handleError = err => {
   if (err.response && err.response.status < 500) {
     if (err.response.status === 401 || err.response.status === 403) {
       localStorage.setItem('toastMessage', error.message);
-      navigate({ pathname: '/ui/login' }, { replace: true });
+      location.href = '/ui/login';
     } else {
       toast.warn(error.message);
     }
