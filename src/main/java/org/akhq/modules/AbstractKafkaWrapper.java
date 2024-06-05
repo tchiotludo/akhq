@@ -9,6 +9,7 @@ import org.akhq.utils.Logger;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.acl.AclBinding;
@@ -165,8 +166,14 @@ abstract public class AbstractKafkaWrapper {
                         )
                         .collect(Collectors.toList());
 
+                    Map<TopicPartition, Long> startOffsetsToSearch = collect.stream().map(p ->
+                        new AbstractMap.SimpleEntry<>(p, 0L))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
                     KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
-                    Map<TopicPartition, Long> begins = consumer.beginningOffsets(collect);
+                    // KAFKA-7556: beginningOffsets always return 0. Use offsetsForTimes instead
+                    Map<TopicPartition, OffsetAndTimestamp> begins = consumer.offsetsForTimes(startOffsetsToSearch);
+
                     Map<TopicPartition, Long> ends = consumer.endOffsets(collect);
                     consumer.close();
 
@@ -177,7 +184,7 @@ abstract public class AbstractKafkaWrapper {
                                 begin ->
                                     new Partition.Offsets(
                                         begin.getKey().partition(),
-                                        begin.getValue(),
+                                        begin.getValue() != null ? begin.getValue().offset() : ends.get(begin.getKey()),
                                         ends.get(begin.getKey())
                                     ),
                                 toList()
