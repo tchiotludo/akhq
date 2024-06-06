@@ -135,9 +135,7 @@ public class AkhqController extends AbstractController {
             securityService
                 .getAuthentication()
                 .ifPresent(authentication -> {
-                    if (!StringUtils.EMPTY_STRING.equals(authentication.getName())) {
-                        authUser.logged = true;
-                    }
+                    authUser.logged = true;
                     authUser.username = authentication.getName();
                 });
         }
@@ -221,16 +219,11 @@ public class AkhqController extends AbstractController {
     }
 
     protected List<AuthUser.AuthPermissions> getRights() {
-        List<AuthUser.AuthPermissions> rights =
-            expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
-
         if (!applicationContext.containsBean(SecurityService.class)) {
-            return rights;
+            return expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
-        rights.addAll(expandRoles(getUserGroups()));
-
-        return rights;
+        return expandRoles(getUserGroups());
     }
 
     @AllArgsConstructor

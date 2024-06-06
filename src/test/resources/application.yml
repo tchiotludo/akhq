@@ -117,10 +117,8 @@ akhq:
           patterns: [ "test-operator.*" ]
       no-filter:
         - role: topic-read
-        - role: topic-write
-        - role: schema-delete
-        - role: acl-read
-          patterns: [ "user.*" ]
+          patterns: [ "public.*" ]
+          clusters: [ "pub.*" ]
     default-group: no-filter
 
     basic-auth:
