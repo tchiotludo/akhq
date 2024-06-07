@@ -219,10 +219,14 @@ public class AkhqController extends AbstractController {
     }
 
     protected List<AuthUser.AuthPermissions> getRights() {
-        if (!applicationContext.containsBean(SecurityService.class)) {
+        // Authentication disabled or authentication enabled but user not logged in
+        // return rights for the default group
+        if (!applicationContext.containsBean(SecurityService.class)
+            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty()) {
             return expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
+        // Authentication enabled and user logged in
         return expandRoles(getUserGroups());
     }
 
