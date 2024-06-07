@@ -1,6 +1,6 @@
-// Set the default
+# Set the default
 "editor.formatOnSave": false,
-// Enable per-language
+# Enable per-language
 "[javascript]": {
     "editor.formatOnSave": true
 }
