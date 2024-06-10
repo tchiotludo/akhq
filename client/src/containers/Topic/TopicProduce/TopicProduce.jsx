@@ -9,7 +9,7 @@ import {
   uriTopics,
   uriTopicsPartitions,
   uriTopicsProduce,
-  uriAllSchema
+  uriAllSchema, uriTopicsName
 } from '../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
@@ -101,19 +101,12 @@ class TopicProduce extends Form {
   async initAvailableTopics() {
     const { clusterId } = this.props.params;
 
-    const topics = [];
-    let page = 0;
-    let topicResponseData = {};
-    do {
-      page = page + 1;
-      topicResponseData = await this.getApi(uriTopics(clusterId, '', '', page)).then(
-        res => res.data
-      );
-      topicResponseData.results.forEach(topicData => topics.push(topicData.name));
-    } while (page < topicResponseData.pages);
-
-    this.setState({
-      topics
+    this.getApi(uriTopicsName(clusterId))
+    .then(res => {
+      this.setState({ topics: res.data });
+    })
+    .catch(err => {
+      console.error('Error:', err);
     });
   }
 
