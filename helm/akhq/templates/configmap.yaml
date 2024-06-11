@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "akhq.fullname" . }}
-  {{- with .Values.annotations }}
+  {{- with .Values.configmapAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
