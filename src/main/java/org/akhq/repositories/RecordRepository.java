@@ -10,6 +10,7 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
+import java.util.stream.StreamSupport;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
@@ -80,10 +81,10 @@ public class RecordRepository extends AbstractRepository {
     @Inject
     private MaskingUtils maskingUtils;
 
-    @Value("${akhq.topic-data.poll-timeout:1000}")
+    @Value("${akhq.topic-data.poll-timeout:10000}")
     protected int pollTimeout;
 
-    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
+    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:25000}")
     protected int maxPollRecords;
 
     @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
@@ -99,9 +100,7 @@ public class RecordRepository extends AbstractRepository {
             .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
             .collect(Collectors.toList());
 
-        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, new Properties() {{
-            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, topicPartitions.size() * 3);
-        }});
+        KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId);
         consumer.assign(topicPartitions);
 
         consumer
@@ -174,9 +173,10 @@ public class RecordRepository extends AbstractRepository {
 
         consumer.close();
 
-        list.sort(Comparator.comparing(Record::getTimestamp));
-
-        return list;
+        return list.stream()
+            .sorted(Comparator.comparing(Record::getTimestamp))
+            .limit(options.size)
+            .toList();
     }
 
     public List<TimeOffset> getOffsetForTime(String clusterId, List<org.akhq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
@@ -264,12 +264,7 @@ public class RecordRepository extends AbstractRepository {
             .getPartitions()
             .parallelStream()
             .map(partition -> {
-                KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(
-                    options.clusterId,
-                    new Properties() {{
-                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, String.valueOf(options.size));
-                    }}
-                );
+                KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
                 return getOffsetForSortNewest(consumer, partition, options)
                         .map(offset -> offset.withTopicPartition(
@@ -652,11 +647,8 @@ public class RecordRepository extends AbstractRepository {
     public Flowable<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
         AtomicInteger matchesCount = new AtomicInteger();
 
-        Properties properties = new Properties();
-        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.getSize());
-
         return Flowable.generate(() -> {
-            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties);
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
             Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
 
             if (partitions.size() == 0) {
@@ -699,22 +691,32 @@ public class RecordRepository extends AbstractRepository {
                 currentEvent.emptyPoll = 0;
             }
 
+            Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp);
+
+            List<Record> sortedRecords = StreamSupport.stream(records.spliterator(), false)
+                .map(record -> newRecord(record, options, topic))
+                .sorted(Options.Sort.NEWEST.equals(options.sort) ? comparator.reversed() : comparator)
+                .toList();
+
             List<Record> list = new ArrayList<>();
 
-            for (ConsumerRecord<byte[], byte[]> record : records) {
+            for (Record record : sortedRecords) {
+                if (matchesCount.get() >= options.size) {
+                    break;
+                }
+
                 currentEvent.updateProgress(record);
 
-                Record current = newRecord(record, options, topic);
-                if (matchFilters(options, current)) {
-                    list.add(current);
+                if (matchFilters(options, record)) {
+                    list.add(record);
                     matchesCount.getAndIncrement();
 
                     log.trace(
                         "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
-                        record.topic(),
-                        record.partition(),
-                        record.offset(),
-                        record.key()
+                        record.getTopic(),
+                        record.getPartition(),
+                        record.getOffset(),
+                        record.getKey()
                     );
                 }
             }
@@ -927,10 +929,9 @@ public class RecordRepository extends AbstractRepository {
             return Event.of(this).name("searchBody");
         }
 
-
-        private void updateProgress(ConsumerRecord<byte[], byte[]> record) {
-            Offset offset = this.offsets.get(record.partition());
-            offset.current = record.offset();
+        private void updateProgress(Record record) {
+            Offset offset = this.offsets.get(record.getPartition());
+            offset.current = record.getOffset();
         }
 
         @AllArgsConstructor

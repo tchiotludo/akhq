@@ -99,7 +99,7 @@ akhq:
   clients-defaults:
     consumer:
       properties:
-        max.poll.records: 50
+        max.poll.records: 25000
         isolation.level: read_committed
         # group.id: Akhq
         enable.auto.commit: "false"
@@ -130,7 +130,7 @@ akhq:
 
   topic-data:
     size: 50
-    poll-timeout: 1000
+    poll-timeout: 10000
     kafka-max-message-length: 1000000
 
   audit:
