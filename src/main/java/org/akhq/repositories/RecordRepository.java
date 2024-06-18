@@ -80,10 +80,10 @@ public class RecordRepository extends AbstractRepository {
     @Inject
     private MaskingUtils maskingUtils;
 
-    @Value("${akhq.topic-data.poll-timeout:1000}")
+    @Value("${akhq.topic-data.poll-timeout:10000}")
     protected int pollTimeout;
 
-    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:50}")
+    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:100000}")
     protected int maxPollRecords;
 
     @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
