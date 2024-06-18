@@ -4,7 +4,7 @@ import { uriTopicsGroups } from '../../../../utils/endpoints';
 import constants from '../../../../utils/constants';
 import Root from '../../../../components/Root';
 import { Link } from 'react-router-dom';
-import {withRouter} from "../../../../utils/withRouter.jsx";
+import { withRouter } from '../../../../utils/withRouter.jsx';
 
 class TopicGroups extends Root {
   state = {

@@ -252,7 +252,8 @@ class TopicData extends Root {
                 lastPercentVal = lastResult.percent;
                 self.setState({
                   nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
-                  recordCount: self.state.recordCount + lastResult.records.length,
+                  recordCount:
+                    self.state.recordCount + (lastResult.records ? lastResult.records.length : 0),
                   percent: lastResult.percent.toFixed(2)
                 });
               }

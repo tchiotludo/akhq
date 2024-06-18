@@ -57,7 +57,8 @@ class TopicCreate extends Form {
       partition: formData.partition,
       replication: formData.replication,
       configs: {
-        'cleanup.policy': formData.cleanup === 'deleteAndCompact' ? 'compact,delete' : formData.cleanup,
+        'cleanup.policy':
+          formData.cleanup === 'deleteAndCompact' ? 'compact,delete' : formData.cleanup,
         'retention.ms': formData.retention
       }
     };
