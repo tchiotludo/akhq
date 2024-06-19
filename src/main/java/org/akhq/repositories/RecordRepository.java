@@ -174,9 +174,10 @@ public class RecordRepository extends AbstractRepository {
 
         consumer.close();
 
-        list.sort(Comparator.comparing(Record::getTimestamp));
-
-        return list;
+        return list.stream()
+            .sorted(Comparator.comparing(Record::getTimestamp))
+            .limit(options.size)
+            .toList();
     }
 
     public List<TimeOffset> getOffsetForTime(String clusterId, List<org.akhq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
