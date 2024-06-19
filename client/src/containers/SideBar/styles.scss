@@ -55,3 +55,7 @@ $sidebarTransition: 0.5s;
 .sidenav-subnav---1EN61 {
   background-color: $primary !important;
 }
+.sidenav---sidenav-subnav---1EN61 {
+  max-height: calc(30vh);
+  overflow: auto !important;
+}
