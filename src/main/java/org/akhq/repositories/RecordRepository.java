@@ -141,7 +141,11 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private List<Record> consumeOldest(Topic topic, Options options) {
-        KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+        KafkaConsumer<byte[], byte[]> consumer =
+            this.kafkaModule.getConsumer(options.clusterId, new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
+            }});
+
         Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options, consumer);
         List<Record> list = new ArrayList<>();
 
@@ -264,7 +268,10 @@ public class RecordRepository extends AbstractRepository {
             .getPartitions()
             .parallelStream()
             .map(partition -> {
-                KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+                KafkaConsumer<byte[], byte[]> consumer =
+                    this.kafkaModule.getConsumer(options.clusterId, new Properties() {{
+                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
+                    }});
 
                 return getOffsetForSortNewest(consumer, partition, options)
                         .map(offset -> offset.withTopicPartition(
