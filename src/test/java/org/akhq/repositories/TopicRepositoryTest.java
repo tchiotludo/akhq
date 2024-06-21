@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
+import static org.akhq.controllers.TopicControllerTest.CREATE_TOPIC_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -49,6 +50,8 @@ class TopicRepositoryTest extends AbstractTest {
 
     private final FilterGenerated filterGenerated = new FilterGenerated();
 
+    private final FilterTopicController filterTopicController = new FilterTopicController();
+
     @BeforeEach
     void before() {
         MockitoAnnotations.initMocks(this);
@@ -62,7 +65,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.ALL,
             Optional.empty(),
             List.of()
-        ).stream().filter(filterGenerated).toList().size());
+        ).stream().filter(filterGenerated).filter(filterTopicController).toList().size());
     }
 
     @Test
@@ -73,7 +76,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_INTERNAL,
             Optional.empty(),
             List.of()
-        ).stream().filter(filterGenerated).toList().size());
+        ).stream().filter(filterGenerated).filter(filterTopicController).toList().size());
     }
 
     @Test
@@ -84,7 +87,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_INTERNAL_STREAM,
             Optional.empty(),
             List.of()
-        ).stream().filter(filterGenerated).toList().size());
+        ).stream().filter(filterGenerated).filter(filterTopicController).toList().size());
     }
 
     @Test
@@ -95,7 +98,7 @@ class TopicRepositoryTest extends AbstractTest {
             TopicRepository.TopicListView.HIDE_STREAM,
             Optional.empty(),
             List.of()
-        ).stream().filter(filterGenerated).toList().size());
+        ).stream().filter(filterGenerated).filter(filterTopicController).toList().size());
     }
 
     @Test
@@ -205,6 +208,13 @@ class TopicRepositoryTest extends AbstractTest {
         @Override
         public boolean test(Topic topic) {
             return !topic.getName().startsWith(PATTERN);
+        }
+    }
+
+    private static class FilterTopicController implements Predicate<Topic> {
+        @Override
+        public boolean test(Topic topic) {
+            return !topic.getName().equals(CREATE_TOPIC_NAME);
         }
     }
 }
