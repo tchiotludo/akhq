@@ -171,7 +171,9 @@ class TopicRepositoryTest extends AbstractTest {
             .findFirst();
 
         assertTrue(compacted.isPresent());
-        assertEquals(0, compacted.get().getFirstOffset());
+        // 50 messages with the same key (1 remaining after compaction) : 1st offset is 49
+        assertEquals(49, compacted.get().getFirstOffset());
+        // 50 messages with the same key + 50 random messages : last offset is 100
         assertEquals(100, compacted.get().getLastOffset());
     }
 
