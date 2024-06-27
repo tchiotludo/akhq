@@ -1,0 +1,1 @@
+import{_ as t,o as r,c as a,b as e,d as s}from"./app-o0KwZLv2.js";const c={},n=e("h1",{id:"schema-registry",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#schema-registry","aria-hidden":"true"},"#"),s(" Schema registry")],-1),o=[n];function d(i,_){return r(),a("div",null,o)}const l=t(c,[["render",d],["__file","index.html.vue"]]);export{l as default};
