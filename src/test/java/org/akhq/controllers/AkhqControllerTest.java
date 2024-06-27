@@ -51,10 +51,10 @@ class AkhqControllerTest extends AbstractTest {
         );
 
         assertEquals("admin", result.getUsername());
-        assertEquals(2, result.getRoles().size());
+        assertEquals(3, result.getRoles().size());
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder(".*", "user.*"));
+            containsInAnyOrder(".*", "user.*", "public.*"));
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder(".*", ".*"));
+            containsInAnyOrder(".*", ".*", "pub.*"));
     }
 }

@@ -13,6 +13,7 @@ import io.micronaut.web.router.RouteMatch;
 import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.akhq.configs.security.SecurityProperties;
 import org.akhq.security.annotation.HasAnyPermission;
 import org.reactivestreams.Publisher;
 
@@ -21,6 +22,9 @@ import java.util.List;
 @Singleton
 @Replaces(SecuredAnnotationRule.class)
 public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
+    @Inject
+    protected SecurityProperties securityProperties;
+
     @Inject
     SecuredAnnotationRuleWithDefault(RolesFinder rolesFinder) {
         super(rolesFinder);
@@ -40,10 +44,7 @@ public class SecuredAnnotationRuleWithDefault extends SecuredAnnotationRule {
 
         MethodBasedRouteMatch<?, ?> methodRoute = ((MethodBasedRouteMatch<?, ?>) routeMatch);
         if (methodRoute.hasAnnotation(HasAnyPermission.class)) {
-            if (getRoles(authentication)
-                .stream()
-                .anyMatch(s -> !s.equals(SecurityRule.IS_ANONYMOUS))
-            ) {
+            if (authentication != null || securityProperties.getDefaultGroup() != null) {
                 return Flowable.just(SecurityRuleResult.ALLOWED);
             } else {
                 return Flowable.just(SecurityRuleResult.REJECTED);

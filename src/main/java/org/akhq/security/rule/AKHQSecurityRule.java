@@ -65,17 +65,29 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
         }
         String cluster = routeMatch.getVariableValues().get("cluster").toString();
 
-        if (authentication == null) {
+        // No authentication information provided or no existing default group, we reject the request
+        if (authentication == null && (securityProperties.getDefaultGroup() == null
+            || securityProperties.getGroups().get(securityProperties.getDefaultGroup()) == null)) {
             log.warn("No authentication information provided");
             return Flowable.just(SecurityRuleResult.REJECTED);
         }
 
-        List<Group> userGroups = decompressGroups(authentication).values().stream()
-            .flatMap(Collection::stream)
-            // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
-            // Need to serialize Object to Group manually in the stream
-            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
-            .collect(Collectors.toList());
+        List<Group> userGroups = new ArrayList<>();
+
+        if (authentication != null) {
+            // Add user groups from the user token
+            userGroups = decompressGroups(authentication).values().stream()
+                .flatMap(Collection::stream)
+                // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
+                // Need to serialize Object to Group manually in the stream
+                .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+                .collect(Collectors.toList());
+        }
+
+        // Add default group anyway
+        if (securityProperties.getGroups().get(securityProperties.getDefaultGroup()) != null) {
+            userGroups.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
+        }
 
         boolean allowed = userGroups.stream()
             // Keep only bindings matching on cluster name

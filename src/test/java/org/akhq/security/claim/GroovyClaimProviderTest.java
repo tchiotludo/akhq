@@ -24,7 +24,7 @@ class GroovyClaimProviderTest {
 
     @Test
     void successUser() {
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"

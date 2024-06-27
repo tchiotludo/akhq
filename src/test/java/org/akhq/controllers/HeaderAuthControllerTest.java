@@ -33,11 +33,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user", result.getUsername());
-        assertEquals(2, result.getRoles().size());
+        assertEquals(3, result.getRoles().size());
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder("test-operator.*", "test-operator.*"));
+            containsInAnyOrder("test-operator.*", "test-operator.*", "public.*"));
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder(".*", ".*"));
+            containsInAnyOrder(".*", ".*", "pub.*"));
     }
 
     @Test
@@ -50,11 +50,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-admin", result.getUsername());
-        assertEquals(2, result.getRoles().size());
+        assertEquals(3, result.getRoles().size());
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder(".*", "user.*"));
+            containsInAnyOrder(".*", "user.*", "public.*"));
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder(".*", ".*"));
+            containsInAnyOrder(".*", ".*", "pub.*"));
     }
 
     @Test
@@ -68,11 +68,11 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-user-operator", result.getUsername());
-        assertEquals(5, result.getRoles().size());
+        assertEquals(6, result.getRoles().size());
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*"));
+            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*", "public.*"));
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*"));
+            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*", "pub.*"));
     }
 
     @Test
@@ -87,11 +87,11 @@ class HeaderAuthControllerTest extends AbstractTest {
 
         assertEquals("header-user", result.getUsername());
         // operator from 'users' and externally provided 'limited'
-        assertEquals(5, result.getRoles().size());
+        assertEquals(6, result.getRoles().size());
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*"));
+            containsInAnyOrder("test.*", "test.*", "user.*", "test-operator.*", "test-operator.*", "public.*"));
         assertThat(result.getRoles().stream().map(AkhqController.AuthUser.AuthPermissions::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
-            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*"));
+            containsInAnyOrder("pub.*", "pub.*", "pub.*", ".*", ".*", "pub.*"));
     }
 
     @Test
@@ -104,7 +104,7 @@ class HeaderAuthControllerTest extends AbstractTest {
         );
 
         assertEquals("header-invalid", result.getUsername());
-        assertEquals(4, result.getRoles().size());
+        assertEquals(1, result.getRoles().size());
     }
 
     @MicronautTest(environments = "header-ip-disallow")

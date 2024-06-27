@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Nullable;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -25,10 +26,7 @@ import org.akhq.utils.VersionProvider;
 
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -207,7 +205,9 @@ public class AkhqController extends AbstractController {
             throw new RuntimeException("Roles has not been defined properly. Please check the documentation");
         }
 
-        return groupBindings.stream()
+        return Optional.ofNullable(groupBindings)
+            .orElseGet(Collections::emptyList)
+            .stream()
             .map(binding -> securityProperties.getRoles().entrySet().stream()
                 .filter(role -> role.getKey().equals(binding.getRole()))
                 .map(Map.Entry::getValue)
@@ -219,10 +219,14 @@ public class AkhqController extends AbstractController {
     }
 
     protected List<AuthUser.AuthPermissions> getRights() {
-        if (!applicationContext.containsBean(SecurityService.class)) {
+        // Authentication disabled or authentication enabled but user not logged in
+        // return rights for the default group
+        if (!applicationContext.containsBean(SecurityService.class)
+            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty()) {
             return expandRoles(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
+        // Authentication enabled and user logged in
         return expandRoles(getUserGroups());
     }
 

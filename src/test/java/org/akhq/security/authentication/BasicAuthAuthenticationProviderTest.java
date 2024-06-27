@@ -24,7 +24,7 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void success() {
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"
@@ -47,7 +47,7 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void successCase() {
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "MyUser3!@yàhöù.com",
                 "pass"
@@ -71,7 +71,7 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void failed_UserNotFound() {
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user2",
                 "pass2"
@@ -84,7 +84,7 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void failed_PasswordInvalid() {
-        AuthenticationResponse response = Flowable
+        AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "invalid-pass"

@@ -42,33 +42,29 @@ abstract public class AbstractController {
     }
 
     protected List<Group> getUserGroups() {
-        Optional<Authentication> authentication = applicationContext.containsBean(SecurityService.class) ?
-            applicationContext.getBean(SecurityService.class).getAuthentication() :
-            Optional.empty();
-
-        if (authentication.isEmpty()) {
+        // Authentication disabled, no groups to return
+        if (!applicationContext.containsBean(SecurityService.class)) {
             return List.of();
         }
 
-        var groups = AKHQSecurityRule.decompressGroups(authentication.get());
+        Optional<Authentication> authentication = applicationContext.getBean(SecurityService.class).getAuthentication();
 
-        if (groups == null) {
-           return List.of();
-        }
-
-        List<Group> groupBindings = groups.values()
-            .stream()
-            .flatMap(Collection::stream)
-            .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
-            .collect(Collectors.toList());
+        var groups = new ArrayList<Group>();
 
         // Add the default group if there is one
-        if (groupBindings.isEmpty() && StringUtils.isNotEmpty(securityProperties.getDefaultGroup())
-            && securityProperties.getGroups().get(securityProperties.getDefaultGroup()) != null) {
-            groupBindings.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
+        if (securityProperties.getGroups().get(securityProperties.getDefaultGroup()) != null) {
+            groups.addAll(securityProperties.getGroups().get(securityProperties.getDefaultGroup()));
         }
 
-        return groupBindings;
+        // Add user groups
+        authentication.ifPresent(value -> groups.addAll(
+            AKHQSecurityRule.decompressGroups(value).values().stream()
+                .flatMap(Collection::stream)
+                .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+                .toList())
+        );
+
+        return groups;
     }
 
     /**
@@ -78,8 +74,8 @@ abstract public class AbstractController {
      * @return
      */
     protected List<String> buildUserBasedResourceFilters(String cluster) {
-        if (!applicationContext.containsBean(SecurityService.class)
-            || applicationContext.getBean(SecurityService.class).getAuthentication().isEmpty())
+        // Authentication disabled, we allow everything
+        if (!applicationContext.containsBean(SecurityService.class))
             return List.of();
 
         AKHQSecured annotation;
@@ -141,26 +137,16 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
-        Optional<Authentication> authentication = applicationContext.containsBean(SecurityService.class) ?
-            applicationContext.getBean(SecurityService.class).getAuthentication() :
-            Optional.empty();
-
-        if (authentication.isEmpty())
+        // Authentication disabled, we allow everything
+        if (!applicationContext.containsBean(SecurityService.class))
             return;
-
-        StackWalker.StackFrame sf = walker.walk(frames ->
-            frames.filter(frame -> frame.getDeclaringClass().equals(getClass()))
-                .findFirst()
-                .orElseThrow());
 
         boolean isAllowed;
 
         try {
             AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
 
-            isAllowed = AKHQSecurityRule.decompressGroups(authentication.get()).values().stream()
-                .flatMap(Collection::stream)
-                .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+            isAllowed = getUserGroups().stream()
                 // Get only group with role matching the method annotation resource and action
                 .filter(groupBinding -> securityProperties.getRoles().entrySet().stream()
                     .filter(role -> groupBinding.getRole().equals(role.getKey()))
@@ -184,7 +170,8 @@ abstract public class AbstractController {
         }
 
         if (!isAllowed) {
-            throw new AuthorizationException(authentication.get());
+            throw new AuthorizationException(applicationContext.getBean(SecurityService.class).getAuthentication()
+                .orElse(null));
         }
     }
 }
