@@ -13,6 +13,10 @@ annotations: {}
 
 podAnnotations: {}
 
+configmapAnnotations: {}
+  # vault.security.banzaicloud.io/vault-role: akhq
+  # vault.security.banzaicloud.io/vault-serviceaccount: akhq
+
 # custom labels
 labels: {}
   # custom.label: 'true'
