@@ -32,8 +32,9 @@ export default defineConfig(({ command, mode }) => {
       global: 'window'
     },
     server: {
-      port: 3000,
-      open: true,
+      clearScreen: false,
+      port: 4000,
+      open: false,
       proxy: {
         '/api': {
           target: env.APP_BASE_URL || 'http://localhost:8080'

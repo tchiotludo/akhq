@@ -33,8 +33,10 @@ services:
 
   ui:
     image: node:lts
-    command: 'sh -c "npm install && npm run build && npm run preview"'
+    command: 'sh -c "npm install && npm run start -- --host"'
     working_dir: /app/client
+    environment:
+      - APP_BASE_URL=http://akhq:8080
     tty: true
     volumes:
       - ./:/app:z
