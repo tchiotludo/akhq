@@ -30,7 +30,8 @@ class Topic extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles')),
     topicInternal: false,
     configs: [],
-    isAllTopicDataSelected: false,
+    exportSome: false,
+    exportMessages: [],
     downloadFormat: 'Select',
     downloadOptions: ['csv', 'json'],
     messages: []
@@ -41,7 +42,7 @@ class Topic extends Root {
   constructor(props) {
     super(props);
     this.topicData = React.createRef();
-    this._handleSelectAllCheckboxChange = this._handleSelectAllCheckboxChange.bind(this);
+    this._handleSelectCheckboxChange = this._handleSelectCheckboxChange.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -85,8 +86,8 @@ class Topic extends Root {
     });
   }
 
-  _handleSelectAllCheckboxChange = (isAllTopicDataSelected, messages) => {
-    this.setState({ isAllTopicDataSelected: isAllTopicDataSelected, messages: messages });
+  _handleSelectCheckboxChange = (exportMessages, selected) => {
+    this.setState({ exportMessages, exportSome: selected });
   };
 
   _renderDownloadFormat = isChecked => {
@@ -113,8 +114,8 @@ class Topic extends Root {
   };
 
   _handleDownloadAll(option) {
-    let messages = this.state.messages;
-    if (this.state.isAllTopicDataSelected) {
+    let messages = this.state.exportMessages;
+    if (messages && messages.length > 0) {
       let allData = [];
       switch (option) {
         case 'json':
@@ -207,9 +208,8 @@ class Topic extends Root {
           <TopicData
             ref={this.topicData}
             location={location}
-            isAllTopicDataSelected={this.state.isAllTopicDataSelected}
-            onSelectAllCheckboxChange={this._handleSelectAllCheckboxChange}
             registryType={this.state.registryType}
+            updateExportData={this._handleSelectCheckboxChange}
           />
         );
       case 'partitions':
@@ -303,14 +303,14 @@ class Topic extends Root {
         {selectedTab !== 'configs' && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
           <aside>
             <li className="aside-button">
-              {this.state.isAllTopicDataSelected && (
+              {this.state.exportSome && (
                 <div className="btn btn-secondary me-2 p-0">
                   <Dropdown>
                     <Dropdown.Toggle className="btn dropdown-toggle btn-secondary">
                       <strong>Download Format:</strong> ({this.state.downloadFormat})
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                      <div>{this._renderDownloadFormat(this.state.isAllTopicDataSelected)}</div>
+                      <div>{this._renderDownloadFormat(this.state.exportSome)}</div>
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>

@@ -85,7 +85,9 @@ class TopicData extends Root {
     percent: 0,
     loading: true,
     canDownload: false,
-    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
+    dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE,
+    checkboxes: {},
+    messagesToExport: []
   };
 
   searchFilterTypes = [
@@ -494,7 +496,37 @@ class TopicData extends Root {
   }
 
   _handleCheckbox(e) {
-    this.props.onSelectAllCheckboxChange(e.target.checked, this.state.messages);
+    const isAllSelected = e.target.checked;
+
+    if (isAllSelected) {
+      this.setState({ messagesToExport: this.state.messages }, () => {
+        this.props.updateExportData(this.state.messagesToExport, true);
+      });
+    }
+
+    this._updateCheckboxes(isAllSelected);
+  }
+
+  _updateCheckboxes(isAllSelected) {
+    if (isAllSelected) {
+      const checkboxes = {};
+      this.state.messages.forEach((message, index) => {
+        checkboxes[message.id] = true;
+      });
+      this.setState({ checkboxes }, () => {
+        this.props.updateExportData(this.state.messagesToExport, true);
+      });
+    } else {
+      this.setState(
+        {
+          checkboxes: {},
+          messagesToExport: []
+        },
+        () => {
+          this.props.updateExportData(this.state.messagesToExport, false);
+        }
+      );
+    }
   }
 
   async _handleOnDateTimeFormatChanged(newDateTimeFormat) {
@@ -858,6 +890,32 @@ class TopicData extends Root {
     return filterKey !== undefined ? search[filterKey].text : '';
   }
 
+  _handleSingleCheckboxChange = event => {
+    const messageId = event.target.id;
+
+    this.setState(
+      prevState => {
+        const newMessage = prevState.messages.find(message => message.id === messageId);
+
+        return {
+          checkboxes: {
+            ...prevState.checkboxes,
+            [messageId]: !prevState.checkboxes[messageId]
+          },
+          messagesToExport: prevState.checkboxes[messageId]
+            ? prevState.messagesToExport.filter(message => message.id !== messageId)
+            : [...prevState.messagesToExport, newMessage]
+        };
+      },
+      () => {
+        this.props.updateExportData(
+          this.state.messagesToExport,
+          this.state.messagesToExport.length > 0
+        );
+      }
+    );
+  };
+
   render() {
     const {
       sortBy,
@@ -1130,7 +1188,7 @@ class TopicData extends Root {
             loading={loading}
             reduce={true}
             firstHeader={firstColumns}
-            isChecked={this.props.isAllTopicDataSelected}
+            isChecked={this.props.exportSome}
             columns={[
               {
                 id: 'checkboxes',
@@ -1138,12 +1196,16 @@ class TopicData extends Root {
                 colName: 'Download all',
                 type: 'checkbox',
                 expand: true,
-                cell: () => {
+                cell: row => {
                   return (
-                    <input type="checkbox" checked={this.props.isAllTopicDataSelected} disabled />
+                    <input
+                      type="checkbox"
+                      id={row.id}
+                      checked={this.state.checkboxes[row.id] || false}
+                      onChange={this._handleSingleCheckboxChange}
+                    />
                   );
-                },
-                readOnly: true
+                }
               },
               {
                 id: 'key',
