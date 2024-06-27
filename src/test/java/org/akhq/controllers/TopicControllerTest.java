@@ -16,7 +16,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class TopicControllerTest extends AbstractTest {
+public class TopicControllerTest extends AbstractTest {
     public static final String BASE_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/topic";
     public static final String DEFAULTS_CONFIGS_URL = "api/topic/defaults-configs";
     public static final String TOPIC_URL = BASE_URL + "/" + KafkaTestCluster.TOPIC_COMPACTED;
