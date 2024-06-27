@@ -117,20 +117,10 @@ public class TopicControllerTest extends AbstractTest {
     @Test
     @Order(1)
     void dataApi() {
-        ResultNextList<Record> result;
-        String after = TOPIC_URL + "/data";
-
-        int count = 0;
-        while (after != null) {
-            result = this.retrieveNextList(HttpRequest.GET(after), Record.class);
-            assertEquals(300, result.getSize());
-            if (result.getResults() != null) {
-                count = count + result.getResults().size();
-            }
-            after = result.getAfter();
-        }
-
-        assertEquals(153, count);
+        ResultNextList<Record> result = this.retrieveNextList(HttpRequest.GET(TOPIC_URL + "/data"), Record.class);
+        // 50 messages with the same key on each partition (1 remaining after compaction) : 3 messages
+        // 50 random messages on each partition : 150 messages
+        assertEquals(153, result.getSize());
     }
 
     @Test
