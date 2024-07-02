@@ -589,6 +589,7 @@ class TopicList extends Root {
             );
           }}
           actions={actions}
+          textHover={'Double-click to view details'}
         />
 
         {roles.TOPIC.includes('CREATE') && (

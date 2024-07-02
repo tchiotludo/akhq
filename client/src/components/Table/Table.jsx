@@ -15,6 +15,7 @@ import {
   faSort,
   faTrash
 } from '@fortawesome/free-solid-svg-icons';
+import { Tooltip } from '@mui/material';
 
 class Table extends Component {
   state = {
@@ -159,30 +160,54 @@ class Table extends Component {
       onDetails,
       handleExtraExpand,
       handleExtraCollapse,
-      reduce
+      reduce,
+      textHover
     } = this.props;
     const { extraExpanded } = this.state;
 
     let extraRowColCollapsed;
     let extraRowColExpanded;
     const items = [
-      <tr key={`tableRow${index}`} className={reduce ? 'reduce' : ''}>
-        {columns.map((column, colIndex) => {
-          let extraStyles = [];
-          if (noRowBackgroundChange) {
-            extraStyles.push({ backgroundColor: '#444' });
-          }
-          if (column.expand) {
-            extraStyles.push({ cursor: 'pointer' });
-          }
-          if (column.extraRow) {
-            extraRowColCollapsed = column.cell ? column.cell(row, column) : row[column.accessor];
-            extraRowColExpanded = column.extraRowContent
-              ? column.extraRowContent(row, column)
-              : row[column.accessor];
-            return null;
-          }
-          if (typeof column.cell === 'function') {
+      <Tooltip title={textHover} key={`tableRow${index}`}>
+        <tr key={`tableRow${index}`} className={reduce ? 'reduce' : ''}>
+          {columns.map((column, colIndex) => {
+            let extraStyles = [];
+            if (noRowBackgroundChange) {
+              extraStyles.push({ backgroundColor: '#444' });
+            }
+            if (column.expand) {
+              extraStyles.push({ cursor: 'pointer' });
+            }
+            if (column.extraRow) {
+              extraRowColCollapsed = column.cell ? column.cell(row, column) : row[column.accessor];
+              extraRowColExpanded = column.extraRowContent
+                ? column.extraRowContent(row, column)
+                : row[column.accessor];
+              return null;
+            }
+            if (typeof column.cell === 'function') {
+              return (
+                <td
+                  key={`tableCol${index}${colIndex}`}
+                  style={column.expand ? { cursor: 'pointer' } : {}}
+                  className={column.readOnly ? 'not-allowed' : ''}
+                  onDoubleClick={() => {
+                    if (
+                      actions &&
+                      actions.find(action => action === constants.TABLE_DETAILS) &&
+                      !column.expand
+                    ) {
+                      this.onDoubleClick(onDetails, row);
+                    }
+
+                    column.expand && this.handleExpand(row);
+                  }}
+                >
+                  {this.renderContent(column.cell(row, column))}
+                </td>
+              );
+            }
+
             return (
               <td
                 key={`tableCol${index}${colIndex}`}
@@ -203,31 +228,10 @@ class Table extends Component {
                 {this.renderContent(column.cell(row, column))}
               </td>
             );
-          }
-
-          return (
-            <td
-              key={`tableCol${index}${colIndex}`}
-              style={column.expand ? { cursor: 'pointer' } : {}}
-              className={column.readOnly ? 'not-allowed' : ''}
-              onDoubleClick={() => {
-                if (
-                  actions &&
-                  actions.find(action => action === constants.TABLE_DETAILS) &&
-                  !column.expand
-                ) {
-                  this.onDoubleClick(onDetails, row);
-                }
-
-                column.expand && this.handleExpand(row);
-              }}
-            >
-              {this.renderContent(row[column.accessor])}
-            </td>
-          );
-        })}
-        {actions && actions.length > 0 && this.renderActions(row)}
-      </tr>
+          })}
+          {actions && actions.length > 0 && this.renderActions(row)}
+        </tr>
+      </Tooltip>
     ];
     if (
       JSON.stringify(
@@ -598,6 +602,7 @@ Table.propTypes = {
   loading: PropTypes.bool,
   router: PropTypes.object,
   rowId: PropTypes.func,
+  textHover: PropTypes.string,
 
   updateData: PropTypes.func,
   extraRow: PropTypes.bool,
