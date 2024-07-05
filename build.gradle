@@ -157,7 +157,7 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.21'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.22'
     // api
 
     // client
