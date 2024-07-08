@@ -139,7 +139,7 @@ dependencies {
     implementation 'org.apache.avro:avro:1.11.3'
 
     // jackson-module-scala
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.17.1'
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.17.2'
 
     // protobuf
     implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.27.0'
