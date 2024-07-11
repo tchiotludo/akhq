@@ -65,6 +65,22 @@ spec:
             {{ toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
           env:
+            {{- /* check for user defined settings of the Micronaut JWT generator secret environment variable */}}
+            {{- $jwtSecretEnvExists := "" -}}
+            {{- range $env := .Values.extraEnv }}
+              {{- if eq $env.name "MICRONAUT_SECURITY_TOKEN_JWT_SIGNATURES_SECRET_GENERATOR_SECRET" }}
+            {{- $jwtSecretEnvExists = "yes" -}}
+              {{- end }}
+            {{- end }}
+            {{- /* only add auto generated JWT secret if no explicit user settings has been defined */}}
+            {{- if not $jwtSecretEnvExists }}
+            - name: MICRONAUT_SECURITY_TOKEN_JWT_SIGNATURES_SECRET_GENERATOR_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "akhq.fullname" . }}-secrets
+                  key: jwtSignatureGeneratorSecret
+                  optional: false
+            {{- end }}
             {{- if .Values.extraEnv }}{{ toYaml .Values.extraEnv | trim | nindent 12 }}{{ end }}
             {{- if or (.Values.existingSecrets) (.Values.secrets) }}
             - name: MICRONAUT_ENVIRONMENTS
