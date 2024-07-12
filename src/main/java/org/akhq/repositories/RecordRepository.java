@@ -620,7 +620,7 @@ public class RecordRepository extends AbstractRepository {
         if (key.isPresent()) {
             if (keySchema.isPresent() && StringUtils.isNotEmpty(keySchema.get())) {
                 keyAsBytes = getBytesBySchemaRegistry(clusterId, key.get(), keySchema.get());
-            } else { // TODO test
+            } else {
                 keyAsBytes = getBytesByAvroSerializer(clusterId, topic, key.get(), true);
             }
         } else {
