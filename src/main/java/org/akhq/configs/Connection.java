@@ -62,7 +62,7 @@ public class Connection extends AbstractProperties {
     }
 
     @Getter
-    @ConfigurationProperties("serialization") // TODO use other key
+    @ConfigurationProperties("serialization")
     public static class Serialization {
         AvroSerializationTopicsMapping avroRaw;
 
