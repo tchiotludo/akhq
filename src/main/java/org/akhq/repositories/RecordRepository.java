@@ -622,7 +622,7 @@ public class RecordRepository extends AbstractRepository {
             if (keySchema.isPresent() && StringUtils.isNotEmpty(keySchema.get())) {
                 keyAsBytes = getBytesBySchemaRegistry(clusterId, key.get(), keySchema.get());
             } else { // TODO test
-                keyAsBytes = getBytesByAvroSerializer(clusterId, topic, key.get());
+                keyAsBytes = getBytesByAvroSerializer(clusterId, topic, key.get(), true);
             }
         } else {
             try {
@@ -637,7 +637,7 @@ public class RecordRepository extends AbstractRepository {
         if (value.isPresent() && valueSchema.isPresent() && StringUtils.isNotEmpty(valueSchema.get())) {
             valueAsBytes = getBytesBySchemaRegistry(clusterId, value.get(), valueSchema.get());
         } else if (value.isPresent()) { // TODO test
-            valueAsBytes = getBytesByAvroSerializer(clusterId, topic, value.get());
+            valueAsBytes = getBytesByAvroSerializer(clusterId, topic, value.get(), false);
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
@@ -649,7 +649,7 @@ public class RecordRepository extends AbstractRepository {
         return serializer.serialize(data);
     }
 
-    private byte[] getBytesByAvroSerializer(String clusterId, String topic, String data) {
+    private byte[] getBytesByAvroSerializer(String clusterId, String topic, String data, boolean isKey) {
         JsonToAvroSerializer jsonToAvroSerializer = customSerializerRepository.getJsonToAvroSerializer(clusterId);
 
         if (jsonToAvroSerializer == null) {
@@ -657,7 +657,7 @@ public class RecordRepository extends AbstractRepository {
         }
 
         try {
-            return jsonToAvroSerializer.serialize(topic, data, false);
+            return jsonToAvroSerializer.serialize(topic, data, isKey);
         } catch (Exception exception) {
             return data.isEmpty() ? null : data.getBytes();
         }
