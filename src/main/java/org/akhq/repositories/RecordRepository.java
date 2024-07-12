@@ -620,15 +620,13 @@ public class RecordRepository extends AbstractRepository {
 
         if (key.isPresent()) {
             if (keySchema.isPresent() && StringUtils.isNotEmpty(keySchema.get())) {
-                Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, keySchema.get());
-                SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, schema.getId());
-                keyAsBytes = keySerializer.serialize(key.get());
-            } else { // TODO same for key + test
-                keyAsBytes = key.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
+                keyAsBytes = getBytesBySchemaRegistry(clusterId, key.get(), keySchema.get());
+            } else { // TODO test
+                keyAsBytes = getBytesByAvroSerializer(clusterId, topic, key.get());
             }
         } else {
             try {
-                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value.isEmpty() ? null : value.get()))) {
+                if (Topic.isCompacted(configRepository.findByTopic(clusterId, value.orElse(null)))) {
                     throw new IllegalArgumentException("Key missing for produce onto compacted topic");
                 }
             } catch (ExecutionException ex) {
@@ -637,26 +635,32 @@ public class RecordRepository extends AbstractRepository {
         }
 
         if (value.isPresent() && valueSchema.isPresent() && StringUtils.isNotEmpty(valueSchema.get())) {
-            Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, valueSchema.get());
-            SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, schema.getId());
-            valueAsBytes = valueSerializer.serialize(value.get());
+            valueAsBytes = getBytesBySchemaRegistry(clusterId, value.get(), valueSchema.get());
         } else if (value.isPresent()) { // TODO test
-            JsonToAvroSerializer jsonToAvroSerializer = customSerializerRepository.getJsonToAvroSerializer(clusterId);
-            if (jsonToAvroSerializer != null) {
-                try {
-                    byte[] buffer = jsonToAvroSerializer.serialize(topic, value.get(), false);
-                    if (buffer != null) {
-                        valueAsBytes = buffer;
-                    }
-                } catch (Exception exception) {
-                    valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
-                }
-            } else {
-                valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
-            }
+            valueAsBytes = getBytesByAvroSerializer(clusterId, topic, value.get());
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
+    }
+
+    private byte[] getBytesBySchemaRegistry(String clusterId, String data, String subject) throws IOException, RestClientException {
+        Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, subject);
+        SchemaSerializer serializer = serializerFactory.createSerializer(clusterId, schema.getId());
+        return serializer.serialize(data);
+    }
+
+    private byte[] getBytesByAvroSerializer(String clusterId, String topic, String data) {
+        JsonToAvroSerializer jsonToAvroSerializer = customSerializerRepository.getJsonToAvroSerializer(clusterId);
+
+        if (jsonToAvroSerializer == null) {
+            return data.isEmpty() ? null : data.getBytes();
+        }
+
+        try {
+            return jsonToAvroSerializer.serialize(topic, data, false);
+        } catch (Exception exception) {
+            return data.isEmpty() ? null : data.getBytes();
+        }
     }
 
     public RecordMetadata delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
