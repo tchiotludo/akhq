@@ -25,6 +25,7 @@ import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
+import org.akhq.utils.JsonToAvroSerializer;
 import org.akhq.utils.MaskingUtils;
 import org.apache.kafka.clients.admin.DeletedRecords;
 import org.apache.kafka.clients.admin.RecordsToDelete;
@@ -74,6 +75,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Inject
     private CustomDeserializerRepository customDeserializerRepository;
+
+    @Inject
+    private CustomSerializerRepository customSerializerRepository;
 
     @Inject
     private AvroWireFormatConverter avroWireFormatConverter;
@@ -612,14 +616,14 @@ public class RecordRepository extends AbstractRepository {
         Optional<String> valueSchema
     ) throws ExecutionException, InterruptedException, RestClientException, IOException {
         byte[] keyAsBytes = null;
-        byte[] valueAsBytes;
+        byte[] valueAsBytes = null;
 
         if (key.isPresent()) {
             if (keySchema.isPresent() && StringUtils.isNotEmpty(keySchema.get())) {
                 Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, keySchema.get());
                 SchemaSerializer keySerializer = serializerFactory.createSerializer(clusterId, schema.getId());
                 keyAsBytes = keySerializer.serialize(key.get());
-            } else {
+            } else { // TODO same for key + test
                 keyAsBytes = key.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
             }
         } else {
@@ -636,8 +640,20 @@ public class RecordRepository extends AbstractRepository {
             Schema schema = schemaRegistryRepository.getLatestVersion(clusterId, valueSchema.get());
             SchemaSerializer valueSerializer = serializerFactory.createSerializer(clusterId, schema.getId());
             valueAsBytes = valueSerializer.serialize(value.get());
-        } else {
-            valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
+        } else if (value.isPresent()) { // TODO test
+            JsonToAvroSerializer jsonToAvroSerializer = customSerializerRepository.getJsonToAvroSerializer(clusterId);
+            if (jsonToAvroSerializer != null) {
+                try {
+                    byte[] buffer = jsonToAvroSerializer.serialize(topic, value.get(), false);
+                    if (buffer != null) {
+                        valueAsBytes = buffer;
+                    }
+                } catch (Exception exception) {
+                    valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
+                }
+            } else {
+                valueAsBytes = value.filter(Predicate.not(String::isEmpty)).map(String::getBytes).orElse(null);
+            }
         }
 
         return produce(clusterId, topic, valueAsBytes, headers, keyAsBytes, partition, timestamp);
