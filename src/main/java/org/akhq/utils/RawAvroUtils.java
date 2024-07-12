@@ -63,7 +63,7 @@ public class RawAvroUtils {
     Schema getSchema(String topic, boolean isKey) {
         AvroTopicsMapping matchingConfig = findMatchingConfig(topic);
         if (matchingConfig == null) {
-            log.debug("Avro serialization config is not found for topic [{}]", topic);
+            log.debug("Avro raw config is not found for topic [{}]", topic);
             return null;
         }
 

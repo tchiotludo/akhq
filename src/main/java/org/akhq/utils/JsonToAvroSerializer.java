@@ -1,20 +1,16 @@
 package org.akhq.utils;
 
 import io.micronaut.core.serialize.exceptions.SerializationException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.Connection;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.Encoder;
-import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.io.*;
 
-// TODO test
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 /**
  * Class for serialization of messages in Json to Avro raw data binary format using topics mapping config.
  */

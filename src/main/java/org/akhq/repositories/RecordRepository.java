@@ -45,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
@@ -636,7 +635,7 @@ public class RecordRepository extends AbstractRepository {
 
         if (value.isPresent() && valueSchema.isPresent() && StringUtils.isNotEmpty(valueSchema.get())) {
             valueAsBytes = getBytesBySchemaRegistry(clusterId, value.get(), valueSchema.get());
-        } else if (value.isPresent()) { // TODO test
+        } else if (value.isPresent()) {
             valueAsBytes = getBytesByAvroSerializer(clusterId, topic, value.get(), false);
         }
 
