@@ -164,7 +164,7 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.1.1'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.2.0'
 
     // AWS Glue serde
     implementation ("software.amazon.glue:schema-registry-serde:1.1.20")
