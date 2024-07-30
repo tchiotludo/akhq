@@ -1,8 +1,6 @@
 package org.akhq.repositories;
 
 import io.micronaut.context.ApplicationContext;
-import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.utils.SecurityService;
 import org.akhq.models.ConsumerGroup;
 import org.akhq.models.Partition;
 import org.akhq.models.audit.ConsumerGroupAuditEvent;
@@ -101,6 +99,30 @@ public class ConsumerGroupRepository extends AbstractRepository {
             ))
             .sorted(Comparator.comparing(ConsumerGroup::getId))
             .collect(Collectors.toList());
+    }
+
+    public List<ConsumerGroup> findActiveByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {
+        List<String> groupName = this.all(clusterId, Optional.empty(), filters);
+
+        List<String> filteredConsumerGroups = groupName.stream()
+            .filter(t -> isMatchRegex(filters, t))
+            .collect(Collectors.toList());
+
+        List<String> consumerGroups =
+            kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups)
+                .values().stream()
+                .filter(description ->
+                    description.members()
+                        .stream()
+                        .flatMap(member -> member.assignment().topicPartitions().stream().map(TopicPartition::topic))
+                        .distinct()
+                        .anyMatch(t -> Objects.equals(t, topic))
+                )
+                .map(ConsumerGroupDescription::groupId)
+                .toList();
+
+
+        return this.findByName(clusterId, consumerGroups, filters);
     }
 
     public List<ConsumerGroup> findByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {

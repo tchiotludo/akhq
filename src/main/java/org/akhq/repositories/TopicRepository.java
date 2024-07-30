@@ -48,6 +48,11 @@ public class TopicRepository extends AbstractRepository {
         HIDE_STREAM,
     }
 
+    public enum TopicConsumerGroupsListView {
+        ALL,
+        HIDE_EMPTY
+    }
+
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
         List<String> all = all(clusterId, view, search, filters);
 

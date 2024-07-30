@@ -275,11 +275,15 @@ public class TopicController extends AbstractController {
     @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.READ)
     @Get("api/{cluster}/topic/{topicName}/groups")
     @Operation(tags = {"topic"}, summary = "List all consumer groups from a topic")
-    public List<ConsumerGroup> groups(String cluster, String topicName) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroup> groups(String cluster, String topicName,
+                                      Optional<TopicRepository.TopicConsumerGroupsListView> consumerGroupsListView)
+        throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
-        return this.consumerGroupRepository.findByTopic(cluster, topicName,
-            buildUserBasedResourceFilters(cluster));
+        return (consumerGroupsListView.isEmpty()
+            || TopicRepository.TopicConsumerGroupsListView.HIDE_EMPTY.equals(consumerGroupsListView.get()))
+            ? this.consumerGroupRepository.findActiveByTopic(cluster, topicName, buildUserBasedResourceFilters(cluster))
+            : this.consumerGroupRepository.findByTopic(cluster, topicName, buildUserBasedResourceFilters(cluster));
     }
 
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ_CONFIG)
