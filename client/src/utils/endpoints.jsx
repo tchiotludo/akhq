@@ -94,8 +94,8 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/partitions`;
 };
 
-export const uriTopicsGroups = (clusterId, topicId) => {
-  return `${apiUrl}/${clusterId}/topic/${topicId}/groups`;
+export const uriTopicsGroups = (clusterId, topicId, consumerGroupsListView) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/groups?consumerGroupsListView=${consumerGroupsListView}`;
 };
 export const uriTopicsLogs = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/logs`;
