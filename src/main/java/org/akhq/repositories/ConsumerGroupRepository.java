@@ -64,12 +64,29 @@ public class ConsumerGroupRepository extends AbstractRepository {
         return consumerGroup.orElseThrow(() -> new NoSuchElementException("Consumer Group '" + name + "' doesn't exist"));
     }
 
+    /**
+     * Find all the consumer groups matching the list of names
+     * Execution time can be long if the list of groups is big. This method does several calls to the Kafka cluster
+     * (describeConsumerGroups, listConsumerGroupOffsets, describeTopics) to build ConsumerGroup with:
+     * - consumer groups description containing the active members
+     * - consumer groups offsets (allowing to retrieve the topics for empty consumer groups)
+     * - topics partition offsets (allowing to compute the lag)
+     *
+     * @param clusterId cluster id
+     * @param groups list of consumer group names
+     * @param filters security filters applied to the user
+     * @return list of consumer groups
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     public List<ConsumerGroup> findByName(String clusterId, List<String> groups, List<String> filters) throws ExecutionException, InterruptedException {
         List<String> filteredConsumerGroups = groups.stream()
             .filter(t -> isMatchRegex(filters, t))
             .collect(Collectors.toList());
+        // Get the consumer group description of all the consumer groups the user has access to
         Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups);
 
+        // Get the consumer group offsets to get also the topics on which the groups are affected
         Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
             .map(group -> {
                 try {
@@ -80,14 +97,18 @@ public class ConsumerGroupRepository extends AbstractRepository {
             })
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        // Extract the topics list
         List<String> topics = groupGroupsOffsets.values().stream()
             .map(Map::keySet)
             .flatMap(Set::stream)
             .map(TopicPartition::topic)
             .distinct()
             .collect(Collectors.toList());
+
+        // Get the topics offsets to be able to extract later the offsets of empty consumer groups
         Map<String, List<Partition.Offsets>> topicTopicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
+        // Build the consumer groups with all the information collected before
         return consumerDescriptions.values().stream()
             .map(consumerGroupDescription -> new ConsumerGroup(
                 consumerGroupDescription,
@@ -101,15 +122,23 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public List<ConsumerGroup> findActiveByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {
-        List<String> groupName = this.all(clusterId, Optional.empty(), filters);
+    /**
+     * Find all the active consumer groups for a topic
+     * Use the ConsumerGroupDescription to find the active topics from the consumer group description members.
+     *
+     * @param clusterId cluster id
+     * @param topic topic name
+     * @param filters security filters applied to the user
+     * @return list of consumer groups
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    public List<ConsumerGroup> findActiveByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException{
+        List<String> groupsName = this.all(clusterId, Optional.empty(), filters);
 
-        List<String> filteredConsumerGroups = groupName.stream()
-            .filter(t -> isMatchRegex(filters, t))
-            .collect(Collectors.toList());
-
+        // Keep only the consumer groups that have the topic in their active topics
         List<String> consumerGroups =
-            kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups)
+            kafkaWrapper.describeConsumerGroups(clusterId, groupsName)
                 .values().stream()
                 .filter(description ->
                     description.members()
@@ -125,20 +154,25 @@ public class ConsumerGroupRepository extends AbstractRepository {
         return this.findByName(clusterId, consumerGroups, filters);
     }
 
+    /**
+     * Find all the consumer groups for a topic, empty or not.
+     * Warning: this method loops over all the consumer groups in the cluster because it searches for the empty consumer groups too.
+     * Consider using findActiveByTopic if searching for the active consumer groups is enough because. The execution time will be faster
+     *
+     * @param clusterId cluster id
+     * @param topic topic name
+     * @param filters security filters applied to the user
+     * @return list of consumer groups
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     public List<ConsumerGroup> findByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {
         List<String> groupName = this.all(clusterId, Optional.empty(), filters);
         List<ConsumerGroup> list = this.findByName(clusterId, groupName, filters);
 
-        return list
-            .stream()
-            .filter(consumerGroups ->
-                consumerGroups.getActiveTopics()
-                    .stream()
-                    .anyMatch(s -> Objects.equals(s, topic)) ||
-                    consumerGroups.getTopics()
-                        .stream()
-                        .anyMatch(s -> Objects.equals(s, topic))
-            )
+        return list.stream()
+            .filter(consumerGroup -> consumerGroup.getTopics().stream()
+                .anyMatch(s -> Objects.equals(s, topic)))
             .collect(Collectors.toList());
     }
 

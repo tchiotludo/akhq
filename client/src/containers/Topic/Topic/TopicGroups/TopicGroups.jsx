@@ -1,11 +1,12 @@
 import React from 'react';
 import Table from '../../../../components/Table';
 import { uriTopicsGroups } from '../../../../utils/endpoints';
-import constants from '../../../../utils/constants';
+import constants, {SETTINGS_VALUES} from '../../../../utils/constants';
 import Root from '../../../../components/Root';
 import { Link } from 'react-router-dom';
 import { withRouter } from '../../../../utils/withRouter.jsx';
 import SearchBar from "../../../../components/SearchBar/index.jsx";
+import {getClusterUIOptions} from "../../../../utils/functions.jsx";
 
 class TopicGroups extends Root {
   state = {
@@ -15,18 +16,31 @@ class TopicGroups extends Root {
     selectedCluster: this.props.clusterId,
     deleteMessage: '',
     loading: true,
-    consumerGroupsListView: 'HIDE_EMPTY'
+    groupsListView: 'ALL',
   };
 
   componentDidMount() {
-    this.getConsumerGroup();
+    this._initializeVars(() => this.getConsumerGroup());
+  }
+
+  async _initializeVars(callBackFunction) {
+    const { clusterId } = this.props.params;
+    const uiOptions = await getClusterUIOptions(clusterId);
+    const query = new URLSearchParams(this.props.location.search);
+
+    this.setState({groupsListView: query.get('groupsListView')
+        ? query.get('groupsListView')
+        : uiOptions && uiOptions.topic && uiOptions.topic.groupsDefaultView
+            ? uiOptions.topic.groupsDefaultView
+            : SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL
+    }, callBackFunction);
   }
 
   async getConsumerGroup() {
-    const { selectedCluster, topicId, consumerGroupsListView} = this.state;
+    const { selectedCluster, topicId, groupsListView} = this.state;
     this.setState({ loading: true });
 
-    let data = await this.getApi(uriTopicsGroups(selectedCluster, topicId, consumerGroupsListView));
+    let data = await this.getApi(uriTopicsGroups(selectedCluster, topicId, groupsListView));
     if (data && data.data) {
       this.handleGroups(data.data);
     } else {
@@ -44,7 +58,7 @@ class TopicGroups extends Root {
 
     this.props.router.navigate({
       pathname: `/ui/${this.state.selectedCluster}/topic/${this.state.topicId}/groups`,
-      search: `consumerGroupsListView=${this.state.consumerGroupsListView}`
+      search: `groupsListView=${this.state.groupsListView}`
     });
   }
 
@@ -99,7 +113,7 @@ class TopicGroups extends Root {
   }
 
   render() {
-    const { selectedCluster, loading, consumerGroupsListView } = this.state;
+    const { selectedCluster, loading, groupsListView } = this.state;
 
     return (
         <div>
@@ -108,10 +122,10 @@ class TopicGroups extends Root {
                 showSearch={false}
                 showPagination={true}
                 showTopicListView={false}
-                showConsumerGroupsListView={true}
-                consumerGroupsListView={consumerGroupsListView}
-                onConsumerGroupsListViewChange={value => {
-                  this.setState({consumerGroupsListView: value});
+                showGroupsListView={true}
+                groupsListView={groupsListView}
+                ongroupsListViewChange={value => {
+                  this.setState({groupsListView: value});
                 }}
                 doSubmit={this.handleSearch}
             />
