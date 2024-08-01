@@ -17,7 +17,8 @@ class Settings extends Form {
       topicDataDateTimeFormat: '',
       skipConsumerGroups: false,
       skipLastRecord: false,
-      showAllConsumerGroups: true
+      showAllConsumerGroups: true,
+      groupsDefaultView: '',
     },
     errors: {}
   };
@@ -33,6 +34,10 @@ class Settings extends Form {
   topicDataDateTimeFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT).map(
     ([value]) => ({ _id: value, name: value })
   );
+  groupsDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW).map(([value]) => ({
+    _id: value,
+    name: value
+  }));
 
   schema = {
     topicDefaultView: Joi.string().optional(),
@@ -40,7 +45,8 @@ class Settings extends Form {
     topicDataDateTimeFormat: Joi.string().required(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
-    showAllConsumerGroups: Joi.boolean().optional()
+    showAllConsumerGroups: Joi.boolean().optional(),
+    groupsDefaultView: Joi.string().optional(),
   };
 
   componentDidMount() {
@@ -72,7 +78,11 @@ class Settings extends Form {
             showAllConsumerGroups:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.showAllConsumerGroups
-                : false
+                : false,
+            groupsDefaultView:
+              this.state.uiOptions && this.state.uiOptions.topic
+                ? this.state.uiOptions.topic.groupsDefaultView
+                : '',
           }
         });
       });
@@ -102,7 +112,8 @@ class Settings extends Form {
         defaultView: formData.topicDefaultView,
         skipConsumerGroups: formData.skipConsumerGroups,
         skipLastRecord: formData.skipLastRecord,
-        showAllConsumerGroups: formData.showAllConsumerGroups
+        showAllConsumerGroups: formData.showAllConsumerGroups,
+        groupsDefaultView: formData.groupsDefaultView,
       },
       topicData: {
         sort: formData.topicDataSort,
@@ -178,6 +189,20 @@ class Settings extends Form {
                 />
               </span>
             </div>
+            {this.renderSelect(
+                'groupsDefaultView',
+                'Consumer Groups Default View',
+                this.groupsDefaultView,
+                ({ currentTarget: input }) => {
+                  const { formData } = this.state;
+                  formData.groupsDefaultView = input.value;
+                  this.setState({ formData });
+                },
+                'col-sm-10',
+                'select-wrapper settings-wrapper',
+                true,
+                { className: 'form-control' }
+            )}
           </fieldset>
 
           <fieldset id="topicData" key="topicData">

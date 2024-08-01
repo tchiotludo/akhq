@@ -77,7 +77,8 @@ public class Connection extends AbstractProperties {
             StringUtils.isNotEmpty(this.uiOptions.topic.getDefaultView()) ? this.uiOptions.topic.getDefaultView() : defaultOptions.getTopic().getDefaultView(),
             (this.uiOptions.topic.getSkipConsumerGroups() != null) ? this.uiOptions.topic.getSkipConsumerGroups() : defaultOptions.getTopic().getSkipConsumerGroups(),
             (this.uiOptions.topic.getSkipLastRecord() != null) ? this.uiOptions.topic.getSkipLastRecord() : defaultOptions.getTopic().getSkipLastRecord(),
-            (this.uiOptions.topic.getShowAllConsumerGroups() != null) ? this.uiOptions.topic.getShowAllConsumerGroups() : defaultOptions.getTopic().getShowAllConsumerGroups()
+            (this.uiOptions.topic.getShowAllConsumerGroups() != null) ? this.uiOptions.topic.getShowAllConsumerGroups() : defaultOptions.getTopic().getShowAllConsumerGroups(),
+            StringUtils.isNotEmpty(this.uiOptions.topic.getGroupsDefaultView()) ? this.uiOptions.topic.getGroupsDefaultView() : defaultOptions.getTopic().getGroupsDefaultView()
         );
 
         options.topicData = new UiOptionsTopicData(

@@ -13,7 +13,7 @@ class SearchBar extends Form {
     showSearch: PropTypes.bool,
     showFilters: PropTypes.string,
     showKeepSearch: PropTypes.bool,
-    showConsumerGroupsListView: PropTypes.bool
+    showGroupsListView: PropTypes.bool
   };
   state = {
     formData: {},
@@ -36,13 +36,13 @@ class SearchBar extends Form {
         name: 'Hide stream topics'
       }
     ],
-    consumerGroupsListViewOptions: [
+    groupsListViewOptions: [
       {
-        _id: "ALL",
+        _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL,
         name: "Show empty consumer groups"
       },
       {
-        _id: "HIDE_EMPTY",
+        _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.HIDE_EMPTY,
         name: "Hide empty consumer groups"
       }]
   };
@@ -54,20 +54,20 @@ class SearchBar extends Form {
   }
 
   componentDidUpdate(prevProps) {
-    const { search, topicListView, keepSearch, consumerGroupsListView } = this.props;
+    const { search, topicListView, keepSearch, groupsListView } = this.props;
 
     if (
       search !== prevProps.search ||
       topicListView !== prevProps.topicListView ||
       keepSearch !== prevProps.keepSearch ||
-        consumerGroupsListView !== prevProps.consumerGroupsListView
+        groupsListView !== prevProps.groupsListView
     ) {
       this.setupProps();
     }
   }
 
   setupProps() {
-    const { showSearch, showTopicListView, showKeepSearch, showConsumerGroupsListView } = this.props;
+    const { showSearch, showTopicListView, showKeepSearch, showGroupsListView } = this.props;
     const { formData } = this.state;
     if (showSearch) {
       const { search } = this.props;
@@ -83,10 +83,10 @@ class SearchBar extends Form {
       formData['keepSearch'] = this.props.keepSearch;
       this.schema['keepSearch'] = Joi.boolean();
     }
-    if (showConsumerGroupsListView) {
-      const { consumerGroupsListView } = this.props;
-      formData['consumerGroupsListView'] = consumerGroupsListView;
-      this.schema['consumerGroupsListView'] = Joi.string().required();
+    if (showGroupsListView) {
+      const { groupsListView } = this.props;
+      formData['groupsListView'] = groupsListView;
+      this.schema['groupsListView'] = Joi.string().required();
     }
     return formData;
   }
@@ -104,7 +104,7 @@ class SearchBar extends Form {
   }
 
   doSubmit = () => {
-    const { pagination, search, topicListView, keepSearch, consumerGroupsListView } = this.state.formData;
+    const { pagination, search, topicListView, keepSearch, groupsListView } = this.state.formData;
     const data = {
       pagination: pagination,
       searchData: {
@@ -112,7 +112,7 @@ class SearchBar extends Form {
         topicListView: topicListView
       },
       keepSearch: keepSearch,
-      consumerGroupsListView: consumerGroupsListView
+      groupsListView: groupsListView
     };
     this.props.doSubmit(data);
   };
@@ -126,8 +126,8 @@ class SearchBar extends Form {
   }
 
   render() {
-    const { showSearch, showTopicListView, showKeepSearch, showConsumerGroupsListView } = this.props;
-    const { topicListViewOptions, consumerGroupsListViewOptions,
+    const { showSearch, showTopicListView, showKeepSearch, showGroupsListView } = this.props;
+    const { topicListViewOptions, groupsListViewOptions,
       showFilters, formData } = this.state;
 
     return (
@@ -173,16 +173,16 @@ class SearchBar extends Form {
                 'select-wrapper',
                 false
               )}
-            {showConsumerGroupsListView && (
+            {showGroupsListView && (
                 this.renderSelect(
-                    'consumerGroupsListView',
+                    'groupsListView',
                     '',
-                    consumerGroupsListViewOptions,
+                    groupsListViewOptions,
                     ({ currentTarget: input }) => {
                       let { formData } = this.state;
-                      formData.consumerGroupsListView = input.value;
+                      formData.groupsListView = input.value;
                       this.setState();
-                      this.props.onConsumerGroupsListViewChange(input.value);
+                      this.props.ongroupsListViewChange(input.value);
                     },
                     '',
                     'select-wrapper',

@@ -109,6 +109,7 @@ akhq:
           skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
           skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
           show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
+          groups-default-view: ALL  # default consumer groups list view (ALL, HIDE_EMPTY). Overrides default
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
           date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
@@ -181,6 +182,7 @@ akhq:
       skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
       skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
       show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
+      consumer-groups-default-view: ALL  # default consumer groups list view (ALL, HIDE_EMPTY). Overrides default
     topic-data:
       sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
 
