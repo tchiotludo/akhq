@@ -56,12 +56,8 @@ class SearchBar extends Form {
   componentDidUpdate(prevProps) {
     const { search, topicListView, keepSearch, groupsListView } = this.props;
 
-    if (
-      search !== prevProps.search ||
-      topicListView !== prevProps.topicListView ||
-      keepSearch !== prevProps.keepSearch ||
-        groupsListView !== prevProps.groupsListView
-    ) {
+    if (search !== prevProps.search || topicListView !== prevProps.topicListView
+        || keepSearch !== prevProps.keepSearch || groupsListView !== prevProps.groupsListView) {
       this.setupProps();
     }
   }
@@ -127,8 +123,7 @@ class SearchBar extends Form {
 
   render() {
     const { showSearch, showTopicListView, showKeepSearch, showGroupsListView } = this.props;
-    const { topicListViewOptions, groupsListViewOptions,
-      showFilters, formData } = this.state;
+    const { topicListViewOptions, groupsListViewOptions, showFilters, formData } = this.state;
 
     return (
       <React.Fragment>
