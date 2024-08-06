@@ -18,6 +18,7 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.AccessControlListRepository;
 import org.akhq.repositories.ConsumerGroupRepository;
 import org.akhq.repositories.RecordRepository;
+import org.akhq.repositories.TopicRepository;
 import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultPagedList;
@@ -103,19 +104,20 @@ public class GroupController extends AbstractController {
 
     @Get("topics")
     @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group for list of topics")
-    public List filterByTopics(String cluster, Optional<List<String>> topics) {
+    public List filterByTopics(String cluster, Optional<List<String>> topics,
+                               Optional<TopicRepository.TopicGroupsListView> groupsListView) {
         checkIfClusterAllowed(cluster);
 
-        return topics.map(
-                topicsName -> {
-                    try {
-                        return this.consumerGroupRepository.findByTopics(cluster, topicsName,
-                            buildUserBasedResourceFilters(cluster));
-                    } catch (ExecutionException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        ).orElse(Collections.EMPTY_LIST);
+        return topics.map(topicsName -> {
+            if (groupsListView.isPresent()
+                && TopicRepository.TopicGroupsListView.HIDE_EMPTY.equals(groupsListView.get())) {
+                return this.consumerGroupRepository.findActiveByTopics(cluster, topicsName,
+                    buildUserBasedResourceFilters(cluster));
+            } else {
+                return this.consumerGroupRepository.findByTopics(cluster, topicsName,
+                    buildUserBasedResourceFilters(cluster));
+            }
+        }).orElse(Collections.emptyList());
     }
 
     @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.UPDATE_OFFSET)

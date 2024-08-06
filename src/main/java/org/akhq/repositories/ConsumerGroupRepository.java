@@ -42,18 +42,16 @@ public class ConsumerGroupRepository extends AbstractRepository {
         return PagedList.of(all(clusterId, search, filters), pagination, groupsList -> this.findByName(clusterId, groupsList, filters));
     }
 
-    public List<String> all(String clusterId, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
-        ArrayList<String> list = new ArrayList<>();
-
-        for (ConsumerGroupListing item : kafkaWrapper.listConsumerGroups(clusterId)) {
-            if (isSearchMatch(search, item.groupId()) && isMatchRegex(filters, item.groupId())) {
-                list.add(item.groupId());
-            }
+    public List<String> all(String clusterId, Optional<String> search, List<String> filters) {
+        try {
+            return kafkaWrapper.listConsumerGroups(clusterId).stream()
+                .map(ConsumerGroupListing::groupId)
+                .filter(groupId -> isSearchMatch(search, groupId) && isMatchRegex(filters, groupId))
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
-
-        list.sort(Comparator.comparing(String::toLowerCase));
-
-        return list;
     }
 
     public ConsumerGroup findByName(String clusterId, String name, List<String> filters) throws ExecutionException, InterruptedException {
@@ -76,82 +74,87 @@ public class ConsumerGroupRepository extends AbstractRepository {
      * @param groups list of consumer group names
      * @param filters security filters applied to the user
      * @return list of consumer groups
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
-    public List<ConsumerGroup> findByName(String clusterId, List<String> groups, List<String> filters) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroup> findByName(String clusterId, List<String> groups, List<String> filters) {
         List<String> filteredConsumerGroups = groups.stream()
             .filter(t -> isMatchRegex(filters, t))
             .collect(Collectors.toList());
-        // Get the consumer group description of all the consumer groups the user has access to
-        Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups);
 
-        // Get the consumer group offsets to get also the topics on which the groups are affected
-        Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
-            .map(group -> {
-                try {
-                    return new AbstractMap.SimpleEntry<>(group, kafkaWrapper.consumerGroupsOffsets(clusterId, group));
-                } catch (ExecutionException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        try {
+            // Get the consumer group description of all the consumer groups the user has access to
+            Map<String, ConsumerGroupDescription> consumerDescriptions = kafkaWrapper.describeConsumerGroups(clusterId, filteredConsumerGroups);
 
-        // Extract the topics list
-        List<String> topics = groupGroupsOffsets.values().stream()
-            .map(Map::keySet)
-            .flatMap(Set::stream)
-            .map(TopicPartition::topic)
-            .distinct()
-            .collect(Collectors.toList());
+            // Get the consumer group offsets to get also the topics on which the groups are affected
+            Map<String, Map<TopicPartition, OffsetAndMetadata>> groupGroupsOffsets = consumerDescriptions.keySet().stream()
+                .map(group -> {
+                    try {
+                        return new AbstractMap.SimpleEntry<>(group, kafkaWrapper.consumerGroupsOffsets(clusterId, group));
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        // Get the topics offsets to be able to extract later the offsets of empty consumer groups
-        Map<String, List<Partition.Offsets>> topicTopicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
+            // Extract the topics list
+            List<String> topics = groupGroupsOffsets.values().stream()
+                .map(Map::keySet)
+                .flatMap(Set::stream)
+                .map(TopicPartition::topic)
+                .distinct()
+                .collect(Collectors.toList());
 
-        // Build the consumer groups with all the information collected before
-        return consumerDescriptions.values().stream()
-            .map(consumerGroupDescription -> new ConsumerGroup(
-                consumerGroupDescription,
-                groupGroupsOffsets.get(consumerGroupDescription.groupId()),
-                groupGroupsOffsets.get(consumerGroupDescription.groupId()).keySet().stream()
-                    .map(TopicPartition::topic)
-                    .distinct()
-                    .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
-            ))
-            .sorted(Comparator.comparing(ConsumerGroup::getId))
-            .collect(Collectors.toList());
+            // Get the topics offsets to be able to extract later the offsets of empty consumer groups
+            Map<String, List<Partition.Offsets>> topicTopicsOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
+
+            // Build the consumer groups with all the information collected before
+            return consumerDescriptions.values().stream()
+                .map(consumerGroupDescription -> new ConsumerGroup(
+                    consumerGroupDescription,
+                    groupGroupsOffsets.get(consumerGroupDescription.groupId()),
+                    groupGroupsOffsets.get(consumerGroupDescription.groupId()).keySet().stream()
+                        .map(TopicPartition::topic)
+                        .distinct()
+                        .collect(Collectors.toMap(Function.identity(), topicTopicsOffsets::get))
+                ))
+                .sorted(Comparator.comparing(ConsumerGroup::getId))
+                .collect(Collectors.toList());
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Find all the active consumer groups for a topic
+     * Find all the active consumer groups for a list of topics
      * Use the ConsumerGroupDescription to find the active topics from the consumer group description members.
      *
      * @param clusterId cluster id
-     * @param topic topic name
+     * @param topics topics name
      * @param filters security filters applied to the user
      * @return list of consumer groups
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
-    public List<ConsumerGroup> findActiveByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException{
+    public List<ConsumerGroup> findActiveByTopics(String clusterId, List<String> topics, List<String> filters) {
         List<String> groupsName = this.all(clusterId, Optional.empty(), filters);
 
-        // Keep only the consumer groups that have the topic in their active topics
+        // Keep only the consumer groups that have the topic(s) in their active topics
         List<String> consumerGroups =
             kafkaWrapper.describeConsumerGroups(clusterId, groupsName)
                 .values().stream()
                 .filter(description ->
                     description.members()
                         .stream()
-                        .flatMap(member -> member.assignment().topicPartitions().stream().map(TopicPartition::topic))
+                        .flatMap(member -> member.assignment().topicPartitions()
+                            .stream().map(TopicPartition::topic))
                         .distinct()
-                        .anyMatch(t -> Objects.equals(t, topic))
+                        .anyMatch(topics::contains)
                 )
                 .map(ConsumerGroupDescription::groupId)
                 .toList();
 
-
         return this.findByName(clusterId, consumerGroups, filters);
+    }
+
+    public List<ConsumerGroup> findActiveByTopic(String clusterId, String topic, List<String> filters) {
+        return findActiveByTopics(clusterId, List.of(topic), filters);
     }
 
     /**
@@ -163,8 +166,6 @@ public class ConsumerGroupRepository extends AbstractRepository {
      * @param topic topic name
      * @param filters security filters applied to the user
      * @return list of consumer groups
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
     public List<ConsumerGroup> findByTopic(String clusterId, String topic, List<String> filters) throws ExecutionException, InterruptedException {
         List<String> groupName = this.all(clusterId, Optional.empty(), filters);
@@ -176,21 +177,18 @@ public class ConsumerGroupRepository extends AbstractRepository {
             .collect(Collectors.toList());
     }
 
-    public List<ConsumerGroup> findByTopics(String clusterId, List<String> topics, List<String> filters) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroup> findByTopics(String clusterId, List<String> topics, List<String> filters) {
 
         List<String> groupName = this.all(clusterId, Optional.empty(), filters);
         List<ConsumerGroup> list = this.findByName(clusterId, groupName, filters);
         return list
             .stream()
             .filter(consumerGroups ->
-                consumerGroups.getActiveTopics()
-                    .stream()
-                    .anyMatch(s -> topics.contains(s)) ||
                     consumerGroups.getTopics()
                         .stream()
-                        .anyMatch(s -> topics.contains(s))
+                        .anyMatch(topics::contains)
             )
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public void updateOffsets(String clusterId, String name, Map<org.akhq.models.TopicPartition, Long> offset) {
