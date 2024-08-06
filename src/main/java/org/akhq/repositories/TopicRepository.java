@@ -3,8 +3,6 @@ package org.akhq.repositories;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.retry.annotation.Retryable;
-import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.utils.SecurityService;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.akhq.models.Partition;
@@ -46,6 +44,11 @@ public class TopicRepository extends AbstractRepository {
         HIDE_INTERNAL,
         HIDE_INTERNAL_STREAM,
         HIDE_STREAM,
+    }
+
+    public enum TopicGroupsListView {
+        ALL,
+        HIDE_EMPTY
     }
 
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {

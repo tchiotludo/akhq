@@ -12,7 +12,8 @@ class SearchBar extends Form {
     showTopicListView: PropTypes.bool,
     showSearch: PropTypes.bool,
     showFilters: PropTypes.string,
-    showKeepSearch: PropTypes.bool
+    showKeepSearch: PropTypes.bool,
+    showGroupsListView: PropTypes.bool
   };
   state = {
     formData: {},
@@ -34,7 +35,16 @@ class SearchBar extends Form {
         _id: SETTINGS_VALUES.TOPIC.TOPIC_DEFAULT_VIEW.HIDE_STREAM,
         name: 'Hide stream topics'
       }
-    ]
+    ],
+    groupsListViewOptions: [
+      {
+        _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL,
+        name: "Show empty consumer groups"
+      },
+      {
+        _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.HIDE_EMPTY,
+        name: "Hide empty consumer groups"
+      }]
   };
 
   schema = {};
@@ -44,19 +54,16 @@ class SearchBar extends Form {
   }
 
   componentDidUpdate(prevProps) {
-    const { search, topicListView, keepSearch } = this.props;
+    const { search, topicListView, keepSearch, groupsListView } = this.props;
 
-    if (
-      search !== prevProps.search ||
-      topicListView !== prevProps.topicListView ||
-      keepSearch !== prevProps.keepSearch
-    ) {
+    if (search !== prevProps.search || topicListView !== prevProps.topicListView
+        || keepSearch !== prevProps.keepSearch || groupsListView !== prevProps.groupsListView) {
       this.setupProps();
     }
   }
 
   setupProps() {
-    const { showSearch, showTopicListView, showKeepSearch } = this.props;
+    const { showSearch, showTopicListView, showKeepSearch, showGroupsListView } = this.props;
     const { formData } = this.state;
     if (showSearch) {
       const { search } = this.props;
@@ -71,6 +78,11 @@ class SearchBar extends Form {
     if (showKeepSearch) {
       formData['keepSearch'] = this.props.keepSearch;
       this.schema['keepSearch'] = Joi.boolean();
+    }
+    if (showGroupsListView) {
+      const { groupsListView } = this.props;
+      formData['groupsListView'] = groupsListView;
+      this.schema['groupsListView'] = Joi.string().required();
     }
     return formData;
   }
@@ -88,14 +100,15 @@ class SearchBar extends Form {
   }
 
   doSubmit = () => {
-    const { pagination, search, topicListView, keepSearch } = this.state.formData;
+    const { pagination, search, topicListView, keepSearch, groupsListView } = this.state.formData;
     const data = {
       pagination: pagination,
       searchData: {
         search: search,
         topicListView: topicListView
       },
-      keepSearch: keepSearch
+      keepSearch: keepSearch,
+      groupsListView: groupsListView
     };
     this.props.doSubmit(data);
   };
@@ -109,8 +122,8 @@ class SearchBar extends Form {
   }
 
   render() {
-    const { showSearch, showTopicListView, showKeepSearch } = this.props;
-    const { topicListViewOptions, showFilters, formData } = this.state;
+    const { showSearch, showTopicListView, showKeepSearch, showGroupsListView } = this.props;
+    const { topicListViewOptions, groupsListViewOptions, showFilters, formData } = this.state;
 
     return (
       <React.Fragment>
@@ -155,6 +168,22 @@ class SearchBar extends Form {
                 'select-wrapper',
                 false
               )}
+            {showGroupsListView && (
+                this.renderSelect(
+                    'groupsListView',
+                    '',
+                    groupsListViewOptions,
+                    ({ currentTarget: input }) => {
+                      let { formData } = this.state;
+                      formData.groupsListView = input.value;
+                      this.setState();
+                      this.props.ongroupsListViewChange(input.value);
+                    },
+                    '',
+                    'select-wrapper',
+                    false
+                )
+            )}
             <button className="btn btn-primary" type="submit">
               <FontAwesomeIcon icon={faSearch} />
               <span className="d-lg-none"> Search</span>
