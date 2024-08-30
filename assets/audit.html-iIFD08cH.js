@@ -1,0 +1,1 @@
+const a=JSON.parse('{"key":"v-04a77cdc","path":"/docs/configuration/audit.html","title":"Audit configuration","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1725056387000,"contributors":[{"name":"Kohei Watanabe","email":"kohei.watanabe@woven-planet.global","commits":1}]},"filePathRelative":"docs/configuration/audit.md"}');export{a as data};

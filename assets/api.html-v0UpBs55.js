@@ -1,0 +1,1 @@
+const a=JSON.parse('{"key":"v-d2e3fc0c","path":"/docs/api.html","title":"Api","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1725056387000,"contributors":[{"name":"Kohei Watanabe","email":"kohei.watanabe@woven-planet.global","commits":1}]},"filePathRelative":"docs/api.md"}');export{a as data};

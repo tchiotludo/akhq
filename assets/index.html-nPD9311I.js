@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-75b1ef1a","path":"/docs/configuration/schema-registry/","title":"Schema registry","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1725056387000,"contributors":[{"name":"Kohei Watanabe","email":"kohei.watanabe@woven-planet.global","commits":1}]},"filePathRelative":"docs/configuration/schema-registry/README.md"}');export{e as data};
