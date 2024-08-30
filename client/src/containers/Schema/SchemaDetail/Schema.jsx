@@ -54,7 +54,7 @@ class Schema extends Root {
       },
       () => {
         this.props.router.navigate(
-          `/ui/${clusterId}/schema/details/${schemaId}/${this.state.selectedTab}`,
+          `/ui/${clusterId}/schema/details/${encodeURIComponent(schemaId)}/${this.state.selectedTab}`,
           {
             replace: true
           }
