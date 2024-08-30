@@ -10,15 +10,12 @@ This is the current implementation and the default one (doesn't break compatibil
 ````yaml
 akhq:
   security:
-    default-group: no-roles
+    default-group: admin
     groups:
       reader:
-        roles:
-          - topic/read
-        attributes:
-          topics-filter-regexp: [".*"]
-      no-roles:
-        roles: []
+        - role: reader
+        # patterns: [ ".*" ]
+        # clusters: [ ".*" ]
     ldap: # LDAP users/groups to AKHQ groups mapping
     oidc: # OIDC users/groups to AKHQ groups mapping
     header-auth: # header authentication users/groups to AKHQ groups mapping
@@ -101,23 +98,26 @@ akhq:
     groovy:
       enabled: true
       file: |
-        package org.akhq.utils;
+        package org.akhq.models.security;
         class GroovyCustomClaimProvider implements ClaimProvider {
             @Override
             ClaimResponse generateClaim(ClaimRequest request) {
-                ClaimResponse response = ClaimResponse.builder().build()
-                response.roles = ["topic/read"]
-                response.topicsFilterRegexp: [".*"]
-                response.connectsFilterRegexp: [".*"]
-                response.consumerGroupsFilterRegexp: [".*"]
-                return response
+                String filterRegexp =  request.groups.collect {
+                  '^' + it + '\\..*'
+                }.join('|')
+                def groups = [
+                  "reader": [
+                    new org.akhq.configs.security.Group(role: "reader", patterns: [filterRegexp]),
+                  ]
+                ]
+                return ClaimResponse.builder().groups(groups).build();
             }
         }
     groups: # anything set here will not be used
 ````
 ``akhq.security.groovy.file`` must be a groovy class that implements the interface ClaimProvider :
 ````java
-package org.akhq.utils;
+package org.akhq.models.securitys;
 public interface ClaimProvider {
     ClaimResponse generateClaim(ClaimRequest request);
 }
@@ -136,9 +136,6 @@ public class ClaimRequest {
 }
 
 public class ClaimResponse {
-    private List<String> roles;
-    private List<String> topicsFilterRegexp;
-    private List<String> connectsFilterRegexp;
-    private List<String> consumerGroupsFilterRegexp;
+  private Map<String, List<Group>> groups;
 }
 ````
