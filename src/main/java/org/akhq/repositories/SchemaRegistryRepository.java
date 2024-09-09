@@ -327,7 +327,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
             if (schemaRegistryType == SchemaRegistryType.TIBCO) {
                 throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO PROTOBUF client is not supported");
             } else {
-                deserializer = new KafkaProtobufDeserializer(this.kafkaModule.getRegistryClient(clusterId));
+                deserializer = new KafkaProtobufDeserializer(this.kafkaModule.getRegistryClient(clusterId), this.kafkaModule.getConnection(clusterId).getProperties());
             }
 
             this.kafkaProtoDeserializers.put(clusterId, deserializer);
