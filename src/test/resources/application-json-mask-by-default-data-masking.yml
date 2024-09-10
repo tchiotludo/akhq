@@ -1,0 +1,12 @@
+akhq:
+  security:
+    data-masking:
+      mode: json_mask_by_default
+      json-filters:
+        - description: Unmask non-sensitive values
+          topic: my-special-topic
+          keys:
+            - specialId
+            - status
+            - trusted
+            - rating

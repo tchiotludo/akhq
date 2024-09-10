@@ -189,6 +189,10 @@ public class Record {
         this.truncated = truncated;
     }
 
+    public void setTopic(Topic topic) {
+        this.topic = topic;
+    }
+
     private String convertToString(byte[] payload, String schemaId, boolean isKey) {
         if (payload == null) {
             return null;

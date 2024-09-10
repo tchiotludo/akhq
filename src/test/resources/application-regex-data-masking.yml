@@ -1,6 +1,7 @@
 akhq:
   security:
     data-masking:
+      mode: regex
       filters:
         - description: "Masks value for secret-key fields"
           search-regex: '"(secret-key)":".*"'

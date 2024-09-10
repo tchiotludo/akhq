@@ -5,7 +5,7 @@ import lombok.Data;
 
 @EachProperty("filters")
 @Data
-public class DataMaskingFilter {
+public class RegexFilter {
     String description;
     String searchRegex;
     String replacement;

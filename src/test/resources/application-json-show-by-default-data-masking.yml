@@ -1,0 +1,12 @@
+akhq:
+  security:
+    data-masking:
+      mode: json_show_by_default
+      json-filters:
+        - description: Mask sensitive values
+          topic: my-special-topic
+          keys:
+            - specialId
+            - status
+            - metadata.trusted
+            - metadata.rating
