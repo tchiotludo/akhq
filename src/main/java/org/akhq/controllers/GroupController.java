@@ -61,6 +61,8 @@ public class GroupController extends AbstractController {
     @Get
     @Operation(tags = {"consumer group"}, summary = "List all consumer groups")
     public ResultPagedList<ConsumerGroup> list(HttpRequest<?> request, String cluster, Optional<String> search, Optional<Integer> page) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
@@ -70,30 +72,39 @@ public class GroupController extends AbstractController {
     @Get("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group")
     public ConsumerGroup home(String cluster, String groupName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster));
     }
 
     @Get("{groupName}/offsets")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsets(String cluster, String groupName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getOffsets();
     }
 
     @Get("{groupName}/members")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
     public List<Consumer> members(String cluster, String groupName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         return this.consumerGroupRepository.findByName(cluster, groupName, buildUserBasedResourceFilters(cluster)).getMembers();
     }
 
     @Get("{groupName}/acls")
     @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group acls")
     public List<AccessControl> acls(String cluster, String groupName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         return aclRepository.findByResourceType(cluster, ResourceType.GROUP, groupName);
     }
 
     @Get("topics")
     @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group for list of topics")
     public List filterByTopics(String cluster, Optional<List<String>> topics) {
+        checkIfClusterAllowed(cluster);
 
         return topics.map(
                 topicsName -> {
@@ -115,6 +126,8 @@ public class GroupController extends AbstractController {
         String groupName,
         @Body List<OffsetsUpdate> offsets
     ) {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         this.consumerGroupRepository.updateOffsets(
             cluster,
             groupName,
@@ -135,6 +148,8 @@ public class GroupController extends AbstractController {
     @Get("{groupName}/offsets/start")
     @Operation(tags = {"consumer group"}, summary = "Retrive consumer group offsets by timestamp")
     public List<RecordRepository.TimeOffset> offsetsStart(String cluster, String groupName, Instant timestamp) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         ConsumerGroup group = this.consumerGroupRepository.findByName(
             cluster, groupName, buildUserBasedResourceFilters(cluster));
 
@@ -152,6 +167,8 @@ public class GroupController extends AbstractController {
     @Delete("{groupName}")
     @Operation(tags = {"consumer group"}, summary = "Delete a consumer group")
     public HttpResponse<?> delete(String cluster, String groupName) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         this.kafkaWrapper.deleteConsumerGroups(cluster, groupName);
 
         return HttpResponse.noContent();
@@ -161,6 +178,8 @@ public class GroupController extends AbstractController {
     @Delete("{groupName}/topic/{topicName}")
     @Operation(tags = {"consumer group"}, summary = "Delete group offsets of given topic")
     public HttpResponse<?> deleteConsumerGroupOffsets(String cluster, String groupName, String topicName) throws ExecutionException {
+        checkIfClusterAndResourceAllowed(cluster, groupName);
+
         this.kafkaWrapper.deleteConsumerGroupOffsets(cluster, groupName, topicName);
         return HttpResponse.noContent();
     }
