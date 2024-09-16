@@ -6,7 +6,7 @@ plugins {
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.5.10'
+    id 'org.gradle.test-retry' version '1.6.0'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.51.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
