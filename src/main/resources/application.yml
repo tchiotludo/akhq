@@ -148,8 +148,10 @@ akhq:
         - resources: [ "TOPIC", "TOPIC_DATA" ]
           actions: [ "READ", "CREATE", "UPDATE", "DELETE", "READ_CONFIG", "ALTER_CONFIG" ]
       topic-data-admin:
-        - resources: [ "TOPIC", "TOPIC_DATA" ]
+        - resources: [ "TOPIC_DATA" ]
           actions: [ "READ", "CREATE", "DELETE" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "READ" ]
       consumer-group-admin:
         - resources: [ "CONSUMER_GROUP" ]
           actions: [ "READ", "UPDATE_OFFSET", "DELETE", "DELETE_OFFSET" ]
