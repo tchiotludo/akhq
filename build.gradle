@@ -143,7 +143,7 @@ dependencies {
 
     // protobuf
     implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.27.0'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.27.1'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.28.2'
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
