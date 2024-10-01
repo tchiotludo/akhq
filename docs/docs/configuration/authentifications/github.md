@@ -51,4 +51,4 @@ akhq:
 The username field can be any string field, the roles field has to be a JSON array.
 
 ## References
-https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth2-configuration
+[https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth2-configuration](https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth2-configuration)
