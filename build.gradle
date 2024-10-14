@@ -236,7 +236,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:3.0'
     testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation 'org.apache.curator:curator-test:5.7.0'
+    testImplementation 'org.apache.curator:curator-test:5.7.1'
 
     testImplementation 'org.awaitility:awaitility:4.2.2'
 }
