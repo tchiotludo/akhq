@@ -139,6 +139,7 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  labels: {}
   paths:
     - /
   pathType: "ImplementationSpecific"
@@ -191,3 +192,4 @@ affinity: {}
 
 networkPolicy:
   enabled: true
+  labels: {}
