@@ -3,41 +3,48 @@ package org.akhq.utils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import lombok.RequiredArgsConstructor;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
+import org.akhq.configs.DataMasking;
 import org.akhq.configs.JsonMaskingFilter;
 import org.akhq.models.Record;
 
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
+@Singleton
+@Requires(property = "akhq.security.data-masking.mode", value = "json_mask_by_default")
 public class JsonMaskByDefaultMasker implements Masker {
 
     private final List<JsonMaskingFilter> jsonMaskingFilters;
     private final String jsonMaskReplacement;
 
+    public JsonMaskByDefaultMasker(DataMasking dataMasking) {
+        this.jsonMaskingFilters = dataMasking.getJsonFilters();
+        this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();
+    }
+
     public Record maskRecord(Record record) {
         try {
-            if(record.getValue().trim().startsWith("{") && record.getValue().trim().endsWith("}")) {
-                JsonMaskingFilter foundFilter = null;
-                for (JsonMaskingFilter filter : jsonMaskingFilters) {
-                    if (record.getTopic().getName().equalsIgnoreCase(filter.getTopic())) {
-                        foundFilter = filter;
-                    }
-                }
-                if (foundFilter != null) {
-                    return applyMasking(record, foundFilter.getKeys());
-                } else {
-                    return applyMasking(record, List.of());
-                }
+            if(record.isTombstone()) {
+                return record;
+            } else if(record.appearsToBeJson()) {
+                jsonMaskingFilters
+                    .stream()
+                    .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                        filter -> applyMasking(record, filter.getKeys()),
+                        () -> applyMasking(record, List.of())
+                    );
             } else {
                 return record;
             }
         } catch (Exception e) {
             LOG.error("Error masking record", e);
-            return record;
         }
+        return record;
     }
 
     @SneakyThrows

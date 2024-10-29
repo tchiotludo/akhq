@@ -364,6 +364,14 @@ public class Record {
         return null;
     }
 
+    public boolean isTombstone() {
+        return value == null;
+    }
+
+    public boolean appearsToBeJson() {
+        return value.trim().startsWith("{") && value.trim().endsWith("}");
+    }
+
     /**
      * Jackson views declaration
      */
