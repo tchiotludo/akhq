@@ -28,7 +28,7 @@ public class JsonShowByDefaultMasker implements Masker {
         try {
             if(record.isTombstone()) {
                 return record;
-            } else if(record.appearsToBeJson()) {
+            } else if(record.isJson()) {
                 jsonMaskingFilters
                     .stream()
                     .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))

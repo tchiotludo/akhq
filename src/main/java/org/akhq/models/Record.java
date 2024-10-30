@@ -5,6 +5,8 @@ import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKaf
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
@@ -368,8 +370,14 @@ public class Record {
         return value == null;
     }
 
-    public boolean appearsToBeJson() {
-        return value.trim().startsWith("{") && value.trim().endsWith("}");
+    public boolean isJson() {
+        try {
+            JsonParser.parseString(value);
+            return true;
+        } catch (JsonSyntaxException ex) {
+            // Consume
+            return false;
+        }
     }
 
     /**

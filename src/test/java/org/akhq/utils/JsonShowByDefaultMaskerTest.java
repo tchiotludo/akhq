@@ -83,6 +83,22 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
         );
     }
 
+    @Test
+    void forNonJsonValueThatLooksLikeJsonValueShouldReturnItself() {
+        Record record = sampleRecord(
+            "some-other-topic",
+            "some-key",
+            "{not a valid json}"
+        );
+
+        Record maskedRecord = masker.maskRecord(record);
+
+        assertEquals(
+            record,
+            maskedRecord
+        );
+    }
+
     private String sampleValue() {
         return """
             {
