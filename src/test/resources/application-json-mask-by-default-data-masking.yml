@@ -4,9 +4,10 @@ akhq:
       mode: json_mask_by_default
       json-filters:
         - description: Unmask non-sensitive values
-          topic: my-special-topic
+          topic: users
           keys:
             - specialId
             - status
-            - trusted
-            - rating
+            - address.country
+            - metadata.trusted
+            - metadata.rating

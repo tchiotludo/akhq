@@ -19,6 +19,9 @@ public class RegexMasker implements Masker {
         this.filters = dataMasking.getFilters();
     }    @Override
     public Record maskRecord(Record record) {
+        if(filters.isEmpty()){
+            return record;
+        }
         String value = record.getValue();
         String key = record.getKey();
 

@@ -18,13 +18,22 @@ public class JsonShowByDefaultMasker implements Masker {
 
     private final List<JsonMaskingFilter> jsonMaskingFilters;
     private final String jsonMaskReplacement;
+    private final boolean enabled;
 
     public JsonShowByDefaultMasker(DataMasking dataMasking) {
         this.jsonMaskingFilters = dataMasking.getJsonFilters();
         this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();
+        if(this.jsonMaskingFilters.isEmpty()) {
+            this.enabled = false;
+        } else {
+            this.enabled = true;
+        }
     }
 
     public Record maskRecord(Record record) {
+        if(!enabled) {
+            return record;
+        }
         try {
             if(record.isTombstone()) {
                 return record;

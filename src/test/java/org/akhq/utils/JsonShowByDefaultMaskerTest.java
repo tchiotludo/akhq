@@ -22,7 +22,7 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
     @Test
     void shouldMaskRecordValue() {
         Record record = sampleRecord(
-            "my-special-topic",
+            "users",
             "some-key",
             sampleValue()
         );
@@ -30,7 +30,7 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
         Record maskedRecord = masker.maskRecord(record);
 
         assertEquals(
-            "{\"specialId\":\"xxxx\",\"firstName\":\"Test\",\"lastName\":\"Testington\",\"age\":100,\"status\":\"xxxx\",\"metadata\":{\"comments\":\"Some comment\",\"trusted\":\"xxxx\",\"expired\":false,\"rating\":\"xxxx\"}}",
+            "{\"specialId\":123,\"status\":\"ACTIVE\",\"name\":\"xxxx\",\"dateOfBirth\":\"xxxx\",\"address\":{\"firstLine\":\"xxxx\",\"town\":\"xxxx\",\"country\":\"United Kingdom\"},\"metadata\":{\"trusted\":true,\"rating\":\"10\",\"notes\":\"All in good order\"}}",
             maskedRecord.getValue()
         );
     }
@@ -54,7 +54,7 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
     @Test
     void forTombstoneShouldReturnItself() {
         Record record = sampleRecord(
-            "another-topic",
+            "users",
             "some-key",
             null
         );
@@ -70,7 +70,7 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
     @Test
     void forNonJsonValueShouldReturnItself() {
         Record record = sampleRecord(
-            "another-topic",
+            "users",
             "some-key",
             "not a valid json"
         );
@@ -86,7 +86,7 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
     @Test
     void forNonJsonValueThatLooksLikeJsonValueShouldReturnItself() {
         Record record = sampleRecord(
-            "some-other-topic",
+            "users",
             "some-key",
             "{not a valid json}"
         );
@@ -102,17 +102,20 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
     private String sampleValue() {
         return """
             {
-                "specialId": "MySpecialId",
-                "firstName": "Test",
-                "lastName": "Testington",
-                "age": 100,
-                "status": "ACTIVE",
-                "metadata": {
-                    "comments": "Some comment",
-                    "trusted": true,
-                    "expired": false,
-                    "rating": "A"
-                }
+               "specialId": 123,
+               "status": "ACTIVE",
+               "name": "John Smith",
+               "dateOfBirth": "01-01-1991",
+               "address": {
+                 "firstLine": "123 Example Avenue",
+                 "town": "Faketown",
+                 "country": "United Kingdom"
+               },
+               "metadata": {
+                 "trusted": true,
+                 "rating": "10",
+                 "notes": "All in good order"
+               }
             }
             """;
     }

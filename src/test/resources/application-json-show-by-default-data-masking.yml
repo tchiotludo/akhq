@@ -4,9 +4,9 @@ akhq:
       mode: json_show_by_default
       json-filters:
         - description: Mask sensitive values
-          topic: my-special-topic
+          topic: users
           keys:
-            - specialId
-            - status
-            - metadata.trusted
-            - metadata.rating
+            - name
+            - dateOfBirth
+            - address.firstLine
+            - address.town
