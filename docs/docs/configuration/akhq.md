@@ -68,12 +68,17 @@ akhq:
 ```
 
 ## Data Masking
-If you want to hide some data in your records, you can configure this with the following filters.
+If you want to hide some data in your records, there are two approaches.
+
+### Regex Masking
+You can use regex masking - configure this with the following filters.
 These will be applied to all record values and keys.
+
 ```yaml
 akhq:
   security:
     data-masking:
+      mode: regex # Note - this is not explicitly required as regex is the 'default' masker that gets applied for backwards compatibility
       filters:
         - description: "Masks value for secret-key fields"
           search-regex: '"(secret-key)":".*"'
@@ -82,6 +87,157 @@ akhq:
           search-regex: '"([\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?)[0-9]{4,6}"'
           replacement: '"$1xxxx"'
 ```
+
+### JSON Masking
+This is useful for records which are interpreted as JSON on deserialization to strings - for example,
+Avro records, or normal JSON payloads.
+These can be configured per-topic, and you can select distinct fields to mask/unmask.
+There are two JSON masking modes: `json_show_by_default` and `json_mask_by_default`.
+
+#### Show by default config
+This means, by default, nothing is masked. If you wish to mask data this way, you can:
+- Set a value in `akhq.security.data-masking.jsonMaskReplacement` (this defaults to `xxxx`)
+- Set `akhq.security.data-masking.mode` to `json_show_by_default`
+- Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *mask*
+
+NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
+there is (currently) no way to distinguish between different records, so any records which have the a JSON field at the
+selected path(s) will be masked. If you have a misconfiguration and have defined multiple filters per topic, only the first will
+actually be selected.
+
+
+```yaml
+akhq:
+  security:
+    data-masking:
+      mode: json_show_by_default
+      jsonMaskReplacement: xxxx
+      json-filters:
+        - description: Mask sensitive values
+          topic: users
+          keys:
+            - name
+            - dateOfBirth
+            - address.firstLine
+            - address.town
+```
+
+Given a record on `users` that looks like:
+
+```json
+{
+  "specialId": 123,
+  "status": "ACTIVE",
+  "name": "John Smith",
+  "dateOfBirth": "01-01-1991",
+  "address": {
+    "firstLine": "123 Example Avenue",
+    "town": "Faketown",
+    "country": "United Kingdom"
+  },
+  "metadata": {
+    "trusted": true,
+    "rating": "10",
+    "notes": "All in good order"
+  }
+}
+```
+
+With the above configuration, it will appear as:
+
+```json
+{
+  "specialId": 123,
+  "status": "ACTIVE",
+  "name": "xxxx",
+  "dateOfBirth": "xxxx",
+  "address": {
+    "firstLine": "xxxx",
+    "town": "xxxx",
+    "country": "United Kingdom"
+  },
+  "metadata": {
+    "trusted": true,
+    "rating": "10",
+    "notes": "All in good order"
+  }
+}
+```
+
+### Mask by default config
+This means, by default, everything is masked.
+This is useful in production scenarios where data must be carefully selected and made available to
+users of AKHQ - usually this is for regulatory compliance of personal/sensitive information.
+If you wish to mask data this way, you can:
+- Set a value in `akhq.security.data-masking.jsonMaskReplacement` (this defaults to `xxxx`)
+- Set `akhq.security.data-masking.mode` to `json_mask_by_default`
+- Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *show*
+
+NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
+there is (currently) no way to distinguish between different records, so any records which have the a JSON field at the
+selected path(s) will be shown. If you have a misconfiguration and have defined multiple filters per topic, only the first will
+actually be selected.
+```yaml
+akhq:
+  security:
+    data-masking:
+      mode: json_mask_by_default
+      jsonMaskReplacement: xxxx
+      json-filters:
+        - description: Unmask non-sensitive values
+          topic: users
+          keys:
+            - specialId
+            - status
+            - address.country
+            - metadata.trusted
+            - metadata.rating
+```
+
+Given a record on `users` that looks like:
+
+```json
+{
+  "specialId": 123,
+  "status": "ACTIVE",
+  "name": "John Smith",
+  "dateOfBirth": "01-01-1991",
+  "address": {
+    "firstLine": "123 Example Avenue",
+    "town": "Faketown",
+    "country": "United Kingdom"
+  },
+  "metadata": {
+    "trusted": true,
+    "rating": "10",
+    "notes": "All in good order"
+  }
+}
+```
+
+With the above configuration, it will appear as:
+
+```json
+{
+  "specialId": 123,
+  "status": "ACTIVE",
+  "name": "xxxx",
+  "dateOfBirth": "xxxx",
+  "address": {
+    "firstLine": "xxxx",
+    "town": "xxxx",
+    "country": "United Kingdom"
+  },
+  "metadata": {
+    "trusted": true,
+    "rating": "10",
+    "notes": "xxxx"
+  }
+}
+```
+
+### No masking required
+You can set `akhq.security.data-masking.mode` to `none` to disable masking altogether.
 
 ## Audit
 If you want to audit user action that modified topics or consumer group state, you can configure akhq to send
