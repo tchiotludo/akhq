@@ -101,7 +101,7 @@ This means, by default, nothing is masked. If you wish to mask data this way, yo
 - Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *mask*
 
 NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
-there is (currently) no way to distinguish between different records, so any records which have the a JSON field at the
+there is (currently) no way to distinguish between different records, so any records which have the JSON field at the
 selected path(s) will be masked. If you have a misconfiguration and have defined multiple filters per topic, only the first will
 actually be selected.
 
@@ -174,7 +174,7 @@ If you wish to mask data this way, you can:
 - Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *show*
 
 NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
-there is (currently) no way to distinguish between different records, so any records which have the a JSON field at the
+there is (currently) no way to distinguish between different records, so any records which have the JSON field at the
 selected path(s) will be shown. If you have a misconfiguration and have defined multiple filters per topic, only the first will
 actually be selected.
 ```yaml
