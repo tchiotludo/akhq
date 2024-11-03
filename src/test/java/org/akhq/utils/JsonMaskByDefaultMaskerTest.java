@@ -1,12 +1,14 @@
 package org.akhq.utils;
 
+import com.google.gson.JsonParser;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.akhq.models.Record;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest(environments = "json-mask-by-default-data-masking")
 class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
@@ -97,6 +99,22 @@ class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
             record,
             maskedRecord
         );
+    }
+
+    @Test
+    void ifJsonParsingThrowsExceptionShouldReturnFalse() {
+        String sampleStringToParse = sampleValue();
+        Record record = sampleRecord(
+            "different-topic",
+            "some-key",
+            sampleStringToParse
+        );
+
+        try (MockedStatic<JsonParser> mockStatic = Mockito.mockStatic(JsonParser.class)) {
+            mockStatic.when(() -> JsonParser.parseString(sampleStringToParse)).thenThrow(new RuntimeException("Bad exception!"));
+            Record record1 = masker.maskRecord(record);
+            assertEquals("An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data. Please contact akhq administrator.", record1.getValue());
+        }
     }
 
     private String sampleValue() {
