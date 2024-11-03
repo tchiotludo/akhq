@@ -28,6 +28,9 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -375,12 +378,15 @@ public class Record {
             return false;
         }
         try {
-            JsonParser.parseString(value);
-            return true;
-        } catch (JsonSyntaxException ex) {
-            // Consume
-            return false;
+            new JSONObject(value);
+        } catch (JSONException ex) {
+            try {
+                new JSONArray(value);
+            } catch (JSONException ex1) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
