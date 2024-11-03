@@ -371,6 +371,9 @@ public class Record {
     }
 
     public boolean isJson() {
+        if(isTombstone()) {
+            return false;
+        }
         try {
             JsonParser.parseString(value);
             return true;

@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.DataMasking;
 import org.akhq.configs.JsonMaskingFilter;
 import org.akhq.models.Record;
@@ -13,41 +14,33 @@ import org.akhq.models.Record;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Singleton
 @Requires(property = "akhq.security.data-masking.mode", value = "json_mask_by_default")
 public class JsonMaskByDefaultMasker implements Masker {
 
     private final List<JsonMaskingFilter> jsonMaskingFilters;
     private final String jsonMaskReplacement;
-    private final boolean enabled;
 
     public JsonMaskByDefaultMasker(DataMasking dataMasking) {
         this.jsonMaskingFilters = dataMasking.getJsonFilters();
         this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();
-        if(this.jsonMaskingFilters.isEmpty()) {
-            this.enabled = false;
-        } else {
-            this.enabled = true;
-        }
     }
 
     public Record maskRecord(Record record) {
-        if(!enabled) {
-            return record;
-        }
         try {
             if(record.isTombstone()) {
+                log.debug("Record at topic {}, partition {}, offset {} is a tombstone, so not masking.", record.getTopic(), record.getPartition(), record.getOffset());
                 return record;
             } else if(record.isJson()) {
-                jsonMaskingFilters
+                return jsonMaskingFilters
                     .stream()
                     .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))
                     .findFirst()
-                    .ifPresentOrElse(
-                        filter -> applyMasking(record, filter.getKeys()),
-                        () -> applyMasking(record, List.of())
-                    );
+                    .map(filter -> applyMasking(record, filter.getKeys()))
+                    .orElseGet(() -> applyMasking(record, List.of()));
             } else {
+                log.debug("Record at topic {}, partition {}, offset {} is not JSON, so not masking.", record.getTopic(), record.getPartition(), record.getOffset());
                 return record;
             }
         } catch (Exception e) {
