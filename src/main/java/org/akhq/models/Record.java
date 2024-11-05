@@ -369,26 +369,6 @@ public class Record {
         return null;
     }
 
-    public boolean isTombstone() {
-        return value == null;
-    }
-
-    public boolean isJson() {
-        if(isTombstone()) {
-            return false;
-        }
-        try {
-            new JSONObject(value);
-        } catch (JSONException ex) {
-            try {
-                new JSONArray(value);
-            } catch (JSONException ex1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * Jackson views declaration
      */

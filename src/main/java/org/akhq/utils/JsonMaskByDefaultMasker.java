@@ -27,10 +27,10 @@ public class JsonMaskByDefaultMasker implements Masker {
 
     public Record maskRecord(Record record) {
         try {
-            if(record.isTombstone()) {
+            if(isTombstone(record)) {
                 LOG.debug("Record at topic {}, partition {}, offset {} is a tombstone, so not masking.", record.getTopic(), record.getPartition(), record.getOffset());
                 return record;
-            } else if(record.isJson()) {
+            } else if(isJson(record)) {
                 return jsonMaskingFilters
                     .stream()
                     .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))
