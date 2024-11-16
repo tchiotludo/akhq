@@ -5,8 +5,6 @@ import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKaf
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
@@ -28,9 +26,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -44,6 +39,8 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class Record {
+
+    @Setter
     private Topic topic;
     @JsonView(Views.Download.class)
     private int partition;
@@ -192,10 +189,6 @@ public class Record {
 
     public void setTruncated(Boolean truncated) {
         this.truncated = truncated;
-    }
-
-    public void setTopic(Topic topic) {
-        this.topic = topic;
     }
 
     private String convertToString(byte[] payload, String schemaId, boolean isKey) {

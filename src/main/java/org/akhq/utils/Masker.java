@@ -13,11 +13,10 @@ public interface Masker {
 
     Record maskRecord(Record record);
 
-    default boolean isTombstone(Record record) {
-        return record.getValue() == null;
-    }
-
     default boolean isJson(Record record) {
+        if(record.getValue() == null) {
+            return false;
+        }
         try {
             new JSONObject(record.getValue());
         } catch (JSONException ex) {

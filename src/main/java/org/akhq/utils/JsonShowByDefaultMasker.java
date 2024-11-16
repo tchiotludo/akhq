@@ -26,17 +26,13 @@ public class JsonShowByDefaultMasker implements Masker {
 
     public Record maskRecord(Record record) {
         try {
-            if(isTombstone(record)) {
-                return record;
-            } else if(isJson(record)) {
+            if(isJson(record)) {
                 return jsonMaskingFilters
                     .stream()
                     .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))
                     .findFirst()
                     .map(filter -> applyMasking(record, filter.getKeys()))
                     .orElse(record);
-            } else {
-                return record;
             }
         } catch (Exception e) {
             LOG.error("Error masking record", e);

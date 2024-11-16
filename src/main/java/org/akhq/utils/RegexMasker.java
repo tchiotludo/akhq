@@ -15,9 +15,11 @@ public class RegexMasker implements Masker {
 
     private final List<RegexFilter> filters;
 
-    public RegexMasker(DataMasking  dataMasking ) {
+    public RegexMasker(DataMasking dataMasking) {
         this.filters = dataMasking.getFilters();
-    }    @Override
+    }
+
+    @Override
     public Record maskRecord(Record record) {
         if(filters.isEmpty()){
             return record;

@@ -12,5 +12,4 @@ public class DataMasking {
    List<RegexFilter> filters = new ArrayList<>(); // regex filters still use `filters` for backwards compatibility
    List<JsonMaskingFilter> jsonFilters = new ArrayList<>();
    String jsonMaskReplacement = "xxxx";
-   boolean cachingEnabled = false;
 }

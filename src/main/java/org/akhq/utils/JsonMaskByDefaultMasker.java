@@ -27,25 +27,19 @@ public class JsonMaskByDefaultMasker implements Masker {
 
     public Record maskRecord(Record record) {
         try {
-            if(isTombstone(record)) {
-                LOG.debug("Record at topic {}, partition {}, offset {} is a tombstone, so not masking.", record.getTopic(), record.getPartition(), record.getOffset());
-                return record;
-            } else if(isJson(record)) {
+            if(isJson(record)) {
                 return jsonMaskingFilters
                     .stream()
                     .filter(jsonMaskingFilter -> record.getTopic().getName().equalsIgnoreCase(jsonMaskingFilter.getTopic()))
                     .findFirst()
                     .map(filter -> applyMasking(record, filter.getKeys()))
                     .orElseGet(() -> applyMasking(record, List.of()));
-            } else {
-                LOG.debug("Record at topic {}, partition {}, offset {} is not JSON, so not masking.", record.getTopic(), record.getPartition(), record.getOffset());
-                return record;
             }
         } catch (Exception e) {
             LOG.error("Error masking record at topic {}, partition {}, offset {} due to {}", record.getTopic(), record.getPartition(), record.getOffset(), e.getMessage());
             record.setValue("An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data. Please contact akhq administrator.");
-            return record;
         }
+        return record;
     }
 
     @SneakyThrows
