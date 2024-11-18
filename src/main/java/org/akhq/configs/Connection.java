@@ -20,6 +20,7 @@ public class Connection extends AbstractProperties {
     List<Connect> connect;
     List<KsqlDb> ksqldb;
     Deserialization deserialization = new Deserialization();
+    Serialization serialization = new Serialization();
     UiOptions uiOptions = new UiOptions();
 
     public Connection(@Parameter String name) {
@@ -55,6 +56,19 @@ public class Connection extends AbstractProperties {
         @Data
         @ConfigurationProperties("avro-raw")
         public static class AvroDeserializationTopicsMapping {
+            String schemasFolder;
+            List<AvroTopicsMapping> topicsMapping = new ArrayList<>();
+        }
+    }
+
+    @Getter
+    @ConfigurationProperties("serialization")
+    public static class Serialization {
+        AvroSerializationTopicsMapping avroRaw;
+
+        @Data
+        @ConfigurationProperties("avro-raw")
+        public static class AvroSerializationTopicsMapping {
             String schemasFolder;
             List<AvroTopicsMapping> topicsMapping = new ArrayList<>();
         }
