@@ -102,7 +102,7 @@ class KsqlDBList extends Component {
             </div>
           </div>
         </div>
-        {roles && roles.KSQDLDB && roles.KSQLDB.includes('EXECUTE') && (
+        {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
           <aside>
             <li className="aside-button">
               <Link
