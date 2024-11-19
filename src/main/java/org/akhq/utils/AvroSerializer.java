@@ -20,6 +20,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,19 @@ public class AvroSerializer {
     private static final TimeConversions.LocalTimestampMillisConversion LOCAL_TIMESTAMP_MILLIS_CONVERSION = new TimeConversions.LocalTimestampMillisConversion();
 
     protected static final String DATE_FORMAT = "yyyy-MM-dd[XXX]";
-    protected static final String TIME_FORMAT = "HH:mm[:ss][.SSSSSS][XXX]";
+    protected static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
+        .appendPattern("HH:mm")
+        .optionalStart()
+        .appendPattern(":ss")
+        .optionalEnd()
+        .optionalStart()
+        .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+        .optionalEnd()
+        .optionalStart()
+        .appendPattern("XXX")
+        .optionalEnd()
+        .toFormatter();
+
     protected static final DateTimeFormatter DATETIME_FORMAT = new DateTimeFormatterBuilder()
             .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             .optionalStart()
@@ -323,7 +336,7 @@ public class AvroSerializer {
     private static Long timeMicrosSerializer(Object data, Schema schema, Schema.Type primitiveType, LogicalType logicalType) {
         LocalTime value;
         if (data instanceof String) {
-            value = LocalTime.parse((String) data, DateTimeFormatter.ofPattern(AvroSerializer.TIME_FORMAT));
+            value = LocalTime.parse((String) data, TIME_FORMATTER);
         } else {
             value = (LocalTime) data;
         }
@@ -339,7 +352,7 @@ public class AvroSerializer {
         LocalTime value;
 
         if (data instanceof String) {
-            value = LocalTime.parse((String) data, DateTimeFormatter.ofPattern(AvroSerializer.TIME_FORMAT));
+            value = LocalTime.parse((String) data, TIME_FORMATTER);
         } else {
             value = (LocalTime) data;
         }
