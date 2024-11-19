@@ -47,7 +47,7 @@ You can still associate a resource with a non-supported action from the table. I
 |----------------|-------|------------|----------------|-----------------|-----------|--------|------|-----|--------|
 | READ           | X     | X          | X              | X               | X         | X      | X    | X   | X      |
 | CREATE         | X     | X          |                |                 | X         | X      |      |     |        |
-| UPDATE         | X     | X          |                |                 |           | X      |      |     |        |
+| UPDATE         | X     | X          |                |                 | X         | X      |      |     |        |
 | DELETE         | X     | X          | X              |                 | X         | X      |      |     |        |
 | UPDATE_OFFSET  |       |            | X              |                 |           |        |      |     |        |
 | DELETE_OFFSET  |       |            | X              |                 |           |        |      |     |        |
