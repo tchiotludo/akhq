@@ -168,6 +168,10 @@ With the above configuration, it will appear as:
 This means, by default, everything is masked.
 This is useful in production scenarios where data must be carefully selected and made available to
 users of AKHQ - usually this is for regulatory compliance of personal/sensitive information.
+
+PLEASE NOTE: This has the side effect of being unable to show unstructured data at all. This is because if the schema registry
+is down, the binary data would otherwise be unfilterable. Instead, a placeholder message is shown.
+
 If you wish to mask data this way, you can:
 - Set a value in `akhq.security.data-masking.jsonMaskReplacement` (this defaults to `xxxx`)
 - Set `akhq.security.data-masking.mode` to `json_mask_by_default`
