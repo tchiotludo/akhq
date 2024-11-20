@@ -80,13 +80,15 @@ class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
         Record maskedRecord = masker.maskRecord(record);
 
         assertEquals(
-            record,
-            maskedRecord
+            "This record is unable to be masked as it is not a structured object. " +
+                "This record is unavailable to view due to safety measures from json_mask_by_default to not leak " +
+                "sensitive data. Please contact akhq administrator.",
+            maskedRecord.getValue()
         );
     }
 
     @Test
-    void forNonJsonValueThatLooksLikeJsonValueShouldReturnItself() {
+    void forNonJsonValueThatLooksLikeJsonValueShouldReturnDisclaimer() {
         Record record = sampleRecord(
             "users",
             "some-key",
@@ -96,8 +98,10 @@ class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
         Record maskedRecord = masker.maskRecord(record);
 
         assertEquals(
-            record,
-            maskedRecord
+            "This record is unable to be masked as it is not a structured object. " +
+                "This record is unavailable to view due to safety measures from json_mask_by_default to not leak " +
+                "sensitive data. Please contact akhq administrator.",
+            maskedRecord.getValue()
         );
     }
 
@@ -117,6 +121,23 @@ class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
         }
     }
 
+    @Test
+    void ifRecordHasMultiLevelNestedValuesShouldBeProcessedCorrectly() {
+        Record record = sampleRecord(
+            "users",
+            "some-key",
+            sampleValueWithMultilevelNestedValues()
+        );
+
+        Record maskedRecord = masker.maskRecord(record);
+
+        assertEquals(
+            """
+                {"specialId":123,"status":"ACTIVE","name":"xxxx","dateOfBirth":"xxxx","address":{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"},"metadata":{"trusted":true,"rating":"10","notes":"xxxx","other":{"shouldBeUnmasked":"Example multi-level-nested-value","shouldBeMasked":"xxxx"}}}""",
+            maskedRecord.getValue()
+        );
+    }
+
     private String sampleValue() {
         return """
             {
@@ -133,6 +154,31 @@ class JsonMaskByDefaultMaskerTest extends MaskerTestHelper {
                  "trusted": true,
                  "rating": "10",
                  "notes": "All in good order"
+               }
+            }
+            """;
+    }
+
+    private String sampleValueWithMultilevelNestedValues() {
+        return """
+            {
+               "specialId": 123,
+               "status": "ACTIVE",
+               "name": "John Smith",
+               "dateOfBirth": "01-01-1991",
+               "address": {
+                 "firstLine": "123 Example Avenue",
+                 "town": "Faketown",
+                 "country": "United Kingdom"
+               },
+               "metadata": {
+                 "trusted": true,
+                 "rating": "10",
+                 "notes": "All in good order",
+                 "other": {
+                    "shouldBeUnmasked": "Example multi-level-nested-value",
+                    "shouldBeMasked": "Example multi-level-nested-value"
+                 }
                }
             }
             """;

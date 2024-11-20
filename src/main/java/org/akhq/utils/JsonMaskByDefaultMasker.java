@@ -34,6 +34,8 @@ public class JsonMaskByDefaultMasker implements Masker {
                     .findFirst()
                     .map(filter -> applyMasking(record, filter.getKeys()))
                     .orElseGet(() -> applyMasking(record, List.of()));
+            } else {
+                record.setValue("This record is unable to be masked as it is not a structured object. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data. Please contact akhq administrator.");
             }
         } catch (Exception e) {
             LOG.error("Error masking record at topic {}, partition {}, offset {} due to {}", record.getTopic(), record.getPartition(), record.getOffset(), e.getMessage());
@@ -59,7 +61,7 @@ public class JsonMaskByDefaultMasker implements Masker {
             JsonObject objectNode = node.getAsJsonObject();
             for(Map.Entry<String, JsonElement> entry : objectNode.entrySet()) {
                 if(entry.getValue().isJsonObject()) {
-                    maskAllExcept(entry.getKey() + ".", entry.getValue().getAsJsonObject(), keys);
+                    maskAllExcept(currentKey + entry.getKey() + ".", entry.getValue().getAsJsonObject(), keys);
                 } else {
                     if(!keys.contains(currentKey + entry.getKey())) {
                         objectNode.addProperty(entry.getKey(), jsonMaskReplacement);
