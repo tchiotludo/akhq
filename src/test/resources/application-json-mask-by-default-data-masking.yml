@@ -11,3 +11,4 @@ akhq:
             - address.country
             - metadata.trusted
             - metadata.rating
+            - metadata.other.shouldBeUnmasked

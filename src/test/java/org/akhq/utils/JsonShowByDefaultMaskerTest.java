@@ -99,6 +99,23 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
         );
     }
 
+    @Test
+    void ifRecordHasMultiLevelNestedValuesShouldBeProcessedCorrectly() {
+        Record record = sampleRecord(
+            "users",
+            "some-key",
+            sampleValueWithMultilevelNestedValues()
+        );
+
+        Record maskedRecord = masker.maskRecord(record);
+
+        assertEquals(
+            """
+                {"specialId":123,"status":"ACTIVE","name":"xxxx","dateOfBirth":"xxxx","address":{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"},"metadata":{"trusted":true,"rating":"10","notes":"All in good order","other":{"shouldBeUnmasked":"Example multi-level-nested-value","shouldBeMasked":"xxxx"}}}""",
+            maskedRecord.getValue()
+        );
+    }
+
     private String sampleValue() {
         return """
             {
@@ -115,6 +132,31 @@ class JsonShowByDefaultMaskerTest extends MaskerTestHelper {
                  "trusted": true,
                  "rating": "10",
                  "notes": "All in good order"
+               }
+            }
+            """;
+    }
+
+    private String sampleValueWithMultilevelNestedValues() {
+        return """
+            {
+               "specialId": 123,
+               "status": "ACTIVE",
+               "name": "John Smith",
+               "dateOfBirth": "01-01-1991",
+               "address": {
+                 "firstLine": "123 Example Avenue",
+                 "town": "Faketown",
+                 "country": "United Kingdom"
+               },
+               "metadata": {
+                 "trusted": true,
+                 "rating": "10",
+                 "notes": "All in good order",
+                 "other": {
+                    "shouldBeUnmasked": "Example multi-level-nested-value",
+                    "shouldBeMasked": "Example multi-level-nested-value"
+                 }
                }
             }
             """;

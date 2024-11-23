@@ -10,3 +10,4 @@ akhq:
             - dateOfBirth
             - address.firstLine
             - address.town
+            - metadata.other.shouldBeMasked
