@@ -12,12 +12,10 @@ HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
   CMD curl --fail http://localhost:28081/health || exit 1
 
 WORKDIR /app
-COPY docker /
-ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 # Create user
 RUN useradd -ms /bin/bash akhq
-# Chown to write configuration
-RUN chown -R akhq /app
+COPY --chown=akhq:akhq docker /
+ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 # Use the 'akhq' user
 USER akhq
 ENTRYPOINT ["docker-entrypoint.sh"]
