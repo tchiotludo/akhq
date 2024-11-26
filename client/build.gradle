@@ -1,5 +1,5 @@
 plugins {
-    id 'org.siouan.frontend-jdk17' version '8.0.0'
+    id 'org.siouan.frontend-jdk17' version '9.0.0'
 }
 
 repositories {
@@ -11,6 +11,7 @@ frontend {
     nodeVersion = '18.18.0'
     assembleScript = 'run build'
     maxDownloadAttempts = 5
+    verboseModeEnabled = true
 }
 
 tasks.register('copyClientResources', Copy) {

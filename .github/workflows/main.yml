@@ -63,7 +63,7 @@ jobs:
       # Gradle check
       - name: Build with Gradle
         run: |
-          ./gradlew classes testClasses --parallel --no-daemon
+          ./gradlew classes testClasses -S --parallel --no-daemon
           ./gradlew check --no-daemon
 
       # report test
