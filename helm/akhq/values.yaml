@@ -38,12 +38,12 @@ extraEnv: []
 #   value: "/any/additional/jars/desired.jar:/go/here.jar"
 
 ## Or you can also use configmap for the configuration...
-configuration:
-  akhq:
-    server:
-      access-log:
-        enabled: false
-        name: org.akhq.log.access
+configuration: {}
+  # akhq:
+  #   server:
+  #     access-log:
+  #       enabled: false
+  #       name: org.akhq.log.access
 
 ##... and secret for connection information
 existingSecrets: ""

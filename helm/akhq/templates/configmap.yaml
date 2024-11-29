@@ -1,4 +1,9 @@
 {{- if .Values.configuration }}
+{{- range .Values.extraEnv }}
+{{- if eq .name "AKHQ_CONFIGURATION" }}
+{{- fail "Can't use AKHQ_CONFIGURATION extraEnv together with ConfigMap configuration." }}
+{{- end }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
