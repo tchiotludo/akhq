@@ -12,4 +12,5 @@ public class UiOptionsTopic {
     private Boolean skipConsumerGroups;
     private Boolean skipLastRecord;
     private Boolean showAllConsumerGroups;
+    private String groupsDefaultView;
 }

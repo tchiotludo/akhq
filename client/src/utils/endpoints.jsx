@@ -94,8 +94,8 @@ export const uriTopicsPartitions = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/partitions`;
 };
 
-export const uriTopicsGroups = (clusterId, topicId) => {
-  return `${apiUrl}/${clusterId}/topic/${topicId}/groups`;
+export const uriTopicsGroups = (clusterId, topicId, groupsListView) => {
+  return `${apiUrl}/${clusterId}/topic/${topicId}/groups?groupsListView=${groupsListView}`;
 };
 export const uriTopicsLogs = (clusterId, topicId) => {
   return `${apiUrl}/${clusterId}/topic/${topicId}/logs`;
@@ -312,8 +312,8 @@ export const uriConsumerGroupAcls = (clusterId, groupId) => {
   return `${apiUrl}/${clusterId}/group/${encodeURIComponent(groupId)}/acls`;
 };
 
-export const uriConsumerGroupByTopics = (clusterId, topicList) => {
-  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}`;
+export const uriConsumerGroupByTopics = (clusterId, topicList, groupsListView) => {
+  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}&groupsListView=${groupsListView}`;
 };
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {

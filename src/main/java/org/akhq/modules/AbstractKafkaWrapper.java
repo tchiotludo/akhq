@@ -217,20 +217,25 @@ abstract public class AbstractKafkaWrapper {
 
     private Map<String, Map<String, ConsumerGroupDescription>> describeConsumerGroups = new HashMap<>();
 
-    public Map<String, ConsumerGroupDescription> describeConsumerGroups(String clusterId, List<String> groups) throws ExecutionException {
+    public Map<String, ConsumerGroupDescription> describeConsumerGroups(String clusterId, List<String> groups) {
         describeConsumerGroups.computeIfAbsent(clusterId, s -> new HashMap<>());
 
         List<String> list = new ArrayList<>(groups);
         list.removeIf(value -> this.describeConsumerGroups.get(clusterId).containsKey(value));
 
-        if (list.size() > 0) {
-            Map<String, ConsumerGroupDescription> description = Logger.call(
-                kafkaModule.getAdminClient(clusterId)
-                    .describeConsumerGroups(groups)
-                    .all(),
-                "Describe ConsumerGroups {}",
-                groups
-            );
+        if (!list.isEmpty()) {
+            Map<String, ConsumerGroupDescription> description = null;
+            try {
+                description = Logger.call(
+                    kafkaModule.getAdminClient(clusterId)
+                        .describeConsumerGroups(groups)
+                        .all(),
+                    "Describe ConsumerGroups {}",
+                    groups
+                );
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
 
             this.describeConsumerGroups.get(clusterId).putAll(description);
         }
