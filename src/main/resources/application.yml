@@ -130,7 +130,7 @@ akhq:
 
   topic-data:
     size: 50
-    poll-timeout: 10000
+    poll-timeout: 1000
     kafka-max-message-length: 1000000
 
   audit:
