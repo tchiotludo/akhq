@@ -18,7 +18,7 @@ class Settings extends Form {
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true,
-      groupsDefaultView: '',
+      groupsDefaultView: ''
     },
     errors: {}
   };
@@ -46,7 +46,7 @@ class Settings extends Form {
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional(),
-    groupsDefaultView: Joi.string().optional(),
+    groupsDefaultView: Joi.string().optional()
   };
 
   componentDidMount() {
@@ -82,7 +82,7 @@ class Settings extends Form {
             groupsDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.groupsDefaultView
-                : '',
+                : ''
           }
         });
       });
@@ -113,7 +113,7 @@ class Settings extends Form {
         skipConsumerGroups: formData.skipConsumerGroups,
         skipLastRecord: formData.skipLastRecord,
         showAllConsumerGroups: formData.showAllConsumerGroups,
-        groupsDefaultView: formData.groupsDefaultView,
+        groupsDefaultView: formData.groupsDefaultView
       },
       topicData: {
         sort: formData.topicDataSort,
@@ -190,18 +190,18 @@ class Settings extends Form {
               </span>
             </div>
             {this.renderSelect(
-                'groupsDefaultView',
-                'Consumer Groups Default View',
-                this.groupsDefaultView,
-                ({ currentTarget: input }) => {
-                  const { formData } = this.state;
-                  formData.groupsDefaultView = input.value;
-                  this.setState({ formData });
-                },
-                'col-sm-10',
-                'select-wrapper settings-wrapper',
-                true,
-                { className: 'form-control' }
+              'groupsDefaultView',
+              'Consumer Groups Default View',
+              this.groupsDefaultView,
+              ({ currentTarget: input }) => {
+                const { formData } = this.state;
+                formData.groupsDefaultView = input.value;
+                this.setState({ formData });
+              },
+              'col-sm-10',
+              'select-wrapper settings-wrapper',
+              true,
+              { className: 'form-control' }
             )}
           </fieldset>
 
