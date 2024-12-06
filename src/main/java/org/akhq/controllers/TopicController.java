@@ -605,27 +605,27 @@ public class TopicController extends AbstractController {
 
 
     @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.CREATE)
-    @Post("api/{fromCluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
+    @Post("api/{cluster}/topic/{fromTopicName}/copy/{toCluster}/topic/{toTopicName}")
     @Operation(tags = {"topic data"}, summary = "Copy from a topic to another topic")
     public RecordRepository.CopyResult copy(
             HttpRequest<?> request,
-            String fromCluster,
+            String cluster,
             String fromTopicName,
             String toCluster,
             String toTopicName,
             @Body List<OffsetCopy> offsets
     ) throws ExecutionException, InterruptedException {
-        checkIfClusterAndResourceAllowed(fromCluster, fromTopicName);
+        checkIfClusterAndResourceAllowed(cluster, fromTopicName);
         checkIfClusterAndResourceAllowed(toCluster, toTopicName);
 
-        Topic fromTopic = this.topicRepository.findByName(fromCluster, fromTopicName);
+        Topic fromTopic = this.topicRepository.findByName(cluster, fromTopicName);
         Topic toTopic = this.topicRepository.findByName(toCluster, toTopicName);
 
         if (!CollectionUtils.isNotEmpty(offsets)) {
             throw new IllegalArgumentException("Empty collections");
         }
 
-        if (fromCluster.equals(toCluster) && fromTopicName.equals(toTopicName)) {
+        if (cluster.equals(toCluster) && fromTopicName.equals(toTopicName)) {
             // #745 Prevent endless loop when copying topic onto itself; Use intermediate copy topic for duplication
             throw new IllegalArgumentException("Can not copy topic to itself");
         }
@@ -638,7 +638,7 @@ public class TopicController extends AbstractController {
             .collect(Collectors.joining("_"));
 
         RecordRepository.Options options = dataSearchOptions(
-            fromCluster,
+            cluster,
             fromTopicName,
             Optional.ofNullable(StringUtils.isNotEmpty(offsetsList) ? offsetsList : null),
             Optional.empty(),
