@@ -313,7 +313,7 @@ export const uriConsumerGroupAcls = (clusterId, groupId) => {
 };
 
 export const uriConsumerGroupByTopics = (clusterId, topicList, groupsListView) => {
-  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}?groupsListView=${groupsListView}`;
+  return `${apiUrl}/${clusterId}/group/topics?topics=${topicList}&groupsListView=${groupsListView}`;
 };
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
