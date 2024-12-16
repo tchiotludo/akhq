@@ -170,7 +170,7 @@ dependencies {
     implementation ("software.amazon.glue:schema-registry-serde:1.1.22")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.0'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.1'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }
