@@ -1,0 +1,14 @@
+akhq:
+  security:
+    data-masking:
+      mode: json_mask_by_default
+      json-filters:
+        - description: Unmask non-sensitive values
+          topic: users
+          keys:
+            - specialId
+            - status
+            - address.country
+            - metadata.trusted
+            - metadata.rating
+            - metadata.other.shouldBeUnmasked

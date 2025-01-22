@@ -1189,7 +1189,7 @@ class TopicData extends Root {
             loading={loading}
             reduce={true}
             firstHeader={firstColumns}
-            isChecked={this.props.exportSome}
+            isChecked={messages?.length === this.state.messagesToExport?.length}
             columns={[
               {
                 id: 'checkboxes',

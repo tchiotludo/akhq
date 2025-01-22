@@ -1,0 +1,13 @@
+akhq:
+  security:
+    data-masking:
+      mode: json_show_by_default
+      json-filters:
+        - description: Mask sensitive values
+          topic: users
+          keys:
+            - name
+            - dateOfBirth
+            - address.firstLine
+            - address.town
+            - metadata.other.shouldBeMasked

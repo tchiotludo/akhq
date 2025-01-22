@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class Record {
+
+    @Setter
     private Topic topic;
     @JsonView(Views.Download.class)
     private int partition;

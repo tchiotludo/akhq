@@ -9,5 +9,7 @@ import java.util.List;
 @ConfigurationProperties("akhq.security.data-masking")
 @Data
 public class DataMasking {
-   List<DataMaskingFilter> filters = new ArrayList<>();
+   List<RegexFilter> filters = new ArrayList<>(); // regex filters still use `filters` for backwards compatibility
+   List<JsonMaskingFilter> jsonFilters = new ArrayList<>();
+   String jsonMaskReplacement = "xxxx";
 }

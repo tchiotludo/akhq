@@ -1,17 +1,17 @@
 plugins {
     // micronaut
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.application" version "4.4.2"
+    id "io.micronaut.application" version "4.4.4"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.5.10'
+    id 'org.gradle.test-retry' version '1.6.0'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.51.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.9"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -117,20 +117,20 @@ dependencies {
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
-    implementation ("org.sourcelab:kafka-connect-client:4.0.4")
+    implementation ("org.sourcelab:kafka-connect-client:4.0.5")
 
     // strimzi
     implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.15.0'
     implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.15.0'
 
     // log
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.13'
-    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.13'
-    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.13'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16'
+    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.16'
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.16'
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:33.3.0-jre'
+    implementation 'com.google.guava:guava:33.3.1-jre'
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -157,7 +157,7 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.22'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.24'
     // api
 
     // client
@@ -167,10 +167,10 @@ dependencies {
     implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.2.0'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.20")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.22")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.6.9'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.0'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }
@@ -236,7 +236,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:3.0'
     testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation 'org.apache.curator:curator-test:5.7.0'
+    testImplementation 'org.apache.curator:curator-test:5.7.1'
 
     testImplementation 'org.awaitility:awaitility:4.2.2'
 }
