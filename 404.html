@@ -1,34 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="generator" content="VuePress 2.0.0-rc.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content="VuePress 2.0.0-rc.19" />
     <style>
       :root {
-        --c-bg: #fff;
+        --vp-c-bg: #fff;
       }
-      html.dark {
-        --c-bg: #22272e;
+
+      [data-theme='dark'] {
+        --vp-c-bg: #1b1b1f;
       }
-      html, body {
-        background-color: var(--c-bg);
+
+      html,
+      body {
+        background-color: var(--vp-c-bg);
       }
     </style>
     <script>
-      const userMode = localStorage.getItem('vuepress-color-scheme');
-			const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-			if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
-				document.documentElement.classList.toggle('dark', true);
-			}
+      const userMode = localStorage.getItem('vuepress-color-scheme')
+      const systemDarkMode =
+        'matchMedia' in window
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          : false
+
+      if (userMode === 'light') {
+        document.documentElement.dataset.theme = 'light'
+      } else if (userMode === 'dark' || systemDarkMode) {
+        document.documentElement.dataset.theme = 'dark'
+      }
     </script>
     <title>AKHQ</title><meta name="description" content="Get all the insight of your Apache Kafka clusters, see topics, browse data inside topics, see consumer groups and their lag, manage your schema registry, see and manage your Kafka Connect cluster status, and more...">
-    <link rel="preload" href="/assets/style-Iw16y8Oo.css" as="style"><link rel="stylesheet" href="/assets/style-Iw16y8Oo.css">
-    <link rel="modulepreload" href="/assets/app-Z8ZuJo9g.js"><link rel="modulepreload" href="/assets/404.html-6Yl8cQE3.js"><link rel="modulepreload" href="/assets/404.html-7cJegNSt.js">
-    <link rel="prefetch" href="/assets/index.html-5b44LjBv.js" as="script"><link rel="prefetch" href="/assets/index.html-p5X-UPGa.js" as="script"><link rel="prefetch" href="/assets/api.html-WrDn04DA.js" as="script"><link rel="prefetch" href="/assets/debug.html-QeOtBza0.js" as="script"><link rel="prefetch" href="/assets/dev.html-YfEMR4ua.js" as="script"><link rel="prefetch" href="/assets/installation.html-UDzF_l0Q.js" as="script"><link rel="prefetch" href="/assets/index.html-fX9Hu32b.js" as="script"><link rel="prefetch" href="/assets/akhq.html-9c1h4rrT.js" as="script"><link rel="prefetch" href="/assets/audit.html-R1Uoqr4v.js" as="script"><link rel="prefetch" href="/assets/avro.html-4sE2RTJe.js" as="script"><link rel="prefetch" href="/assets/brokers.html-yCfNiMFH.js" as="script"><link rel="prefetch" href="/assets/docker.html-iaJppsYq.js" as="script"><link rel="prefetch" href="/assets/helm.html-vSjF7zTk.js" as="script"><link rel="prefetch" href="/assets/others.html-xJ--D9cu.js" as="script"><link rel="prefetch" href="/assets/protobuf.html-yCBzberB.js" as="script"><link rel="prefetch" href="/assets/index.html-GeOubG82.js" as="script"><link rel="prefetch" href="/assets/aws-iam-auth.html-3rqGwiV3.js" as="script"><link rel="prefetch" href="/assets/basic-auth.html-iiV9bMhT.js" as="script"><link rel="prefetch" href="/assets/external.html-ASub3Q1g.js" as="script"><link rel="prefetch" href="/assets/github.html-KwV3p1l_.js" as="script"><link rel="prefetch" href="/assets/groups.html-gfybofC4.js" as="script"><link rel="prefetch" href="/assets/header.html-hP2VNOEd.js" as="script"><link rel="prefetch" href="/assets/jwt.html-8xEdFHyO.js" as="script"><link rel="prefetch" href="/assets/ldap.html-GIE9MJYv.js" as="script"><link rel="prefetch" href="/assets/oidc.html-2GvO1Wi5.js" as="script"><link rel="prefetch" href="/assets/index.html-JNa9UrPx.js" as="script"><link rel="prefetch" href="/assets/glue.html-GwR1tGYX.js" as="script"><link rel="prefetch" href="/assets/schema-references.html-4H3tr3uE.js" as="script"><link rel="prefetch" href="/assets/tibco.html-c47_Tmhd.js" as="script"><link rel="prefetch" href="/assets/index.html-hkcPRENc.js" as="script"><link rel="prefetch" href="/assets/index.html-NcJlb1_N.js" as="script"><link rel="prefetch" href="/assets/api.html-zAnPqUlZ.js" as="script"><link rel="prefetch" href="/assets/debug.html-hNwriRtH.js" as="script"><link rel="prefetch" href="/assets/dev.html-C1TeHuMn.js" as="script"><link rel="prefetch" href="/assets/installation.html-wZgd8aEt.js" as="script"><link rel="prefetch" href="/assets/index.html-ynLAWe54.js" as="script"><link rel="prefetch" href="/assets/akhq.html-eZz8Koou.js" as="script"><link rel="prefetch" href="/assets/audit.html-28QOyroN.js" as="script"><link rel="prefetch" href="/assets/avro.html-MH0IVwl5.js" as="script"><link rel="prefetch" href="/assets/brokers.html-xsyy4j_c.js" as="script"><link rel="prefetch" href="/assets/docker.html-IaEGgzgP.js" as="script"><link rel="prefetch" href="/assets/helm.html-hQ3bf1zR.js" as="script"><link rel="prefetch" href="/assets/others.html-xG1vYi-P.js" as="script"><link rel="prefetch" href="/assets/protobuf.html-X1D141bF.js" as="script"><link rel="prefetch" href="/assets/index.html-09j9rzaa.js" as="script"><link rel="prefetch" href="/assets/aws-iam-auth.html-nUrMxY_o.js" as="script"><link rel="prefetch" href="/assets/basic-auth.html-8u_fa3QV.js" as="script"><link rel="prefetch" href="/assets/external.html-4yF40o-V.js" as="script"><link rel="prefetch" href="/assets/github.html-7vrvbV-k.js" as="script"><link rel="prefetch" href="/assets/groups.html-Tme_yJCw.js" as="script"><link rel="prefetch" href="/assets/header.html-qyklfTvY.js" as="script"><link rel="prefetch" href="/assets/jwt.html-O1mR5_fv.js" as="script"><link rel="prefetch" href="/assets/ldap.html-pXKtKLOk.js" as="script"><link rel="prefetch" href="/assets/oidc.html-XTUlvXjY.js" as="script"><link rel="prefetch" href="/assets/index.html-atKC_X_Z.js" as="script"><link rel="prefetch" href="/assets/glue.html-IO6TAMx_.js" as="script"><link rel="prefetch" href="/assets/schema-references.html-_IPYXoPD.js" as="script"><link rel="prefetch" href="/assets/tibco.html-b9KT3ZKh.js" as="script"><link rel="prefetch" href="/assets/Index-sNc6q5ia.js" as="script">
+    <link rel="preload" href="/assets/style-BLi5FY0A.css" as="style"><link rel="stylesheet" href="/assets/style-BLi5FY0A.css">
+    <link rel="modulepreload" href="/assets/app-DR_w82Kd.js"><link rel="modulepreload" href="/assets/404.html-C-esIVHX.js">
+    <link rel="prefetch" href="/assets/index.html-PJcTy_ir.js" as="script"><link rel="prefetch" href="/assets/index.html-D5-Aw6jJ.js" as="script"><link rel="prefetch" href="/assets/api.html-CQhb0bvK.js" as="script"><link rel="prefetch" href="/assets/debug.html-B2N67Ew0.js" as="script"><link rel="prefetch" href="/assets/dev.html-w4yq2xhE.js" as="script"><link rel="prefetch" href="/assets/installation.html-C5tpr0sp.js" as="script"><link rel="prefetch" href="/assets/index.html-CEXgiC4Q.js" as="script"><link rel="prefetch" href="/assets/akhq.html-CtH9EX0J.js" as="script"><link rel="prefetch" href="/assets/audit.html-DhpSaLgf.js" as="script"><link rel="prefetch" href="/assets/avro.html-CufUUp1k.js" as="script"><link rel="prefetch" href="/assets/brokers.html-x3iAbYUS.js" as="script"><link rel="prefetch" href="/assets/docker.html-B5Y6OS92.js" as="script"><link rel="prefetch" href="/assets/helm.html-CejWTWnf.js" as="script"><link rel="prefetch" href="/assets/others.html-BzeJVJuk.js" as="script"><link rel="prefetch" href="/assets/protobuf.html-DmFkkAAf.js" as="script"><link rel="prefetch" href="/assets/index.html-C00tXvhY.js" as="script"><link rel="prefetch" href="/assets/aws-iam-auth.html-DUBTfTS8.js" as="script"><link rel="prefetch" href="/assets/basic-auth.html-C7sg4Xwu.js" as="script"><link rel="prefetch" href="/assets/external.html-DREUSm0T.js" as="script"><link rel="prefetch" href="/assets/github.html-6Y-mlI2q.js" as="script"><link rel="prefetch" href="/assets/groups.html-DTPYWhqx.js" as="script"><link rel="prefetch" href="/assets/header.html-cn6tpKWv.js" as="script"><link rel="prefetch" href="/assets/jwt.html-C3SmLeCp.js" as="script"><link rel="prefetch" href="/assets/ldap.html-C4vHy23Q.js" as="script"><link rel="prefetch" href="/assets/oidc.html-CQuDmJPC.js" as="script"><link rel="prefetch" href="/assets/index.html-BqFujjlk.js" as="script"><link rel="prefetch" href="/assets/glue.html-DGdmBaLi.js" as="script"><link rel="prefetch" href="/assets/schema-references.html-wXvdbbrk.js" as="script"><link rel="prefetch" href="/assets/tibco.html-BMzmXxOV.js" as="script"><link rel="prefetch" href="/assets/Index-BNDyj6gh.js" as="script"><link rel="prefetch" href="/assets/setupDevtools-7MC2TMWH-Y2T2ckNe.js" as="script">
   </head>
   <body>
-    <div id="app"><!--[--><div class="theme-container"><main class="page"><div class="theme-default-content"><h1>404</h1><blockquote>That&#39;s a Four-Oh-Four.</blockquote><a href="/" class="">Take me home</a></div></main></div><!----><!--]--></div>
-    <script type="module" src="/assets/app-Z8ZuJo9g.js" defer></script>
+    <div id="app"><!--[--><div class="vp-theme-container" vp-container data-v-a9c14c63><main class="page" data-v-a9c14c63><div vp-content data-v-a9c14c63><h1 data-v-a9c14c63>404</h1><blockquote data-v-a9c14c63>That&#39;s a Four-Oh-Four.</blockquote><a class="route-link" href="/" data-v-a9c14c63>Take me home</a></div></main></div><!--[--><!----><!--]--><!--]--></div>
+    <script type="module" src="/assets/app-DR_w82Kd.js" defer></script>
   </body>
 </html>
