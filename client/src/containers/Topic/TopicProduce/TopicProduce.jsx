@@ -126,7 +126,7 @@ class TopicProduce extends Form {
   }
 
   async initByTopicEvent(copyValues) {
-    const { headers, ...topicValuesDefault } = copyValues;
+    const { headers, keySchema, valueSchema, ...topicValuesDefault } = copyValues;
 
     let nHeaders = headers.length === 0 ? 1 : 0;
 
