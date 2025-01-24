@@ -10,7 +10,7 @@
     "@emotion/styled": "^11.11.5",
     "@popperjs/core": "^2.11.8",
     "@trendmicro/react-sidenav": "^0.5.0",
-    "axios": "^1.6.8",
+    "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "buffer": "^6.0.3",
     "event-source-polyfill": "^1.0.31",
