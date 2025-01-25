@@ -21,7 +21,7 @@ public class JsonMaskByDefaultMasker implements Masker {
     private final Map<String, List<String>> topicToKeysMap;
     private final String jsonMaskReplacement;
     private static final String NON_JSON_MESSAGE = "This record is unable to be masked as it is not a structured object. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data.";
-    private static final String ERROR_MESSAGE = "An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data. Please contact akhq administrator.";
+    private static final String ERROR_MESSAGE = "An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data.";
 
     public JsonMaskByDefaultMasker(DataMasking dataMasking) {
         this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();

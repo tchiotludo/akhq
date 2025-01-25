@@ -66,7 +66,7 @@ class JsonMaskByDefaultMaskerTest implements JsonMaskerTest {
         try (MockedStatic<JsonParser> mockStatic = Mockito.mockStatic(JsonParser.class)) {
             mockStatic.when(() -> JsonParser.parseString(SAMPLE_VALUE)).thenThrow(new RuntimeException("Bad exception!"));
             Record record1 = getMasker().maskRecord(record);
-            assertEquals("An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data. Please contact akhq administrator.", record1.getValue());
+            assertEquals("An exception occurred during an attempt to mask this record. This record is unavailable to view due to safety measures from json_mask_by_default to not leak sensitive data.", record1.getValue());
         }
     }
 
