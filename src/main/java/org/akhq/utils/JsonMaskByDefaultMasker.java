@@ -73,7 +73,7 @@ public class JsonMaskByDefaultMasker implements Masker {
 
     @SneakyThrows
     private Record applyMasking(Record record, List<String> unmaskedKeys) {
-        JsonObject root = JsonParser.parseString(record.getValue()).getAsJsonObject();
+        JsonElement root = JsonParser.parseString(record.getValue());
         maskJson(root, "", unmaskedKeys);
         record.setValue(root.toString());
         return record;

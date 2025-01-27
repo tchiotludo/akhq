@@ -56,7 +56,7 @@ public class JsonShowByDefaultMasker implements Masker {
 
     @SneakyThrows
     private Record applyMasking(Record record, List<String> maskedKeys) {
-        JsonObject root = JsonParser.parseString(record.getValue()).getAsJsonObject();
+        JsonElement root = JsonParser.parseString(record.getValue());
         String[][] pathArrays = preProcessPaths(maskedKeys);
         maskPaths(root, pathArrays);
         record.setValue(root.toString());
@@ -69,7 +69,7 @@ public class JsonShowByDefaultMasker implements Masker {
             .toArray(String[][]::new);
     }
 
-    private void maskPaths(JsonObject root, String[][] pathArrays) {
+    private void maskPaths(JsonElement root, String[][] pathArrays) {
         for (String[] path : pathArrays) {
             maskJson(root, path, 0);
         }
