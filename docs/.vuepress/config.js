@@ -19,9 +19,11 @@ module.exports = {
     }),
   ],
   theme: defaultTheme({
-    colorModeSwitch: false,
+    colorModeSwitch: true,
     logo: '/assets/images/logo/akhqio_logo_yellow_white.svg',
-    darkMode: false,
+    logoDark: '/assets/images/logo/akhqio_logo_yellow_dark.svg',
+    darkMode: true,
+    externalLinkIcon: false,
     repo: 'tchiotludo/akhq',
     repoLabel: 'GitHub',
     docsRepo: 'tchiotludo/akhq',

@@ -563,7 +563,7 @@ export default {
 .landing {
     @import "../styles/home/style";
     @import "../styles/home/akhq-theme";
-    header.navbar, #mu-hero {
+    .vp-navbar {
         margin-top: 29px;
     }
 }
