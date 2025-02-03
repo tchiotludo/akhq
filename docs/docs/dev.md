@@ -22,7 +22,7 @@ Or build it with a `./gradlew shadowJar`, the jar will be located here `build/li
 ## Development Server
 
 A docker-compose is provided to start a development environment.
-Just install docker & docker-compose, clone the repository and issue a simple `docker-compose -f docker-compose-dev.yml up` to start a dev server.
+Just install docker & docker compose plugin, clone the repository and issue a simple `docker compose -f docker-compose-dev.yml up` to start a dev server.
 Dev server is a java server & webpack-dev-server with live reload.
 
 The configuration for the dev server is in `application.dev.yml`.
