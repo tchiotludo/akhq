@@ -18,7 +18,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DatePicker from '../../../components/DatePicker';
-import moment from 'moment';
 import Input from '../../../components/Form/Input';
 import { withRouter } from '../../../utils/withRouter';
 import { format } from 'date-fns';
@@ -261,23 +260,23 @@ class TopicCopy extends Form {
 
   async getTopicOffset() {
     const { clusterId, topicId, timestamp } = this.state;
-    const momentValue = moment(timestamp);
 
     const date =
       timestamp.toString().length > 0
         ? formatDateTime(
             {
-              year: momentValue.year(),
-              monthValue: momentValue.month(),
-              dayOfMonth: momentValue.date(),
-              hour: momentValue.hour(),
-              minute: momentValue.minute(),
-              second: momentValue.second(),
-              milli: momentValue.millisecond()
+              year: timestamp.getFullYear(),
+              monthValue: timestamp.getMonth(),
+              dayOfMonth: timestamp.getDate(),
+              hour: timestamp.getHours(),
+              minute: timestamp.getMinutes(),
+              second: timestamp.getMinutes(),
+              milli: timestamp.getMilliseconds()
             },
-            'YYYY-MM-DDTHH:mm:ss.SSSZ'
+            "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
           )
-        : '';
+        : ''; // This case will never happen, 'getTopicOffset' is only called after timestamp is set.
+    // This ternary is probably copy paste from getTopicOffset in ConsumerGroupUpdate.jsx
 
     let data = {};
     if (date !== '') {

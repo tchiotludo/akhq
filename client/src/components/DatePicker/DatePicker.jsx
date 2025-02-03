@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import DateTimePicker from 'react-datepicker';
-import moment from 'moment';
 import { formatDateTime } from '../../utils/converters';
 
 class DatePicker extends Component {
@@ -23,18 +22,18 @@ class DatePicker extends Component {
   };
 
   getDisplayValue = value => {
-    let date = moment(value);
+    const date = value == '' ? new Date() : value;
     try {
       return formatDateTime(
         {
-          year: date.year(),
-          monthValue: date.month(),
-          dayOfMonth: date.date(),
-          hour: date.hour(),
-          minute: date.minute(),
-          second: date.second()
+          year: date.getFullYear(),
+          monthValue: date.getMonth(),
+          dayOfMonth: date.getDate(),
+          hour: date.getHours(),
+          minute: date.getMinutes(),
+          second: date.getSeconds()
         },
-        'DD-MM-YYYY HH:mm'
+        'dd-MM-yyyy HH:mm'
       );
     } catch (e) {
       return '';
