@@ -204,7 +204,6 @@ class TopicCopy extends Form {
                 false,
                 '',
                 '',
-                `partition-input ${name}-input`
               )}
             </span>
           </div>
