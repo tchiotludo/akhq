@@ -39,12 +39,13 @@ class SearchBar extends Form {
     groupsListViewOptions: [
       {
         _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL,
-        name: "Show empty consumer groups"
+        name: 'Show empty consumer groups'
       },
       {
         _id: SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.HIDE_EMPTY,
-        name: "Hide empty consumer groups"
-      }]
+        name: 'Hide empty consumer groups'
+      }
+    ]
   };
 
   schema = {};
@@ -56,8 +57,12 @@ class SearchBar extends Form {
   componentDidUpdate(prevProps) {
     const { search, topicListView, keepSearch, groupsListView } = this.props;
 
-    if (search !== prevProps.search || topicListView !== prevProps.topicListView
-        || keepSearch !== prevProps.keepSearch || groupsListView !== prevProps.groupsListView) {
+    if (
+      search !== prevProps.search ||
+      topicListView !== prevProps.topicListView ||
+      keepSearch !== prevProps.keepSearch ||
+      groupsListView !== prevProps.groupsListView
+    ) {
       this.setupProps();
     }
   }
@@ -168,22 +173,21 @@ class SearchBar extends Form {
                 'select-wrapper',
                 false
               )}
-            {showGroupsListView && (
-                this.renderSelect(
-                    'groupsListView',
-                    '',
-                    groupsListViewOptions,
-                    ({ currentTarget: input }) => {
-                      let { formData } = this.state;
-                      formData.groupsListView = input.value;
-                      this.setState();
-                      this.props.ongroupsListViewChange(input.value);
-                    },
-                    '',
-                    'select-wrapper',
-                    false
-                )
-            )}
+            {showGroupsListView &&
+              this.renderSelect(
+                'groupsListView',
+                '',
+                groupsListViewOptions,
+                ({ currentTarget: input }) => {
+                  let { formData } = this.state;
+                  formData.groupsListView = input.value;
+                  this.setState();
+                  this.props.ongroupsListViewChange(input.value);
+                },
+                '',
+                'select-wrapper',
+                false
+              )}
             <button className="btn btn-primary" type="submit">
               <FontAwesomeIcon icon={faSearch} />
               <span className="d-lg-none"> Search</span>
