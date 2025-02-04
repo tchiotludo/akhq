@@ -9,7 +9,8 @@ import {
   uriTopics,
   uriTopicsPartitions,
   uriTopicsProduce,
-  uriAllSchema, uriTopicsName
+  uriAllSchema,
+  uriTopicsName
 } from '../../../utils/endpoints';
 import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
@@ -102,12 +103,12 @@ class TopicProduce extends Form {
     const { clusterId } = this.props.params;
 
     this.getApi(uriTopicsName(clusterId))
-    .then(res => {
-      this.setState({ topics: res.data });
-    })
-    .catch(err => {
-      console.error('Error:', err);
-    });
+      .then(res => {
+        this.setState({ topics: res.data });
+      })
+      .catch(err => {
+        console.error('Error:', err);
+      });
   }
 
   async getPreferredSchemaForTopic() {
