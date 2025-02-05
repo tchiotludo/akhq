@@ -11,7 +11,7 @@ import {
   uriTopicLastRecord,
   uriTopics
 } from '../../../utils/endpoints';
-import constants, {SETTINGS_VALUES} from '../../../utils/constants';
+import constants, { SETTINGS_VALUES } from '../../../utils/constants';
 import { calculateTopicOffsetLag, showBytes } from '../../../utils/converters';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -288,26 +288,27 @@ class TopicList extends Root {
     const topicsName = topics.map(topic => topic.name).join(',');
 
     if (!uiOptionsTopic.skipConsumerGroups) {
-      const groupsListView = uiOptions && uiOptions.topic && uiOptions.topic.groupsDefaultView
+      const groupsListView =
+        uiOptions && uiOptions.topic && uiOptions.topic.groupsDefaultView
           ? uiOptions.topic.groupsDefaultView
-          : SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL
+          : SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL;
 
-      this.getApi(uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName), groupsListView)).then(
-        value => {
-          topics.forEach(topic => {
-            tableTopics[topic.name].groupComponent =
-              value && value.data
-                ? value.data.filter(
-                    consumerGroup =>
-                      (consumerGroup.activeTopics &&
-                        consumerGroup.activeTopics.includes(topic.name)) ||
-                      (consumerGroup.topics && consumerGroup.topics.includes(topic.name))
-                  )
-                : [];
-          });
-          setState();
-        }
-      );
+      this.getApi(
+        uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName), groupsListView)
+      ).then(value => {
+        topics.forEach(topic => {
+          tableTopics[topic.name].groupComponent =
+            value && value.data
+              ? value.data.filter(
+                  consumerGroup =>
+                    (consumerGroup.activeTopics &&
+                      consumerGroup.activeTopics.includes(topic.name)) ||
+                    (consumerGroup.topics && consumerGroup.topics.includes(topic.name))
+                )
+              : [];
+        });
+        setState();
+      });
     }
 
     if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {

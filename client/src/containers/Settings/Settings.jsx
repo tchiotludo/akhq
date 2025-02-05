@@ -34,10 +34,12 @@ class Settings extends Form {
   topicDataDateTimeFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT).map(
     ([value]) => ({ _id: value, name: value })
   );
-  groupsDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW).map(([value]) => ({
-    _id: value,
-    name: value
-  }));
+  groupsDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW).map(
+    ([value]) => ({
+      _id: value,
+      name: value
+    })
+  );
 
   schema = {
     topicDefaultView: Joi.string().optional(),

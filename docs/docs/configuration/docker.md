@@ -25,7 +25,6 @@ docker run -d \
 Override the `JVM_OPTS_FILE` with docker-compose:
 
 ```yaml
-version: '3.7'
 services:
   akhq:
     image: tchiotludo/akhq-jvm:dev
