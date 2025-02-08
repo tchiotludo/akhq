@@ -1,6 +1,6 @@
 # Groups
 
-Groups allow you to limit user
+Groups allow you to set users granular permissions to various resources.
 
 ::: warning
 With PR #1472 AKHQ introduced a new, better group management system in 0.25.0. It's a breaking change, so you need to rewrite your ACLS
@@ -22,9 +22,9 @@ If the secret is not set, the API will not enforce the group role, and the restr
 :::
 
 3 defaults group are available :
-- `admin` with all right and no patterns/clusters restrictions
-- `reader` with only read access on all AKHQ and no patterns/clusters restrictions
-- `no-roles` without any roles, that force user to login
+- `admin` with all rights and no patterns/clusters restrictions
+- `reader` with read access only on all AKHQ and no patterns/clusters restrictions
+- `no-roles` without any roles, forces user to login
 
 Here is an example of a `reader` group definition based on the default reader role with access on all the resources prefixed with `pub` and located the on `public` cluster
 ```yaml
@@ -39,7 +39,7 @@ Here is an example of a `reader` group definition based on the default reader ro
 
 Roles are based on Resource and Action association. A role can target one or several Resource and allow one or several Action.
 The resources and actions list + possible associations between them are detailed in the table below.
-You can still associate a resource with a non-supported action from the table. It will just be ignored
+You can still associate a resource with a non-supported action from the table however it will be ignored.
 
 <div style="text-align: center;">
 

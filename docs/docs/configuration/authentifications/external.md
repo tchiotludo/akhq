@@ -1,9 +1,7 @@
 
 # External roles and attributes mapping
 
-If you managed which topics (or any other resource) in an external system, you have access to 2 more implementations mechanisms to map your authenticated user (from either Local, Header, LDAP or OIDC) into AKHQ roles and attributes:
-
-If you use this mechanism, keep in mind it will take the local user's groups for local Auth, and the external groups for Header/LDAP/OIDC (ie. this will NOT do the mapping between Header/LDAP/OIDC and local groups)
+If you manage topics (or any other resource) permissions in an external system, you have access to 2 more implementation mechanisms to map your authenticated user (from either Local, Header, LDAP or OIDC) into AKHQ roles and attributes. If you use this approach, keep in mind it will take the local user's groups for local Auth, and the external groups for Header/LDAP/OIDC (ie. this will NOT do the mapping between Header/LDAP/OIDC and local groups).
 
 **Default configuration-based**
 This is the current implementation and the default one (doesn't break compatibility)
