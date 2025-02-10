@@ -203,7 +203,7 @@ class TopicCopy extends Form {
                 'number',
                 false,
                 '',
-                '',
+                ''
               )}
             </span>
           </div>
