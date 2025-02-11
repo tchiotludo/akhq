@@ -55,7 +55,7 @@ public class AkhqController extends AbstractController {
 
     @HasAnyPermission()
     @Get("api/cluster")
-    @Operation(tags = {"AKHQ"}, summary = "Get all cluster for current instance")
+    @Operation(tags = {"AKHQ"}, summary = "Get all clusters for current instance")
     public List<ClusterDefinition> list() {
         // Get all the clusters the logged user can access resources
         List<String> clusters = this.getUserGroups().stream()
