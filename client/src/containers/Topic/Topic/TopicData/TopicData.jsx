@@ -46,8 +46,8 @@ import { fromEvent, map, scan } from 'rxjs';
 
 class TopicData extends Root {
   state = {
-    sortBy: 'Oldest',
-    sortOptions: ['Oldest', 'Newest'],
+    sortBy: 'Newest',
+    sortOptions: ['Newest', 'Oldest'],
     partitionCount: 0,
     partition: 'All',
     partitionOptions: [],
