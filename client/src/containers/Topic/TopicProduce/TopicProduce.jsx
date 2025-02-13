@@ -12,7 +12,6 @@ import {
   uriAllSchema,
   uriTopicsName
 } from '../../../utils/endpoints';
-import moment from 'moment';
 import DatePicker from '../../../components/DatePicker';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -445,7 +444,6 @@ class TopicProduce extends Form {
       multiMessage,
       tombstone
     } = this.state;
-    let date = moment(datetime);
     return (
       <div>
         <form encType="multipart/form-data" className="khq-form khq-form-config">
@@ -555,14 +553,14 @@ class TopicProduce extends Form {
                     ' ' +
                       formatDateTime(
                         {
-                          year: date.year(),
-                          monthValue: date.month(),
-                          dayOfMonth: date.date(),
-                          hour: date.hour(),
-                          minute: date.minute(),
-                          second: date.second()
+                          year: datetime.getFullYear(),
+                          monthValue: datetime.getMonth(),
+                          dayOfMonth: datetime.getDate(),
+                          hour: datetime.getHours(),
+                          minute: datetime.getMinutes(),
+                          second: datetime.getSeconds()
                         },
-                        'DD-MM-YYYY HH:mm'
+                        'dd-MM-yyyy HH:mm'
                       )
                   }
                   placeholder={
@@ -570,14 +568,14 @@ class TopicProduce extends Form {
                     ' ' +
                       formatDateTime(
                         {
-                          year: date.year(),
-                          monthValue: date.month(),
-                          dayOfMonth: date.date(),
-                          hour: date.hour(),
-                          minute: date.minute(),
-                          second: date.second()
+                          year: datetime.getFullYear(),
+                          monthValue: datetime.getMonth(),
+                          dayOfMonth: datetime.getDate(),
+                          hour: datetime.getHours(),
+                          minute: datetime.getMinutes(),
+                          second: datetime.getSeconds()
                         },
-                        'DD-MM-YYYY HH:mm'
+                        'dd-MM-yyyy HH:mm'
                       )
                   }
                 />
