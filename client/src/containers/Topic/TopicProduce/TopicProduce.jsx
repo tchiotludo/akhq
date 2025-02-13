@@ -548,7 +548,7 @@ class TopicProduce extends Form {
               >
                 <input
                   className="form-control"
-                  defaultValue={
+                  value={
                     datetime !== '' &&
                     ' ' +
                       formatDateTime(

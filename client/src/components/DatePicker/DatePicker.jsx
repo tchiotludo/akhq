@@ -101,10 +101,7 @@ class DatePicker extends Component {
 
 DatePicker.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.instanceOf(Date)
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
   onChange: PropTypes.func,
   showDateTimeInput: PropTypes.bool,
   showTimeInput: PropTypes.bool,
