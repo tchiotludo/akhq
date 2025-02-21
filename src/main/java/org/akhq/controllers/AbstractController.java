@@ -9,6 +9,8 @@ import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
+import org.akhq.configs.security.Role.Action;
+import org.akhq.configs.security.Role.Resource;
 import org.akhq.configs.security.SecurityProperties;
 import org.akhq.models.security.ClaimProvider;
 import org.akhq.security.annotation.AKHQSecured;
@@ -89,6 +91,9 @@ abstract public class AbstractController {
             return List.of();
         }
 
+        var securedResource = annotation.resource();
+        var securedAction = annotation.action();
+
         return getUserGroups().stream()
             // Keep only group matching the cluster
             .filter(group -> group.getClusters()
@@ -99,8 +104,8 @@ abstract public class AbstractController {
             .map(gb -> securityProperties.getRoles().get(gb.getRole())
                 .stream()
                 // Find roles with a resource and action matching the calling method AKHQSecured annotation
-                .filter(role -> role.getResources().contains(annotation.resource())
-                    && role.getActions().contains(annotation.action()))
+                .filter(role -> role.getResources().contains(securedResource)
+                    && role.getActions().contains(securedAction))
                 // Keep only the restriction attribute containing the patterns
                 .map(role -> gb.getPatterns())
                 .collect(Collectors.toList()))
@@ -135,40 +140,17 @@ abstract public class AbstractController {
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, List<String> resources) {
-        for(String resource : resources) {
+        for (String resource : resources) {
             checkIfClusterAndResourceAllowed(cluster, resource);
         }
     }
 
     protected void checkIfClusterAndResourceAllowed(String cluster, String resource) {
-        // Authentication disabled, we allow everything
-        if (!applicationContext.containsBean(SecurityService.class))
-            return;
-
         boolean isAllowed;
 
         try {
             AKHQSecured annotation = getCallingAKHQSecuredAnnotation();
-
-            isAllowed = getUserGroups().stream()
-                // Get only group with role matching the method annotation resource and action
-                .filter(groupBinding -> securityProperties.getRoles().entrySet().stream()
-                    .filter(role -> groupBinding.getRole().equals(role.getKey()))
-                    .flatMap(role -> role.getValue().stream())
-                    .anyMatch(roleBinding -> roleBinding.getResources().contains(annotation.resource())
-                        && roleBinding.getActions().contains(annotation.action())))
-                // Check that resource and cluster patterns match
-                .anyMatch(group -> {
-                    boolean allowed = group.getClusters().stream()
-                        .anyMatch(pattern -> Pattern.matches(pattern, cluster));
-
-                    if (StringUtils.isNotEmpty(resource)) {
-                        allowed = allowed && group.getPatterns().stream()
-                            .anyMatch(pattern -> Pattern.matches(pattern, resource));
-                    }
-
-                    return allowed;
-                });
+            isAllowed = checkIfClusterAndResourceAllowed(cluster, resource, annotation.action(), annotation.resource());
         } catch (NoSuchMethodException e) {
             isAllowed = false;
         }
@@ -177,5 +159,32 @@ abstract public class AbstractController {
             throw new AuthorizationException(applicationContext.getBean(SecurityService.class).getAuthentication()
                 .orElse(null));
         }
+    }
+
+    protected boolean checkIfClusterAndResourceAllowed(String cluster, String resource, Action action, Resource resourceType) {
+        // Authentication disabled, we allow everything
+        if (!applicationContext.containsBean(SecurityService.class))
+            return true;
+
+
+        return getUserGroups().stream()
+            // Get only group with role matching the method annotation resource and action
+            .filter(groupBinding -> securityProperties.getRoles().entrySet().stream()
+                .filter(role -> groupBinding.getRole().equals(role.getKey()))
+                .flatMap(role -> role.getValue().stream())
+                .anyMatch(roleBinding -> roleBinding.getResources().contains(resourceType)
+                    && roleBinding.getActions().contains(action)))
+            // Check that resource and cluster patterns match
+            .anyMatch(group -> {
+                boolean allowed = group.getClusters().stream()
+                    .anyMatch(pattern -> Pattern.matches(pattern, cluster));
+
+                if (StringUtils.isNotEmpty(resource)) {
+                    allowed = allowed && group.getPatterns().stream()
+                        .anyMatch(pattern -> Pattern.matches(pattern, resource));
+                }
+
+                return allowed;
+            });
     }
 }
