@@ -103,13 +103,30 @@ public class TopicController extends AbstractController {
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         Pagination pagination = new Pagination(uiPageSize.orElse(pageSize), uri, page.orElse(1));
 
-        return ResultPagedList.of(this.topicRepository.list(
+        var topicList = this.topicRepository.list(
             cluster,
             pagination,
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search,
             buildUserBasedResourceFilters(cluster)
-        ));
+        );
+        topicList.forEach(topic -> {
+            var permissions = new TopicPermissions(
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.UPDATE, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ_CONFIG, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.ALTER_CONFIG, Role.Resource.TOPIC),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC_DATA),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC_DATA),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC_DATA),
+                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.CONSUMER_GROUP)
+            );
+            topic.setPermissions(permissions);
+        });
+
+        return ResultPagedList.of(topicList);
     }
 
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)

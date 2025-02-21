@@ -1,6 +1,6 @@
 package org.akhq.models;
 
-public record Permissions(
+public record TopicPermissions(
     boolean create,
     boolean read,
     boolean update,
@@ -9,19 +9,6 @@ public record Permissions(
     boolean alterConfig,
     boolean topicDataRead,
     boolean topicDataCreate,
-    boolean topicDataDelete
-) {
-    public Permissions() {
-        this(
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
-        );
-    }
-}
+    boolean topicDataDelete,
+    boolean consumerGroupRead
+) {}
