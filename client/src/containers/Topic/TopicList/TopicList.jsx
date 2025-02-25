@@ -278,23 +278,28 @@ class TopicList extends Root {
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
         groupComponent: undefined,
-        internal: topic.internal
+        internal: topic.internal,
+        permissions: topic.permissions
       };
       collapseConsumerGroups[topic.name] = uiOptionsTopic.showAllConsumerGroups ? true : false;
     });
     this.setState({ collapseConsumerGroups });
     setState();
 
-    const topicsName = topics.map(topic => topic.name).join(',');
 
     if (!uiOptionsTopic.skipConsumerGroups) {
+      const topicsNameConsumerGroupRead = topics
+        .filter(topic => topic.permissions.consumerGroupRead)
+        .map(topic => topic.name)
+        .join(',');
+
       const groupsListView =
         uiOptions && uiOptions.topic && uiOptions.topic.groupsDefaultView
           ? uiOptions.topic.groupsDefaultView
           : SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW.ALL;
 
       this.getApi(
-        uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName), groupsListView)
+        uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsNameConsumerGroupRead), groupsListView)
       ).then(value => {
         topics.forEach(topic => {
           tableTopics[topic.name].groupComponent =
@@ -312,7 +317,11 @@ class TopicList extends Root {
     }
 
     if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
-      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName))).then(
+      const topicsNameDataRead = topics
+        .filter(topic => topic.permissions.topicDataRead)
+        .map(topic => topic.name)
+        .join(',');
+      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsNameDataRead))).then(
         value => {
           topics.forEach(topic => {
             tableTopics[topic.name].lastWrite = value.data[topic.name]
@@ -516,7 +525,7 @@ class TopicList extends Root {
 
     let detailsHref = undefined;
     const actions = [constants.TABLE_CONFIG];
-    if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
+    if (roles.TOPIC_DATA && roles.TOPIC.includes('READ_CONFIG') && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
       detailsHref = id => `/ui/${selectedCluster}/topic/${id}/data`;
     }
@@ -573,6 +582,7 @@ class TopicList extends Root {
             replicationCols,
             uiOptionsTopic.skipConsumerGroups ? [] : consumerGprCols
           )}
+          confirmAction={confirmAction}
           data={topics}
           updateData={data => {
             this.setState({ topics: data });
@@ -607,6 +617,25 @@ class TopicList extends Root {
         />
       </div>
     );
+  }
+}
+
+/**
+ * Check if the user has the permission to perform the action
+ * @param {Object} topic
+ * @param {String} action
+ * @returns {Boolean}
+ */
+const confirmAction = (topic, action) => {
+  switch (action) {
+    case constants.TABLE_DETAILS:
+      return topic.permissions.topicDataRead && topic.permissions.readConfig;
+    case constants.TABLE_CONFIG:
+      return topic.permissions.readConfig;
+    case constants.TABLE_DELETE:
+      return topic.permissions.delete;
+    default:
+      return true;
   }
 }
 

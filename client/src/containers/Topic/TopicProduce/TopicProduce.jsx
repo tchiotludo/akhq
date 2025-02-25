@@ -6,7 +6,6 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { formatDateTime } from '../../../utils/converters';
 import { popProduceToTopicValues } from '../../../utils/localstorage';
 import {
-  uriTopics,
   uriTopicsPartitions,
   uriTopicsProduce,
   uriAllSchema,

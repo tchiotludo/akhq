@@ -151,8 +151,9 @@ class Table extends Component {
 
   renderRow(row, index) {
     const {
-      actions,
+      actions: unconfirmedActions,
       columns,
+      confirmAction,
       extraRow,
       onExpand,
       noRowBackgroundChange,
@@ -161,6 +162,10 @@ class Table extends Component {
       reduce
     } = this.props;
     const { extraExpanded } = this.state;
+    let actions = unconfirmedActions ?? [];
+    if (confirmAction && unconfirmedActions) {
+      actions = unconfirmedActions.filter(action => confirmAction(row, action));
+    }
 
     let extraRowColCollapsed;
     let extraRowColExpanded;
@@ -189,7 +194,6 @@ class Table extends Component {
                 className={column.readOnly ? 'not-allowed' : ''}
                 onDoubleClick={() => {
                   if (
-                    actions &&
                     actions.find(action => action === constants.TABLE_DETAILS) &&
                     !column.expand
                   ) {
@@ -211,7 +215,6 @@ class Table extends Component {
               className={column.readOnly ? 'not-allowed' : ''}
               onDoubleClick={() => {
                 if (
-                  actions &&
                   actions.find(action => action === constants.TABLE_DETAILS) &&
                   !column.expand
                 ) {
@@ -225,7 +228,7 @@ class Table extends Component {
             </td>
           );
         })}
-        {actions && actions.length > 0 && this.renderActions(row)}
+        {unconfirmedActions && unconfirmedActions.length > 0 && this.renderActions(row)}
       </tr>
     ];
     if (
@@ -338,8 +341,12 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } =
+    const { actions: unconfirmedActions, confirmAction, onAdd, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } =
       this.props;
+    let actions = unconfirmedActions ?? [];
+    if (confirmAction && unconfirmedActions) {
+      actions = unconfirmedActions.filter(action => confirmAction(row, action));
+    }
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -357,6 +364,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faSearch} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_ADD) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -364,6 +373,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faSearch} />
             </Link>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_DETAILS) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -371,6 +382,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faGear} />
             </Link>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.CONFIG) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -384,6 +397,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faTrash} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_DELETE) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_EDIT) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -397,6 +412,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faSearch} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_EDIT) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_RESTART) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -410,6 +427,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faRefresh} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_RESTART) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_COPY) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -423,6 +442,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faClone} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_COPY) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_SHARE) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -436,6 +457,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faShare} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_SHARE) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_DOWNLOAD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
@@ -449,6 +472,8 @@ class Table extends Component {
               <FontAwesomeIcon icon={faDownload} />
             </span>
           </td>
+        ) || unconfirmedActions.find(el => el === constants.TABLE_DOWNLOAD) && (
+          <td className="khq-row-action khq-row-action-main" />
         )}
       </>
     );
