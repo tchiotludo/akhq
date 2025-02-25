@@ -584,7 +584,7 @@ class TopicProduce extends Form {
                 <div className="input-group">
                   <DatePicker
                     showDateTimeInput
-                    showTimeInput
+                    showTimeSelect
                     value={datetime}
                     onChange={value => {
                       this.setState({

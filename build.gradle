@@ -164,13 +164,13 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.2.0'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.0'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.22")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.23")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.2'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.3'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }
@@ -238,7 +238,7 @@ dependencies {
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
     testImplementation 'org.apache.curator:curator-test:5.7.1'
 
-    testImplementation 'org.awaitility:awaitility:4.2.2'
+    testImplementation 'org.awaitility:awaitility:4.3.0'
 }
 
 testlogger {
