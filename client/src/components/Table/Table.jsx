@@ -382,7 +382,7 @@ class Table extends Component {
               <FontAwesomeIcon icon={faGear} />
             </Link>
           </td>
-        ) || unconfirmedActions.find(el => el === constants.CONFIG) && (
+        ) || unconfirmedActions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main" />
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
