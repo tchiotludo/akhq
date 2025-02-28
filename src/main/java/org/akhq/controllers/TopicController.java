@@ -111,18 +111,18 @@ public class TopicController extends AbstractController {
             buildUserBasedResourceFilters(cluster)
         );
         topicList.forEach(topic -> {
-            var permissions = new TopicPermissions(
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.UPDATE, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ_CONFIG, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.ALTER_CONFIG, Role.Resource.TOPIC),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC_DATA),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC_DATA),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC_DATA),
-                checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.CONSUMER_GROUP)
-            );
+            var permissions = TopicPermissions.builder()
+                .create(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC))
+                .read(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC))
+                .update(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.UPDATE, Role.Resource.TOPIC))
+                .delete(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC))
+                .readConfig(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ_CONFIG, Role.Resource.TOPIC))
+                .alterConfig(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.ALTER_CONFIG, Role.Resource.TOPIC))
+                .topicDataRead(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.TOPIC_DATA))
+                .topicDataCreate(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.CREATE, Role.Resource.TOPIC_DATA))
+                .topicDataDelete(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.DELETE, Role.Resource.TOPIC_DATA))
+                .consumerGroupRead(checkIfClusterAndResourceAllowed(cluster, topic.getName(), Role.Action.READ, Role.Resource.CONSUMER_GROUP))
+                .build();
             topic.setPermissions(permissions);
         });
 
