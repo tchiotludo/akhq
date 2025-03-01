@@ -1,72 +1,53 @@
 package org.akhq.utils;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
 import org.akhq.configs.DataMasking;
-import org.akhq.configs.JsonMaskingFilter;
 import org.akhq.models.Record;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Singleton
 @Requires(property = "akhq.security.data-masking.mode", value = "json_show_by_default")
-public class JsonShowByDefaultMasker implements Masker {
+public class JsonShowByDefaultMasker extends JsonMasker {
 
-    private final Map<String, List<String>> topicToKeysMap;
-    private final String jsonMaskReplacement;
     private static final String ERROR_MESSAGE = "Error masking record";
 
     public JsonShowByDefaultMasker(DataMasking dataMasking) {
-        this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();
-        this.topicToKeysMap = buildTopicKeysMap(dataMasking);
+        super(dataMasking);
     }
 
-    private Map<String, List<String>> buildTopicKeysMap(DataMasking dataMasking) {
-        return dataMasking.getJsonFilters().stream()
-            .collect(Collectors.toMap(
-                JsonMaskingFilter::getTopic,
-                JsonMaskingFilter::getKeys,
-                (a, b) -> a,
-                HashMap::new
-            ));
-    }
-
+    @Override
     public Record maskRecord(Record record) {
         try {
             if (!isJson(record)) {
                 return record;
             }
-            return maskJsonRecord(record);
+            String topic = record.getTopic().getName().toLowerCase();
+            List<String> keysToMask = getKeysForTopic(topic);
+            return keysToMask.isEmpty() ? record : applyMasking(record, keysToMask);
         } catch (Exception e) {
             LOG.error(ERROR_MESSAGE, e);
             return record;
         }
     }
 
-    private Record maskJsonRecord(Record record) {
-        String topic = record.getTopic().getName().toLowerCase();
-        List<String> maskedKeys = topicToKeysMap.get(topic);
-        return maskedKeys != null ? applyMasking(record, maskedKeys) : record;
-    }
-
     @SneakyThrows
-    private Record applyMasking(Record record, List<String> maskedKeys) {
+    private Record applyMasking(Record record, List<String> keysToMask) {
         JsonElement root = JsonParser.parseString(record.getValue());
-        String[][] pathArrays = preProcessPaths(maskedKeys);
+        String[][] pathArrays = keysToMask
+            .stream()
+            .map(key -> key.split("\\."))
+            .toArray(String[][]::new);
         maskPaths(root, pathArrays);
         record.setValue(root.toString());
         return record;
-    }
-
-    private String[][] preProcessPaths(List<String> maskedKeys) {
-        return maskedKeys.stream()
-            .map(key -> key.split("\\."))
-            .toArray(String[][]::new);
     }
 
     private void maskPaths(JsonElement root, String[][] pathArrays) {

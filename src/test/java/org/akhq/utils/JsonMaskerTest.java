@@ -3,7 +3,7 @@ package org.akhq.utils;
 import org.akhq.models.Record;
 import org.junit.jupiter.api.Test;
 
-import static org.akhq.utils.MaskerTestHelper.*;
+import static org.akhq.utils.MaskerTestHelper.sampleRecord;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 interface JsonMaskerTest {
