@@ -58,7 +58,7 @@ public class SchemaController extends AbstractController {
 
 
     @Get("api/{cluster}/schema")
-    @Operation(tags = {"schema registry"}, summary = "List all schemas")
+    @Operation(tags = {"schema registry"}, summary = "List all schemas paginated")
     public ResultPagedList<Schema> list(
         HttpRequest<?> request,
         String cluster,
@@ -79,7 +79,7 @@ public class SchemaController extends AbstractController {
     }
 
     @Get("api/{cluster}/schema/topic/{topic}")
-    @Operation(tags = {"schema registry"}, summary = "List all schemas prefered schemas for this topic")
+    @Operation(tags = {"schema registry"}, summary = "List all preferred schemas for a topic")
     public TopicSchema listSchemaForTopic(
         HttpRequest<?> request,
         String cluster,

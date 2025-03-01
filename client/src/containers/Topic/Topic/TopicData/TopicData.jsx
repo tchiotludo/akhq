@@ -13,7 +13,6 @@ import {
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
-import moment from 'moment';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
@@ -351,19 +350,20 @@ class TopicData extends Root {
   }
 
   _buildTimestampFilter(datetime) {
-    let timestamp = datetime.toString().length > 0 ? moment(datetime) : '';
-    return formatDateTime(
-      {
-        year: timestamp.year(),
-        monthValue: timestamp.month(),
-        dayOfMonth: timestamp.date(),
-        hour: timestamp.hour(),
-        minute: timestamp.minute(),
-        second: timestamp.second(),
-        milli: timestamp.millisecond()
-      },
-      'YYYY-MM-DDTHH:mm:ss.SSSZ'
-    );
+    if (datetime instanceof Date) {
+      return formatDateTime(
+        {
+          year: datetime.getFullYear(),
+          monthValue: datetime.getMonth(),
+          dayOfMonth: datetime.getDate(),
+          hour: datetime.getHours(),
+          minute: datetime.getMinutes(),
+          second: datetime.getSeconds(),
+          milli: datetime.getMilliseconds()
+        },
+        "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
+      );
+    }
   }
 
   _searchMessages(changePage = false, replaceInNavigation = false) {
@@ -941,8 +941,6 @@ class TopicData extends Root {
       actions.push(constants.TABLE_DELETE);
     if (canDownload) actions.push(constants.TABLE_DOWNLOAD);
 
-    let date = moment(datetime);
-    let endDate = moment(endDatetime);
     const firstColumns = [
       { colName: 'Key', colSpan: 1 },
       { colName: 'Value', colSpan: 1 },
@@ -1025,27 +1023,27 @@ class TopicData extends Root {
                       ' From ' +
                         formatDateTime(
                           {
-                            year: date.year(),
-                            monthValue: date.month(),
-                            dayOfMonth: date.date(),
-                            hour: date.hour(),
-                            minute: date.minute(),
-                            second: date.second()
+                            year: datetime.getFullYear(),
+                            monthValue: datetime.getMonth(),
+                            dayOfMonth: datetime.getDate(),
+                            hour: datetime.getHours(),
+                            minute: datetime.getMinutes(),
+                            second: datetime.getSeconds()
                           },
-                          'DD-MM-YYYY HH:mm'
+                          'dd-MM-yyyy HH:mm'
                         )}
                     {endDatetime !== '' &&
                       ' To ' +
                         formatDateTime(
                           {
-                            year: endDate.year(),
-                            monthValue: endDate.month(),
-                            dayOfMonth: endDate.date(),
-                            hour: endDate.hour(),
-                            minute: endDate.minute(),
-                            second: endDate.second()
+                            year: endDatetime.getFullYear(),
+                            monthValue: endDatetime.getMonth(),
+                            dayOfMonth: endDatetime.getDate(),
+                            hour: endDatetime.getHours(),
+                            minute: endDatetime.getMinutes(),
+                            second: endDatetime.getSeconds()
                           },
-                          'DD-MM-YYYY HH:mm'
+                          'dd-MM-yyyy HH:mm'
                         )}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>

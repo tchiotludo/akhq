@@ -79,7 +79,7 @@ public class GroupController extends AbstractController {
     }
 
     @Get("{groupName}/offsets")
-    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group offsets")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group offsets")
     public List<TopicPartition.ConsumerGroupOffset> offsets(String cluster, String groupName) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, groupName);
 
@@ -87,7 +87,7 @@ public class GroupController extends AbstractController {
     }
 
     @Get("{groupName}/members")
-    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group members")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group members")
     public List<Consumer> members(String cluster, String groupName) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, groupName);
 
@@ -95,7 +95,7 @@ public class GroupController extends AbstractController {
     }
 
     @Get("{groupName}/acls")
-    @Operation(tags = {"consumer group"}, summary = "Retrieve a consumer group acls")
+    @Operation(tags = {"consumer group"}, summary = "Retrieve consumer group acls")
     public List<AccessControl> acls(String cluster, String groupName) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, groupName);
 
@@ -178,7 +178,7 @@ public class GroupController extends AbstractController {
 
     @AKHQSecured(resource = Role.Resource.CONSUMER_GROUP, action = Role.Action.DELETE_OFFSET)
     @Delete("{groupName}/topic/{topicName}")
-    @Operation(tags = {"consumer group"}, summary = "Delete group offsets of given topic")
+    @Operation(tags = {"consumer group"}, summary = "Delete consumer group offsets for the given topic")
     public HttpResponse<?> deleteConsumerGroupOffsets(String cluster, String groupName, String topicName) throws ExecutionException {
         checkIfClusterAndResourceAllowed(cluster, groupName);
 

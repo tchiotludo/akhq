@@ -48,7 +48,7 @@ public class NodeController extends AbstractController {
     }
 
     @Get("api/{cluster}/node/partitions")
-    @Operation(tags = {"topic"}, summary = "partition counts")
+    @Operation(tags = {"topic"}, summary = "Partition counts")
     public List<NodePartition> nodePartitions(String cluster) throws ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
@@ -93,7 +93,7 @@ public class NodeController extends AbstractController {
     }
 
     @Get("api/{cluster}/node/{nodeId}")
-    @Operation(tags = {"node"}, summary = "Retrieve a nodes")
+    @Operation(tags = {"node"}, summary = "Retrieve a node")
     public Node node(String cluster, Integer nodeId) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
 

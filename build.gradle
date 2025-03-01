@@ -6,12 +6,12 @@ plugins {
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.6.1'
+    id 'org.gradle.test-retry' version '1.6.2'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.51.0"
+    id "com.github.ben-manes.versions" version "0.52.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.9"
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.10"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -131,7 +131,7 @@ dependencies {
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
     implementation 'com.google.guava:guava:33.4.0-jre'
-    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'com.google.code.gson:gson:2.12.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
@@ -157,20 +157,20 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.24'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.25'
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.2.0'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.0'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.22")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.23")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.2'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.3'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }
@@ -231,14 +231,14 @@ dependencies {
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.17.2'
+    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.18.0'
     testImplementation 'org.hamcrest:hamcrest:3.0'
     testImplementation 'org.hamcrest:hamcrest-library:3.0'
     testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
     testImplementation 'org.apache.curator:curator-test:5.7.1'
 
-    testImplementation 'org.awaitility:awaitility:4.2.2'
+    testImplementation 'org.awaitility:awaitility:4.3.0'
 }
 
 testlogger {

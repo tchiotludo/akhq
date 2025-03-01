@@ -1,5 +1,5 @@
-import lowerCase from 'lodash/lowerCase';
-import moment from 'moment';
+import { format } from 'date-fns';
+import { UTCDateMini } from '@date-fns/utc';
 import convert from 'convert-units';
 
 export function calculateTopicOffsetLag(topicOffsets, topicId) {
@@ -36,7 +36,7 @@ export function groupedTopicOffset(offsets) {
  * If utc is false, the date and time will be formatted in the local time zone.
  * Finally, the formatted date and time string is returned as a string
  */
-export function formatDateTime(value, format, utc = false) {
+export function formatDateTime(value, formatStr, utc = false) {
   let milli = value.milli || 0;
   const date = new Date(
     value.year,
@@ -48,9 +48,7 @@ export function formatDateTime(value, format, utc = false) {
     milli
   );
 
-  return utc
-    ? moment(date.toISOString()).utc().format(format).toString()
-    : moment(date.toISOString()).format(format).toString();
+  return utc ? format(new UTCDateMini(date), formatStr) : format(date, formatStr);
 }
 
 export function handleConvert(value, unit, exclude) {
@@ -59,7 +57,7 @@ export function handleConvert(value, unit, exclude) {
 }
 
 export function handleType(value) {
-  return lowerCase(value.plural);
+  return value.plural.toLowerCase();
 }
 
 export function showTime(milliseconds) {

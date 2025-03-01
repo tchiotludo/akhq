@@ -10,7 +10,6 @@ import {
   uriConsumerGroupOffsetsByTimestamp,
   uriConsumerGroupUpdate
 } from '../../../../utils/endpoints';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../../../utils/withRouter';
@@ -41,21 +40,20 @@ class ConsumerGroupUpdate extends Form {
 
   async getTopicOffset() {
     const { clusterId, consumerGroupId, topicOffset, timestamp } = this.state;
-    const momentValue = moment(timestamp);
 
     const date =
-      timestamp.toString().length > 0
+      timestamp instanceof Date
         ? formatDateTime(
             {
-              year: momentValue.year(),
-              monthValue: momentValue.month(),
-              dayOfMonth: momentValue.date(),
-              hour: momentValue.hour(),
-              minute: momentValue.minute(),
-              second: momentValue.second(),
-              milli: momentValue.millisecond()
+              year: timestamp.getFullYear(),
+              monthValue: timestamp.getMonth(),
+              dayOfMonth: timestamp.getDate(),
+              hour: timestamp.getHours(),
+              minute: timestamp.getMinutes(),
+              second: timestamp.getSeconds(),
+              milli: timestamp.getMilliseconds()
             },
-            'YYYY-MM-DDTHH:mm:ss.SSSZ'
+            "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
           )
         : '';
 
