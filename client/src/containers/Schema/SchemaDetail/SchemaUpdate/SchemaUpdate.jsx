@@ -116,7 +116,7 @@ class SchemaUpdate extends Form {
         className="khq-form khq-form-config"
         onSubmit={e => this.handleSubmit(e)}
       >
-        <fieldset>
+        <fieldset disabled={!roles.SCHEMA.includes('UPDATE')}>
           {this.renderInput('subject', 'Subject', 'Subject', undefined, false, '', false, false, {
             disabled: true
           })}
