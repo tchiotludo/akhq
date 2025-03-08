@@ -143,7 +143,18 @@ public class RecordRepository extends AbstractRepository {
     private List<Record> consumeOldest(Topic topic, Options options) {
         List<Record> list = new ArrayList<>();
 
-        for (Map.Entry<TopicPartition, Long> partition : getTopicPartitionForSortOldest(topic, options).entrySet()) {
+        getTopicPartitionForSortOldest(topic, options).entrySet().parallelStream()
+            .forEach(partition -> {
+
+            // Skip partition without data
+            if (topic.getPartitions()
+                    .stream()
+                    .filter(partition_ -> partition_.getId() == partition.getKey().partition())
+                    .filter(partition_ -> partition_.getLogDir().stream().anyMatch(logDir -> logDir.getSize() != 0))
+                    .collect(Collectors.toList()).isEmpty()) {
+                return;
+            }
+
             Properties properties = new Properties() {{
                 put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
             }};
@@ -171,7 +182,7 @@ public class RecordRepository extends AbstractRepository {
                     }
                 }
             }
-        }
+        });
 
         return list.stream()
             .sorted(Comparator.comparing(Record::getTimestamp))
@@ -268,6 +279,8 @@ public class RecordRepository extends AbstractRepository {
         return topic
             .getPartitions()
             .parallelStream()
+            // Skip partition without data
+            .filter(partition -> partition.getLogDir().stream().anyMatch(logDir -> logDir.getSize() != 0))
             .map(partition -> {
                 KafkaConsumer<byte[], byte[]> consumer =
                     this.kafkaModule.getConsumer(options.clusterId, new Properties() {{
