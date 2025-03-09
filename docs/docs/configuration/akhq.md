@@ -180,7 +180,30 @@ With the above configuration, it will appear as:
 }
 ```
 
-Note how the configuration fields automatically propagates to all objects in an array where relevant.
+Note how arrays are automatically understood where relevant.
+In other words, `address.firstLine` will apply to both of the following:
+```json
+{
+  "address": {
+    "firstLine": "This field!"
+  }
+}
+```
+
+and
+
+```json
+{
+  "address": [
+    {
+      "firstLine": "This field!"
+    },
+    {
+      "firstLine": "And this one!"
+    }
+  ]
+}
+```
 
 ### Mask by default config
 This means, by default, everything is masked.
@@ -272,7 +295,30 @@ With the above configuration, it will appear as:
 }
 ```
 
-Note how the configuration fields automatically propagates to all objects in an array where relevant.
+Note how arrays are automatically understood where relevant.
+In other words, `address.firstLine` will apply to both of the following:
+```json
+{
+  "address": {
+    "firstLine": "This field!"
+  }
+}
+```
+
+and
+
+```json
+{
+  "address": [
+    {
+      "firstLine": "This field!"
+    },
+    {
+      "firstLine": "And this one!"
+    }
+  ]
+}
+```
 
 ### No masking required
 You can set `akhq.security.data-masking.mode` to `none` to disable masking altogether.
