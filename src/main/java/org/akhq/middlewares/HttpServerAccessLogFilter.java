@@ -155,7 +155,7 @@ public class HttpServerAccessLogFilter implements HttpServerFilter {
             if (accessLogger.isInfoEnabled()) {
                 final long timeElapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
                 final int status = status(response);
-
+                long contentLength = response.getContentLength();
                 String message = MessageFormatter.arrayFormat(
                     logFormat,
                     new Object[]{
@@ -166,6 +166,7 @@ public class HttpServerAccessLogFilter implements HttpServerFilter {
                         status,
                         inetAddress,
                         user,
+                        contentLength
                     }
                 ).getMessage();
 
