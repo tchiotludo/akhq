@@ -121,6 +121,7 @@ akhq:
             - dateOfBirth
             - address.firstLine
             - address.town
+            - metadata.notes
 ```
 
 Given a record on `users` that looks like:
@@ -131,11 +132,18 @@ Given a record on `users` that looks like:
   "status": "ACTIVE",
   "name": "John Smith",
   "dateOfBirth": "01-01-1991",
-  "address": {
-    "firstLine": "123 Example Avenue",
-    "town": "Faketown",
-    "country": "United Kingdom"
-  },
+  "address": [
+    {
+      "firstLine": "123 Example Avenue",
+      "town": "Faketown",
+      "country": "United Kingdom"
+    },
+    {
+      "firstLine": "123 Previous Avenue",
+      "town": "Previoustown",
+      "country": "United Kingdom"
+    }
+  ],
   "metadata": {
     "trusted": true,
     "rating": "10",
@@ -152,18 +160,27 @@ With the above configuration, it will appear as:
   "status": "ACTIVE",
   "name": "xxxx",
   "dateOfBirth": "xxxx",
-  "address": {
-    "firstLine": "xxxx",
-    "town": "xxxx",
-    "country": "United Kingdom"
-  },
+  "address": [
+    {
+      "firstLine": "xxxx",
+      "town": "xxxx",
+      "country": "United Kingdom"
+    },
+    {
+      "firstLine": "xxxx",
+      "town": "xxxx",
+      "country": "United Kingdom"
+    }
+  ],
   "metadata": {
     "trusted": true,
     "rating": "10",
-    "notes": "All in good order"
+    "notes": "xxxx"
   }
 }
 ```
+
+Note how the configuration fields automatically propagates to all objects in an array where relevant.
 
 ### Mask by default config
 This means, by default, everything is masked.
@@ -207,11 +224,18 @@ Given a record on `users` that looks like:
   "status": "ACTIVE",
   "name": "John Smith",
   "dateOfBirth": "01-01-1991",
-  "address": {
-    "firstLine": "123 Example Avenue",
-    "town": "Faketown",
-    "country": "United Kingdom"
-  },
+  "address": [
+    {
+      "firstLine": "123 Example Avenue",
+      "town": "Faketown",
+      "country": "United Kingdom"
+    },
+    {
+      "firstLine": "123 Previous Avenue",
+      "town": "Previoustown",
+      "country": "United Kingdom"
+    }
+  ],
   "metadata": {
     "trusted": true,
     "rating": "10",
@@ -228,11 +252,18 @@ With the above configuration, it will appear as:
   "status": "ACTIVE",
   "name": "xxxx",
   "dateOfBirth": "xxxx",
-  "address": {
-    "firstLine": "xxxx",
-    "town": "xxxx",
-    "country": "United Kingdom"
-  },
+  "address": [
+    {
+      "firstLine": "xxxx",
+      "town": "xxxx",
+      "country": "United Kingdom"
+    },
+    {
+      "firstLine": "xxxx",
+      "town": "xxxx",
+      "country": "United Kingdom"
+    }
+  ],
   "metadata": {
     "trusted": true,
     "rating": "10",
@@ -240,6 +271,8 @@ With the above configuration, it will appear as:
   }
 }
 ```
+
+Note how the configuration fields automatically propagates to all objects in an array where relevant.
 
 ### No masking required
 You can set `akhq.security.data-masking.mode` to `none` to disable masking altogether.

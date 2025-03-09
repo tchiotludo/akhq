@@ -76,7 +76,8 @@ interface JsonMaskerTest {
                     "shouldBeUnmasked": "Example multi-level-nested-value",
                     "shouldBeMasked": "Example multi-level-nested-value",
                     "arrayToMask": [ "one", "two", "three" ],
-                    "arrayToShow": [ "one", "two", "three" ]
+                    "arrayToShow": [ "one", "two", "three" ],
+                    "jsonArray": [ { "showThis": "Hello", "maskThis": "World" }, { "showThis": "How are", "maskThis": "You" } ]
                  }
                }
             }
@@ -143,7 +144,7 @@ interface JsonMaskerTest {
         Record maskedRecord = getMasker().maskRecord(record);
         assertEquals(
             """
-            {"specialId":123,"status":"ACTIVE","name":"xxxx","dateOfBirth":"xxxx","address":[{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"},{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"}],"metadata":{"trusted":true,"rating":"10","notes":"All in good order","other":{"shouldBeUnmasked":"Example multi-level-nested-value","shouldBeMasked":"xxxx","arrayToMask":["xxxx","xxxx","xxxx"],"arrayToShow":["one","two","three"]}}}""",
+            {"specialId":123,"status":"ACTIVE","name":"xxxx","dateOfBirth":"xxxx","address":[{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"},{"firstLine":"xxxx","town":"xxxx","country":"United Kingdom"}],"metadata":{"trusted":true,"rating":"10","notes":"All in good order","other":{"shouldBeUnmasked":"Example multi-level-nested-value","shouldBeMasked":"xxxx","arrayToMask":["xxxx","xxxx","xxxx"],"arrayToShow":["one","two","three"],"jsonArray":[{"showThis":"Hello","maskThis":"xxxx"},{"showThis":"How are","maskThis":"xxxx"}]}}}""",
             maskedRecord.getValue()
         );
     }

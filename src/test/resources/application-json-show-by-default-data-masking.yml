@@ -12,3 +12,4 @@ akhq:
             - address.town
             - metadata.other.shouldBeMasked
             - metadata.other.arrayToMask
+            - metadata.other.jsonArray.maskThis

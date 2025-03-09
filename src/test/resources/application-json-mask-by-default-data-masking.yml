@@ -14,3 +14,4 @@ akhq:
             - metadata.notes
             - metadata.other.shouldBeUnmasked
             - metadata.other.arrayToShow
+            - metadata.other.jsonArray.showThis
