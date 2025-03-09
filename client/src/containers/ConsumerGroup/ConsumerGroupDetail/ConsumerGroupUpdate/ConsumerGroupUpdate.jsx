@@ -297,8 +297,8 @@ class ConsumerGroupUpdate extends Form {
               <Dropdown.Menu>
                 <div>
                   <DatePicker
-                    showTimeInput
                     showDateTimeInput
+                    showTimeSelect
                     value={timestamp}
                     label={''}
                     onChange={value => {
