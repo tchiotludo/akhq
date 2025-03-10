@@ -13,6 +13,9 @@ import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.ConsumerGroupState;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -23,6 +26,7 @@ import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class GroupControllerTest extends AbstractTest {
     public static final String BASE_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/group";
     public static final String GROUP_URL = BASE_URL + "/" + KafkaTestCluster.CONSUMER_STREAM_TEST;
@@ -44,12 +48,14 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     void homeApi() {
         ConsumerGroup result = this.retrieve(HttpRequest.GET(GROUP_URL), ConsumerGroup.class);
         assertEquals("stream-test-example", result.getId());
     }
 
     @Test
+    @Order(2)
     void offsetsApi() {
         List<TopicPartition.ConsumerGroupOffset> result = this.retrieveList(
             HttpRequest.GET(GROUP_URL + "/offsets"),
@@ -59,23 +65,30 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(3)
     void membersApi() {
         List<Consumer> result = this.retrieveList(HttpRequest.GET(GROUP_URL + "/members"), Consumer.class);
         assertEquals(1, result.size());
     }
 
     @Test
+    @Order(4)
     void offsetsStartApi() {
         List<RecordRepository.TimeOffset> result = this.retrieveList(
             HttpRequest.GET(GROUP_URL + "/offsets/start?timestamp=2020-03-28T11:40:10.123Z"),
             RecordRepository.TimeOffset.class
         );
 
+        System.out.println("Result size: " + result.size());
+        for (RecordRepository.TimeOffset offset : result) {
+            System.out.println("Offset: " + offset.getOffset());
+        }
         assertEquals(4, result.size());
         assertEquals(0, result.get(0).getOffset());
     }
 
     @Test
+    @Order(5)
     void aclsApi() {
         List<AccessControl> result = this.retrieveList(
             HttpRequest.GET(BASE_URL + "/groupConsumer/acls"),
@@ -88,6 +101,7 @@ class GroupControllerTest extends AbstractTest {
     }
 
     @Test
+    @Order(6)
     void consumer() {
         String name = UUID.randomUUID().toString();
         Properties properties = new Properties();
