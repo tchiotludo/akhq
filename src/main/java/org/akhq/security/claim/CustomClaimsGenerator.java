@@ -13,10 +13,12 @@ import io.micronaut.security.token.claims.JtiGenerator;
 import io.micronaut.security.token.config.TokenConfiguration;
 import io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Base64;
 
 @Singleton
+@Slf4j
 @Replaces(JWTClaimsSetGenerator.class)
 public class CustomClaimsGenerator extends JWTClaimsSetGenerator {
     private final GzipCompressionAlgorithm gzip = new GzipCompressionAlgorithm();
@@ -37,7 +39,11 @@ public class CustomClaimsGenerator extends JWTClaimsSetGenerator {
 
         try {
             String plainGroups = mapper.writeValueAsString(builder.getClaims().get("groups"));
-            builder.claim("groups", Base64.getEncoder().encodeToString(gzip.compress(plainGroups.getBytes())));
+            String encodedGroups = Base64.getEncoder().encodeToString(gzip.compress(plainGroups.getBytes()));
+            if (encodedGroups.length() > 4096) {
+                log.warn("encodedGroups string exceeds 4 KiB, which is likely to lead to cookie overflow");
+            }
+            builder.claim("groups", encodedGroups);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to build the JWT token, groups format is incorrect");
         }
