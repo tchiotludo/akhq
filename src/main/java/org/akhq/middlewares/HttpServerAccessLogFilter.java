@@ -127,6 +127,8 @@ public class HttpServerAccessLogFilter implements HttpServerFilter {
         public void subscribe(Subscriber<? super T> actual) {
 
             publisher.subscribe(new Subscriber<T>() {
+                private T response;
+
                 @Override
                 public void onSubscribe(Subscription subscription) {
                     actual.onSubscribe(subscription);
@@ -134,7 +136,7 @@ public class HttpServerAccessLogFilter implements HttpServerFilter {
 
                 @Override
                 public void onNext(T httpResponse) {
-                    log(httpResponse);
+                    this.response = httpResponse;
                     actual.onNext(httpResponse);
                 }
 
@@ -146,6 +148,7 @@ public class HttpServerAccessLogFilter implements HttpServerFilter {
 
                 @Override
                 public void onComplete() {
+                    log(response);
                     actual.onComplete();
                 }
             });
