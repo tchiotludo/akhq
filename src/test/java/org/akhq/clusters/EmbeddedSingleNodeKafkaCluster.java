@@ -105,6 +105,8 @@ public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallba
         ksqlDbProperties.put("bootstrap.servers", bootstrapServers());
         ksqlDbProperties.put("ksql.schema.registry.url", schemaRegistryUrl());
         ksqlDbProperties.put("listeners", "http://0.0.0.0:" + randomPort());
+        ksqlDbProperties.put("ksql.udf.enable.security.manager", "false");
+        ksqlDbProperties.put("confluent.support.metrics.enable", "false");
 
         ksqlDBEmbedded = new KsqlDBEmbedded(ksqlDbProperties);
         log.debug("Kafka KsqlDB is running at {}", ksqlDbUrl());

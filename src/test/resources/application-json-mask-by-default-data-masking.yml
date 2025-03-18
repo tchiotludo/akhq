@@ -11,4 +11,7 @@ akhq:
             - address.country
             - metadata.trusted
             - metadata.rating
+            - metadata.notes
             - metadata.other.shouldBeUnmasked
+            - metadata.other.arrayToShow
+            - metadata.other.jsonArray.showThis

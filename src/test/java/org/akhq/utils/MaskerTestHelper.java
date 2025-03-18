@@ -6,7 +6,7 @@ import org.apache.kafka.clients.admin.TopicDescription;
 
 import java.util.List;
 
-public class MaskerTestHelper {
+class MaskerTestHelper {
 
     static Record sampleRecord(String topicName,
                                   String key,
