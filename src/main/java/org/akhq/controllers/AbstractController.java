@@ -10,6 +10,7 @@ import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
 import org.akhq.configs.security.SecurityProperties;
+import org.akhq.models.security.ClaimProvider;
 import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.security.rule.AKHQSecurityRule;
 
@@ -29,6 +30,9 @@ abstract public class AbstractController {
 
     @Inject
     protected SecurityProperties securityProperties;
+
+    @Inject
+    private ClaimProvider claimProvider;
 
     @Value("${micronaut.server.context-path:}")
     protected String basePath;
@@ -58,7 +62,7 @@ abstract public class AbstractController {
 
         // Add user groups
         authentication.ifPresent(value -> groups.addAll(
-            AKHQSecurityRule.decompressGroups(value).values().stream()
+            AKHQSecurityRule.unrollGroups(value, claimProvider).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 .toList())

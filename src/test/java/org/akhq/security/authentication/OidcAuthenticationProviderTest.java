@@ -16,6 +16,8 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import org.akhq.configs.security.Group;
 import org.akhq.controllers.AkhqController;
+import org.akhq.models.security.ClaimProvider;
+import org.akhq.security.rule.AKHQSecurityRule;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -24,6 +26,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +53,9 @@ class OidcAuthenticationProviderTest {
 
     @Inject
     AkhqController akhqController;
+
+    @Inject
+    private ClaimProvider claimProvider;
 
     @Named("oidc")
     @MockBean(TokenEndpointClient.class)
@@ -92,7 +98,7 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = getGroups(response);
 
         assertThat(groups.keySet(), hasSize(1));
         assertNotNull(groups.get("limited"));
@@ -128,7 +134,7 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = getGroups(response);
 
         assertThat(groups.keySet(), hasSize(1));
         assertNotNull(groups.get("limited"));
@@ -165,7 +171,7 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = getGroups(response);
 
         assertThat(groups.keySet(), hasSize(2));
         assertNotNull(groups.get("limited"));
@@ -211,7 +217,7 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user2", response.getAuthentication().get().getName());
 
-        Map<String, List<Group>> groups = (Map<String, List<Group>>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> groups = getGroups(response);
 
         assertThat(groups.keySet(), hasSize(2));
         assertNotNull(groups.get("limited"));
@@ -231,6 +237,10 @@ class OidcAuthenticationProviderTest {
             containsInAnyOrder(".*", ".*"));
         assertThat(groups.get("operator").stream().map(Group::getPatterns).flatMap(Collection::stream).collect(Collectors.toList()),
             containsInAnyOrder("test-operator.*", "test-operator.*"));
+    }
+
+    private Map<String, List<Group>> getGroups(final AuthenticationResponse response) {
+        return AKHQSecurityRule.unrollGroups(response.getAuthentication().get(), claimProvider);
     }
 
     @Test
@@ -255,7 +265,7 @@ class OidcAuthenticationProviderTest {
         assertTrue(response.isAuthenticated());
         assertEquals("user", response.getAuthentication().get().getName());
 
-        Map<String, List> roles = (Map<String, List>)response.getAuthentication().get().getAttributes().get("groups");
+        Map<String, List<Group>> roles = getGroups(response);
 
         assertThat(roles.keySet(), hasSize(0));
     }

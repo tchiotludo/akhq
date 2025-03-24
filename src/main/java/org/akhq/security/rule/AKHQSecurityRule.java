@@ -18,6 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.Group;
 import org.akhq.configs.security.Role;
 import org.akhq.configs.security.SecurityProperties;
+import org.akhq.models.security.ClaimProvider;
+import org.akhq.models.security.ClaimProviderType;
+import org.akhq.models.security.ClaimRequest;
+import org.akhq.models.security.ClaimResponse;
 import org.akhq.security.annotation.AKHQSecured;
 import org.reactivestreams.Publisher;
 
@@ -39,7 +43,9 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     }
 
     @Inject
-    SecurityProperties securityProperties;
+    private SecurityProperties securityProperties;
+    @Inject
+    private ClaimProvider claimProvider;
 
     @Override
     public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
@@ -76,7 +82,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
 
         if (authentication != null) {
             // Add user groups from the user token
-            userGroups = decompressGroups(authentication).values().stream()
+            userGroups = unrollGroups(authentication, claimProvider).values().stream()
                 .flatMap(Collection::stream)
                 // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
                 // Need to serialize Object to Group manually in the stream
@@ -111,15 +117,44 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             return Flowable.just(SecurityRuleResult.REJECTED);
     }
 
-    public static Map<String, List<?>> decompressGroups(Authentication authentication) {
+    public static Map<String, List<Group>> unrollGroups(Authentication authentication, ClaimProvider claimProvider) {
+        Object decompressedGroups = decompressGroups(authentication);
+        if (decompressedGroups instanceof Map<?, ?>) {
+            return (Map<String, List<Group>>) decompressedGroups;
+        }
+        final String providerName = (String) authentication.getAttributes().get("provider_name");
+        if (claimProvider == null || providerName == null || !(decompressedGroups instanceof List<?>)) {
+            throw new RuntimeException("No ClaimProvider, or no providerName, or wrong group format");
+        }
+        return getClaimProviderGroups(providerName, (List<String>) decompressedGroups, authentication, claimProvider);
+    }
+
+    private static Object decompressGroups(Authentication authentication) {
         try {
             String base64CompressedGroups = ((String) authentication.getAttributes().get("groups"));
             String compressedGroups = new String(gzip.decompress(Base64.getDecoder().decode(base64CompressedGroups)));
-            return mapper.readValue(compressedGroups, Map.class);
+            return mapper.readValue(compressedGroups, Object.class);
         } catch (Exception e) {
             log.trace("JWT payload is not compressed, returning groups directly");
-            return (Map<String, List<?>>) authentication.getAttributes().get("groups");
+            return authentication.getAttributes().get("groups");
         }
+    }
+
+    private static Map<String, List<Group>> getClaimProviderGroups(String providerName, List<String> claimGroups, Authentication authentication, ClaimProvider claimProvider) {
+        Map<String, List<Group>> groups = new HashMap<>();
+        ClaimRequest request = ClaimRequest.builder()
+                                           .providerType(ClaimProviderType.OIDC)
+                                           .providerName(providerName)
+                                           .username(authentication.getName())
+                                           .groups(claimGroups)
+                                           .build();
+        try {
+            ClaimResponse claim = claimProvider.generateClaim(request);
+            groups.putAll(claim.getGroups());
+        } catch (Exception e) {
+            log.warn("Exception from ClaimProvider " + claimProvider.getClass() + ": " + e.getMessage());
+        }
+        return groups;
     }
 
     public static final Integer ORDER = SecuredAnnotationRule.ORDER - 100;

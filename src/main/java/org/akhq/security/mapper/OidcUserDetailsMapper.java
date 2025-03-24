@@ -15,14 +15,9 @@ import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import io.micronaut.security.rules.SecurityRule;
 import io.reactivex.Flowable;
-import org.akhq.configs.security.Oidc;
-import org.akhq.models.security.ClaimRequest;
-import org.akhq.models.security.ClaimResponse;
-import org.akhq.models.security.ClaimProvider;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import org.akhq.models.security.ClaimProviderType;
+import org.akhq.configs.security.Oidc;
 import org.reactivestreams.Publisher;
 
 import java.util.*;
@@ -39,8 +34,6 @@ import java.util.stream.Collectors;
 public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
     @Inject
     private Oidc oidc;
-    @Inject
-    private ClaimProvider claimProvider;
 
     public OidcUserDetailsMapper(OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration, AuthenticationModeConfiguration authenticationModeConfiguration) {
         super(openIdAdditionalClaimsConfiguration, authenticationModeConfiguration);
@@ -63,20 +56,10 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
 
-        ClaimRequest request = ClaimRequest.builder()
-                .providerType(ClaimProviderType.OIDC)
-                .providerName(providerName)
-                .username(oidcUsername)
-                .groups(oidcGroups)
-                .build();
-
-        try {
-            ClaimResponse claim = claimProvider.generateClaim(request);
-            return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups()))));
-        } catch (Exception e) {
-            String claimProviderClass = claimProvider.getClass().getName();
-            return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
-        }
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("provider_name", providerName);
+        attributes.put("groups", oidcGroups);
+        return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
     }
 
     private AuthenticationResponse createDirectClaimAuthenticationResponse(String oidcUsername, OpenIdClaims openIdClaims) {
