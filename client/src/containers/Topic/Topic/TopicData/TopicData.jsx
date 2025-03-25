@@ -720,10 +720,14 @@ class TopicData extends Root {
       renderedOptions.push(
         <Dropdown.Item
           key={option}
-          onClick={() =>
-            this.setState({ sortBy: option }, () => {
-              this._searchMessages();
-            })
+          onClick={() => {
+              if (option === 'Newest' && this.state.endDatetime !== '') {
+                toast.warn('Sorting by newest with timestamp in large topics may not show data.');
+              }
+              this.setState({ sortBy: option }, () => {
+                this._searchMessages();
+              })
+            }
           }
         >
           <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
@@ -1078,7 +1082,7 @@ class TopicData extends Root {
                           showTimeSelect
                           value={endDatetime}
                           onChange={value => {
-                            this.setState({ endDatetime: value }, () => {
+                            this.setState({ endDatetime: value, sortBy: "Oldest" }, () => {
                               this._searchMessages();
                             });
                           }}
