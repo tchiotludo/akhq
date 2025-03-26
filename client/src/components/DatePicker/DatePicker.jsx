@@ -21,25 +21,6 @@ class DatePicker extends Component {
     });
   };
 
-  getDisplayValue = value => {
-    const date = value == '' ? new Date() : value;
-    try {
-      return formatDateTime(
-        {
-          year: date.getFullYear(),
-          monthValue: date.getMonth(),
-          dayOfMonth: date.getDate(),
-          hour: date.getHours(),
-          minute: date.getMinutes(),
-          second: date.getSeconds()
-        },
-        'dd-MM-yyyy HH:mm'
-      );
-    } catch (e) {
-      return '';
-    }
-  };
-
   render = () => {
     const { value } = this.state;
     const { showDateTimeInput, showTimeInput, showTimeSelect, onClear, label } = this.props;
@@ -55,11 +36,14 @@ class DatePicker extends Component {
             }}
           >
             {label && <div style={{ marginRight: 10 }}>{label}</div>}
-            <input
-              value={this.getDisplayValue(value)}
-              className="form-control"
-              readOnly={true}
-              placeholder={this.getDisplayValue(value)}
+            <DateTimePicker
+              popperClassName="display-none"
+              selected={value}
+              onChange={date => {
+                this.onChange(date);
+              }}
+              showTimeSelect={showTimeSelect}
+              dateFormat="dd-MM-yyyy HH:mm"
             />
             {onClear && (
               <button
