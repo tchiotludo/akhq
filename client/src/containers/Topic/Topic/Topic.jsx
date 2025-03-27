@@ -66,6 +66,7 @@ class Topic extends Root {
         topicInternal: this.props.location.internal
       },
       () => {
+        console.log('Topic data current:', this.topicData.current);
         this.getTopicsConfig();
         let uri = `/ui/${clusterId}/topic/${topicId}/${this.state.selectedTab}`;
         if (searchParams) {
