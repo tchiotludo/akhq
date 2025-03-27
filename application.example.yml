@@ -39,7 +39,7 @@ akhq:
     access-log: # Access log configuration (optional)
       enabled: true # true by default
       name: org.akhq.log.access # Logger name
-      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}] [Length: {}]" # Logger format
     # Custom HTTP response headers configuration
     customHttpResponseHeaders:
       - name: "Content-Security-Policy"
