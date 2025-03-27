@@ -143,7 +143,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     private static Map<String, List<Group>> getClaimProviderGroups(String providerName, List<String> claimGroups, Authentication authentication, ClaimProvider claimProvider) {
         Map<String, List<Group>> groups = new HashMap<>();
         ClaimRequest request = ClaimRequest.builder()
-                                           .providerType(ClaimProviderType.OIDC)
+                                           .providerType(ClaimProviderType.valueOf((String) authentication.getAttributes().get("provider_type")))
                                            .providerName(providerName)
                                            .username(authentication.getName())
                                            .groups(claimGroups)

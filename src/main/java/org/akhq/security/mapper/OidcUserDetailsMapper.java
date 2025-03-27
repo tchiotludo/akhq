@@ -18,6 +18,7 @@ import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.Oidc;
+import org.akhq.models.security.ClaimProviderType;
 import org.reactivestreams.Publisher;
 
 import java.util.*;
@@ -58,6 +59,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("provider_name", providerName);
+        attributes.put("provider_type", ClaimProviderType.OIDC);
         attributes.put("groups", oidcGroups);
         return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
     }
