@@ -84,9 +84,6 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             // Add user groups from the user token
             userGroups = unrollGroups(authentication, claimProvider).values().stream()
                 .flatMap(Collection::stream)
-                // Type mismatch during serialization from LinkedTreeMap to Group if we use List<Group>
-                // Need to serialize Object to Group manually in the stream
-                .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
                 .collect(Collectors.toList());
         }
 
@@ -120,13 +117,27 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     public static Map<String, List<Group>> unrollGroups(Authentication authentication, ClaimProvider claimProvider) {
         Object decompressedGroups = decompressGroups(authentication);
         if (decompressedGroups instanceof Map<?, ?>) {
-            return (Map<String, List<Group>>) decompressedGroups;
+            return toMapOfGroupLists((Map<String, List<?>>) decompressedGroups);
         }
         final String providerName = (String) authentication.getAttributes().get("provider_name");
         if (claimProvider == null || providerName == null || !(decompressedGroups instanceof List<?>)) {
             throw new RuntimeException("No ClaimProvider, or no providerName, or wrong group format");
         }
         return getClaimProviderGroups(providerName, (List<String>) decompressedGroups, authentication, claimProvider);
+    }
+
+    private static Map<String, List<Group>> toMapOfGroupLists(Map<String, List<?>> map) {
+        Map<String, List<Group>> newMap = new LinkedHashMap<>();
+        for (Map.Entry<String, List<?>> entry : map.entrySet()) {
+            newMap.put(entry.getKey(), toListOfGroups(entry.getValue()));
+        }
+        return newMap;
+    }
+
+    private static List<Group> toListOfGroups(List<?> list) {
+        return list.stream()
+                   .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
+                   .collect(Collectors.toList());
     }
 
     private static Object decompressGroups(Authentication authentication) {

@@ -59,7 +59,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("provider_name", providerName);
-        attributes.put("provider_type", ClaimProviderType.OIDC);
+        attributes.put("provider_type", ClaimProviderType.OIDC.name());
         attributes.put("groups", oidcGroups);
         return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
     }
