@@ -9,6 +9,8 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -135,16 +137,22 @@ public class AvroToJsonDeserializer {
         return null;
     }
 
-    private String tryToDeserializeWithSchemaFile(byte[] buffer, Schema schema) throws IOException {
-        DatumReader<?> reader = new GenericDatumReader<>(schema);
-        Object result = reader.read(null, decoderFactory.binaryDecoder(buffer, null));
+private String tryToDeserializeWithSchemaFile(byte[] buffer, Schema schema) throws IOException {
+    DatumReader<?> reader = new GenericDatumReader<>(schema);
+    Object result = reader.read(null, decoderFactory.binaryDecoder(buffer, null));
 
-        //for primitive avro type
-        if (!(result instanceof GenericRecord)) {
-            return String.valueOf(result);
-        }
-
-        GenericRecord record = (GenericRecord) result;
-        return avroToJsonSerializer.toJson(record);
+    //for primitive avro type
+    if (!(result instanceof GenericRecord)) {
+        return String.valueOf(result);
     }
+
+    GenericRecord record = (GenericRecord) result;
+
+    Object jsonObject = avroToJsonSerializer.toJson(record);
+
+    // Convert to JSON String
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.writeValueAsString(jsonObject);
+}
+
 }
