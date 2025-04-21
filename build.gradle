@@ -1,7 +1,7 @@
 plugins {
     // micronaut
     id "com.gradleup.shadow" version "8.3.5"
-    id "io.micronaut.application" version "4.4.5"
+    id "io.micronaut.application" version "4.5.3"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
