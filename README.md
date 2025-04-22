@@ -83,7 +83,7 @@ Many thanks to:
 * [JetBrains](https://www.jetbrains.com/?from=AKHQ) for their free OpenSource license.
 * Apache, Apache Kafka, Kafka, and associated open source project names are trademarks of the Apache Software Foundation. AKHQ is not affiliated with, endorsed by, or otherwise associated with the Apache Software.
 
-[![Jetbrains](https://user-images.githubusercontent.com/2064609/55432917-6df7fc00-5594-11e9-90c4-5133fbb6d4da.png)](https://www.jetbrains.com/?from=AKHQ)
+[![Jetbrains](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)
 
 
 ## License
