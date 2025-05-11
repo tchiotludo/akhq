@@ -1183,239 +1183,245 @@ class TopicData extends Root {
         </nav>
         {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
-          <Table
-            loading={loading}
-            reduce={true}
-            firstHeader={firstColumns}
-            isChecked={messages?.length === this.state.messagesToExport?.length}
-            columns={[
-              {
-                id: 'checkboxes',
-                accessor: 'checkboxes',
-                colName: 'Download all',
-                type: 'checkbox',
-                expand: true,
-                cell: row => {
-                  return (
-                    <input
-                      type="checkbox"
-                      id={row.id}
-                      checked={this.state.checkboxes[row.id] || false}
-                      onChange={this._handleSingleCheckboxChange}
-                    />
-                  );
-                }
-              },
-              {
-                id: 'key',
-                accessor: 'key',
-                colName: 'Key',
-                type: 'text',
-                cell: (obj, col) => {
-                  let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
-                  return (
-                    <span>
-                      <code className="key">{value}</code>
-                    </span>
-                  );
-                }
-              },
-              {
-                id: 'value',
-                accessor: 'value',
-                colName: 'Value',
-                type: 'text',
-                extraRow: true,
-                extraRowContent: (obj, index) => {
-                  let value = obj.value;
-                  try {
-                    let json = LosslessJson.parse(obj.value);
-                    value = LosslessJson.stringify(json, undefined, '  ');
-                    // eslint-disable-next-line no-empty
-                  } catch (e) {}
-
-                  return (
-                    <AceEditor
-                      setOptions={{ useWorker: false }}
-                      mode="json"
-                      id={'value' + index}
-                      theme="merbivore_soft"
-                      value={value ?? 'null'}
-                      readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
-                      style={{ width: '100%', minHeight: '25vh' }}
-                    />
-                  );
+          {messages.length === 0 && !loading ? (
+            <div className="alert alert-info text-center" style={{ margin: '2rem' }}>
+              No data available
+            </div>
+          ) : (
+            <Table
+              loading={loading}
+              reduce={true}
+              firstHeader={firstColumns}
+              isChecked={messages?.length === this.state.messagesToExport?.length}
+              columns={[
+                {
+                  id: 'checkboxes',
+                  accessor: 'checkboxes',
+                  colName: 'Download all',
+                  type: 'checkbox',
+                  expand: true,
+                  cell: row => {
+                    return (
+                      <input
+                        type="checkbox"
+                        id={row.id}
+                        checked={this.state.checkboxes[row.id] || false}
+                        onChange={this._handleSingleCheckboxChange}
+                      />
+                    );
+                  }
                 },
-                cell: obj => {
-                  return (
-                    <div>
-                      {obj.exceptions.length > 0 && (
-                        <div
-                          className="alert alert-warning"
-                          role="alert"
-                          dangerouslySetInnerHTML={{ __html: obj.exceptions.join('<br /><br />') }}
-                        ></div>
-                      )}
-                      <pre className="mb-0 khq-data-highlight">
-                        <code>{obj.value ?? 'null'}</code>
-                      </pre>
-                    </div>
-                  );
-                }
-              },
-              {
-                id: 'timestamp',
-                accessor: 'timestamp',
-                colName:
-                  this.state.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
-                    ? 'Timestamp ' + format(new Date(), 'z')
-                    : 'Timestamp',
-                type: 'text',
-                cell: (obj, col) => {
-                  return (
-                    <DateTime
-                      isoDateTimeString={obj[col.accessor]}
-                      dateTimeFormat={this.state.dateTimeFormat}
-                    />
-                  );
-                }
-              },
-              {
-                id: 'partition',
-                accessor: 'partition',
-                colName: 'Partition',
-                type: 'text',
-                cell: (obj, col) => {
-                  return obj[col.accessor];
-                }
-              },
-              {
-                id: 'offset',
-                accessor: 'offset',
-                colName: 'Offset',
-                type: 'text',
-                cell: (obj, col) => {
-                  return obj[col.accessor];
-                }
-              },
-              {
-                id: 'headers',
-                accessor: 'headers',
-                colName: 'Headers',
-                type: 'text',
-                expand: true,
-                cell: obj => {
-                  return <div className="tail-headers">{obj.headers.length}</div>;
-                }
-              },
-              {
-                id: 'schema',
-                accessor: 'schema',
-                colName: 'Schema',
-                type: 'text',
-                cell: (obj, col) => {
-                  return (
-                    <div className="justify-items">
-                      {obj[col.accessor].key !== undefined && (
-                        <span
-                          className="badge bg-primary clickable"
-                          onClick={
-                            obj[col.accessor].registryType !== 'GLUE'
-                              ? () => {
-                                  this._redirectToSchema(obj.schema.key);
-                                }
-                              : undefined
-                          }
-                        >
-                          Key: {obj[col.accessor].key}
-                        </span>
-                      )}
+                {
+                  id: 'key',
+                  accessor: 'key',
+                  colName: 'Key',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    let value = obj[col.accessor] === '' ? 'null' : obj[col.accessor];
+                    return (
+                      <span>
+                        <code className="key">{value}</code>
+                      </span>
+                    );
+                  }
+                },
+                {
+                  id: 'value',
+                  accessor: 'value',
+                  colName: 'Value',
+                  type: 'text',
+                  extraRow: true,
+                  extraRowContent: (obj, index) => {
+                    let value = obj.value;
+                    try {
+                      let json = LosslessJson.parse(obj.value);
+                      value = LosslessJson.stringify(json, undefined, '  ');
+                      // eslint-disable-next-line no-empty
+                    } catch (e) {}
 
-                      {obj[col.accessor].value !== undefined && (
-                        <span
-                          className="badge bg-primary clickable schema-value"
-                          onClick={
-                            obj[col.accessor].registryType !== 'GLUE'
-                              ? () => {
-                                  this._redirectToSchema(obj.schema.value);
-                                }
-                              : undefined
-                          }
-                        >
-                          Value: {obj[col.accessor].value}
-                        </span>
-                      )}
-                    </div>
-                  );
+                    return (
+                      <AceEditor
+                        setOptions={{ useWorker: false }}
+                        mode="json"
+                        id={'value' + index}
+                        theme="merbivore_soft"
+                        value={value ?? 'null'}
+                        readOnly
+                        name="UNIQUE_ID_OF_DIV"
+                        editorProps={{ $blockScrolling: true }}
+                        style={{ width: '100%', minHeight: '25vh' }}
+                      />
+                    );
+                  },
+                  cell: obj => {
+                    return (
+                      <div>
+                        {obj.exceptions.length > 0 && (
+                          <div
+                            className="alert alert-warning"
+                            role="alert"
+                            dangerouslySetInnerHTML={{ __html: obj.exceptions.join('<br /><br />') }}
+                          ></div>
+                        )}
+                        <pre className="mb-0 khq-data-highlight">
+                          <code>{obj.value ?? 'null'}</code>
+                        </pre>
+                      </div>
+                    );
+                  }
+                },
+                {
+                  id: 'timestamp',
+                  accessor: 'timestamp',
+                  colName:
+                    this.state.dateTimeFormat === SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
+                      ? 'Timestamp ' + format(new Date(), 'z')
+                      : 'Timestamp',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return (
+                      <DateTime
+                        isoDateTimeString={obj[col.accessor]}
+                        dateTimeFormat={this.state.dateTimeFormat}
+                      />
+                    );
+                  }
+                },
+                {
+                  id: 'partition',
+                  accessor: 'partition',
+                  colName: 'Partition',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return obj[col.accessor];
+                  }
+                },
+                {
+                  id: 'offset',
+                  accessor: 'offset',
+                  colName: 'Offset',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return obj[col.accessor];
+                  }
+                },
+                {
+                  id: 'headers',
+                  accessor: 'headers',
+                  colName: 'Headers',
+                  type: 'text',
+                  expand: true,
+                  cell: obj => {
+                    return <div className="tail-headers">{obj.headers.length}</div>;
+                  }
+                },
+                {
+                  id: 'schema',
+                  accessor: 'schema',
+                  colName: 'Schema',
+                  type: 'text',
+                  cell: (obj, col) => {
+                    return (
+                      <div className="justify-items">
+                        {obj[col.accessor].key !== undefined && (
+                          <span
+                            className="badge bg-primary clickable"
+                            onClick={
+                              obj[col.accessor].registryType !== 'GLUE'
+                                ? () => {
+                                    this._redirectToSchema(obj.schema.key);
+                                  }
+                                : undefined
+                            }
+                          >
+                            Key: {obj[col.accessor].key}
+                          </span>
+                        )}
+
+                        {obj[col.accessor].value !== undefined && (
+                          <span
+                            className="badge bg-primary clickable schema-value"
+                            onClick={
+                              obj[col.accessor].registryType !== 'GLUE'
+                                ? () => {
+                                    this._redirectToSchema(obj.schema.value);
+                                  }
+                                : undefined
+                            }
+                          >
+                            Value: {obj[col.accessor].value}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  }
                 }
-              }
-            ]}
-            extraRow
-            noStripes
-            data={messages}
-            rowId={data => {
-              return data.partition + '-' + data.offset;
-            }}
-            updateData={data => {
-              this.setState({ messages: data });
-            }}
-            updateCheckbox={e => {
-              this._handleCheckbox(e);
-            }}
-            onDelete={row => {
-              this._handleOnDelete(row);
-            }}
-            onShare={row => {
-              this._handleOnShare(row);
-            }}
-            onDownload={row => {
-              this._handleDownload(row);
-            }}
-            onCopy={row => {
-              this._handleCopy(row);
-            }}
-            actions={actions}
-            onExpand={obj => {
-              return obj.headers.map((header, i) => {
-                return (
-                  <tr
-                    key={i}
-                    className={'table-sm'}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      width: '100%'
-                    }}
-                  >
-                    <td
+              ]}
+              extraRow
+              noStripes
+              data={messages}
+              rowId={data => {
+                return data.partition + '-' + data.offset;
+              }}
+              updateData={data => {
+                this.setState({ messages: data });
+              }}
+              updateCheckbox={e => {
+                this._handleCheckbox(e);
+              }}
+              onDelete={row => {
+                this._handleOnDelete(row);
+              }}
+              onShare={row => {
+                this._handleOnShare(row);
+              }}
+              onDownload={row => {
+                this._handleDownload(row);
+              }}
+              onCopy={row => {
+                this._handleCopy(row);
+              }}
+              actions={actions}
+              onExpand={obj => {
+                return obj.headers.map((header, i) => {
+                  return (
+                    <tr
+                      key={i}
+                      className={'table-sm'}
                       style={{
-                        width: '100%',
                         display: 'flex',
-                        borderStyle: 'dashed',
-                        borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        flexDirection: 'row',
+                        width: '100%'
                       }}
                     >
-                      {header.key}
-                    </td>
-                    <td
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        borderStyle: 'dashed',
-                        borderWidth: '1px',
-                        backgroundColor: '#171819'
-                      }}
-                    >
-                      {header.value}
-                    </td>
-                  </tr>
-                );
-              });
-            }}
-          />
+                      <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                      >
+                        {header.key}
+                      </td>
+                      <td
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          backgroundColor: '#171819'
+                        }}
+                      >
+                        {header.value}
+                      </td>
+                    </tr>
+                  );
+                });
+              }}
+            />
+          )}
         </div>
 
         <ConfirmModal
