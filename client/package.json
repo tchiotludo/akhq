@@ -8,7 +8,7 @@
   "dependencies": {
     "@date-fns/utc": "^2.1.0",
     "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
+    "@emotion/styled": "^11.14.0",
     "@popperjs/core": "^2.11.8",
     "@trendmicro/react-sidenav": "^0.5.0",
     "axios": "^1.7.4",
