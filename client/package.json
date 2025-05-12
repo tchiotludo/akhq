@@ -64,7 +64,7 @@
     "joi": "^17.12.3",
     "joi-browser": "^13.4.0",
     "jsdom": "^24.0.0",
-    "prettier": "^3.2.5",
+    "prettier": "^3.5.3",
     "react-bootstrap": "^2.10.2",
     "react-datepicker": "^6.8.0",
     "react-test-renderer": "^18.2.0",
