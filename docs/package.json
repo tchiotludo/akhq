@@ -23,7 +23,7 @@
     "@vuepress/plugin-git": "v2.0.0-rc.68",
     "@vuepress/plugin-google-analytics": "v2.0.0-rc.66",
     "@vuepress/plugin-medium-zoom": "v2.0.0-rc.74",
-    "@vuepress/plugin-nprogress": "v2.0.0-rc.74",
+    "@vuepress/plugin-nprogress": "v2.0.0-rc.103",
     "@vuepress/plugin-prismjs": "v2.0.0-rc.74",
     "@vuepress/plugin-register-components": "v2.0.0-rc.66",
     "@vuepress/plugin-search": "v2.0.0-rc.74",
