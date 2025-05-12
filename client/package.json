@@ -51,7 +51,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/material": "^5.15.15",
+    "@mui/material": "^7.1.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^15.0.2",
     "@testing-library/user-event": "^14.5.2",
