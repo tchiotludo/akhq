@@ -25,7 +25,7 @@
     "@vuepress/plugin-medium-zoom": "v2.0.0-rc.74",
     "@vuepress/plugin-nprogress": "v2.0.0-rc.74",
     "@vuepress/plugin-prismjs": "v2.0.0-rc.74",
-    "@vuepress/plugin-register-components": "v2.0.0-rc.66",
+    "@vuepress/plugin-register-components": "v2.0.0-rc.103",
     "@vuepress/plugin-search": "v2.0.0-rc.74",
     "@vuepress/theme-default": "v2.0.0-rc.74",
     "glob": "^11.0.1",
