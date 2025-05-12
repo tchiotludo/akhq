@@ -27,7 +27,7 @@
     "@vuepress/plugin-prismjs": "v2.0.0-rc.74",
     "@vuepress/plugin-register-components": "v2.0.0-rc.66",
     "@vuepress/plugin-search": "v2.0.0-rc.74",
-    "@vuepress/theme-default": "v2.0.0-rc.74",
+    "@vuepress/theme-default": "v2.0.0-rc.103",
     "glob": "^11.0.1",
     "http-server": "^14.1.1",
     "inflection": "^3.0.2",
