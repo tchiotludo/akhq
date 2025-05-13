@@ -1,5 +1,7 @@
 package org.akhq.security.claim;
 
+import io.micronaut.cache.annotation.CacheConfig;
+import io.micronaut.cache.annotation.Cacheable;
 import io.micronaut.context.annotation.Primary;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.util.StringUtils;
@@ -17,8 +19,10 @@ import org.akhq.models.security.ClaimResponse;
 @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
 @Client("${akhq.security.rest.url}")
 @ExecuteOn(TaskExecutors.BLOCKING)
+@CacheConfig("rest-api-claim-provider")
 public interface RestApiClaimProvider extends ClaimProvider {
     @Post
+    @Cacheable
     @Override
     ClaimResponse generateClaim(@Body ClaimRequest request);
 }

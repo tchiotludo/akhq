@@ -103,6 +103,7 @@ dependencies {
     implementation("io.micronaut:micronaut-retry")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")
     implementation("io.micronaut.cache:micronaut-cache-core")
+    implementation("io.micronaut.cache:micronaut-cache-caffeine")
 
     implementation("io.micronaut.rxjava2:micronaut-rxjava2")
     implementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty")
