@@ -247,12 +247,12 @@ class TopicList extends Root {
       }
       this.setState({
         selectedCluster,
-        totalPageNumber: data.page,
+        totalPageNumber: data.page < 1 ? 1 : data.page,
         currentPageSize: data.pageSize,
         loading: false
       });
     } else {
-      this.setState({ topics: [], loading: false, totalPageNumber: 0 });
+      this.setState({ topics: [], loading: false });
     }
   }
 

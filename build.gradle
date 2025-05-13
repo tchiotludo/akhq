@@ -1,10 +1,10 @@
 plugins {
     // micronaut
-    id "com.gradleup.shadow" version "8.3.5"
-    id "io.micronaut.application" version "4.4.5"
+    id "com.gradleup.shadow" version "8.3.6"
+    id "io.micronaut.application" version "4.5.3"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.4.2"
+    id "com.gorylenko.gradle-git-properties" version "2.5.0"
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'org.gradle.test-retry' version '1.6.2'
     id 'com.github.psxpaul.execfork' version '0.2.2'
@@ -121,8 +121,8 @@ dependencies {
     implementation ("org.sourcelab:kafka-connect-client:4.0.5")
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.15.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.15.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.16.2'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.16.2'
 
     // log
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16'
@@ -131,8 +131,8 @@ dependencies {
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:33.4.0-jre'
-    implementation 'com.google.code.gson:gson:2.12.1'
+    implementation 'com.google.guava:guava:33.4.8-jre'
+    implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
@@ -165,13 +165,13 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.0'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.2'
 
     // AWS Glue serde
     implementation ("software.amazon.glue:schema-registry-serde:1.1.23")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.3'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.5'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }
@@ -237,7 +237,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-library:3.0'
     testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation 'org.apache.curator:curator-test:5.7.1'
+    testImplementation 'org.apache.curator:curator-test:5.8.0'
 
     testImplementation 'org.awaitility:awaitility:4.3.0'
 }
