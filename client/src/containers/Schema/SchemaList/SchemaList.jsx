@@ -130,7 +130,7 @@ class SchemaList extends Root {
         );
       });
     } else {
-      this.setState({ selectedCluster, schemasRegistry: [], totalPageNumber: 0, loading: false });
+      this.setState({ selectedCluster, schemasRegistry: [], loading: false });
     }
   }
 

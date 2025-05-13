@@ -80,7 +80,7 @@ class KsqlDBQueries extends Root {
         );
       });
     } else {
-      this.setState({ clusterId, tableData: [], totalPageNumber: 0, loading: false });
+      this.setState({ clusterId, tableData: [], loading: false });
     }
   }
 

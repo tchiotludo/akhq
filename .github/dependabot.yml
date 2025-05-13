@@ -24,7 +24,17 @@ updates:
 
   # Maintain dependencies for Npm modules
   - package-ecosystem: "npm"
-    directory: "/ui"
+    directory: "/client"
+    schedule:
+      # Check for updates to Npm modules every week
+      interval: "weekly"
+    labels:
+      - "dependency-upgrade"
+    open-pull-requests-limit: 50
+
+  # Maintain dependencies for Npm modules
+  - package-ecosystem: "npm"
+    directory: "/docs"
     schedule:
       # Check for updates to Npm modules every week
       interval: "weekly"

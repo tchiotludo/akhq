@@ -41,10 +41,6 @@ class Schema extends Root {
     const { clusterId, schemaId, roles } = this.state;
     let tabSelected = getSelectedTab(this.props, this.tabs);
 
-    if (!roles.SCHEMA.includes('UPDATE') && tabSelected === 'update') {
-      tabSelected = 'versions';
-    }
-
     schemas = await this.getApi(endpoints.uriSchemaVersions(clusterId, schemaId));
     this.setState(
       {
@@ -97,16 +93,14 @@ class Schema extends Root {
         <Header title={`Schema: ${decodeURIComponent(schemaId)}`} />
         <div className="tabs-container">
           <ul className="nav nav-tabs" role="tablist">
-            {roles.SCHEMA.includes('UPDATE') && (
               <li className="nav-item">
                 <Link
                   to={`/ui/${clusterId}/schema/details/${schemaId}/update`}
                   className={this.tabClassName('update')}
                 >
-                  Update
+                  Details
                 </Link>
               </li>
-            )}
             <li className="nav-item">
               <Link
                 to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
