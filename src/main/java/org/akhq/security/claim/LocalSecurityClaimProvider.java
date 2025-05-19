@@ -1,5 +1,7 @@
 package org.akhq.security.claim;
 
+import io.micronaut.cache.annotation.CacheConfig;
+import io.micronaut.cache.annotation.Cacheable;
 import io.micronaut.context.annotation.Secondary;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Inject;
@@ -22,6 +24,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Singleton
 @Secondary
+@CacheConfig("local-security-claim-provider")
 public class LocalSecurityClaimProvider implements ClaimProvider {
 
     @Inject
@@ -35,6 +38,7 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     @Inject
     Oauth oauthProperties;
 
+    @Cacheable(condition = "#{request.providerType == T(org.akhq.models.security.ClaimProviderType).valueOf('OIDC')}")
     @Override
     public ClaimResponse generateClaim(ClaimRequest request) {
         List<UserMapping> userMappings;
