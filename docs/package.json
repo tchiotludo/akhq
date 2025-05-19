@@ -26,7 +26,7 @@
     "@vuepress/plugin-nprogress": "v2.0.0-rc.74",
     "@vuepress/plugin-prismjs": "v2.0.0-rc.74",
     "@vuepress/plugin-register-components": "v2.0.0-rc.66",
-    "@vuepress/plugin-search": "v2.0.0-rc.74",
+    "@vuepress/plugin-search": "v2.0.0-rc.105",
     "@vuepress/theme-default": "v2.0.0-rc.74",
     "glob": "^11.0.1",
     "http-server": "^14.1.1",
