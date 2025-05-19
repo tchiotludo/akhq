@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "^v2.0.0-rc.19",
-    "@vuepress/plugin-active-header-links": "v2.0.0-rc.74",
+    "@vuepress/plugin-active-header-links": "v2.0.0-rc.105",
     "@vuepress/plugin-back-to-top": "v2.0.0-rc.74",
     "@vuepress/plugin-git": "v2.0.0-rc.68",
     "@vuepress/plugin-google-analytics": "v2.0.0-rc.66",
