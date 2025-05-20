@@ -700,12 +700,6 @@ body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
   margin: auto;
 }
 
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  .swal2-container .swal2-modal {
-    margin: 0 !important;
-  }
-}
-
 .swal2-container.swal2-fade {
   transition: background-color 0.1s;
 }
@@ -1051,15 +1045,6 @@ body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
 }
 
 @supports (-ms-accelerator: true) {
-  .swal2-range input {
-    width: 100% !important;
-  }
-  .swal2-range output {
-    display: none;
-  }
-}
-
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
   .swal2-range input {
     width: 100% !important;
   }
