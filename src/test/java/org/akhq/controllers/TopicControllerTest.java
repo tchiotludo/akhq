@@ -27,7 +27,7 @@ public class TopicControllerTest extends AbstractTest {
     @Test
     @Order(1)
     void defaultsConfigsApi(){
-        Map<String,Integer> result = this.retrieve(HttpRequest.GET(DEFAULTS_CONFIGS_URL), Map.class);
+        Map<String,Long> result = this.retrieve(HttpRequest.GET(DEFAULTS_CONFIGS_URL), Map.class);
 
         assertEquals(1, result.get("replication"));
         assertEquals(86400000, result.get("retention"));

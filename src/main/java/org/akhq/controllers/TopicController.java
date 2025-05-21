@@ -73,16 +73,16 @@ public class TopicController extends AbstractController {
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
     @Value("${akhq.topic.retention}")
-    private Integer retention;
+    private Long retention;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Get ("api/topic/defaults-configs")
     @Operation(tags = {"topic"}, summary = "Get default topic configuration")
-    public Map<String,Integer> getDefaultConf(){
+    public Map<String,Long> getDefaultConf(){
         return Map.of(
-            "replication", replicationFactor.intValue(),
-            "partition", partitionCount,
+            "replication", replicationFactor.longValue(),
+            "partition", partitionCount.longValue(),
             "retention", retention
         );
     }
