@@ -73,14 +73,6 @@ akhq:
               groups:
                 - topic-writer-clusterA-projectA
                 - acl-reader-clusterA
-  caches:
-    kafka-wrapper:
-      record-stats: true
-      expire-after-write: 0s
-    local-security-claim-provider:
-      expire-after-write: 600s
-    rest-api-claim-provider:
-      expire-after-write: 600s
 ```
 
 The username field can be any string field, the roles field has to be a JSON array. The mapping is performed on the OIDC _ID token_.
