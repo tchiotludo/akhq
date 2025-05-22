@@ -28,6 +28,7 @@ akhq:
       enabled: true
       url: https://external.service/get-roles-and-attributes
     groups: # anything set here will not be used
+micronaut:
   caches:
     rest-api-claim-provider:
       expire-after-write: 600s # Default. May be overridden.
@@ -75,7 +76,7 @@ and expect the following JSON as response :
 }
 ````
 
-The response will be cached according to settings under `akhq.security.caches.rest-api-claim-provider`, as may be seen in the example above.
+The response will be cached according to settings under `micronaut.caches.rest-api-claim-provider`, as may be seen in the example above.
 
 If you want to send a static authentication token to the external service where it might be public, you can extend the configuration for the rest interface as follows:
 ````yaml
