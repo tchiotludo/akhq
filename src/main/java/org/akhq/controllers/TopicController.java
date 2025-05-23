@@ -278,7 +278,7 @@ public class TopicController extends AbstractController {
     public List<ConsumerGroup> groups(String cluster, String topicName,
                                       Optional<TopicRepository.TopicGroupsListView> groupsListView)
         throws ExecutionException, InterruptedException {
-        checkIfClusterAndResourceAllowed(cluster, topicName);
+        checkIfClusterAllowed(cluster);
 
         return groupsListView.isPresent() && TopicRepository.TopicGroupsListView.HIDE_EMPTY.equals(groupsListView.get())
             ? this.consumerGroupRepository.findActiveByTopic(cluster, topicName, buildUserBasedResourceFilters(cluster))
