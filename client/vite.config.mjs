@@ -28,6 +28,15 @@ export default defineConfig(({ command, mode }) => {
         }
       }
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          quietDeps: true,
+          /* https://github.com/twbs/bootstrap/issues/40962 */
+          silenceDeprecations: ['mixed-decls', 'color-functions', 'global-builtin', 'import']
+        }
+      }
+    },
     define: {
       global: 'window'
     },
@@ -37,16 +46,16 @@ export default defineConfig(({ command, mode }) => {
       open: false,
       proxy: {
         '/api': {
-          target: env.APP_BASE_URL || 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8081'
         },
         '/login': {
-          target: env.APP_BASE_URL || 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8081'
         },
         '/logout': {
-          target: env.APP_BASE_URL || 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8081'
         },
         '/oauth': {
-          target: env.APP_BASE_URL || 'http://localhost:8080'
+          target: env.APP_BASE_URL || 'http://localhost:8081'
         }
       }
     },
