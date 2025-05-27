@@ -38,6 +38,7 @@ class DatePicker extends Component {
             {label && <div style={{ marginRight: 10 }}>{label}</div>}
             <DateTimePicker
               popperClassName="display-none"
+              className="form-control"
               selected={value}
               onChange={date => {
                 this.onChange(date);
