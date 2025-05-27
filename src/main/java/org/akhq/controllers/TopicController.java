@@ -79,10 +79,10 @@ public class TopicController extends AbstractController {
 
     @Get ("api/topic/defaults-configs")
     @Operation(tags = {"topic"}, summary = "Get default topic configuration")
-    public Map<String,Long> getDefaultConf(){
+    public Map<String,Object> getDefaultConf(){
         return Map.of(
-            "replication", replicationFactor.longValue(),
-            "partition", partitionCount.longValue(),
+            "replication", replicationFactor,
+            "partition", partitionCount,
             "retention", retention
         );
     }
