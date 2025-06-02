@@ -13,8 +13,8 @@ $theme-colors: (
   'white': $white
 );
 
-@import 'bootstrap/scss/bootstrap';
-@import 'react-datepicker/dist/react-datepicker';
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import '../node_modules/react-datepicker/dist/react-datepicker';
 
 // old styles
 @import 'css/datas/after-offset';
@@ -51,21 +51,21 @@ $theme-colors: (
 @import 'containers/KsqlDB/KsqlDBQuery/styles';
 @import 'containers/Loading/styles';
 @import 'containers/Login/styles';
-@import 'src/containers/Node/NodeDetail/styles';
+@import 'containers/Node/NodeDetail/styles';
 @import 'containers/Schema/SchemaList/styles';
 @import 'containers/Settings/styles';
 @import 'containers/SideBar/styles';
 @import 'containers/Tail/styles';
-@import 'src/containers/Topic/Topic/styles';
-@import 'src/containers/Topic/Topic/TopicAcls/styles';
-@import 'src/containers/Topic/Topic/TopicConfigs/styles';
-@import 'src/containers/Topic/Topic/TopicData/styles';
-@import 'src/containers/Topic/Topic/TopicGroups/styles';
-@import 'src/containers/Topic/Topic/TopicLogs/styles';
-@import 'src/containers/Topic/Topic/TopicPartitions/styles';
-@import 'src/containers/Topic/TopicCopy/styles';
-@import 'src/containers/Topic/TopicList/styles';
-@import 'src/containers/Topic/TopicProduce/styles';
+@import 'containers/Topic/Topic/styles';
+@import 'containers/Topic/Topic/TopicAcls/styles';
+@import 'containers/Topic/Topic/TopicConfigs/styles';
+@import 'containers/Topic/Topic/TopicData/styles';
+@import 'containers/Topic/Topic/TopicGroups/styles';
+@import 'containers/Topic/Topic/TopicLogs/styles';
+@import 'containers/Topic/Topic/TopicPartitions/styles';
+@import 'containers/Topic/TopicCopy/styles';
+@import 'containers/Topic/TopicList/styles';
+@import 'containers/Topic/TopicProduce/styles';
 
 .khq-data-filter {
   @include media-breakpoint-up(sm) {

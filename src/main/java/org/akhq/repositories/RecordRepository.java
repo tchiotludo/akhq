@@ -81,7 +81,7 @@ public class RecordRepository extends AbstractRepository {
     @Inject
     private Masker masker;
 
-    @Value("${akhq.topic-data.poll-timeout:10000}")
+    @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
 
     @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:25000}")
@@ -143,7 +143,7 @@ public class RecordRepository extends AbstractRepository {
     private List<Record> consumeOldest(Topic topic, Options options) {
         List<Record> list = new ArrayList<>();
 
-        for (Map.Entry<TopicPartition, Long> partition : getTopicPartitionForSortOldest(topic, options).entrySet()) {
+        getTopicPartitionForSortOldest(topic, options).entrySet().parallelStream().forEach(partition -> {
             Properties properties = new Properties() {{
                 put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
             }};
@@ -171,7 +171,7 @@ public class RecordRepository extends AbstractRepository {
                     }
                 }
             }
-        }
+        });
 
         return list.stream()
             .sorted(Comparator.comparing(Record::getTimestamp))

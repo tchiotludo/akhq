@@ -125,9 +125,9 @@ dependencies {
     implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.16.2'
 
     // log
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16'
-    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.16'
-    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.16'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17'
+    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.17'
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.17'
 
     // utils
     implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
@@ -171,7 +171,7 @@ dependencies {
     implementation ("software.amazon.glue:schema-registry-serde:1.1.23")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.5'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.6'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
 }

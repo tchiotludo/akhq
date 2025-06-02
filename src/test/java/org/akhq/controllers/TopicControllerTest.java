@@ -27,11 +27,11 @@ public class TopicControllerTest extends AbstractTest {
     @Test
     @Order(1)
     void defaultsConfigsApi(){
-        Map<String,Integer> result = this.retrieve(HttpRequest.GET(DEFAULTS_CONFIGS_URL), Map.class);
+        Map<String,Object> result = this.retrieve(HttpRequest.GET(DEFAULTS_CONFIGS_URL), Map.class);
 
-        assertEquals(1, result.get("replication"));
-        assertEquals(86400000, result.get("retention"));
-        assertEquals(1, result.get("partition"));
+        assertEquals(1, ((Number) result.get("replication")).shortValue());
+        assertEquals(86400000L, ((Number) result.get("retention")).longValue());
+        assertEquals(1, ((Number) result.get("partition")).intValue());
     }
 
 

@@ -73,15 +73,15 @@ public class TopicController extends AbstractController {
     @Value("${akhq.topic.partition}")
     private Integer partitionCount;
     @Value("${akhq.topic.retention}")
-    private Integer retention;
+    private Long retention;
     @Value("${akhq.pagination.page-size}")
     private Integer pageSize;
 
     @Get ("api/topic/defaults-configs")
     @Operation(tags = {"topic"}, summary = "Get default topic configuration")
-    public Map<String,Integer> getDefaultConf(){
+    public Map<String,Object> getDefaultConf(){
         return Map.of(
-            "replication", replicationFactor.intValue(),
+            "replication", replicationFactor,
             "partition", partitionCount,
             "retention", retention
         );
@@ -278,7 +278,7 @@ public class TopicController extends AbstractController {
     public List<ConsumerGroup> groups(String cluster, String topicName,
                                       Optional<TopicRepository.TopicGroupsListView> groupsListView)
         throws ExecutionException, InterruptedException {
-        checkIfClusterAndResourceAllowed(cluster, topicName);
+        checkIfClusterAllowed(cluster);
 
         return groupsListView.isPresent() && TopicRepository.TopicGroupsListView.HIDE_EMPTY.equals(groupsListView.get())
             ? this.consumerGroupRepository.findActiveByTopic(cluster, topicName, buildUserBasedResourceFilters(cluster))
