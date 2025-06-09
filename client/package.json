@@ -24,7 +24,7 @@
     "react-ace": "^14.0.1",
     "react-dom": "^19.1.0",
     "react-helmet": "^6.1.0",
-    "react-router-dom": "^7.6.1",
+    "react-router-dom": "^7.6.2",
     "react-timeago": "^8.2.0",
     "react-toastify": "^11.0.5"
   },
