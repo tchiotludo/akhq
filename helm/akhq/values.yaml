@@ -103,6 +103,11 @@ initContainers: {}
 #      - mountPath: /tmp
 #        name: certs
 
+# When using a sidecar (e.g., initContainer with restartPolicy=Always), 
+# you may want to set service.targetPort to the sidecar port:
+# service:
+#   targetPort: "proxy"  # or 4180
+
 # Configure the Pod Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 securityContext: {}
@@ -126,6 +131,12 @@ service:
   type: ClusterIP
   port: 80
   managementPort: 28081
+  # Configure target ports for the service - useful when using sidecars
+  # targetPort: "http"  # defaults to "http" (port name)
+  # managementTargetPort: "management"  # defaults to "management" (port name)
+  # Alternative: specify port numbers directly
+  # targetPort: 8080
+  # managementTargetPort: 28081
   #httpNodePort: 32551
   #managementNodePort: 32552
   labels: {}

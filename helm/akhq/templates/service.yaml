@@ -19,14 +19,14 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.targetPort | default "http" }}
       protocol: TCP
       name: http
       {{- if and (eq "NodePort" .Values.service.type) .Values.service.httpNodePort }}
       nodePort: {{ .Values.service.httpNodePort }}
       {{- end }}
     - port: {{ .Values.service.managementPort }}
-      targetPort: management
+      targetPort: {{ .Values.service.managementTargetPort | default "management" }}
       protocol: TCP
       name: management
       {{- if and (eq "NodePort" .Values.service.type) .Values.service.managementNodePort }}
