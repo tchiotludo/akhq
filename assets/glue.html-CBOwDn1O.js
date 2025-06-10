@@ -1,0 +1,22 @@
+import{_ as s,c as n,b as e,o as t}from"./app--BFGRV3M.js";const l={};function p(o,a){return t(),n("div",null,a[0]||(a[0]=[e(`<h1 id="glue-schema-registry" tabindex="-1"><a class="header-anchor" href="#glue-schema-registry"><span>Glue schema registry</span></a></h1><p>Currently ,glue schema registry support is limited to only de-serialisation of avro/protobuf/json serialized messages. It can be configured as below.</p><div class="language-yaml line-numbers-mode" data-highlighter="prismjs" data-ext="yml"><pre><code class="language-yaml"><span class="line">  <span class="token key atrule">akhq</span><span class="token punctuation">:</span></span>
+<span class="line">    <span class="token key atrule">environment</span><span class="token punctuation">:</span></span>
+<span class="line">      <span class="token key atrule">AKHQ_CONFIGURATION</span><span class="token punctuation">:</span> <span class="token punctuation">|</span><span class="token scalar string"></span>
+<span class="line">        akhq:</span>
+<span class="line">          connections:</span>
+<span class="line">            docker-kafka-server:</span>
+<span class="line">              properties:</span>
+<span class="line">                bootstrap.servers: &quot;kafka:9092&quot;</span>
+<span class="line">              schema-registry:</span>
+<span class="line">                url: &quot;http://schema-registry:8085&quot;</span>
+<span class="line">                type: &quot;glue&quot;</span>
+<span class="line">                glueSchemaRegistryName: Name of schema Registry</span>
+<span class="line">                awsRegion: aws region</span>
+<span class="line">              connect:</span>
+<span class="line">                - name: &quot;connect&quot;</span>
+<span class="line">                  url: &quot;http://connect:8083&quot;</span></span>
+<span class="line">    <span class="token key atrule">ports</span><span class="token punctuation">:</span></span>
+<span class="line">      <span class="token punctuation">-</span> 8080<span class="token punctuation">:</span><span class="token number">8080</span></span>
+<span class="line">    <span class="token key atrule">links</span><span class="token punctuation">:</span></span>
+<span class="line">      <span class="token punctuation">-</span> kafka</span>
+<span class="line">      <span class="token punctuation">-</span> repo</span>
+<span class="line"></span></code></pre><div class="line-numbers" aria-hidden="true" style="counter-reset:line-number 0;"></div></div><p>Please note that authentication is done using aws default credentials provider.</p><p>Url key is required to not break the flow.</p>`,5)]))}const i=s(l,[["render",p]]),r=JSON.parse('{"path":"/docs/configuration/schema-registry/glue.html","title":"Glue schema registry","lang":"en-US","frontmatter":{},"git":{"updatedTime":1749561554000,"contributors":[{"name":"Christopher Poenaru","username":"","email":"kiambogo@gmail.com","commits":1},{"name":"Claude","username":"Claude","email":"noreply@anthropic.com","commits":1,"url":"https://github.com/Claude"}],"changelog":[{"hash":"28adebe3a94c587b147638fe9a60eaf0ab6b268b","time":1749561554000,"email":"kiambogo@gmail.com","author":"Christopher Poenaru","message":"feat(helm): add configurable targetPort support for sidecars","coAuthors":[{"name":"Claude","email":"noreply@anthropic.com"}]}]},"filePathRelative":"docs/configuration/schema-registry/glue.md"}');export{i as comp,r as data};
