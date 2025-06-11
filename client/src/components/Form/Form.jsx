@@ -209,7 +209,7 @@ class Form extends Root {
                 <input
                   type="text"
                   name="searchValue"
-                  className="form-control placeholder"
+                  className="form-control"
                   placeholder={name}
                   defaultValue={selectedKeySchema}
                 />
@@ -227,6 +227,11 @@ class Form extends Root {
                     aria-controls="bs-select-1"
                     aria-autocomplete="list"
                     placeholder={'search'}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                      }
+                    }}
                     onChange={onChange}
                     value={searchValue}
                   />
