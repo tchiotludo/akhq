@@ -12,7 +12,7 @@
     "@popperjs/core": "^2.11.8",
     "@trendmicro/react-sidenav": "^0.5.0",
     "axios": "^1.9.0",
-    "bootstrap": "^5.3.6",
+    "bootstrap": "^5.3.7",
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "event-source-polyfill": "^1.0.31",
