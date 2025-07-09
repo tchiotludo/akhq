@@ -93,7 +93,7 @@ dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.swagger.core.v3:swagger-annotations")
-    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("ch.qos.logback:logback-classic:1.5.18")
     runtimeOnly("org.yaml:snakeyaml")
     implementation("io.micronaut.security:micronaut-security-annotations")
     implementation("io.micronaut.security:micronaut-security-jwt")
