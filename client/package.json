@@ -58,7 +58,7 @@
     "@vitejs/plugin-react": "^4.5.0",
     "convert-units": "^2.3.4",
     "eslint": "^9.27.0",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-react": "^7.37.5",
     "joi": "^17.13.3",
