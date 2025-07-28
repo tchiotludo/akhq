@@ -49,7 +49,7 @@
     "@babel/eslint-parser": "^7.27.1",
     "@babel/preset-react": "^7.27.1",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/material": "^7.1.0",
     "@testing-library/jest-dom": "^6.6.3",
