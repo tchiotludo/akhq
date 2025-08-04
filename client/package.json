@@ -6,7 +6,7 @@
   "homepage": "./ui",
   "packageManager": "npm@11.4.1",
   "dependencies": {
-    "@date-fns/utc": "^2.1.0",
+    "@date-fns/utc": "^2.1.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@popperjs/core": "^2.11.8",
