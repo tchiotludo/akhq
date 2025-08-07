@@ -115,9 +115,10 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     }
 
     public static Map<String, List<Group>> unrollGroups(Authentication authentication, ClaimProvider claimProvider) {
-        /* For OIDC providers, the "groups" attribute contains a list of group names.
-         * For other providers, the "groups" attribute contains a map of role names to lists of groups.
-         * This method creates a map of role names to lists of groups no matter the origin of the "groups" attribute. */
+        /* For OIDC providers with useOidcGroupsInToken, the "groups" attribute contains a list of group names.
+         * For other providers and OIDC without useOidcGroupsInToken, the "groups" attribute contains a map of role
+         * names to lists of groups. This method creates a map of role names to lists of groups no matter the origin
+         * of the "groups" attribute. */
         Object decompressedGroups = decompressGroups(authentication);
         if (decompressedGroups instanceof Map<?, ?>) {
             return toMapOfGroupLists((Map<String, List<?>>) decompressedGroups);
