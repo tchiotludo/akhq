@@ -113,9 +113,7 @@ class NodesList extends Root {
             this.setState({ data });
           }}
           actions={[constants.TABLE_DETAILS]}
-          onDetails={id => {
-            this.props.router.navigate(`/ui/${selectedCluster}/node/${id}`);
-          }}
+          detailsHref={id => `/ui/${selectedCluster}/node/${id}`}
         />
       </div>
     );

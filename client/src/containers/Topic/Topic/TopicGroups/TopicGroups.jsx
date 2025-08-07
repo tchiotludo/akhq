@@ -179,14 +179,7 @@ class TopicGroups extends Root {
           updateData={data => {
             this.setState({ consumerGroups: data });
           }}
-          onDetails={id => {
-            this.props.router.navigate(
-              {
-                pathname: `/ui/${selectedCluster}/group/${id}`
-              },
-              { replace: true }
-            );
-          }}
+          detailsHref={id => `/ui/${selectedCluster}/group/${id}`}
           actions={[constants.TABLE_DETAILS]}
         />
       </div>

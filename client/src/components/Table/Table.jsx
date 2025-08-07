@@ -15,6 +15,7 @@ import {
   faSort,
   faTrash
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 class Table extends Component {
   state = {
@@ -142,10 +143,9 @@ class Table extends Component {
   }
 
   onDoubleClick(onDetails, row) {
-    const { idCol } = this.props;
-
-    if (onDetails) {
-      onDetails(idCol ? row[idCol] : row.id);
+    const { idCol, router, detailsHref } = this.props;
+    if (detailsHref) {
+      router.navigate(detailsHref(idCol ? row[idCol] : row.id));
     }
   }
 
@@ -372,28 +372,16 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
-              title="Details"
-              id="details"
-              onClick={() => {
-                onDetails && onDetails(idColVal);
-              }}
-            >
+            <Link title="Details" id="details" to={this.props.detailsHref(idColVal)}>
               <FontAwesomeIcon icon={faSearch} />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
-              title="Config"
-              id="config"
-              onClick={() => {
-                onConfig && onConfig(idColVal);
-              }}
-            >
+            <Link title="Config" id="config" to={this.props.configHref(idColVal)}>
               <FontAwesomeIcon icon={faGear} />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
@@ -581,6 +569,8 @@ Table.propTypes = {
 
   onAdd: PropTypes.func,
   onDetails: PropTypes.func,
+  detailsHref: PropTypes.func,
+  configHref: PropTypes.func,
   onConfig: PropTypes.func,
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
