@@ -142,7 +142,7 @@ class Table extends Component {
     );
   }
 
-  onDoubleClick(onDetails, row) {
+  onDoubleClick(row) {
     const { idCol, router, detailsHref } = this.props;
     if (detailsHref) {
       router.navigate(detailsHref(idCol ? row[idCol] : row.id));
@@ -156,7 +156,6 @@ class Table extends Component {
       extraRow,
       onExpand,
       noRowBackgroundChange,
-      onDetails,
       handleExtraExpand,
       handleExtraCollapse,
       reduce
@@ -194,7 +193,7 @@ class Table extends Component {
                     actions.find(action => action === constants.TABLE_DETAILS) &&
                     !column.expand
                   ) {
-                    this.onDoubleClick(onDetails, row);
+                    this.onDoubleClick(row);
                   }
 
                   column.expand && this.handleExpand(row);
@@ -216,7 +215,7 @@ class Table extends Component {
                   actions.find(action => action === constants.TABLE_DETAILS) &&
                   !column.expand
                 ) {
-                  this.onDoubleClick(onDetails, row);
+                  this.onDoubleClick(row);
                 }
 
                 column.expand && this.handleExpand(row);
@@ -339,19 +338,8 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const {
-      actions,
-      onAdd,
-      onDetails,
-      onConfig,
-      onDelete,
-      onEdit,
-      onRestart,
-      onShare,
-      onDownload,
-      onCopy,
-      idCol
-    } = this.props;
+    const { actions, onAdd, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } =
+      this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -568,10 +556,8 @@ Table.propTypes = {
   actions: PropTypes.array,
 
   onAdd: PropTypes.func,
-  onDetails: PropTypes.func,
   detailsHref: PropTypes.func,
   configHref: PropTypes.func,
-  onConfig: PropTypes.func,
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onRestart: PropTypes.func,
