@@ -20,6 +20,10 @@ micronaut:
 
 OIDC responses will be cached according to the settings under `micronaut.caches.local-security-claim-provider`.
 
+> Depending on the number of groups the user is part of, you may face issues during login. If the groups size is too big, it won't fit into the 4Kb cookie size limit, in which we save the groups the user belongs to.
+>
+> Groups size issue can happen on the AKHQ groups mapping (default behaviour) or the OIDC groups. To let you choose the one you want to use, AKHQ provides the `akhq.providers.<provider_name>.useOidcGroupsInToken`. By setting it to true, only the OIDC groups are saved in the token, and the AKHQ groups mapping is resolved when a request arrives.
+
 To further tell AKHQ to display OIDC options on the login page and customize claim mapping, configure OIDC in the AKHQ config:
 
 ```yaml
