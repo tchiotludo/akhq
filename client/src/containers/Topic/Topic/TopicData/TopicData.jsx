@@ -721,14 +721,13 @@ class TopicData extends Root {
         <Dropdown.Item
           key={option}
           onClick={() => {
-              if (option === 'Newest' && this.state.endDatetime !== '') {
-                toast.warn('Sorting by newest with timestamp in large topics may not show data.');
-              }
-              this.setState({ sortBy: option }, () => {
-                this._searchMessages();
-              })
+            if (option === 'Newest' && this.state.endDatetime !== '') {
+              toast.warn('Sorting by newest with timestamp in large topics may not show data.');
             }
-          }
+            this.setState({ sortBy: option }, () => {
+              this._searchMessages();
+            });
+          }}
         >
           <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
         </Dropdown.Item>
@@ -1082,7 +1081,7 @@ class TopicData extends Root {
                           showTimeSelect
                           value={endDatetime}
                           onChange={value => {
-                            this.setState({ endDatetime: value, sortBy: "Oldest" }, () => {
+                            this.setState({ endDatetime: value, sortBy: 'Oldest' }, () => {
                               this._searchMessages();
                             });
                           }}
@@ -1444,20 +1443,19 @@ class TopicData extends Root {
     );
   }
 }
-const withRouterInnerRef = (WrappedComponent) => {
-
+const withRouterInnerRef = WrappedComponent => {
   class InnerComponentWithRef extends React.Component {
-      render() {
-          const { forwardRef, ...rest } = this.props;
-          return <WrappedComponent {...rest} ref={forwardRef} />;
-      }
+    render() {
+      const { forwardRef, ...rest } = this.props;
+      return <WrappedComponent {...rest} ref={forwardRef} />;
+    }
   }
 
   const ComponentWithRef = withRouter(InnerComponentWithRef, { withRef: true });
 
   return React.forwardRef((props, ref) => {
-      return <ComponentWithRef {...props} forwardRef={ref} />;
-    });
-}
+    return <ComponentWithRef {...props} forwardRef={ref} />;
+  });
+};
 
 export default withRouterInnerRef(TopicData);
