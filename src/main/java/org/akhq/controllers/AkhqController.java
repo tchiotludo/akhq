@@ -64,7 +64,7 @@ public class AkhqController extends AbstractController {
             .distinct()
             .collect(Collectors.toList());
 
-        return this.connections
+        List<ClusterDefinition> clusterDefinitions = this.connections
             .stream()
             // Keep only connections matching clusters the user has access
             .filter(c -> AbstractRepository.isMatchRegex(clusters, c.getName()))
@@ -82,6 +82,46 @@ public class AkhqController extends AbstractController {
                     .collect(Collectors.toList())
 
             ))
+            .collect(Collectors.toList());
+
+        // Apply custom ordering if configured
+        return sortClusters(clusterDefinitions);
+    }
+
+    private List<ClusterDefinition> sortClusters(List<ClusterDefinition> clusters) {
+        // Get cluster order from global UI options
+        List<String> clusterOrder = uIOptions.getCluster().getOrder();
+        
+        if (clusterOrder == null || clusterOrder.isEmpty()) {
+            // No custom order defined, sort alphabetically
+            return clusters.stream()
+                .sorted(Comparator.comparing(ClusterDefinition::getId))
+                .collect(Collectors.toList());
+        }
+        
+        // Custom ordering logic
+        Map<String, Integer> orderMap = new HashMap<>();
+        for (int i = 0; i < clusterOrder.size(); i++) {
+            orderMap.put(clusterOrder.get(i), i);
+        }
+        
+        return clusters.stream()
+            .sorted((c1, c2) -> {
+                Integer order1 = orderMap.get(c1.getId());
+                Integer order2 = orderMap.get(c2.getId());
+                
+                // If both clusters are in the order list, use the defined order
+                if (order1 != null && order2 != null) {
+                    return order1.compareTo(order2);
+                }
+                
+                // If only one cluster is in the order list, it comes first
+                if (order1 != null) return -1;
+                if (order2 != null) return 1;
+                
+                // If neither cluster is in the order list, sort alphabetically
+                return c1.getId().compareTo(c2.getId());
+            })
             .collect(Collectors.toList());
     }
 

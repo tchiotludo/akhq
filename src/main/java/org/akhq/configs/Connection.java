@@ -68,6 +68,9 @@ public class Connection extends AbstractProperties {
 
         @ConfigurationBuilder(configurationPrefix = "topic-data")
         private UiOptionsTopicData topicData = new UiOptionsTopicData();
+
+        @ConfigurationBuilder(configurationPrefix = "cluster")
+        private UiOptionsCluster cluster = new UiOptionsCluster();
     }
 
     public UiOptions mergeOptions(UIOptions defaultOptions) {
@@ -84,6 +87,10 @@ public class Connection extends AbstractProperties {
         options.topicData = new UiOptionsTopicData(
             StringUtils.isNotEmpty(this.uiOptions.topicData.getSort()) ? this.uiOptions.topicData.getSort() : defaultOptions.getTopicData().getSort(),
             this.uiOptions.topicData.getDateTimeFormat()
+        );
+
+        options.cluster = new UiOptionsCluster(
+            (this.uiOptions.cluster.getOrder() != null && !this.uiOptions.cluster.getOrder().isEmpty()) ? this.uiOptions.cluster.getOrder() : defaultOptions.getCluster().getOrder()
         );
 
         return options;

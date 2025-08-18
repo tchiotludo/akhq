@@ -113,6 +113,11 @@ akhq:
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
           date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
+        cluster:
+          order: # Per-cluster ordering override (optional). Overrides global ui-options.cluster.order
+            - "my-cluster-ssl"
+            - "my-cluster-plain-text"
+            - "my-cluster-sasl"
 
     my-cluster-ssl:
       properties:
@@ -185,6 +190,11 @@ akhq:
       groups-default-view: ALL  # default consumer groups list view (ALL, HIDE_EMPTY). Overrides default
     topic-data:
       sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
+    cluster:
+      order: # Cluster display order (optional). Controls sidebar cluster ordering
+        - "my-cluster-plain-text"
+        - "my-cluster-ssl" 
+        - "my-cluster-sasl"
 
   # Auth & Roles (optional)
   security:
