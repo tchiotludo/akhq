@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Header from '../../Header/Header';
 import { getSelectedTab } from '../../../utils/functions';
+import { hasPermissionForCluster } from '../../../utils/converters';
 import { Link } from 'react-router-dom';
 import KsqlDBInfo from './KsqlDBInfo/KsqlDBInfo';
 import KsqlDBStreams from './KsqlDBStreams/KsqlDBStreams';
@@ -102,7 +103,7 @@ class KsqlDBList extends Component {
             </div>
           </div>
         </div>
-        {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
+        {hasPermissionForCluster(roles, 'KSQLDB', 'EXECUTE', clusterId) && (
           <aside>
             <li className="aside-button">
               <Link

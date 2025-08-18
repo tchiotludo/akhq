@@ -5,6 +5,7 @@ import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
 import logoUrl from '../../images/logo.svg';
 import sortBy from 'lodash/sortBy';
+import { hasPermissionForCluster } from '../../utils/converters';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
@@ -371,33 +372,21 @@ class Sidebar extends Component {
             {listClusters}
           </NavItem>
 
-          {roles &&
-            roles.NODE &&
-            roles.NODE.includes('READ') &&
+          {hasPermissionForCluster(roles, 'NODE', 'READ', selectedCluster) &&
             this.renderMenuItem(faLaptop, constants.NODE, 'Nodes')}
-          {roles &&
-            roles.TOPIC &&
-            roles.TOPIC.includes('READ') &&
+          {hasPermissionForCluster(roles, 'TOPIC', 'READ', selectedCluster) &&
             this.renderMenuItem(faList, constants.TOPIC, 'Topics')}
-          {roles &&
-            roles.TOPIC_DATA &&
-            roles.TOPIC_DATA.includes('READ') &&
+          {hasPermissionForCluster(roles, 'TOPIC_DATA', 'READ', selectedCluster) &&
             this.renderMenuItem(faLevelDown, constants.TAIL, 'Live Tail')}
-          {roles &&
-            roles.CONSUMER_GROUP &&
-            roles.CONSUMER_GROUP.includes('READ') &&
+          {hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'READ', selectedCluster) &&
             this.renderMenuItem(faObjectGroup, constants.GROUP, 'Consumer Groups')}
-          {roles &&
-            roles.ACL &&
-            roles.ACL.includes('READ') &&
+          {hasPermissionForCluster(roles, 'ACL', 'READ', selectedCluster) &&
             this.renderMenuItem(faKey, constants.ACLS, 'ACLS')}
           {enableRegistry &&
             registryType !== 'GLUE' &&
-            roles &&
-            roles.SCHEMA &&
-            roles.SCHEMA.includes('READ') &&
+            hasPermissionForCluster(roles, 'SCHEMA', 'READ', selectedCluster) &&
             this.renderMenuItem(faCogs, constants.SCHEMA, 'Schema Registry')}
-          {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
+          {enableConnect && hasPermissionForCluster(roles, 'CONNECTOR', 'READ', selectedCluster) && (
             <NavItem
               eventKey="connects"
               className={selectedTab === constants.CONNECT ? 'active' : ''}
@@ -422,7 +411,7 @@ class Sidebar extends Component {
               {listConnects}
             </NavItem>
           )}
-          {enableKsqlDB && roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
+          {enableKsqlDB && hasPermissionForCluster(roles, 'KSQLDB', 'READ', selectedCluster) && (
             <NavItem
               eventKey="ksqlDBs"
               className={selectedTab === constants.KSQLDB ? 'active' : ''}
