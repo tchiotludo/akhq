@@ -113,11 +113,6 @@ akhq:
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
           date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
-        cluster:
-          order: # Per-cluster ordering override (optional). Overrides global ui-options.cluster.order
-            - "my-cluster-ssl"
-            - "my-cluster-plain-text"
-            - "my-cluster-sasl"
 
     my-cluster-ssl:
       properties:
