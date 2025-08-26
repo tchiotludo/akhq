@@ -66,7 +66,7 @@
     "jsdom": "^26.1.0",
     "prettier": "^3.5.3",
     "react-bootstrap": "^2.10.10",
-    "react-datepicker": "8.2.1",
+    "react-datepicker": "8.7.0",
     "react-test-renderer": "^19.1.0",
     "rxjs": "^7.8.2",
     "sass": "^1.89.0",
