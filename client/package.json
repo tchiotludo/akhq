@@ -63,7 +63,7 @@
     "eslint-plugin-react": "^7.37.5",
     "joi": "^17.13.3",
     "joi-browser": "^13.4.0",
-    "jsdom": "^26.1.0",
+    "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
     "react-bootstrap": "^2.10.10",
     "react-datepicker": "8.2.1",
