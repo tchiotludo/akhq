@@ -315,6 +315,14 @@ akhq:
         - username: header-admin
           groups:
             - admin
+    # Controller methods configuration (optional)
+    # Enable or disable specific controller endpoints
+    # controllers:
+    #   topic: # Controller path segments
+    #     list: # Method identifier
+    #       enabled: false # Set to false to disable this endpoint
+    #     create:
+    #       enabled: false
 
     # Data masking configuration
     data-masking:

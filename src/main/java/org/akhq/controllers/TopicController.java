@@ -130,6 +130,7 @@ public class TopicController extends AbstractController {
 
 
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.CREATE)
+    @ControllerMethodEnabled(property = "akhq.controllers.topic.create.enabled", defaultValue = true)
     @Post(value = "api/{cluster}/topic")
     @Operation(tags = {"topic"}, summary = "Create a topic")
     public Topic create(
