@@ -20,7 +20,7 @@
     "lodash": "^4.17.21",
     "lossless-json": "^4.1.0",
     "prop-types": "^15.8.1",
-    "react": "^19.1.0",
+    "react": "^19.2.0",
     "react-ace": "^14.0.1",
     "react-dom": "^19.1.0",
     "react-helmet": "^6.1.0",
