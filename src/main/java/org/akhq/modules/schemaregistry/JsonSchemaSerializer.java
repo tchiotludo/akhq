@@ -1,13 +1,14 @@
 package org.akhq.modules.schemaregistry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
+import io.confluent.kafka.schemaregistry.json.jackson.Jackson;
 import io.confluent.kafka.serializers.json.AbstractKafkaJsonSchemaSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
 import org.everit.json.schema.ValidationException;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,6 +21,8 @@ public class JsonSchemaSerializer extends AbstractKafkaJsonSchemaSerializer<Stri
     private final int schemaId;
     private final JsonSchema jsonSchema;
     private final SchemaRegistryType schemaRegistryType;
+    private static final ObjectMapper objectMapper = Jackson.newObjectMapper();
+
 
     public static JsonSchemaSerializer newInstance(int schemaId, ParsedSchema parsedSchema, SchemaRegistryType schemaRegistryType) {
         if (supports(parsedSchema)) {
@@ -32,8 +35,7 @@ public class JsonSchemaSerializer extends AbstractKafkaJsonSchemaSerializer<Stri
     @Override
     public byte[] serialize(String json) {
         try {
-            JSONObject jsonObject = new JSONObject(json);
-            jsonSchema.validate(jsonObject);
+            jsonSchema.validate(objectMapper.readTree(json));
         } catch (JsonProcessingException e) {
             String errorMsg = String.format("Provided json [%s] is not valid according to schema", json);
             log.error(errorMsg);
