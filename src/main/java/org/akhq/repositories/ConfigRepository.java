@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import com.google.common.collect.ImmutableMap;
 import org.akhq.models.Config;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.apache.kafka.clients.admin.AlterConfigOp;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
 
@@ -66,7 +67,7 @@ public class ConfigRepository extends AbstractRepository {
     }
 
     private void update(String clusterId, ConfigResource.Type type, String name, List<Config> configs) throws ExecutionException, InterruptedException {
-        List<ConfigEntry> entries = new ArrayList<>();
+        List<AlterConfigOp> entries = new ArrayList<>();
 
         List<String> configNamesToReset = configs.stream()
             .filter(Config::shouldResetToDefault)
@@ -78,16 +79,16 @@ public class ConfigRepository extends AbstractRepository {
             .stream()
             .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
             .filter(config -> !configNamesToReset.contains(config.getName()))
-            .forEach(config -> entries.add(new ConfigEntry(config.getName(), config.getValue())));
+            .forEach(config -> entries.add(new AlterConfigOp(new ConfigEntry(config.getName(), config.getValue()), AlterConfigOp.OpType.SET)));
 
         configs.stream()
             .filter(config -> !config.shouldResetToDefault())
-            .map(config -> new ConfigEntry(config.getName(), config.getValue()))
+            .map(config -> new AlterConfigOp(new ConfigEntry(config.getName(), config.getValue()), AlterConfigOp.OpType.SET))
             .forEach(entries::add);
 
         kafkaWrapper.alterConfigs(clusterId, ImmutableMap.of(
             new ConfigResource(type, name),
-            new org.apache.kafka.clients.admin.Config(entries)
+            entries
         ));
     }
 

@@ -79,7 +79,7 @@ abstract public class AbstractKafkaWrapper {
             Map<String, TopicDescription> description = Logger.call(
                 kafkaModule.getAdminClient(clusterId)
                     .describeTopics(list)
-                    .all(),
+                    .allTopicNames(),
                 "Describe Topics {}",
                 topics
             );
@@ -372,10 +372,10 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void alterConfigs(String clusterId, Map<ConfigResource, Config> configs) throws ExecutionException {
+    public void alterConfigs(String clusterId, Map<ConfigResource, Collection<AlterConfigOp>> configs) throws ExecutionException {
         Logger.call(
             kafkaModule.getAdminClient(clusterId)
-                .alterConfigs(configs)
+                .incrementalAlterConfigs(configs)
                 .all(),
             "Alter configs",
             Collections.singletonList(clusterId)
@@ -385,7 +385,7 @@ abstract public class AbstractKafkaWrapper {
             (k, v) -> {
                 if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
                     auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
-                        v.entries().stream().collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+                        v.stream().map(AlterConfigOp::configEntry).collect(toMap(ConfigEntry::name, ConfigEntry::value))));
                 }
             }
         );

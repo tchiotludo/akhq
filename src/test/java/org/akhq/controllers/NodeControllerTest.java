@@ -29,21 +29,21 @@ class NodeControllerTest extends AbstractTest {
     @Test
     void nodeApi() {
         Node result = this.retrieve(
-            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0"),
+            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/1"),
             Node.class
         );
 
-        assertEquals(0, result.getId());
+        assertEquals(1, result.getId());
     }
 
     @Test
     void nodeConfigApi() {
         List<Config> result = this.retrieveList(
-            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/configs"),
+            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/1/configs"),
             Config.class
         );
 
-        assertEquals("2", result.stream().filter(config -> config.getName().equals("num.io.threads")).findFirst().orElseThrow().getValue());
+        assertEquals("8", result.stream().filter(config -> config.getName().equals("num.io.threads")).findFirst().orElseThrow().getValue());
     }
 
     @Test
@@ -52,7 +52,7 @@ class NodeControllerTest extends AbstractTest {
 
         List<Config> result = this.retrieveList(
             HttpRequest.POST(
-                "/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/configs",
+                "/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/1/configs",
                 ImmutableMap.of("configs", ImmutableMap.of("max.connections.per.ip", s))
             ),
             Config.class
@@ -64,7 +64,7 @@ class NodeControllerTest extends AbstractTest {
     @Test
     void nodeLogApi() {
         List<LogDir> result = this.retrieveList(
-            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/0/logs"),
+            HttpRequest.GET("/api/" +  KafkaTestCluster.CLUSTER_ID + "/node/1/logs"),
             LogDir.class
         );
 

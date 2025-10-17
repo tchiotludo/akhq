@@ -241,6 +241,7 @@ dependencies {
     testImplementation 'org.apache.curator:curator-test:5.9.0'
 
     testImplementation 'org.awaitility:awaitility:4.3.0'
+    testImplementation 'org.testcontainers:kafka:1.19.7'
 }
 
 testlogger {
@@ -292,6 +293,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
 shadowJar {
     mergeServiceFiles()
     zip64 true
+    mainClassName = 'org.akhq.KafkaTestCluster'
 }
 
 processResources.dependsOn ":client:installFrontend"

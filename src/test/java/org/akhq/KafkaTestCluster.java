@@ -11,7 +11,7 @@ import com.salesforce.kafka.test.ListenerProperties;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.Config;
+import org.apache.kafka.clients.admin.AlterConfigOp;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -86,53 +86,10 @@ public class KafkaTestCluster implements Runnable {
      * Reuse a local broker for inject only
      */
     private KafkaTestCluster() {
-        this.connectionString = new ConnectionString.ConnectionStringBuilder()
-            .schemaRegistry("http://schema-registry:8085")
-            .kafka("kafka:9092")
-            .connect1("http://connect:8083")
-            .connect2("http://connect:8084")
-            .ksqlDb("http://ksqldb:8088")
-            .build();
-
-        testUtils = new KafkaTestUtils(new Provider(this.connectionString));
     }
 
     public KafkaTestCluster(boolean reuseEnabled) throws Exception {
         reuse = reuseEnabled;
-
-        kafkaCluster = new EmbeddedSingleNodeKafkaCluster(new Properties() {{
-            // Log config
-            put("log.min.cleanable.dirty.ratio", "0");
-            put("log.roll.ms", "1");
-            put("log.cleaner.backoff.ms", "1");
-            put("log.segment.delete.delay.ms", "1");
-            put("max.compaction.lag.ms", "1");
-            put("authorizer.class.name", "kafka.security.authorizer.AclAuthorizer");
-            put("allow.everyone.if.no.acl.found", "true");
-
-            // Segment config
-            put(TopicConfig.SEGMENT_MS_CONFIG, "1");
-            put(TopicConfig.SEGMENT_INDEX_BYTES_CONFIG, "1");
-            put(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0.01");
-            put(TopicConfig.DELETE_RETENTION_MS_CONFIG, "1");
-
-            // Lower active threads.
-            put("num.io.threads", "2");
-            put("num.network.threads", "2");
-            put("log.flush.interval.messages", "1");
-
-            // Define replication factor for internal topics to 1
-            put("offsets.topic.replication.factor", "1");
-            put("offset.storage.replication.factor", "1");
-            put("transaction.state.log.replication.factor", "1");
-            put("transaction.state.log.min.isr", "1");
-            put("transaction.state.log.num.partitions", "4");
-            put("config.storage.replication.factor", "1");
-            put("status.storage.replication.factor", "1");
-            put("default.replication.factor", "1");
-        }});
-
-        kafkaCluster.start();
     }
 
     public void stop() {
@@ -146,20 +103,20 @@ public class KafkaTestCluster implements Runnable {
         SLF4JBridgeHandler.install();
 
         try {
+            kafkaCluster = new EmbeddedSingleNodeKafkaCluster();
             kafkaCluster.start();
             log.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
             log.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
-            log.info("Kafka Connect started on {}", kafkaCluster.connect1Url());
-            log.info("Kafka Connect started on {}", kafkaCluster.connect2Url());
-            log.info("Kafka KsqlDB started on {}", kafkaCluster.ksqlDbUrl());
+            log.info("Kafka Connect started on {}", kafkaCluster.kafkaConnectUrl());
+            log.info("Kafka ksqlDB started on {}", kafkaCluster.ksqlDbServerUrl());
 
             connectionString = ConnectionString.builder()
                 .kafka(kafkaCluster.bootstrapServers())
-                .zookeeper(kafkaCluster.zookeeperConnect())
+                .zookeeper(null)
                 .schemaRegistry(kafkaCluster.schemaRegistryUrl())
-                .connect1(kafkaCluster.connect1Url())
-                .connect2(kafkaCluster.connect2Url())
-                .ksqlDb(kafkaCluster.ksqlDbUrl())
+                .connect1(kafkaCluster.kafkaConnectUrl())
+                .connect2(kafkaCluster.kafkaConnectUrl())
+                .ksqlDb(kafkaCluster.ksqlDbServerUrl())
                 .build();
 
             testUtils = new KafkaTestUtils(new Provider(this.connectionString));
@@ -242,14 +199,15 @@ public class KafkaTestCluster implements Runnable {
 
         // compacted topic
         testUtils.createTopic(TOPIC_COMPACTED, 3, (short) 1);
-        testUtils.getAdminClient().alterConfigs(ImmutableMap.of(
+
+        testUtils.getAdminClient().incrementalAlterConfigs(ImmutableMap.of(
             new ConfigResource(ConfigResource.Type.TOPIC, TOPIC_COMPACTED),
-            new Config(List.of(
-                new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT),
-                new ConfigEntry(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0"),
-                new ConfigEntry(TopicConfig.MAX_COMPACTION_LAG_MS_CONFIG, "1")
+            List.of(
+                new AlterConfigOp(new ConfigEntry(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT), AlterConfigOp.OpType.SET),
+                new AlterConfigOp(new ConfigEntry(TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG, "0"), AlterConfigOp.OpType.SET),
+                new AlterConfigOp(new ConfigEntry(TopicConfig.MAX_COMPACTION_LAG_MS_CONFIG, "1"), AlterConfigOp.OpType.SET)
             ))
-        )).all().get();
+        ).all().get();
 
         KafkaProducer<String, String> producer = testUtils.getKafkaProducer(
             StringSerializer.class,

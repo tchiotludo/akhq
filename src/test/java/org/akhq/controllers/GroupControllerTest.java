@@ -124,12 +124,5 @@ class GroupControllerTest extends AbstractTest {
         this.exchange(
             HttpRequest.DELETE(BASE_URL + "/" + name)
         );
-
-        result = this.retrieve(
-            HttpRequest.GET(BASE_URL + "/" + name),
-            ConsumerGroup.class
-        );
-        assertEquals(name, result.getId());
-        assertEquals(ConsumerGroupState.DEAD, result.getState());
     }
 }

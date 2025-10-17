@@ -50,7 +50,7 @@ public class JsonSchemaSerializer extends AbstractKafkaJsonSchemaSerializer<Stri
         }
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             out.write(schemaRegistryType.getMagicByte());
-            out.write(ByteBuffer.allocate(idSize).putInt(schemaId).array());
+            out.write(ByteBuffer.allocate(4).putInt(schemaId).array());
             out.write(json.getBytes(StandardCharsets.UTF_8));
             byte[] bytes = out.toByteArray();
             out.close();

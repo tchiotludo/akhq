@@ -1,221 +1,142 @@
 package org.akhq.clusters;
 
-import io.confluent.kafka.schemaregistry.CompatibilityLevel;
-import io.confluent.kafka.schemaregistry.RestApp;
-import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
-import kafka.server.KafkaConfig$;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Properties;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 public class EmbeddedSingleNodeKafkaCluster implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
-    private static final int DEFAULT_BROKER_PORT = 0; // 0 results in a random port being selected
-    private static final String KAFKA_SCHEMAS_TOPIC = "__schemas";
-    private static final String AVRO_COMPATIBILITY_TYPE = CompatibilityLevel.BACKWARD.name;
+    private static final String DEFAULT_KAFKA_IMAGE = "confluentinc/cp-kafka:8.0.0";
+    private static final String DEFAULT_SCHEMA_REGISTRY_IMAGE = "confluentinc/cp-schema-registry:8.0.0";
+    private static final String DEFAULT_KAFKA_CONNECT_IMAGE = "confluentinc/cp-kafka-connect:8.0.0";
+    private static final String DEFAULT_KSQLDB_IMAGE = "confluentinc/ksqldb-server:0.29.0";
 
-    private static final String KAFKASTORE_OPERATION_TIMEOUT_MS = "10000";
-    private static final String KAFKASTORE_DEBUG = "true";
-    private static final String KAFKASTORE_INIT_TIMEOUT = "90000";
+    private ConfluentKafkaContainer kafka;
+    private GenericContainer<?> schemaRegistry;
+    private GenericContainer<?> kafkaConnect;
+    private GenericContainer<?> ksqlDbServer;
+    private String schemaRegistryUrl;
+    private String kafkaConnectUrl;
+    private String ksqlDbServerUrl;
+    private Network network;
 
-    private ZooKeeperEmbedded zookeeper;
-    private KafkaEmbedded broker;
-    private RestApp schemaRegistry;
-    private ConnectEmbedded connect1, connect2;
-    private KsqlDBEmbedded ksqlDBEmbedded;
-
-    private final Properties brokerConfig;
-
-    public EmbeddedSingleNodeKafkaCluster(final Properties brokerConfig) {
-        this.brokerConfig = new Properties();
-        this.brokerConfig.putAll(brokerConfig);
+    public EmbeddedSingleNodeKafkaCluster() {
     }
 
-    public void start() throws Exception {
-        // zookeeper
-        log.debug("Initiating embedded Kafka cluster startup");
-        log.debug("Starting a ZooKeeper instance...");
-        zookeeper = new ZooKeeperEmbedded();
-        log.debug("ZooKeeper instance is running at {}", zookeeper.connectString());
+    public void start() {
+        network = Network.newNetwork();
 
-        // kafka
-        final Properties effectiveBrokerConfig = effectiveBrokerConfigFrom(brokerConfig, zookeeper);
-        log.debug("Starting a Kafka instance on port {} ...", effectiveBrokerConfig.getProperty(KafkaConfig$.MODULE$.ListenersProp()));
-        broker = new KafkaEmbedded(effectiveBrokerConfig);
-        log.debug("Kafka instance is running at {}, connected to ZooKeeper at {}", broker.brokerList(), broker.zookeeperConnect());
+        log.debug("Starting embedded Kafka cluster using Testcontainers...");
+        kafka = new ConfluentKafkaContainer(DockerImageName.parse(DEFAULT_KAFKA_IMAGE))
+            .withNetworkAliases("kafka")
+            .withNetwork(network)
+            .withListener("kafka:29092")
+            .withEnv("KAFKA_AUTHORIZER_CLASS_NAME", "org.apache.kafka.metadata.authorizer.StandardAuthorizer")
+            .withEnv("KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND", "true")
+            .withReuse(false);
+        kafka.start();
+        log.debug("Kafka broker started at {}", kafka.getBootstrapServers());
 
-        // schema registry
-        final Properties schemaRegistryProps = new Properties();
-        schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_TIMEOUT_CONFIG, KAFKASTORE_OPERATION_TIMEOUT_MS);
-        schemaRegistryProps.put(SchemaRegistryConfig.DEBUG_CONFIG, KAFKASTORE_DEBUG);
-        schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_INIT_TIMEOUT_CONFIG, KAFKASTORE_INIT_TIMEOUT);
-        schemaRegistryProps.put(SchemaRegistryConfig.KAFKASTORE_BOOTSTRAP_SERVERS_CONFIG, bootstrapServers());
+        schemaRegistry = new GenericContainer<>(DockerImageName.parse(DEFAULT_SCHEMA_REGISTRY_IMAGE))
+            .withNetwork(network)
+            .withNetworkAliases("registry")
+            .withEnv("SCHEMA_REGISTRY_HOST_NAME", "localhost")
+            .withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "kafka:29092")
+            .withEnv("SCHEMA_REGISTRY_DEBUG", "true")
+            .withExposedPorts(8081)
+            .waitingFor(Wait.forHttp("/subjects"))
+            .withReuse(false);
 
-        schemaRegistry = new RestApp(0, zookeeperConnect(), KAFKA_SCHEMAS_TOPIC, AVRO_COMPATIBILITY_TYPE, schemaRegistryProps);
         schemaRegistry.start();
-        log.debug("Schema registry is running at {}", schemaRegistryUrl());
+        schemaRegistryUrl = String.format("http://localhost:%d", schemaRegistry.getMappedPort(8081));
+        log.debug("Schema Registry started at {}", schemaRegistryUrl);
 
-        // connect-1
-        Properties connect1Properties = new Properties();
-        connect1Properties.put("bootstrap.servers", bootstrapServers());
-        connect1Properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
-        connect1Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
-        connect1Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
-        connect1Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect1Properties.put("listeners", "http://:" + randomPort());
-        connect1Properties.put("group.id", "connect-1-integration-test-");
-        connect1Properties.put("offset.storage.topic", "__connect-1-offsets");
-        connect1Properties.put("offset.storage.replication.factor", 1);
-        connect1Properties.put("config.storage.topic", "__connect-1-config");
-        connect1Properties.put("config.storage.replication.factor", 1);
-        connect1Properties.put("status.storage.topic", "__connect-1-status");
-        connect1Properties.put("status.storage.replication.factor", 1);
-        connect1Properties.put("plugin.path", "null");
+        kafkaConnect = new GenericContainer<>(DockerImageName.parse(DEFAULT_KAFKA_CONNECT_IMAGE))
+            .withNetwork(network)
+            .withNetworkAliases("connect")
+            .withEnv("CONNECT_BOOTSTRAP_SERVERS", "kafka:29092")
+            .withEnv("CONNECT_REST_ADVERTISED_HOST_NAME", "connect")
+            .withEnv("CONNECT_GROUP_ID", "connect-cluster")
+            .withEnv("CONNECT_CONFIG_STORAGE_TOPIC", "connect-configs")
+            .withEnv("CONNECT_OFFSET_STORAGE_TOPIC", "connect-offsets")
+            .withEnv("CONNECT_STATUS_STORAGE_TOPIC", "connect-status")
+            .withEnv("CONNECT_KEY_CONVERTER", "org.apache.kafka.connect.json.JsonConverter")
+            .withEnv("CONNECT_VALUE_CONVERTER", "org.apache.kafka.connect.json.JsonConverter")
+            .withEnv("CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR", "1")
+            .withEnv("CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR", "1")
+            .withEnv("CONNECT_STATUS_STORAGE_REPLICATION_FACTOR", "1")
+            .withEnv("CONNECT_SCHEMA_REGISTRY_URL", "http://registry:8081")
+            .withEnv("CONNECT_PLUGIN_PATH", "/usr/local/share/kafka/plugins,/usr/share/filestream-connectors")
+            .withExposedPorts(8083)
+            .waitingFor(Wait.forHttp("/"))
+            .withReuse(false);
 
-        // connect-2
-        Properties connect2Properties = new Properties();
-        connect2Properties.put("bootstrap.servers", bootstrapServers());
-        connect2Properties.put("key.converter", "io.confluent.connect.avro.AvroConverter");
-        connect2Properties.put("key.converter.schema.registry.url", schemaRegistryUrl());
-        connect2Properties.put("value.converter", "io.confluent.connect.avro.AvroConverter");
-        connect2Properties.put("value.converter.schema.registry.url", schemaRegistryUrl());
-        connect2Properties.put("listeners", "http://:" + randomPort());
-        connect2Properties.put("group.id", "connect-2-integration-test-");
-        connect2Properties.put("offset.storage.topic", "__connect-2-offsets");
-        connect2Properties.put("offset.storage.replication.factor", 1);
-        connect2Properties.put("config.storage.topic", "__connect-2-config");
-        connect2Properties.put("config.storage.replication.factor", 1);
-        connect2Properties.put("status.storage.topic", "__connect-2-status");
-        connect2Properties.put("status.storage.replication.factor", 1);
-        connect2Properties.put("plugin.path", "null");
+        kafkaConnect.start();
+        kafkaConnectUrl = String.format("http://localhost:%d", kafkaConnect.getMappedPort(8083));
+        log.debug("Kafka Connect started at {}", kafkaConnectUrl);
 
-        connect1 = new ConnectEmbedded(connect1Properties);
-        log.debug("Kafka Connect-1 is running at {}", connect1Url());
+        ksqlDbServer = new GenericContainer<>(DockerImageName.parse(DEFAULT_KSQLDB_IMAGE))
+            .withNetwork(network)
+            .withNetworkAliases("ksqldb-server")
+            .withEnv("KSQL_BOOTSTRAP_SERVERS", "kafka:29092")
+            .withEnv("KSQL_HOST_NAME", "ksqldb-server")
+            .withEnv("KSQL_LISTENERS", "http://0.0.0.0:8088")
+            .withEnv("KSQL_KSQL_SCHEMA_REGISTRY_URL", "http://registry:8081")
+            .withExposedPorts(8088)
+            .waitingFor(Wait.forHttp("/info"))
+            .withReuse(false);
 
-        connect2 = new ConnectEmbedded(connect2Properties);
-        log.debug("Kafka Connect-2 is running at {}", connect2Url());
-
-        // KsqlDB
-        Properties ksqlDbProperties = new Properties();
-        ksqlDbProperties.put("bootstrap.servers", bootstrapServers());
-        ksqlDbProperties.put("ksql.schema.registry.url", schemaRegistryUrl());
-        ksqlDbProperties.put("listeners", "http://0.0.0.0:" + randomPort());
-        ksqlDbProperties.put("ksql.udf.enable.security.manager", "false");
-        ksqlDbProperties.put("confluent.support.metrics.enable", "false");
-
-        ksqlDBEmbedded = new KsqlDBEmbedded(ksqlDbProperties);
-        log.debug("Kafka KsqlDB is running at {}", ksqlDbUrl());
-    }
-
-    static Integer randomPort() {
-        try {
-            try (
-                ServerSocket socket = new ServerSocket(0)
-            ) {
-                return socket.getLocalPort();
-            }
-        } catch (IOException ignored) {
-            return null;
-        }
-    }
-
-    private Properties effectiveBrokerConfigFrom(final Properties brokerConfig, final ZooKeeperEmbedded zookeeper) {
-        final Properties effectiveConfig = new Properties();
-        effectiveConfig.putAll(brokerConfig);
-        effectiveConfig.put(KafkaConfig$.MODULE$.ZkConnectProp(), zookeeper.connectString());
-        effectiveConfig.put(KafkaConfig$.MODULE$.DeleteTopicEnableProp(), true);
-        effectiveConfig.put(KafkaConfig$.MODULE$.LogCleanerDedupeBufferSizeProp(), 2 * 1024 * 1024L);
-        effectiveConfig.put(KafkaConfig$.MODULE$.GroupMinSessionTimeoutMsProp(), 0);
-        effectiveConfig.put(KafkaConfig$.MODULE$.GroupInitialRebalanceDelayMsProp(), 0);
-        effectiveConfig.put(KafkaConfig$.MODULE$.OffsetsTopicReplicationFactorProp(), (short) 1);
-        effectiveConfig.put(KafkaConfig$.MODULE$.OffsetsTopicPartitionsProp(), 1);
-        effectiveConfig.put(KafkaConfig$.MODULE$.AutoCreateTopicsEnableProp(), true);
-        return effectiveConfig;
+        ksqlDbServer.start();
+        ksqlDbServerUrl = String.format("http://localhost:%d", ksqlDbServer.getMappedPort(8088));
+        log.debug("ksqlDB Server started at {}", ksqlDbServerUrl);
     }
 
     @Override
-    public void beforeTestExecution(ExtensionContext context) throws Exception {
+    public void beforeTestExecution(ExtensionContext context) {
         start();
     }
 
     @Override
-    public void afterTestExecution(ExtensionContext context) throws Exception {
+    public void afterTestExecution(ExtensionContext context) {
         stop();
     }
 
     public void stop() {
         log.info("Stopping EmbeddedSingleNodeKafkaCluster");
-        try {
-            if (connect1 != null) {
-                connect1.stop();
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+        if (ksqlDbServer != null) {
+            ksqlDbServer.stop();
         }
-
-        try {
-            if (connect2 != null) {
-                connect2.stop();
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+        if (kafkaConnect != null) {
+            kafkaConnect.stop();
         }
-
-        try {
-            if (ksqlDBEmbedded != null) {
-                ksqlDBEmbedded.stop();
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+        if (schemaRegistry != null) {
+            schemaRegistry.stop();
         }
-
-        try {
-            if (schemaRegistry != null) {
-                schemaRegistry.stop();
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        if (broker != null) {
-            broker.stop();
-        }
-
-        try {
-            if (zookeeper != null) {
-                zookeeper.stop();
-            }
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
+        if (kafka != null) {
+            kafka.stop();
         }
         log.info("EmbeddedSingleNodeKafkaCluster Stopped");
     }
 
     public String bootstrapServers() {
-        return broker.brokerList();
-    }
-
-    public String zookeeperConnect() {
-        return zookeeper.connectString();
+        return kafka.getBootstrapServers();
     }
 
     public String schemaRegistryUrl() {
-        return schemaRegistry.restConnect;
+        return schemaRegistryUrl;
     }
 
-    public String connect1Url() {
-        return connect1.connectUrl();
+    public String kafkaConnectUrl() {
+        return kafkaConnectUrl;
     }
 
-    public String connect2Url() {
-        return connect2.connectUrl();
-    }
-    public String ksqlDbUrl() {
-        return ksqlDBEmbedded.ksqlDbUrl();
+    public String ksqlDbServerUrl() {
+        return ksqlDbServerUrl;
     }
 }
