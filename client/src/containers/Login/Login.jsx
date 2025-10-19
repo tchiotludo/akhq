@@ -42,6 +42,12 @@ class Login extends Form {
       };
 
       login(uriLogin(), body).then(res => {
+        // Safari: Handle opaqueredirect (status 0 means redirect was successful with redirect: 'manual')
+        if (res.type === 'opaqueredirect' || res.status === 0) {
+          this.getData();
+          return;
+        }
+
         // Handle login failed for bearer auth
         if (res.status === 500) {
           toast.error('Wrong Username or Password!');
