@@ -320,6 +320,16 @@ and
 }
 ```
 
+You can also use wildcards to unmask all fields under a path. For example, `metadata.*` will unmask all fields under `metadata`.
+
+To unmask all fields for a topic, you can use `*` as the key. For example:
+```yaml
+- description: Unmask all fields in the all-fields-visible topic
+  topic: all-fields-visible
+  keys: ["*"]
+```
+
+
 ### No masking required
 You can set `akhq.security.data-masking.mode` to `none` to disable masking altogether.
 

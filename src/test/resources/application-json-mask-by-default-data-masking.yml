@@ -15,3 +15,11 @@ akhq:
             - metadata.other.shouldBeUnmasked
             - metadata.other.arrayToShow
             - metadata.other.jsonArray.showThis
+        - description: Unmask wildcard values
+          topic: wildcard
+          keys:
+            - address.*
+            - metadata.other.*
+        - description: Unmask all values
+          topic: unmask-all
+          keys: ["*"]
