@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import Loading from '../../containers/Loading';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import Root from '../../components/Root';
 import { withRouter } from '../../utils/withRouter';
 

@@ -23,7 +23,7 @@
     "react": "^19.2.0",
     "react-ace": "^14.0.1",
     "react-dom": "^19.2.0",
-    "react-helmet": "^6.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.9.4",
     "react-timeago": "^8.3.0",
     "react-toastify": "^11.0.5"
