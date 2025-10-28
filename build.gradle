@@ -35,8 +35,8 @@ repositories {
 configurations.all {
     exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
 
     resolutionStrategy {
@@ -44,9 +44,9 @@ configurations.all {
         force("org.apache.kafka:kafka-streams:" + kafkaVersion)
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-        force("com.google.protobuf:protobuf-java:3.25.2")
-        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
+        force("org.apache.kafka:kafka-metadata:" + kafkaVersion)
+        force("org.apache.kafka:kafka-server:" + kafkaVersion)
+        force("org.apache.kafka:kafka-raft:" + kafkaVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
