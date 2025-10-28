@@ -69,8 +69,10 @@ micronaut:
       record-stats: true
       expire-after-write: 0s
     local-security-claim-provider:
+      record-stats: true
       expire-after-write: 600s
     rest-api-claim-provider:
+      record-stats: true
       expire-after-write: 600s
   http:
     client:
