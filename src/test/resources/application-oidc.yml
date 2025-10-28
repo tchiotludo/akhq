@@ -30,12 +30,6 @@ micronaut:
             issuer: "http://no.url"
             token: "fake-token"
 
-  caches:
-    kafka-wrapper:
-      maximum-size: 0
-      record-stats: true
-      expire-after-write: 0s
-
 akhq:
   server:
     access-log:
