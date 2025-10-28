@@ -74,16 +74,28 @@ public class ConfigRepository extends AbstractRepository {
             .map(Config::getName)
             .collect(Collectors.toList());
 
+        List<String> configNamesToUpdate = configs.stream()
+            .filter(config -> !config.shouldResetToDefault())
+            .map(Config::getName)
+            .collect(Collectors.toList());
+
         this.find(clusterId, type, Collections.singletonList(name))
             .get(name)
             .stream()
             .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
             .filter(config -> !configNamesToReset.contains(config.getName()))
+            .filter(config -> !configNamesToUpdate.contains(config.getName()))
             .forEach(config -> entries.add(new AlterConfigOp(new ConfigEntry(config.getName(), config.getValue()), AlterConfigOp.OpType.SET)));
 
         configs.stream()
             .filter(config -> !config.shouldResetToDefault())
             .map(config -> new AlterConfigOp(new ConfigEntry(config.getName(), config.getValue()), AlterConfigOp.OpType.SET))
+            .forEach(entries::add);
+
+        // Add DELETE operations for configs that should be reset to default
+        configs.stream()
+            .filter(Config::shouldResetToDefault)
+            .map(config -> new AlterConfigOp(new ConfigEntry(config.getName(), null), AlterConfigOp.OpType.DELETE))
             .forEach(entries::add);
 
         kafkaWrapper.alterConfigs(clusterId, ImmutableMap.of(

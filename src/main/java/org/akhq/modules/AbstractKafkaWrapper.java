@@ -384,8 +384,19 @@ abstract public class AbstractKafkaWrapper {
         configs.forEach(
             (k, v) -> {
                 if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
-                    auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
-                        v.stream().map(AlterConfigOp::configEntry).collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+                    // Include both SET and DELETE operations in audit logging
+                    // For DELETE operations, use empty string as placeholder since value is null
+                    Map<String, String> configChanges = v.stream()
+                        .map(op -> {
+                            ConfigEntry entry = op.configEntry();
+                            String value = entry.value() != null ? entry.value() : "";
+                            return new AbstractMap.SimpleEntry<>(entry.name(), value);
+                        })
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                    if (!configChanges.isEmpty()) {
+                        auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(), configChanges));
+                    }
                 }
             }
         );

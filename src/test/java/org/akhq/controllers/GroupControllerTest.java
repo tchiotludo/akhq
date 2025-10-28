@@ -11,7 +11,6 @@ import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.ConsumerGroupState;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

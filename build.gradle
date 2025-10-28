@@ -113,6 +113,7 @@ dependencies {
     implementation group: "org.apache.kafka", name: "kafka_" + kafkaScalaVersion, version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
+    implementation ("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
     implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
@@ -201,6 +202,11 @@ test {
 dependencies {
     testImplementation 'ch.qos.logback:logback-classic'
 
+    // Log4j dependencies needed by KsqlDB at test runtime
+    // KsqlDB requires actual Log4j implementation, not bridges
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.24.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
+
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
     testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
@@ -219,12 +225,13 @@ dependencies {
     testImplementation ("io.micronaut:micronaut-inject")
     testImplementation ("io.micronaut.rxjava2:micronaut-rxjava2-http-client")
     testImplementation("io.micronaut.test:micronaut-test-rest-assured")
+    testImplementation ("io.netty:netty-all")
 
     // test
     testImplementation "org.apache.kafka:kafka-clients:" + kafkaVersion + ":test"
     testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion
     testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion + ":test"
-    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion
+    testImplementation "org.apache.kafka:kafka-server-common:" + kafkaVersion
     testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
     testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
     testImplementation "org.apache.kafka:connect-file:" + kafkaVersion

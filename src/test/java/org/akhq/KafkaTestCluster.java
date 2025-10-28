@@ -27,7 +27,7 @@ import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourceType;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.akhq.clusters.EmbeddedSingleNodeKafkaCluster;
+import org.akhq.clusters.SingleNodeKafkaCluster;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.IOException;
@@ -56,15 +56,15 @@ public class KafkaTestCluster implements Runnable {
     public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
     public static final String TOPIC_AUDIT = "audit";
 
-    public static final int TOPIC_ALL_COUNT = 23;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 13;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 11;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 21;
+    public static final int TOPIC_ALL_COUNT = 24;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 14;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 12;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 22;
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
 
-    private EmbeddedSingleNodeKafkaCluster kafkaCluster;
+    private SingleNodeKafkaCluster kafkaCluster;
     private KafkaTestUtils testUtils;
     private boolean reuse;
     private ConnectionString connectionString;
@@ -103,19 +103,20 @@ public class KafkaTestCluster implements Runnable {
         SLF4JBridgeHandler.install();
 
         try {
-            kafkaCluster = new EmbeddedSingleNodeKafkaCluster();
+            kafkaCluster = new SingleNodeKafkaCluster();
             kafkaCluster.start();
             log.info("Kafka Server started on {}", kafkaCluster.bootstrapServers());
             log.info("Kafka Schema registry started on {}", kafkaCluster.schemaRegistryUrl());
-            log.info("Kafka Connect started on {}", kafkaCluster.kafkaConnectUrl());
+            log.info("Kafka Connect 1 started on {}", kafkaCluster.kafkaConnect1Url());
+            log.info("Kafka Connect 2 started on {}", kafkaCluster.kafkaConnect2Url());
             log.info("Kafka ksqlDB started on {}", kafkaCluster.ksqlDbServerUrl());
 
             connectionString = ConnectionString.builder()
                 .kafka(kafkaCluster.bootstrapServers())
                 .zookeeper(null)
                 .schemaRegistry(kafkaCluster.schemaRegistryUrl())
-                .connect1(kafkaCluster.kafkaConnectUrl())
-                .connect2(kafkaCluster.kafkaConnectUrl())
+                .connect1(kafkaCluster.kafkaConnect1Url())
+                .connect2(kafkaCluster.kafkaConnect2Url())
                 .ksqlDb(kafkaCluster.ksqlDbServerUrl())
                 .build();
 
@@ -128,7 +129,7 @@ public class KafkaTestCluster implements Runnable {
             injectTestData();
             log.info("Test data injected");
 
-            Thread.sleep(5000);
+            Thread.sleep(20000);
             log.info("Test data injected sleep done");
 
             if (reuse) {
