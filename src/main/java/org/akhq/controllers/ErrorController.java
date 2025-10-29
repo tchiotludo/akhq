@@ -3,7 +3,7 @@ package org.akhq.controllers;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micrometer.core.instrument.util.StringUtils;
 import io.micronaut.core.annotation.AnnotationValue;
-import io.micronaut.http.HttpAttributes;
+import io.micronaut.http.BasicHttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -84,10 +84,10 @@ public class ErrorController extends AbstractController {
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
         if (request.getUri().toString().startsWith("/api")) {
             if (e.isForbidden()) {
-                if (request.getAttribute(HttpAttributes.ROUTE_MATCH).isPresent() &&
-                    ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).hasAnnotation(AKHQSecured.class)) {
+                if (BasicHttpAttributes.getRouteMatchInfo(request).isPresent() &&
+                    ((UriRouteMatch<?, ?>) BasicHttpAttributes.getRouteMatchInfo(request).get()).hasAnnotation(AKHQSecured.class)) {
                     AnnotationValue<AKHQSecured> annotation =
-                        ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).getAnnotation(AKHQSecured.class);
+                        ((UriRouteMatch<?, ?>) BasicHttpAttributes.getRouteMatchInfo(request).get()).getAnnotation(AKHQSecured.class);
 
                     return HttpResponse.status(HttpStatus.FORBIDDEN)
                         .body(new JsonError(String.format("Unauthorized: missing permission on resource %s and action %s",

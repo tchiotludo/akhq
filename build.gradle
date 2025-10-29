@@ -38,6 +38,11 @@ configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    // Exclude BC-FIPS to avoid conflicts with regular Bouncy Castle
+    exclude group: 'org.bouncycastle', module: 'bc-fips'
+    exclude group: 'org.bouncycastle', module: 'bcpkix-fips'
+    exclude group: 'org.bouncycastle', module: 'bctls-fips'
+    exclude group: 'org.bouncycastle', module: 'bcutil-fips'
 
     resolutionStrategy {
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
