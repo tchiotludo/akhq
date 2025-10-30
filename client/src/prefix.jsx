@@ -1,7 +1,9 @@
+const UI_PATH = '/ui';
+
 function extractPrefixFromUrl() {
   // Extract prefix from current URL path
   const path = window.location.pathname;
-  const uiIndex = path.indexOf('/ui');
+  const uiIndex = path.indexOf(UI_PATH);
 
   if (uiIndex > 0) {
     return path.substring(0, uiIndex);
