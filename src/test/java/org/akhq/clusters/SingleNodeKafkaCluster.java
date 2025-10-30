@@ -12,10 +12,10 @@ import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 public class SingleNodeKafkaCluster implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
-    private static final String DEFAULT_KAFKA_IMAGE = "confluentinc/cp-kafka:8.0.0";
-    private static final String DEFAULT_SCHEMA_REGISTRY_IMAGE = "confluentinc/cp-schema-registry:8.0.0";
-    private static final String DEFAULT_KAFKA_CONNECT_IMAGE = "confluentinc/cp-kafka-connect:8.0.0";
-    private static final String DEFAULT_KSQLDB_IMAGE = "confluentinc/cp-ksqldb-server:8.0.0";
+    private static final String DEFAULT_KAFKA_IMAGE = "confluentinc/cp-kafka:8.1.0";
+    private static final String DEFAULT_SCHEMA_REGISTRY_IMAGE = "confluentinc/cp-schema-registry:8.1.0";
+    private static final String DEFAULT_KAFKA_CONNECT_IMAGE = "confluentinc/cp-kafka-connect:8.1.0";
+    private static final String DEFAULT_KSQLDB_IMAGE = "confluentinc/cp-ksqldb-server:8.1.0";
 
     private ConfluentKafkaContainer kafka;
     private GenericContainer<?> schemaRegistry;
