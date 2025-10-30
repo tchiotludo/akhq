@@ -18,6 +18,7 @@ import java.util.Objects;
 
 @Slf4j
 public class JsonSchemaSerializer extends AbstractKafkaJsonSchemaSerializer<String> implements SchemaSerializer {
+    public static final int SCHEMA_ID_SIZE = 4;
     private final int schemaId;
     private final JsonSchema jsonSchema;
     private final SchemaRegistryType schemaRegistryType;
@@ -50,7 +51,7 @@ public class JsonSchemaSerializer extends AbstractKafkaJsonSchemaSerializer<Stri
         }
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             out.write(schemaRegistryType.getMagicByte());
-            out.write(ByteBuffer.allocate(4).putInt(schemaId).array());
+            out.write(ByteBuffer.allocate(SCHEMA_ID_SIZE).putInt(schemaId).array());
             out.write(json.getBytes(StandardCharsets.UTF_8));
             byte[] bytes = out.toByteArray();
             out.close();
