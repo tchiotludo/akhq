@@ -5,7 +5,7 @@ function extractPrefixFromUrl() {
   const path = window.location.pathname;
   const uiIndex = path.indexOf(UI_PATH);
 
-  if (uiIndex > 0) {
+  if (uiIndex >= 0) {
     return path.substring(0, uiIndex);
   }
 
