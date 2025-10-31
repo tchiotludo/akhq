@@ -12,7 +12,7 @@ import io.micronaut.security.oauth2.client.DefaultOpenIdProviderMetadata;
 import io.micronaut.security.oauth2.endpoint.token.request.TokenEndpointClient;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
-import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTokenResponseValidator;
+import io.micronaut.security.oauth2.endpoint.token.response.validation.ReactiveOpenIdTokenResponseValidator;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.Flowable;
@@ -45,7 +45,7 @@ class OidcDirectClaimAuthenticationProviderTest {
     TokenEndpointClient tokenEndpointClient;
 
     @Inject
-    OpenIdTokenResponseValidator openIdTokenResponseValidator;
+    ReactiveOpenIdTokenResponseValidator reactiveOpenIdTokenResponseValidator;
 
     @Named("oidc")
     @MockBean(TokenEndpointClient.class)
@@ -54,9 +54,9 @@ class OidcDirectClaimAuthenticationProviderTest {
     }
 
     @Named("oidc")
-    @MockBean(OpenIdTokenResponseValidator.class)
-    OpenIdTokenResponseValidator openIdTokenResponseValidator() {
-        return mock(OpenIdTokenResponseValidator.class);
+    @MockBean(ReactiveOpenIdTokenResponseValidator.class)
+    ReactiveOpenIdTokenResponseValidator reactiveOpenIdTokenResponseValidator() {
+        return mock(ReactiveOpenIdTokenResponseValidator.class);
     }
 
     @Named("oidc")
@@ -81,8 +81,8 @@ class OidcDirectClaimAuthenticationProviderTest {
 
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
-        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+        Mockito.when(reactiveOpenIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+                .thenReturn(Publishers.just(jwt));
 
         AuthenticationResponse response = (AuthenticationResponse) Flowable
                 .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
@@ -111,8 +111,8 @@ class OidcDirectClaimAuthenticationProviderTest {
 
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
             .thenReturn(Publishers.just(new OpenIdTokenResponse()));
-        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Optional.of(jwt));
+        Mockito.when(reactiveOpenIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Publishers.just(jwt));
 
         AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
@@ -133,8 +133,8 @@ class OidcDirectClaimAuthenticationProviderTest {
 
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
             .thenReturn(Publishers.just(new OpenIdTokenResponse()));
-        Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Optional.of(jwt));
+        Mockito.when(reactiveOpenIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Publishers.just(jwt));
 
         AuthenticationResponse response = (AuthenticationResponse) Flowable
             .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(

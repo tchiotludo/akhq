@@ -9,6 +9,7 @@ import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.provider.HttpRequestReactiveAuthenticationProvider;
 import io.micronaut.security.rules.SecurityRule;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.BasicAuth;
@@ -57,12 +58,15 @@ public class BasicAuthAuthenticationProvider<B> implements HttpRequestReactiveAu
             .groups(auth.getGroups())
             .build();
 
-        try {
+        // Use Flowable.fromCallable() with IO scheduler to move blocking call off event loop
+        return Flowable.fromCallable(() -> {
             ClaimResponse claim = claimProvider.generateClaim(request);
-            return Flowable.just(AuthenticationResponse.success(auth.getUsername(), List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups())));
-        } catch (Exception e) {
+            return AuthenticationResponse.success(auth.getUsername(), List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups()));
+        })
+        .subscribeOn(Schedulers.io())
+        .onErrorReturn(e -> {
             String claimProviderClass = claimProvider.getClass().getName();
-            return Flowable.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
-        }
+            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+        });
     }
 }

@@ -1,8 +1,4 @@
 volumes:
-  zookeeper-data:
-    driver: local
-  zookeeper-log:
-    driver: local
   kafka-data:
     driver: local
 
@@ -31,37 +27,31 @@ services:
       - kafka
       - schema-registry
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
-    restart: unless-stopped
-    volumes:
-      - zookeeper-data:/var/lib/zookeeper/data:Z
-      - zookeeper-log:/var/lib/zookeeper/log:Z
-    environment:
-      ZOOKEEPER_CLIENT_PORT: '2181'
-      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
-
   kafka:
     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
     volumes:
       - kafka-data:/var/lib/kafka/data:Z
     environment:
-      KAFKA_BROKER_ID: '0'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_NODE_ID: '1'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
       KAFKA_NUM_PARTITIONS: '12'
       KAFKA_COMPRESSION_TYPE: 'gzip'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
       KAFKA_JMX_PORT: '9091'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.authorizer.AclAuthorizer'
+      KAFKA_AUTHORIZER_CLASS_NAME: 'org.apache.kafka.metadata.authorizer.StandardAuthorizer'
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
-    links:
-      - zookeeper
 
   schema-registry:
     image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-latest}
