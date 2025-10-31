@@ -139,7 +139,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // avro
-    implementation 'org.apache.avro:avro:1.12.0'
+    implementation 'org.apache.avro:avro:1.12.1'
 
     // jackson-module-scala
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.20.0'
