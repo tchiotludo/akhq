@@ -123,8 +123,8 @@ dependencies {
     implementation ("org.sourcelab:kafka-connect-client:4.0.5")
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.17.0'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.17.0'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.17.1'
+    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.17.1'
 
     // log
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17'
