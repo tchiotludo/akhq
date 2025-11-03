@@ -248,7 +248,7 @@ dependencies {
     testImplementation 'org.apache.curator:curator-test:5.9.0'
 
     testImplementation 'org.awaitility:awaitility:4.3.0'
-    testImplementation 'org.testcontainers:kafka:1.19.7'
+    testImplementation 'org.testcontainers:kafka:1.21.3'
 }
 
 testlogger {
