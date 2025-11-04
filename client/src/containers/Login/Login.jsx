@@ -20,6 +20,7 @@ class Login extends Form {
       password: ''
     },
     errors: {},
+    errorMessage: null,
     config: {
       formEnabled: true,
       oidcAuths: [],
@@ -44,7 +45,7 @@ class Login extends Form {
       login(uriLogin(), body).then(res => {
         // Handle login failed for bearer auth
         if (res.status === 500) {
-          toast.error('Wrong Username or Password!');
+          this.setState({ errorMessage: 'Wrong Username or Password!' });
           return;
         }
 
@@ -62,7 +63,7 @@ class Login extends Form {
       });
     } catch (err) {
       // Handle login failed for cookie auth
-      toast.error('Wrong Username or Password!');
+      this.setState({ errorMessage: 'Wrong Username or Password!' });
     }
   }
 
@@ -81,14 +82,21 @@ class Login extends Form {
 
         window.location.replace(basePath + (returnTo || '/ui'));
       } else {
-        toast.error('User logged in but no roles assigned');
+        this.setState({ errorMessage: 'Authentication failed: User has no roles assigned.' });
       }
     } else {
-      toast.error('Wrong Username or Password!');
+      this.setState({ errorMessage: 'Wrong Username or Password!' });
     }
   }
 
   componentDidMount() {
+    const {
+      router: { location }
+    } = this.props;
+    if (location.pathname.endsWith('/failed')) {
+      this.setState({ errorMessage: 'Authentication failed: Invalid credentials.' });
+    }
+
     const auths = JSON.parse(sessionStorage.getItem('auths'));
     if (auths && auths.loginEnabled) {
       const { ...config } = auths;
@@ -202,6 +210,9 @@ class Login extends Form {
               </h3>
             </div>
             {formEnabled && this._renderForm()}
+            {this.state.errorMessage && (
+              <div className="alert alert-danger mt-3">{this.state.errorMessage}</div>
+            )}
             {formEnabled &&
               (!!oidcAuths?.length || !!oauthAuths?.length) &&
               this._renderSeparator()}
