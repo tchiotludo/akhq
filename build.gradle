@@ -148,6 +148,9 @@ dependencies {
     implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.33.0'
     implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.33.0'
 
+    // Buf Schema Registry (BSR) - contains BSR API types for descriptor fetching
+    implementation group: "build.buf.bsr.kafka", name: "bsr-kafka-serde", version: '0.1.1'
+
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-inject")

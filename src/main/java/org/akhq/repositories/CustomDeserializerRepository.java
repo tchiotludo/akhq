@@ -1,8 +1,12 @@
 package org.akhq.repositories;
 
+import org.akhq.configs.Connection;
+import org.akhq.configs.SchemaRegistryType;
 import org.akhq.modules.KafkaModule;
+import org.akhq.modules.schemaregistry.BufSchemaRegistryClient;
 import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
+import org.akhq.utils.BufProtobufToJsonDeserializer;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 
 import jakarta.inject.Inject;
@@ -18,6 +22,7 @@ public class CustomDeserializerRepository {
     private AvroToJsonSerializer avroToJsonSerializer;
     private final Map<String, ProtobufToJsonDeserializer> protobufToJsonDeserializers = new HashMap<>();
     private final Map<String, AvroToJsonDeserializer> avroToJsonDeserializers = new HashMap<>();
+    private final Map<String, BufProtobufToJsonDeserializer> bsrDeserializers = new HashMap<>();
 
     public ProtobufToJsonDeserializer getProtobufToJsonDeserializer(String clusterId) {
         if (!this.protobufToJsonDeserializers.containsKey(clusterId)) {
@@ -37,5 +42,28 @@ public class CustomDeserializerRepository {
             );
         }
         return this.avroToJsonDeserializers.get(clusterId);
+    }
+
+    public BufProtobufToJsonDeserializer getBsrProtobufDeserializer(String clusterId) {
+        if (!this.bsrDeserializers.containsKey(clusterId)) {
+            Connection connection = kafkaModule.getConnection(clusterId);
+
+            // Only create BSR deserializer if BSR is configured
+            if (connection.getSchemaRegistry() != null &&
+                connection.getSchemaRegistry().getType() == SchemaRegistryType.BSR) {
+
+                BufSchemaRegistryClient bsrClient = kafkaModule.getBsrClient(clusterId);
+                if (bsrClient != null) {
+                    this.bsrDeserializers.put(
+                        clusterId,
+                        new BufProtobufToJsonDeserializer(
+                            bsrClient,
+                            connection.getDeserialization().getProtobuf()
+                        )
+                    );
+                }
+            }
+        }
+        return this.bsrDeserializers.get(clusterId);
     }
 }

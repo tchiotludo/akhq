@@ -19,6 +19,7 @@ import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
 import org.akhq.configs.Connection;
 import org.akhq.configs.Default;
+import org.akhq.configs.SchemaRegistryType;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -211,6 +212,13 @@ public class KafkaModule {
             throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
         }
 
+        // BSR doesn't use Confluent ProtobufSchemaProvider, return null
+        Connection connection = this.getConnection(clusterId);
+        if (connection.getSchemaRegistry() != null &&
+            connection.getSchemaRegistry().getType() == SchemaRegistryType.BSR) {
+            return null;
+        }
+
         ProtobufSchemaProvider protobufSchemaProvider = new ProtobufSchemaProvider();
         protobufSchemaProvider.configure(Collections.singletonMap(
             SCHEMA_VERSION_FETCHER,
@@ -226,6 +234,12 @@ public class KafkaModule {
         }
 
         Connection connection = this.getConnection(clusterId);
+
+        // BSR doesn't use Confluent RestService, return null
+        if (connection.getSchemaRegistry() != null &&
+            connection.getSchemaRegistry().getType() == SchemaRegistryType.BSR) {
+            return null;
+        }
 
         if (connection.getSchemaRegistry() != null) {
             RestService restService = new RestService(
@@ -275,6 +289,7 @@ public class KafkaModule {
     }
 
     private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
+    private final Map<String, org.akhq.modules.schemaregistry.BufSchemaRegistryClient> bsrClients = new HashMap<>();
 
 
     public SchemaRegistryClient getRegistryClient(String clusterId) throws InvalidClusterException {
@@ -282,10 +297,14 @@ public class KafkaModule {
             throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
         }
 
+        // BSR doesn't use Confluent SchemaRegistryClient, return null
+        Connection connection = this.getConnection(clusterId);
+        if (connection.getSchemaRegistry() != null &&
+            connection.getSchemaRegistry().getType() == SchemaRegistryType.BSR) {
+            return null;
+        }
+
         if (!this.registryClient.containsKey(clusterId)) {
-            Connection connection = this.getConnection(clusterId);
-
-
             List<SchemaProvider> providers = new ArrayList<>();
             providers.add(new AvroSchemaProvider());
             providers.add(new JsonSchemaProvider());
@@ -385,5 +404,29 @@ public class KafkaModule {
         }
 
         return this.ksqlDbClient.get(clusterId);
+    }
+
+    public org.akhq.modules.schemaregistry.BufSchemaRegistryClient getBsrClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
+        }
+
+        if (!this.bsrClients.containsKey(clusterId)) {
+            Connection connection = this.getConnection(clusterId);
+
+            if (connection.getSchemaRegistry() != null &&
+                connection.getSchemaRegistry().getBsrHost() != null &&
+                !connection.getSchemaRegistry().getBsrHost().isEmpty()) {
+
+                this.bsrClients.put(clusterId,
+                    new org.akhq.modules.schemaregistry.BufSchemaRegistryClient(
+                        connection.getSchemaRegistry().getBsrHost(),
+                        connection.getSchemaRegistry().getBsrToken()
+                    )
+                );
+            }
+        }
+
+        return this.bsrClients.get(clusterId);
     }
 }
