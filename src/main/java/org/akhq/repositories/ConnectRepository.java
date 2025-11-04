@@ -45,7 +45,8 @@ public class ConnectRepository extends AbstractRepository {
 
     @Retryable(includes = {
         ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class
+        ResourceNotFoundException.class,
+        InvalidRequestException.class
     }, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
         return new ConnectDefinition(
@@ -61,8 +62,9 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     @Retryable(includes = {
-            ConcurrentConfigModificationException.class,
-            ResourceNotFoundException.class
+        ConcurrentConfigModificationException.class,
+        ResourceNotFoundException.class,
+        InvalidRequestException.class
     }, delay = "3s", attempts = "5")
     public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, List<String> filters)
             throws IOException, RestClientException, ExecutionException, InterruptedException{
@@ -135,6 +137,11 @@ public class ConnectRepository extends AbstractRepository {
         return getDefinition(clusterId, connectId, name);
     }
 
+    @Retryable(includes = {
+        ConcurrentConfigModificationException.class,
+        ResourceNotFoundException.class,
+        InvalidRequestException.class
+    }, delay = "3s", attempts = "5")
     public ConnectDefinition update(String clusterId, String connectId, String name, Map<String, String> configs) {
         try {
             this.kafkaModule

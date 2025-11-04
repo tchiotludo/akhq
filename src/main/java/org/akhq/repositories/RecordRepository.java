@@ -10,6 +10,7 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.sse.Event;
 import io.reactivex.Flowable;
+import java.time.Duration;
 import java.util.stream.StreamSupport;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -430,7 +431,7 @@ public class RecordRepository extends AbstractRepository {
         // First one wait for metadata and send records
         // Hack bellow can be used to wait for metadata
         */
-        return consumer.poll(this.pollTimeout);
+        return consumer.poll(Duration.ofMillis(this.pollTimeout));
 
         /*
         if (!records.isEmpty()) {
