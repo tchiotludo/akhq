@@ -462,15 +462,15 @@ class Tail extends Root {
                 cell: obj => {
                   return (
                     <div className="tail-headers">
-                      {obj.headers ? Object.keys(obj.headers).length : 0}
+                      Headers ({obj.headers ? Object.keys(obj.headers).length : 0})
                     </div>
                   );
                 }
               },
               {
-                id: 'value',
+                id: 'Value',
                 accessor: 'value',
-                colName: 'Schema',
+                colName: 'Value',
                 type: 'text',
                 extraRow: true,
                 extraRowContent: (obj, index) => {
@@ -482,28 +482,23 @@ class Tail extends Root {
                   } catch (e) {}
 
                   return (
-                    <AceEditor
-                      setOptions={{ useWorker: false }}
-                      mode="json"
-                      id={'value' + index}
-                      theme="merbivore_soft"
-                      value={value || 'null'}
-                      readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
-                      style={{ width: '100%', minHeight: '25vh' }}
-                    />
+                    <>
+                      <strong>Value</strong>
+                      <AceEditor
+                        setOptions={{ useWorker: false }}
+                        mode="json"
+                        id={'value' + index}
+                        theme="merbivore_soft"
+                        value={value || 'null'}
+                        readOnly
+                        name="UNIQUE_ID_OF_DIV"
+                        editorProps={{ $blockScrolling: true }}
+                        style={{ width: '100%', minHeight: '25vh' }}
+                      />
+                    </>
                   );
                 },
-                cell: obj => {
-                  return (
-                    <pre className="mb-0 khq-data-highlight">
-                      <code>{obj.value}</code>
-                    </pre>
-                  );
-                }
-              }
-            ]}
+}
             extraRow
             noStripes
             data={data}
@@ -512,42 +507,37 @@ class Tail extends Root {
             }}
             noContent={<tr />}
             onExpand={obj => {
-              return obj.headers.map((header, i) => {
-                return (
-                  <tr
-                    key={i}
-                    className={'table-sm'}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      width: '100%'
-                    }}
-                  >
-                    <td
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        borderStyle: 'dashed',
-                        borderWidth: '1px',
-                        backgroundColor: '#171819'
-                      }}
-                    >
-                      {header.key}
-                    </td>
-                    <td
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        borderStyle: 'dashed',
-                        borderWidth: '1px',
-                        backgroundColor: '#171819'
-                      }}
-                    >
-                      {header.value}
-                    </td>
-                  </tr>
-                );
-              });
+              return (
+                <tr className="khq-data-highlight-row">
+                  <td colSpan={6}>
+                    <div className="incell-wrapper">
+                      <strong>Headers</strong>
+                      <Table
+                        tbody={{ className: 'incell-table' }}
+                        columns={[
+                          {
+                            id: 'key',
+                            accessor: 'key',
+                            colName: 'Key',
+                            cell: ({ value }) => <td>{value}</td>
+                          },
+                          {
+                            id: 'value',
+                            accessor: 'value',
+                            colName: 'Value',
+                            cell: ({ value }) => <td>{value}</td>
+                          }
+                        ]}
+                        data={Object.entries(obj.headers).map(([key, value]) => {
+                          return { key, value };
+                        })}
+                        noStripes
+                        noContent={<div>No headers</div>}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              );
             }}
           />
         )}
