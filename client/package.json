@@ -11,7 +11,7 @@
     "@emotion/styled": "^11.14.1",
     "@popperjs/core": "^2.11.8",
     "@trendmicro/react-sidenav": "^0.5.0",
-    "axios": "^1.12.0",
+    "axios": "^1.13.1",
     "bootstrap": "^5.3.8",
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
@@ -23,7 +23,7 @@
     "react": "^19.2.0",
     "react-ace": "^14.0.1",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.4",
+    "react-router-dom": "^7.9.5",
     "react-timeago": "^8.3.0",
     "react-toastify": "^11.0.5"
   },
@@ -44,9 +44,9 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@babel/core": "^7.28.4",
-    "@babel/eslint-parser": "^7.28.4",
-    "@babel/preset-react": "^7.27.1",
+    "@babel/core": "^7.28.5",
+    "@babel/eslint-parser": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
@@ -54,22 +54,22 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^5.1.0",
     "convert-units": "^2.3.4",
-    "eslint": "^9.37.0",
+    "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
     "joi": "^18.0.1",
     "joi-browser": "^13.4.0",
-    "jsdom": "^27.0.0",
+    "jsdom": "^27.1.0",
     "prettier": "^3.6.2",
     "react-bootstrap": "^2.10.10",
     "react-datepicker": "8.2.1",
     "react-test-renderer": "^19.2.0",
     "rxjs": "^7.8.2",
     "sass": "^1.93.2",
-    "vite": "7.1.5",
-    "vitest": "^3.2.4"
+    "vite": "7.1.12",
+    "vitest": "^4.0.5"
   }
 }
