@@ -106,12 +106,12 @@ public class TopicControllerTest extends AbstractTest {
         List<Config> result = this.retrieveList(
             HttpRequest.POST(
                 TOPIC_URL + "/configs",
-                ImmutableMap.of("configs", ImmutableMap.of("message.timestamp.difference.max.ms", s))
+                ImmutableMap.of("configs", ImmutableMap.of("message.timestamp.before.max.ms", s))
             ),
             Config.class
         );
 
-        assertEquals(s, result.stream().filter(config -> config.getName().equals("message.timestamp.difference.max.ms")).findFirst().orElseThrow().getValue());
+        assertEquals(s, result.stream().filter(config -> config.getName().equals("message.timestamp.before.max.ms")).findFirst().orElseThrow().getValue());
     }
 
     @Test
@@ -133,7 +133,9 @@ public class TopicControllerTest extends AbstractTest {
                 "name", CREATE_TOPIC_NAME,
                 "partition", 3,
                 "configs", ImmutableMap.of(
-                    TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT
+                    TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT,
+                    TopicConfig.SEGMENT_MS_CONFIG, "1",
+                    TopicConfig.MIN_COMPACTION_LAG_MS_CONFIG, "0"
                 )
             )
         ), Topic.class);

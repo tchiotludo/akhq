@@ -21,7 +21,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Caches
       - name: Gradle cache
@@ -55,7 +55,7 @@ jobs:
 
       # JDK
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: 17
@@ -87,7 +87,7 @@ jobs:
           find build/distributions/akhq-*.zip -type f -exec cp "{}" build/dist/ ";"
 
       - name: Upload jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: success()
         with:
           name: jar
