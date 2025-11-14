@@ -46,16 +46,16 @@ export default defineConfig(({ command, mode }) => {
       open: false,
       proxy: {
         '/api': {
-          target: env.APP_BASE_URL || 'http://localhost:8081'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/login': {
-          target: env.APP_BASE_URL || 'http://localhost:8081'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/logout': {
-          target: env.APP_BASE_URL || 'http://localhost:8081'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         },
         '/oauth': {
-          target: env.APP_BASE_URL || 'http://localhost:8081'
+          target: env.APP_BASE_URL || 'http://localhost:8080'
         }
       }
     },

@@ -139,7 +139,7 @@ class ConnectConfigs extends Form {
             <FontAwesomeIcon
               icon={faExclamation}
               className={'text-danger'}
-              style={{ marginleft: '1%' }}
+              style={{ marginLeft: '1%' }}
               aria-hidden="true"
             />
           </span>
@@ -152,7 +152,7 @@ class ConnectConfigs extends Form {
             <FontAwesomeIcon
               icon={faInfo}
               className={'text-warning'}
-              style={{ marginleft: '2%' }}
+              style={{ marginLeft: '2%' }}
               aria-hidden="true"
             />
           </span>
