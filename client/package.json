@@ -68,7 +68,7 @@
     "react-datepicker": "8.2.1",
     "react-test-renderer": "^19.2.0",
     "rxjs": "^7.8.2",
-    "sass": "^1.93.2",
+    "sass": "^1.94.0",
     "vite": "7.1.12",
     "vitest": "^4.0.5"
   }
