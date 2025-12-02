@@ -4,10 +4,12 @@ volumes:
 
 services:
   akhq:
-    # build:
-    #   context: .
-    image: tchiotludo/akhq
+    build:
+      context: .
+      dockerfile: Dockerfile.devrev
+    image: tchiotludo/akhq:devrev
     restart: unless-stopped
+    pull_policy: never
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
