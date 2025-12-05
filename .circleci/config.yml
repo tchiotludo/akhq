@@ -11,6 +11,9 @@ jobs:
     steps:
       - checkout
       - sidekick/tidy_build_publish:
+          cache_files: Makefile
+          cache_key: v05122025
+          publish: false
           build_steps:
             - run:
                 name: Run Snyk security scan
@@ -20,9 +23,6 @@ jobs:
     description: Build and publish service image
     executor: sidekick/base
     resource_class: large
-    cache_files: Makefile
-    cache_key: v20251205
-    publish: false
     steps:
       - checkout
       - sidekick/build_push_image:
