@@ -21,7 +21,7 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
-      - sidekick/build_publish_image:
+      - sidekick/build_push_image:
           target: docker
   
 workflows:
