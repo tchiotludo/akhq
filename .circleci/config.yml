@@ -9,11 +9,8 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
-      - sidekick/tidy_build_publish:
-          cache_files: Makefile
-          cache_key: v05122025
-          publish: false
-          build_steps:
+      - sidekick/with_infra_ecr:
+          steps:
             - run:
                 name: Run Snyk security scan
                 command: make snyk
