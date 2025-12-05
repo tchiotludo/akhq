@@ -10,8 +10,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - sidekick/with_infra_ecr:
-          steps:
+      - sidekick/tidy_build_publish:
+          build_steps:
             - run:
                 name: Run Snyk security scan
                 command: make snyk
@@ -21,6 +21,7 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
+      - checkout
       - sidekick/build_push_image:
           target: docker
   
