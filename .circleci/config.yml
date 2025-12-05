@@ -9,7 +9,6 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
-      - checkout
       - sidekick/tidy_build_publish:
           cache_files: Makefile
           cache_key: v05122025
@@ -24,7 +23,6 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
-      - checkout
       - sidekick/build_push_image:
           target: docker
   
