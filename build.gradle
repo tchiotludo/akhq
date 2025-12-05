@@ -50,6 +50,14 @@ configurations.all {
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
+
+        force("io.netty:netty-codec-http:4.1.125.Final")
+        force("org.apache.commons:commons-lang3:3.18.0")
+        force("io.vertx:vertx-core:4.4.8")
+        force("ch.qos.logback:logback-core:1.5.19")
+        force("ch.qos.logback:logback-classic:1.5.19")
+        force("com.nimbusds:nimbus-jose-jwt:9.37.4")
+        force("commons-beanutils:commons-beanutils:1.11.0")
     }
 }
 
@@ -200,7 +208,8 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.19'
+    testImplementation 'ch.qos.logback:logback-core:1.5.19'
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
