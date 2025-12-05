@@ -1,0 +1,45 @@
+version: 2.1
+
+orbs:
+  sidekick: devrev/sidekick@2
+
+jobs:
+  run_snyk:
+    description: Run Snyk security scan on PRs
+    executor: sidekick/base
+    resource_class: large
+    steps:
+      - checkout
+      - sidekick/with_infra_ecr:
+          steps:
+            - run:
+                name: Run Snyk security scan
+                command: make snyk
+
+  build_and_publish:
+    description: Build and publish service image
+    executor: sidekick/base
+    resource_class: large
+    steps:
+      - checkout
+      - sidekick/build_push_image:
+          target: docker
+  
+workflows:
+  pr:
+    jobs:
+      - run_snyk:
+          context:
+            - aws-infra-ecr
+            - snyk-integration
+    unless:
+      equal: [dev, << pipeline.git.branch >>]
+
+  dev:
+    jobs:
+      - build_and_publish:
+          context:
+            - aws-infra-ecr
+          filters:
+            branches:
+              only: dev
