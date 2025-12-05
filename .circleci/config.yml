@@ -9,6 +9,7 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
+      - checkout
       - sidekick/with_infra_ecr:
           steps:
             - run:
