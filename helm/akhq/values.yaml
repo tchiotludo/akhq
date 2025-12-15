@@ -137,7 +137,7 @@ service:
     # cloud.google.com/load-balancer-type: "Internal"
 
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
@@ -145,7 +145,7 @@ ingress:
   labels: {}
   paths:
     - /
-  pathType: "ImplementationSpecific"
+  pathType: "Prefix"
   hosts:
     - akhq.demo.com
   tls: []
