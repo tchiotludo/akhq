@@ -22,7 +22,7 @@
     "prop-types": "^15.8.1",
     "react": "^19.2.0",
     "react-ace": "^14.0.1",
-    "react-dom": "^19.2.0",
+    "react-dom": "^19.2.3",
     "react-router-dom": "^7.9.5",
     "react-timeago": "^8.3.0",
     "react-toastify": "^11.0.5"
