@@ -45,8 +45,8 @@ class Login extends Form {
 
         // Handle opaqueredirect - Otherwise the flow breaks in Safari
         if (res.type === 'opaqueredirect') {
-            this.getData();
-            return;
+          this.getData();
+          return;
         }
         // Handle login failed for bearer auth
         if (res.status === 500) {
