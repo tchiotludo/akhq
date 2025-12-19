@@ -6,7 +6,7 @@ bsr token is required. However, where records do not have the headers, the topic
 
 
 ```yaml
-akqh:
+akhq:
   environment:
     AKHQ_CONFIGURATION: | 
       akhq:
