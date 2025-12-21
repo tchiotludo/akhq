@@ -15,9 +15,11 @@ WORKDIR /app
 # Create user
 RUN useradd -ms /bin/bash akhq
 COPY --chown=akhq:akhq docker /
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 # Use the 'akhq' user
 USER akhq
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["./akhq"]
+
+
+
