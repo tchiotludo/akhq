@@ -92,12 +92,6 @@ describe('Table', () => {
       onAdd={() => {
         mockFunction(TABLE_ADD);
       }}
-      onDetails={() => {
-        mockFunction(TABLE_DETAILS);
-      }}
-      onConfig={() => {
-        mockFunction(TABLE_CONFIG);
-      }}
       onEdit={() => {
         mockFunction(TABLE_EDIT);
       }}

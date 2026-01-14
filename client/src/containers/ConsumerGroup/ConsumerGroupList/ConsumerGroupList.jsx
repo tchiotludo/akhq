@@ -275,9 +275,7 @@ class ConsumerGroupList extends Root {
           onDelete={group => {
             this.handleOnDelete(group);
           }}
-          onDetails={id => {
-            this.props.router.navigate(`/ui/${selectedCluster}/group/${encodeURIComponent(id)}`);
-          }}
+          detailsHref={id => `/ui/${selectedCluster}/group/${encodeURIComponent(id)}`}
           actions={
             roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE')
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]

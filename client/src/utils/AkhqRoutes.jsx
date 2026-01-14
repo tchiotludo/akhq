@@ -108,6 +108,17 @@ class AkhqRoutes extends Root {
     this.setState({ loading: false });
   }
 
+  checkAfterLoginAndHandleRedirect() {
+    const returnTo = sessionStorage.getItem('returnTo');
+
+    if (returnTo && location.pathname !== '/ui/login') {
+      sessionStorage.removeItem('returnTo');
+      return returnTo;
+    }
+
+    return this.handleRedirect();
+  }
+
   handleRedirect() {
     let clusterId = this.state.clusterId;
     const roles = JSON.parse(sessionStorage.getItem('roles'));
@@ -300,7 +311,7 @@ class AkhqRoutes extends Root {
               )}
               <Route exact path="/ui/:clusterId/settings" element={<Settings />} />
               <Route path="/" element={<Navigate to={this.handleRedirect()} />} />
-              <Route path="/ui" element={<Navigate to={this.handleRedirect()} />} />
+              <Route path="/ui" element={<Navigate to={this.checkAfterLoginAndHandleRedirect()} />} />
               <Route path="/ui/401" element={<Navigate to={this.handleRedirect()} />} />
             </Routes>
           </Base>

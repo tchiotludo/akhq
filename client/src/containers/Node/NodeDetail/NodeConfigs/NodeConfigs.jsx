@@ -4,6 +4,7 @@ import { BYTES, MILLI, TEXT } from '../../../../utils/constants';
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
+import { safeConfigValue } from '../../../../utils/largeIntegerUtils';
 import Joi from 'joi-browser';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -97,7 +98,7 @@ class NodeConfigs extends Form {
     }
     this.schema[config.name] = validation;
 
-    formData[config.name] = isNaN(+config.value) ? config.value : +config.value;
+    formData[config.name] = safeConfigValue(config.value);
     this.setState({ formData });
   }
 

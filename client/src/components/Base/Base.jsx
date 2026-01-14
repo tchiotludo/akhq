@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Sidebar from '../../containers/SideBar';
 import constants from '../../utils/constants';
 import Loading from '../../containers/Loading';
-import { Helmet } from 'react-helmet';
 import Root from '../../components/Root';
 import { withRouter } from '../../utils/withRouter';
 
@@ -69,7 +68,7 @@ class Base extends Root {
     const { loading, selectedTab, expanded } = this.state;
     return (
       <>
-        <Helmet title={this.handleTitle()} />
+        <title>{this.handleTitle()}</title>
         <Loading show={loading} />
         {this.props.location.pathname !== '/ui/login' &&
           this.props.location.pathname !== '/ui/page-not-found' && (

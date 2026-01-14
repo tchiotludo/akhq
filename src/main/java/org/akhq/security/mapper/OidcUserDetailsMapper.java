@@ -18,7 +18,10 @@ import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.Oidc;
+import org.akhq.models.security.ClaimProvider;
 import org.akhq.models.security.ClaimProviderType;
+import org.akhq.models.security.ClaimRequest;
+import org.akhq.models.security.ClaimResponse;
 import org.reactivestreams.Publisher;
 
 import java.util.*;
@@ -35,6 +38,9 @@ import java.util.stream.Collectors;
 public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
     @Inject
     private Oidc oidc;
+
+    @Inject
+    private ClaimProvider claimProvider;
 
     public OidcUserDetailsMapper(OpenIdAdditionalClaimsConfiguration openIdAdditionalClaimsConfiguration, AuthenticationModeConfiguration authenticationModeConfiguration) {
         super(openIdAdditionalClaimsConfiguration, authenticationModeConfiguration);
@@ -57,11 +63,38 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("provider_name", providerName);
-        attributes.put("provider_type", ClaimProviderType.OIDC.name());
-        attributes.put("groups", oidcGroups);
-        return (Flowable.just(AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
+        // Stores the OIDC groups in the JWT token
+        // Useful is the AKHQ groups mapping size is more than 4Kb. It saves the OIDC groups and resolves the AKHQ
+        // groups for each HTTP request (in the AKHQSecurityRule).
+        if (provider.isUseOidcGroupsInToken()) {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("provider_name", providerName);
+            attributes.put("provider_type", ClaimProviderType.OIDC.name());
+            attributes.put("groups", oidcGroups);
+            return (Flowable.just(
+                AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
+        }
+        // Stores the AKHQ groups in the JWT token
+        // Default behaviour. The OIDC provider gives the groups, AKHQ resolves the groups mapping and saves it in the token.
+        else {
+            ClaimRequest request = ClaimRequest.builder()
+                .providerType(ClaimProviderType.OIDC)
+                .providerName(providerName)
+                .username(oidcUsername)
+                .groups(oidcGroups)
+                .build();
+
+            try {
+                ClaimResponse claim = claimProvider.generateClaim(request);
+                return (Flowable.just(
+                    AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED),
+                        Map.of("groups", claim.getGroups()))));
+            } catch (Exception e) {
+                String claimProviderClass = claimProvider.getClass().getName();
+                return Flowable.just(new AuthenticationFailed(
+                    "Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
+            }
+        }
     }
 
     private AuthenticationResponse createDirectClaimAuthenticationResponse(String oidcUsername, OpenIdClaims openIdClaims) {

@@ -341,9 +341,7 @@ class ConnectList extends Root {
             this.setState({ tableData: data });
           }}
           actions={this.getTableActions()}
-          onDetails={name => {
-            this.props.router.navigate(`/ui/${clusterId}/connect/${connectId}/definition/${name}`);
-          }}
+          detailsHref={name => `/ui/${clusterId}/connect/${connectId}/definition/${name}`}
           onDelete={row => {
             this.handleOnDelete(row.id);
           }}

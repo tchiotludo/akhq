@@ -266,6 +266,7 @@ class Tail extends Root {
               <Dropdown.Menu
                 style={{
                   maxHeight: 'calc(100vh - 200px)',
+                  maxWidth: 'calc(100vw - 300px)',
                   overflow: 'hidden',
                   minHeight: '182px'
                 }}
