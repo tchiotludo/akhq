@@ -193,6 +193,8 @@ tolerations: []
 
 affinity: {}
 
+topologySpreadConstraints: []
+
 networkPolicy:
   enabled: true
   labels: {}
