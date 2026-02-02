@@ -145,8 +145,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.20.0'
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.33.0'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.33.0'
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.33.5'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.33.5'
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
