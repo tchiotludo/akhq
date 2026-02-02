@@ -44,7 +44,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@babel/core": "^7.28.5",
+    "@babel/core": "^7.29.0",
     "@babel/eslint-parser": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
