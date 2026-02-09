@@ -114,14 +114,22 @@ dependencies {
     implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
     implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
     implementation ("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
-    implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
+    implementation(group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion) {
+    exclude group: "io.confluent.observability"
+    exclude group: "io.confluent.resourcemanager"
+    exclude group: "io.confluent", module: "broker-plugins"
+}
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
-    implementation ("org.sourcelab:kafka-connect-client:4.0.5")
-
+    implementation ("org.sourcelab:kafka-connect-client:4.0.5") {
+    exclude group: "com.fasterxml.jackson.core"
+    exclude group: "com.fasterxml.jackson.dataformat"
+    exclude group: "com.fasterxml.jackson.datatype"
+}
+//This will force it to use your project's Jackson version instead of its own.
     // strimzi
     implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.17.1'
     implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.17.1'
@@ -233,10 +241,15 @@ dependencies {
     testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion + ":test"
     testImplementation "org.apache.kafka:kafka-server-common:" + kafkaVersion
     testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
-    testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
+    testImplementation("org.apache.kafka:connect-runtime:" + kafkaVersion) {
+    exclude group: "io.confluent.observability"
+    exclude group: "io.confluent.resourcemanager"
+}
     testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
-    testImplementation 'io.confluent.ksql:ksqldb-rest-app:' + confluentVersion
-
+    testImplementation('io.confluent.ksql:ksqldb-rest-app:' + confluentVersion) {
+    exclude group: "io.confluent.observability"
+    exclude group: "io.confluent.resourcemanager"
+}
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
     testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
     testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
