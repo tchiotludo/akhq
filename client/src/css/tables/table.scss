@@ -1,3 +1,5 @@
+@use "sass:color";
+
 div.khq-search-sse {
   .progress-container {
     border-left: $table-border-width solid $table-border-color;
@@ -13,7 +15,7 @@ div.khq-search-sse {
 
       .progress-bar {
         transition: width 0.1s ease;
-        color: darken($progress-bar-bg, 30%);
+        color: color.adjust($progress-bar-bg, $lightness: -30%);
       }
     }
 
@@ -99,11 +101,11 @@ table {
       }
 
       tbody tr:nth-of-type(even) {
-        background-color: lighten($table-accent-bg, 0.1);
+        background-color: color.adjust($table-accent-bg, $lightness: 0.1);
       }
 
       tbody tr:nth-of-type(odd) {
-        background-color: lighten($table-bg, 0.1);
+        background-color: color.adjust($table-bg, $lightness: 0.1);
       }
     }
   }
