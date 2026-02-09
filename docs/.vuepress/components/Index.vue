@@ -559,6 +559,8 @@ export default {
 
 
 <style lang="scss">
+// Use Dart Sass modules for color utilities
+@use "sass:color";
 @import "../styles/variable";
 .landing {
     @import "../styles/home/style";
@@ -580,7 +582,7 @@ export default {
     cursor: pointer;
 
     a {
-        color: darken($teal, 25%);
+        color: color.adjust($teal, $lightness: -25%);
     }
 }
 
