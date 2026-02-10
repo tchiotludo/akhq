@@ -38,7 +38,7 @@ export default defineConfig(({ command, mode }) => {
             'color-functions',
             'global-builtin',
             'import',
-            'if-functions'
+            'if-function'
           ]
         }
       }

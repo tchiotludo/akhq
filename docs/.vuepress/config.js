@@ -90,7 +90,7 @@ module.exports = {
               'color-functions',
               'global-builtin',
               'import',
-              'if-functions'
+              'if-function'
             ]
           }
         }

@@ -82,32 +82,6 @@ table {
     td a:hover {
       color: $body-color;
     }
-
-    .table.table-sm {
-      margin-top: calc(-#{$table-cell-padding-y});
-      width: calc(100% + (#{$table-cell-padding-x} * 2));
-      margin-left: -$table-cell-padding-x;
-      position: relative;
-      border-bottom: $table-border-width dashed $table-border-color;
-      font-size: $font-size-sm;
-
-      td,
-      th {
-        border: 0;
-      }
-
-      th {
-        border-right: $table-border-width dashed $table-border-color;
-      }
-
-      tbody tr:nth-of-type(even) {
-        background-color: color.adjust($table-accent-bg, $lightness: 0.1);
-      }
-
-      tbody tr:nth-of-type(odd) {
-        background-color: color.adjust($table-bg, $lightness: 0.1);
-      }
-    }
   }
 }
 
