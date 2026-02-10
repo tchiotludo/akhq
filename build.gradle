@@ -40,6 +40,9 @@ configurations.all {
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
     // Exclude legacy org.lz4 provider so we can consistently use the relocated at.yawk.lz4
     exclude group: 'org.lz4', module: 'lz4-java'
+    // Explicitly exclude missing Confluent telemetry modules from all configurations
+    exclude group: 'io.confluent', module: 'telemetry-events'
+    exclude group: 'io.confluent', module: 'telemetry-api'
 
     resolutionStrategy {
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
@@ -53,6 +56,13 @@ configurations.all {
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
     }
+}
+
+// Apply Confluent-related exclusions to both runtime and test runtime classpaths
+[configurations.runtimeClasspath, configurations.testRuntimeClasspath].each { conf ->
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
+    conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
 }
 
 /**********************************************************************************************************************\
