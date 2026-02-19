@@ -1,17 +1,17 @@
 plugins {
     // micronaut
-    id "com.gradleup.shadow" version "9.2.2"
-    id "io.micronaut.application" version "4.6.1"
+    id "com.gradleup.shadow" version "9.3.1"
+    id "io.micronaut.application" version "4.6.2"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.5.3"
+    id "com.gorylenko.gradle-git-properties" version "2.5.7"
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'org.gradle.test-retry' version '1.6.4'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.53.0"
     id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
     // idea
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.3"
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.4"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -38,6 +38,11 @@ configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    // Exclude legacy org.lz4 provider so we can consistently use the relocated at.yawk.lz4
+    exclude group: 'org.lz4', module: 'lz4-java'
+    // Explicitly exclude missing Confluent telemetry modules from all configurations
+    exclude group: 'io.confluent', module: 'telemetry-events'
+    exclude group: 'io.confluent', module: 'telemetry-api'
 
     resolutionStrategy {
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
@@ -51,6 +56,13 @@ configurations.all {
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
     }
+}
+
+// Apply Confluent-related exclusions to both runtime and test runtime classpaths
+[configurations.runtimeClasspath, configurations.testRuntimeClasspath].each { conf ->
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
+    conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
 }
 
 /**********************************************************************************************************************\
@@ -111,9 +123,13 @@ dependencies {
 
     // kafka
     implementation group: "org.apache.kafka", name: "kafka_" + kafkaScalaVersion, version: kafkaVersion
-    implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
+    implementation("org.apache.kafka:kafka-clients:" + kafkaVersion)
     implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
     implementation ("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
+
+    // Prefer relocated LZ4 provider explicitly
+    implementation("at.yawk.lz4:lz4-java:1.10.3")
+
     implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
@@ -142,11 +158,11 @@ dependencies {
     implementation 'org.apache.avro:avro:1.12.1'
 
     // jackson-module-scala
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.20.0'
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.21.0'
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.33.0'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.33.0'
+    implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.33.5'
+    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.33.5'
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
@@ -160,20 +176,20 @@ dependencies {
     // Password hashing
     implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '5.0.2'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '5.0.4'
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.4'
+    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.5'
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.25")
+    implementation ("software.amazon.glue:schema-registry-serde:1.1.27")
 
 
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.12'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.8.3'
 
     implementation 'io.jsonwebtoken:jjwt-impl:0.13.0'
 }
@@ -204,8 +220,8 @@ dependencies {
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.24.3'
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.25.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.25.3'
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
@@ -248,7 +264,7 @@ dependencies {
     testImplementation 'org.apache.curator:curator-test:5.9.0'
 
     testImplementation 'org.awaitility:awaitility:4.3.0'
-    testImplementation 'org.testcontainers:kafka:1.21.3'
+    testImplementation 'org.testcontainers:kafka:1.21.4'
 }
 
 testlogger {
@@ -300,7 +316,6 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
 shadowJar {
     mergeServiceFiles()
     zip64 true
-    mainClassName = "org.akhq.App"
 }
 
 processResources.dependsOn ":client:installFrontend"

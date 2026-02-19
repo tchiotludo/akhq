@@ -95,7 +95,7 @@ export function showTime(milliseconds) {
  * @returns
  */
 export function showBytes(bytes, decimals = 3) {
-  if (bytes === null || bytes === undefined) return '';
+  if (bytes === null || bytes === undefined || bytes < 0) return '';
   if (bytes === 0) return '0 B';
 
   const kbytes = 1024;

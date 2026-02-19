@@ -33,7 +33,13 @@ export default defineConfig(({ command, mode }) => {
         scss: {
           quietDeps: true,
           /* https://github.com/twbs/bootstrap/issues/40962 */
-          silenceDeprecations: ['mixed-decls', 'color-functions', 'global-builtin', 'import']
+          silenceDeprecations: [
+            'mixed-decls',
+            'color-functions',
+            'global-builtin',
+            'import',
+            'if-function'
+          ]
         }
       }
     },
