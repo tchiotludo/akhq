@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $sidebar-expanded: 240px;
 $sidebar-collapsed: 64px;
 $navbar-padding-x: 1rem;
@@ -85,7 +87,7 @@ $link-color: $blue !default;
 
 .btn-primary {
   &:hover {
-    background-color: lighten($primary, 10%) !important;
+    background-color: color.adjust($primary, $lightness: 10%) !important;
   }
 }
 
@@ -139,12 +141,12 @@ $pagination-bg: $primary !default;
 $pagination-border-width: 0 !default;
 $pagination-border-color: transparent !default;
 $pagination-hover-color: $white !default;
-$pagination-hover-bg: lighten($primary, 10%) !default;
+$pagination-hover-bg: color.adjust($primary, $lightness: 10%) !default;
 $pagination-hover-border-color: transparent !default;
 $pagination-active-bg: $pagination-hover-bg !default;
 $pagination-active-border-color: transparent !default;
 $pagination-disabled-color: $white !default;
-$pagination-disabled-bg: darken($primary, 15%) !default;
+$pagination-disabled-bg: color.adjust($primary, $lightness: -15%) !default;
 $pagination-disabled-border-color: transparent !default;
 
 // Jumbotron
@@ -180,3 +182,4 @@ $close-text-shadow: none !default;
 
 // Code
 $pre-color: inherit !default;
+
