@@ -38,6 +38,10 @@ configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    // Confluent artifacts not published to public repos (transitive from kafka-client-plugins/ksqldb)
+    exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
+    exclude group: 'io.confluent.observability', module: 'telemetry-client'
+    exclude group: 'io.confluent.observability', module: 'telemetry-api'
 
     resolutionStrategy {
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
@@ -51,13 +55,15 @@ configurations.all {
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
 
-        force("io.netty:netty-codec-http:4.1.125.Final")
+        force("io.netty:netty-codec-http:4.1.129.Final")
         force("org.apache.commons:commons-lang3:3.18.0")
-        force("io.vertx:vertx-core:4.4.8")
-        force("ch.qos.logback:logback-core:1.5.19")
-        force("ch.qos.logback:logback-classic:1.5.19")
+        force("io.vertx:vertx-core:4.5.24")
+        force("ch.qos.logback:logback-core:1.5.25")
+        force("ch.qos.logback:logback-classic:1.5.25")
         force("com.nimbusds:nimbus-jose-jwt:9.37.4")
         force("commons-beanutils:commons-beanutils:1.11.0")
+        force("org.apache.logging.log4j:log4j-api:2.25.3")
+        force("org.apache.logging.log4j:log4j-core:2.25.3")
     }
 }
 
@@ -208,13 +214,13 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic:1.5.19'
-    testImplementation 'ch.qos.logback:logback-core:1.5.19'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.25'
+    testImplementation 'ch.qos.logback:logback-core:1.5.25'
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.24.3'
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.25.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.25.3'
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
