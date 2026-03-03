@@ -21,32 +21,32 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Caches
       - name: Gradle cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.gradle/caches
           key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Gradle wrapper cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.gradle/wrapper
           key: "${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-wrapper-
       - name: Npm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: node
           key: "${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}"
@@ -87,7 +87,7 @@ jobs:
           find build/distributions/akhq-*.zip -type f -exec cp "{}" build/dist/ ";"
 
       - name: Upload jar
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: success()
         with:
           name: jar
