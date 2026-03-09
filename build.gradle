@@ -128,7 +128,7 @@ dependencies {
     implementation ("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
-    implementation("at.yawk.lz4:lz4-java:1.10.3")
+    implementation("at.yawk.lz4:lz4-java:1.10.4")
 
     implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
     implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
