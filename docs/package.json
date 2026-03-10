@@ -21,7 +21,7 @@
     "@vuepress/plugin-active-header-links": "^2.0.0-rc.122",
     "@vuepress/plugin-back-to-top": "^2.0.0-rc.122",
     "@vuepress/plugin-git": "^v2.0.0-rc.124",
-    "@vuepress/plugin-google-analytics": "^v2.0.0-rc.124",
+    "@vuepress/plugin-google-analytics": "^v2.0.0-rc.125",
     "@vuepress/plugin-medium-zoom": "^2.0.0-rc.122",
     "@vuepress/plugin-nprogress": "^2.0.0-rc.122",
     "@vuepress/plugin-prismjs": "^2.0.0-rc.122",
