@@ -124,12 +124,29 @@ export function organizeRoles(roles) {
         if (newRoles[resource] === undefined) {
           newRoles[resource] = [];
         }
-        newRoles[resource].push(action);
+        newRoles[resource].push({
+          action,
+          clusters: role.clusters || ['.*']
+        });
       });
     });
   });
 
   return JSON.stringify(newRoles);
+}
+
+export function hasPermissionForCluster(roles, resource, action, clusterId) {
+  if (!roles || !roles[resource]) return false;
+  
+  return roles[resource].some(permission => {
+    if (typeof permission === 'string') {
+      // Backward compatibility with old format
+      return permission === action;
+    }
+    
+    return permission.action === action && 
+           permission.clusters.some(pattern => new RegExp(pattern).test(clusterId));
+  });
 }
 
 export function transformListObjsToViewOptions(list, id, name) {

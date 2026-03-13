@@ -26,7 +26,7 @@ import ConsumerGroupOffsetDelete from '../containers/ConsumerGroup/ConsumerGroup
 import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from '../containers/Settings/Settings';
-import { organizeRoles } from './converters';
+import { organizeRoles, hasPermissionForCluster } from './converters';
 import { uriAuths, uriClusters, uriCurrentUser } from './endpoints';
 import Root from '../components/Root';
 import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
@@ -122,12 +122,12 @@ class AkhqRoutes extends Root {
   handleRedirect() {
     let clusterId = this.state.clusterId;
     const roles = JSON.parse(sessionStorage.getItem('roles'));
-    if (roles && roles.TOPIC && roles.TOPIC.includes('READ')) return `/ui/${clusterId}/topic`;
-    else if (roles && roles.NODE && roles.NODE.includes('READ')) return `/ui/${clusterId}/node`;
-    else if (roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ'))
+    if (hasPermissionForCluster(roles, 'TOPIC', 'READ', clusterId)) return `/ui/${clusterId}/topic`;
+    else if (hasPermissionForCluster(roles, 'NODE', 'READ', clusterId)) return `/ui/${clusterId}/node`;
+    else if (hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'READ', clusterId))
       return `/ui/${clusterId}/group`;
-    else if (roles && roles.ACL && roles.ACL.includes('READ')) return `/ui/${clusterId}/acls`;
-    else if (roles && roles.SCHEMA && roles.SCHEMA.includes('READ'))
+    else if (hasPermissionForCluster(roles, 'ACL', 'READ', clusterId)) return `/ui/${clusterId}/acls`;
+    else if (hasPermissionForCluster(roles, 'SCHEMA', 'READ', clusterId))
       return `/ui/${clusterId}/schema`;
     else if (roles && Object.keys(roles).length > 0) return `/ui/${clusterId}/topic`;
     else return '/ui/login';
@@ -138,6 +138,10 @@ class AkhqRoutes extends Root {
     const clusters = this.state.clusters || [];
     const roles = JSON.parse(sessionStorage.getItem('roles')) || {};
     let clusterId = this.state.clusterId;
+    
+    // Extract clusterId from current route for permission checking
+    const pathSegments = location.pathname.split('/');
+    const routeClusterId = pathSegments[2] || clusterId;
 
     if (this.state.user.length <= 0) {
       this._initUserAndAuth();
@@ -162,15 +166,15 @@ class AkhqRoutes extends Root {
           <Base clusters={clusters}>
             <Routes location={location}>
               <Route exact path="/ui/login" element={<Login />} />
-              {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
+              {hasPermissionForCluster(roles, 'TOPIC', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/topic" element={<TopicList />} />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'TOPIC', 'CREATE', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/topic/create" element={<TopicCreate />} />
               )}
 
-              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'TOPIC_DATA', 'CREATE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/produce"
@@ -178,7 +182,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'TOPIC_DATA', 'CREATE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/increasepartition"
@@ -186,11 +190,11 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'TOPIC_DATA', 'CREATE', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/topic/:topicId/copy" element={<TopicCopy />} />
               )}
 
-              {roles && roles.TOPIC && roles.TOPIC.includes('READ') && (
+              {hasPermissionForCluster(roles, 'TOPIC', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/topic/:topicId/:tab?"
@@ -198,22 +202,22 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
+              {hasPermissionForCluster(roles, 'TOPIC_DATA', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/tail" element={<Tail />} />
               )}
 
-              {roles && roles.NODE && roles.NODE.includes('READ') && (
+              {hasPermissionForCluster(roles, 'NODE', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/node" element={<NodesList />} />
               )}
-              {roles && roles.NODE && roles.NODE.includes('READ') && (
+              {hasPermissionForCluster(roles, 'NODE', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/node/:nodeId/:tab?" element={<NodeDetails />} />
               )}
 
-              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ') && (
+              {hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/group" element={<ConsumerGroupList />} />
               )}
 
-              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('DELETE_OFFSET') && (
+              {hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'DELETE_OFFSET', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsetsdelete"
@@ -221,7 +225,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('UPDATE_OFFSET') && (
+              {hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'UPDATE_OFFSET', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/offsets"
@@ -229,7 +233,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ') && (
+              {hasPermissionForCluster(roles, 'CONSUMER_GROUP', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/group/:consumerGroupId/:tab?"
@@ -237,10 +241,10 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.ACL && roles.ACL.includes('READ') && (
+              {hasPermissionForCluster(roles, 'ACL', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/acls" element={<Acls />} />
               )}
-              {roles && roles.ACL && roles.ACL.includes('READ') && (
+              {hasPermissionForCluster(roles, 'ACL', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/acls/:principalEncoded/:tab?"
@@ -248,14 +252,14 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.SCHEMA && roles.SCHEMA.includes('READ') && (
+              {hasPermissionForCluster(roles, 'SCHEMA', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/schema" element={<SchemaList />} />
               )}
-              {roles && roles.SCHEMA && roles.SCHEMA.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'SCHEMA', 'CREATE', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/schema/create" element={<SchemaCreate />} />
               )}
 
-              {roles && roles.SCHEMA && roles.SCHEMA.includes('UPDATE') && (
+              {hasPermissionForCluster(roles, 'SCHEMA', 'UPDATE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/update"
@@ -263,7 +267,7 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.SCHEMA && roles.SCHEMA.includes('READ') && (
+              {hasPermissionForCluster(roles, 'SCHEMA', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/schema/details/:schemaId/:tab?"
@@ -271,38 +275,38 @@ class AkhqRoutes extends Root {
                 />
               )}
 
-              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('CREATE') && (
+              {hasPermissionForCluster(roles, 'CONNECTOR', 'CREATE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/create"
                   element={<ConnectCreate />}
                 />
               )}
-              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
+              {hasPermissionForCluster(roles, 'CONNECTOR', 'READ', routeClusterId) && (
                 <Route exact path="/ui/:clusterId/connect/:connectId" element={<ConnectList />} />
               )}
-              {roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
+              {hasPermissionForCluster(roles, 'CONNECTOR', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/connect/:connectId/definition/:definitionId/:tab?"
                   element={<Connect />}
                 />
               )}
-              {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
+              {hasPermissionForCluster(roles, 'KSQLDB', 'EXECUTE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/ksqldb/:ksqlDBId/query"
                   element={<KsqlDBQuery />}
                 />
               )}
-              {roles && roles.KSQLDB && roles.KSQLDB.includes('EXECUTE') && (
+              {hasPermissionForCluster(roles, 'KSQLDB', 'EXECUTE', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/ksqldb/:ksqlDBId/statement"
                   element={<KsqlDBStatement />}
                 />
               )}
-              {roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
+              {hasPermissionForCluster(roles, 'KSQLDB', 'READ', routeClusterId) && (
                 <Route
                   exact
                   path="/ui/:clusterId/ksqldb/:ksqlDBId/:tab?"
