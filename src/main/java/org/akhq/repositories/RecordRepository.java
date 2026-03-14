@@ -106,10 +106,12 @@ public class RecordRepository extends AbstractRepository {
         try (KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId)) {
             consumer.assign(topicPartitions);
 
+            Map<TopicPartition, Long> beginOffsets = consumer.beginningOffsets(consumer.assignment());
             consumer
                 .endOffsets(consumer.assignment())
                 .forEach((topicPartition, offset) -> {
-                    consumer.seek(topicPartition, Math.max(0, offset - 2));
+                    long beginOffset = beginOffsets.getOrDefault(topicPartition, 0L);
+                    consumer.seek(topicPartition, Math.max(beginOffset, offset - 2));
                 });
 
             this.poll(consumer)
