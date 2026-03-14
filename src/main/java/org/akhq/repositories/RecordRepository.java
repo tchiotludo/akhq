@@ -874,8 +874,7 @@ public class RecordRepository extends AbstractRepository {
         }
 
         return in.parallelStream()
-            .filter(Objects::nonNull)
-            .anyMatch(s -> extractSearchPatterns(search)
+            .anyMatch(s -> s == null || extractSearchPatterns(search)
                 .stream()
                 .noneMatch(s.toLowerCase()::contains));
     }
