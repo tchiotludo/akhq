@@ -4,5 +4,8 @@ node_modules/
 .gradle
 .idea
 build/
+!build/libs/
+build/libs/*
+!build/libs/akhq-*-all.jar
 out/
 *.hprof
