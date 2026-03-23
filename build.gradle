@@ -316,6 +316,9 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
 shadowJar {
     mergeServiceFiles()
     zip64 = true
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer) {
+        include('git.properties')
+    }
 }
 
 processResources.dependsOn ":client:installFrontend"
