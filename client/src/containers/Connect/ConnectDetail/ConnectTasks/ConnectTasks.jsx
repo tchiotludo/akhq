@@ -66,12 +66,43 @@ class ConnectTasks extends Root {
     this.setState({ definition: definition.data }, () => this.handleTasks());
   }
 
+  static POLL_INTERVAL = 1000;
+  static POLL_MAX_ATTEMPTS = 10;
+
+  async waitForStateChange(expectedAction) {
+    const { clusterId, connectId, definitionId } = this.state;
+
+    for (let i = 0; i < ConnectTasks.POLL_MAX_ATTEMPTS; i++) {
+      await new Promise(resolve => setTimeout(resolve, ConnectTasks.POLL_INTERVAL));
+      const response = await this.getApi(uriGetDefinition(clusterId, connectId, definitionId));
+      const tasks = response.data.tasks || [];
+
+      let settled = false;
+      if (expectedAction === 'paused') {
+        settled = tasks.length > 0 && tasks.every(t => t.state === 'PAUSED');
+      } else if (expectedAction === 'resumed' || expectedAction === 'restarted') {
+        settled = tasks.length > 0 && tasks.every(t => t.state === 'RUNNING');
+      } else {
+        settled = true;
+      }
+
+      if (settled) {
+        this.setState({ definition: response.data }, () => this.handleTasks());
+        return;
+      }
+    }
+
+    // Exhausted attempts — refresh with whatever state we have
+    await this.getDefinition();
+  }
+
   modifyDefinitionState = () => {
     const { definitionId } = this.state;
     const { uri, action, taskId } = this.state.definitionModifyData;
 
+    this.setState({ loading: true });
     this.getApi(uri)
-      .then(() => this.getDefinition())
+      .then(() => this.waitForStateChange(action))
       .then(() => {
         toast.success(
           `${
@@ -80,6 +111,11 @@ class ConnectTasks extends Root {
               : `Definition '${definitionId}' is ${action}`
           }`
         );
+        this.closeActionModal();
+      })
+      .catch(() => {
+        toast.error(`Failed to ${this.state.definitionModifyData.failedAction} definition '${definitionId}'`);
+        this.getDefinition();
         this.closeActionModal();
       });
   };
