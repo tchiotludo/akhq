@@ -18,7 +18,8 @@ class Settings extends Form {
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true,
-      groupsDefaultView: ''
+      groupsDefaultView: '',
+      connectTaskStatusFilters: Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS)
     },
     errors: {}
   };
@@ -48,7 +49,8 @@ class Settings extends Form {
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional(),
-    groupsDefaultView: Joi.string().optional()
+    groupsDefaultView: Joi.string().optional(),
+    connectTaskStatusFilters: Joi.array().items(Joi.string()).optional()
   };
 
   componentDidMount() {
@@ -84,7 +86,11 @@ class Settings extends Form {
             groupsDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.groupsDefaultView
-                : ''
+                : '',
+            connectTaskStatusFilters:
+              this.state.uiOptions && this.state.uiOptions.connect
+                ? this.state.uiOptions.connect.taskStatusFilters
+                : Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS)
           }
         });
       });
@@ -120,6 +126,9 @@ class Settings extends Form {
       topicData: {
         sort: formData.topicDataSort,
         dateTimeFormat: formData.topicDataDateTimeFormat
+      },
+      connect: {
+        taskStatusFilters: formData.connectTaskStatusFilters
       }
     });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
@@ -237,6 +246,43 @@ class Settings extends Form {
               true,
               { className: 'form-control' }
             )}
+          </fieldset>
+
+          <fieldset id="connect" key="connect">
+            <legend id="connect">Connect</legend>
+            <div className="select-wrapper settings-wrapper row">
+              <span className="col-sm-2 col-form-label">Task Status Filters</span>
+              <span className="col-sm-10">
+                {Object.entries(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS).map(
+                  ([key, value]) => (
+                    <div key={key} className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`status-${value}`}
+                        value={value}
+                        checked={(this.state.formData.connectTaskStatusFilters || []).includes(
+                          value
+                        )}
+                        onChange={event => {
+                          const { formData } = this.state;
+                          const filters = formData.connectTaskStatusFilters || [];
+                          if (event.target.checked) {
+                            formData.connectTaskStatusFilters = [...filters, value];
+                          } else {
+                            formData.connectTaskStatusFilters = filters.filter(f => f !== value);
+                          }
+                          this.setState({ formData });
+                        }}
+                      />
+                      <label className="form-check-label" htmlFor={`status-${value}`}>
+                        {value}
+                      </label>
+                    </div>
+                  )
+                )}
+              </span>
+            </div>
           </fieldset>
 
           {this.renderButton(
