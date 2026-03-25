@@ -55,6 +55,7 @@ configurations.all {
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
+        force("commons-beanutils:commons-beanutils:1.11.0")
     }
 }
 
