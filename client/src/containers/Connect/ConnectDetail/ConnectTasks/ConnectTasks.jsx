@@ -69,21 +69,28 @@ class ConnectTasks extends Root {
   static POLL_INTERVAL = 1000;
   static POLL_MAX_ATTEMPTS = 10;
 
-  async waitForStateChange(expectedAction) {
+  async waitForStateChange(expectedAction, taskId) {
     const { clusterId, connectId, definitionId } = this.state;
+
+    // For individual task restarts, just do a single delayed refresh
+    if (taskId !== undefined) {
+      await new Promise(resolve => setTimeout(resolve, ConnectTasks.POLL_INTERVAL));
+      await this.getDefinition();
+      return;
+    }
 
     for (let i = 0; i < ConnectTasks.POLL_MAX_ATTEMPTS; i++) {
       await new Promise(resolve => setTimeout(resolve, ConnectTasks.POLL_INTERVAL));
       const response = await this.getApi(uriGetDefinition(clusterId, connectId, definitionId));
       const tasks = response.data.tasks || [];
 
+      if (tasks.length === 0) continue;
+
       let settled = false;
       if (expectedAction === 'paused') {
-        settled = tasks.length > 0 && tasks.every(t => t.state === 'PAUSED');
+        settled = tasks.every(t => t.state === 'PAUSED');
       } else if (expectedAction === 'resumed' || expectedAction === 'restarted') {
-        settled = tasks.length > 0 && tasks.every(t => t.state === 'RUNNING');
-      } else {
-        settled = true;
+        settled = tasks.every(t => t.state === 'RUNNING' || t.state === 'FAILED');
       }
 
       if (settled) {
@@ -102,7 +109,7 @@ class ConnectTasks extends Root {
 
     this.setState({ loading: true });
     this.getApi(uri)
-      .then(() => this.waitForStateChange(action))
+      .then(() => this.waitForStateChange(action, taskId))
       .then(() => {
         toast.success(
           `${
