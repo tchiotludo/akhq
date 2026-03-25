@@ -108,8 +108,10 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
 
         if (allowed)
             return Flowable.just(SecurityRuleResult.ALLOWED);
-        else
-            return Flowable.just(SecurityRuleResult.REJECTED);
+
+        request.setAttribute("akhq.rejected.resource", optionalResource.get().toString());
+        request.setAttribute("akhq.rejected.action", optionalAction.get().toString());
+        return Flowable.just(SecurityRuleResult.REJECTED);
     }
 
     public static Map<String, List<Group>> unrollGroups(Authentication authentication, ClaimProvider claimProvider) {
