@@ -15,6 +15,7 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.web.router.UriRouteMatch;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
 import org.akhq.security.annotation.AKHQSecured;
@@ -103,18 +104,21 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, ConstraintViolationException e) {
+        JsonError error = new JsonError("Constraint violations")
+            .link(Link.SELF, Link.of(request.getUri()))
+            .embedded("violations", new JsonError(e.getMessage()));
+
+        return HttpResponse.<JsonError>badRequest()
+            .body(error);
+    }
+
+    @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, Throwable e) {
         log.error(e.getMessage(), e);
 
-        StringWriter stringWriter = new StringWriter();
-        e.printStackTrace(new PrintWriter(stringWriter));
-
         JsonError error = new JsonError("Internal Server Error: " + e.getMessage())
-            .link(Link.SELF, Link.of(request.getUri()))
-            .embedded(
-                "stacktrace",
-                new JsonError(stringWriter.toString())
-            );
+            .link(Link.SELF, Link.of(request.getUri()));
 
         return HttpResponse.<JsonError>serverError()
             .body(error);
