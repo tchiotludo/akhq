@@ -111,7 +111,7 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: '1'
 
   test-data:
-    image: gradle:8-jdk17
+    image: gradle:9-jdk25
     command: "gradle --no-daemon testInjectData -x installFrontend -x assembleFrontend"
     restart: unless-stopped
     working_dir: /app
