@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Singleton
 public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
+    public static final String REJECTED_RESOURCE = "akhq.rejected.resource";
+    public static final String REJECTED_ACTION = "akhq.rejected.action";
+
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final GzipCompressionAlgorithm gzip = new GzipCompressionAlgorithm();
 
@@ -109,8 +112,8 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
         if (allowed)
             return Flowable.just(SecurityRuleResult.ALLOWED);
 
-        request.setAttribute("akhq.rejected.resource", optionalResource.get().toString());
-        request.setAttribute("akhq.rejected.action", optionalAction.get().toString());
+        request.setAttribute(REJECTED_RESOURCE, optionalResource.get().toString());
+        request.setAttribute(REJECTED_ACTION, optionalAction.get().toString());
         return Flowable.just(SecurityRuleResult.REJECTED);
     }
 

@@ -14,6 +14,7 @@ import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
+import org.akhq.security.rule.AKHQSecurityRule;
 import org.apache.kafka.common.errors.ApiException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -80,8 +81,8 @@ public class ErrorController extends AbstractController {
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
         if (request.getUri().toString().startsWith("/api")) {
             if (e.isForbidden()) {
-                String resource = request.getAttribute("akhq.rejected.resource", String.class).orElse(null);
-                String action = request.getAttribute("akhq.rejected.action", String.class).orElse(null);
+                String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);
+                String action = request.getAttribute(AKHQSecurityRule.REJECTED_ACTION, String.class).orElse(null);
                 String message = resource != null && action != null
                     ? String.format("Unauthorized: missing permission on resource %s and action %s", resource, action)
                     : "Forbidden: insufficient permissions";
