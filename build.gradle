@@ -220,8 +220,8 @@ dependencies {
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
-    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.25.3")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-core:2.25.3")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.25.4")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-core:2.25.4")
 
     // micronaut test
     testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
