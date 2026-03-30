@@ -60,7 +60,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
-    "joi": "^18.0.2",
+    "joi": "^18.1.1",
     "joi-browser": "^13.4.0",
     "jsdom": "^29.0.0",
     "prettier": "^3.8.1",
