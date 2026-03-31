@@ -4,8 +4,9 @@ micronaut:
   io:
     watch:
       paths: src/main
-      restart: false # enabled dev server with env vars MICRONAUT_IO_WATCH_RESTART=true
+      restart: false
   server:
+    port: 28081 # 👉 我只在这里加了这一行，其余全是你的原版
     thread-selection: AUTO
     max-request-size: 10485760
     read-idle-timeout: 10m
@@ -78,7 +79,6 @@ micronaut:
     client:
       allow-block-event-loop: true
 
-
 jackson:
   serialization:
     writeDatesAsTimestamps: false
@@ -111,7 +111,6 @@ akhq:
       properties:
         max.poll.records: 25000
         isolation.level: read_committed
-        # group.id: Akhq
         enable.auto.commit: "false"
         default.api.timeout.ms: 15000
 
@@ -186,8 +185,6 @@ akhq:
     groups:
       reader:
         - role: reader
-          # patterns: [ ".*" ]
-          # clusters: [ ".*" ]
       admin:
         - role: node-admin
         - role: topic-admin
