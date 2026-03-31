@@ -149,6 +149,7 @@ public class TopicController extends AbstractController {
             (configs != null ? configs : ImmutableMap.<String, String>of())
                 .entrySet()
                 .stream()
+                // Triggering GitHub Actions for testing #2601
                 .filter(r -> r.getValue()!=null&&!r.getValue().isEmpty())
                 .map(r -> new Config(r.getKey(), r.getValue()))
                 .collect(Collectors.toList())
