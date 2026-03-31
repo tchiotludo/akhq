@@ -94,6 +94,10 @@ endpoints:
     write-sensitive: false
 
 akhq:
+  connections:
+    local-docker:
+      properties:
+        bootstrap.servers: "localhost:9092"
   server:
     access-log:
       enabled: true
