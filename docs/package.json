@@ -14,18 +14,18 @@
     "bootstrap": "^5.3.8",
     "font-awesome": "^4.7.0",
     "github-contributors-list": "^1.2.5",
-    "vuepress": "v2.0.0-rc.26"
+    "vuepress": "v2.0.0-rc.28"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "^v2.0.0-rc.26",
+    "@vuepress/bundler-vite": "^v2.0.0-rc.28",
     "@vuepress/plugin-active-header-links": "^2.0.0-rc.125",
     "@vuepress/plugin-back-to-top": "^2.0.0-rc.125",
-    "@vuepress/plugin-git": "^v2.0.0-rc.125",
-    "@vuepress/plugin-google-analytics": "^v2.0.0-rc.125",
+    "@vuepress/plugin-git": "^v2.0.0-rc.128",
+    "@vuepress/plugin-google-analytics": "^v2.0.0-rc.128",
     "@vuepress/plugin-medium-zoom": "^2.0.0-rc.125",
     "@vuepress/plugin-nprogress": "^2.0.0-rc.125",
     "@vuepress/plugin-prismjs": "^2.0.0-rc.125",
-    "@vuepress/plugin-register-components": "^v2.0.0-rc.125",
+    "@vuepress/plugin-register-components": "^v2.0.0-rc.128",
     "@vuepress/plugin-search": "^2.0.0-rc.125",
     "@vuepress/theme-default": "^2.0.0-rc.125",
     "glob": "^13.0.0",
