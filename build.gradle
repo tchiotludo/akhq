@@ -52,6 +52,8 @@ configurations.all {
         force("org.apache.kafka:kafka-metadata:" + kafkaVersion)
         force("org.apache.kafka:kafka-server:" + kafkaVersion)
         force("org.apache.kafka:kafka-raft:" + kafkaVersion)
+        force("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
+        force("org.apache.kafka:kafka-group-coordinator-api:" + kafkaVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
