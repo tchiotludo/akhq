@@ -1,6 +1,6 @@
 apiVersion: v2
 appVersion: "0.27.0"
-description: Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
+description: Helm chart for AKHQ, the Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
 name: akhq
 version: 0.27.0
 keywords:
