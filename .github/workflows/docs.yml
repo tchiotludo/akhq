@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - dev
-    tags:
-      - '*'
+  release:
+    types: [released]
 
 jobs:
   check:
@@ -40,15 +40,15 @@ jobs:
           cp LICENSE helm/akhq/LICENSE
           cp README.md helm/akhq/README.md
 
-      # Helm charts - only release on tag push
+      # Helm charts - only release on GitHub release creation
       - name: Configure Git
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: Run chart-releaser
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         uses: helm/chart-releaser-action@v1
         with:
           charts_dir: helm
