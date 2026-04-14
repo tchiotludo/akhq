@@ -53,6 +53,7 @@ jobs:
         with:
           charts_dir: helm
           pages_branch: helm
+          mark_as_latest: false
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
