@@ -222,3 +222,7 @@ networkPolicy:
 gke:
   healthCheckPolicy:
     enabled: false
+    checkIntervalSec: 5
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2

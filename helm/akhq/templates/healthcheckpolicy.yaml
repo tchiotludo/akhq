@@ -11,18 +11,18 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   default:
-    checkIntervalSec: 5
+    checkIntervalSec: {{ .Values.gke.healthCheckPolicy.checkIntervalSec }}
     config:
       httpHealthCheck:
         port: {{ .Values.service.managementPort }}
         portSpecification: USE_FIXED_PORT
         requestPath: /health
       type: HTTP
-    healthyThreshold: 1
+    healthyThreshold: {{ .Values.gke.healthCheckPolicy.healthyThreshold }}
     logConfig:
       enabled: true
-    timeoutSec: 5
-    unhealthyThreshold: 2
+    timeoutSec: {{ .Values.gke.healthCheckPolicy.timeoutSec }}
+    unhealthyThreshold: {{ .Values.gke.healthCheckPolicy.unhealthyThreshold }}
   targetRef:
     group: ""
     kind: Service
