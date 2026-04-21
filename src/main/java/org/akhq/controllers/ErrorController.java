@@ -2,8 +2,6 @@ package org.akhq.controllers;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micrometer.core.instrument.util.StringUtils;
-import io.micronaut.core.annotation.AnnotationValue;
-import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -14,10 +12,9 @@ import io.micronaut.http.hateoas.Link;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
-import io.micronaut.web.router.UriRouteMatch;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
-import org.akhq.security.annotation.AKHQSecured;
+import org.akhq.security.rule.AKHQSecurityRule;
 import org.apache.kafka.common.errors.ApiException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
 import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
@@ -84,16 +81,12 @@ public class ErrorController extends AbstractController {
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
         if (request.getUri().toString().startsWith(getBasePath()+"/api")) {
             if (e.isForbidden()) {
-                if (request.getAttribute(HttpAttributes.ROUTE_MATCH).isPresent() &&
-                    ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).hasAnnotation(AKHQSecured.class)) {
-                    AnnotationValue<AKHQSecured> annotation =
-                        ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).getAnnotation(AKHQSecured.class);
-
-                    return HttpResponse.status(HttpStatus.FORBIDDEN)
-                        .body(new JsonError(String.format("Unauthorized: missing permission on resource %s and action %s",
-                            annotation.getValues().get("resource"),
-                            annotation.getValues().get("action"))));
-                }
+                String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);
+                String action = request.getAttribute(AKHQSecurityRule.REJECTED_ACTION, String.class).orElse(null);
+                String message = resource != null && action != null
+                    ? String.format("Unauthorized: missing permission on resource %s and action %s", resource, action)
+                    : "Forbidden: insufficient permissions";
+                return HttpResponse.status(HttpStatus.FORBIDDEN).body(new JsonError(message));
             } else {
                 return HttpResponse.unauthorized().body(new JsonError("User not authenticated or token expired"));
             }

@@ -15,6 +15,7 @@ import {
   faSort,
   faTrash
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 class Table extends Component {
   state = {
@@ -141,11 +142,10 @@ class Table extends Component {
     );
   }
 
-  onDoubleClick(onDetails, row) {
-    const { idCol } = this.props;
-
-    if (onDetails) {
-      onDetails(idCol ? row[idCol] : row.id);
+  onDoubleClick(row) {
+    const { idCol, router, detailsHref } = this.props;
+    if (detailsHref) {
+      router.navigate(detailsHref(idCol ? row[idCol] : row.id));
     }
   }
 
@@ -156,7 +156,6 @@ class Table extends Component {
       extraRow,
       onExpand,
       noRowBackgroundChange,
-      onDetails,
       handleExtraExpand,
       handleExtraCollapse,
       reduce
@@ -194,7 +193,7 @@ class Table extends Component {
                     actions.find(action => action === constants.TABLE_DETAILS) &&
                     !column.expand
                   ) {
-                    this.onDoubleClick(onDetails, row);
+                    this.onDoubleClick(row);
                   }
 
                   column.expand && this.handleExpand(row);
@@ -216,7 +215,7 @@ class Table extends Component {
                   actions.find(action => action === constants.TABLE_DETAILS) &&
                   !column.expand
                 ) {
-                  this.onDoubleClick(onDetails, row);
+                  this.onDoubleClick(row);
                 }
 
                 column.expand && this.handleExpand(row);
@@ -339,19 +338,8 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const {
-      actions,
-      onAdd,
-      onDetails,
-      onConfig,
-      onDelete,
-      onEdit,
-      onRestart,
-      onShare,
-      onDownload,
-      onCopy,
-      idCol
-    } = this.props;
+    const { actions, onAdd, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } =
+      this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
@@ -372,28 +360,16 @@ class Table extends Component {
         )}
         {actions.find(el => el === constants.TABLE_DETAILS) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
-              title="Details"
-              id="details"
-              onClick={() => {
-                onDetails && onDetails(idColVal);
-              }}
-            >
+            <Link title="Details" id="details" to={this.props.detailsHref(idColVal)}>
               <FontAwesomeIcon icon={faSearch} />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_CONFIG) && (
           <td className="khq-row-action khq-row-action-main action-hover">
-            <span
-              title="Config"
-              id="config"
-              onClick={() => {
-                onConfig && onConfig(idColVal);
-              }}
-            >
+            <Link title="Config" id="config" to={this.props.configHref(idColVal)}>
               <FontAwesomeIcon icon={faGear} />
-            </span>
+            </Link>
           </td>
         )}
         {actions.find(el => el === constants.TABLE_DELETE) && (
@@ -580,8 +556,8 @@ Table.propTypes = {
   actions: PropTypes.array,
 
   onAdd: PropTypes.func,
-  onDetails: PropTypes.func,
-  onConfig: PropTypes.func,
+  detailsHref: PropTypes.func,
+  configHref: PropTypes.func,
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onRestart: PropTypes.func,

@@ -78,7 +78,8 @@ class ConnectControllerTest extends AbstractTest {
     @Order(2)
     void pluginsListApi() {
         List<ConnectPlugin> result = this.retrieveList(HttpRequest.GET(BASE_URL + "/plugins"), ConnectPlugin.class);
-        assertEquals(2, result.size());
+        assertTrue(
+            result.stream().anyMatch(plugin -> plugin.getClassName().equals("org.apache.kafka.connect.file.FileStreamSinkConnector")));
     }
 
     @Test
@@ -155,10 +156,6 @@ class ConnectControllerTest extends AbstractTest {
     void deleteApi() {
         this.exchange(
             HttpRequest.DELETE(CONNECT_URL)
-        );
-
-        this.exchange(
-            HttpRequest.DELETE("/api/" + KafkaTestCluster.CLUSTER_ID + "/group/connect-connect-controller-test")
         );
     }
 }

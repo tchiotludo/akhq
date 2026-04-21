@@ -17,6 +17,9 @@ configmapAnnotations: {}
   # vault.security.banzaicloud.io/vault-role: akhq
   # vault.security.banzaicloud.io/vault-serviceaccount: akhq
 
+secretAnnotations: {}
+  # same as configmapAnnotations
+
 # custom labels
 labels: {}
   # custom.label: 'true'

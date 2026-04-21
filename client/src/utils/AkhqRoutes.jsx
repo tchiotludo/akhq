@@ -32,7 +32,6 @@ import Root from '../components/Root';
 import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
 import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
 import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
-import sortBy from 'lodash/sortBy';
 
 class AkhqRoutes extends Root {
   state = {
@@ -51,10 +50,10 @@ class AkhqRoutes extends Root {
     const { clusterId } = this.state;
     try {
       const resClusters = await this.getApi(uriClusters());
-      let sortedClusters = sortBy(resClusters.data || [], cluster => cluster.id);
+      const clusters = resClusters.data || [];
       this.setState({
-        clusters: sortedClusters,
-        clusterId: sortedClusters ? sortedClusters[0].id : '',
+        clusters: clusters,
+        clusterId: clusters.length > 0 ? clusters[0].id : '',
         loading: false
       });
     } catch (err) {
@@ -106,6 +105,17 @@ class AkhqRoutes extends Root {
       }
     }
     this.setState({ loading: false });
+  }
+
+  checkAfterLoginAndHandleRedirect() {
+    const returnTo = sessionStorage.getItem('returnTo');
+
+    if (returnTo && location.pathname !== '/ui/login') {
+      sessionStorage.removeItem('returnTo');
+      return returnTo;
+    }
+
+    return this.handleRedirect();
   }
 
   handleRedirect() {
@@ -300,7 +310,7 @@ class AkhqRoutes extends Root {
               )}
               <Route exact path="/ui/:clusterId/settings" element={<Settings />} />
               <Route path="/" element={<Navigate to={this.handleRedirect()} />} />
-              <Route path="/ui" element={<Navigate to={this.handleRedirect()} />} />
+              <Route path="/ui" element={<Navigate to={this.checkAfterLoginAndHandleRedirect()} />} />
               <Route path="/ui/401" element={<Navigate to={this.handleRedirect()} />} />
             </Routes>
           </Base>

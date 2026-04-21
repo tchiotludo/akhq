@@ -35,6 +35,20 @@ These parameters are the default values used in the topic creation page.
 ### Topic Data
 * `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
 
+### Cluster
+* `akhq.ui-options.cluster.order`: define custom ordering for clusters in the sidebar (optional). Clusters listed in this array will appear first in the specified order, followed by any unlisted clusters in alphabetical order.
+
+Example:
+```yaml
+akhq:
+  ui-options:
+    cluster:
+      order:
+        - "production-cluster"
+        - "staging-cluster"
+        - "development-cluster"
+```
+
 ### Inject some css or javascript
 * `akhq.html-head`: Append some head tags on the webserver application
 Mostly useful in order to inject some css or javascript to customize the web application.

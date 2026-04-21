@@ -2,7 +2,7 @@ package org.akhq.security.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.impl.compression.GzipCompressionAlgorithm;
-import io.micronaut.http.HttpAttributes;
+import io.micronaut.http.BasicHttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.AbstractSecurityRule;
@@ -10,7 +10,6 @@ import io.micronaut.security.rules.SecuredAnnotationRule;
 import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import io.micronaut.web.router.MethodBasedRouteMatch;
-import io.micronaut.web.router.RouteMatch;
 import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -32,6 +31,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Singleton
 public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
+    public static final String REJECTED_RESOURCE = "akhq.rejected.resource";
+    public static final String REJECTED_ACTION = "akhq.rejected.action";
+
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final GzipCompressionAlgorithm gzip = new GzipCompressionAlgorithm();
 
@@ -49,12 +51,11 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
 
     @Override
     public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
-        RouteMatch<?> routeMatch = request.getAttribute(HttpAttributes.ROUTE_MATCH, RouteMatch.class).orElse(null);
-        if (!(routeMatch instanceof MethodBasedRouteMatch)) {
+        var routeMatchInfo = BasicHttpAttributes.getRouteMatchInfo(request);
+        if (routeMatchInfo.isEmpty() || !(routeMatchInfo.get() instanceof MethodBasedRouteMatch<?, ?> methodRoute)) {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }
 
-        MethodBasedRouteMatch<?, ?> methodRoute = ((MethodBasedRouteMatch<?, ?>) routeMatch);
         if (!methodRoute.hasAnnotation(AKHQSecured.class)) {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }
@@ -65,11 +66,11 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
             return Flowable.just(SecurityRuleResult.UNKNOWN);
         }
 
-        if (!routeMatch.getVariableValues().containsKey("cluster")) {
+        if (!methodRoute.getVariableValues().containsKey("cluster")) {
             log.warn("Route matched AKHQSecured but no `cluster` provided");
             return Flowable.just(SecurityRuleResult.REJECTED);
         }
-        String cluster = routeMatch.getVariableValues().get("cluster").toString();
+        String cluster = methodRoute.getVariableValues().get("cluster").toString();
 
         // No authentication information provided or no existing default group, we reject the request
         if (authentication == null && (securityProperties.getDefaultGroup() == null
@@ -110,14 +111,17 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
 
         if (allowed)
             return Flowable.just(SecurityRuleResult.ALLOWED);
-        else
-            return Flowable.just(SecurityRuleResult.REJECTED);
+
+        request.setAttribute(REJECTED_RESOURCE, optionalResource.get().toString());
+        request.setAttribute(REJECTED_ACTION, optionalAction.get().toString());
+        return Flowable.just(SecurityRuleResult.REJECTED);
     }
 
     public static Map<String, List<Group>> unrollGroups(Authentication authentication, ClaimProvider claimProvider) {
-        /* For OIDC providers, the "groups" attribute contains a list of group names.
-         * For other providers, the "groups" attribute contains a map of role names to lists of groups.
-         * This method creates a map of role names to lists of groups no matter the origin of the "groups" attribute. */
+        /* For OIDC providers with useOidcGroupsInToken, the "groups" attribute contains a list of group names.
+         * For other providers and OIDC without useOidcGroupsInToken, the "groups" attribute contains a map of role
+         * names to lists of groups. This method creates a map of role names to lists of groups no matter the origin
+         * of the "groups" attribute. */
         Object decompressedGroups = decompressGroups(authentication);
         if (decompressedGroups instanceof Map<?, ?>) {
             return toMapOfGroupLists((Map<String, List<?>>) decompressedGroups);

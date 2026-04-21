@@ -79,7 +79,7 @@ abstract public class AbstractKafkaWrapper {
             Map<String, TopicDescription> description = Logger.call(
                 kafkaModule.getAdminClient(clusterId)
                     .describeTopics(list)
-                    .all(),
+                    .allTopicNames(),
                 "Describe Topics {}",
                 topics
             );
@@ -372,10 +372,10 @@ abstract public class AbstractKafkaWrapper {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void alterConfigs(String clusterId, Map<ConfigResource, Config> configs) throws ExecutionException {
+    public void alterConfigs(String clusterId, Map<ConfigResource, Collection<AlterConfigOp>> configs) throws ExecutionException {
         Logger.call(
             kafkaModule.getAdminClient(clusterId)
-                .alterConfigs(configs)
+                .incrementalAlterConfigs(configs)
                 .all(),
             "Alter configs",
             Collections.singletonList(clusterId)
@@ -384,8 +384,19 @@ abstract public class AbstractKafkaWrapper {
         configs.forEach(
             (k, v) -> {
                 if (Objects.requireNonNull(k.type()) == ConfigResource.Type.TOPIC) {
-                    auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(),
-                        v.entries().stream().collect(toMap(ConfigEntry::name, ConfigEntry::value))));
+                    // Include both SET and DELETE operations in audit logging
+                    // For DELETE operations, use empty string as placeholder since value is null
+                    Map<String, String> configChanges = v.stream()
+                        .map(op -> {
+                            ConfigEntry entry = op.configEntry();
+                            String value = entry.value() != null ? entry.value() : "";
+                            return new AbstractMap.SimpleEntry<>(entry.name(), value);
+                        })
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                    if (!configChanges.isEmpty()) {
+                        auditModule.save(TopicAuditEvent.configChange(clusterId, k.name(), configChanges));
+                    }
                 }
             }
         );

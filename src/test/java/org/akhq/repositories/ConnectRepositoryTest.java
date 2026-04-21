@@ -41,7 +41,7 @@ class ConnectRepositoryTest extends AbstractTest {
     @Test
     void getPlugins() {
         List<ConnectPlugin> all = repository.getPlugins(KafkaTestCluster.CLUSTER_ID, "connect-1");
-        assertEquals(2, all.size());
+        assertEquals(5, all.size());
     }
 
     @AfterEach

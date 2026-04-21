@@ -87,7 +87,9 @@ public class StreamTest implements Runnable {
                 String[] split = value.split(";");
                 return new KeyValue<>(key, new Cat(Integer.valueOf(split[0]), split[1], Breed.valueOf(split[2])));
             })
-            .through(KafkaTestCluster.TOPIC_STREAM_MAP, Produced.with(Serdes.String(), specificAvroSerde))
+            .to(KafkaTestCluster.TOPIC_STREAM_MAP, Produced.with(Serdes.String(), specificAvroSerde));
+
+        builder.stream(KafkaTestCluster.TOPIC_STREAM_MAP, Consumed.with(Serdes.String(), specificAvroSerde))
             .groupBy((key, value) -> String.valueOf(value.getId()), Grouped.with(Serdes.String(), specificAvroSerde))
             .count(Materialized.as("count"))
             .toStream()

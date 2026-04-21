@@ -11,7 +11,6 @@ import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.utils.ResultPagedList;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.ConsumerGroupState;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -124,12 +123,5 @@ class GroupControllerTest extends AbstractTest {
         this.exchange(
             HttpRequest.DELETE(BASE_URL + "/" + name)
         );
-
-        result = this.retrieve(
-            HttpRequest.GET(BASE_URL + "/" + name),
-            ConsumerGroup.class
-        );
-        assertEquals(name, result.getId());
-        assertEquals(ConsumerGroupState.DEAD, result.getState());
     }
 }

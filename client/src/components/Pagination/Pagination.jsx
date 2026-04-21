@@ -28,7 +28,7 @@ const Pagination = ({
         >
           <div className="page-link">
             <span aria-hidden="true">&laquo;</span>
-            <span className=" sr-only">Previous</span>
+            <span className="visually-hidden">Previous</span>
           </div>
         </a>
       </li>
@@ -63,7 +63,7 @@ const Pagination = ({
         >
           <div className=" page-link" aria-label=" Next">
             <span aria-hidden="true">&raquo;</span>
-            <span className="sr-only">Next</span>
+            <span className="visually-hidden">Next</span>
           </div>
         </a>
       </li>

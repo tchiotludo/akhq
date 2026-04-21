@@ -3,6 +3,7 @@ import { uriTopicsConfigs, uriTopicsUpdateConfigs } from '../../../../utils/endp
 import Table from '../../../../components/Table';
 import Form from '../../../../components/Form/Form';
 import converters from '../../../../utils/converters';
+import { safeConfigValue } from '../../../../utils/largeIntegerUtils';
 import Joi from 'joi-browser';
 import { MILLI, BYTES, TEXT } from '../../../../utils/constants';
 import { toast } from 'react-toastify';
@@ -64,6 +65,8 @@ class TopicConfigs extends Form {
         return MILLI;
       case '.size':
         return BYTES;
+      case '.bytes':
+        return BYTES;
       default:
         return TEXT;
     }
@@ -93,7 +96,7 @@ class TopicConfigs extends Form {
     }
     this.schema[config.name] = validation;
 
-    formData[config.name] = isNaN(+config.value) ? config.value : +config.value;
+    formData[config.name] = safeConfigValue(config.value);
     this.setState({ formData });
   }
 

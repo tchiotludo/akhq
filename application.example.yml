@@ -185,6 +185,11 @@ akhq:
       groups-default-view: ALL  # default consumer groups list view (ALL, HIDE_EMPTY). Overrides default
     topic-data:
       sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
+    cluster:
+      order: # Cluster display order (optional). Controls sidebar cluster ordering
+        - "my-cluster-plain-text"
+        - "my-cluster-ssl" 
+        - "my-cluster-sasl"
 
   # Auth & Roles (optional)
   security:

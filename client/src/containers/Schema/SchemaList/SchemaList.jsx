@@ -297,14 +297,9 @@ class SchemaList extends Root {
             this.handleOnDelete(schema);
           }}
           idCol="subject"
-          onDetails={subject => {
-            this.props.router.navigate(
-              {
-                pathname: `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`
-              },
-              { replace: false }
-            );
-          }}
+          detailsHref={subject =>
+            `/ui/${selectedCluster}/schema/details/${encodeURIComponent(subject)}`
+          }
           actions={
             roles.SCHEMA && roles.SCHEMA.includes('DELETE')
               ? [constants.TABLE_DELETE, constants.TABLE_DETAILS]

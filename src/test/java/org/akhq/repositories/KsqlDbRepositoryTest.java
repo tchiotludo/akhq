@@ -68,14 +68,14 @@ class KsqlDbRepositoryTest extends AbstractTest {
     void getServerInfo() {
         KsqlDbServerInfo serverInfo = repository.getServerInfo(KafkaTestCluster.CLUSTER_ID, "ksqldb");
         assertNotNull(serverInfo.getKafkaClusterId());
-        assertEquals("7.4.4", serverInfo.getServerVersion());
+        assertEquals("8.1.0", serverInfo.getServerVersion());
         assertEquals("ksql", serverInfo.getKsqlServiceId());
     }
 
     @Test
     void listStreams() {
         List<KsqlDbStream> ksqlDbStreams = repository.listStreams(KafkaTestCluster.CLUSTER_ID, "ksqldb");
-        assertEquals(0, ksqlDbStreams.size());
+        assertEquals(1, ksqlDbStreams.size()); // There is always a default stream named KSQL_PROCESSING_LOG
     }
 
     @Test
@@ -134,7 +134,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
         assertDoesNotThrow(() -> repository.executeStatement(KafkaTestCluster.CLUSTER_ID, "ksqldb", sql));
 
         List<KsqlDbStream> ksqlDbStreams = repository.listStreams(KafkaTestCluster.CLUSTER_ID, "ksqldb");
-        assertEquals(1, ksqlDbStreams.size());
+        assertEquals(2, ksqlDbStreams.size()); // One default stream KSQL_PROCESSING_LOG and the created ORDERS stream
     }
 
     @Test

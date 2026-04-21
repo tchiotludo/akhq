@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
 import logoUrl from '../../images/logo.svg';
-import sortBy from 'lodash/sortBy';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
@@ -81,7 +80,7 @@ class Sidebar extends Component {
     );
 
     const clusterId = match ? match.params.clusterId || '' : '';
-    const allClusters = sortBy(clusters || [], cluster => cluster.id);
+    const allClusters = clusters || [];
     const cluster = allClusters.find(cluster => cluster.id === clusterId);
     this.setState(
       {

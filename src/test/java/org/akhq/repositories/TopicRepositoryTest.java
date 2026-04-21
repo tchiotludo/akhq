@@ -187,13 +187,29 @@ class TopicRepositoryTest extends AbstractTest {
 
     @Test
     void increasePartition() throws ExecutionException, InterruptedException {
-        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "increasePartition", 8, (short) 1, Collections.emptyList()
-        );
-        topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, "increasePartition", 9);
+        String topicName = "increasePartition";
+        try {
+            topicRepository.create(KafkaTestCluster.CLUSTER_ID, topicName, 8, (short) 1, Collections.emptyList());
 
-        assertEquals(9, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "increasePartition").getPartitions().size());
+            // Give Kafka time to create the topic
+            Thread.sleep(2000);
 
-        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "increasePartition");
+            topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, topicName, 9);
+
+            // Give Kafka time to update partitions
+            Thread.sleep(2000);
+
+            assertEquals(9, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, topicName).getPartitions().size());
+        } finally {
+            // Ensure cleanup happens even if test fails
+            try {
+                topicRepository.delete(KafkaTestCluster.CLUSTER_ID, topicName);
+                // Give Kafka time to delete the topic
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                // Ignore if topic doesn't exist
+            }
+        }
     }
 
     private void mockApplicationContext() {
