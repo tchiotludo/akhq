@@ -258,7 +258,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
     testImplementation("io.confluent:kafka-streams-avro-serde:${confluentVersion}")
     testImplementation("io.confluent:kafka-connect-avro-converter:${confluentVersion}")
-    testImplementation("commons-codec:commons-codec:1.21.0")
+    testImplementation("commons-codec:commons-codec:1.22.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
     testImplementation("org.hamcrest:hamcrest-library:3.0")
     testImplementation("org.mockito:mockito-junit-jupiter")
