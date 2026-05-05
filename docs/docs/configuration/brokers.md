@@ -22,6 +22,8 @@
     * `url`: ksqlDB url
     * `basic-auth-username`: ksqlDB basic auth username
     * `basic-auth-password`: ksqlDB basic auth password
+  * `ui-options`: *(optional)* per-cluster UI overrides
+    * `topic-aliases`: *(optional)* map of Kafka topic name to human-readable alias, see [Topic Aliases](akhq.md#topic-aliases)
 
 ## Basic cluster with plain auth
 

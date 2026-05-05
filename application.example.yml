@@ -113,6 +113,9 @@ akhq:
         topic-data:
           sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
           date-time-format: ISO # format of message timestamps (RELATIVE, ISO) (default: RELATIVE)
+        topic-aliases: # optional human-readable display names for technical topic names
+          org.company.billing.events.v2: "Billing Events"
+          1de5cb5d-9f92-4ff8-bda2-084158c0cd06: "Payment Transactions"
 
     my-cluster-ssl:
       properties:
