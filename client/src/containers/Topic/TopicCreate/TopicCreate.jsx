@@ -38,7 +38,7 @@ class TopicCreate extends Form {
     partition: Joi.number().min(1).label('Partition').required(),
     replication: Joi.number().min(1).label('Replication').required(),
     cleanup: Joi.string().required(),
-    retention: Joi.number().label('Retention')
+    retention: Joi.number().allow('').label('Retention')
   };
 
   onCleanupChange = value => {
