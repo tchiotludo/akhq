@@ -178,7 +178,7 @@ dependencies {
     // Password hashing
     implementation("org.mindrot:jbcrypt:0.4")
 
-    implementation("org.apache.groovy:groovy-all:5.0.4")
+    implementation("org.apache.groovy:groovy-all:5.0.6")
     // api
 
     // client
