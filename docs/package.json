@@ -14,7 +14,7 @@
     "bootstrap": "^5.3.8",
     "font-awesome": "^4.7.0",
     "github-contributors-list": "^1.2.5",
-    "vuepress": "v2.0.0-rc.26"
+    "vuepress": "v2.0.0-rc.29"
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "^v2.0.0-rc.26",
