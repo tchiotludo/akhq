@@ -1,8 +1,8 @@
 apiVersion: v2
-appVersion: "0.27.0"
+appVersion: "0.27.1"
 description: Helm chart for AKHQ, the Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more...
 name: akhq
-version: 0.27.0
+version: 0.27.1
 keywords:
   - kafka
   - confluent
