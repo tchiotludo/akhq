@@ -2,8 +2,8 @@ package org.akhq.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPlugin;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigValidationResults;
+import org.akhq.clients.connect.dto.ConnectorPluginInfo;
+import org.akhq.clients.connect.dto.ConnectorPluginValidation;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,12 +21,12 @@ public class ConnectPlugin {
     private String version;
     private List<Definition> definitions;
 
-    public ConnectPlugin(ConnectorPlugin connectorPlugin, ConnectorPluginConfigValidationResults results) {
-        this.className = connectorPlugin.getClassName();
-        this.type = connectorPlugin.getType();
-        this.version = connectorPlugin.getVersion();
+    public ConnectPlugin(ConnectorPluginInfo pluginInfo, ConnectorPluginValidation validation) {
+        this.className = pluginInfo.getClassName();
+        this.type = pluginInfo.getType();
+        this.version = pluginInfo.getVersion();
         this.definitions = Stream.concat(
-            results.getConfigs()
+            validation.getConfigs()
                 .stream()
                 .map(config -> new Definition(config.getDefinition())),
             registryDefinition()
@@ -134,7 +134,7 @@ public class ConnectPlugin {
         private Collection<String> dependents;
         private int order;
 
-        public Definition(ConnectorPluginConfigValidationResults.Config.Definition definition) {
+        public Definition(ConnectorPluginValidation.Config.Definition definition) {
             String displayCompare = null;
 
             if (definition.getDisplayName() != null) {

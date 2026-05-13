@@ -138,7 +138,6 @@ dependencies {
     implementation("io.confluent:kafka-json-schema-serializer:${confluentVersion}")
     implementation("io.confluent:kafka-protobuf-serializer:${confluentVersion}")
     implementation("io.confluent:kafka-client-plugins:${confluentVersion}-ce")
-    implementation("org.sourcelab:kafka-connect-client:4.0.5")
 
     // strimzi
     implementation("io.strimzi:kafka-oauth-common:0.17.1")

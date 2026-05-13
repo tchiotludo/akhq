@@ -16,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
 import org.akhq.security.rule.AKHQSecurityRule;
 import org.apache.kafka.common.errors.ApiException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
+import org.akhq.clients.connect.error.ConnectBadRequestException;
+import org.akhq.clients.connect.error.ConnectConflictException;
+import org.akhq.clients.connect.error.ConnectNotFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,17 +48,17 @@ public class ErrorController extends AbstractController {
 
     // Connect
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, InvalidRequestException e) {
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectBadRequestException e) {
         return renderExecption(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ResourceNotFoundException e) {
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectNotFoundException e) {
         return renderExecption(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ConcurrentConfigModificationException e) {
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectConflictException e) {
         return renderExecption(request, e);
     }
 

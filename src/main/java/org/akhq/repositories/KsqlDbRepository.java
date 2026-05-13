@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import io.confluent.ksql.api.client.KsqlObject;
 import io.confluent.ksql.api.client.Row;
 import io.confluent.ksql.api.client.ServerInfo;
+import io.confluent.ksql.api.client.exception.KsqlClientException;
 import io.micronaut.retry.annotation.Retryable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -11,8 +12,6 @@ import org.akhq.models.*;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -35,13 +34,13 @@ public class KsqlDbRepository extends AbstractRepository {
                 serverInfo.getKafkaClusterId(),
                 serverInfo.getKsqlServiceId()
             );
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class
+        KsqlClientException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbStream> getPaginatedStreams(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -68,13 +67,13 @@ public class KsqlDbRepository extends AbstractRepository {
                     streamInfo.getValueFormat(),
                     streamInfo.isWindowed()
                 )).collect(Collectors.toList());
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class
+        KsqlClientException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbTable> getPaginatedTables(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -101,13 +100,13 @@ public class KsqlDbRepository extends AbstractRepository {
                     tableInfo.getValueFormat(),
                     tableInfo.isWindowed()
                 )).collect(Collectors.toList());
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class
+        KsqlClientException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbQuery> getPaginatedQueries(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -134,7 +133,7 @@ public class KsqlDbRepository extends AbstractRepository {
                     queryInfo.getSink().orElse(""),
                     queryInfo.getSinkTopic().orElse("")
                 )).collect(Collectors.toList());
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -149,7 +148,7 @@ public class KsqlDbRepository extends AbstractRepository {
                 .get(ksqlDbId)
                 .insertInto(streamName, row)
                 .get();
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -161,7 +160,7 @@ public class KsqlDbRepository extends AbstractRepository {
                 .get(ksqlDbId)
                 .executeStatement(sql)
                 .get().queryId().orElse("");
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -185,7 +184,7 @@ public class KsqlDbRepository extends AbstractRepository {
                 rows.get(0).columnNames(),
                 rows.stream().map(row -> row.values().toJsonString()).collect(Collectors.toList())
             );
-        } catch (InvalidRequestException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IllegalArgumentException(e);
         }
     }

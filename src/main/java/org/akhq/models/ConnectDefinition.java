@@ -7,8 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorDefinition;
-import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorStatus;
+import org.akhq.clients.connect.dto.ConnectorInfo;
+import org.akhq.clients.connect.dto.ConnectorStatus;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,20 +25,17 @@ public class ConnectDefinition {
     private Map<String, String> configs;
     private List<TaskDefinition> tasks;
 
-    public ConnectDefinition(ConnectorDefinition connectorDefinition, ConnectorStatus connectorStatus) {
-        this.name = connectorDefinition.getName();
-        this.type = connectorDefinition.getType();
-        this.configs = connectorDefinition.getConfig();
-        this.tasks = connectorDefinition.getTasks()
+    public ConnectDefinition(ConnectorInfo connectorInfo, ConnectorStatus connectorStatus) {
+        this.name = connectorInfo.getName();
+        this.type = connectorInfo.getType();
+        this.configs = connectorInfo.getConfig();
+        this.tasks = connectorInfo.getTasks()
             .stream()
-            .map(r -> connectorStatus
-                .getTasks()
+            .map(taskRef -> connectorStatus.getTasks()
                 .stream()
-                .filter(taskStatus -> taskStatus.getId() == r.getTask())
+                .filter(taskState -> taskState.getId() == taskRef.getTask())
                 .findFirst()
-                .map(s ->
-                    new TaskDefinition(r, s)
-                )
+                .map(taskState -> new TaskDefinition(taskRef, taskState))
                 .orElse(null)
             )
             .filter(Objects::nonNull)
@@ -92,12 +89,12 @@ public class ConnectDefinition {
         private String workerId;
         private String trace;
 
-        public TaskDefinition(ConnectorDefinition.TaskDefinition taskDefinition, ConnectorStatus.TaskStatus status) {
-            this.connector = taskDefinition.getConnector();
-            this.id = taskDefinition.getTask();
-            this.state = status.getState();
-            this.workerId = status.getWorkerId();
-            this.trace = status.getTrace();
+        public TaskDefinition(ConnectorInfo.TaskRef taskRef, ConnectorStatus.TaskState taskState) {
+            this.connector = taskRef.getConnector();
+            this.id = taskRef.getTask();
+            this.state = taskState.getState();
+            this.workerId = taskState.getWorkerId();
+            this.trace = taskState.getTrace();
         }
     }
 }
