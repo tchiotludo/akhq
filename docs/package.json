@@ -17,7 +17,7 @@
     "vuepress": "v2.0.0-rc.28"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "^v2.0.0-rc.28",
+    "@vuepress/bundler-vite": "^v2.0.0-rc.29",
     "@vuepress/plugin-active-header-links": "^2.0.0-rc.125",
     "@vuepress/plugin-back-to-top": "^2.0.0-rc.125",
     "@vuepress/plugin-git": "^v2.0.0-rc.128",
