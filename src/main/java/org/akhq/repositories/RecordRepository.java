@@ -661,7 +661,12 @@ public class RecordRepository extends AbstractRepository {
         return Flowable.generate(() -> {
             Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options);
 
-            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+            // Bound MAX_POLL_RECORDS so a single busy partition cannot drain
+            // the consumer's prefetch buffer and starve the others.
+            Properties properties = new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, Math.max(options.size, 50));
+            }};
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties);
 
             if (partitions.size() == 0) {
                 return new SearchState(consumer, null);
@@ -679,10 +684,15 @@ public class RecordRepository extends AbstractRepository {
                 )
             );
 
-            return new SearchState(consumer, new SearchEvent(topic));
+            // Capture end offsets so we can detect "truly done" instead of
+            // ending the search on the first single empty poll.
+            Map<TopicPartition, Long> endOffsets = consumer.endOffsets(partitions.keySet());
+
+            return new SearchState(consumer, new SearchEvent(topic), endOffsets);
         }, (searchState, emitter) -> {
             SearchEvent searchEvent = searchState.getSearchEvent();
             KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
+            Map<TopicPartition, Long> endOffsets = searchState.getEndOffsets();
 
             // end
             if (searchEvent == null || searchEvent.emptyPoll >= 1) {
@@ -690,14 +700,31 @@ public class RecordRepository extends AbstractRepository {
                 emitter.onComplete();
                 consumer.close();
 
-                return new SearchState(consumer, searchEvent);
+                return new SearchState(consumer, searchEvent, endOffsets);
             }
 
             SearchEvent currentEvent = new SearchEvent(searchEvent);
 
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
 
-            if (records.isEmpty()) {
+            // Only treat the search as exhausted when every assigned partition
+            // has reached its end offset. Otherwise keep polling so that quiet
+            // partitions get a chance to deliver records.
+            boolean allAtEnd = true;
+            if (endOffsets != null) {
+                for (TopicPartition tp : consumer.assignment()) {
+                    Long end = endOffsets.get(tp);
+                    if (end == null) {
+                        continue;
+                    }
+                    if (consumer.position(tp) < end) {
+                        allAtEnd = false;
+                        break;
+                    }
+                }
+            }
+
+            if (records.isEmpty() && allAtEnd) {
                 currentEvent.emptyPoll = 1;
             } else {
                 currentEvent.emptyPoll = 0;
@@ -735,7 +762,7 @@ public class RecordRepository extends AbstractRepository {
 
             currentEvent.records = list;
 
-            // No more records, poll was empty: stop here
+            // No more records anywhere: stop here
             if (currentEvent.emptyPoll == 1) {
                 emitter.onNext(currentEvent.end(searchEvent.getAfter()));
             }
@@ -749,7 +776,7 @@ public class RecordRepository extends AbstractRepository {
                 emitter.onNext(currentEvent.progress(options));
             }
 
-            return new SearchState(consumer, currentEvent);
+            return new SearchState(consumer, currentEvent, endOffsets);
         });
     }
 
@@ -1140,6 +1167,11 @@ public class RecordRepository extends AbstractRepository {
     public static class SearchState {
         private final KafkaConsumer<byte[], byte[]> consumer;
         private final SearchEvent searchEvent;
+        private Map<TopicPartition, Long> endOffsets;
+
+        public SearchState(KafkaConsumer<byte[], byte[]> consumer, SearchEvent searchEvent) {
+            this(consumer, searchEvent, null);
+        }
     }
 
 
