@@ -45,7 +45,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/eslint-parser": "^7.28.6",
+    "@babel/eslint-parser": "^7.29.7",
     "@babel/preset-react": "^7.28.5",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
