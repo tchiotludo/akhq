@@ -10,4 +10,4 @@ build:
 	cp build/libs/akhq-*-all.jar docker/app/akhq.jar;
 
 snyk: .d.snyk docker
-	$(SNYK) container test $(PROJECT_NAME):$(DOCKER_BUILD_TAG)
+	$(SNYK) container test $(PROJECT_NAME):$(DOCKER_BUILD_TAG) --policy-path=.snyk

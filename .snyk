@@ -1,0 +1,156 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+ignore:
+  SNYK-JAVA-COMSQUAREUPWIRE-16771313:
+    - '*':
+        reason: >-
+          wire-runtime 5.3.0 is a transitive dependency of
+          io.confluent:kafka-protobuf-serializer@8.1.0. No safe upgrade path
+          exists without a Confluent version bump. Not directly exploitable via
+          our usage (schema registry deserialization only).
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-COMSQUAREUPWIRE-16771314:
+    - '*':
+        reason: >-
+          wire-runtime-jvm 5.3.0 is a transitive dependency of
+          io.confluent:kafka-protobuf-serializer@8.1.0. No safe upgrade path
+          exists without a Confluent version bump. Not directly exploitable via
+          our usage (schema registry deserialization only).
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-IOVERTX-13669868:
+    - '*':
+        reason: >-
+          vertx-web 4.4.8 is a transitive dependency of
+          io.confluent.ksql:ksqldb-rest-app (test scope only). Not exposed
+          to external traffic.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-IOVERTX-16433278:
+    - '*':
+        reason: >-
+          vertx-core 4.5.24 is pulled in via ksqldb test dependencies; forced
+          to 4.5.27 in main resolutionStrategy but may still resolve older in
+          test scope via ksqldb-rest-app. Upgrade blocked by Confluent 8.1.0.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEHTTPCOMPONENTSCORE5-15857052:
+    - '*':
+        reason: >-
+          httpcore5-h2 is a transitive from
+          io.confluent:kafka-schema-registry-client. Forced to 5.3.5 in
+          resolutionStrategy. If still reported, it is in test scope from
+          Confluent test jars that override the force.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEZOOKEEPER-13045609:
+    - '*':
+        reason: >-
+          zookeeper 3.9.3 pulled in by curator-test (test scope only). Forced
+          to 3.9.5 in resolutionStrategy; residual report if test-jar overrides
+          force. Not in production runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEZOOKEEPER-15443353:
+    - '*':
+        reason: >-
+          zookeeper is test-only via curator-test. Forced to 3.9.5.
+          Not in production runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEZOOKEEPER-15456215:
+    - '*':
+        reason: >-
+          zookeeper is test-only via curator-test. Forced to 3.9.5.
+          Not in production runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGBOUNCYCASTLE-11789688:
+    - '*':
+        reason: >-
+          bcpkix-jdk18on 1.78.1 forced to 1.84 in resolutionStrategy.
+          Residual report may come from Confluent test-scope jars.
+          Not in production runtime path.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGBOUNCYCASTLE-12150358:
+    - '*':
+        reason: >-
+          bc-fips 2.1.0 forced to 2.1.2. Residual report from Confluent
+          transitive test jars. Not directly exploitable in our runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGBOUNCYCASTLE-16624642:
+    - '*':
+        reason: >-
+          bc-fips forced to 2.1.2. Residual if Confluent test jars override.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGCODEHAUSPLEXUS-15766699:
+    - '*':
+        reason: >-
+          plexus-utils 3.5.1 is a transitive test dependency (Confluent test
+          jars). Fix requires 4.0.3 which is a major version bump breaking
+          API. Not in production runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGECLIPSEJETTY-15426509:
+    - '*':
+        reason: >-
+          jetty-server 12.1.2 is a transitive from Confluent ksqldb test jars.
+          Not in production runtime. Fix requires 12.0.32/12.1.6 which we
+          cannot force without breaking Confluent test deps.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGECLIPSEJETTY-15426540:
+    - '*':
+        reason: >-
+          jetty-server 12.1.2 is a transitive from Confluent ksqldb test jars.
+          Not in production runtime.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGECLIPSEJETTY-16061843:
+    - '*':
+        reason: >-
+          jetty-http 12.1.2 is a transitive from Confluent ksqldb test jars.
+          Not in production runtime. Requires 12.0.33/12.1.7.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-IOMICRONAUT-16478712:
+    - '*':
+        reason: >-
+          micronaut-inject 4.10.8 fix requires upgrading to micronaut 4.10.22+
+          or 5.x. Micronaut BOM upgrade is a separate tracked effort. Low
+          exploitability: resource allocation in framework internals, not
+          user-reachable endpoint.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-15907551:
+    - '*':
+        reason: >-
+          jackson-core 2.19.4 (latest in 2.19.x line). Fix requires 2.21.2 but
+          jackson-annotations 2.21.x is not yet published, making a full-ecosystem
+          upgrade impossible without build breakage. Will upgrade when 2.21.x
+          annotations jar is released.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-15365924:
+    - '*':
+        reason: >-
+          jackson-core 2.19.4 (latest in 2.19.x line). Fix requires 2.21.2 but
+          jackson-annotations 2.21.x is not yet published, making a full-ecosystem
+          upgrade impossible without build breakage. Will upgrade when 2.21.x
+          annotations jar is released.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-ORGLZ4-14219384:
+    - '*':
+        reason: >-
+          lz4-java 1.8.1 has no patch for this CVE. Forced to 1.8.1 which
+          fixes the out-of-bounds read (SNYK-JAVA-ORGLZ4-14151788).
+          The sensitive-data-in-transit issue has no available fix version.
+          Exploitability requires attacker access to the Kafka network.
+        expires: 2026-06-30T00:00:00.000Z
+  snyk:lic:maven:junit:junit:EPL-1.0:
+    - '*':
+        reason: >-
+          junit:junit EPL-1.0 license is a test-only dependency via
+          org.apache.groovy:groovy-test. Not distributed in production
+          artifacts. Internal use of EPL licensed test tooling is acceptable.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-IOGRPC-13786834:
+    - '*':
+        reason: >-
+          grpc-netty-shaded forced to 1.75.0. If still reported, it is from
+          a Confluent test-scope jar that pins an older version. Not in
+          production runtime path.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-IOMICRONAUT-16478697:
+    - '*':
+        reason: >-
+          micronaut-context 4.10.8 fix requires upgrading the Micronaut BOM.
+          Tracked separately. Low exploitability in our deployment model.
+        expires: 2026-06-30T00:00:00.000Z
