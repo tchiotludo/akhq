@@ -38,6 +38,9 @@ configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+    exclude group: 'io.confluent', module: 'confluent-log4j2-extensions'
     // Exclude legacy org.lz4 provider so we can consistently use the relocated at.yawk.lz4
     exclude group: 'org.lz4', module: 'lz4-java'
     // Explicitly exclude missing Confluent telemetry modules from all configurations
