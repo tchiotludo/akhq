@@ -57,6 +57,19 @@ configurations.all {
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
+
+        // Security CVE fixes (forced transitive bumps)
+        force("ch.qos.logback:logback-core:1.5.25")
+        force("ch.qos.logback:logback-classic:1.5.25")
+        force("io.netty:netty-codec-http:4.2.11.Final")
+        force("io.netty:netty-codec-http2:4.2.11.Final")
+        force("io.vertx:vertx-core:4.5.24")
+        force("org.apache.logging.log4j:log4j-core:2.25.4")
+        force("org.apache.logging.log4j:log4j-1.2-api:2.25.4")
+        force("org.codehaus.plexus:plexus-utils:3.6.1")
+        force("commons-beanutils:commons-beanutils:1.11.0")
+        force("org.eclipse.jetty:jetty-http:12.1.7")
+        force("org.eclipse.jetty:jetty-server:12.1.7")
     }
 }
 
