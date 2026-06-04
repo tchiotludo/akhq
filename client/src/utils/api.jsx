@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { uriLogin } from './endpoints';
 
 const configs = {
   withCredentials: true
@@ -25,7 +26,7 @@ const handleError = err => {
     if (err.response.status === 401 || err.response.status === 403) {
       sessionStorage.setItem('returnTo', window.location.pathname + (window.location.search || ''));
       localStorage.setItem('toastMessage', error.message);
-      location.href = '/ui/login';
+      location.href = uriLogin();
     } else {
       toast.warn(error.message);
     }

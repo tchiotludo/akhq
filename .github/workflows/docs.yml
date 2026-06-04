@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - dev
+  release:
+    types: [released]
 
 jobs:
   check:
     name: Docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v6
@@ -36,12 +40,22 @@ jobs:
           cp LICENSE helm/akhq/LICENSE
           cp README.md helm/akhq/README.md
 
-      # Helm charts
-      - uses: J12934/helm-gh-pages-action@master
+      # Helm charts - only release on GitHub release creation
+      - name: Configure Git
+        if: github.event_name == 'release'
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Run chart-releaser
+        if: github.event_name == 'release'
+        uses: helm/chart-releaser-action@v1
         with:
-          access-token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
-          charts-folder: "helm"
-          deploy-branch: helm
+          charts_dir: helm
+          pages_branch: helm
+          mark_as_latest: false
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       # Clone helm charts
       - name: Clone helm charts
@@ -60,7 +74,7 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/.vuepress/dist/
 
       # Slack

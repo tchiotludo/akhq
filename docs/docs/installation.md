@@ -17,7 +17,7 @@ docker run -d \
 
 
 ### Stand Alone
-* Install Java 17
+* Install Java 25
 * Download the latest jar on [release page](https://github.com/tchiotludo/akhq/releases)
 * Create a [configuration file](./configuration/README.md)
 * Launch the application with `java -Dmicronaut.config.files=/path/to/application.yml -jar akhq.jar`
