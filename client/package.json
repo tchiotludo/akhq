@@ -25,7 +25,12 @@
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.13.1",
     "react-timeago": "^8.3.0",
-    "react-toastify": "^11.1.0"
+    "react-toastify": "^11.1.0",
+    "@uiw/react-codemirror": "^4.25.10",
+    "@uiw/codemirror-theme-copilot": "^4.25.10",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lang-sql": "^6.10.0",
+    "@codemirror/legacy-modes": "^6.5.3"
   },
   "scripts": {
     "start": "vite",

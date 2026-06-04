@@ -1,7 +1,5 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import SearchBar from '../../../../components/SearchBar';

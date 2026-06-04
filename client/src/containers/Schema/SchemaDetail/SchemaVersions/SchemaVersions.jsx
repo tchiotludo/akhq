@@ -3,11 +3,9 @@ import Table from '../../../../components/Table';
 import constants from '../../../../utils/constants';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
 import { uriDeleteSchemaVersion } from '../../../../utils/endpoints';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import Root from '../../../../components/Root';
 
 class SchemaVersions extends Root {
@@ -133,7 +131,6 @@ class SchemaVersions extends Root {
                     setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={obj[col.accessor]}
                     readOnly
                     name="UNIQUE_ID_OF_DIV"

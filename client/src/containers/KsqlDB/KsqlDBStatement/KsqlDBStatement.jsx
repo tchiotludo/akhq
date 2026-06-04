@@ -1,12 +1,10 @@
 import React from 'react';
 import { uriKsqlDBExecuteStatement } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBStatement extends Root {
@@ -78,7 +76,6 @@ class KsqlDBStatement extends Root {
                 setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
-                theme="merbivore_soft"
                 value={formData['sql']}
                 onChange={value => {
                   let { formData } = this.state;

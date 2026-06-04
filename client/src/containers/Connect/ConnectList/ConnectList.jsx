@@ -5,9 +5,7 @@ import constants from '../../../utils/constants';
 import { Link } from 'react-router-dom';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
@@ -285,7 +283,6 @@ class ConnectList extends Root {
                     setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}
                     readOnly
                     name="UNIQUE_ID_OF_DIV"

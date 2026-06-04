@@ -139,6 +139,7 @@ class SchemaUpdate extends Form {
               formData.schema = value;
               this.setState({ formData });
             },
+            null,
             'col-sm-10'
           )}
           {roles.SCHEMA.includes('UPDATE') &&

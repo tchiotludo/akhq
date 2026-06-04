@@ -16,12 +16,8 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
-import 'ace-builds/src-noconflict/ext-searchbox';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
@@ -1239,7 +1235,6 @@ class TopicData extends Root {
                       setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={value ?? 'null'}
                       readOnly
                       name="UNIQUE_ID_OF_DIV"
