@@ -215,7 +215,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
@@ -233,7 +234,8 @@ public class TopicController extends AbstractController {
                         searchByHeaderKey,
                         searchByHeaderValue,
                         searchByKeySubject,
-                        searchByValueSubject);
+                        searchByValueSubject,
+                        size);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
@@ -407,7 +409,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
@@ -424,7 +427,8 @@ public class TopicController extends AbstractController {
             searchByHeaderKey,
             searchByHeaderValue,
             searchByKeySubject,
-            searchByValueSubject
+            searchByValueSubject,
+            size
         );
 
         Topic topic = topicRepository.findByName(cluster, topicName);
@@ -481,7 +485,8 @@ public class TopicController extends AbstractController {
             searchByHeaderKey,
             searchByHeaderValue,
             searchByKeySubject,
-            searchByValueSubject
+            searchByValueSubject,
+            Optional.empty()
         );
 
         // Set in MAX_POLL_RECORDS_CONFIG, big number increases speed
@@ -574,6 +579,7 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -653,6 +659,7 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -679,7 +686,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) {
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
 
@@ -695,6 +703,7 @@ public class TopicController extends AbstractController {
         searchByHeaderValue.ifPresent(options::setSearchByHeaderValue);
         searchByKeySubject.ifPresent(options::setSearchByKeySubject);
         searchByValueSubject.ifPresent(options::setSearchByValueSubject);
+        size.ifPresent(options::setSize);
         return options;
     }
 

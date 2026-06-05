@@ -15,6 +15,7 @@ class Settings extends Form {
       topicDefaultView: '',
       topicDataSort: '',
       topicDataDateTimeFormat: '',
+      topicDataSize: '',
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true,
@@ -34,6 +35,10 @@ class Settings extends Form {
   topicDataDateTimeFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT).map(
     ([value]) => ({ _id: value, name: value })
   );
+  topicDataPageSizes = [10, 25, 50, 100, 150, 200].map(value => ({
+    _id: String(value),
+    name: String(value)
+  }));
   groupsDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW).map(
     ([value]) => ({
       _id: value,
@@ -45,6 +50,7 @@ class Settings extends Form {
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
     topicDataDateTimeFormat: Joi.string().required(),
+    topicDataSize: Joi.string().optional(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional(),
@@ -68,6 +74,10 @@ class Settings extends Form {
             topicDataDateTimeFormat:
               this.state.uiOptions && this.state.uiOptions.topicData
                 ? this.state.uiOptions.topicData.dateTimeFormat
+                : '',
+            topicDataSize:
+              this.state.uiOptions && this.state.uiOptions.topicData
+                ? String(this.state.uiOptions.topicData.size || '')
                 : '',
             skipConsumerGroups:
               this.state.uiOptions && this.state.uiOptions.topic
@@ -119,7 +129,8 @@ class Settings extends Form {
       },
       topicData: {
         sort: formData.topicDataSort,
-        dateTimeFormat: formData.topicDataDateTimeFormat
+        dateTimeFormat: formData.topicDataDateTimeFormat,
+        size: formData.topicDataSize ? parseInt(formData.topicDataSize) : undefined
       }
     });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
@@ -230,6 +241,20 @@ class Settings extends Form {
               ({ currentTarget: input }) => {
                 const { formData } = this.state;
                 formData.topicDataDateTimeFormat = input.value;
+                this.setState({ formData });
+              },
+              'col-sm-10',
+              'select-wrapper settings-wrapper',
+              true,
+              { className: 'form-control' }
+            )}
+            {this.renderSelect(
+              'topicDataSize',
+              'Page Size',
+              this.topicDataPageSizes,
+              ({ currentTarget: input }) => {
+                const { formData } = this.state;
+                formData.topicDataSize = input.value;
                 this.setState({ formData });
               },
               'col-sm-10',
