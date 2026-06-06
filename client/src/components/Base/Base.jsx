@@ -38,7 +38,7 @@ class Base extends Root {
       title = 'Nodes |';
     }
     if (page.includes('topic')) {
-      title = 'Topics |';
+      title = this.state.topicId ? `${this.state.topicId} | Topics |` : 'Topics |';
     }
     if (page.includes('tail')) {
       title = 'Live Tail |';
