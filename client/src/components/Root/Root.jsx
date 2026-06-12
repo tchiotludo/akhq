@@ -16,6 +16,14 @@ class Root extends Component {
     this.cancelAxiosRequests();
   }
 
+  saveReturnToOnSessionExpiry() {
+    const pathname = window.location.pathname;
+
+    if (pathname && pathname.startsWith('/ui/') && pathname !== '/ui/login') {
+      sessionStorage.setItem('returnTo', pathname + (window.location.search || ''));
+    }
+  }
+
   cancelAxiosRequests() {
     if (this.cancel !== undefined) {
       this.cancel.cancel('cancel all');

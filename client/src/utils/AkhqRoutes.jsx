@@ -93,6 +93,7 @@ class AkhqRoutes extends Root {
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
       this.setState({ user: currentUserData.username });
     } else {
+      this.saveReturnToOnSessionExpiry();
       sessionStorage.setItem('login', false);
       if (currentUserData.roles) {
         sessionStorage.setItem('user', 'default');
