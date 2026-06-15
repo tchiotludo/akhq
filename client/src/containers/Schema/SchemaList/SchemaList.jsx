@@ -17,6 +17,13 @@ import Root from '../../../components/Root';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import { withRouter } from '../../../utils/withRouter';
 
+const FilterType = {
+  SUBJECT: 'Subject',
+  VERSION: 'Version',
+  SCHEMA_TYPE: 'Schema Type',
+  ID: 'Id'
+};
+
 class SchemaList extends Root {
   state = {
     schemasRegistry: [],
@@ -30,6 +37,7 @@ class SchemaList extends Root {
     searchData: {
       search: ''
     },
+    filterType: FilterType.SUBJECT,
     createSubjectFormData: {
       subject: '',
       compatibilityLevel: '',
@@ -100,6 +108,12 @@ class SchemaList extends Root {
     });
   };
 
+  handleFilterChange = (e) => {
+    this.setState({ filterType: e.target.value, pageNumber: 1, searchData: { search: '' } }, () => {
+      this.getSchemaRegistry(false);
+    });
+  };
+
   handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
     this.setState({ pageNumber: pageNumber }, () => {
@@ -108,18 +122,29 @@ class SchemaList extends Root {
   };
 
   async getSchemaRegistry(replaceInNavigation = true) {
-    const { selectedCluster, pageNumber } = this.state;
+    const { selectedCluster, pageNumber, filterType} = this.state;
     const { search } = this.state.searchData;
 
     this.setState({ loading: true });
-
+    // Fetch schemas from API
     let response = await this.getApi(
-      endpoints.uriSchemaRegistry(selectedCluster, search, pageNumber)
+      endpoints.uriSchemaRegistry(selectedCluster, filterType !== FilterType.SUBJECT ? "" : search, pageNumber)
     );
-
     let data = response.data;
     if (data.results) {
-      this.handleSchemaRegistry(data.results);
+      const searchValue = search.toLowerCase();
+      // Apply filtering based on selected filter type
+      const filteredResults = data.results.filter(schema => {
+        const filterConditions = {
+          [FilterType.ID]: () => schema.id.toString().toLowerCase().includes(searchValue),
+          [FilterType.VERSION]: () => schema.version.toString().toLowerCase().includes(searchValue),
+          [FilterType.SUBJECT]: () => schema.subject.toLowerCase().includes(searchValue),
+          [FilterType.SCHEMA_TYPE]: () => schema.schemaType.toLowerCase().includes(searchValue),
+        };
+
+        return filterConditions[filterType] ? filterConditions[filterType]() : true;
+      });
+      this.handleSchemaRegistry(filteredResults);
       this.setState({ selectedCluster, totalPageNumber: data.page }, () => {
         this.props.router.navigate(
           {
@@ -201,6 +226,19 @@ class SchemaList extends Root {
       <div>
         <Header title="Schema Registry" />
         <nav className="navbar navbar-expand-lg navbar-light bg-light me-auto khq-data-filter khq-sticky khq-nav">
+
+          <select
+            className="form-select"
+            value={this.state.filterType}
+            onChange={this.handleFilterChange}
+            style={{ width: 'auto', minWidth: '150px' }}
+          >
+            <option value={FilterType.SUBJECT}>Subject</option>
+            <option value={FilterType.ID}>Id</option>
+            <option value={FilterType.VERSION}>Version</option>
+            <option value={FilterType.SCHEMA_TYPE}>Schema Type</option>
+          </select>
+
           <SearchBar
             showSearch={true}
             search={searchData.search}
@@ -215,7 +253,7 @@ class SchemaList extends Root {
           <Pagination
             pageNumber={pageNumber}
             totalPageNumber={totalPageNumber}
-            onChange={handlePageChange}
+            onChange={this.handlePageChange}
             onSubmit={value => this.handlePageChangeSubmission(value, false)}
           />
         </nav>
@@ -325,8 +363,8 @@ class SchemaList extends Root {
             const newExpandedRows = !isRowCurrentlyExpanded
               ? currentExpandedRows
               : currentExpandedRows.filter(
-                  obj => !(obj.id === el.id && obj.subject === el.subject)
-                );
+                obj => !(obj.id === el.id && obj.subject === el.subject)
+              );
             return newExpandedRows;
           }}
           noContent={'No schemas available'}
