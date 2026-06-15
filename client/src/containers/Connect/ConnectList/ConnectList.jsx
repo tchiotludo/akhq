@@ -17,8 +17,8 @@ import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import { withRouter } from '../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
-import { getClusterUIOptions } from '../../../utils/functions';
 import { SETTINGS_VALUES } from '../../../utils/constants';
+import { Tooltip } from '@mui/material';
 
 class ConnectList extends Root {
   state = {
@@ -35,8 +35,7 @@ class ConnectList extends Root {
     searchData: {
       search: ''
     },
-    statusFilter: '',
-    availableStatuses: Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS)
+    statusFilter: ''
   };
 
   static getDerivedStateFromProps(nextProps) {
@@ -50,21 +49,14 @@ class ConnectList extends Root {
   }
 
   async componentDidMount() {
-    const { searchData, pageNumber, statusFilter, clusterId } = this.state;
+    const { searchData, pageNumber, statusFilter } = this.state;
     const query = new URLSearchParams(this.props.location.search);
-
-    const uiOptions = await getClusterUIOptions(clusterId);
-    const configuredStatuses =
-      uiOptions && uiOptions.connect && uiOptions.connect.taskStatusFilters
-        ? uiOptions.connect.taskStatusFilters
-        : Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS);
 
     this.setState(
       {
         searchData: { search: query.get('search') ? query.get('search') : searchData.search },
         pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber),
-        statusFilter: query.get('status') ? query.get('status') : statusFilter,
-        availableStatuses: configuredStatuses
+        statusFilter: query.get('status') ? query.get('status') : statusFilter
       },
       () => {
         this.getConnectDefinitions();
@@ -262,7 +254,7 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber, statusFilter, availableStatuses } =
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber, statusFilter } =
       this.state;
     const roles = this.state.roles || {};
 
@@ -278,19 +270,21 @@ class ConnectList extends Root {
             doSubmit={this.handleSearch}
           />
 
-          <select
-            className="form-select ms-2"
-            value={statusFilter}
-            onChange={this.handleStatusFilterChange}
-            style={{ width: 'auto' }}
-          >
-            <option value="">All statuses</option>
-            {availableStatuses.map(status => (
-              <option key={status} value={status}>
-                {status.charAt(0) + status.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </select>
+          <Tooltip title="Shows connectors with at least one task in the selected state">
+            <select
+              className="form-select ms-2"
+              value={statusFilter}
+              onChange={this.handleStatusFilterChange}
+              style={{ width: 'auto' }}
+            >
+              <option value="">All statuses</option>
+              {Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS).map(status => (
+                <option key={status} value={status}>
+                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </Tooltip>
 
           <Pagination
             pageNumber={pageNumber}
