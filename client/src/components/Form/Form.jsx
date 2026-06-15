@@ -110,7 +110,7 @@ class Form extends Root {
     );
   };
 
-  renderJSONInput = (name, label, onChange, textMode, options, rest) => {
+  renderJSONInput = (name, label, onChange, textMode, _options, rest) => {
     const { formData, errors } = this.state;
     const inputMode = textMode ? 'text' : formData.schemaType === 'PROTOBUF' ? 'protobuf' : 'json';
     return (
@@ -124,14 +124,11 @@ class Form extends Root {
         )}
         <div id={name} className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
-            setOptions={{ ...options, useWorker: false }}
             mode={inputMode}
             value={formData[name]}
             onChange={value => {
               onChange(value);
             }}
-            name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
             style={{ width: '100%', minHeight: '25vh' }}
             {...rest}
           />

@@ -481,13 +481,10 @@ class Tail extends Root {
 
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
                       value={value || 'null'}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );

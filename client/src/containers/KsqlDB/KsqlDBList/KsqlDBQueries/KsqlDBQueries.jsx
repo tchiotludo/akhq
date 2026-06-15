@@ -183,13 +183,10 @@ class KsqlDBQueries extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode="sql"
                     id={'value' + index}
                     value={obj[col.accessor]}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
                     style={{ width: '100%', minHeight: '25vh' }}
                   />
                 );

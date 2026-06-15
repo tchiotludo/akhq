@@ -281,7 +281,6 @@ class ConnectCreate extends Root {
             </td>
             <td>
               <AceEditor
-                setOptions={{ useWorker: false }}
                 mode="json"
                 id={'transformsprops'}
                 value={formData['transformsprops']}
@@ -298,8 +297,6 @@ class ConnectCreate extends Root {
                   this.handleData();
                   this.setState({ formData });
                 }}
-                name="UNIQUE_ID_OF_DIV"
-                editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', minHeight: '25vh' }}
               />
               {errors['transformsprops'] && (

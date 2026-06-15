@@ -280,13 +280,10 @@ class ConnectList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
                     value={JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
                     style={{ width: '100%', minHeight: '25vh' }}
                   />
                 );

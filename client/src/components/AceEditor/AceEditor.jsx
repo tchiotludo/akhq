@@ -19,21 +19,13 @@ const customBackground = EditorView.theme({
 
 /**
  * Drop-in replacement for react-ace using @uiw/react-codemirror (CodeMirror 6).
- * Accepts a subset of react-ace props used across this project.
  */
 const AceEditor = ({
   mode,
-  theme: _theme, // ignored — we always use copilot
   value,
   onChange,
   readOnly,
   style,
-  // ignored react-ace-specific props
-  name: _name,
-  editorProps: _editorProps,
-  setOptions: _setOptions,
-  wrapEnabled: _wrapEnabled,
-  fontSize: _fontSize,
   ...rest
 }) => {
   // CodeMirror's outer div doesn't propagate height/minHeight into the editor.

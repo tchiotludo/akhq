@@ -73,7 +73,6 @@ class KsqlDBStatement extends Root {
 
             <div className="col-sm-10">
               <AceEditor
-                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
                 value={formData['sql']}
@@ -82,8 +81,6 @@ class KsqlDBStatement extends Root {
                   formData['sql'] = value;
                   this.setState({ formData });
                 }}
-                name="UNIQUE_ID_OF_DIV"
-                editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', height: '200px' }}
               />
             </div>

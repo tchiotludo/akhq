@@ -220,13 +220,10 @@ class ConnectTasks extends Root {
                 extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="text"
                       id={'value' + index}
                       value={obj.trace}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );

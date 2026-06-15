@@ -120,7 +120,6 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
-                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
                 value={formData['sql']}
@@ -130,8 +129,6 @@ class KsqlDBQuery extends Root {
                   formData['sql'] = value;
                   this.setState({ formData });
                 }}
-                name="UNIQUE_ID_OF_DIV"
-                editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', height: '200px' }}
               />
             </div>
@@ -142,15 +139,12 @@ class KsqlDBQuery extends Root {
 
             <div className="col-sm-10">
               <AceEditor
-                setOptions={{ useWorker: false }}
                 mode="properties"
                 id={'properties'}
                 placeholder={'auto.offset.reset=earliest\nksql.query.pull.table.scan.enabled=true'}
                 onChange={value => {
                   this.buildQueryProperties(value);
                 }}
-                name="UNIQUE_ID_OF_DIV"
-                editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', height: '100px' }}
               />
             </div>
