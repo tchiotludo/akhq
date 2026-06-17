@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { basePath } from '../../utils/endpoints';
 import axios from 'axios';
 import { get, put, post, remove } from '../../utils/api';
 
@@ -10,17 +11,17 @@ class Root extends Component {
     const pathname = this.props.location?.pathname;
 
     if (pathname && pathname !== '/ui/login') {
-      sessionStorage.setItem('returnTo', pathname + (window.location.search || ''));
+      sessionStorage.setItem('returnTo', basePath + pathname + (window.location.search || ''));
     }
 
     this.cancelAxiosRequests();
   }
 
   saveReturnToOnSessionExpiry() {
-    const pathname = window.location.pathname;
+    const pathname = this.props.location?.pathname;
 
     if (pathname && pathname.startsWith('/ui/') && pathname !== '/ui/login') {
-      sessionStorage.setItem('returnTo', pathname + (window.location.search || ''));
+      sessionStorage.setItem('returnTo', basePath + pathname + (window.location.search || ''));
     }
   }
 
