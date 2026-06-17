@@ -29,6 +29,7 @@ public class Topic {
     @JsonIgnore
     private boolean configStream;
     private final List<Partition> partitions = new ArrayList<>();
+    private TopicPermissions permissions;
 
     public Topic(
         TopicDescription description,
@@ -119,6 +120,14 @@ public class Topic {
         }
 
         throw new NoSuchElementException("Partition '" + partition + "' doesn't exist for topic " + this.name);
+    }
+
+    public void setPermissions(TopicPermissions permission) {
+        this.permissions = permission;
+    }
+
+    public TopicPermissions getPermissions() {
+        return permissions;
     }
 
     public Boolean canDeleteRecords(String clusterId, ConfigRepository configRepository) throws ExecutionException, InterruptedException {
