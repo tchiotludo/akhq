@@ -6,9 +6,9 @@ import { copilot } from '@uiw/codemirror-theme-copilot';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { search } from '@codemirror/search';
-import { StreamLanguage } from "@codemirror/language";
-import { protobuf } from "@codemirror/legacy-modes/mode/protobuf";
-import { properties } from "@codemirror/legacy-modes/mode/properties";
+import { StreamLanguage } from '@codemirror/language';
+import { protobuf } from '@codemirror/legacy-modes/mode/protobuf';
+import { properties } from '@codemirror/legacy-modes/mode/properties';
 
 // Overrides the background on top of any base theme
 const customBackground = EditorView.theme({

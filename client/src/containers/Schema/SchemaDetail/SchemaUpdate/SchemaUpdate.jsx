@@ -138,9 +138,7 @@ class SchemaUpdate extends Form {
               let { formData } = { ...this.state };
               formData.schema = value;
               this.setState({ formData });
-            },
-            null,
-            'col-sm-10'
+            }
           )}
           {roles.SCHEMA.includes('UPDATE') &&
             this.renderButton('Update', undefined, undefined, 'submit')}

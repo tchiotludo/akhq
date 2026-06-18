@@ -129,7 +129,7 @@ class Form extends Root {
             onChange={value => {
               onChange(value);
             }}
-            style={{ width: '100%', minHeight: '25vh' }}
+            style={{ width: '100%', minHeight: '25vh', maxHeight: '500px' }}
             {...rest}
           />
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}
