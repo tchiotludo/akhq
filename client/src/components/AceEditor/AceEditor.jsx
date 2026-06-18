@@ -8,6 +8,7 @@ import { EditorState } from '@codemirror/state';
 import { search } from '@codemirror/search';
 import { StreamLanguage } from "@codemirror/language";
 import { protobuf } from "@codemirror/legacy-modes/mode/protobuf";
+import { properties } from "@codemirror/legacy-modes/mode/properties";
 
 // Overrides the background on top of any base theme
 const customBackground = EditorView.theme({
@@ -30,17 +31,19 @@ const AceEditor = ({
 }) => {
   // CodeMirror's outer div doesn't propagate height/minHeight into the editor.
   // Extract them from style and apply via EditorView.theme on .cm-editor instead.
-  const { height, minHeight: _minHeight, maxHeight = '500px', width = '100%', ...remainingStyle } = style || {};
+  const { height, minHeight, maxHeight, ...remainingStyle } = style || {};
 
   const sizeTheme = useMemo(() => {
     const editorStyle = {};
+    if (minHeight) editorStyle.minHeight = minHeight;
     if (height) editorStyle.height = height;
     if (maxHeight) editorStyle.maxHeight = maxHeight;
     return EditorView.theme({
       '&': editorStyle,
-      '.cm-scroller': { maxHeight: maxHeight || 'unset', overflow: 'auto' }
+      '.cm-scroller': { maxHeight: maxHeight ?? 'unset', overflow: 'auto' },
+      '.cm-content': { fontSize: '12px' }
     });
-  }, [height, maxHeight, width]);
+  }, [height, minHeight, maxHeight]);
 
   const extensions = useMemo(() => {
     const exts = [customBackground, sizeTheme, EditorView.lineWrapping, search({ top: true })];
@@ -54,6 +57,9 @@ const AceEditor = ({
         break;
       case 'protobuf':
         exts.push(StreamLanguage.define(protobuf));
+        break;
+      case 'properties':
+        exts.push(StreamLanguage.define(properties));
         break;
       default:
         // plain text — no extension needed

@@ -257,7 +257,7 @@ class SchemaList extends Root {
                     id={'value' + index}
                     value={obj[col.accessor]}
                     readOnly
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', maxHeight: '500px' }}
                   />
                 );
               },
