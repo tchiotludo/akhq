@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 @ConfigurationProperties("akhq.ui-options")
 public class UIOptions {
+    private Boolean refreshFromServer = false;
+
     @ConfigurationBuilder(configurationPrefix = "topic")
     private UiOptionsTopic topic = new UiOptionsTopic();
 

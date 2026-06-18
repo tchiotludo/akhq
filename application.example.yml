@@ -177,6 +177,7 @@ akhq:
 
   # Ui Global Options (optional)
   ui-options:
+    refresh-from-server: false # Always refresh UI options from server instead of using local browser settings
     topic:
       default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
       skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
