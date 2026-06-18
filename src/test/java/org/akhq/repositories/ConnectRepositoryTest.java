@@ -81,10 +81,10 @@ class ConnectRepositoryTest extends AbstractTest {
         );
 
 
-        List<ConnectDefinition> all1 = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), List.of());
+        List<ConnectDefinition> all1 = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(), List.of());
         assertEquals(1, all1.size());
 
-        List<ConnectDefinition> all2 = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-2", Optional.empty(), List.of());
+        List<ConnectDefinition> all2 = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-2", Optional.empty(), Optional.empty(), List.of());
         assertEquals(1, all2.size());
 
         assertEquals(path1, repository.getDefinition(
@@ -135,8 +135,8 @@ class ConnectRepositoryTest extends AbstractTest {
 
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","ConnectRepositoryTest1");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-2","ConnectRepositoryTest2");
-        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), List.of()).size());
-        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-2", Optional.empty(), List.of()).size());
+        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(), List.of()).size());
+        assertEquals(0, repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-2", Optional.empty(), Optional.empty(), List.of()).size());
     }
 
     private void mockApplicationContext() {
@@ -185,7 +185,7 @@ class ConnectRepositoryTest extends AbstractTest {
 
         mockApplicationContext();
 
-        List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), List.of("^prefixed.*$"));
+        List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(), List.of("^prefixed.*$"));
         assertEquals(2, filtered.size());
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
@@ -220,15 +220,50 @@ class ConnectRepositoryTest extends AbstractTest {
 
         mockApplicationContext();
 
-        List<ConnectDefinition> notFiltered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), List.of());
+        List<ConnectDefinition> notFiltered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(), List.of());
         assertEquals(2, notFiltered.size());
-        List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching1"), List.of());
+        List<ConnectDefinition> filtered = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching1"), Optional.empty(), List.of());
         assertEquals(1, filtered.size());
-        List<ConnectDefinition> filteredAll = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching"), List.of());
+        List<ConnectDefinition> filteredAll = repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.of("prefixed.Matching"), Optional.empty(), List.of());
         assertEquals(2, filteredAll.size());
 
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching1");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "prefixed.Matching2");
+    }
+
+    @Test
+    void getFilteredByStatusList() {
+        repository.create(
+            KafkaTestCluster.CLUSTER_ID,
+            "connect-1",
+            "statusTest1",
+            ImmutableMap.of(
+                "connector.class", "FileStreamSinkConnector",
+                "file", "/tmp/test.txt",
+                "topics", KafkaTestCluster.TOPIC_CONNECT
+            )
+        );
+
+        mockApplicationContext();
+
+        // Get all connectors and determine the actual task state
+        List<ConnectDefinition> all = repository.getDefinitions(
+            KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(), List.of());
+        assertEquals(1, all.size());
+        String actualState = all.get(0).getTasks().get(0).getState();
+
+        // Filtering by the actual state should return the connector
+        List<ConnectDefinition> matched = repository.getDefinitions(
+            KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.of(actualState), List.of());
+        assertEquals(1, matched.size());
+
+        // Filtering by a different state should return nothing
+        String otherState = actualState.equals("RUNNING") ? "PAUSED" : "RUNNING";
+        List<ConnectDefinition> notMatched = repository.getDefinitions(
+            KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.of(otherState), List.of());
+        assertEquals(0, notMatched.size());
+
+        repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "statusTest1");
     }
 
 }

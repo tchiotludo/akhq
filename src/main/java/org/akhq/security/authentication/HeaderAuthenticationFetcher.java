@@ -11,6 +11,7 @@ import io.micronaut.security.filters.AuthenticationFetcher;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.token.config.TokenConfiguration;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.HeaderAuth;
 import org.akhq.models.security.ClaimRequest;
@@ -109,6 +110,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
                 return Optional.of(claimProvider.generateClaim(claim));
 
             })
+            .subscribeOn(Schedulers.io())
             .switchMap(t -> {
                 if (t.isPresent()) {
                     return Flowable.just(new ServerAuthentication(

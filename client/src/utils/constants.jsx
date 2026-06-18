@@ -54,6 +54,14 @@ export const SETTINGS_VALUES = {
       HIDE_EMPTY: 'HIDE_EMPTY'
     }
   },
+  CONNECT: {
+    TASK_STATUS_FILTERS: {
+      RUNNING: 'RUNNING',
+      FAILED: 'FAILED',
+      PAUSED: 'PAUSED',
+      UNASSIGNED: 'UNASSIGNED'
+    }
+  },
   TOPIC_DATA: {
     SORT: {
       OLDEST: 'OLDEST',
