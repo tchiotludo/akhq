@@ -84,7 +84,7 @@ class Settings extends Form {
             groupsDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.groupsDefaultView
-                : ''
+                : '',
           }
         });
       });

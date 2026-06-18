@@ -31,31 +31,48 @@ class Base extends Root {
     };
   }
 
+  getTitleContext(pathname) {
+    const segments = pathname.split('/').filter(Boolean);
+    const section = segments[2] || '';
+    const decodeSegment = value => {
+      if (!value) return '';
+      try {
+        return decodeURIComponent(value);
+      } catch (e) {
+        return value;
+      }
+    };
+    switch (section) {
+      case 'topic':
+        return { label: 'Topics', id: decodeSegment(segments[3]) };
+      case 'node':
+        return { label: 'Nodes', id: decodeSegment(segments[3]) };
+      case 'tail':
+        return { label: 'Live Tail', id: '' };
+      case 'group':
+        return { label: 'Consumer Groups', id: decodeSegment(segments[3]) };
+      case 'acls':
+        return { label: 'Acls', id: decodeSegment(segments[3]) };
+      case 'schema': {
+        const schemaId = segments[3] === 'details' ? segments[4] : '';
+        return { label: 'Schema Registry', id: decodeSegment(schemaId) };
+      }
+      case 'connect': {
+        const connectId = segments[3];
+        const definitionId = segments[4] === 'definition' ? segments[5] : '';
+        return { label: 'Connect', id: decodeSegment(definitionId || connectId) };
+      }
+      case 'ksqldb':
+        return { label: 'KsqlDB', id: decodeSegment(segments[3]) };
+      default:
+        return { label: '', id: '' };
+    }
+  }
+
   handleTitle() {
     const page = window.location.pathname;
-    let title = '';
-    if (page.includes('node')) {
-      title = 'Nodes |';
-    }
-    if (page.includes('topic')) {
-      title = 'Topics |';
-    }
-    if (page.includes('tail')) {
-      title = 'Live Tail |';
-    }
-    if (page.includes('group')) {
-      title = 'Consumer Groups |';
-    }
-    if (page.includes('acls')) {
-      title = 'Acls |';
-    }
-    if (page.includes('schema')) {
-      title = 'Schema Registry |';
-    }
-    if (page.includes('connect')) {
-      title = 'Connect |';
-    }
-
+    const { label, id } = this.getTitleContext(page);
+    const title = label ? (id ? `${id} | ${label} |` : `${label} |`) : '';
     return title + ' akhq.io';
   }
 
