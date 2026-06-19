@@ -9,7 +9,7 @@ plugins {
     id 'org.gradle.test-retry' version '1.6.5'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.54.0"
-    id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
+    id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
 }
@@ -68,16 +68,6 @@ configurations.all {
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
     conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
-}
-
-/**********************************************************************************************************************\
- * IntelliJ IDEA
- **********************************************************************************************************************/
-idea.project.settings {
-    taskTriggers {
-        beforeBuild generateAvroJava
-        beforeRebuild generateAvroJava
-    }
 }
 
 /**********************************************************************************************************************\

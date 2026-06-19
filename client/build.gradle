@@ -1,5 +1,5 @@
 plugins {
-    id 'org.siouan.frontend-jdk17' version '8.0.0'
+    id 'org.siouan.frontend-jdk21' version '10.0.0'
 }
 
 repositories {
@@ -8,7 +8,8 @@ repositories {
 }
 
 frontend {
-    nodeVersion = '22.21.0'
+    nodeVersion = '26.3.1'
+    corepackVersion = '0.35.0'
     assembleScript = 'run build'
     maxDownloadAttempts = 5
 }
