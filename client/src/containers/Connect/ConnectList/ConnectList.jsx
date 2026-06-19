@@ -69,10 +69,8 @@ class ConnectList extends Root {
     const searchChanged = this.props.location.search !== prevProps.location.search;
 
     if (pathnameChanged || searchChanged) {
-      if (pathnameChanged) {
-        this.cancelAxiosRequests();
-        this.renewCancelToken();
-      }
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
 
       this._initializeVars(() => {
         this.getConnectDefinitions();
