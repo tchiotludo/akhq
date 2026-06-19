@@ -146,14 +146,14 @@ public class KafkaConnectApiClient {
      * GET /connector-plugins
      */
     public List<ConnectorPluginInfo> getConnectorPlugins() {
-        return call(HttpRequest.GET("/connector-plugins"), Argument.listOf(ConnectorPluginInfo.class));
+        return call(HttpRequest.GET(uri("/connector-plugins")), Argument.listOf(ConnectorPluginInfo.class));
     }
 
     /**
      * PUT /connector-plugins/{pluginName}/config/validate
      */
     public ConnectorPluginValidation validateConnectorPluginConfig(String pluginName, Map<String, String> config) {
-        return call(HttpRequest.PUT("/connector-plugins/" + encode(pluginName) + "/config/validate", config),
+        return call(HttpRequest.PUT(uri("/connector-plugins/" + encode(pluginName) + "/config/validate"), config),
             Argument.of(ConnectorPluginValidation.class));
     }
 
@@ -164,49 +164,49 @@ public class KafkaConnectApiClient {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("name", name);
         body.put("config", config);
-        return call(HttpRequest.POST("/connectors", body), Argument.of(ConnectorInfo.class));
+        return call(HttpRequest.POST(uri("/connectors"), body), Argument.of(ConnectorInfo.class));
     }
 
     /**
      * PUT /connectors/{name}/config
      */
     public ConnectorInfo updateConnectorConfig(String name, Map<String, String> config) {
-        return call(HttpRequest.PUT("/connectors/" + encode(name) + "/config", config), Argument.of(ConnectorInfo.class));
+        return call(HttpRequest.PUT(uri("/connectors/" + encode(name) + "/config"), config), Argument.of(ConnectorInfo.class));
     }
 
     /**
      * DELETE /connectors/{name}
      */
     public void deleteConnector(String name) {
-        callVoid(HttpRequest.DELETE("/connectors/" + encode(name)));
+        callVoid(HttpRequest.DELETE(uri("/connectors/" + encode(name))));
     }
 
     /**
      * PUT /connectors/{name}/pause
      */
     public void pauseConnector(String name) {
-        callVoid(HttpRequest.PUT("/connectors/" + encode(name) + "/pause", null));
+        callVoid(HttpRequest.PUT(uri("/connectors/" + encode(name) + "/pause"), null));
     }
 
     /**
      * PUT /connectors/{name}/resume
      */
     public void resumeConnector(String name) {
-        callVoid(HttpRequest.PUT("/connectors/" + encode(name) + "/resume", null));
+        callVoid(HttpRequest.PUT(uri("/connectors/" + encode(name) + "/resume"), null));
     }
 
     /**
      * POST /connectors/{name}/restart
      */
     public void restartConnector(String name) {
-        callVoid(HttpRequest.POST("/connectors/" + encode(name) + "/restart", null));
+        callVoid(HttpRequest.POST(uri("/connectors/" + encode(name) + "/restart"), null));
     }
 
     /**
      * POST /connectors/{name}/tasks/{taskId}/restart
      */
     public void restartConnectorTask(String name, int taskId) {
-        callVoid(HttpRequest.POST("/connectors/" + encode(name) + "/tasks/" + taskId + "/restart", null));
+        callVoid(HttpRequest.POST(uri("/connectors/" + encode(name) + "/tasks/" + taskId + "/restart"), null));
     }
 
     // -------------------------------------------------------------------------
