@@ -71,25 +71,15 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {
-        Map<String, ConnectorExpanded> definitions = this.kafkaModule
+        Map<String, ConnectorExpanded> expanded = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
             .getConnectorsExpanded();
 
-        Collection<ConnectorExpanded> connectorsFilteredBySearch =
-            definitions.values().stream().filter(connector -> isSearchMatch(search, connector.getInfo().getName())
-                && isMatchRegex(filters, connector.getInfo().getName())
-        ).toList();
-
-        ArrayList<ConnectDefinition> filtered = new ArrayList<>();
-        for (ConnectorDefinition item : connectorsFilteredBySearch) {
-            if (isMatchRegex(filters, item.getName())) {
-                filtered.add(new ConnectDefinition(
-                    item,
-                    unfiltered.getStatusForConnector(item.getName())
-                ));
-            }
-        }
+        List<ConnectDefinition> filtered = expanded.entrySet().stream()
+            .filter(e -> isSearchMatch(search, e.getKey()) && isMatchRegex(filters, e.getKey()))
+            .map(e -> new ConnectDefinition(e.getValue().getInfo(), e.getValue().getStatus()))
+            .collect(Collectors.toList());
 
         if (status.isPresent() && !status.get().isEmpty()) {
             filtered.removeIf(def -> def.getTasks().stream().noneMatch(

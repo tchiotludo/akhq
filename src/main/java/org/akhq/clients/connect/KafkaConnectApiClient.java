@@ -234,7 +234,7 @@ public class KafkaConnectApiClient {
             case 404 -> new ConnectNotFoundException(body);
             case 409 -> new ConnectConflictException(body);
             default -> new ConnectRestException(e.getStatus().getCode(),
-                "Kafka Connect returned HTTP " + e.getStatus().getCode() + ": " + body);
+                "Kafka Connect returned HTTP " + e.getStatus().getCode() + ": " + body, e);
         };
     }
 

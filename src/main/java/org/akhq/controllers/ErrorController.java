@@ -32,7 +32,7 @@ public class ErrorController extends AbstractController {
     // Kafka
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ApiException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     @Error(global = true)
@@ -43,33 +43,33 @@ public class ErrorController extends AbstractController {
     // Registry
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, RestClientException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     // Connect
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ConnectBadRequestException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ConnectNotFoundException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ConnectConflictException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     // Akhq
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, IllegalArgumentException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
-    private HttpResponse<?> renderExecption(HttpRequest<?> request, Exception e) {
+    private HttpResponse<?> renderException(HttpRequest<?> request, Exception e) {
         JsonError error = new JsonError(e.getMessage())
             .link(Link.SELF, Link.of(request.getUri()));
 
