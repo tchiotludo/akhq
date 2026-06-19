@@ -153,7 +153,7 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.1")
 
     // jackson-module-scala
-    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.21.4")
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.0")
 
     // protobuf
     implementation("com.google.protobuf:protobuf-java:4.35.1")
