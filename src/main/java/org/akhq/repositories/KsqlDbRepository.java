@@ -3,7 +3,6 @@ package org.akhq.repositories;
 import io.confluent.ksql.api.client.KsqlObject;
 import io.confluent.ksql.api.client.Row;
 import io.confluent.ksql.api.client.ServerInfo;
-import io.confluent.ksql.api.client.exception.KsqlClientException;
 import io.micronaut.retry.annotation.Retryable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -40,7 +39,7 @@ public class KsqlDbRepository extends AbstractRepository {
     }
 
     @Retryable(includes = {
-        KsqlClientException.class
+        ExecutionException.class, InterruptedException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbStream> getPaginatedStreams(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -53,27 +52,23 @@ public class KsqlDbRepository extends AbstractRepository {
         return PagedList.of(ksqlDbStreamsFilteredBySearch, pagination, list -> list);
     }
 
-    public List<KsqlDbStream> listStreams(String clusterId, String ksqlDbId) {
-        try {
-            return this.kafkaModule
-                .getKsqlDbClient(clusterId)
-                .get(ksqlDbId)
-                .listStreams()
-                .get()
-                .stream().map(streamInfo -> new KsqlDbStream(
-                    streamInfo.getName(),
-                    streamInfo.getTopic(),
-                    streamInfo.getKeyFormat(),
-                    streamInfo.getValueFormat(),
-                    streamInfo.isWindowed()
-                )).collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public List<KsqlDbStream> listStreams(String clusterId, String ksqlDbId) throws ExecutionException, InterruptedException {
+        return this.kafkaModule
+            .getKsqlDbClient(clusterId)
+            .get(ksqlDbId)
+            .listStreams()
+            .get()
+            .stream().map(streamInfo -> new KsqlDbStream(
+                streamInfo.getName(),
+                streamInfo.getTopic(),
+                streamInfo.getKeyFormat(),
+                streamInfo.getValueFormat(),
+                streamInfo.isWindowed()
+            )).collect(Collectors.toList());
     }
 
     @Retryable(includes = {
-        KsqlClientException.class
+        ExecutionException.class, InterruptedException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbTable> getPaginatedTables(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -86,27 +81,23 @@ public class KsqlDbRepository extends AbstractRepository {
         return PagedList.of(ksqlDbTablesFilteredBySearch, pagination, list -> list);
     }
 
-    public List<KsqlDbTable> listTables(String clusterId, String ksqlDbId) {
-        try {
-            return this.kafkaModule
-                .getKsqlDbClient(clusterId)
-                .get(ksqlDbId)
-                .listTables()
-                .get()
-                .stream().map(tableInfo -> new KsqlDbTable(
-                    tableInfo.getName(),
-                    tableInfo.getTopic(),
-                    tableInfo.getKeyFormat(),
-                    tableInfo.getValueFormat(),
-                    tableInfo.isWindowed()
-                )).collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public List<KsqlDbTable> listTables(String clusterId, String ksqlDbId) throws ExecutionException, InterruptedException {
+        return this.kafkaModule
+            .getKsqlDbClient(clusterId)
+            .get(ksqlDbId)
+            .listTables()
+            .get()
+            .stream().map(tableInfo -> new KsqlDbTable(
+                tableInfo.getName(),
+                tableInfo.getTopic(),
+                tableInfo.getKeyFormat(),
+                tableInfo.getValueFormat(),
+                tableInfo.isWindowed()
+            )).collect(Collectors.toList());
     }
 
     @Retryable(includes = {
-        KsqlClientException.class
+        ExecutionException.class, InterruptedException.class
     }, delay = "3s", attempts = "5")
     public PagedList<KsqlDbQuery> getPaginatedQueries(String clusterId, String connectId, Pagination pagination, Optional<String> search)
         throws ExecutionException, InterruptedException{
@@ -119,23 +110,19 @@ public class KsqlDbRepository extends AbstractRepository {
         return PagedList.of(ksqlDbQueriesFilteredBySearch, pagination, list -> list);
     }
 
-    public List<KsqlDbQuery> listQueries(String clusterId, String ksqlDbId) {
-        try {
-            return this.kafkaModule
-                .getKsqlDbClient(clusterId)
-                .get(ksqlDbId)
-                .listQueries()
-                .get()
-                .stream().map(queryInfo -> new KsqlDbQuery(
-                    queryInfo.getQueryType().name(),
-                    queryInfo.getId(),
-                    queryInfo.getSql(),
-                    queryInfo.getSink().orElse(""),
-                    queryInfo.getSinkTopic().orElse("")
-                )).collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public List<KsqlDbQuery> listQueries(String clusterId, String ksqlDbId) throws ExecutionException, InterruptedException {
+        return this.kafkaModule
+            .getKsqlDbClient(clusterId)
+            .get(ksqlDbId)
+            .listQueries()
+            .get()
+            .stream().map(queryInfo -> new KsqlDbQuery(
+                queryInfo.getQueryType().name(),
+                queryInfo.getId(),
+                queryInfo.getSql(),
+                queryInfo.getSink().orElse(""),
+                queryInfo.getSinkTopic().orElse("")
+            )).collect(Collectors.toList());
     }
 
     public void insertRow(String clusterId, String ksqlDbId, String streamName, Map<String, Object> keyValueRow) {
