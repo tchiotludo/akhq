@@ -46,94 +46,73 @@ class ConnectList extends Root {
     };
   }
 
-  async componentDidMount() {
-    const { searchData, pageNumber, statusFilter } = this.state;
-    const query = new URLSearchParams(this.props.location.search);
+  componentDidMount() {
+    this._initializeVars(() => {
+      this.getConnectDefinitions();
+    });
+  }
 
+  _initializeVars(callbackFunction) {
+    const query = new URLSearchParams(this.props.location.search);
     this.setState(
       {
-        searchData: { search: query.get('search') ? query.get('search') : searchData.search },
-        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber),
-        statusFilter: query.get('status') ? query.get('status') : statusFilter
+        searchData: { search: query.get('search') ?? '' },
+        pageNumber: query.get('page') ? parseInt(query.get('page')) : 1,
+        statusFilter: query.get('status') ?? ''
       },
-      () => {
-        this.getConnectDefinitions();
-      }
+      callbackFunction
     );
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
-      this.cancelAxiosRequests();
-      this.renewCancelToken();
+  componentDidUpdate(prevProps) {
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
 
-      this.setState({ pageNumber: 1 }, () => {
-        this.componentDidMount();
-      });
-    }
-
-    if (this.props.location.search !== prevProps.location.search) {
-      // Handle back navigation
-      if (this.props.router.navigationType === 'POP') {
-        let { clusterId } = this.props.params;
-        const { searchData, pageNumber } = this.state;
-        const query = new URLSearchParams(this.props.location.search);
-        this.setState(
-          {
-            selectedCluster: clusterId,
-            searchData: { search: query.get('search') },
-            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber),
-            statusFilter: query.get('status') || ''
-          },
-          () => {
-            this.getConnectDefinitions(false);
-          }
-        );
-      } else if (this.props.location.search === '') {
-        // Handle sidebar click on schema registry from the component
-        this.setState(
-          {
-            searchData: { search: '' },
-            pageNumber: 1,
-            statusFilter: ''
-          },
-          () => {
-            this.getConnectDefinitions(false);
-          }
-        );
+    if (pathnameChanged || searchChanged) {
+      if (pathnameChanged) {
+        this.cancelAxiosRequests();
+        this.renewCancelToken();
       }
+
+      this._initializeVars(() => {
+        this.getConnectDefinitions();
+      });
     }
   }
 
-  async getConnectDefinitions(replaceInNavigation = true) {
+  async getConnectDefinitions() {
     const { clusterId, connectId, pageNumber, statusFilter } = this.state;
     const { search } = this.state.searchData;
 
     this.setState({ loading: true });
 
     let response = await this.getApi(
-      uriConnectDefinitions(clusterId, connectId, search, pageNumber, statusFilter)
+      uriConnectDefinitions(clusterId, connectId, search || '', pageNumber, statusFilter)
     );
     let data = response.data;
     if (data.results) {
       this.handleData(data);
-      this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
-        let searchParams = `search=${this.state.searchData.search}&page=${pageNumber}`;
-        if (this.state.statusFilter) {
-          searchParams += `&status=${this.state.statusFilter}`;
-        }
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-            search: searchParams
-          },
-          { replace: replaceInNavigation }
-        );
-      });
+      this.setState({ selectedCluster: clusterId, totalPageNumber: data.page });
     } else {
       this.setState({ clusterId, tableData: [], loading: false });
     }
   }
+
+  navigateWithParams = (search, pageNumber, statusFilter, replaceInNavigation = false) => {
+    const { clusterId, connectId } = this.state;
+    let searchParams = `search=${search || ''}&page=${pageNumber}`;
+    if (statusFilter) {
+      searchParams += `&status=${statusFilter}`;
+    }
+
+    this.props.router.navigate(
+      {
+        pathname: `/ui/${clusterId}/connect/${connectId}`,
+        search: searchParams
+      },
+      { replace: replaceInNavigation }
+    );
+  };
 
   deleteDefinition = () => {
     const { clusterId, connectId, definitionToDelete: definition } = this.state;
@@ -203,20 +182,26 @@ class ConnectList extends Root {
   handleSearch = data => {
     const { searchData } = data;
     this.setState({ pageNumber: 1, searchData }, () => {
-      this.getConnectDefinitions(false);
+      this.navigateWithParams(searchData.search, 1, this.state.statusFilter, false);
     });
   };
 
   handleStatusFilterChange = e => {
-    this.setState({ pageNumber: 1, statusFilter: e.target.value }, () => {
-      this.getConnectDefinitions(false);
+    const nextStatusFilter = e.target.value;
+    this.setState({ pageNumber: 1, statusFilter: nextStatusFilter }, () => {
+      this.navigateWithParams(this.state.searchData.search, 1, nextStatusFilter, false);
     });
   };
 
   handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
-      this.getConnectDefinitions(replaceInNavigation);
+      this.navigateWithParams(
+        this.state.searchData.search,
+        pageNumber,
+        this.state.statusFilter,
+        replaceInNavigation
+      );
     });
   };
 

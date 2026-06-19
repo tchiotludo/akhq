@@ -8,6 +8,7 @@ import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.DefaultHttpClientConfiguration;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.http.ssl.SslConfiguration;
+import io.micronaut.http.uri.UriBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.clients.connect.dto.*;
 import org.akhq.clients.connect.error.ConnectBadRequestException;
@@ -16,7 +17,8 @@ import org.akhq.clients.connect.error.ConnectNotFoundException;
 import org.akhq.clients.connect.error.ConnectRestException;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -26,11 +28,13 @@ import java.util.*;
 public class KafkaConnectApiClient {
 
     private final BlockingHttpClient httpClient;
+    private final URI baseUri;
     private final String basicAuthUser;
     private final String basicAuthPassword;
 
-    private KafkaConnectApiClient(BlockingHttpClient httpClient, String basicAuthUser, String basicAuthPassword) {
+    private KafkaConnectApiClient(BlockingHttpClient httpClient, URI baseUri, String basicAuthUser, String basicAuthPassword) {
         this.httpClient = httpClient;
+        this.baseUri = baseUri;
         this.basicAuthUser = basicAuthUser;
         this.basicAuthPassword = basicAuthPassword;
     }
@@ -97,12 +101,18 @@ public class KafkaConnectApiClient {
                     }
                 }
 
-                BlockingHttpClient client = HttpClient.create(new URL(baseUrl), config).toBlocking();
-                return new KafkaConnectApiClient(client, basicAuthUsername, basicAuthPassword);
-            } catch (MalformedURLException e) {
+                URI uri = new URI(baseUrl);
+                BlockingHttpClient client = HttpClient.create(uri.toURL(), config).toBlocking();
+
+                return new KafkaConnectApiClient(client, new URI(baseUrl), basicAuthUsername, basicAuthPassword);
+            } catch (MalformedURLException | URISyntaxException e) {
                 throw new IllegalArgumentException("Invalid Kafka Connect URL: " + baseUrl, e);
             }
         }
+    }
+
+    private URI uri(String path) {
+        return UriBuilder.of(baseUri).path(path).build();
     }
 
     // -------------------------------------------------------------------------
@@ -113,14 +123,14 @@ public class KafkaConnectApiClient {
      * GET /connectors/{name}
      */
     public ConnectorInfo getConnector(String name) {
-        return call(HttpRequest.GET("/connectors/" + encode(name)), Argument.of(ConnectorInfo.class));
+        return call(HttpRequest.GET(uri("/connectors/" + encode(name))), Argument.of(ConnectorInfo.class));
     }
 
     /**
      * GET /connectors/{name}/status
      */
     public ConnectorStatus getConnectorStatus(String name) {
-        return call(HttpRequest.GET("/connectors/" + encode(name) + "/status"), Argument.of(ConnectorStatus.class));
+        return call(HttpRequest.GET(uri("/connectors/" + encode(name) + "/status")), Argument.of(ConnectorStatus.class));
     }
 
     /**
@@ -128,7 +138,7 @@ public class KafkaConnectApiClient {
      * Returns a map of connector name -> expanded info+status.
      */
     public Map<String, ConnectorExpanded> getConnectorsExpanded() {
-        return call(HttpRequest.GET("/connectors?expand=info&expand=status"),
+        return call(HttpRequest.GET(uri("/connectors?expand=info&expand=status")),
             Argument.mapOf(String.class, ConnectorExpanded.class));
     }
 

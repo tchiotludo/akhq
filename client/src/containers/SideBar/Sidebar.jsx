@@ -232,16 +232,9 @@ class Sidebar extends Component {
   }
 
   changeSelectedConnect(connect) {
-    this.setState({ selectedConnect: connect, showConnects: false }, () => {
-      const { selectedConnect, selectedCluster } = this.state;
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
-          selectedCluster
-        },
-        { replace: true }
-      );
-    });
+    // Navigation is handled by the <Link> inside listConnects.
+    // Only update sidebar UI state here to avoid a double navigate.
+    this.setState({ selectedConnect: connect, showConnects: false });
   }
 
   changeSelectedKsqlDB(ksqlDB) {
