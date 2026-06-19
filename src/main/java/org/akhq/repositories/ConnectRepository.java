@@ -8,8 +8,6 @@ import com.google.gson.reflect.TypeToken;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
-import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.utils.SecurityService;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.models.audit.ConnectAuditEvent;
@@ -18,7 +16,6 @@ import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.akhq.clients.connect.dto.ConnectorExpanded;
-import org.akhq.clients.connect.dto.ConnectorInfo;
 import org.akhq.clients.connect.dto.ConnectorPluginInfo;
 import org.akhq.clients.connect.dto.ConnectorPluginValidation;
 import org.akhq.clients.connect.error.ConnectBadRequestException;
@@ -140,40 +137,37 @@ public class ConnectRepository extends AbstractRepository {
         return getDefinition(clusterId, connectId, name);
     }
 
-    public boolean delete(String clusterId, String connectId, String name) {
+    public void delete(String clusterId, String connectId, String name) {
         try {
             this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .deleteConnector(name);
             auditModule.save(ConnectAuditEvent.deleteConnector(clusterId, connectId, name));
-            return true;
         } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    public boolean pause(String clusterId, String connectId, String name) {
+    public void pause(String clusterId, String connectId, String name) {
         try {
             this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .pauseConnector(name);
             auditModule.save(ConnectAuditEvent.pauseConnector(clusterId, connectId, name));
-            return true;
         } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    public boolean resume(String clusterId, String connectId, String name) {
+    public void resume(String clusterId, String connectId, String name) {
         try {
             this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .resumeConnector(name);
             auditModule.save(ConnectAuditEvent.resumeConnector(clusterId, connectId, name));
-            return true;
         } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
@@ -192,14 +186,13 @@ public class ConnectRepository extends AbstractRepository {
         }
     }
 
-    public boolean restartTask(String clusterId, String connectId, String name, int task) {
+    public void restartTask(String clusterId, String connectId, String name, int task) {
         try {
             this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnectorTask(name, task);
             auditModule.save(ConnectAuditEvent.restartTaskConnector(clusterId, connectId, name, task));
-            return true;
         } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
