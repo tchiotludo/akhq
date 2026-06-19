@@ -32,6 +32,7 @@ import Root from '../components/Root';
 import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
 import KsqlDBStatement from '../containers/KsqlDB/KsqlDBStatement';
 import KsqlDBQuery from '../containers/KsqlDB/KsqlDBQuery';
+import { withRouter } from './withRouter';
 
 class AkhqRoutes extends Root {
   state = {
@@ -93,6 +94,7 @@ class AkhqRoutes extends Root {
       sessionStorage.setItem('roles', organizeRoles(currentUserData.roles));
       this.setState({ user: currentUserData.username });
     } else {
+      this.saveReturnToOnSessionExpiry();
       sessionStorage.setItem('login', false);
       if (currentUserData.roles) {
         sessionStorage.setItem('user', 'default');
@@ -331,4 +333,4 @@ class AkhqRoutes extends Root {
   }
 }
 
-export default AkhqRoutes;
+export default withRouter(AkhqRoutes);

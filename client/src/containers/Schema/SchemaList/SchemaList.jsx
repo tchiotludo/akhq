@@ -7,10 +7,7 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/mode-protobuf';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
@@ -256,15 +253,11 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode={obj.schemaType === 'PROTOBUF' ? 'protobuf' : 'json'}
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={obj[col.accessor]}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
-                    style={{ width: '100%', minHeight: '25vh' }}
+                    style={{ width: '100%', maxHeight: '500px' }}
                   />
                 );
               },

@@ -7,9 +7,7 @@ import { SETTINGS_VALUES } from '../../utils/constants';
 import { getClusterUIOptions } from '../../utils/functions';
 import { uriLiveTail, uriTopicsName } from '../../utils/endpoints';
 import Table from '../../components/Table';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../components/AceEditor/AceEditor';
 import Root from '../../components/Root';
 import DateTime from '../../components/DateTime';
 import { EventSourcePolyfill } from 'event-source-polyfill';
@@ -483,14 +481,10 @@ class Tail extends Root {
 
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={value || 'null'}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );

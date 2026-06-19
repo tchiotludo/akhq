@@ -85,7 +85,7 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        window.location.replace(basePath + (returnTo || '/ui'));
+        window.location.replace((returnTo || basePath + '/ui'));
       } else {
         toast.error('User logged in but no roles assigned');
       }

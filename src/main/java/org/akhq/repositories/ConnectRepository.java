@@ -61,25 +61,43 @@ public class ConnectRepository extends AbstractRepository {
         ConnectNotFoundException.class,
         ConnectBadRequestException.class
     }, delay = "3s", attempts = "5")
-    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, List<String> filters)
+    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, Optional<String> status, List<String> filters)
             throws IOException, RestClientException, ExecutionException, InterruptedException{
-        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, filters);
+        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, status, filters);
 
         // I'm not sure of how to use the last parameter in this case
         // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
         return PagedList.of(definitions, pagination, list -> list);
     }
 
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, List<String> filters) {
-        Map<String, ConnectorExpanded> expanded = this.kafkaModule
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {
+        Map<String, ConnectorExpanded> definitions = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
             .getConnectorsExpanded();
 
-        return expanded.entrySet().stream()
-            .filter(e -> isSearchMatch(search, e.getKey()) && isMatchRegex(filters, e.getKey()))
-            .map(e -> new ConnectDefinition(e.getValue().getInfo(), e.getValue().getStatus()))
-            .collect(Collectors.toList());
+        Collection<ConnectorExpanded> connectorsFilteredBySearch =
+            definitions.values().stream().filter(connector -> isSearchMatch(search, connector.getInfo().getName())
+                && isMatchRegex(filters, connector.getInfo().getName())
+        ).toList();
+
+        ArrayList<ConnectDefinition> filtered = new ArrayList<>();
+        for (ConnectorDefinition item : connectorsFilteredBySearch) {
+            if (isMatchRegex(filters, item.getName())) {
+                filtered.add(new ConnectDefinition(
+                    item,
+                    unfiltered.getStatusForConnector(item.getName())
+                ));
+            }
+        }
+
+        if (status.isPresent() && !status.get().isEmpty()) {
+            filtered.removeIf(def -> def.getTasks().stream().noneMatch(
+                task -> task.getState().equalsIgnoreCase(status.get())
+            ));
+        }
+
+        return filtered;
     }
 
     public Optional<ConnectPlugin> validatePlugin(String clusterId, String connectId, String className,

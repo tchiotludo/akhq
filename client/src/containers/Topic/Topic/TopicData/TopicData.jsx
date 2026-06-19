@@ -16,12 +16,8 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
-import 'ace-builds/src-noconflict/ext-searchbox';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
@@ -720,11 +716,14 @@ class TopicData extends Root {
       renderedOptions.push(
         <Dropdown.Item
           key={option}
-          onClick={() =>
+          onClick={() => {
+            if (option === 'Newest' && this.state.endDatetime !== '') {
+              toast.warn('Sorting by newest with timestamp in large topics may not show data.');
+            }
             this.setState({ sortBy: option }, () => {
               this._searchMessages();
-            })
-          }
+            });
+          }}
         >
           <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
         </Dropdown.Item>
@@ -1078,7 +1077,7 @@ class TopicData extends Root {
                           showTimeSelect
                           value={endDatetime}
                           onChange={value => {
-                            this.setState({ endDatetime: value }, () => {
+                            this.setState({ endDatetime: value, sortBy: 'Oldest' }, () => {
                               this._searchMessages();
                             });
                           }}
@@ -1236,14 +1235,10 @@ class TopicData extends Root {
 
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={value ?? 'null'}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );
@@ -1440,20 +1435,19 @@ class TopicData extends Root {
     );
   }
 }
-const withRouterInnerRef = (WrappedComponent) => {
-
+const withRouterInnerRef = WrappedComponent => {
   class InnerComponentWithRef extends React.Component {
-      render() {
-          const { forwardRef, ...rest } = this.props;
-          return <WrappedComponent {...rest} ref={forwardRef} />;
-      }
+    render() {
+      const { forwardRef, ...rest } = this.props;
+      return <WrappedComponent {...rest} ref={forwardRef} />;
+    }
   }
 
   const ComponentWithRef = withRouter(InnerComponentWithRef, { withRef: true });
 
   return React.forwardRef((props, ref) => {
-      return <ComponentWithRef {...props} forwardRef={ref} />;
-    });
-}
+    return <ComponentWithRef {...props} forwardRef={ref} />;
+  });
+};
 
 export default withRouterInnerRef(TopicData);

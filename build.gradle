@@ -1,15 +1,15 @@
 plugins {
     // micronaut
-    id "com.gradleup.shadow" version "9.4.1"
+    id "com.gradleup.shadow" version "9.4.2"
     id "io.micronaut.application" version "4.6.2"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.5.7"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.6.4'
+    id 'org.gradle.test-retry' version '1.6.5'
     id 'com.github.psxpaul.execfork' version '0.2.2'
     id "com.github.ben-manes.versions" version "0.54.0"
-    id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
+    id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
 }
@@ -38,6 +38,9 @@ configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+    exclude group: 'io.confluent', module: 'confluent-log4j2-extensions'
     // Exclude legacy org.lz4 provider so we can consistently use the relocated at.yawk.lz4
     exclude group: 'org.lz4', module: 'lz4-java'
     // Explicitly exclude missing Confluent telemetry modules from all configurations
@@ -65,16 +68,6 @@ configurations.all {
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
     conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
-}
-
-/**********************************************************************************************************************\
- * IntelliJ IDEA
- **********************************************************************************************************************/
-idea.project.settings {
-    taskTriggers {
-        beforeBuild generateAvroJava
-        beforeRebuild generateAvroJava
-    }
 }
 
 /**********************************************************************************************************************\
@@ -144,9 +137,9 @@ dependencies {
     implementation("io.strimzi:kafka-oauth-client:0.17.1")
 
     // log
-    implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("org.slf4j:jul-to-slf4j:2.0.17")
-    implementation("org.slf4j:log4j-over-slf4j:2.0.17")
+    implementation("org.slf4j:slf4j-api:2.0.18")
+    implementation("org.slf4j:jul-to-slf4j:2.0.18")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.18")
 
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
@@ -159,11 +152,11 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.1")
 
     // jackson-module-scala
-    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.21.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.21.4")
 
     // protobuf
-    implementation("com.google.protobuf:protobuf-java:4.34.1")
-    implementation("com.google.protobuf:protobuf-java-util:4.34.1")
+    implementation("com.google.protobuf:protobuf-java:4.35.1")
+    implementation("com.google.protobuf:protobuf-java-util:4.35.1")
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
@@ -184,13 +177,13 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.6")
+    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.7")
 
     // AWS Glue serde
     implementation ("software.amazon.glue:schema-registry-serde:1.1.27")
 
 
-    implementation("io.projectreactor:reactor-core:3.8.5")
+    implementation("io.projectreactor:reactor-core:3.8.6")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }

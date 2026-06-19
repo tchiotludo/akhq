@@ -5,9 +5,7 @@ import constants from '../../../utils/constants';
 import { Link } from 'react-router-dom';
 import { uriConnectDefinitions, uriDeleteDefinition } from '../../../utils/endpoints';
 import ConfirmModal from '../../../components/Modal/ConfirmModal/ConfirmModal';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
@@ -17,6 +15,8 @@ import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import { withRouter } from '../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
+import { SETTINGS_VALUES } from '../../../utils/constants';
+import { Tooltip } from '@mui/material';
 
 class ConnectList extends Root {
   state = {
@@ -32,7 +32,8 @@ class ConnectList extends Root {
     totalPageNumber: 1,
     searchData: {
       search: ''
-    }
+    },
+    statusFilter: ''
   };
 
   static getDerivedStateFromProps(nextProps) {
@@ -45,13 +46,15 @@ class ConnectList extends Root {
     };
   }
 
-  componentDidMount() {
-    const { searchData, pageNumber } = this.state;
+  async componentDidMount() {
+    const { searchData, pageNumber, statusFilter } = this.state;
     const query = new URLSearchParams(this.props.location.search);
+
     this.setState(
       {
         searchData: { search: query.get('search') ? query.get('search') : searchData.search },
-        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber),
+        statusFilter: query.get('status') ? query.get('status') : statusFilter
       },
       () => {
         this.getConnectDefinitions();
@@ -79,7 +82,8 @@ class ConnectList extends Root {
           {
             selectedCluster: clusterId,
             searchData: { search: query.get('search') },
-            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber),
+            statusFilter: query.get('status') || ''
           },
           () => {
             this.getConnectDefinitions(false);
@@ -90,7 +94,8 @@ class ConnectList extends Root {
         this.setState(
           {
             searchData: { search: '' },
-            pageNumber: 1
+            pageNumber: 1,
+            statusFilter: ''
           },
           () => {
             this.getConnectDefinitions(false);
@@ -101,22 +106,26 @@ class ConnectList extends Root {
   }
 
   async getConnectDefinitions(replaceInNavigation = true) {
-    const { clusterId, connectId, pageNumber } = this.state;
+    const { clusterId, connectId, pageNumber, statusFilter } = this.state;
     const { search } = this.state.searchData;
 
     this.setState({ loading: true });
 
     let response = await this.getApi(
-      uriConnectDefinitions(clusterId, connectId, search, pageNumber)
+      uriConnectDefinitions(clusterId, connectId, search, pageNumber, statusFilter)
     );
     let data = response.data;
     if (data.results) {
       this.handleData(data);
       this.setState({ selectedCluster: clusterId, totalPageNumber: data.page }, () => {
+        let searchParams = `search=${this.state.searchData.search}&page=${pageNumber}`;
+        if (this.state.statusFilter) {
+          searchParams += `&status=${this.state.statusFilter}`;
+        }
         this.props.router.navigate(
           {
             pathname: `/ui/${this.state.clusterId}/connect/${this.state.connectId}`,
-            search: `search=${this.state.searchData.search}&page=${pageNumber}`
+            search: searchParams
           },
           { replace: replaceInNavigation }
         );
@@ -198,6 +207,12 @@ class ConnectList extends Root {
     });
   };
 
+  handleStatusFilterChange = e => {
+    this.setState({ pageNumber: 1, statusFilter: e.target.value }, () => {
+      this.getConnectDefinitions(false);
+    });
+  };
+
   handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
     this.setState({ pageNumber: pageNumber }, () => {
@@ -237,7 +252,7 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber } =
+    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber, statusFilter } =
       this.state;
     const roles = this.state.roles || {};
 
@@ -252,6 +267,22 @@ class ConnectList extends Root {
             pagination={pageNumber}
             doSubmit={this.handleSearch}
           />
+
+          <Tooltip title="Shows connectors with at least one task in the selected state">
+            <select
+              className="form-select ms-2"
+              value={statusFilter}
+              onChange={this.handleStatusFilterChange}
+              style={{ width: 'auto' }}
+            >
+              <option value="">All statuses</option>
+              {Object.values(SETTINGS_VALUES.CONNECT.TASK_STATUS_FILTERS).map(status => (
+                <option key={status} value={status}>
+                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </Tooltip>
 
           <Pagination
             pageNumber={pageNumber}
@@ -282,14 +313,10 @@ class ConnectList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode="json"
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={JSON.stringify(JSON.parse(obj[col.accessor]), null, 2)}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
                     style={{ width: '100%', minHeight: '25vh' }}
                   />
                 );
