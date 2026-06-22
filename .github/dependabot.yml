@@ -21,6 +21,11 @@ updates:
     labels:
       - "dependency-upgrade"
     open-pull-requests-limit: 50
+    ignore:
+      # Holding off on gradle-wrapper 9.6.0 for now. See JAVA-457.
+      - dependency-name: gradle-wrapper
+        versions:
+          - 9.6.0
 
   # Maintain dependencies for Npm modules
   - package-ecosystem: "npm"
