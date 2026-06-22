@@ -15,7 +15,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Setup
       - name: Setup Node
@@ -59,7 +59,7 @@ jobs:
 
       # Clone helm charts
       - name: Clone helm charts
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: helm
           path: tmp-helm
