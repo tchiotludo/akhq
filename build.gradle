@@ -1,7 +1,7 @@
 plugins {
     // micronaut
     id "com.gradleup.shadow" version "9.4.2"
-    id "io.micronaut.application" version "4.6.2"
+    id "io.micronaut.application" version "5.0.1"
 
     // akhq
     id "com.gorylenko.gradle-git-properties" version "2.5.7"
@@ -113,8 +113,8 @@ dependencies {
     implementation("io.micronaut.cache:micronaut-cache-core")
     implementation("io.micronaut.cache:micronaut-cache-caffeine")
 
-    implementation("io.micronaut.rxjava2:micronaut-rxjava2")
-    implementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty")
+    implementation("io.micronaut.rxjava2:micronaut-rxjava2:${micronautRxjava2Version}")
+    implementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty:${micronautRxjava2Version}")
 
     // kafka
     implementation("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
