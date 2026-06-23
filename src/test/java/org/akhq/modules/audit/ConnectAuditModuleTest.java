@@ -71,7 +71,6 @@ public class ConnectAuditModuleTest extends AbstractTest {
         assertEquals("connect-1", event.getConnectClusterId());
     }
 
-    @Test
     @RetryingTest(maxAttempts = 3, suspendForMs = 1000)
     @Order(2)
     public void update() throws IOException {

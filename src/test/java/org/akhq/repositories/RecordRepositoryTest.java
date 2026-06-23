@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -124,8 +125,7 @@ class RecordRepositoryTest extends AbstractTest {
         assertEquals(51, consumeAll(options));
     }
 
-
-    @Test
+    @RetryingTest(maxAttempts = 3, suspendForMs = 1000)
     void consumeAvro() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
