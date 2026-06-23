@@ -26,20 +26,22 @@ public class ConnectDefinition {
     private List<TaskDefinition> tasks;
 
     public ConnectDefinition(ConnectorInfo connectorInfo, ConnectorStatus connectorStatus) {
-        this.name = connectorInfo.getName();
-        this.type = connectorInfo.getType();
-        this.configs = connectorInfo.getConfig();
-        this.tasks = connectorInfo.getTasks()
-            .stream()
-            .map(taskRef -> connectorStatus.getTasks()
+        if (connectorInfo != null) {
+            this.name = connectorInfo.getName();
+            this.type = connectorInfo.getType();
+            this.configs = connectorInfo.getConfig();
+            this.tasks = connectorInfo.getTasks()
                 .stream()
-                .filter(taskState -> taskState.getId() == taskRef.getTask())
-                .findFirst()
-                .map(taskState -> new TaskDefinition(taskRef, taskState))
-                .orElse(null)
-            )
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .map(taskRef -> connectorStatus.getTasks()
+                    .stream()
+                    .filter(taskState -> taskState.getId() == taskRef.getTask())
+                    .findFirst()
+                    .map(taskState -> new TaskDefinition(taskRef, taskState))
+                    .orElse(null)
+                )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        }
     }
 
     public String getShortClassName() {
@@ -90,11 +92,15 @@ public class ConnectDefinition {
         private String trace;
 
         public TaskDefinition(ConnectorInfo.TaskRef taskRef, ConnectorStatus.TaskState taskState) {
-            this.connector = taskRef.getConnector();
-            this.id = taskRef.getTask();
-            this.state = taskState.getState();
-            this.workerId = taskState.getWorkerId();
-            this.trace = taskState.getTrace();
+            if (taskRef != null) {
+                this.connector = taskRef.getConnector();
+                this.id = taskRef.getTask();
+            }
+            if (taskState != null) {
+                this.state = taskState.getState();
+                this.workerId = taskState.getWorkerId();
+                this.trace = taskState.getTrace();
+            }
         }
     }
 }

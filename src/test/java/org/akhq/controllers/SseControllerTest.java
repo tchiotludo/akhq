@@ -1,12 +1,14 @@
 package org.akhq.controllers;
 
 import io.micronaut.http.HttpRequest;
-import io.micronaut.rxjava2.http.client.sse.RxSseClient;
+import io.micronaut.http.client.sse.SseClient;
+import io.micronaut.http.sse.Event;
 import io.micronaut.runtime.server.EmbeddedServer;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.akhq.models.Record;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 
 import java.net.URI;
 import java.util.List;
@@ -25,19 +27,19 @@ class SseControllerTest extends AbstractTest {
 
     @Test
     void searchApi() {
-        RxSseClient sseClient = embeddedServer.getApplicationContext().createBean(RxSseClient.class, embeddedServer.getURL());
+        SseClient sseClient = embeddedServer.getApplicationContext().createBean(SseClient.class, embeddedServer.getURL());
 
         HttpRequest<?> request = HttpRequest.GET(URI.create(BASE_URL + "/" + KafkaTestCluster.TOPIC_HUGE + "/data/search?searchByKey=key_100_C"))
             .basicAuth("admin", "pass");
 
-        List<Record> results = sseClient
-            .eventStream(request, TopicController.SearchRecord.class)
-            .toList()
-            .blockingGet()
+        List<Record> records = Flux.from(sseClient.eventStream(request, TopicController.SearchRecord.class))
+            .collectList()
+            .block()
             .stream()
-            .flatMap(r -> r.getData() != null && r.getData().getRecords() != null ? r.getData().getRecords().stream() : Stream.empty())
+            .map(Event::getData)
+            .flatMap(r -> r != null && r.getRecords() != null ? r.getRecords().stream() : Stream.empty())
             .collect(Collectors.toList());
 
-        assertThat(results.size(), is(3));
+        assertThat(records.size(), is(3));
     }
 }

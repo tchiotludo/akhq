@@ -10,14 +10,14 @@ import io.micronaut.security.config.SecurityConfigurationProperties;
 import io.micronaut.security.filters.AuthenticationFetcher;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.token.config.TokenConfiguration;
-import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.HeaderAuth;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimProvider;
 import org.akhq.models.security.ClaimProviderType;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.net.InetSocketAddress;
 import java.util.*;
@@ -90,7 +90,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
             request.getHeaders().getAll(headerAuth.getGroupsHeader()) :
             Collections.emptyList();
 
-        return Flowable
+        return Mono
             .fromCallable(() -> {
                 List<String> groups = groupsHeader
                     .stream()
@@ -110,10 +110,10 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
                 return Optional.of(claimProvider.generateClaim(claim));
 
             })
-            .subscribeOn(Schedulers.io())
-            .switchMap(t -> {
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(t -> {
                 if (t.isPresent()) {
-                    return Flowable.just(new ServerAuthentication(
+                    return Mono.just(new ServerAuthentication(
                         userHeaders.get(),
                         List.of(SecurityRule.IS_AUTHENTICATED),
                         Map.of("groups", t.get().getGroups())
@@ -122,7 +122,7 @@ public class HeaderAuthenticationFetcher implements AuthenticationFetcher<HttpRe
                     if (log.isDebugEnabled()) {
                         log.debug("Could not authenticate {}", userHeaders.get());
                     }
-                    return Flowable.empty();
+                    return Mono.empty();
                 }
             });
     }

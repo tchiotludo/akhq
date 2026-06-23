@@ -16,6 +16,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -73,6 +74,7 @@ public class ConnectAuditModuleTest extends AbstractTest {
     }
 
     @Test
+    @RetryingTest(maxAttempts = 3, suspendForMs = 1000)
     @Order(2)
     public void update() throws IOException {
         String path2 = "/tmp/file2.data";

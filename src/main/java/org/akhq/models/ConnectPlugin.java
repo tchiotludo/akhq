@@ -22,20 +22,25 @@ public class ConnectPlugin {
     private List<Definition> definitions;
 
     public ConnectPlugin(ConnectorPluginInfo pluginInfo, ConnectorPluginValidation validation) {
-        this.className = pluginInfo.getClassName();
-        this.type = pluginInfo.getType();
-        this.version = pluginInfo.getVersion();
-        this.definitions = Stream.concat(
-            validation.getConfigs()
-                .stream()
-                .map(config -> new Definition(config.getDefinition())),
-            registryDefinition()
-        )
-            .sorted(Comparator.comparing(Definition::getGroup, Comparator.comparing((String s) -> s.equals("Others"))
-                    .thenComparing(Comparator.naturalOrder()))
-                .thenComparing(Definition::getOrder)
-            )
-            .collect(Collectors.toList());
+        if (pluginInfo != null) {
+            this.className = pluginInfo.getClassName();
+            this.type = pluginInfo.getType();
+            this.version = pluginInfo.getVersion();
+        }
+        if (validation != null) {
+            this.definitions = Stream.concat(
+                    validation.getConfigs()
+                        .stream()
+                        .map(config -> new Definition(config.getDefinition())),
+                    registryDefinition()
+                )
+                .sorted(
+                    Comparator.comparing(Definition::getGroup, Comparator.comparing((String s) -> s.equals("Others"))
+                            .thenComparing(Comparator.naturalOrder()))
+                        .thenComparing(Definition::getOrder)
+                )
+                .collect(Collectors.toList());
+        }
     }
 
     public Stream<Definition> registryDefinition() {
