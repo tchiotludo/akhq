@@ -108,33 +108,20 @@ class TopicData extends Root {
   }
 
   componentDidMount = () => {
-    this._checkProps();
+    this._syncStateFromLocationAndLoad();
   };
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    // Handle back navigation
-    if (
-      this.props.location.search !== prevProps.location.search &&
-      this.props.router.navigationType === 'POP'
-    ) {
-      const { clusterId, topicId } = this.props.params;
-      const query = new URLSearchParams(this.props.location.search);
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
 
-      this.setState(
-        {
-          selectedCluster: clusterId,
-          selectedTopic: topicId,
-          sortBy: query.get('sort'),
-          partition: query.get('partition'),
-          datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : '',
-          endDatetime: query.get('endTimestamp') ? new Date(query.get('endTimestamp')) : '',
-          offsetsSearch: query.get('after'),
-          search: this._buildSearchFromQueryString(query)
-        },
-        () => {
-          this._searchMessages(false, true);
-        }
-      );
+    if (pathnameChanged || searchChanged) {
+      if (!this.props.location.pathname.endsWith('/data')) {
+        return;
+      }
+
+      this._stopEventSource(false);
+      this._syncStateFromLocationAndLoad();
     }
   }
 
@@ -143,10 +130,11 @@ class TopicData extends Root {
     this._stopEventSource();
   };
 
-  async _checkProps() {
+  async _syncStateFromLocationAndLoad() {
     const { clusterId, topicId } = this.props.params;
     const query = new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
+
     this.setState(
       prevState => ({
         selectedCluster: clusterId,
@@ -175,20 +163,35 @@ class TopicData extends Root {
             : prevState.dateTimeFormat
       }),
       () => {
-        if (query.get('single') !== null) {
-          this._getSingleMessage(query.get('partition'), query.get('offset'));
-          this.setState({ canDownload: true });
-        } else if (Object.keys(this.state.offsets).length) {
-          this._getMessages(false, true);
-        } else {
-          this._searchMessages(false, true);
-        }
+        this._loadFromCurrentLocation(query);
       }
     );
   }
 
+  _loadFromCurrentLocation = query => {
+    if (query.get('single') !== null) {
+      this._getSingleMessage(query.get('partition'), query.get('offset'));
+      this.setState({ canDownload: true });
+    } else if (Object.keys(this.state.offsets).length) {
+      this.setState({ canDownload: false }, () => {
+        this._getMessages(false);
+      });
+    } else {
+      this.setState({ canDownload: false }, () => {
+        this._searchMessages(false);
+      });
+    }
+  };
+
   _buildSearchFromQueryString(query) {
-    const { search } = this.state;
+    const search = {
+      key: { text: '', type: 'C' },
+      value: { text: '', type: 'C' },
+      headerKey: { text: '', type: 'C' },
+      headerValue: { text: '', type: 'C' },
+      keySubject: { text: '', type: 'C' },
+      valueSubject: { text: '', type: 'C' }
+    };
 
     Object.keys(search).forEach(value => {
       const searchFilter = query.get(`searchBy${capitalizeTxt(value)}`);
@@ -204,7 +207,7 @@ class TopicData extends Root {
     return search;
   }
 
-  _startEventSource = (changePage, replaceInNavigation = false) => {
+  _startEventSource = changePage => {
     let { selectedCluster, selectedTopic, nextPage } = this.state;
 
     let lastPercentVal = 0.0;
@@ -215,11 +218,6 @@ class TopicData extends Root {
       { messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 },
       () => {
         const filters = this._buildFilters();
-        if (changePage) {
-          this._setUrlHistory(filters + '&after=' + nextPage, replaceInNavigation);
-        } else {
-          this._setUrlHistory(filters, replaceInNavigation);
-        }
         this.eventSource = new EventSourcePolyfill(
           uriTopicDataSearch(
             selectedCluster,
@@ -282,7 +280,7 @@ class TopicData extends Root {
     );
   };
 
-  _stopEventSource = () => {
+  _stopEventSource = (resetLoading = true) => {
     if (this.eventSource) {
       this.eventSource.close();
     }
@@ -290,7 +288,7 @@ class TopicData extends Root {
     this.cancelAxiosRequests();
     this.renewCancelToken();
 
-    this.setState({ isSearching: false, loading: false });
+    this.setState({ isSearching: false, ...(resetLoading ? { loading: false } : {}) });
   };
 
   _clearSearch = () => {
@@ -306,7 +304,7 @@ class TopicData extends Root {
         }
       },
       () => {
-        this._searchMessages();
+        this._navigateWithCurrentFilters(false);
       }
     );
   };
@@ -362,18 +360,20 @@ class TopicData extends Root {
     }
   }
 
-  _searchMessages(changePage = false, replaceInNavigation = false) {
-    this._stopEventSource();
+  _searchMessages(changePage = false) {
+    this._stopEventSource(false);
     this.setState({ loading: true });
     if (this._hasAnyFilterFilled()) {
-      this._startEventSource(changePage, replaceInNavigation);
+      this._startEventSource(changePage);
     } else {
-      this._getMessages(changePage, replaceInNavigation);
+      this._getMessages(changePage);
     }
   }
 
   _getSingleMessage(partition, offset) {
     const { selectedCluster, selectedTopic } = this.state;
+
+    this.setState({ loading: true });
 
     const requests = [
       this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
@@ -383,8 +383,10 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  _getMessages = (changePage = false, replaceInNavigation = false) => {
+  _getMessages = (changePage = false) => {
     const { selectedCluster, selectedTopic, nextPage } = this.state;
+
+    this.setState({ loading: true });
 
     const filters = this._buildFilters();
     const requests = [
@@ -395,15 +397,6 @@ class TopicData extends Root {
     ];
 
     this._fetchMessages(requests, changePage);
-
-    if (changePage) {
-      this._setUrlHistory(
-        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
-        replaceInNavigation
-      );
-    } else {
-      this._setUrlHistory(filters, replaceInNavigation);
-    }
   };
 
   _fetchMessages(requests, changePage = false) {
@@ -690,6 +683,27 @@ class TopicData extends Root {
     );
   }
 
+  _navigateWithCurrentFilters = (replaceInNavigation = false) => {
+    this.setState({ loading: true }, () => {
+      this._setUrlHistory(this._buildFilters(), replaceInNavigation);
+    });
+  };
+
+  _navigateToNextPage = (replaceInNavigation = false) => {
+    const { nextPage } = this.state;
+
+    if (!nextPage) {
+      return;
+    }
+
+    this.setState({ loading: true }, () => {
+      this._setUrlHistory(
+        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
+        replaceInNavigation
+      );
+    });
+  };
+
   _redirectToSchema(id) {
     const { selectedCluster, selectedTopic } = this.state;
 
@@ -699,8 +713,7 @@ class TopicData extends Root {
           {
             pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
             schemaId: response.data.subject
-          },
-          { replace: true }
+          }
         );
       } else {
         toast.warn(`Unable to find the registry schema with id  ${id} !`);
@@ -721,7 +734,7 @@ class TopicData extends Root {
               toast.warn('Sorting by newest with timestamp in large topics may not show data.');
             }
             this.setState({ sortBy: option }, () => {
-              this._searchMessages();
+              this._navigateWithCurrentFilters(false);
             });
           }}
         >
@@ -742,7 +755,7 @@ class TopicData extends Root {
           key={option}
           onClick={() =>
             this.setState({ partition: option }, () => {
-              this._searchMessages();
+              this._navigateWithCurrentFilters(false);
             })
           }
         >
@@ -855,7 +868,7 @@ class TopicData extends Root {
           <button
             className="btn btn-primary inline-block search"
             type="button"
-            onClick={() => this._searchMessages()}
+            onClick={() => this._navigateWithCurrentFilters(false)}
           >
             {isSearching ? (
               <FontAwesomeIcon icon={faSpinner} spin={true} />
@@ -982,7 +995,7 @@ class TopicData extends Root {
                       pageNumber: pageNumber + 1
                     },
                     () => {
-                      this._searchMessages(true);
+                      this._navigateToNextPage(false);
                     }
                   );
                 }}
@@ -1052,7 +1065,7 @@ class TopicData extends Root {
                           label="Start"
                           onClear={() => {
                             this.setState({ datetime: '' }, () => {
-                              this._searchMessages();
+                              this._navigateWithCurrentFilters(false);
                             });
                           }}
                           showDateTimeInput
@@ -1060,7 +1073,7 @@ class TopicData extends Root {
                           value={datetime}
                           onChange={value => {
                             this.setState({ datetime: value }, () => {
-                              this._searchMessages();
+                              this._navigateWithCurrentFilters(false);
                             });
                           }}
                         />
@@ -1070,7 +1083,7 @@ class TopicData extends Root {
                           label="End"
                           onClear={() => {
                             this.setState({ endDatetime: '' }, () => {
-                              this._searchMessages();
+                              this._navigateWithCurrentFilters(false);
                             });
                           }}
                           showDateTimeInput
@@ -1078,7 +1091,7 @@ class TopicData extends Root {
                           value={endDatetime}
                           onChange={value => {
                             this.setState({ endDatetime: value, sortBy: 'Oldest' }, () => {
-                              this._searchMessages();
+                              this._navigateWithCurrentFilters(false);
                             });
                           }}
                         />
@@ -1119,7 +1132,7 @@ class TopicData extends Root {
                                 }
                               }
                               this.setState({ offsetsSearch }, () => {
-                                this._searchMessages();
+                                this._navigateWithCurrentFilters(false);
                               });
                             }}
                           >
