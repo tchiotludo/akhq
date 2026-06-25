@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 class ConnectRepositoryTest extends AbstractTest {
 
+    private static final Duration CONNECT_OPERATION_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration CONNECT_OPERATION_POLL_INTERVAL = Duration.ofMillis(1);
+
     @Inject
     @InjectMocks
     private ConnectRepository repository;
@@ -60,8 +63,7 @@ class ConnectRepositoryTest extends AbstractTest {
         String path1 = ConnectRepository.class.getClassLoader().getResource("application.yml").getPath();
         String path2 = ConnectRepository.class.getClassLoader().getResource("logback.xml").getPath();
 
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-1",
             "ConnectRepositoryTest1",
             ImmutableMap.of(
@@ -71,8 +73,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-2",
             "ConnectRepositoryTest2",
             ImmutableMap.of(
@@ -82,7 +83,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() -> {
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() -> {
                 List<ConnectDefinition> all1 =
                     repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(),
                         List.of());
@@ -104,8 +105,7 @@ class ConnectRepositoryTest extends AbstractTest {
             "ConnectRepositoryTest2"
         ).getConfigs().get("file"));
 
-        repository.update(
-            KafkaTestCluster.CLUSTER_ID,
+        updateWithRetry(
             "connect-1",
             "ConnectRepositoryTest1",
             ImmutableMap.of(
@@ -115,8 +115,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        repository.update(
-            KafkaTestCluster.CLUSTER_ID,
+        updateWithRetry(
             "connect-2",
             "ConnectRepositoryTest2",
             ImmutableMap.of(
@@ -126,7 +125,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() ->
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() ->
             assertEquals(path2, repository.getDefinition(
                 KafkaTestCluster.CLUSTER_ID,
                 "connect-1",
@@ -142,7 +141,7 @@ class ConnectRepositoryTest extends AbstractTest {
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1","ConnectRepositoryTest1");
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-2","ConnectRepositoryTest2");
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() -> {
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() -> {
             assertEquals(0,
                 repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(),
                     List.of()).size());
@@ -152,19 +151,10 @@ class ConnectRepositoryTest extends AbstractTest {
         });
     }
 
-    private void mockApplicationContext() {
-        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
-        DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
-        when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
-        when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
-        when(applicationContext.getBean(SecurityService.class)).thenReturn(securityService);
-    }
-
     @Test
     void getFilteredList() {
 
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-1",
             "prefixed.Matching1",
             ImmutableMap.of(
@@ -174,8 +164,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-1",
             "prefixed.Matching2",
             ImmutableMap.of(
@@ -185,8 +174,7 @@ class ConnectRepositoryTest extends AbstractTest {
             )
         );
 
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-1",
             "not.Matching3",
             ImmutableMap.of(
@@ -198,7 +186,7 @@ class ConnectRepositoryTest extends AbstractTest {
 
         mockApplicationContext();
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() -> {
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() -> {
                 List<ConnectDefinition> filtered =
                     repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(),
                         List.of("^prefixed.*$"));
@@ -214,9 +202,8 @@ class ConnectRepositoryTest extends AbstractTest {
     @Test
     void getFilteredBySearchList() {
 
-        repository.create(
-                KafkaTestCluster.CLUSTER_ID,
-                "connect-1",
+        createWithRetry(
+            "connect-1",
                 "prefixed.Matching1",
                 ImmutableMap.of(
                         "connector.class", "FileStreamSinkConnector",
@@ -225,9 +212,8 @@ class ConnectRepositoryTest extends AbstractTest {
                 )
         );
 
-        repository.create(
-                KafkaTestCluster.CLUSTER_ID,
-                "connect-1",
+        createWithRetry(
+            "connect-1",
                 "prefixed.Matching2",
                 ImmutableMap.of(
                         "connector.class", "FileStreamSinkConnector",
@@ -238,7 +224,7 @@ class ConnectRepositoryTest extends AbstractTest {
 
         mockApplicationContext();
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() -> {
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() -> {
                 List<ConnectDefinition> notFiltered =
                     repository.getDefinitions(KafkaTestCluster.CLUSTER_ID, "connect-1", Optional.empty(), Optional.empty(),
                         List.of());
@@ -255,8 +241,7 @@ class ConnectRepositoryTest extends AbstractTest {
 
     @Test
     void getFilteredByStatusList() {
-        repository.create(
-            KafkaTestCluster.CLUSTER_ID,
+        createWithRetry(
             "connect-1",
             "statusTest1",
             ImmutableMap.of(
@@ -268,7 +253,7 @@ class ConnectRepositoryTest extends AbstractTest {
 
         mockApplicationContext();
 
-        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(1)).untilAsserted(() -> {
+        await().atMost(CONNECT_OPERATION_TIMEOUT).pollInterval(CONNECT_OPERATION_POLL_INTERVAL).untilAsserted(() -> {
             List<ConnectDefinition> all = repository.getDefinitions(
                 KafkaTestCluster.CLUSTER_ID,
                 "connect-1",
@@ -294,4 +279,25 @@ class ConnectRepositoryTest extends AbstractTest {
         repository.delete(KafkaTestCluster.CLUSTER_ID, "connect-1", "statusTest1");
     }
 
+    private void mockApplicationContext() {
+        Authentication auth = new ServerAuthentication("test", List.of(), Map.of());
+        DefaultSecurityService securityService = Mockito.mock(DefaultSecurityService.class);
+        when(securityService.getAuthentication()).thenReturn(Optional.of(auth));
+        when(applicationContext.containsBean(SecurityService.class)).thenReturn(true);
+        when(applicationContext.getBean(SecurityService.class)).thenReturn(securityService);
+    }
+
+    private void createWithRetry(String connectId, String name, Map<String, String> configs) {
+        await()
+            .atMost(CONNECT_OPERATION_TIMEOUT)
+            .pollInterval(CONNECT_OPERATION_POLL_INTERVAL)
+            .untilAsserted(() -> repository.create(KafkaTestCluster.CLUSTER_ID, connectId, name, configs));
+    }
+
+    private void updateWithRetry(String connectId, String name, Map<String, String> configs) {
+        await()
+            .atMost(CONNECT_OPERATION_TIMEOUT)
+            .pollInterval(CONNECT_OPERATION_POLL_INTERVAL)
+            .untilAsserted(() -> repository.update(KafkaTestCluster.CLUSTER_ID, connectId, name, configs));
+    }
 }
