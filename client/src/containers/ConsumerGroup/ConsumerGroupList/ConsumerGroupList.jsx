@@ -39,10 +39,13 @@ class ConsumerGroupList extends Root {
 
   navigateWithQuery = (search, pageNumber, replace = false) => {
     const { clusterId } = this.props.params;
+    const searchParams = new URLSearchParams();
+    searchParams.set('search', search || '');
+    searchParams.set('page', pageNumber);
     this.props.router.navigate(
       {
         pathname: `/ui/${clusterId}/group`,
-        search: `search=${search || ''}&page=${pageNumber}`
+        search: searchParams.toString()
       },
       { replace }
     );

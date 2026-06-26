@@ -46,10 +46,13 @@ class SchemaList extends Root {
 
   navigateWithQuery = (search, pageNumber, replace = false) => {
     const { clusterId } = this.props.params;
+    const searchParams = new URLSearchParams();
+    searchParams.set('search', search || '');
+    searchParams.set('page', pageNumber);
     this.props.router.navigate(
       {
         pathname: `/ui/${clusterId}/schema`,
-        search: `search=${search || ''}&page=${pageNumber}`
+        search: searchParams.toString()
       },
       { replace }
     );
