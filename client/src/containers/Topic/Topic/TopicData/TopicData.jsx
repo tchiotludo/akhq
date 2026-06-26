@@ -172,12 +172,9 @@ class TopicData extends Root {
     if (query.get('single') !== null) {
       this._getSingleMessage(query.get('partition'), query.get('offset'));
       this.setState({ canDownload: true });
-    } else if (Object.keys(this.state.offsets).length) {
-      this.setState({ canDownload: false }, () => {
-        this._getMessages(false);
-      });
     } else {
       this.setState({ canDownload: false }, () => {
+        // Delegate mode selection to _searchMessages so active filters always use /data/search.
         this._searchMessages(false);
       });
     }
@@ -671,7 +668,7 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  _setUrlHistory(filters, replaceInNavigation = true) {
+  _navigateWithFilters(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
 
     this.props.router.navigate(
@@ -685,7 +682,7 @@ class TopicData extends Root {
 
   _navigateWithCurrentFilters = (replaceInNavigation = false) => {
     this.setState({ loading: true }, () => {
-      this._setUrlHistory(this._buildFilters(), replaceInNavigation);
+      this._navigateWithFilters(this._buildFilters(), replaceInNavigation);
     });
   };
 
@@ -697,10 +694,16 @@ class TopicData extends Root {
     }
 
     this.setState({ loading: true }, () => {
-      this._setUrlHistory(
-        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
-        replaceInNavigation
-      );
+      const currentParams = new URLSearchParams(this.props.location.search);
+
+      if (nextPage.includes('?')) {
+        const nextQuery = nextPage.substring(nextPage.indexOf('?') + 1);
+        this._navigateWithFilters(nextQuery, replaceInNavigation);
+      } else {
+        // EventSource search returns token-only `after` values (e.g. 0-106_1-55).
+        currentParams.set('after', nextPage);
+        this._navigateWithFilters(currentParams.toString(), replaceInNavigation);
+      }
     });
   };
 
