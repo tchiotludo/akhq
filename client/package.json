@@ -51,7 +51,7 @@
     "@babel/core": "^8.0.1",
     "@babel/eslint-parser": "^8.0.1",
     "@babel/preset-react": "^8.0.1",
-    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/fontawesome-svg-core": "^7.3.0",
     "@fortawesome/free-solid-svg-icons": "^7.3.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
     "@mui/material": "^9.1.1",
