@@ -311,7 +311,7 @@ public class Record {
             return Optional.ofNullable(consumerOffsetsDecoder.decode(this.bytesKey, payload).value())
                 .map(value -> value.message().toString())
                 .orElse("null");
-        } catch (Throwable throwable) {
+        } catch (Exception | LinkageError throwable) {
             return decodeConsumerOffsetsLegacy(payload, isKey);
         }
     }
