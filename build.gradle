@@ -57,6 +57,8 @@ configurations.all {
         force("org.apache.kafka:kafka-raft:" + kafkaVersion)
         force("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
         force("org.apache.kafka:kafka-group-coordinator-api:" + kafkaVersion)
+        force("org.apache.kafka:kafka-transaction-coordinator:" + kafkaVersion)
+        force("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
@@ -68,6 +70,9 @@ configurations.all {
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
     conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
     conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
+    // Exclude problematic transitive dependencies from ksqldb that don't exist in Confluent 8.x
+    conf?.exclude group: 'io.confluent.cloud', module: 'events-schema'
+    conf?.exclude group: 'io.confluent.rm', module: 'rm-core-schemas'
 }
 
 /**********************************************************************************************************************\
@@ -117,7 +122,10 @@ dependencies {
     implementation("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
     implementation("org.apache.kafka:kafka-clients:" + kafkaVersion)
     implementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
+    implementation("org.apache.kafka:kafka-server-common:" + kafkaVersion)
     implementation("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-transaction-coordinator:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
     implementation("at.yawk.lz4:lz4-java:1.11.0")
@@ -238,7 +246,9 @@ dependencies {
     testImplementation("io.confluent:kafka-schema-registry:${confluentVersion}:tests")
     testImplementation("org.apache.kafka:connect-runtime:${kafkaVersion}")
     testImplementation("org.apache.kafka:connect-file:${kafkaVersion}")
-    testImplementation("io.confluent.ksql:ksqldb-rest-app:${confluentVersion}")
+    testImplementation("io.confluent.ksql:ksqldb-rest-app:${confluentVersion}") {
+        exclude group: "io.netty", module: "netty-tcnative-fips-boringssl-static"
+    }
 
     testImplementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
     testImplementation("io.confluent:kafka-streams-avro-serde:${confluentVersion}")
