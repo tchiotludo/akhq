@@ -20,6 +20,8 @@ import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.models.Schema;
+import org.akhq.models.audit.RecordAuditEvent;
+import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
@@ -57,6 +59,9 @@ public class RecordRepository extends AbstractRepository {
     public static final String SEARCH_SPLIT_REGEX = " (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private AuditModule auditModule;
 
     @Inject
     private ConfigRepository configRepository;
@@ -519,6 +524,7 @@ public class RecordRepository extends AbstractRepository {
             produceResults.add(
                 produce(clusterId, topic, value, headers, key, partition, timestamp, keySchema, valueSchema));
         }
+        auditModule.save(RecordAuditEvent.produce(clusterId, topic, produceResults.size()));
         return produceResults;
     }
 
@@ -575,6 +581,7 @@ public class RecordRepository extends AbstractRepository {
                     RecordsToDelete.beforeOffset(partition.getLastOffset()));
         });
         deleteRecords(clusterId, recordsToDelete);
+        auditModule.save(RecordAuditEvent.empty(clusterId, topicName));
     }
 
     public void emptyTopicByTimestamp(String clusterId,
@@ -593,7 +600,7 @@ public class RecordRepository extends AbstractRepository {
             recordsToDelete.put(topicPartition, RecordsToDelete.beforeOffset(offsetAndTimestamp.offset()));
         });
         deleteRecords(clusterId, recordsToDelete);
-
+        auditModule.save(RecordAuditEvent.empty(clusterId, topicName));
     }
 
     private void deleteRecords(String clusterId, Map<TopicPartition, RecordsToDelete> recordsToDelete) throws InterruptedException, ExecutionException {
@@ -647,12 +654,14 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public RecordMetadata delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
-        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+        RecordMetadata recordMetadata = kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
             key,
             null
         )).get();
+        auditModule.save(RecordAuditEvent.delete(clusterId, topic, partition));
+        return recordMetadata;
     }
 
     public Flux<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {

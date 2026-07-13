@@ -1,6 +1,7 @@
 package org.akhq.modules.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
@@ -10,6 +11,7 @@ import org.akhq.KafkaTestCluster;
 import org.akhq.models.Config;
 import org.akhq.models.audit.AuditEvent;
 import org.akhq.models.audit.ConsumerGroupAuditEvent;
+import org.akhq.models.audit.RecordAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
 import org.akhq.modules.KafkaModule;
 import org.akhq.repositories.*;
@@ -29,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -154,6 +157,91 @@ class KafkaAuditModuleTest extends AbstractTest {
 
     }
 
+    @Test
+    void recordAudit() throws ExecutionException, InterruptedException, IOException, RestClientException {
+        String generatedString = generateRandomString();
+
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, generatedString, 1, (short) 1, Collections.emptyList());
+
+        // Single produce event tests
+        recordRepository.produce(
+            KafkaTestCluster.CLUSTER_ID,
+            generatedString,
+            Optional.of("value"),
+            Collections.emptyList(),
+            Optional.of("key"),
+            Optional.of(0),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            false,
+            Optional.empty()
+        );
+
+        var produceEvent = (RecordAuditEvent) searchAuditEvent(AuditEvent.ActionType.RECORD_PRODUCE, generatedString);
+
+        assertNotNull(produceEvent);
+        assertEquals(generatedString, produceEvent.getTopicName());
+        assertEquals(KafkaTestCluster.CLUSTER_ID, produceEvent.getClusterId());
+        // The produce event records the action, not a per-record partition (records may span partitions)
+        assertNull(produceEvent.getPartition());
+        assertEquals(1, produceEvent.getRecordCount());
+
+        // Record delete event tests
+        recordRepository.delete(KafkaTestCluster.CLUSTER_ID, generatedString, 0, "key".getBytes());
+
+        var deleteEvent = (RecordAuditEvent) searchAuditEvent(AuditEvent.ActionType.RECORD_DELETE, generatedString);
+
+        assertNotNull(deleteEvent);
+        assertEquals(generatedString, deleteEvent.getTopicName());
+        assertEquals(KafkaTestCluster.CLUSTER_ID, deleteEvent.getClusterId());
+        assertEquals(0, deleteEvent.getPartition());
+
+        // Empty topic event tests
+        recordRepository.emptyTopic(KafkaTestCluster.CLUSTER_ID, generatedString);
+
+        var emptyEvent = (RecordAuditEvent) searchAuditEvent(AuditEvent.ActionType.RECORD_EMPTY, generatedString);
+
+        assertNotNull(emptyEvent);
+        assertEquals(generatedString, emptyEvent.getTopicName());
+        assertEquals(KafkaTestCluster.CLUSTER_ID, emptyEvent.getClusterId());
+
+        // A second topic to cover the multi-message produce and empty-by-timestamp paths
+        String multiTopic = generateRandomString();
+        topicRepository.create(KafkaTestCluster.CLUSTER_ID, multiTopic, 1, (short) 1, Collections.emptyList());
+
+        // Multi-message produce: recordCount must equal the number of split key/value pairs
+        recordRepository.produce(
+            KafkaTestCluster.CLUSTER_ID,
+            multiTopic,
+            Optional.of("key1=value1\nkey2=value2"),
+            Collections.emptyList(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            true,
+            Optional.of("=")
+        );
+
+        var multiProduceEvent = (RecordAuditEvent) searchAuditEvent(AuditEvent.ActionType.RECORD_PRODUCE, multiTopic);
+
+        assertNotNull(multiProduceEvent);
+        assertEquals(multiTopic, multiProduceEvent.getTopicName());
+        assertNull(multiProduceEvent.getPartition());
+        assertEquals(2, multiProduceEvent.getRecordCount());
+
+        // Empty by timestamp must also emit a RECORD_EMPTY event
+        recordRepository.emptyTopicByTimestamp(KafkaTestCluster.CLUSTER_ID, multiTopic, 0L);
+
+        var emptyByTimestampEvent = (RecordAuditEvent) searchAuditEvent(AuditEvent.ActionType.RECORD_EMPTY, multiTopic);
+
+        assertNotNull(emptyByTimestampEvent);
+        assertEquals(multiTopic, emptyByTimestampEvent.getTopicName());
+        assertEquals(KafkaTestCluster.CLUSTER_ID, emptyByTimestampEvent.getClusterId());
+    }
+
     private AuditEvent searchAuditEvent(AuditEvent.ActionType actionType, String topicName) throws IOException {
         var consumer = kafkaModule.getConsumer(KafkaTestCluster.CLUSTER_ID);
         consumer.assign(List.of(new TopicPartition(AUDIT_TOPIC_NAME, 0)));
@@ -173,6 +261,12 @@ class KafkaAuditModuleTest extends AbstractTest {
 
                 if (payload.getType().equals("TOPIC")) {
                     var event = (TopicAuditEvent) payload;
+                    if (event.getTopicName().equals(topicName) && event.getActionType().equals(actionType)) {
+                        consumer.close();
+                        return payload;
+                    }
+                } else if (payload.getType().equals("RECORD")) {
+                    var event = (RecordAuditEvent) payload;
                     if (event.getTopicName().equals(topicName) && event.getActionType().equals(actionType)) {
                         consumer.close();
                         return payload;
