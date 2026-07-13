@@ -25,7 +25,7 @@
     "react-router-dom": "^7.17.0",
     "react-timeago": "^8.3.0",
     "react-toastify": "^11.1.0",
-    "@uiw/react-codemirror": "^4.25.10",
+    "@uiw/react-codemirror": "^4.25.11",
     "@uiw/codemirror-theme-copilot": "^4.25.10",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-sql": "^6.10.0",
