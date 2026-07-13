@@ -3,11 +3,14 @@ package org.akhq.repositories;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.retry.annotation.Retryable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.akhq.configs.Connection;
 import org.akhq.models.Partition;
 import org.akhq.models.Topic;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 
@@ -19,9 +22,13 @@ import java.util.stream.Collectors;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 
 @Singleton
+@Slf4j
 public class TopicRepository extends AbstractRepository {
     @Inject
     private AbstractKafkaWrapper kafkaWrapper;
+
+    @Inject
+    private KafkaModule kafkaModule;
 
     @Inject
     private LogDirRepository logDirRepository;
@@ -52,18 +59,65 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
-        List<String> all = all(clusterId, view, search, filters);
+        TopicCandidates candidates = topicCandidates(clusterId, view, search, filters);
 
-        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
+        if (candidates.allowlistActive()) {
+            AllowlistedTopicDescriptions descriptions = describeExistingAllowlistedTopics(clusterId, candidates.names());
+
+            return PagedList.of(
+                descriptions.names(),
+                pagination,
+                topicList -> this.findAllowlistedTopics(clusterId, topicList, descriptions.descriptions())
+            );
+        }
+
+        return PagedList.of(candidates.names(), pagination, topicList -> this.findByName(clusterId, topicList));
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
-        return kafkaWrapper.listTopics(clusterId)
+        TopicCandidates candidates = topicCandidates(clusterId, view, search, filters);
+
+        if (candidates.allowlistActive()) {
+            return describeExistingAllowlistedTopics(clusterId, candidates.names()).names();
+        }
+
+        return candidates.names();
+    }
+
+    private TopicCandidates topicCandidates(String clusterId, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException {
+        List<String> topicDiscoveryAllowlist = topicDiscoveryAllowlist(clusterId);
+
+        List<String> names = topicDiscoveryAllowlist.isEmpty() ?
+            kafkaWrapper.listTopics(clusterId)
+                .stream()
+                .map(TopicListing::name)
+                .collect(Collectors.toList()) :
+            topicDiscoveryAllowlist;
+
+        return new TopicCandidates(
+            !topicDiscoveryAllowlist.isEmpty(),
+            names
+                .stream()
+                .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
+                .filter(name -> isListViewMatch(view, name))
+                .sorted(Comparator.comparing(String::toLowerCase))
+                .collect(Collectors.toList())
+        );
+    }
+
+    private List<String> topicDiscoveryAllowlist(String clusterId) {
+        Connection.TopicDiscovery topicDiscovery = kafkaModule.getConnection(clusterId).getTopicDiscovery();
+
+        if (topicDiscovery == null || topicDiscovery.getAllowlist() == null) {
+            return Collections.emptyList();
+        }
+
+        return topicDiscovery.getAllowlist()
             .stream()
-            .map(TopicListing::name)
-            .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
-            .filter(name -> isListViewMatch(view, name))
-            .sorted(Comparator.comparing(String::toLowerCase))
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .distinct()
             .collect(Collectors.toList());
     }
 
@@ -88,25 +142,98 @@ public class TopicRepository extends AbstractRepository {
     }
 
     public List<Topic> findByName(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
-        ArrayList<Topic> list = new ArrayList<>();
         Set<Map.Entry<String, TopicDescription>> topicDescriptions = kafkaWrapper.describeTopics(clusterId, topics).entrySet();
         Map<String, List<Partition.Offsets>> topicOffsets = kafkaWrapper.describeTopicsOffsets(clusterId, topics);
 
+        return buildTopics(clusterId, topicDescriptions, topicOffsets);
+    }
+
+    private List<Topic> findAllowlistedTopics(String clusterId, List<String> topics, Map<String, TopicDescription> topicDescriptions) throws ExecutionException, InterruptedException {
+        List<String> existingTopics = topics.stream()
+            .filter(topicDescriptions::containsKey)
+            .collect(Collectors.toList());
+        Map<String, List<Partition.Offsets>> topicOffsets = existingTopics.isEmpty() ?
+            Collections.emptyMap() :
+            kafkaWrapper.describeTopicsOffsets(clusterId, existingTopics);
+        Set<Map.Entry<String, TopicDescription>> descriptions = existingTopics.stream()
+            .map(topic -> new AbstractMap.SimpleEntry<>(topic, topicDescriptions.get(topic)))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return buildTopics(clusterId, descriptions, topicOffsets);
+    }
+
+    private AllowlistedTopicDescriptions describeExistingAllowlistedTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+        Map<String, TopicDescription> topicDescriptions = kafkaWrapper.describeExistingTopics(clusterId, topics);
+
+        topics.stream()
+            .filter(topic -> !topicDescriptions.containsKey(topic))
+            .forEach(topic -> log.warn("Topic configured in topic-discovery.allowlist does not exist for cluster {}: {}", clusterId, topic));
+
+        List<String> existingNames = topics.stream()
+            .filter(topicDescriptions::containsKey)
+            .collect(Collectors.toList());
+
+        return new AllowlistedTopicDescriptions(existingNames, topicDescriptions);
+    }
+
+    private List<Topic> buildTopics(
+        String clusterId,
+        Set<Map.Entry<String, TopicDescription>> topicDescriptions,
+        Map<String, List<Partition.Offsets>> topicOffsets
+    ) throws ExecutionException, InterruptedException {
+        ArrayList<Topic> list = new ArrayList<>();
+
         for (Map.Entry<String, TopicDescription> description : topicDescriptions) {
-                list.add(
-                    new Topic(
-                        description.getValue(),
-                        logDirRepository.findByTopic(clusterId, description.getValue().name()),
-                        topicOffsets.get(description.getValue().name()),
-                        isInternal(description.getValue().name()),
-                        isStream(description.getValue().name())
-                    )
-                );
+            list.add(
+                new Topic(
+                    description.getValue(),
+                    logDirRepository.findByTopic(clusterId, description.getValue().name()),
+                    topicOffsets.get(description.getValue().name()),
+                    isInternal(description.getValue().name()),
+                    isStream(description.getValue().name())
+                )
+            );
         }
 
         list.sort(Comparator.comparing(Topic::getName));
 
         return list;
+    }
+
+    private static class TopicCandidates {
+        private final boolean allowlistActive;
+        private final List<String> names;
+
+        private TopicCandidates(boolean allowlistActive, List<String> names) {
+            this.allowlistActive = allowlistActive;
+            this.names = names;
+        }
+
+        private boolean allowlistActive() {
+            return allowlistActive;
+        }
+
+        private List<String> names() {
+            return names;
+        }
+    }
+
+    private static class AllowlistedTopicDescriptions {
+        private final List<String> names;
+        private final Map<String, TopicDescription> descriptions;
+
+        private AllowlistedTopicDescriptions(List<String> names, Map<String, TopicDescription> descriptions) {
+            this.names = names;
+            this.descriptions = descriptions;
+        }
+
+        private List<String> names() {
+            return names;
+        }
+
+        private Map<String, TopicDescription> descriptions() {
+            return descriptions;
+        }
     }
 
     private boolean isInternal(String name) {
