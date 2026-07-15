@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum SchemaRegistryType {
     CONFLUENT((byte) 0x0),
     TIBCO((byte) 0x80),
-    GLUE((byte) 0x0);
+    GLUE((byte) 0x0),
+    AZURE((byte) 0x0);
 
     private byte magicByte;
 

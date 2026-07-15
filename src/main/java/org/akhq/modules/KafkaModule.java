@@ -1,5 +1,8 @@
 package org.akhq.modules;
 
+import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
+import com.azure.identity.DefaultAzureCredential;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.google.common.collect.ImmutableMap;
 import io.confluent.kafka.schemaregistry.SchemaProvider;
 import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
@@ -376,5 +379,41 @@ public class KafkaModule {
         }
 
         return this.ksqlDbClient.get(clusterId);
+    }
+
+    private final Map<String, com.azure.data.schemaregistry.SchemaRegistryClient> azureSchemaRegistryClient = new HashMap<>();
+    public com.azure.data.schemaregistry.SchemaRegistryClient getAzureSchemaRegistryClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
+        }
+        if(!this.azureSchemaRegistryClient.containsKey(clusterId)){
+            Connection connection = this.getConnection(clusterId);
+            Connection.SchemaRegistry schemaRegistry = connection.getSchemaRegistry();
+            // Get endpoint
+            String namespace = schemaRegistry.getUrl();
+            String fullyQualifiedNamespace = namespace.contains(".")
+                ? namespace
+                : namespace + ".servicebus.windows.net";
+
+            //build credential from DefaultAzureCredentialBuilder
+            DefaultAzureCredential credential = new DefaultAzureCredentialBuilder().build();
+            // Create Schema Registry client
+            com.azure.data.schemaregistry.SchemaRegistryClient client = new  SchemaRegistryClientBuilder()
+                .fullyQualifiedNamespace(fullyQualifiedNamespace)
+                .credential(credential)
+                .buildClient();
+            azureSchemaRegistryClient.put(clusterId, client);
+        }
+        return azureSchemaRegistryClient.get(clusterId);
+    }
+
+    public String getAzureGroupeName (String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
+        }
+        Connection connection = this.getConnection(clusterId);
+        Connection.SchemaRegistry schemaRegistry = connection.getSchemaRegistry();
+        Map<String, String> properties = schemaRegistry.getProperties();
+        return properties.get("schema.group");
     }
 }
