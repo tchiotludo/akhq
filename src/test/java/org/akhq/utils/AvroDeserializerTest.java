@@ -190,4 +190,63 @@ class AvroDeserializerTest {
 
         assertThat(result, is(defaultValues));
     }
+
+    @Test
+    void testMapWithNullableUnionValueContainingNull() {
+        String type = "{"
+            + "\"name\": \"root\","
+            + "\"type\": \"record\","
+            + "\"fields\": ["
+            + "    {"
+            + "        \"name\": \"props\","
+            + "        \"type\": {\"type\": \"map\", \"values\": [\"string\", \"null\"]}"
+            + "    }"
+            + "    ]"
+            + "}";
+        Schema schema = new Schema.Parser().parse(type);
+
+        Map<String, Object> mapValue = new HashMap<>();
+        mapValue.put("present", "value");
+        mapValue.put("absent", null);
+
+        GenericRecord record = new org.apache.avro.generic.GenericData.Record(schema);
+        record.put("props", mapValue);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("props", mapValue);
+
+        Map<String, Object> result = AvroDeserializer.recordDeserializer(record);
+
+        assertThat(result, is(expected));
+    }
+
+    @Test
+    void testArrayWithNullableUnionElementContainingNull() {
+        String type = "{"
+            + "\"name\": \"root\","
+            + "\"type\": \"record\","
+            + "\"fields\": ["
+            + "    {"
+            + "        \"name\": \"items\","
+            + "        \"type\": {\"type\": \"array\", \"items\": [\"string\", \"null\"]}"
+            + "    }"
+            + "    ]"
+            + "}";
+        Schema schema = new Schema.Parser().parse(type);
+
+        List<Object> items = new java.util.ArrayList<>();
+        items.add("a");
+        items.add(null);
+        items.add("b");
+
+        GenericRecord record = new org.apache.avro.generic.GenericData.Record(schema);
+        record.put("items", items);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("items", items);
+
+        Map<String, Object> result = AvroDeserializer.recordDeserializer(record);
+
+        assertThat(result, is(expected));
+    }
 }
