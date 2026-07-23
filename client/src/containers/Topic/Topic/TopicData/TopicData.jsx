@@ -13,6 +13,7 @@ import {
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
+import PageSize from '../../../../components/PageSize/PageSize';
 import DatePicker from '../../../../components/DatePicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
@@ -64,6 +65,7 @@ class TopicData extends Root {
     pageNumber: 1,
     nextPage: '',
     recordCount: 0,
+    currentPageSize: 50,
     showFilters: '',
     showDeleteModal: false,
     showDownloadModal: false,
@@ -152,6 +154,9 @@ class TopicData extends Root {
           : this.state.endDatetime,
         offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
         search: this._buildSearchFromQueryString(query),
+        currentPageSize: query.get('uiPageSize')
+          ? parseInt(query.get('uiPageSize'), 10)
+          : this.state.currentPageSize,
         offsets: query.get('offset')
           ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
           : query.get('after')
@@ -312,13 +317,14 @@ class TopicData extends Root {
   }
 
   _buildFilters() {
-    const { sortBy, partition, datetime, endDatetime, offsetsSearch, search } = this.state;
+    const { sortBy, partition, datetime, endDatetime, offsetsSearch, search, currentPageSize } = this.state;
 
     const filters = [];
 
     if (sortBy) filters.push(`sort=${sortBy}`);
     if (offsetsSearch) filters.push(`after=${offsetsSearch}`);
     if (partition) filters.push(`partition=${partition}`);
+    if (currentPageSize) filters.push(`size=${currentPageSize}`);
 
     if (datetime) {
       filters.push(`timestamp=${encodeURIComponent(this._buildTimestampFilter(datetime))}`);
@@ -668,6 +674,12 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
+  handlePageSizeChangeSubmission = value => {
+    this.setState({ currentPageSize: value, pageNumber: 1 }, () => {
+      this._navigateWithCurrentFilters(true);
+    });
+  };
+
   _navigateWithFilters(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
 
@@ -948,7 +960,8 @@ class TopicData extends Root {
       canDownload,
       percent,
       loading,
-      roles
+      roles,
+      currentPageSize
     } = this.state;
 
     let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
@@ -985,6 +998,10 @@ class TopicData extends Root {
 
           <nav className="pagination-data">
             <div>
+              <PageSize
+                currentPageSize={currentPageSize}
+                onChange={this.handlePageSizeChangeSubmission}
+              />
               <Pagination
                 pageNumber={pageNumber}
                 totalRecords={recordCount}
