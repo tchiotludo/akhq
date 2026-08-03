@@ -115,13 +115,22 @@ class TopicRepositoryTest extends AbstractTest {
 
     @Test
     void search() throws ExecutionException, InterruptedException {
-        assertEquals(1, topicRepository.list(
+        // Use "rando" (a substring specific to the TOPIC_RANDOM fixture) instead of "ra do".
+        // "ra do" is an AND-search of two very short tokens ("ra" AND "do") that can accidentally
+        // match topic names created as side effects of other tests when they share the same JVM
+        // (e.g. KsqlDB-generated changelog/repartition topics), which made this test flaky.
+        List<Topic> matched = topicRepository.list(
             KafkaTestCluster.CLUSTER_ID,
             new Pagination(100, URIBuilder.empty(), 1),
             TopicRepository.TopicListView.ALL,
-            Optional.of("ra do"),
+            Optional.of("rando"),
             List.of()
-        ).size());
+        );
+        assertEquals(
+            List.of(KafkaTestCluster.TOPIC_RANDOM),
+            matched.stream().map(Topic::getName).toList(),
+            "search(\"rando\") should match only the '" + KafkaTestCluster.TOPIC_RANDOM + "' fixture topic"
+        );
     }
 
     @Test
