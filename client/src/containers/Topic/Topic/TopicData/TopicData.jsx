@@ -349,19 +349,9 @@ class TopicData extends Root {
   }
 
   async _handlePageSizeChange(newSize) {
-    const { clusterId } = this.props.params;
     this.setState({ size: newSize, nextPage: '' }, () => {
-      this._searchMessages(false, true);
+      this._navigateWithCurrentFilters(false);
     });
-    const currentUiOptions = await getClusterUIOptions(clusterId);
-    const newUiOptions = {
-      ...currentUiOptions,
-      topicData: {
-        ...currentUiOptions.topicData,
-        size: newSize
-      }
-    };
-    setUIOptions(clusterId, newUiOptions);
   }
 
   _buildTimestampFilter(datetime) {
@@ -1010,6 +1000,10 @@ class TopicData extends Root {
 
           <nav className="pagination-data">
             <div>
+              <PageSize
+                  currentPageSize={size}
+                  onChange={value => this._handlePageSizeChange(value)}
+              />
               <Pagination
                 pageNumber={pageNumber}
                 totalRecords={recordCount}
@@ -1031,10 +1025,6 @@ class TopicData extends Root {
                 showTotalPageNumber={false}
               />
             </div>
-            <PageSize
-              currentPageSize={size}
-              onChange={value => this._handlePageSizeChange(value)}
-            />
           </nav>
 
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
