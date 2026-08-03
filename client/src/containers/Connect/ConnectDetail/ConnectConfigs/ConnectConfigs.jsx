@@ -8,8 +8,6 @@ import {
 import constants from '../../../../utils/constants';
 import Form from '../../../../components/Form/Form';
 import filter from 'lodash/filter';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from '../../../../utils/withRouter';

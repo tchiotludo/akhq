@@ -1,14 +1,12 @@
 import React from 'react';
 import Table from '../../../../components/Table/Table';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import SearchBar from '../../../../components/SearchBar';
 import Pagination from '../../../../components/Pagination';
 import { handlePageChange, getPageNumber } from '../../../../utils/pagination';
 import { uriKsqlDBQueries } from '../../../../utils/endpoints';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import { Link } from 'react-router-dom';
 import { withRouter } from '../../../../utils/withRouter';
 
@@ -185,14 +183,10 @@ class KsqlDBQueries extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode="sql"
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={obj[col.accessor]}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
                     style={{ width: '100%', minHeight: '25vh' }}
                   />
                 );

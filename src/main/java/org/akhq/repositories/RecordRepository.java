@@ -9,7 +9,6 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.sse.Event;
-import io.reactivex.Flowable;
 import java.time.Duration;
 import java.util.stream.StreamSupport;
 import lombok.*;
@@ -21,6 +20,8 @@ import org.akhq.models.Partition;
 import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.models.Schema;
+import org.akhq.models.audit.RecordAuditEvent;
+import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
@@ -37,6 +38,7 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +59,9 @@ public class RecordRepository extends AbstractRepository {
     public static final String SEARCH_SPLIT_REGEX = " (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
     @Inject
     private KafkaModule kafkaModule;
+
+    @Inject
+    private AuditModule auditModule;
 
     @Inject
     private ConfigRepository configRepository;
@@ -519,6 +524,7 @@ public class RecordRepository extends AbstractRepository {
             produceResults.add(
                 produce(clusterId, topic, value, headers, key, partition, timestamp, keySchema, valueSchema));
         }
+        auditModule.save(RecordAuditEvent.produce(clusterId, topic, produceResults.size()));
         return produceResults;
     }
 
@@ -575,6 +581,7 @@ public class RecordRepository extends AbstractRepository {
                     RecordsToDelete.beforeOffset(partition.getLastOffset()));
         });
         deleteRecords(clusterId, recordsToDelete);
+        auditModule.save(RecordAuditEvent.empty(clusterId, topicName));
     }
 
     public void emptyTopicByTimestamp(String clusterId,
@@ -593,7 +600,7 @@ public class RecordRepository extends AbstractRepository {
             recordsToDelete.put(topicPartition, RecordsToDelete.beforeOffset(offsetAndTimestamp.offset()));
         });
         deleteRecords(clusterId, recordsToDelete);
-
+        auditModule.save(RecordAuditEvent.empty(clusterId, topicName));
     }
 
     private void deleteRecords(String clusterId, Map<TopicPartition, RecordsToDelete> recordsToDelete) throws InterruptedException, ExecutionException {
@@ -647,18 +654,20 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public RecordMetadata delete(String clusterId, String topic, Integer partition, byte[] key) throws ExecutionException, InterruptedException {
-        return kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
+        RecordMetadata recordMetadata = kafkaModule.getProducer(clusterId).send(new ProducerRecord<>(
             topic,
             partition,
             key,
             null
         )).get();
+        auditModule.save(RecordAuditEvent.delete(clusterId, topic, partition));
+        return recordMetadata;
     }
 
-    public Flowable<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
+    public Flux<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
         AtomicInteger matchesCount = new AtomicInteger();
 
-        return Flowable.generate(() -> {
+        return Flux.generate(() -> {
             Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options);
 
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
@@ -686,9 +695,8 @@ public class RecordRepository extends AbstractRepository {
 
             // end
             if (searchEvent == null || searchEvent.emptyPoll >= 1) {
-                emitter.onNext(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
-                emitter.onComplete();
-                consumer.close();
+                emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
+                emitter.complete();
 
                 return new SearchState(consumer, searchEvent);
             }
@@ -737,20 +745,20 @@ public class RecordRepository extends AbstractRepository {
 
             // No more records, poll was empty: stop here
             if (currentEvent.emptyPoll == 1) {
-                emitter.onNext(currentEvent.end(searchEvent.getAfter()));
+                emitter.next(currentEvent.end(searchEvent.getAfter()));
             }
             // More records than expected, send the records and then stop
             else if (matchesCount.get() >= options.getSize()) {
                 currentEvent.emptyPoll = 666;
-                emitter.onNext(currentEvent.progress(options));
+                emitter.next(currentEvent.progress(options));
             }
             // Continue to search
             else {
-                emitter.onNext(currentEvent.progress(options));
+                emitter.next(currentEvent.progress(options));
             }
 
             return new SearchState(consumer, currentEvent);
-        });
+        }, searchState -> searchState.getConsumer().close());
     }
 
     private boolean matchFilters(BaseOptions options, Record record) {
@@ -959,8 +967,8 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
-    public Flowable<Event<TailEvent>> tail(String clusterId, TailOptions options) {
-        return Flowable.generate(() -> {
+    public Flux<Event<TailEvent>> tail(String clusterId, TailOptions options) {
+        return Flux.generate(() -> {
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
             Map<String, Topic> topics = topicRepository.findByName(clusterId, options.topics).stream()
@@ -989,7 +997,7 @@ public class RecordRepository extends AbstractRepository {
             }
 
             return new TailState(consumer, new TailEvent(), topics);
-        }, (state, subscriber) -> {
+        }, (state, emitter) -> {
             ConsumerRecords<byte[], byte[]> records = this.poll(state.getConsumer());
             TailEvent tailEvent = state.getTailEvent();
 
@@ -1019,11 +1027,11 @@ public class RecordRepository extends AbstractRepository {
             }
 
             tailEvent.records = list;
-            subscriber.onNext(Event.of(tailEvent).name("tailBody"));
+            emitter.next(Event.of(tailEvent).name("tailBody"));
 
             state.tailEvent = tailEvent;
             return state;
-        });
+        }, tailState -> tailState.getConsumer().close());
     }
 
     public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {

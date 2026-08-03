@@ -1,8 +1,10 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.kafka.common.TopicPartitionInfo;
 
@@ -11,6 +13,7 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class Partition {
     private Node.Partition leader;
@@ -21,6 +24,7 @@ public class Partition {
     private long firstOffset;
     private long lastOffset;
 
+    @JsonIgnore
     public Partition(String topic, TopicPartitionInfo partitionInfo, List<LogDir> logDir, Offsets offsets) {
         this.id = partitionInfo.partition();
         this.topic = topic;

@@ -8,8 +8,6 @@ import io.micronaut.security.authentication.AuthenticationRequest;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.provider.HttpRequestReactiveAuthenticationProvider;
 import io.micronaut.security.rules.SecurityRule;
-import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.BasicAuth;
@@ -19,6 +17,8 @@ import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
@@ -42,13 +42,13 @@ public class BasicAuthAuthenticationProvider<B> implements HttpRequestReactiveAu
 
         // User not found
         if(optionalBasicAuth.isEmpty()){
-            return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
+            return Mono.just(new AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND));
         }
         BasicAuth auth = optionalBasicAuth.get();
 
         // Invalid password
         if (!auth.isValidPassword((String) authenticationRequest.getSecret())) {
-            return Flowable.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
+            return Mono.just(new AuthenticationFailed(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
         }
 
         ClaimRequest request = ClaimRequest.builder()
@@ -58,15 +58,15 @@ public class BasicAuthAuthenticationProvider<B> implements HttpRequestReactiveAu
             .groups(auth.getGroups())
             .build();
 
-        // Use Flowable.fromCallable() with IO scheduler to move blocking call off event loop
-        return Flowable.fromCallable(() -> {
+        // Use Mono.fromCallable() with a bounded elastic scheduler to move blocking call off the event loop
+        return Mono.fromCallable(() -> {
             ClaimResponse claim = claimProvider.generateClaim(request);
             return AuthenticationResponse.success(auth.getUsername(), List.of(SecurityRule.IS_AUTHENTICATED), Map.of("groups", claim.getGroups()));
         })
-        .subscribeOn(Schedulers.io())
-        .onErrorReturn(e -> {
+        .subscribeOn(Schedulers.boundedElastic())
+        .onErrorResume(e -> {
             String claimProviderClass = claimProvider.getClass().getName();
-            return new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage());
+            return Mono.just(new AuthenticationFailed("Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
         });
     }
 }

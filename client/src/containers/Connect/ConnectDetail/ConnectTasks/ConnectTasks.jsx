@@ -11,7 +11,7 @@ import {
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import Root from '../../../../components/Root';
 import { withRouter } from '../../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -220,14 +220,10 @@ class ConnectTasks extends Root {
                 extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="text"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={obj.trace}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );

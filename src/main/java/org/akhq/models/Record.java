@@ -11,13 +11,11 @@ import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
-import kafka.coordinator.group.GroupMetadataManager;
-import kafka.coordinator.transaction.BaseKey;
-import kafka.coordinator.transaction.TransactionLog;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
+import org.akhq.utils.ConsumerOffsetsDecoder;
 import org.akhq.utils.ContentUtils;
 import org.akhq.utils.ProtobufToJsonDeserializer;
 import org.apache.avro.generic.GenericRecord;
@@ -26,6 +24,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.coordinator.transaction.TransactionLog;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -101,6 +100,8 @@ public class Record {
     private Boolean truncated;
     @JsonIgnore
     private Deserializer awsGlueKafkaDeserializer;
+    @JsonIgnore
+    private final ConsumerOffsetsDecoder consumerOffsetsDecoder = new ConsumerOffsetsDecoder();
 
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         this.MAGIC_BYTE = schemaRegistryType.getMagicByte();
@@ -238,11 +239,7 @@ public class Record {
             }
         } else if (topic.isInternalTopic() && topic.getName().equals("__consumer_offsets")) {
             try {
-                if (isKey) {
-                    return GroupMetadataManager.readMessageKey(ByteBuffer.wrap(payload)).key().toString();
-                } else {
-                    return GroupMetadataManager.readOffsetMessageValue(ByteBuffer.wrap(payload)).toString();
-                }
+                return decodeConsumerOffsets(payload, isKey);
             } catch (Exception exception) {
                 this.exceptions.add(Optional.ofNullable(exception.getMessage())
                         .filter(msg -> !msg.isBlank())
@@ -252,15 +249,7 @@ public class Record {
             }
         } else if (topic.isInternalTopic() && topic.getName().equals("__transaction_state")) {
             try {
-                if (isKey) {
-                    BaseKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
-                    return avroToJsonSerializer.getMapper().writeValueAsString(
-                        Map.of("transactionalId", txnKey.transactionalId(), "version", txnKey.version())
-                    );
-                } else {
-                    BaseKey txnKey = TransactionLog.readTxnRecordKey(ByteBuffer.wrap(this.bytesKey));
-                    return avroToJsonSerializer.getMapper().writeValueAsString(TransactionLog.readTxnRecordValue(txnKey.transactionalId(), ByteBuffer.wrap(payload)));
-                }
+                return decodeTransactionState(payload, isKey);
             } catch (Exception exception) {
                 this.exceptions.add(Optional.ofNullable(exception.getMessage())
                     .filter(msg -> !msg.isBlank())
@@ -312,6 +301,43 @@ public class Record {
             .stream()
             .map(KeyValue::getValue)
             .collect(Collectors.toList());
+    }
+
+    private String decodeConsumerOffsets(byte[] payload, boolean isKey) throws Exception {
+        try {
+            if (isKey) {
+                return consumerOffsetsDecoder.decode(payload, null).key().toString();
+            }
+            return Optional.ofNullable(consumerOffsetsDecoder.decode(this.bytesKey, payload).value())
+                .map(value -> value.message().toString())
+                .orElse("null");
+        } catch (Exception | LinkageError throwable) {
+            return decodeConsumerOffsetsLegacy(payload, isKey);
+        }
+    }
+
+    private String decodeConsumerOffsetsLegacy(byte[] payload, boolean isKey) throws Exception {
+        Class<?> groupMetadataManagerClass = Class.forName("kafka.coordinator.group.GroupMetadataManager");
+        if (isKey) {
+            Object key = groupMetadataManagerClass
+                .getMethod("readMessageKey", ByteBuffer.class)
+                .invoke(null, ByteBuffer.wrap(payload));
+            return key.getClass().getMethod("key").invoke(key).toString();
+        }
+        Object value = groupMetadataManagerClass
+            .getMethod("readOffsetMessageValue", ByteBuffer.class)
+            .invoke(null, ByteBuffer.wrap(payload));
+        return value.toString();
+    }
+
+    private String decodeTransactionState(byte[] payload, boolean isKey) throws Exception {
+        if (isKey) {
+            return TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
+        }
+        if (this.bytesKey == null) {
+            return new String(payload);
+        }
+        return TransactionLog.read(ByteBuffer.wrap(this.bytesKey), ByteBuffer.wrap(payload)).toString();
     }
 
     private String getAvroSchemaId(byte[] payload) {

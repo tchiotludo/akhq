@@ -8,8 +8,6 @@ import com.google.gson.reflect.TypeToken;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.retry.annotation.Retryable;
-import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.utils.SecurityService;
 import org.akhq.models.ConnectDefinition;
 import org.akhq.models.ConnectPlugin;
 import org.akhq.models.audit.ConnectAuditEvent;
@@ -17,10 +15,12 @@ import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
-import org.sourcelab.kafka.connect.apiclient.request.dto.*;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
+import org.akhq.clients.connect.dto.ConnectorExpanded;
+import org.akhq.clients.connect.dto.ConnectorPluginInfo;
+import org.akhq.clients.connect.dto.ConnectorPluginValidation;
+import org.akhq.clients.connect.error.ConnectBadRequestException;
+import org.akhq.clients.connect.error.ConnectConflictException;
+import org.akhq.clients.connect.error.ConnectNotFoundException;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -44,58 +44,47 @@ public class ConnectRepository extends AbstractRepository {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class,
-        InvalidRequestException.class
+        ConnectConflictException.class,
+        ConnectNotFoundException.class,
+        ConnectBadRequestException.class
     }, delay = "3s", attempts = "5")
     public ConnectDefinition getDefinition(String clusterId, String connectId, String name) {
+        var client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
         return new ConnectDefinition(
-            this.kafkaModule
-                .getConnectRestClient(clusterId)
-                .get(connectId)
-                .getConnector(name),
-            this.kafkaModule
-                .getConnectRestClient(clusterId)
-                .get(connectId)
-                .getConnectorStatus(name)
+            client.getConnector(name),
+            client.getConnectorStatus(name)
         );
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class,
-        InvalidRequestException.class
+        ConnectConflictException.class,
+        ConnectNotFoundException.class,
+        ConnectBadRequestException.class
     }, delay = "3s", attempts = "5")
-    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, List<String> filters)
+    public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, Optional<String> status, List<String> filters)
             throws IOException, RestClientException, ExecutionException, InterruptedException{
-        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, filters);
+        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, status, filters);
 
         // I'm not sure of how to use the last parameter in this case
         // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
         return PagedList.of(definitions, pagination, list -> list);
     }
 
-    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, List<String> filters) {
-        ConnectorsWithExpandedMetadata unfiltered = this.kafkaModule
+    public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {
+        Map<String, ConnectorExpanded> expanded = this.kafkaModule
             .getConnectRestClient(clusterId)
             .get(connectId)
-            .getConnectorsWithAllExpandedMetadata();
+            .getConnectorsExpanded();
 
-        Collection<ConnectorDefinition> definitions = unfiltered.getAllDefinitions();
+        List<ConnectDefinition> filtered = expanded.entrySet().stream()
+            .filter(e -> isSearchMatch(search, e.getKey()) && isMatchRegex(filters, e.getKey()))
+            .map(e -> new ConnectDefinition(e.getValue().getInfo(), e.getValue().getStatus()))
+            .collect(Collectors.toList());
 
-        Collection<ConnectorDefinition> connectorsFilteredBySearch =
-            definitions.stream().filter(connector -> isSearchMatch(search, connector.getName())
-                && isMatchRegex(filters, connector.getName())
-        ).collect(Collectors.toList());
-
-        ArrayList<ConnectDefinition> filtered = new ArrayList<>();
-        for (ConnectorDefinition item : connectorsFilteredBySearch) {
-            if (isMatchRegex(filters, item.getName())) {
-                filtered.add(new ConnectDefinition(
-                    item,
-                    unfiltered.getStatusForConnector(item.getName())
-                ));
-            }
+        if (status.isPresent() && !status.get().isEmpty()) {
+            filtered.removeIf(def -> def.getTasks().stream().noneMatch(
+                task -> task.getState().equalsIgnoreCase(status.get())
+            ));
         }
 
         return filtered;
@@ -108,8 +97,8 @@ public class ConnectRepository extends AbstractRepository {
             .get(connectId)
             .getConnectorPlugins()
             .stream()
-            .filter(connectPlugin -> connectPlugin.getClassName().equals(className))
-            .map(s -> mapToConnectPlugin(s, clusterId, connectId, configs))
+            .filter(p -> p.getClassName().equals(className))
+            .map(p -> mapToConnectPlugin(p, clusterId, connectId, configs))
             .findFirst();
     }
 
@@ -119,7 +108,7 @@ public class ConnectRepository extends AbstractRepository {
             .get(connectId)
             .getConnectorPlugins()
             .stream()
-            .map(s -> mapToConnectPlugin(s, clusterId, connectId))
+            .map(p -> mapToConnectPlugin(p, clusterId, connectId))
             .collect(Collectors.toList());
     }
 
@@ -128,8 +117,8 @@ public class ConnectRepository extends AbstractRepository {
             this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
-                .addConnector(new NewConnectorDefinition(name, configs));
-        } catch (InvalidRequestException e) {
+                .createConnector(name, configs);
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -138,9 +127,9 @@ public class ConnectRepository extends AbstractRepository {
     }
 
     @Retryable(includes = {
-        ConcurrentConfigModificationException.class,
-        ResourceNotFoundException.class,
-        InvalidRequestException.class
+        ConnectConflictException.class,
+        ConnectNotFoundException.class,
+        ConnectBadRequestException.class
     }, delay = "3s", attempts = "5")
     public ConnectDefinition update(String clusterId, String connectId, String name, Map<String, String> configs) {
         try {
@@ -148,7 +137,7 @@ public class ConnectRepository extends AbstractRepository {
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .updateConnectorConfig(name, configs);
-        } catch (InvalidRequestException e) {
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -156,77 +145,63 @@ public class ConnectRepository extends AbstractRepository {
         return getDefinition(clusterId, connectId, name);
     }
 
-    public boolean delete(String clusterId, String connectId, String name) {
+    public void delete(String clusterId, String connectId, String name) {
         try {
-            var isSuccess = this.kafkaModule
+            this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .deleteConnector(name);
-            if (isSuccess) {
-                auditModule.save(ConnectAuditEvent.deleteConnector(clusterId, connectId, name));
-            }
-            return isSuccess;
-        } catch (InvalidRequestException e) {
+            auditModule.save(ConnectAuditEvent.deleteConnector(clusterId, connectId, name));
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    public boolean pause(String clusterId, String connectId, String name) {
+    public void pause(String clusterId, String connectId, String name) {
         try {
-            var isSuccess = this.kafkaModule
+            this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .pauseConnector(name);
-            if (isSuccess) {
-                auditModule.save(ConnectAuditEvent.pauseConnector(clusterId, connectId, name));
-            }
-            return isSuccess;
-        } catch (InvalidRequestException e) {
+            auditModule.save(ConnectAuditEvent.pauseConnector(clusterId, connectId, name));
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    public boolean resume(String clusterId, String connectId, String name) {
+    public void resume(String clusterId, String connectId, String name) {
         try {
-            var isSuccess = this.kafkaModule
+            this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .resumeConnector(name);
-            if (isSuccess) {
-                auditModule.save(ConnectAuditEvent.resumeConnector(clusterId, connectId, name));
-            }
-            return isSuccess;
-        } catch (InvalidRequestException e) {
+            auditModule.save(ConnectAuditEvent.resumeConnector(clusterId, connectId, name));
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     public boolean restart(String clusterId, String connectId, String name) {
         try {
-            var isSuccess = this.kafkaModule
+            this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnector(name);
-            if (isSuccess) {
-                auditModule.save(ConnectAuditEvent.restartConnector(clusterId, connectId, name));
-            }
-            return isSuccess;
-        } catch (InvalidRequestException e) {
+            auditModule.save(ConnectAuditEvent.restartConnector(clusterId, connectId, name));
+            return true;
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    public boolean restartTask(String clusterId, String connectId, String name, int task) {
+    public void restartTask(String clusterId, String connectId, String name, int task) {
         try {
-            var isSuccess = this.kafkaModule
+            this.kafkaModule
                 .getConnectRestClient(clusterId)
                 .get(connectId)
                 .restartConnectorTask(name, task);
-            if (isSuccess) {
-                auditModule.save(ConnectAuditEvent.restartTaskConnector(clusterId, connectId, name, task));
-            }
-            return isSuccess;
-        } catch (InvalidRequestException e) {
+            auditModule.save(ConnectAuditEvent.restartTaskConnector(clusterId, connectId, name, task));
+        } catch (ConnectBadRequestException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -256,7 +231,7 @@ public class ConnectRepository extends AbstractRepository {
         return list;
     }
 
-    private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId) {
+    private ConnectPlugin mapToConnectPlugin(ConnectorPluginInfo plugin, String clusterId, String connectId) {
         Map<String, String> config = ImmutableMap.of(
             "connector.class", plugin.getClassName(),
             "topics", "getPlugins"
@@ -264,17 +239,14 @@ public class ConnectRepository extends AbstractRepository {
         return this.mapToConnectPlugin(plugin, clusterId, connectId, config);
     }
 
-    private ConnectPlugin mapToConnectPlugin(ConnectorPlugin plugin, String clusterId, String connectId,
-                                                Map<String,String> config) {
-        return new ConnectPlugin(
-            plugin,
-            this.kafkaModule
-                .getConnectRestClient(clusterId)
-                .get(connectId)
-                .validateConnectorPluginConfig(new ConnectorPluginConfigDefinition(
-                    Iterables.getLast(Arrays.asList(plugin.getClassName().split("/"))),
-                    config
-                )));
+    private ConnectPlugin mapToConnectPlugin(ConnectorPluginInfo plugin, String clusterId, String connectId,
+                                             Map<String, String> config) {
+        String shortName = Iterables.getLast(Arrays.asList(plugin.getClassName().split("\\.")));
+        ConnectorPluginValidation validation = this.kafkaModule
+            .getConnectRestClient(clusterId)
+            .get(connectId)
+            .validateConnectorPluginConfig(shortName, config);
+        return new ConnectPlugin(plugin, validation);
     }
 
     private String getShortClassName(String className) {

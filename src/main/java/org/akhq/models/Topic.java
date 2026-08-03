@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class Topic {
     private String name;
@@ -28,8 +30,9 @@ public class Topic {
     private boolean configInternal;
     @JsonIgnore
     private boolean configStream;
-    private final List<Partition> partitions = new ArrayList<>();
+    private List<Partition> partitions = new ArrayList<>();
 
+    @JsonIgnore
     public Topic(
         TopicDescription description,
         List<LogDir> logDirs,

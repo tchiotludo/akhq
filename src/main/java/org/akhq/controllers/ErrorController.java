@@ -16,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
 import org.akhq.security.rule.AKHQSecurityRule;
 import org.apache.kafka.common.errors.ApiException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
+import org.akhq.clients.connect.error.ConnectBadRequestException;
+import org.akhq.clients.connect.error.ConnectConflictException;
+import org.akhq.clients.connect.error.ConnectNotFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,7 +32,7 @@ public class ErrorController extends AbstractController {
     // Kafka
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ApiException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     @Error(global = true)
@@ -43,33 +43,33 @@ public class ErrorController extends AbstractController {
     // Registry
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, RestClientException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     // Connect
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, InvalidRequestException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectBadRequestException e) {
+        return renderException(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ResourceNotFoundException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectNotFoundException e) {
+        return renderException(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ConcurrentConfigModificationException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectConflictException e) {
+        return renderException(request, e);
     }
 
     // Akhq
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, IllegalArgumentException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
-    private HttpResponse<?> renderExecption(HttpRequest<?> request, Exception e) {
+    private HttpResponse<?> renderException(HttpRequest<?> request, Exception e) {
         JsonError error = new JsonError(e.getMessage())
             .link(Link.SELF, Link.of(request.getUri()));
 

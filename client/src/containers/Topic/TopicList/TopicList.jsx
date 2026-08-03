@@ -58,54 +58,37 @@ class TopicList extends Root {
   componentDidMount() {
     this._initializeVars(() => {
       this.getTopics();
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${this.state.selectedCluster}/topic`,
-          search: this.props.location.search
-        },
-        { replace: true }
-      );
     });
   }
 
+  navigateWithQuery = (searchData, pageNumber, currentPageSize, replace = false) => {
+    const { clusterId } = this.props.params;
+    const searchParams = new URLSearchParams();
+    searchParams.set('search', searchData.search || '');
+    searchParams.set('topicListView', searchData.topicListView || '');
+    searchParams.set('page', pageNumber);
+    searchParams.set('uiPageSize', currentPageSize);
+
+    this.props.router.navigate(
+      {
+        pathname: `/ui/${clusterId}/topic`,
+        search: searchParams.toString()
+      },
+      { replace }
+    );
+  };
+
   componentDidUpdate(prevProps) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
+
+    if (pathnameChanged || searchChanged) {
       this.cancelAxiosRequests();
       this.renewCancelToken();
 
-      this.setState({ pageNumber: 1 }, () => {
-        this._initializeVars(this.getTopics);
+      this._initializeVars(() => {
+        this.getTopics();
       });
-    }
-
-    if (this.props.location.search !== prevProps.location.search) {
-      const { searchData } = this.state;
-      // Handle back navigation
-      if (this.props.router.navigationType === 'POP') {
-        let { clusterId } = this.props.params;
-        const query = new URLSearchParams(this.props.location.search);
-        this.setState(
-          {
-            selectedCluster: clusterId,
-            searchData: { ...searchData, search: query.get('search') ? query.get('search') : '' },
-            pageNumber: query.get('page') ? parseInt(query.get('page')) : 1
-          },
-          () => {
-            this.getTopics();
-          }
-        );
-      } else if (this.props.location.search === '') {
-        // Handle sidebar click on topics from the component
-        this.setState(
-          {
-            pageNumber: 1,
-            searchData: { ...searchData, search: '' }
-          },
-          () => {
-            this._initializeVars(this.getTopics);
-          }
-        );
-      }
     }
   }
 
@@ -183,50 +166,19 @@ class TopicList extends Root {
   handleSearch = data => {
     const { searchData } = data;
 
-    // Cancel previous requests if there are some to prevent UI issues
-    this.cancelAxiosRequests();
-    this.renewCancelToken();
-
     this.setState({ pageNumber: 1, searchData }, () => {
-      const { topicListView } = this.state.searchData;
-      this.getTopics();
       this.handleKeepSearchChange(data.keepSearch);
-      this.props.router.navigate({
-        pathname: `/ui/${this.state.selectedCluster}/topic`,
-        search: `search=${searchData.search}&topicListView=${topicListView}&page=${this.state.pageNumber}`
-      });
+      this.navigateWithQuery(this.state.searchData, this.state.pageNumber, this.state.currentPageSize, false);
     });
   };
 
   handlePageChangeSubmission = (value, replaceInNavigation = true) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
-
-    this.setState({ pageNumber: pageNumber }, () => {
-      const { search, topicListView } = this.state.searchData;
-      this.getTopics();
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${this.state.selectedCluster}/topic`,
-          search: `search=${search}&topicListView=${topicListView}&page=${pageNumber}`
-        },
-        { replace: replaceInNavigation }
-      );
-    });
+    this.navigateWithQuery(this.state.searchData, pageNumber, this.state.currentPageSize, replaceInNavigation);
   };
 
   handlePageSizeChangeSubmission = value => {
-    let pageNumber = 1;
-    this.setState({ currentPageSize: value, pageNumber: pageNumber }, () => {
-      const { search, topicListView } = this.state.searchData;
-      this.getTopics();
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${this.state.selectedCluster}/topic`,
-          search: `search=${search}&topicListView=${topicListView}&uiPageSize=${value}`
-        },
-        { replace: true }
-      );
-    });
+    this.navigateWithQuery(this.state.searchData, 1, value, true);
   };
 
   async getTopics() {

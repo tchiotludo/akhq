@@ -3,11 +3,13 @@ package org.akhq.models;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class Node {
     private int id;
@@ -16,15 +18,18 @@ public class Node {
     private String rack;
 
     public Node(org.apache.kafka.common.Node node) {
-        this.id = node.id();
-        this.host = node.host();
-        this.port = node.port();
-        this.rack = node.rack();
+        if (node != null) {
+            this.id = node.id();
+            this.host = node.host();
+            this.port = node.port();
+            this.rack = node.rack();
+        }
     }
 
     @ToString
     @EqualsAndHashCode(callSuper=true)
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class Partition extends Node {
         private boolean leader;

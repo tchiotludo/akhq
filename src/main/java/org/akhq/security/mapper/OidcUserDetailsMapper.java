@@ -14,7 +14,6 @@ import io.micronaut.security.oauth2.endpoint.token.response.DefaultOpenIdAuthent
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
 import io.micronaut.security.rules.SecurityRule;
-import io.reactivex.Flowable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.Oidc;
@@ -23,6 +22,7 @@ import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,7 +58,7 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
         // Some OIDC providers like Keycloak can return a claim with roles and attributes directly,
         // so we don't use the AKHQ internal ClaimProvider mechanism
         if(provider.isUseOidcClaim()){
-            return (Flowable.just(createDirectClaimAuthenticationResponse(oidcUsername, openIdClaims)));
+            return Mono.just(createDirectClaimAuthenticationResponse(oidcUsername, openIdClaims));
         }
 
         List<String> oidcGroups = getOidcGroups(provider, openIdClaims);
@@ -71,8 +71,8 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
             attributes.put("provider_name", providerName);
             attributes.put("provider_type", ClaimProviderType.OIDC.name());
             attributes.put("groups", oidcGroups);
-            return (Flowable.just(
-                AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes)));
+            return Mono.just(
+                AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED), attributes));
         }
         // Stores the AKHQ groups in the JWT token
         // Default behaviour. The OIDC provider gives the groups, AKHQ resolves the groups mapping and saves it in the token.
@@ -86,12 +86,12 @@ public class OidcUserDetailsMapper extends DefaultOpenIdAuthenticationMapper {
 
             try {
                 ClaimResponse claim = claimProvider.generateClaim(request);
-                return (Flowable.just(
+                return Mono.just(
                     AuthenticationResponse.success(oidcUsername, List.of(SecurityRule.IS_AUTHENTICATED),
-                        Map.of("groups", claim.getGroups()))));
+                        Map.of("groups", claim.getGroups())));
             } catch (Exception e) {
                 String claimProviderClass = claimProvider.getClass().getName();
-                return Flowable.just(new AuthenticationFailed(
+                return Mono.just(new AuthenticationFailed(
                     "Exception from ClaimProvider " + claimProviderClass + ": " + e.getMessage()));
             }
         }

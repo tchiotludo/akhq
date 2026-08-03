@@ -114,6 +114,15 @@ public class AvroDeserializer {
     }
 
     private static Object unionDeserializer(Object value, Schema schema) {
+        if (value == null) {
+            return schema
+                .getTypes()
+                .stream()
+                .filter(type -> type.getType() == Type.NULL)
+                .findFirst()
+                .map(type -> AvroDeserializer.objectDeserializer(null, type))
+                .orElse(null);
+        }
         return AvroDeserializer.objectDeserializer(value, schema
             .getTypes()
             .stream()
@@ -129,13 +138,9 @@ public class AvroDeserializer {
     }
 
     private static Map<String, ?> mapDeserializer(Map<String, ?> value, Schema schema) {
-        return value
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                e -> AvroDeserializer.objectDeserializer(e.getValue(), schema.getValueType()))
-            );
+        Map<String, Object> result = new LinkedHashMap<>();
+        value.forEach((k, v) -> result.put(k, AvroDeserializer.objectDeserializer(v, schema.getValueType())));
+        return result;
     }
 
     private static Collection<?> arrayDeserializer(Collection<?> value, Schema schema) {
