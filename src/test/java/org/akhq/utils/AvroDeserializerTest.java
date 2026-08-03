@@ -249,4 +249,38 @@ class AvroDeserializerTest {
 
         assertThat(result, is(expected));
     }
+
+    @Test
+    void testMapWithUtf8Keys() {
+        String type = "{"
+            + "\"name\": \"root\","
+            + "\"type\": \"record\","
+            + "\"fields\": ["
+            + "    {"
+            + "        \"name\": \"props\","
+            + "        \"type\": {\"type\": \"map\", \"values\": \"string\"}"
+            + "    }"
+            + "    ]"
+            + "}";
+        Schema schema = new Schema.Parser().parse(type);
+
+        // Avro returns Utf8 keys when "avro.java.string": "String" is not set on the map/schema.
+        // Simulate that by putting Utf8 instances as keys directly.
+        Map<org.apache.avro.util.Utf8, Object> mapValue = new HashMap<>();
+        mapValue.put(new org.apache.avro.util.Utf8("k1"), "v1");
+        mapValue.put(new org.apache.avro.util.Utf8("k2"), "v2");
+
+        GenericRecord record = new org.apache.avro.generic.GenericData.Record(schema);
+        record.put("props", mapValue);
+
+        Map<String, Object> expectedInner = new HashMap<>();
+        expectedInner.put("k1", "v1");
+        expectedInner.put("k2", "v2");
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("props", expectedInner);
+
+        Map<String, Object> result = AvroDeserializer.recordDeserializer(record);
+
+        assertThat(result, is(expected));
+    }
 }

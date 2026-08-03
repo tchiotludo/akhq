@@ -55,7 +55,6 @@ public class AvroDeserializer {
             );
     }
 
-    @SuppressWarnings("unchecked")
     private static Object objectDeserializer(Object value, Schema schema) {
         LogicalType logicalType = schema.getLogicalType();
         Type primitiveType = schema.getType();
@@ -87,7 +86,7 @@ public class AvroDeserializer {
                 case UNION:
                     return AvroDeserializer.unionDeserializer(value, schema);
                 case MAP:
-                    return AvroDeserializer.mapDeserializer((Map<String, ?>) value, schema);
+                    return AvroDeserializer.mapDeserializer((Map<?, ?>) value, schema);
                 case RECORD:
                     return AvroDeserializer.recordDeserializer((GenericRecord) value);
                 case ENUM:
@@ -137,9 +136,9 @@ public class AvroDeserializer {
             .orElseThrow());
     }
 
-    private static Map<String, ?> mapDeserializer(Map<String, ?> value, Schema schema) {
+    private static Map<String, ?> mapDeserializer(Map<?, ?> value, Schema schema) {
         Map<String, Object> result = new LinkedHashMap<>();
-        value.forEach((k, v) -> result.put(k, AvroDeserializer.objectDeserializer(v, schema.getValueType())));
+        value.forEach((k, v) -> result.put(k.toString(), AvroDeserializer.objectDeserializer(v, schema.getValueType())));
         return result;
     }
 
