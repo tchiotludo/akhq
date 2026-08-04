@@ -13,3 +13,14 @@ akhq:
             - metadata.other.shouldBeMasked
             - metadata.other.arrayToMask
             - metadata.other.jsonArray.maskThis
+        - description: Mask name for user events (regex)
+          topic: user-events-.*
+          keys:
+            - name
+        - description: Mask dateOfBirth for user events (regex, uppercase pattern)
+          topic: 'USER-EVENTS-\d+'
+          keys:
+            - dateOfBirth
+        - description: Misconfigured filter without a topic (ignored)
+          keys:
+            - name

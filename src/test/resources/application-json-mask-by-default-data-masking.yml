@@ -15,3 +15,14 @@ akhq:
             - metadata.other.shouldBeUnmasked
             - metadata.other.arrayToShow
             - metadata.other.jsonArray.showThis
+        - description: Unmask specialId for user events (regex)
+          topic: user-events-.*
+          keys:
+            - specialId
+        - description: Unmask status for user events (regex, uppercase pattern)
+          topic: 'USER-EVENTS-\d+'
+          keys:
+            - status
+        - description: Misconfigured filter without a topic (ignored)
+          keys:
+            - name
