@@ -17,13 +17,23 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout (full history for tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Checkout (shallow for branches/PRs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
 
       # Caches
       - name: Gradle cache
