@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - dev
-  release:
-    types: [released]
+  repository_dispatch:
+    types: [ akhq-release-docs ]
 
 jobs:
   check:
@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       # Setup
       - name: Setup Node
@@ -33,29 +35,6 @@ jobs:
           node_modules/.bin/githubcontrib --repo akhq --owner tchiotludo --format html --sortOrder desc > .vuepress/public/contributors.html
           npm run build
           echo "akhq.io" > .vuepress/dist/CNAME
-
-      # Copy for helm
-      - name: Add some files
-        run: |
-          cp LICENSE helm/akhq/LICENSE
-          cp README.md helm/akhq/README.md
-
-      # Helm charts - only release on GitHub release creation
-      - name: Configure Git
-        if: github.event_name == 'release'
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Run chart-releaser
-        if: github.event_name == 'release'
-        uses: helm/chart-releaser-action@v1
-        with:
-          charts_dir: helm
-          pages_branch: helm
-          mark_as_latest: false
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       # Clone helm charts
       - name: Clone helm charts
