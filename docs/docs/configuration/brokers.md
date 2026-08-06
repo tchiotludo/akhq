@@ -2,6 +2,8 @@
 * `akhq.connections` is a key value configuration with :
   * `key`: must be an url friendly (letter, number, _, -, ... dot are not allowed here)  string to identify your cluster (`my-cluster-1` and `my-cluster-2` is the example above)
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
+  * `topic-discovery`: *(optional)* per-connection topic discovery options
+    * `allowlist`: exact topic names to use for topic discovery instead of requesting the complete topic list from Kafka. Omit it or leave it empty to keep the default full discovery behavior. Regex, wildcard and prefix matching are not supported. Missing topics are ignored with a warning. This is a discovery/performance option, not an authorization rule; use AKHQ security group patterns to restrict access.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url
     * `type`: the type of schema registry used, either 'confluent' or 'tibco'
@@ -31,6 +33,10 @@ akhq:
     local:
       properties:
         bootstrap.servers: "local:9092"
+      topic-discovery:
+        allowlist:
+          - "topic-a"
+          - "topic-b"
       schema-registry:
         url: "http://schema-registry:8085"
       connect:
@@ -124,7 +130,6 @@ akhq:
         sasl.mechanism: OAUTHBEARER
 ```
 I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certificates did not match the FQDN. In a production, you have to remove it.
-
 
 
 

@@ -20,10 +20,17 @@ public class Connection extends AbstractProperties {
     List<Connect> connect;
     List<KsqlDb> ksqldb;
     Deserialization deserialization = new Deserialization();
+    TopicDiscovery topicDiscovery = new TopicDiscovery();
     UiOptions uiOptions = new UiOptions();
 
     public Connection(@Parameter String name) {
         super(name);
+    }
+
+    @Data
+    @ConfigurationProperties("topic-discovery")
+    public static class TopicDiscovery {
+        List<String> allowlist = new ArrayList<>();
     }
 
     @Getter
@@ -89,4 +96,3 @@ public class Connection extends AbstractProperties {
         return options;
     }
 }
-
