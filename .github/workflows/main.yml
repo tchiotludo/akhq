@@ -20,6 +20,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      checks: write
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
