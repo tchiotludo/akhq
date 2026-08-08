@@ -141,7 +141,10 @@ class AkhqRoutes extends Root {
     let clusterId = this.state.clusterId;
 
     if (this.state.user.length <= 0) {
-      this._initUserAndAuth();
+      if (!this._authRequestPending) {
+        this._authRequestPending = true;
+        this._initUserAndAuth();
+      }
       return <></>;
     }
 
