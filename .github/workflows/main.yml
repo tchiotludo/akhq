@@ -17,6 +17,10 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    # Upstream-only. On the alpian fork this pipeline has no DockerHub/Slack secrets, and on
+    # an *-alpian tag it would also cut a second GitHub release and run chart-releaser on top
+    # of alpian-release.yml. Fork releases are handled by alpian-release.yml instead.
+    if: ${{ github.repository == 'tchiotludo/akhq' }}
     permissions:
       contents: write
       packages: write

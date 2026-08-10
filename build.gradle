@@ -12,6 +12,9 @@ plugins {
     id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
+
+    // alpian fork: publish the shadow jar to GitHub Packages
+    id "maven-publish"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("25")
@@ -315,6 +318,38 @@ shadowJar {
     zip64 = true
     transform(com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer) {
         include('git.properties')
+    }
+}
+
+/**********************************************************************************************************************\
+ * Publishing (alpian fork)
+ *
+ * Publishes only the fat jar (akhq-<version>-all.jar) to GitHub Packages of this fork.
+ * The version is overridden at publication level so the upstream `version` above stays untouched
+ * and merging upstream release tags never conflicts here.
+ **********************************************************************************************************************/
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            // the fat jar is the one and only artifact, published without the "all" classifier
+            artifact(tasks.shadowJar) {
+                classifier = null
+            }
+            version = System.getenv('PUBLISH_VERSION') ?: project.version
+        }
+    }
+    repositories {
+        // Only configured on CI; local builds use publishToMavenLocal
+        if (System.getenv('GITHUB_REPOSITORY')) {
+            maven {
+                name = 'GitHubPackages'
+                url = "https://maven.pkg.github.com/${System.getenv('GITHUB_REPOSITORY')}"
+                credentials {
+                    username = System.getenv('GITHUB_ACTOR')
+                    password = System.getenv('GITHUB_TOKEN')
+                }
+            }
+        }
     }
 }
 

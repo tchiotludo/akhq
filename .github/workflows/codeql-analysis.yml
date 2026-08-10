@@ -17,6 +17,9 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    # Upstream-only: the alpian fork tracks upstream releases and does not act on its own
+    # code-scanning alerts. Avoids a full java+javascript build on every dependabot PR.
+    if: ${{ github.repository == 'tchiotludo/akhq' }}
 
     strategy:
       fail-fast: false

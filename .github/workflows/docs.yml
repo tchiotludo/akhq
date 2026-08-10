@@ -11,6 +11,8 @@ jobs:
   check:
     name: Docs
     runs-on: ubuntu-latest
+    # Upstream-only: publishes akhq.io docs, which the alpian fork has no business updating.
+    if: ${{ github.repository == 'tchiotludo/akhq' }}
     permissions:
       contents: write
 
