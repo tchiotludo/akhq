@@ -63,6 +63,8 @@ public class Connection extends AbstractProperties {
     @Data
     @ConfigurationProperties("ui-options")
     public static class UiOptions {
+        Boolean refreshFromServer;
+
         @ConfigurationBuilder(configurationPrefix = "topic")
         private UiOptionsTopic topic = new UiOptionsTopic();
 
@@ -72,6 +74,8 @@ public class Connection extends AbstractProperties {
 
     public UiOptions mergeOptions(UIOptions defaultOptions) {
         UiOptions options = new UiOptions();
+
+        options.refreshFromServer = (this.uiOptions.refreshFromServer != null) ? this.uiOptions.refreshFromServer : defaultOptions.getRefreshFromServer();
 
         options.topic = new UiOptionsTopic(
             StringUtils.isNotEmpty(this.uiOptions.topic.getDefaultView()) ? this.uiOptions.topic.getDefaultView() : defaultOptions.getTopic().getDefaultView(),
@@ -89,4 +93,3 @@ public class Connection extends AbstractProperties {
         return options;
     }
 }
-
