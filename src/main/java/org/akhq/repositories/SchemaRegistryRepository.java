@@ -51,17 +51,19 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
     private final Map<String, Deserializer> awsGlueKafkaDeserializers = new HashMap<>();
 
-
-    public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        return PagedList.of(all(clusterId, search, filters), pagination, list -> this.toSchemasLatestVersion(list, clusterId));
+    public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search,
+            List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        return PagedList.of(all(clusterId, search, filters), pagination,
+                list -> this.toSchemasLatestVersion(list, clusterId));
     }
 
-    public List<Schema> listAll(String clusterId, Optional<String> search, List<String> filters) throws IOException, RestClientException {
+    public List<Schema> listAll(String clusterId, Optional<String> search, List<String> filters)
+            throws IOException, RestClientException {
         return toSchemasLatestVersion(all(clusterId, search, filters), clusterId);
     }
 
-    private List<Schema> toSchemasLatestVersion(List<String> subjectList, String clusterId){
-        return subjectList .stream()
+    private List<Schema> toSchemasLatestVersion(List<String> subjectList, String clusterId) {
+        return subjectList.stream()
                 .map(s -> {
                     try {
                         return getLatestVersion(clusterId, s);
@@ -72,40 +74,42 @@ public class SchemaRegistryRepository extends AbstractRepository {
                 .collect(Collectors.toList());
     }
 
-    private ParsedSchema getParsedSchema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, String clusterId)  {
+    private ParsedSchema getParsedSchema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema,
+            String clusterId) {
         ParsedSchema parsedSchema;
-        if ( schema.getSchemaType().equals(JsonSchema.TYPE) ) {
+        if (schema.getSchemaType().equals(JsonSchema.TYPE)) {
             parsedSchema = this.kafkaModule
-                .getJsonSchemaProvider(clusterId)
-                .parseSchema(schema.getSchema(), schema.getReferences())
-                .orElse(null);
+                    .getJsonSchemaProvider(clusterId)
+                    .parseSchema(schema.getSchema(), schema.getReferences())
+                    .orElse(null);
 
-        } else if( schema.getSchemaType().equals(ProtobufSchema.TYPE)) {
+        } else if (schema.getSchemaType().equals(ProtobufSchema.TYPE)) {
             parsedSchema = this.kafkaModule
-                .getProtobufSchemaProvider(clusterId)
-                .parseSchema(schema.getSchema(), schema.getReferences())
-                .orElse(null);
+                    .getProtobufSchemaProvider(clusterId)
+                    .parseSchema(schema.getSchema(), schema.getReferences())
+                    .orElse(null);
         } else {
             parsedSchema = this.kafkaModule
-                .getAvroSchemaProvider(clusterId)
-                .parseSchema(schema.getSchema(), schema.getReferences())
-                .orElse(null);
+                    .getAvroSchemaProvider(clusterId)
+                    .parseSchema(schema.getSchema(), schema.getReferences())
+                    .orElse(null);
         }
         return parsedSchema;
     }
 
-    public List<String> all(String clusterId, Optional<String> search, List<String> filters) throws  IOException, RestClientException {
+    public List<String> all(String clusterId, Optional<String> search, List<String> filters)
+            throws IOException, RestClientException {
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
                 .getRegistryRestClient(clusterId));
-        if(maybeRegistryRestClient.isEmpty()){
+        if (maybeRegistryRestClient.isEmpty()) {
             return List.of();
         }
         return maybeRegistryRestClient.get()
-            .getAllSubjects()
-            .stream()
-            .filter(s -> isSearchMatch(search, s) && isMatchRegex(filters, s))
-            .sorted(Comparator.comparing(String::toLowerCase))
-            .collect(Collectors.toList());
+                .getAllSubjects()
+                .stream()
+                .filter(s -> isSearchMatch(search, s) && isMatchRegex(filters, s))
+                .sorted(Comparator.comparing(String::toLowerCase))
+                .collect(Collectors.toList());
     }
 
     public boolean exist(String clusterId, String subject) throws IOException, RestClientException {
@@ -123,23 +127,24 @@ public class SchemaRegistryRepository extends AbstractRepository {
         return found;
     }
 
-    public List<Schema> getSubjectsBySchemaId(String clusterId, int id) throws  IOException, RestClientException {
+    public List<Schema> getSubjectsBySchemaId(String clusterId, int id) throws IOException, RestClientException {
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
-            .getRegistryRestClient(clusterId));
+                .getRegistryRestClient(clusterId));
         if (maybeRegistryRestClient.isEmpty()) {
             return List.of();
         }
 
         return maybeRegistryRestClient.get()
-            .getAllVersionsById(id)
-            .stream()
-            .map(v -> new Schema(id, v.getSubject(), v.getVersion()))
-            .collect(Collectors.toList());
+                .getAllVersionsById(id)
+                .stream()
+                .map(v -> new Schema(id, v.getSubject(), v.getVersion()))
+                .collect(Collectors.toList());
     }
 
-    public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
-        for (String subject: this.all(clusterId, Optional.empty(), List.of())) {
-            for (Schema version: this.getAllVersions(clusterId, subject)) {
+    public Optional<Schema> getById(String clusterId, Integer id)
+            throws IOException, RestClientException, ExecutionException, InterruptedException {
+        for (String subject : this.all(clusterId, Optional.empty(), List.of())) {
+            for (Schema version : this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
                     return Optional.of(version);
                 }
@@ -150,82 +155,125 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema getLatestVersion(String clusterId, String subject) throws IOException, RestClientException {
-        io.confluent.kafka.schemaregistry.client.rest.entities.Schema latestVersion = this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .getLatestVersion(subject);
+        var registryRestClient = this.kafkaModule.getRegistryRestClient(clusterId);
 
-        ParsedSchema parsedSchema = getParsedSchema(latestVersion, clusterId);
+        try {
+            io.confluent.kafka.schemaregistry.client.rest.entities.Schema latestVersion = registryRestClient
+                    .getLatestVersion(subject);
 
-        return new Schema(latestVersion, parsedSchema, this.getConfig(clusterId, subject));
+            ParsedSchema parsedSchema = getParsedSchema(latestVersion, clusterId);
+
+            return new Schema(latestVersion, parsedSchema, this.getConfig(clusterId, subject));
+        } catch (RestClientException exception) {
+            /*
+             * Apicurio Schema Registry returns 404 when the latest version of a subject is
+             * disabled.
+             * For non-Apicurio registries, keep the existing behaviour and rethrow the
+             * exception.
+             */
+            if (!isApicurioRegistry(clusterId) || exception.getStatus() != 404) {
+                throw exception;
+            }
+
+            // Try to resolve a usable schema version by walking all known versions from
+            // newest to oldest.
+            List<Integer> versions = registryRestClient.getAllVersions(subject);
+            versions.sort(Comparator.reverseOrder());
+
+            Schema.Config config = this.getConfig(clusterId, subject);
+
+            for (Integer version : versions) {
+                try {
+                    io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema = registryRestClient
+                            .getVersion(subject, version);
+
+                    ParsedSchema parsedSchema = getParsedSchema(schema, clusterId);
+
+                    return new Schema(schema, parsedSchema, config);
+                } catch (RestClientException | IOException ignored) {
+                    // Ignore and try the next available version.
+                }
+            }
+
+            // No usable schema version is available: return a safe, empty Schema instance.
+            return new Schema();
+        }
     }
 
     public List<Schema> getAllVersions(String clusterId, String subject) throws IOException, RestClientException {
         Schema.Config config = this.getConfig(clusterId, subject);
 
         return this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .getAllVersions(subject)
-            .parallelStream()
-            .map(id -> {
-                try {
-                    return this.kafkaModule.getRegistryRestClient(clusterId).getVersion(subject, id);
-                } catch (RestClientException | IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .map(schema -> {
-                ParsedSchema parsedSchema = getParsedSchema(schema, clusterId);
-                return new Schema(schema, parsedSchema, config);
-            })
-            .collect(Collectors.toList());
+                .getRegistryRestClient(clusterId)
+                .getAllVersions(subject)
+                .parallelStream()
+                .map(id -> {
+                    try {
+                        return this.kafkaModule.getRegistryRestClient(clusterId).getVersion(subject, id);
+                    } catch (RestClientException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(schema -> {
+                    ParsedSchema parsedSchema = getParsedSchema(schema, clusterId);
+                    return new Schema(schema, parsedSchema, config);
+                })
+                .collect(Collectors.toList());
     }
 
-    public Schema lookUpSubjectVersion(String clusterId, String subject, org.apache.avro.Schema schema, boolean deleted) throws IOException, RestClientException {
+    public Schema lookUpSubjectVersion(String clusterId, String subject, org.apache.avro.Schema schema, boolean deleted)
+            throws IOException, RestClientException {
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema find = this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .lookUpSubjectVersion(schema.toString(), subject, deleted);
+                .getRegistryRestClient(clusterId)
+                .lookUpSubjectVersion(schema.toString(), subject, deleted);
 
         ParsedSchema parsedSchema = getParsedSchema(find, clusterId);
 
         return new Schema(find, parsedSchema, this.getConfig(clusterId, subject));
     }
 
-    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
+    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema)
+            throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .testCompatibility(schema.toString(), subject, "latest");
+                .getRegistryRestClient(clusterId)
+                .testCompatibility(schema.toString(), subject, "latest");
     }
 
-    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version) throws IOException, RestClientException {
+    public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version)
+            throws IOException, RestClientException {
         return this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .testCompatibility(schema.toString(), subject, String.valueOf(version));
+                .getRegistryRestClient(clusterId)
+                .testCompatibility(schema.toString(), subject, String.valueOf(version));
     }
 
-    public Schema register(String clusterId, String subject, String schema, List<SchemaReference> references) throws IOException, RestClientException {
+    public Schema register(String clusterId, String subject, String schema, List<SchemaReference> references)
+            throws IOException, RestClientException {
         return register(clusterId, subject, null, schema, references);
     }
 
-    public Schema register(String clusterId, String subject, String type, String schema, List<SchemaReference> references) throws IOException, RestClientException {
+    public Schema register(String clusterId, String subject, String type, String schema,
+            List<SchemaReference> references) throws IOException, RestClientException {
         RegisterSchemaResponse registerSchemaResponse = this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .registerSchema(schema, type != null? type: "AVRO", references, subject);
+                .getRegistryRestClient(clusterId)
+                .registerSchema(schema, type != null ? type : "AVRO", references, subject);
 
         Schema latestVersion = getLatestVersion(clusterId, subject);
 
         if (latestVersion.getId() != registerSchemaResponse.getId()) {
-            throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId() + " got last version " + latestVersion.getId());
+            throw new IllegalArgumentException("Invalid id from registry expect " + registerSchemaResponse.getId()
+                    + " got last version " + latestVersion.getId());
         }
 
-        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(clusterId, subject, latestVersion.getId(), latestVersion.getVersion()));
+        auditModule.save(SchemaAuditEvent.createOrUpdateSchema(clusterId, subject, latestVersion.getId(),
+                latestVersion.getVersion()));
 
         return latestVersion;
     }
 
     public int delete(String clusterId, String subject) throws IOException, RestClientException {
         List<Integer> list = this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .deleteSubject(new HashMap<>(), subject);
+                .getRegistryRestClient(clusterId)
+                .deleteSubject(new HashMap<>(), subject);
 
         if (list.size() == 0) {
             throw new IllegalArgumentException("Invalid subject '" + subject + "'");
@@ -238,24 +286,22 @@ public class SchemaRegistryRepository extends AbstractRepository {
 
     public int deleteVersion(String clusterId, String subject, int version) throws IOException, RestClientException {
         var deletedVersion = this.kafkaModule.getRegistryRestClient(clusterId)
-            .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
+                .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
         auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
         return deletedVersion;
     }
 
     public Schema.Config getDefaultConfig(String clusterId) throws IOException, RestClientException {
         return new Schema.Config(this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .getConfig(null)
-        );
+                .getRegistryRestClient(clusterId)
+                .getConfig(null));
     }
 
     public Schema.Config getConfig(String clusterId, String subject) throws IOException, RestClientException {
         try {
             return new Schema.Config(this.kafkaModule
-                .getRegistryRestClient(clusterId)
-                .getConfig(Map.of(), subject, true)
-            );
+                    .getRegistryRestClient(clusterId)
+                    .getConfig(Map.of(), subject, true));
         } catch (RestClientException exception) {
             if (exception.getStatus() != 404) {
                 throw exception;
@@ -265,15 +311,19 @@ public class SchemaRegistryRepository extends AbstractRepository {
         }
     }
 
-    public void updateConfig(String clusterId, String subject, Schema.Config config) throws IOException, RestClientException {
+    public void updateConfig(String clusterId, String subject, Schema.Config config)
+            throws IOException, RestClientException {
         ConfigUpdateRequest configUpdateRequest = this.kafkaModule
-            .getRegistryRestClient(clusterId)
-            .updateCompatibility(config.getCompatibilityLevel().name(), subject);
+                .getRegistryRestClient(clusterId)
+                .updateCompatibility(config.getCompatibilityLevel().name(), subject);
 
         if (!configUpdateRequest.getCompatibilityLevel().equals(config.getCompatibilityLevel().name())) {
-            throw new IllegalArgumentException("Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel() + "' expected: " + config.getCompatibilityLevel().name());
+            throw new IllegalArgumentException(
+                    "Invalid config for '" + subject + "' current: '" + configUpdateRequest.getCompatibilityLevel()
+                            + "' expected: " + config.getCompatibilityLevel().name());
         }
-        auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(clusterId, subject, null, config.getCompatibilityLevel().name()));
+        auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(clusterId, subject, null,
+                config.getCompatibilityLevel().name()));
     }
 
     public Deserializer getKafkaAvroDeserializer(String clusterId) {
@@ -282,17 +332,23 @@ public class SchemaRegistryRepository extends AbstractRepository {
             SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
             if (schemaRegistryType == SchemaRegistryType.TIBCO) {
                 try {
-                    deserializer = (Deserializer) Class.forName("com.tibco.messaging.kafka.avro.AvroDeserializer").getDeclaredConstructor().newInstance();
+                    deserializer = (Deserializer) Class.forName("com.tibco.messaging.kafka.avro.AvroDeserializer")
+                            .getDeclaredConstructor().newInstance();
                     Map<String, String> config = new HashMap<>();
-                    config.put("schema.registry.url", this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getUrl());
+                    config.put("schema.registry.url",
+                            this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getUrl());
                     if (this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getBasicAuthUsername() != null) {
-                        config.put("ftl.username", this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getBasicAuthUsername());
-                        config.put("ftl.password", this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getBasicAuthPassword());
+                        config.put("ftl.username",
+                                this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getBasicAuthUsername());
+                        config.put("ftl.password",
+                                this.kafkaModule.getConnection(clusterId).getSchemaRegistry().getBasicAuthPassword());
                     }
                     config.putAll(this.kafkaModule.getConnection(clusterId).getProperties());
                     deserializer.configure(config, false);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-                    throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO Avro client library not found on classpath");
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                        | NoSuchMethodException | ClassNotFoundException e) {
+                    throw new IllegalArgumentException(
+                            "Configured schema registry type was 'tibco', but TIBCO Avro client library not found on classpath");
                 }
             } else {
                 deserializer = new KafkaAvroDeserializer(this.kafkaModule.getRegistryClient(clusterId));
@@ -309,7 +365,8 @@ public class SchemaRegistryRepository extends AbstractRepository {
             Deserializer deserializer;
             SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
             if (schemaRegistryType == SchemaRegistryType.TIBCO) {
-                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO JSON client is not supported");
+                throw new IllegalArgumentException(
+                        "Configured schema registry type was 'tibco', but TIBCO JSON client is not supported");
             } else {
                 deserializer = new KafkaJsonSchemaDeserializer(this.kafkaModule.getRegistryClient(clusterId));
             }
@@ -325,7 +382,8 @@ public class SchemaRegistryRepository extends AbstractRepository {
             Deserializer deserializer;
             SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
             if (schemaRegistryType == SchemaRegistryType.TIBCO) {
-                throw new IllegalArgumentException("Configured schema registry type was 'tibco', but TIBCO PROTOBUF client is not supported");
+                throw new IllegalArgumentException(
+                        "Configured schema registry type was 'tibco', but TIBCO PROTOBUF client is not supported");
             } else {
                 deserializer = new KafkaProtobufDeserializer(this.kafkaModule.getRegistryClient(clusterId));
             }
@@ -344,22 +402,35 @@ public class SchemaRegistryRepository extends AbstractRepository {
         }
         return schemaRegistryType;
     }
+
+    private boolean isApicurioRegistry(String clusterId) {
+        Connection.SchemaRegistry schemaRegistry = this.kafkaModule.getConnection(clusterId).getSchemaRegistry();
+        if (schemaRegistry == null || schemaRegistry.getUrl() == null) {
+            return false;
+        }
+
+        String url = schemaRegistry.getUrl().toLowerCase();
+        return url.contains("apicurio") || url.contains("/apis/registry");
+    }
+
     public Deserializer getAwsGlueKafkaDeserializer(String clusterId) {
 
-        if (!this.awsGlueKafkaDeserializers.containsKey(clusterId)){
+        if (!this.awsGlueKafkaDeserializers.containsKey(clusterId)) {
             Connection.SchemaRegistry schemaRegistry = kafkaModule.getConnection(clusterId).getSchemaRegistry();
             Map<String, Object> params = new HashMap<>();
             params.put(AWSSchemaRegistryConstants.REGISTRY_NAME, schemaRegistry.getGlueSchemaRegistryName());
-            params.put(AWSSchemaRegistryConstants.AWS_REGION,schemaRegistry.getAwsRegion());
+            params.put(AWSSchemaRegistryConstants.AWS_REGION, schemaRegistry.getAwsRegion());
             params.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
 
-            // Adding secondary deserializer so that messages that aren't serialized using avro,proto or json are deserialized using StringDeserializer
+            // Adding secondary deserializer so that messages that aren't serialized using
+            // avro,proto or json are deserialized using StringDeserializer
             params.put(AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER, StringDeserializer.class.getName());
             Map<String, String> otherParams = schemaRegistry.getProperties();
             if (otherParams != null) {
                 params.putAll(otherParams);
             }
-            this.awsGlueKafkaDeserializers.put(clusterId, new GlueSchemaRegistryKafkaDeserializer(DefaultCredentialsProvider.builder().build(), params));
+            this.awsGlueKafkaDeserializers.put(clusterId,
+                    new GlueSchemaRegistryKafkaDeserializer(DefaultCredentialsProvider.builder().build(), params));
         }
         return this.awsGlueKafkaDeserializers.get(clusterId);
     }
