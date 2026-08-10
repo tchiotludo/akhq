@@ -1,0 +1,50 @@
+name: Alpian Release
+
+# Releasing is done in the GitHub UI: create a Release with tag <upstream-version>-alpian
+# (e.g. 0.28.0-alpian) on the matching fork branch, and write the release notes there.
+# This workflow builds the shadow jar, publishes it to this fork's GitHub Packages Maven
+# repo, and attaches it to the release. The tag IS the published version — nothing here
+# computes, creates, or pushes tags.
+#
+# GitHub Packages Maven versions are IMMUTABLE: to re-publish the same upstream version,
+# tag 0.28.0-alpian-2 rather than reusing the tag.
+#
+# Upstream's Main workflow skips *-alpian tags (see main.yml), so this is the only
+# pipeline that runs for a fork release.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write # attach the jar to the release
+  packages: write # publish jar (GitHub Packages)
+
+jobs:
+  release:
+    name: Publish shadow jar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # No tests: this fork carries a handful of patches on top of an upstream release,
+      # none of them on a core path.
+      - name: Build and publish shadow jar to GitHub Packages
+        env:
+          PUBLISH_VERSION: ${{ github.event.release.tag_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew shadowJar publish
+
+      # Same bytes as the ones published to Packages — a plain download URL for anyone
+      # who does not want to go through Maven.
+      - name: Attach jar to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" build/libs/akhq-*-all.jar --clobber
