@@ -1,5 +1,9 @@
 package org.akhq.repositories;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer;
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType;
@@ -41,6 +45,10 @@ import java.util.stream.Collectors;
 public class SchemaRegistryRepository extends AbstractRepository {
     public static final int ERROR_NOT_FOUND = 40401;
 
+    private static final Logger log =
+        LoggerFactory.getLogger(SchemaRegistryRepository.class);
+
+
     @Inject
     private KafkaModule kafkaModule;
 
@@ -66,9 +74,12 @@ public class SchemaRegistryRepository extends AbstractRepository {
                     try {
                         return getLatestVersion(clusterId, s);
                     } catch (RestClientException | IOException e) {
-                        throw new RuntimeException(e);
+                        log.warn("Unable to fetch latest version for schema {}" , s , e );
+                        return null;
                     }
                 })
+                .filter(Objects::nonNull)
+
                 .collect(Collectors.toList());
     }
 
