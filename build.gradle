@@ -138,8 +138,8 @@ dependencies {
     implementation("io.confluent:kafka-client-plugins:${confluentVersion}-ce")
 
     // strimzi
-    implementation("io.strimzi:kafka-oauth-common:0.17.1")
-    implementation("io.strimzi:kafka-oauth-client:0.17.1")
+    implementation("io.strimzi:kafka-oauth-common:0.18.0")
+    implementation("io.strimzi:kafka-oauth-client:0.18.0")
 
     // log
     implementation("org.slf4j:slf4j-api:2.0.18")
