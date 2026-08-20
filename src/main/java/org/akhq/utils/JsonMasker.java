@@ -16,6 +16,7 @@ public abstract class JsonMasker implements Masker {
     }
 
     private List<Map.Entry<Pattern, List<String>>> buildTopicPatternToKeys(DataMasking dataMasking) {
+        boolean regexEnabled = dataMasking.isEnableRegexTopicFilters();
         return dataMasking.getJsonFilters().stream()
             .filter(filter -> {
                 if (filter.getTopic() == null) {
@@ -25,7 +26,10 @@ public abstract class JsonMasker implements Masker {
                 return true;
             })
             .map(filter -> Map.entry(
-                Pattern.compile(filter.getTopic(), Pattern.CASE_INSENSITIVE),
+                Pattern.compile(
+                    regexEnabled ? filter.getTopic() : Pattern.quote(filter.getTopic()),
+                    Pattern.CASE_INSENSITIVE
+                ),
                 filter.getKeys()
             ))
             .toList();
