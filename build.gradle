@@ -169,7 +169,7 @@ dependencies {
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.inject:jakarta.inject-api")
     implementation("org.reactivestreams:reactive-streams")
-    implementation("io.projectreactor:reactor-core:3.8.6")
+    implementation("io.projectreactor:reactor-core:3.8.7")
 
     // Password hashing
     implementation("org.mindrot:jbcrypt:0.4")
