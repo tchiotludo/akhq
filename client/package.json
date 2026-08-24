@@ -74,7 +74,7 @@
     "rxjs": "^7.8.2",
     "sass": "^1.102.0",
     "vite": "8.1.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "allowScripts": {
     "@parcel/watcher@2.5.1": true,
