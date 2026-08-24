@@ -42,11 +42,11 @@ spec:
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
       {{- if .Values.securityContext }}
       securityContext:
-        {{ toYaml .Values.securityContext | nindent 8 }}
+        {{- toYaml .Values.securityContext | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "akhq.serviceAccountName" . }}
       {{- if .Values.initContainers }}
@@ -62,7 +62,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           {{- if .Values.containerSecurityContext }}
           securityContext:
-            {{ toYaml .Values.containerSecurityContext | nindent 12 }}
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
           env:
             {{- if .Values.extraEnv }}{{ toYaml .Values.extraEnv | trim | nindent 12 }}{{ end }}
