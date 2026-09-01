@@ -1,6 +1,15 @@
 # Snyk (https://snyk.io) policy file
 version: v1.25.0
 ignore:
+  SNYK-JAVA-ORGAPACHELOGGINGLOG4J-17954276:
+    - '*':
+        reason: >-
+          log4j-api 2.25.4 is already the latest published version; Snyk
+          reports no upgrade or patch available for this CVE. log4j-core is
+          forced to the same version and log4j is bridged to slf4j/logback in
+          our runtime (log4j-slf4j impls excluded), so the affected output
+          encoding path is not used.
+        expires: 2026-12-31T00:00:00.000Z
   SNYK-JAVA-COMSQUAREUPWIRE-16771313:
     - '*':
         reason: >-

@@ -55,35 +55,53 @@ configurations.all {
         force("org.apache.kafka:kafka-raft:" + kafkaVersion)
         force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-annotations:" + jacksonVersion)
+        force("com.fasterxml.jackson.core:jackson-annotations:" + jacksonAnnotationsVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
 
-        force("io.netty:netty-codec-http:4.2.13.Final")
-        force("io.netty:netty-codec-http2:4.2.13.Final")
-        force("io.netty:netty-handler-proxy:4.2.13.Final")
-        force("io.netty:netty-transport-classes-epoll:4.2.13.Final")
-        force("io.netty:netty-codec-dns:4.2.13.Final")
-        force("io.netty:netty-all:4.2.13.Final")
+        force("io.netty:netty-common:4.2.17.Final")
+        force("io.netty:netty-buffer:4.2.17.Final")
+        force("io.netty:netty-transport:4.2.17.Final")
+        force("io.netty:netty-resolver:4.2.17.Final")
+        force("io.netty:netty-codec:4.2.17.Final")
+        force("io.netty:netty-codec-base:4.2.17.Final")
+        force("io.netty:netty-codec-compression:4.2.17.Final")
+        force("io.netty:netty-codec-http:4.2.17.Final")
+        force("io.netty:netty-codec-http2:4.2.17.Final")
+        force("io.netty:netty-codec-socks:4.2.17.Final")
+        force("io.netty:netty-codec-marshalling:4.2.17.Final")
+        force("io.netty:netty-codec-protobuf:4.2.17.Final")
+        force("io.netty:netty-handler:4.2.17.Final")
+        force("io.netty:netty-handler-proxy:4.2.17.Final")
+        force("io.netty:netty-resolver-dns:4.2.17.Final")
+        force("io.netty:netty-transport-classes-epoll:4.2.17.Final")
+        force("io.netty:netty-transport-native-unix-common:4.2.17.Final")
+        force("io.netty:netty-codec-dns:4.2.17.Final")
+        force("io.netty:netty-all:4.2.17.Final")
         force("io.grpc:grpc-netty-shaded:1.75.0")
         force("org.apache.commons:commons-lang3:3.18.0")
-        force("io.vertx:vertx-core:4.5.27")
-        force("ch.qos.logback:logback-core:1.5.25")
-        force("ch.qos.logback:logback-classic:1.5.25")
+        force("io.vertx:vertx-core:4.5.30")
+        force("ch.qos.logback:logback-core:1.5.36")
+        force("ch.qos.logback:logback-classic:1.5.36")
         force("com.nimbusds:nimbus-jose-jwt:9.37.4")
         force("commons-beanutils:commons-beanutils:1.11.0")
         force("org.apache.logging.log4j:log4j-api:2.25.4")
         force("org.apache.logging.log4j:log4j-core:2.25.4")
-        force("org.apache.httpcomponents.core5:httpcore5-h2:5.3.5")
+        force("org.apache.httpcomponents.client5:httpclient5:5.6.4")
+        force("org.apache.httpcomponents.core5:httpcore5:5.4.3")
+        force("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
+        force("at.yawk.lz4:lz4-java:1.11.1")
+        force("org.codehaus.plexus:plexus-utils:3.6.1")
         force("org.bouncycastle:bcpkix-jdk18on:1.84")
         force("org.bouncycastle:bcprov-jdk18on:1.84")
         force("org.bouncycastle:bc-fips:2.1.2")
         force("org.apache.zookeeper:zookeeper:3.9.5")
-        force("org.eclipse.jetty:jetty-http:12.0.33")
-        force("org.eclipse.jetty:jetty-server:12.0.33")
-        force("org.eclipse.jetty:jetty-client:12.0.33")
-        force("org.eclipse.jetty:jetty-io:12.0.33")
-        force("org.eclipse.jetty:jetty-util:12.0.33")
+        force("org.eclipse.jetty:jetty-http:12.0.36")
+        force("org.eclipse.jetty:jetty-server:12.0.36")
+        force("org.eclipse.jetty:jetty-client:12.0.36")
+        force("org.eclipse.jetty:jetty-io:12.0.36")
+        force("org.eclipse.jetty:jetty-util:12.0.36")
+        force("org.eclipse.jetty:jetty-security:12.0.36")
     }
 }
 
@@ -234,8 +252,8 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic:1.5.25'
-    testImplementation 'ch.qos.logback:logback-core:1.5.25'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.36'
+    testImplementation 'ch.qos.logback:logback-core:1.5.36'
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
