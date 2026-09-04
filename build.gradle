@@ -156,6 +156,10 @@ dependencies {
     // avro
     implementation("org.apache.avro:avro:1.12.1")
 
+    // azure schema registry
+    implementation ("com.azure:azure-data-schemaregistry:1.5.11")
+    implementation ("com.azure:azure-identity:1.18.3")
+
     // jackson-module-scala
     implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.21.4")
 

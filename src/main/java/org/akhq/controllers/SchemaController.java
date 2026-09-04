@@ -177,7 +177,7 @@ public class SchemaController extends AbstractController {
     public Schema getSubjectBySchemaIdAndTopic(
         HttpRequest<?> request,
         String cluster,
-        Integer id,
+        String id,
         @Nullable @QueryValue String topic
     ) throws IOException, RestClientException {
         // TODO Do the check on the subject name too

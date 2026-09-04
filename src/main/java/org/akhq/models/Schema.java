@@ -26,6 +26,7 @@ public class Schema {
     private final Parser parser = new Parser().setValidateDefaults(false);
 
     private Integer id;
+    private String azureSchemaId;
     private String subject;
     private Integer version;
     private Config.CompatibilityLevelConfig compatibilityLevel;
@@ -41,6 +42,11 @@ public class Schema {
 
     private String exception;
 
+    public Schema(String schemaId, String subject, int version) {
+        this.azureSchemaId = schemaId;
+        this.subject = subject;
+        this.version = version;
+    }
     public Schema(int schemaId, String subject, int version) {
         this.id = schemaId;
         this.subject = subject;
@@ -55,6 +61,16 @@ public class Schema {
         this.references = schema.getReferences();
         this.exception = schema.exception;
         this.compatibilityLevel = config.getCompatibilityLevel();
+    }
+
+
+    public Schema (String schemaId, String subject, int version, org.apache.avro.Schema avroSchema , String schema) {
+        this.azureSchemaId = schemaId;
+        this.subject = subject;
+        this.version = version;
+        this.compatibilityLevel = Config.CompatibilityLevelConfig.NONE;
+        this.avroSchema = avroSchema;
+        this.schema = schema;
     }
 
     public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, ParsedSchema parsedSchema, Schema.Config config) {
