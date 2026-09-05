@@ -307,6 +307,13 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
     timeout = 300
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.forkOptions.jvmArgs += [
+        '-Dmicronaut.openapi.filename=akhq'
+    ]
+}
+
 /**********************************************************************************************************************\
  * Jar
  **********************************************************************************************************************/
