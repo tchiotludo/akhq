@@ -142,9 +142,9 @@ dependencies {
     implementation("io.strimzi:kafka-oauth-client:0.17.1")
 
     // log
-    implementation("org.slf4j:slf4j-api:2.0.18")
-    implementation("org.slf4j:jul-to-slf4j:2.0.18")
-    implementation("org.slf4j:log4j-over-slf4j:2.0.18")
+    implementation("org.slf4j:slf4j-api:2.0.19")
+    implementation("org.slf4j:jul-to-slf4j:2.0.19")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.19")
 
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
