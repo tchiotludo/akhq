@@ -13,6 +13,7 @@ import org.akhq.models.Topic;
 import org.akhq.utils.Album;
 import org.akhq.utils.ResourceTestUtil;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
@@ -48,6 +49,45 @@ class RecordRepositoryTest extends AbstractTest {
 
     @Inject
     private JsonMapper jsonMapper;
+
+    @Test
+    void buildPartitionRangesSkipsEmptyWindows() {
+        Map<TopicPartition, Long> starts = new LinkedHashMap<>();
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 10L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 20L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2), 30L);
+
+        Map<TopicPartition, Long> ends = new LinkedHashMap<>();
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 10L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 40L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2), 35L);
+
+        Map<TopicPartition, RecordRepository.PartitionRange> ranges = RecordRepository.buildPartitionRanges(starts, ends);
+
+        assertEquals(2, ranges.size());
+        assertEquals(20L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1)).getBegin());
+        assertEquals(40L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1)).getEnd());
+        assertEquals(30L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2)).getBegin());
+        assertEquals(35L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2)).getEnd());
+    }
+
+    @Test
+    void buildPartitionRangesKeepsTimestampBoundedRange() {
+        Map<TopicPartition, Long> starts = new LinkedHashMap<>();
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 100L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 200L);
+
+        Map<TopicPartition, Long> ends = new LinkedHashMap<>();
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 150L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 200L);
+
+        Map<TopicPartition, RecordRepository.PartitionRange> ranges = RecordRepository.buildPartitionRanges(starts, ends);
+
+        assertEquals(1, ranges.size());
+        RecordRepository.PartitionRange range = ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0));
+        assertEquals(100L, range.getBegin());
+        assertEquals(150L, range.getEnd());
+    }
 
     @Test
     void consumeEmpty() throws ExecutionException, InterruptedException {

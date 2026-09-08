@@ -25,6 +25,8 @@ import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
+import org.akhq.search.TopicSearchPlanner;
+import org.akhq.search.RecordSearchFilter;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
 import org.akhq.utils.Masker;
@@ -49,14 +51,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 @Singleton
 @Slf4j
 public class RecordRepository extends AbstractRepository {
-    public static final String SEARCH_SPLIT_REGEX = " (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
     @Inject
     private KafkaModule kafkaModule;
 
@@ -87,14 +87,262 @@ public class RecordRepository extends AbstractRepository {
     @Inject
     private Masker masker;
 
+    @Inject
+    private TopicSearchPlanner topicSearchPlanner;
+
+    @Inject
+    private RecordSearchFilter recordSearchFilter;
+
     @Value("${akhq.topic-data.poll-timeout:1000}")
     protected int pollTimeout;
 
-    @Value("${akhq.clients-defaults.consumer.properties.max.poll.records:25000}")
-    protected int maxPollRecords;
-
     @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
     protected int maxKafkaMessageLength;
+
+    public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
+        return Debug.call(() -> {
+            Topic topicsDetail = topicRepository.findByName(clusterId, options.topic);
+
+            if (options.sort == Options.Sort.OLDEST) {
+                return consumeOldest(topicsDetail, options);
+            } else {
+                return consumeNewest(topicsDetail, options);
+            }
+        }, "Consume with options {}", Collections.singletonList(options.toString()));
+    }
+
+    private List<Record> consumeOldest(Topic topic, Options options) {
+        List<Record> list = new ArrayList<>();
+
+        Properties properties = new Properties() {{
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
+        }};
+
+        try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
+            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, false);
+            if (rangePlan.isEmpty()) {
+                return list;
+            }
+
+            consumer.assign(rangePlan.ranges().keySet());
+            rangePlan.ranges().values().forEach(range -> consumer.seek(range.topicPartition(), range.begin()));
+
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            ConsumerRecords<byte[], byte[]> filteredRecords = filterRecordsByPartitionRange(records, rangePlan.getRangeEnds());
+
+            for (ConsumerRecord<byte[], byte[]> record : filteredRecords) {
+                Record current = newRecord(record, options, topic);
+                boolean matched = recordSearchFilter.matchFilters(options, current);
+                if (matched) {
+                    filterMessageLength(current);
+                    list.add(current);
+                }
+            }
+        }
+
+        return list.stream()
+            .sorted(Comparator.comparing(Record::getTimestamp))
+            .limit(options.size)
+            .toList();
+    }
+
+    private List<Record> consumeNewest(Topic topic, Options options) {
+        Properties properties = new Properties() {{
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
+        }};
+
+        try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
+            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, true);
+            if (rangePlan.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            consumer.assign(rangePlan.ranges().keySet());
+            rangePlan.ranges().values().forEach(range -> consumer.seek(range.topicPartition(), range.begin()));
+
+            rangePlan.ranges().values().forEach(range ->
+                log.trace(
+                    "Consume Newest [topic: {}] [partition: {}] [start: {}] [end: {}]",
+                    range.topicPartition().topic(),
+                    range.topicPartition().partition(),
+                    range.begin(),
+                    range.end()
+                )
+            );
+
+            List<Record> list = new ArrayList<>();
+            int emptyPoll = 0;
+            do {
+                ConsumerRecords<byte[], byte[]> records = filterRecordsByPartitionRange(
+                    this.poll(consumer),
+                    rangePlan.getRangeEnds()
+                );
+
+                if (records.isEmpty()) {
+                    emptyPoll++;
+                } else {
+                    emptyPoll = 0;
+                }
+
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    Record current = newRecord(record, options, topic);
+                    boolean matched = recordSearchFilter.matchFilters(options, current);
+                    if (matched) {
+                        filterMessageLength(current);
+                        list.add(current);
+                    }
+                }
+            } while (emptyPoll < 1 && list.size() < options.size);
+
+            List<Record> result = new ArrayList<>(list);
+            result.sort(Comparator.comparing(Record::getTimestamp).reversed());
+            return result.stream().limit(options.size).collect(Collectors.toList());
+        }
+    }
+
+    public Optional<Record> consumeSingleRecord(String clusterId, Topic topic, Options options) throws ExecutionException, InterruptedException {
+        return Debug.call(() -> {
+            if (options.getPartition() == null) {
+                return Optional.empty();
+            }
+
+            Properties properties = new Properties() {{
+                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);
+            }};
+
+            try (KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, properties)) {
+                TopicPartition targetPartition = new TopicPartition(topic.getName(), options.getPartition());
+                long startOffset = Math.max(0L, options.after.getOrDefault(options.getPartition(), -1L) + 1);
+                consumer.assign(Collections.singleton(targetPartition));
+                consumer.seek(targetPartition, startOffset);
+
+                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+                if (records.isEmpty()) {
+                    return Optional.empty();
+                }
+
+                Optional<ConsumerRecord<byte[], byte[]>> record = records.records(targetPartition).stream()
+                    .filter(r -> r.offset() >= startOffset)
+                    .findFirst();
+
+                return record.map(r -> newRecord(r, options, topic));
+            }
+        }, "Consume with options {}", Collections.singletonList(options.toString()));
+    }
+
+    public Flux<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
+        AtomicInteger matchesCount = new AtomicInteger();
+        AtomicInteger iteration = new AtomicInteger();
+
+        return Flux.generate(() -> {
+            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
+            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, false);
+
+            if (rangePlan.isEmpty()) {
+                return new SearchState(consumer, null, Collections.emptyMap());
+            }
+
+            consumer.assign(rangePlan.ranges().keySet());
+            rangePlan.ranges().values().forEach(range -> consumer.seek(range.topicPartition(), range.begin()));
+
+            rangePlan.ranges().values().forEach(range ->
+                log.trace(
+                    "Search [topic: {}] [partition: {}] [start: {}] [end: {}]",
+                    range.topicPartition().topic(),
+                    range.topicPartition().partition(),
+                    range.begin(),
+                    range.end()
+                )
+            );
+
+            return new SearchState(consumer, new SearchEvent(topic), rangePlan.getRangeEnds());
+        }, (searchState, emitter) -> {
+            SearchEvent searchEvent = searchState.getSearchEvent();
+            KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
+
+            // end
+            if (searchEvent == null || searchEvent.emptyPoll >= 1) {
+                emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
+                emitter.complete();
+
+                return new SearchState(consumer, searchEvent, searchState.getRangeEnds());
+            }
+
+            SearchEvent currentEvent = new SearchEvent(searchEvent);
+            int currentIteration = iteration.incrementAndGet();
+
+            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+            ConsumerRecords<byte[], byte[]> filteredRecords = filterRecordsByPartitionRange(records, searchState.getRangeEnds());
+
+            if (filteredRecords.isEmpty()) {
+                currentEvent.emptyPoll = 1;
+            } else {
+                currentEvent.emptyPoll = 0;
+            }
+
+            log.trace(
+                "Search poll iteration #{} [topic: {}] [ranges: {}] [pollRecords: {}] [filteredRecords: {}]",
+                currentIteration,
+                topic.getName(),
+                currentEvent.getOffsets().entrySet().stream()
+                    .map(entry -> entry.getKey() + ":" + entry.getValue().begin + "-" + entry.getValue().end)
+                    .collect(Collectors.toList()),
+                records.count(),
+                filteredRecords.count()
+            );
+
+            Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp);
+
+            List<Record> sortedRecords = StreamSupport.stream(filteredRecords.spliterator(), false)
+                .map(record -> newRecord(record, options, topic))
+                .sorted(Options.Sort.NEWEST.equals(options.sort) ? comparator.reversed() : comparator)
+                .toList();
+
+            List<Record> list = new ArrayList<>();
+
+            for (Record record : sortedRecords) {
+                if (matchesCount.get() >= options.size) {
+                    break;
+                }
+
+                currentEvent.updateProgress(record);
+
+                if (recordSearchFilter.matchFilters(options, record)) {
+                    list.add(record);
+                    matchesCount.getAndIncrement();
+
+                    SearchEvent.Offset partitionOffset = currentEvent.getOffsets().get(record.getPartition());
+                    log.trace(
+                        "Search matched record [topic: {}] [partition: {}] [offset: {}] [key: {}] [iteration: {}] [bounds: {}]",
+                        record.getTopic(),
+                        record.getPartition(),
+                        record.getOffset(),
+                        record.getKey(),
+                        currentIteration,
+                        partitionOffset == null ? "n/a" : partitionOffset.begin + "-" + partitionOffset.end
+                    );
+                }
+            }
+
+            currentEvent.records = list;
+
+            // No more records, poll was empty: stop here
+            if (currentEvent.emptyPoll == 1) {
+                emitter.next(currentEvent.end(searchEvent.getAfter()));
+            }
+            // More records than expected, send the records and then stop
+            else if (matchesCount.get() >= options.getSize()) {
+                currentEvent.emptyPoll = 666;
+                emitter.next(currentEvent.progress(options));
+            }
+            // Continue to search
+            else {
+                emitter.next(currentEvent.progress(options));
+            }
+
+            return new SearchState(consumer, currentEvent, searchState.getRangeEnds());
+        }, searchState -> searchState.getConsumer().close());
+    }
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
         Map<String, Topic> topics = topicRepository.findByName(clusterId, topicsName).stream()
@@ -134,368 +382,6 @@ public class RecordRepository extends AbstractRepository {
         }
 
         return records;
-    }
-
-    public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
-        return Debug.call(() -> {
-            Topic topicsDetail = topicRepository.findByName(clusterId, options.topic);
-
-            if (options.sort == Options.Sort.OLDEST) {
-                return consumeOldest(topicsDetail, options);
-            } else {
-                return consumeNewest(topicsDetail, options);
-            }
-        }, "Consume with options {}", Collections.singletonList(options.toString()));
-    }
-
-    private List<Record> consumeOldest(Topic topic, Options options) {
-        List<Record> list = new ArrayList<>();
-
-        getTopicPartitionForSortOldest(topic, options).entrySet().parallelStream().forEach(partition -> {
-            Properties properties = new Properties() {{
-                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
-            }};
-
-            try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-                consumer.assign(List.of(partition.getKey()));
-                consumer.seek(partition.getKey(), partition.getValue());
-
-                if (log.isTraceEnabled()) {
-                    log.trace(
-                        "Consume [topic: {}] [partition: {}] [start: {}]",
-                        partition.getKey().topic(),
-                        partition.getKey().partition(),
-                        partition.getValue()
-                    );
-                }
-
-                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-
-                for (ConsumerRecord<byte[], byte[]> record : records) {
-                    Record current = newRecord(record, options, topic);
-                    if (matchFilters(options, current)) {
-                        filterMessageLength(current);
-                        list.add(current);
-                    }
-                }
-            }
-        });
-
-        return list.stream()
-            .sorted(Comparator.comparing(Record::getTimestamp))
-            .limit(options.size)
-            .toList();
-    }
-
-    public List<TimeOffset> getOffsetForTime(String clusterId, List<org.akhq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
-        return Debug.call(() -> {
-            Map<TopicPartition, Long> map = new HashMap<>();
-
-            try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(clusterId)) {
-                partitions
-                    .forEach(partition -> map.put(
-                        new TopicPartition(partition.getTopic(), partition.getPartition()),
-                        timestamp
-                    ));
-
-                List<TimeOffset> collect = consumer.offsetsForTimes(map)
-                    .entrySet()
-                    .stream()
-                    .map(r -> r.getValue() != null ? new TimeOffset(
-                        r.getKey().topic(),
-                        r.getKey().partition(),
-                        r.getValue().offset()
-                    ) : null)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-                return collect;
-            }
-        }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
-    }
-
-    public Optional<Record> consumeSingleRecord(String clusterId, Topic topic, Options options) throws ExecutionException, InterruptedException {
-        return Debug.call(() -> {
-            Optional<Record> singleRecord = Optional.empty();
-
-            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options);
-
-            Properties properties = new Properties() {{
-                put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);
-            }};
-
-            try (KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId, properties)) {
-                consumer.assign(partitions.keySet());
-                partitions.forEach(consumer::seek);
-
-                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-                if (!records.isEmpty()) {
-                    singleRecord = Optional.of(newRecord(records.iterator().next(), options, topic));
-                }
-            }
-
-            return singleRecord;
-        }, "Consume with options {}", Collections.singletonList(options.toString()));
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
-    public static class TimeOffset {
-        private final String topic;
-        private final int partition;
-        private final long offset;
-    }
-
-
-    private Map<TopicPartition, Long> getTopicPartitionForSortOldest(Topic topic, Options options) {
-        Properties properties = new Properties() {{
-            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);
-        }};
-
-        try (KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(options.clusterId, properties)) {
-            return topic
-                .getPartitions()
-                .stream()
-                .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
-                    .map(offsetBound -> offsetBound.withTopicPartition(
-                        new TopicPartition(
-                            partition.getTopic(),
-                            partition.getId()
-                        )
-                    ))
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
-        }
-    }
-
-    private List<Record> consumeNewest(Topic topic, Options options) {
-        return topic
-            .getPartitions()
-            .parallelStream()
-            .map(partition -> {
-                KafkaConsumer<byte[], byte[]> consumer =
-                    this.kafkaModule.getConsumer(options.clusterId, new Properties() {{
-                        put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
-                    }});
-
-                return getOffsetForSortNewest(consumer, partition, options)
-                        .map(offset -> offset.withTopicPartition(
-                            new TopicPartition(
-                                partition.getTopic(),
-                                partition.getId()
-                            )
-                        ));
-                }
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .flatMap(topicPartitionOffset -> {
-                topicPartitionOffset.getConsumer().assign(Collections.singleton(topicPartitionOffset.getTopicPartition()));
-                topicPartitionOffset.getConsumer().seek(topicPartitionOffset.getTopicPartition(), topicPartitionOffset.getBegin());
-
-                if (log.isTraceEnabled()) {
-                    log.trace(
-                        "Consume Newest [topic: {}] [partition: {}] [start: {}]",
-                        topicPartitionOffset.getTopicPartition().topic(),
-                        topicPartitionOffset.getTopicPartition().partition(),
-                        topicPartitionOffset.getBegin()
-                    );
-                }
-
-                List<Record> list = new ArrayList<>();
-                int emptyPoll = 0;
-
-                do {
-                    ConsumerRecords<byte[], byte[]> records;
-
-                    records = this.poll(topicPartitionOffset.getConsumer());
-
-                    if (records.isEmpty()) {
-                        emptyPoll++;
-                    } else {
-                        if (log.isTraceEnabled()) {
-                            log.trace(
-                                "Empty pool [topic: {}] [partition: {}]",
-                                topicPartitionOffset.getTopicPartition().topic(),
-                                topicPartitionOffset.getTopicPartition().partition()
-                            );
-                        }
-                        emptyPoll = 0;
-                    }
-
-                    for (ConsumerRecord<byte[], byte[]> record : records) {
-                        if (record.offset() > topicPartitionOffset.getEnd()) {
-                            emptyPoll = 2;
-                            break;
-                        }
-                        Record current = newRecord(record, options, topic);
-                        if (matchFilters(options, current)) {
-                            filterMessageLength(current);
-                            list.add(current);
-                        }
-
-                        // End of the partition, we can stop here
-                        if (record.offset() == topicPartitionOffset.getEnd()) {
-                            emptyPoll = 1;
-                            break;
-                        }
-                    }
-                }
-                while (emptyPoll < 1);
-
-                Collections.reverse(list);
-
-                topicPartitionOffset.getConsumer().close();
-
-                return Stream.of(list);
-            })
-            .flatMap(List::stream)
-            .sorted(Comparator.comparing(Record::getTimestamp).reversed())
-            .limit(options.size)
-            .collect(Collectors.toList());
-    }
-
-    private Optional<Long> getFirstOffset(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
-        if (options.partition != null && partition.getId() != options.partition) {
-            return Optional.empty();
-        }
-
-        long first = partition.getFirstOffset();
-
-        if (options.timestamp != null) {
-            Map<TopicPartition, OffsetAndTimestamp> timestampOffset = consumer.offsetsForTimes(
-                ImmutableMap.of(
-                    new TopicPartition(partition.getTopic(), partition.getId()),
-                    options.timestamp
-                )
-            );
-
-            for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : timestampOffset.entrySet()) {
-                if (entry.getValue() == null) {
-                    return Optional.empty();
-                }
-
-                first = entry.getValue().offset();
-            }
-        }
-
-        return Optional.of(first);
-    }
-
-    private Optional<OffsetBound> getFirstOffsetForSortOldest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
-        return getFirstOffset(consumer, partition, options)
-            .map(first -> {
-                if (options.after.size() > 0 && options.after.containsKey(partition.getId())) {
-                    first = options.after.get(partition.getId()) + 1;
-                }
-
-                if (first > partition.getLastOffset()) {
-                    return null;
-                }
-
-                return OffsetBound.builder()
-                    .begin(first)
-                    .build();
-            });
-    }
-
-    private Optional<EndOffsetBound> getOffsetForSortNewest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, Options options) {
-        return getFirstOffset(consumer, partition, options)
-            .map(first -> {
-                // Take end offset - 1 to get the last record offset
-                long last = partition.getLastOffset() - 1;
-
-                // If there is an after parameter in the request use this one
-                if (options.after.containsKey(partition.getId())) {
-                    last = options.after.get(partition.getId()) - 1;
-                }
-
-                if (last < 0) {
-                    consumer.close();
-                    return null;
-                } else if (!(last - options.getSize() < first)) {
-                    first = last - options.getSize() + 1;
-                }
-
-                return EndOffsetBound.builder()
-                    .consumer(consumer)
-                    .begin(first)
-                    .end(last)
-                    .build();
-            });
-    }
-
-    @SuppressWarnings("deprecation")
-    private ConsumerRecords<byte[], byte[]> poll(KafkaConsumer<byte[], byte[]> consumer) {
-        /*
-        // poll with long call poll(final long timeoutMs, boolean includeMetadataInTimeout = true)
-        // poll with Duration call poll(final long timeoutMs, boolean includeMetadataInTimeout = false)
-        // So second one don't wait for metadata and return empty records
-        // First one wait for metadata and send records
-        // Hack bellow can be used to wait for metadata
-        */
-        return consumer.poll(Duration.ofMillis(this.pollTimeout));
-
-        /*
-        if (!records.isEmpty()) {
-            return records;
-        }
-
-        Field field = consumer.getClass().getDeclaredField("client");
-        field.setAccessible(true);
-
-        ConsumerNetworkClient client = (ConsumerNetworkClient) field.get(consumer);
-
-        while(!client.hasReadyNodes(System.currentTimeMillis())) {
-            Thread.sleep(100);
-        }
-
-        return consumer.poll(Duration.ofMillis(2000));
-        */
-    }
-
-    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
-        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
-        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
-        return masker.maskRecord(new Record(
-            client,
-            record,
-            this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
-            this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
-            this.avroToJsonSerializer,
-            this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
-            this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, client,
-                    this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
-            topic,
-            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(clusterId): null
-        ));
-    }
-
-    private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
-        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
-        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
-        return masker.maskRecord(new Record(
-            client,
-            record,
-            schemaRegistryType,
-            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
-            this.avroToJsonSerializer,
-            this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
-            this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, client,
-                    this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
-            topic,
-            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(options.getClusterId()): null
-        ));
     }
 
     public List<RecordMetadata> produce(
@@ -664,245 +550,326 @@ public class RecordRepository extends AbstractRepository {
         return recordMetadata;
     }
 
-    public Flux<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
-        AtomicInteger matchesCount = new AtomicInteger();
-
+    public Flux<Event<TailEvent>> tail(String clusterId, TailOptions options) {
         return Flux.generate(() -> {
-            Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(topic, options);
-
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
 
-            if (partitions.size() == 0) {
-                return new SearchState(consumer, null);
+            Map<String, Topic> topics = topicRepository.findByName(clusterId, options.topics).stream()
+                    .collect(Collectors.toMap(Topic::getName, Function.identity()));
+
+            consumer
+                .assign(topics.values()
+                    .stream()
+                    .flatMap(topic -> topic.getPartitions()
+                        .stream()
+                        .map(partition -> new TopicPartition(topic.getName(), partition.getId()))
+                    )
+                    .collect(Collectors.toList())
+                );
+
+            if (options.getAfter() != null) {
+                options
+                    .getAfter()
+                    .forEach(s -> {
+                        String[] split = s.split(",");
+                        consumer.seek(
+                            new TopicPartition(split[0], Integer.parseInt(split[1])),
+                            Long.parseLong(split[2])
+                        );
+                    });
             }
 
-            consumer.assign(partitions.keySet());
-            partitions.forEach(consumer::seek);
-
-            partitions.forEach((topicPartition, first) ->
-                log.trace(
-                    "Search [topic: {}] [partition: {}] [start: {}]",
-                    topicPartition.topic(),
-                    topicPartition.partition(),
-                    first
-                )
-            );
-
-            return new SearchState(consumer, new SearchEvent(topic));
-        }, (searchState, emitter) -> {
-            SearchEvent searchEvent = searchState.getSearchEvent();
-            KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
-
-            // end
-            if (searchEvent == null || searchEvent.emptyPoll >= 1) {
-                emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
-                emitter.complete();
-
-                return new SearchState(consumer, searchEvent);
-            }
-
-            SearchEvent currentEvent = new SearchEvent(searchEvent);
-
-            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-
-            if (records.isEmpty()) {
-                currentEvent.emptyPoll = 1;
-            } else {
-                currentEvent.emptyPoll = 0;
-            }
-
-            Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp);
-
-            List<Record> sortedRecords = StreamSupport.stream(records.spliterator(), false)
-                .map(record -> newRecord(record, options, topic))
-                .sorted(Options.Sort.NEWEST.equals(options.sort) ? comparator.reversed() : comparator)
-                .toList();
+            return new TailState(consumer, new TailEvent(), topics);
+        }, (state, emitter) -> {
+            ConsumerRecords<byte[], byte[]> records = this.poll(state.getConsumer());
+            TailEvent tailEvent = state.getTailEvent();
 
             List<Record> list = new ArrayList<>();
 
-            for (Record record : sortedRecords) {
-                if (matchesCount.get() >= options.size) {
-                    break;
-                }
+            for (ConsumerRecord<byte[], byte[]> record : records) {
 
-                currentEvent.updateProgress(record);
+                tailEvent.offsets.put(
+                    ImmutableMap.of(
+                        record.topic(),
+                        record.partition()
+                    ),
+                    record.offset()
+                );
 
-                if (matchFilters(options, record)) {
-                    list.add(record);
-                    matchesCount.getAndIncrement();
-
+                Record current = newRecord(record, options, state.getTopics().get(record.topic()));
+                if (recordSearchFilter.matchFilters(options, current)) {
+                    list.add(current);
                     log.trace(
                         "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
-                        record.getTopic(),
-                        record.getPartition(),
-                        record.getOffset(),
-                        record.getKey()
+                        record.topic(),
+                        record.partition(),
+                        record.offset(),
+                        record.key()
                     );
                 }
             }
 
-            currentEvent.records = list;
+            tailEvent.records = list;
+            emitter.next(Event.of(tailEvent).name("tailBody"));
 
-            // No more records, poll was empty: stop here
-            if (currentEvent.emptyPoll == 1) {
-                emitter.next(currentEvent.end(searchEvent.getAfter()));
-            }
-            // More records than expected, send the records and then stop
-            else if (matchesCount.get() >= options.getSize()) {
-                currentEvent.emptyPoll = 666;
-                emitter.next(currentEvent.progress(options));
-            }
-            // Continue to search
-            else {
-                emitter.next(currentEvent.progress(options));
-            }
-
-            return new SearchState(consumer, currentEvent);
-        }, searchState -> searchState.getConsumer().close());
+            state.tailEvent = tailEvent;
+            return state;
+        }, tailState -> tailState.getConsumer().close());
     }
 
-    private boolean matchFilters(BaseOptions options, Record record) {
+    public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
+        Properties properties = new Properties() {{
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+        }};
 
-        if (options.getSearch() != null) {
-            return matchFilter(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
-        } else {
-            if (options.getSearchByKey() != null) {
-                if (!matchFilter(options.getSearchByKey(), Collections.singletonList(record.getKey()))) {
-                    return false;
+        try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
+            Map<TopicPartition, Long> partitions = topicSearchPlanner.resolvePartitionRangePlan(fromTopic, options, consumer, false)
+                .ranges()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().begin()));
+
+            Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
+                .filter(topicPartitionLongEntry -> offsets.stream()
+                    .anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            int counter = 0;
+
+            if (!filteredPartitions.isEmpty()) {
+                consumer.assign(filteredPartitions.keySet());
+                filteredPartitions.forEach(consumer::seek);
+
+                if (log.isTraceEnabled()) {
+                    filteredPartitions.forEach((topicPartition, first) ->
+                        log.trace(
+                            "Consume [topic: {}] [partition: {}] [start: {}]",
+                            topicPartition.topic(),
+                            topicPartition.partition(),
+                            first
+                        )
+                    );
                 }
+
+                Map<Partition, Long> partitionsLastOffsetMap = fromTopic.getPartitions()
+                    .stream()
+                    .collect(Collectors.toMap(Function.identity(), Partition::getLastOffset));
+
+                boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
+
+                KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
+                ConsumerRecords<byte[], byte[]> records;
+                do {
+                    records = this.pollAndFilter(consumer, partitionsLastOffsetMap);
+
+                    for (ConsumerRecord<byte[], byte[]> record : records) {
+                        System.out.println(record.offset() + "-" + record.partition());
+
+                        counter++;
+                        producer.send(new ProducerRecord<>(
+                            toTopic.getName(),
+                            samePartition ? record.partition() : null,
+                            record.timestamp(),
+                            record.key(),
+                            record.value(),
+                            record.headers()
+                        ));
+                    }
+
+                } while (!records.isEmpty());
+
+                producer.flush();
             }
 
-            if (options.getSearchByValue() != null) {
-                if (!matchFilter(options.getSearchByValue(), Collections.singletonList(record.getValue()))) {
-                    return false;
-                }
-            }
-
-            if (options.getSearchByHeaderKey() != null) {
-                if (!matchFilter(options.getSearchByHeaderKey(), record.getHeadersKeySet())) {
-                    return false;
-                }
-            }
-
-            if (options.getSearchByHeaderValue() != null) {
-                if (!matchFilter(options.getSearchByHeaderValue(), record.getHeadersValues())) {
-                    return false;
-                }
-            }
-
-            if (options.getSearchByKeySubject() != null) {
-                if (!matchFilter(options.getSearchByKeySubject(), Collections.singletonList(record.getKeySubject()))) {
-                    return false;
-                }
-            }
-
-            if (options.getSearchByValueSubject() != null) {
-                return matchFilter(options.getSearchByValueSubject(), Collections.singletonList(record.getValueSubject()));
-            }
+            return new CopyResult(counter);
         }
-        return true;
     }
 
-    private boolean matchFilters(Options options, Record record) {
-        if (!matchFilters((BaseOptions) options, record)) {
-            return false;
-        }
+    public List<TimeOffset> getOffsetForTime(String clusterId, List<org.akhq.models.TopicPartition> partitions, Long timestamp) throws ExecutionException, InterruptedException {
+        return Debug.call(() -> {
+            Map<TopicPartition, Long> map = new HashMap<>();
 
-        if (options.getEndTimestamp() != null) {
-            return record.getTimestamp().toInstant().toEpochMilli() <= options.getEndTimestamp();
-        }
+            try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(clusterId)) {
+                partitions
+                    .forEach(partition -> map.put(
+                        new TopicPartition(partition.getTopic(), partition.getPartition()),
+                        timestamp
+                    ));
 
-        return true;
+                return consumer.offsetsForTimes(map)
+                    .entrySet()
+                    .stream()
+                    .map(r -> r.getValue() != null ? new TimeOffset(
+                        r.getKey().topic(),
+                        r.getKey().partition(),
+                        r.getValue().offset()
+                    ) : null)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            }
+        }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
     }
 
-
-    private boolean matchFilter(Search searchFilter, Collection<String> stringsToSearch) {
-        switch (searchFilter.searchMatchType) {
-            case EQUALS:
-                return equalsAll(searchFilter.getText(), stringsToSearch);
-            case NOT_CONTAINS:
-                return notContainsAll(searchFilter.getText(), stringsToSearch);
-            default:
-                return containsAll(searchFilter.getText(), stringsToSearch);
+    private ConsumerRecords<byte[], byte[]> filterRecordsByPartitionRange(
+        ConsumerRecords<byte[], byte[]> records,
+        Map<TopicPartition, Long> rangeEnds
+    ) {
+        if (records.isEmpty() || rangeEnds.isEmpty()) {
+            return records;
         }
+
+        Map<TopicPartition, List<ConsumerRecord<byte[], byte[]>>> filtered = new HashMap<>();
+        rangeEnds.forEach((topicPartition, endOffset) -> {
+            List<ConsumerRecord<byte[], byte[]>> partitionRecords = records.records(topicPartition)
+                .stream()
+                .filter(record -> record.offset() < endOffset)
+                .collect(Collectors.toList());
+
+            if (!partitionRecords.isEmpty()) {
+                filtered.put(topicPartition, partitionRecords);
+            }
+        });
+
+        return filtered.isEmpty() ? new ConsumerRecords<>(Collections.emptyMap()) : new ConsumerRecords<>(filtered);
     }
 
     /**
-     * Check that one of the input strings contains at least one time the patterns in the search string
-     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
+     * Polls the records and filters them with a maximum offset
      *
-     * @param search - the search string
-     * @param in - all the input string to check
-     * @return true if input matches at least one time the patterns
+     * @param consumer
+     * @param partitionsLastOffsetMap key : partition, value : the maximum offset we want to reach
+     * @return filtered records after polled. And an empty one if there are no records polled
+     * or if every record has been filtered
      */
-    private boolean containsAll(String search, Collection<String> in) {
-        if (search.equals("null")) {
-            return in
-                .stream()
-                .allMatch(Objects::isNull);
-        }
-
-        return in.parallelStream()
-    		.filter(Objects::nonNull)
-            .anyMatch(s -> extractSearchPatterns(search)
-                .stream()
-                .anyMatch(s.toLowerCase()::contains));
+    private ConsumerRecords<byte[], byte[]> pollAndFilter(KafkaConsumer<byte[], byte[]> consumer, Map<Partition, Long> partitionsLastOffsetMap) {
+        ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
+        return new ConsumerRecords<>(partitionsLastOffsetMap.entrySet()
+            .stream()
+            .map(entry ->
+                {
+                    // We filter records by partition
+                    TopicPartition topicPartition = new TopicPartition(entry.getKey().getTopic(), entry.getKey().getId());
+                    return Map.entry(topicPartition, records.records(topicPartition)
+                        .stream()
+                        .filter(consumerRecord -> consumerRecord.offset() < entry.getValue())
+                        .collect(Collectors.toList()));
+                }
+            ).filter(entry -> !entry.getValue().isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    /**
-     * Check that one of the input strings matches exactly at least one time the patterns in the search string
-     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
-     *
-     * @param search - the search string
-     * @param in - all the input string to check
-     * @return true if one of the input matches exactly at least one time the patterns
-     */
-    private boolean equalsAll(String search, Collection<String> in) {
-        if (search.equals("null")) {
-            return in
-                .stream()
-                .allMatch(Objects::isNull);
-        }
-
-        return in.parallelStream().filter(Objects::nonNull)
-            .anyMatch(s -> extractSearchPatterns(search).contains(s.toLowerCase()));
+    @SuppressWarnings("deprecation")
+    private ConsumerRecords<byte[], byte[]> poll(KafkaConsumer<byte[], byte[]> consumer) {
+        /*
+        // poll with long call poll(final long timeoutMs, boolean includeMetadataInTimeout = true)
+        // poll with Duration call poll(final long timeoutMs, boolean includeMetadataInTimeout = false)
+        // So second one don't wait for metadata and return empty records
+        // First one wait for metadata and send records
+        // Hack bellow can be used to wait for metadata
+        */
+        return consumer.poll(Duration.ofMillis(this.pollTimeout));
     }
 
-    /**
-     * Check that one of the input strings does not contain at least one time the patterns in the search string
-     * Patterns are extracted from the search string based on whitespace unless enclosed with double quotes
-     *
-     * @param search - the search string
-     * @param in - all the input string to check
-     * @return true if input does not contain at least one time the patterns
-     */
-    private boolean notContainsAll(String search, Collection<String> in) {
-        if (search.equals("null")) {
-            return in
-                .stream()
-                .noneMatch(Objects::isNull);
-        }
 
-        return in.parallelStream()
-            .anyMatch(s -> s == null || extractSearchPatterns(search)
-                .stream()
-                .noneMatch(s.toLowerCase()::contains));
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
+        return masker.maskRecord(new Record(
+            client,
+            record,
+            this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
+            this.avroToJsonSerializer,
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
+            this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
+                this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
+            topic,
+            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(clusterId): null
+        ));
     }
 
-    /**
-     * Extract search patterns from the search string by splitting on whitespace
-     * If a pattern is enclosed with double quotes, the white space will be ignored during splitting
-     *
-     * @param searchString the search string to split into patterns
-     * @return search patterns
-     */
-    private List<String> extractSearchPatterns(String searchString) {
-        return Arrays.stream(searchString.toLowerCase().split(SEARCH_SPLIT_REGEX, -1))
-            .map(s -> {
-                // Update pattern enclosed with double quotes by removing backslashes and start/end double quotes
-                s = s.replaceAll("\\\\", "");
-                return s.startsWith("\"") ? s.substring(1, s.length() - 1) : s;
-            }).collect(Collectors.toList());
+    private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
+        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
+        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
+        return masker.maskRecord(new Record(
+            client,
+            record,
+            schemaRegistryType,
+            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
+            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
+            this.avroToJsonSerializer,
+            this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
+            this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
+            avroWireFormatConverter.convertValueToWireFormat(record, client,
+                this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
+            topic,
+            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(options.getClusterId()): null
+        ));
+    }
+
+    public static Map<TopicPartition, PartitionRange> buildPartitionRanges(Map<TopicPartition, Long> starts, Map<TopicPartition, Long> ends) {
+        return TopicSearchPlanner.buildPartitionRanges(starts, ends).entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> new PartitionRange(entry.getKey(), entry.getValue().begin(), entry.getValue().end())));
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class PartitionRange {
+        private final TopicPartition topicPartition;
+        private final long begin;
+        private final long end;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class TimeOffset {
+        private final String topic;
+        private final int partition;
+        private final long offset;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @AllArgsConstructor
+    @Getter
+    public static class CopyResult {
+        int records;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class TailState {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private TailEvent tailEvent;
+        private Map<String, Topic> topics;
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    public static class TailEvent {
+        private List<Record> records = new ArrayList<>();
+        private final Map<Map<String, Integer>, Long> offsets = new HashMap<>();
+    }
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @AllArgsConstructor
+    public static class SearchState {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private final SearchEvent searchEvent;
+        private final Map<TopicPartition, Long> rangeEnds;
     }
 
     @ToString
@@ -967,197 +934,6 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
-    public Flux<Event<TailEvent>> tail(String clusterId, TailOptions options) {
-        return Flux.generate(() -> {
-            KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-
-            Map<String, Topic> topics = topicRepository.findByName(clusterId, options.topics).stream()
-                    .collect(Collectors.toMap(Topic::getName, Function.identity()));
-
-            consumer
-                .assign(topics.values()
-                    .stream()
-                    .flatMap(topic -> topic.getPartitions()
-                        .stream()
-                        .map(partition -> new TopicPartition(topic.getName(), partition.getId()))
-                    )
-                    .collect(Collectors.toList())
-                );
-
-            if (options.getAfter() != null) {
-                options
-                    .getAfter()
-                    .forEach(s -> {
-                        String[] split = s.split(",");
-                        consumer.seek(
-                            new TopicPartition(split[0], Integer.parseInt(split[1])),
-                            Long.parseLong(split[2])
-                        );
-                    });
-            }
-
-            return new TailState(consumer, new TailEvent(), topics);
-        }, (state, emitter) -> {
-            ConsumerRecords<byte[], byte[]> records = this.poll(state.getConsumer());
-            TailEvent tailEvent = state.getTailEvent();
-
-            List<Record> list = new ArrayList<>();
-
-            for (ConsumerRecord<byte[], byte[]> record : records) {
-
-                tailEvent.offsets.put(
-                    ImmutableMap.of(
-                        record.topic(),
-                        record.partition()
-                    ),
-                    record.offset()
-                );
-
-                Record current = newRecord(record, options, state.getTopics().get(record.topic()));
-                if (matchFilters(options, current)) {
-                    list.add(current);
-                    log.trace(
-                        "Record [topic: {}] [partition: {}] [offset: {}] [key: {}]",
-                        record.topic(),
-                        record.partition(),
-                        record.offset(),
-                        record.key()
-                    );
-                }
-            }
-
-            tailEvent.records = list;
-            emitter.next(Event.of(tailEvent).name("tailBody"));
-
-            state.tailEvent = tailEvent;
-            return state;
-        }, tailState -> tailState.getConsumer().close());
-    }
-
-    public CopyResult copy(Topic fromTopic, String toClusterId, Topic toTopic, List<TopicController.OffsetCopy> offsets, RecordRepository.Options options) {
-        Map<TopicPartition, Long> partitions = getTopicPartitionForSortOldest(fromTopic, options);
-
-        Map<TopicPartition, Long> filteredPartitions = partitions.entrySet().stream()
-            .filter(topicPartitionLongEntry -> offsets.stream()
-                .anyMatch(offsetCopy -> offsetCopy.getPartition() == topicPartitionLongEntry.getKey().partition()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        Properties properties = new Properties() {{
-            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
-        }};
-
-        try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-            int counter = 0;
-
-            if (filteredPartitions.size() > 0) {
-                consumer.assign(filteredPartitions.keySet());
-                filteredPartitions.forEach(consumer::seek);
-
-                if (log.isTraceEnabled()) {
-                    filteredPartitions.forEach((topicPartition, first) ->
-                        log.trace(
-                            "Consume [topic: {}] [partition: {}] [start: {}]",
-                            topicPartition.topic(),
-                            topicPartition.partition(),
-                            first
-                        )
-                    );
-                }
-
-                Map<Partition, Long> partitionsLastOffsetMap = fromTopic.getPartitions()
-                    .stream()
-                    .collect(Collectors.toMap(Function.identity(), Partition::getLastOffset));
-
-                boolean samePartition = toTopic.getPartitions().size() == fromTopic.getPartitions().size();
-
-                KafkaProducer<byte[], byte[]> producer = kafkaModule.getProducer(toClusterId);
-                ConsumerRecords<byte[], byte[]> records;
-                do {
-                    records = this.pollAndFilter(consumer, partitionsLastOffsetMap);
-
-                    for (ConsumerRecord<byte[], byte[]> record : records) {
-                        System.out.println(record.offset() + "-" + record.partition());
-
-                        counter++;
-                        producer.send(new ProducerRecord<>(
-                            toTopic.getName(),
-                            samePartition ? record.partition() : null,
-                            record.timestamp(),
-                            record.key(),
-                            record.value(),
-                            record.headers()
-                        ));
-                    }
-
-                } while (!records.isEmpty());
-
-                producer.flush();
-            }
-
-            return new CopyResult(counter);
-        }
-    }
-
-    /**
-     * Polls the records and filters them with a maximum offset
-     *
-     * @param consumer
-     * @param partitionsLastOffsetMap key : partition, value : the maximum offset we want to reach
-     * @return filtered records after polled. And an empty one if there are no records polled
-     * or if every record has been filtered
-     */
-    private ConsumerRecords<byte[], byte[]> pollAndFilter(KafkaConsumer<byte[], byte[]> consumer, Map<Partition, Long> partitionsLastOffsetMap) {
-        ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-        return new ConsumerRecords<>(partitionsLastOffsetMap.entrySet()
-            .stream()
-            .map(entry ->
-                {
-                    // We filter records by partition
-                    TopicPartition topicPartition = new TopicPartition(entry.getKey().getTopic(), entry.getKey().getId());
-                    return Map.entry(topicPartition, records.records(topicPartition)
-                        .stream()
-                        .filter(consumerRecord -> consumerRecord.offset() < entry.getValue())
-                        .collect(Collectors.toList()));
-                }
-            ).filter(entry -> !entry.getValue().isEmpty())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @AllArgsConstructor
-    @Getter
-    public static class CopyResult {
-        int records;
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
-    public static class TailState {
-        private final KafkaConsumer<byte[], byte[]> consumer;
-        private TailEvent tailEvent;
-        private Map<String, Topic> topics;
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
-    public static class SearchState {
-        private final KafkaConsumer<byte[], byte[]> consumer;
-        private final SearchEvent searchEvent;
-    }
-
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    public static class TailEvent {
-        private List<Record> records = new ArrayList<>();
-        private final Map<Map<String, Integer>, Long> offsets = new HashMap<>();
-    }
 
     @ToString
     @EqualsAndHashCode
@@ -1371,24 +1147,6 @@ public class RecordRepository extends AbstractRepository {
             this.clusterId = clusterId;
             this.topics = topics;
         }
-    }
-
-    @Data
-    @Builder
-    private static class OffsetBound {
-        @With
-        private final TopicPartition topicPartition;
-        private final long begin;
-    }
-
-    @Data
-    @Builder
-    private static class EndOffsetBound {
-        @With
-        private final TopicPartition topicPartition;
-        private final long begin;
-        private final long end;
-        private final KafkaConsumer<byte[], byte[]> consumer;
     }
 
     private void filterMessageLength(Record record) {
