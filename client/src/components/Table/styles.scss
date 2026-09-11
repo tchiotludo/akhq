@@ -1,5 +1,19 @@
-.action-hover :hover {
-  cursor: pointer;
+.action-hover {
+  :hover {
+    cursor: pointer;
+  }
+
+  .favorite-action {
+    color: inherit;
+  }
+
+  .favorite-action:not(.is-favorite) svg {
+    opacity: 0.55;
+  }
+
+  .favorite-action.is-favorite {
+    color: #ffd166;
+  }
 }
 
 .no-stripes tr {
@@ -31,8 +45,4 @@ td {
   top: -5px;
   cursor: pointer;
   font-size: $font-size-lg;
-}
-
-.empty-consumergroups {
-  min-height: 31px;
 }

@@ -95,7 +95,8 @@ public class TopicController extends AbstractController {
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
         Optional<Integer> page,
-        Optional<Integer> uiPageSize
+        Optional<Integer> uiPageSize,
+        Optional<List<String>> favorite
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
@@ -107,7 +108,8 @@ public class TopicController extends AbstractController {
             pagination,
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search,
-            buildUserBasedResourceFilters(cluster)
+            buildUserBasedResourceFilters(cluster),
+            favorite.orElse(List.of())
         ));
     }
 
@@ -745,4 +747,3 @@ public class TopicController extends AbstractController {
         private long offset;
     }
 }
-
