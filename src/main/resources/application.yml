@@ -180,10 +180,6 @@ akhq:
         - resources: [ "KSQLDB" ]
           actions: [ "READ", "EXECUTE" ]
     groups:
-      reader:
-        - role: reader
-          # patterns: [ ".*" ]
-          # clusters: [ ".*" ]
       admin:
         - role: node-admin
         - role: topic-admin

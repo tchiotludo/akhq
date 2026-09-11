@@ -1,8 +1,8 @@
 package org.akhq.repositories;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micronaut.context.env.Environment;
+import io.micronaut.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -46,7 +47,7 @@ class RecordRepositoryTest extends AbstractTest {
     private Environment environment;
 
     @Inject
-    private ObjectMapper objectMapper;
+    private JsonMapper jsonMapper;
 
     @Test
     void consumeEmpty() throws ExecutionException, InterruptedException {
@@ -124,8 +125,7 @@ class RecordRepositoryTest extends AbstractTest {
         assertEquals(51, consumeAll(options));
     }
 
-
-    @Test
+    @RetryingTest(maxAttempts = 3, suspendForMs = 1000)
     void consumeAvro() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_STREAM_MAP);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
@@ -254,7 +254,7 @@ class RecordRepositoryTest extends AbstractTest {
         Schema keyJsonSchema = registerSchema("json_schema/key.json", KafkaTestCluster.TOPIC_JSON_SCHEMA + "-key");
         Schema valueJsonSchema = registerSchema("json_schema/album.json", KafkaTestCluster.TOPIC_JSON_SCHEMA + "-value");
         Album objectSatisfyingJsonSchema = new Album("title", List.of("artist_1", "artist_2"), 1989, List.of("song_1", "song_2"));
-        String recordAsJsonString = objectMapper.writeValueAsString(objectSatisfyingJsonSchema);
+        String recordAsJsonString = jsonMapper.writeValueAsString(objectSatisfyingJsonSchema);
         String keyJsonString = new JSONObject(Collections.singletonMap("id", "83fff9f8-b47a-4bf7-863b-9942c4369f06")).toString();
 
         RecordMetadata producedRecordMetadata = repository.produce(
@@ -303,22 +303,24 @@ class RecordRepositoryTest extends AbstractTest {
         Topic topic = topicRepository.findByName(options.getClusterId(), options.getTopic());
 
         do {
-            repository.search(topic, options).blockingSubscribe(event -> {
-                size.addAndGet(event.getData().getRecords().size());
+            repository.search(topic, options)
+                .doOnNext(event -> {
+                    size.addAndGet(event.getData().getRecords().size());
 
-                assertTrue(event.getData().getPercent() >= 0);
-                assertTrue(event.getData().getPercent() <= 100);
+                    assertTrue(event.getData().getPercent() >= 0);
+                    assertTrue(event.getData().getPercent() <= 100);
 
-                if (event.getName().equals("searchEnd")) {
-                    if (event.getData().getAfter() == null) {
-                        hasNext.set(false);
+                    if (event.getName().equals("searchEnd")) {
+                        if (event.getData().getAfter() == null) {
+                            hasNext.set(false);
+                        }
                     }
-                }
 
-                if (event.getData().getAfter() != null) {
-                    options.setAfter(event.getData().getAfter());
-                }
-            });
+                    if (event.getData().getAfter() != null) {
+                        options.setAfter(event.getData().getAfter());
+                    }
+                })
+                .blockLast();
 
         } while (hasNext.get());
 

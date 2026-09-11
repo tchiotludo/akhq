@@ -1,0 +1,46 @@
+{{- if and .Values.httpRoute.enabled .Values.service.enabled -}}
+{{- $fullName := include "akhq.fullname" . -}}
+{{- $httpRoutePaths := .Values.httpRoute.paths -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $value := .Values.httpRoute.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.httpRoute.hostnames }}
+  hostnames:
+  {{- range .Values.httpRoute.hostnames }}
+    - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  parentRefs:
+  {{- toYaml .Values.httpRoute.parentRefs | nindent 2 }}
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: {{ $fullName }}
+      port: {{ .Values.service.port }}
+      weight: 100
+    {{- if .Values.httpRoute.filters }}
+    filters:
+    {{- toYaml .Values.httpRoute.filters | nindent 4 }}
+    {{- end }}
+    matches:
+    {{- range $httpRoutePaths }}
+    - path:
+        type: {{ $.Values.httpRoute.pathType | default "PathPrefix" }}
+        value: {{ . }}
+    {{- end }}
+{{- end }}

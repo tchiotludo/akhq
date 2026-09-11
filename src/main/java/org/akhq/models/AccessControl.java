@@ -35,10 +35,12 @@ public class AccessControl {
     public AccessControl(String principal, Collection<AclBinding> aclBinding) {
         this.principal = principal;
         this.encodedPrincipal = encodePrincipal(this.principal);
-        this.acls = aclBinding
-            .stream()
-            .map(Acl::new)
-            .collect(Collectors.toList());
+        if (aclBinding != null) {
+            this.acls = aclBinding
+                .stream()
+                .map(Acl::new)
+                .collect(Collectors.toList());
+        }
     }
 
     public List<Acl> findByRessourceType(String resourceType) {

@@ -1,8 +1,10 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class ConsumerGroup {
     private String id;
@@ -22,9 +25,10 @@ public class ConsumerGroup {
     private String partitionAssignor;
     private GroupState state;
     private Node coordinator;
-    private final ArrayList<Consumer> members = new ArrayList<>();
-    private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
+    private ArrayList<Consumer> members = new ArrayList<>();
+    private ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 
+    @JsonIgnore
     public ConsumerGroup(
         ConsumerGroupDescription groupDescription,
         Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> groupOffset,

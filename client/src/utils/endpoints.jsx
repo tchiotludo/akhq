@@ -123,8 +123,12 @@ export const uriConnects = id => {
   return `${apiUrl}/connects${id ? '?clusterId=' + id : ''}`;
 };
 
-export const uriConnectDefinitions = (clusterId, connectId, search, pageNumber) => {
-  return `${apiUrl}/${clusterId}/connect/${connectId}?&search=${search}&page=${pageNumber}`;
+export const uriConnectDefinitions = (clusterId, connectId, search, pageNumber, status) => {
+  let url = `${apiUrl}/${clusterId}/connect/${connectId}?&search=${search}&page=${pageNumber}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
+  return url;
 };
 
 export const uriConnectPlugins = (clusterId, connectId) => {

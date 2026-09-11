@@ -8,7 +8,6 @@ import io.micronaut.security.ldap.group.DefaultLdapGroupProcessor;
 import io.micronaut.security.ldap.group.LdapGroupProcessor;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
 import org.akhq.configs.security.Group;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@MicronautTest(propertySources = "application.yml")
+@MicronautTest(environments = "test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LdapAuthenticationProviderTest {
     @Inject
@@ -46,6 +45,7 @@ class LdapAuthenticationProviderTest {
     @Inject
     LdapGroupProcessor ldapGroupProcessor;
 
+    @SuppressWarnings("rawtypes")
     @Inject
     LdapAuthenticationProvider ldapAuthenticationProvider;
 
@@ -77,13 +77,10 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList("ldap-admin")));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
-                        "user",
-                        "pass"
-                ))).blockingFirst();
-
-
+        AuthenticationResponse response = ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
+            "user",
+            "pass"
+        ));
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
@@ -92,7 +89,7 @@ class LdapAuthenticationProviderTest {
 
         assertThat(groups.keySet(), hasSize(1));
         assertNotNull(groups.get("limited"));
-        assertEquals(groups.get("limited").size(), 3);
+        assertEquals(3, groups.get("limited").size());
         assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
             containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
         assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
@@ -115,12 +112,10 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Arrays.asList("ldap-admin", "ldap-operator")));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
-                        "user",
-                        "pass"
-                ))).blockingFirst();
-
+        AuthenticationResponse response = ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
+            "user",
+            "pass"
+        ));
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
@@ -129,7 +124,7 @@ class LdapAuthenticationProviderTest {
 
         assertThat(groups.keySet(), hasSize(2));
         assertNotNull(groups.get("limited"));
-        assertEquals(groups.get("limited").size(), 3);
+        assertEquals(3, groups.get("limited").size());
         assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
             containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
         assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
@@ -138,7 +133,7 @@ class LdapAuthenticationProviderTest {
             containsInAnyOrder("test.*", "test.*", "user.*"));
 
         assertNotNull(groups.get("operator"));
-        assertEquals(groups.get("operator").size(), 2);
+        assertEquals(2, groups.get("operator").size());
         assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
             containsInAnyOrder("topic-read", "topic-data-admin"));
         assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
@@ -160,12 +155,10 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(List.of("ldap-admin")));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                        .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
-                                        "user2",
-                                        "pass"
-                        ))).blockingFirst();
-
+        AuthenticationResponse response = ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
+            "user2",
+            "pass"
+        ));
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user2", response.getAuthentication().get().getName());
@@ -174,7 +167,7 @@ class LdapAuthenticationProviderTest {
 
         assertThat(groups.keySet(), hasSize(2));
         assertNotNull(groups.get("limited"));
-        assertEquals(groups.get("limited").size(), 3);
+        assertEquals(3, groups.get("limited").size());
         assertThat(groups.get("limited").stream().map(Group::getRole).collect(Collectors.toList()),
             containsInAnyOrder("topic-read", "topic-write", "schema-delete"));
         assertThat(groups.get("limited").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
@@ -183,7 +176,7 @@ class LdapAuthenticationProviderTest {
             containsInAnyOrder("test.*", "test.*", "user.*"));
 
         assertNotNull(groups.get("operator"));
-        assertEquals(groups.get("operator").size(), 2);
+        assertEquals(2, groups.get("operator").size());
         assertThat(groups.get("operator").stream().map(Group::getRole).collect(Collectors.toList()),
             containsInAnyOrder("topic-read", "topic-data-admin"));
         assertThat(groups.get("operator").stream().map(Group::getClusters).flatMap(Collection::stream).collect(Collectors.toList()),
@@ -204,12 +197,10 @@ class LdapAuthenticationProviderTest {
 
         when(ldapGroupProcessor.process(anyString(), any(LdapSearchResult.class), any(SearchProvider.class))).thenReturn(new HashSet<>(Collections.singletonList(("ldap-other-group"))));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
-                        "user",
-                        "pass"
-                ))).blockingFirst();
-
+        AuthenticationResponse response = ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
+            "user",
+            "pass"
+        ));
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
         assertEquals("user", response.getAuthentication().get().getName());
@@ -227,16 +218,12 @@ class LdapAuthenticationProviderTest {
 
         when(ldapSearchService.searchFirst(any(DirContext.class), any(SearchSettings.class))).thenReturn(optionalResult);
 
-        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> {
-            Flowable
-                .fromPublisher(ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
-                    "user",
-                    "pass"
-                ))).blockingFirst();
-        });
+        AuthenticationResponse response = ldapAuthenticationProvider.authenticate(null, new UsernamePasswordCredentials(
+            "user",
+            "pass"
+        ));
 
-        assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
-        assertNotNull(authenticationException.getResponse());
-        assertFalse(authenticationException.getResponse().isAuthenticated());
+        assertThat(response, instanceOf(AuthenticationFailed.class));
+        assertFalse(response.isAuthenticated());
     }
 }

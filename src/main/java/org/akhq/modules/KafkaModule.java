@@ -27,10 +27,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.sourcelab.kafka.connect.apiclient.Configuration;
-import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
+import org.akhq.clients.connect.KafkaConnectApiClient;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -305,9 +303,9 @@ public class KafkaModule {
         return this.registryClient.get(clusterId);
     }
 
-    private final Map<String, Map<String, KafkaConnectClient>> connectRestClient = new HashMap<>();
+    private final Map<String, Map<String, KafkaConnectApiClient>> connectRestClient = new HashMap<>();
 
-    public Map<String, KafkaConnectClient> getConnectRestClient(String clusterId) throws InvalidClusterException {
+    public Map<String, KafkaConnectApiClient> getConnectRestClient(String clusterId) throws InvalidClusterException {
         if (!this.clusterExists(clusterId)) {
             throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
         }
@@ -317,33 +315,26 @@ public class KafkaModule {
 
             if (connection.getConnect() != null && !connection.getConnect().isEmpty()) {
 
-                Map<String, KafkaConnectClient> mapConnects = new HashMap<>();
+                Map<String, KafkaConnectApiClient> mapConnects = new HashMap<>();
                 connection.getConnect().forEach(connect -> {
-
                     URIBuilder uri = URIBuilder.fromString(connect.getUrl().toString());
-                    Configuration configuration = new Configuration(uri.toNormalizedURI(false).toString());
+
+                    KafkaConnectApiClient.Builder builder = KafkaConnectApiClient
+                        .builder(uri.toNormalizedURI(false).toString());
 
                     if (connect.getBasicAuthUsername() != null) {
-                        configuration.useBasicAuth(
-                            connect.getBasicAuthUsername(),
-                            connect.getBasicAuthPassword()
-                        );
+                        builder.basicAuth(connect.getBasicAuthUsername(), connect.getBasicAuthPassword());
                     }
 
                     if (connect.getSslTrustStore() != null) {
-                        configuration.useTrustStore(
-                            new File(connect.getSslTrustStore()),
-                            connect.getSslTrustStorePassword()
-                        );
+                        builder.trustStore(connect.getSslTrustStore(), connect.getSslTrustStorePassword());
                     }
 
                     if (connect.getSslKeyStore() != null) {
-                        configuration.useKeyStore(
-                            new File(connect.getSslKeyStore()),
-                            connect.getSslKeyStorePassword()
-                        );
+                        builder.keyStore(connect.getSslKeyStore(), connect.getSslKeyStorePassword());
                     }
-                    mapConnects.put(connect.getName(), new KafkaConnectClient(configuration));
+
+                    mapConnects.put(connect.getName(), builder.build());
                 });
                 this.connectRestClient.put(clusterId, mapConnects);
             }

@@ -2,6 +2,11 @@ micronaut:
   application:
     name: akhq
 
+  server:
+    port: 0
+    netty:
+      logLevel: TRACE
+
   security:
     enabled: true
     endpoints:
@@ -31,17 +36,19 @@ micronaut:
         groups:
           enabled: true
           base: ''
+
   caches:
     kafka-wrapper:
       maximum-size: 0
 
-  server:
-    netty:
-      logLevel: TRACE
 
   http:
     client:
       read-timeout: 30s
+
+endpoints:
+  all:
+    port: 0
 
 akhq:
   server:

@@ -45,7 +45,7 @@ public class ConnectController extends AbstractController {
     @Get
     @Operation(tags = {"connect"}, summary = "List all connect definitions")
     public ResultPagedList<ConnectDefinition> list(
-        HttpRequest<?> request, String cluster, String connectId, Optional<String> search, Optional<Integer> page)
+        HttpRequest<?> request, String cluster, String connectId, Optional<String> search, Optional<String> status, Optional<Integer> page)
         throws IOException, RestClientException, ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
@@ -53,7 +53,7 @@ public class ConnectController extends AbstractController {
         Pagination pagination = new Pagination(pageSize, uri, page.orElse(1));
 
         return ResultPagedList.of(this.connectRepository.getPaginatedDefinitions(
-            cluster, connectId, pagination, search, buildUserBasedResourceFilters(cluster)));
+            cluster, connectId, pagination, search, status, buildUserBasedResourceFilters(cluster)));
     }
 
     @AKHQSecured(resource = Role.Resource.CONNECT_CLUSTER, action = Role.Action.READ)

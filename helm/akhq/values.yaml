@@ -153,6 +153,28 @@ ingress:
   #    hosts:
   #      - akhq.demo.com
 
+httpRoute:
+  enabled: false
+  annotations: {}
+  labels: {}
+  paths:
+    - /
+  pathType: "PathPrefix"
+  hostnames:
+    - akhq.demo.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: gateway-name
+      namespace: gateway-namespace
+  filters: []
+  # Example filters:
+  # - type: RequestHeaderModifier
+  #   requestHeaderModifier:
+  #     add:
+  #       - name: X-Custom-Header
+  #         value: custom-value
+
 ### Readiness / Liveness probe config.
 ### ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 readinessProbe:
@@ -196,3 +218,11 @@ affinity: {}
 networkPolicy:
   enabled: true
   labels: {}
+
+gke:
+  healthCheckPolicy:
+    enabled: false
+    checkIntervalSec: 5
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2

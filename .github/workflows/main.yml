@@ -17,36 +17,50 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      checks: write
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout (full history for tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Checkout (shallow for branches/PRs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
 
       # Caches
       - name: Gradle cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/caches
           key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Gradle wrapper cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/wrapper
           key: "${{ runner.os }}-wrapper-${{ hashFiles('**/*.gradle') }}"
           restore-keys: |
             ${{ runner.os }}-wrapper-
       - name: Npm cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.npm
           key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node
           key: "${{ runner.os }}-node-${{ hashFiles('**/*.gradle') }}"
@@ -55,7 +69,7 @@ jobs:
 
       # JDK
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: 25
@@ -115,6 +129,28 @@ jobs:
             build/dist/akhq-*.tar
             build/dist/akhq-*.zip
 
+      - name: Add chart files
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cp LICENSE helm/akhq/LICENSE
+          cp README.md helm/akhq/README.md
+
+      - name: Configure Git
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Run chart-releaser
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: helm/chart-releaser-action@v1
+        with:
+          charts_dir: helm
+          pages_branch: helm
+          mark_as_latest: false
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
       # Docker
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -164,6 +200,13 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Trigger docs publish
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          event-type: akhq-release-docs
+          client-payload: '{"sha": "${{ github.sha }}"}'
 
       # Slack
       - name: Slack notification

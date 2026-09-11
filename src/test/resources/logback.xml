@@ -64,4 +64,7 @@
     <logger name="org.reflections" level="ERROR" />
     <logger name="org.apache.kafka.connect.runtime.Worker" level="ERROR" />
     <logger name="org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader" level="OFF" />
+    
+    <!-- Suppress benign Kafka 4.3.1+ warning during consumer rebalancing (Kafka issue KAFKA-20449) -->
+    <logger name="org.apache.kafka.clients.consumer.internals.OffsetFetcherUtils" level="ERROR" />
 </configuration>

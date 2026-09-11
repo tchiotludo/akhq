@@ -73,7 +73,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void listStreams() {
+    void listStreams() throws ExecutionException, InterruptedException {
         List<KsqlDbStream> ksqlDbStreams = repository.listStreams(KafkaTestCluster.CLUSTER_ID, "ksqldb");
         assertEquals(1, ksqlDbStreams.size()); // There is always a default stream named KSQL_PROCESSING_LOG
     }
@@ -91,7 +91,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void listTables() {
+    void listTables() throws ExecutionException, InterruptedException {
         List<KsqlDbTable> ksqlDbTables = repository.listTables(KafkaTestCluster.CLUSTER_ID, "ksqldb");
         assertEquals(0, ksqlDbTables.size());
     }
@@ -109,7 +109,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void listQueries() {
+    void listQueries() throws ExecutionException, InterruptedException {
         List<KsqlDbQuery> ksqlDbQueries = repository.listQueries(KafkaTestCluster.CLUSTER_ID, "ksqldb");
         assertEquals(0, ksqlDbQueries.size());
     }
@@ -129,7 +129,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void executeStatement_stream() {
+    void executeStatement_stream() throws ExecutionException, InterruptedException {
         final String sql = "CREATE STREAM ORDERS (ORDER_ID BIGINT, PRODUCT_ID VARCHAR, USER_ID VARCHAR) WITH (KAFKA_TOPIC='orders', PARTITIONS=1, VALUE_FORMAT='json');";
         assertDoesNotThrow(() -> repository.executeStatement(KafkaTestCluster.CLUSTER_ID, "ksqldb", sql));
 
@@ -138,7 +138,7 @@ class KsqlDbRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void executeStatement_table() {
+    void executeStatement_table() throws ExecutionException, InterruptedException {
         final String sqlStream = "CREATE STREAM ORDERS (ORDER_ID BIGINT, PRODUCT_ID VARCHAR, USER_ID VARCHAR) WITH (KAFKA_TOPIC='orders', PARTITIONS=1, VALUE_FORMAT='json');";
         repository.executeStatement(KafkaTestCluster.CLUSTER_ID, "ksqldb", sqlStream);
         final String sql = "CREATE TABLE ORDERS_BY_USERS AS SELECT USER_ID, COUNT(*) as COUNT FROM ORDERS GROUP BY USER_ID EMIT CHANGES;";

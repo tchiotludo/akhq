@@ -4,20 +4,26 @@ on:
   push:
     branches:
       - dev
+  repository_dispatch:
+    types: [ akhq-release-docs ]
 
 jobs:
   check:
     name: Docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       # Setup
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '26'
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
 
@@ -30,22 +36,9 @@ jobs:
           npm run build
           echo "akhq.io" > .vuepress/dist/CNAME
 
-      # Copy for helm
-      - name: Add some files
-        run: |
-          cp LICENSE helm/akhq/LICENSE
-          cp README.md helm/akhq/README.md
-
-      # Helm charts
-      - uses: J12934/helm-gh-pages-action@master
-        with:
-          access-token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
-          charts-folder: "helm"
-          deploy-branch: helm
-
       # Clone helm charts
       - name: Clone helm charts
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: helm
           path: tmp-helm
@@ -60,7 +53,7 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/.vuepress/dist/
 
       # Slack

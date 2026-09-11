@@ -10,7 +10,7 @@ volumes:
 
 services:
   akhq:
-    image: gradle:8-jdk17
+    image: gradle:9-jdk25
     command: 'gradle run -x installFrontend -x assembleFrontend -t'
     working_dir: /app
     volumes:
