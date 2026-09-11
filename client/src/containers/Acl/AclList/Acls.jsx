@@ -6,8 +6,9 @@ import { uriAclsList } from '../../../utils/endpoints';
 import SearchBar from '../../../components/SearchBar';
 import Root from '../../../components/Root';
 import { withRouter } from '../../../utils/withRouter';
+import { encodeBase64PathSegment, encodeUtf8ToBase64 } from '../../../utils/base64';
 
-class Acls extends Root {
+export class Acls extends Root {
   state = {
     data: [],
     selectedCluster: '',
@@ -43,7 +44,7 @@ class Acls extends Root {
 
   handleData(acls) {
     let tableAcls = acls.map(acl => {
-      acl.principalEncoded = btoa(acl.principal);
+      acl.principalEncoded = encodeUtf8ToBase64(acl.principal);
       return {
         id: acl,
         user: acl.principal || ''
@@ -111,7 +112,9 @@ class Acls extends Root {
               </td>
             </tr>
           }
-          detailsHref={acl => `/ui/${clusterId}/acls/${acl.principalEncoded}`}
+          detailsHref={acl =>
+            `/ui/${clusterId}/acls/${encodeBase64PathSegment(acl.principalEncoded)}`
+          }
         />
       </div>
     );
