@@ -29,7 +29,7 @@
     "@uiw/codemirror-theme-copilot": "^4.25.11",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-sql": "^6.10.0",
-    "@codemirror/legacy-modes": "^6.5.3"
+    "@codemirror/legacy-modes": "^6.5.4"
   },
   "scripts": {
     "start": "vite",
