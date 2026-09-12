@@ -11,6 +11,7 @@ import lombok.SneakyThrows;
 import org.akhq.configs.DataMasking;
 import org.akhq.models.Record;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,18 @@ public class JsonMaskByDefaultMasker extends JsonMasker {
 
         try {
             List<String> keysToUnmask = getKeysForTopic(record.getTopic().getName());
-            return applyMasking(record, keysToUnmask);
+
+            if (keysToUnmask.contains("*")) {
+                return record;
+            }
+
+            List<String> wildCardKeys = keysToUnmask.stream()
+                .filter(key -> key.endsWith(".*"))
+                .map(key -> key.substring(0, key.length() - 2))
+                .toList();
+            List<String> nonWildCardKeys = keysToUnmask.stream().filter(key -> !key.endsWith(".*")).toList();
+            return applyMasking(record, nonWildCardKeys, wildCardKeys);
+
         } catch (Exception e) {
             LOG.error("Error masking record at topic {}, partition {}, offset {} due to {}",
                 record.getTopic(), record.getPartition(), record.getOffset(), e.getMessage());
@@ -43,49 +55,74 @@ public class JsonMaskByDefaultMasker extends JsonMasker {
     }
 
     @SneakyThrows
-    private Record applyMasking(Record record, List<String> keysToUnmask) {
+    private Record applyMasking(
+        Record record,
+        List<String> keysToUnmask,
+        List<String> wildcardKeysToUnmask
+    ) {
         JsonElement root = JsonParser.parseString(record.getValue());
-        maskJson(root, "", keysToUnmask);
+        maskJson(root, "", keysToUnmask, wildcardKeysToUnmask, false);
         record.setValue(root.toString());
         return record;
     }
 
-    private void maskJson(JsonElement element, String path, List<String> keysToUnmask) {
+    private void maskJson(
+        JsonElement element,
+        String path,
+        List<String> keysToUnmask,
+        List<String> wildcardKeysToUnmask,
+        Boolean unmaskAll
+    ) {
         if (element.isJsonObject()) {
-            maskJsonObject(element.getAsJsonObject(), path, keysToUnmask);
+            maskJsonObject(element.getAsJsonObject(), path, keysToUnmask, wildcardKeysToUnmask, unmaskAll);
         } else if (element.isJsonArray()) {
-            maskJsonArray(element.getAsJsonArray(), path, keysToUnmask);
+            maskJsonArray(element.getAsJsonArray(), path, keysToUnmask, wildcardKeysToUnmask, unmaskAll);
         }
     }
 
-    private void maskJsonObject(JsonObject obj, String path, List<String> keysToUnmask) {
+    private void maskJsonObject(
+        JsonObject obj,
+        String path,
+        List<String> keysToUnmask,
+        List<String> wildcardKeysToUnmask,
+        Boolean unmaskAll
+    ) {
         for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
             String newPath = path + entry.getKey();
             JsonElement value = entry.getValue();
+            Boolean wildcardMatch = unmaskAll || wildcardKeysToUnmask.contains(newPath);
 
-            if (shouldMaskPrimitive(value, newPath, keysToUnmask)) {
+            if (shouldMaskPrimitive(value, newPath, keysToUnmask, wildcardMatch)) {
                 entry.setValue(new JsonPrimitive(jsonMaskReplacement));
             } else if (isNestedStructure(value)) {
-                maskJson(value, newPath + ".", keysToUnmask);
+                maskJson(value, newPath + ".", keysToUnmask, wildcardKeysToUnmask, wildcardMatch);
             }
         }
     }
 
-    private void maskJsonArray(JsonArray array, String path, List<String> keysToUnmask) {
-        boolean shouldMask = !keysToUnmask.contains(path.substring(0, path.length() - 1));
+    private void maskJsonArray(
+        JsonArray array,
+        String path,
+        List<String> keysToUnmask,
+        List<String> wildcardKeysToUnmask,
+        Boolean unmaskAll
+    ) {
+        String arrayPath = path.substring(0, path.length() - 1);
+        boolean unmaskAllFromNow = unmaskAll || wildcardKeysToUnmask.contains(arrayPath);
+        boolean shouldMask = !unmaskAllFromNow && !keysToUnmask.contains(arrayPath);
 
         for (int i = 0; i < array.size(); i++) {
             JsonElement arrayElement = array.get(i);
             if (arrayElement.isJsonPrimitive() && shouldMask) {
                 array.set(i, new JsonPrimitive(jsonMaskReplacement));
             } else if (isNestedStructure(arrayElement)) {
-                maskJson(arrayElement, path, keysToUnmask);
+                maskJson(arrayElement, path, keysToUnmask, wildcardKeysToUnmask, unmaskAllFromNow);
             }
         }
     }
 
-    private boolean shouldMaskPrimitive(JsonElement value, String path, List<String> keysToUnmask) {
-        return value.isJsonPrimitive() && !keysToUnmask.contains(path);
+    private boolean shouldMaskPrimitive(JsonElement value, String path, List<String> keysToUnmask, Boolean wildcardMatch) {
+        return value.isJsonPrimitive() && !wildcardMatch && !keysToUnmask.contains(path);
     }
 
     private boolean isNestedStructure(JsonElement value) {
