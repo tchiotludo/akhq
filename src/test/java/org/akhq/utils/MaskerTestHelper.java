@@ -18,7 +18,8 @@ class MaskerTestHelper {
                 List.of(),
                 List.of(),
                 true,
-                true
+                true,
+                null
             )
         );
         record.setKey(key);
