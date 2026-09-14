@@ -1,4 +1,5 @@
 import prefix from './../prefix';
+import { encodeBase64PathSegment } from './base64';
 
 const baseUrl =
   import.meta.env.VITE_BASE_URL ||
@@ -321,7 +322,9 @@ export const uriConsumerGroupByTopics = (clusterId, topicList, groupsListView) =
 };
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
-  return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
+  return `${apiUrl}/${clusterId}/acls/${encodeBase64PathSegment(
+    principalEncoded
+  )}?resourceType=${resourceType}`;
 };
 
 export const uriLiveTail = (clusterId, search, topics, size) => {
