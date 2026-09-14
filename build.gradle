@@ -1,6 +1,6 @@
 plugins {
     // micronaut
-    id "com.gradleup.shadow" version "9.4.3"
+    id "com.gradleup.shadow" version "9.6.1"
     id "io.micronaut.application" version "5.0.2"
 
     // akhq
@@ -8,7 +8,7 @@ plugins {
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'org.gradle.test-retry' version '1.6.5'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.54.0"
+    id "com.github.ben-manes.versions" version "0.61.0"
     id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
@@ -128,7 +128,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
-    implementation("at.yawk.lz4:lz4-java:1.11.1")
+    implementation("at.yawk.lz4:lz4-java:1.11.2")
 
     implementation("io.confluent.ksql:ksqldb-api-client:${confluentVersion}")
     implementation("io.confluent:kafka-schema-registry-client:${confluentVersion}")
@@ -138,17 +138,17 @@ dependencies {
     implementation("io.confluent:kafka-client-plugins:${confluentVersion}-ce")
 
     // strimzi
-    implementation("io.strimzi:kafka-oauth-common:0.17.1")
-    implementation("io.strimzi:kafka-oauth-client:0.17.1")
+    implementation("io.strimzi:kafka-oauth-common:0.18.0")
+    implementation("io.strimzi:kafka-oauth-client:0.18.0")
 
     // log
-    implementation("org.slf4j:slf4j-api:2.0.18")
-    implementation("org.slf4j:jul-to-slf4j:2.0.18")
-    implementation("org.slf4j:log4j-over-slf4j:2.0.18")
+    implementation("org.slf4j:slf4j-api:2.0.19")
+    implementation("org.slf4j:jul-to-slf4j:2.0.19")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.19")
 
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
-    implementation("com.google.guava:guava:33.6.0-jre")
+    implementation("com.google.guava:guava:33.7.1-jre")
     implementation("com.google.code.gson:gson:2.14.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -157,11 +157,11 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.1")
 
     // jackson-module-scala
-    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.21.4")
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.2")
 
     // protobuf
-    implementation("com.google.protobuf:protobuf-java:4.35.1")
-    implementation("com.google.protobuf:protobuf-java-util:4.35.1")
+    implementation("com.google.protobuf:protobuf-java:4.36.1")
+    implementation("com.google.protobuf:protobuf-java-util:4.36.1")
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
@@ -169,12 +169,12 @@ dependencies {
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.inject:jakarta.inject-api")
     implementation("org.reactivestreams:reactive-streams")
-    implementation("io.projectreactor:reactor-core:3.8.6")
+    implementation("io.projectreactor:reactor-core:3.8.7")
 
     // Password hashing
     implementation("org.mindrot:jbcrypt:0.4")
 
-    implementation("org.apache.groovy:groovy-all:5.0.7")
+    implementation("org.apache.groovy:groovy-all:5.1.2")
     // api
 
     // client
@@ -253,7 +253,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
     testImplementation("io.confluent:kafka-streams-avro-serde:${confluentVersion}")
     testImplementation("io.confluent:kafka-connect-avro-converter:${confluentVersion}")
-    testImplementation("commons-codec:commons-codec:1.22.0")
+    testImplementation("commons-codec:commons-codec:1.22.1")
     testImplementation("org.hamcrest:hamcrest:3.0")
     testImplementation("org.hamcrest:hamcrest-library:3.0")
     testImplementation("org.mockito:mockito-junit-jupiter")
