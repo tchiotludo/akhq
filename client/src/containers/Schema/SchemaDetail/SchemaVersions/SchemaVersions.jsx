@@ -29,7 +29,7 @@ class SchemaVersions extends Root {
     if (schemas) {
       let data = schemas.map(schema => {
         return {
-          id: schema.id,
+          id: schema.azureSchemaId ? schema.azureSchemaId : schema.id,
           version: schema.version,
           schemaType: schema.schemaType,
           schema:

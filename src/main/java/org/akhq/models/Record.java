@@ -13,6 +13,7 @@ import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
+import org.akhq.modules.schemaregistry.AzureSchemaRegistryDeserializer;
 import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.ConsumerOffsetsDecoder;
@@ -111,10 +112,10 @@ public class Record {
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.bytesKey = bytesKey;
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
-        this.keySchemaId = getAvroSchemaId(this.bytesKey);
+        this.keySchemaId = getAvroSchemaId(this.bytesKey, schemaRegistryType);
         this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
         this.bytesValue = bytesValue;
-        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue,schemaRegistryType);
         this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
         this.headers = headers;
         this.truncated = false;
@@ -136,16 +137,15 @@ public class Record {
         this.timestampType = record.timestampType();
         this.bytesKey = record.key();
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
-        this.keySchemaId = getAvroSchemaId(this.bytesKey);
-        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
-        this.bytesValue = bytesValue;
-        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
-        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
         for (Header header: record.headers()) {
             String headerValue = String.valueOf(ContentUtils.convertToObject(header.value()));
             this.headers.add(new KeyValue<>(header.key(), headerValue));
         }
-
+        this.keySchemaId = getAvroSchemaId(this.bytesKey, schemaRegistryType);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
+        this.bytesValue = bytesValue;
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue, schemaRegistryType);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
         this.avroToJsonDeserializer = avroToJsonDeserializer;
@@ -192,6 +192,9 @@ public class Record {
         this.truncated = truncated;
     }
 
+    private boolean isAzureRegistry(){
+        return kafkaAvroDeserializer instanceof AzureSchemaRegistryDeserializer;
+    }
     private String convertToString(byte[] payload, String schemaId, boolean isKey) {
         if (payload == null) {
             return null;
@@ -202,14 +205,13 @@ public class Record {
                 if (this.awsGlueKafkaDeserializer != null) {
                     return this.awsGlueKafkaDeserializer.deserialize(this.topic.getName(), payload).toString();
                 }
-                if (client != null) {
+                if (client != null && !isAzureRegistry()) {
                     ParsedSchema schema = client.getSchemaById(Integer.parseInt(schemaId));
                     if ( schema.schemaType().equals(ProtobufSchema.TYPE) ) {
                        toType = kafkaProtoDeserializer.deserialize(topic.getName(), payload);
                        if (!(toType instanceof Message)) {
                            return String.valueOf(toType);
                        }
-
                        Message dynamicMessage = (Message)toType;
                        return avroToJsonSerializer.getMapper().readTree(JsonFormat.printer().print(dynamicMessage)).toString();
                     } else  if ( schema.schemaType().equals(JsonSchema.TYPE) ) {
@@ -221,8 +223,14 @@ public class Record {
                       return node.toString();
                     }
                 }
-
-                toType = kafkaAvroDeserializer.deserialize(topic.getName(), payload);
+                if (isAzureRegistry()) {
+                    if (isKey) return null; // Azure Event Hub does not support key schema
+                    AzureSchemaRegistryDeserializer azureDeserializer =
+                        (AzureSchemaRegistryDeserializer) kafkaAvroDeserializer;
+                    toType = azureDeserializer.deserialize(topic.getName(), payload, schemaId);
+                } else {
+                    toType = kafkaAvroDeserializer.deserialize(topic.getName(), payload);
+                }
 
                 //for primitive avro type
                 if (!(toType instanceof GenericRecord)) {
@@ -340,7 +348,26 @@ public class Record {
         return TransactionLog.read(ByteBuffer.wrap(this.bytesKey), ByteBuffer.wrap(payload)).toString();
     }
 
-    private String getAvroSchemaId(byte[] payload) {
+    private String extractSchemaIdFromHeaders() {
+        if (this.headers == null) {
+            return null;
+        }
+        String contentType = null;
+        for (KeyValue<String, String> header : this.headers) {
+            if ("content-type".equalsIgnoreCase(header.getKey())) {
+                contentType = header.getValue();
+            }
+        }
+        if (contentType == null) {
+            return null;
+        }
+        // Extract GUID after "avro/binary+"
+        if (contentType.startsWith("avro/binary+")) {
+            return  contentType.substring("avro/binary+".length());
+        }
+        return null;
+    }
+    private String getAvroSchemaId(byte[] payload, SchemaRegistryType schemaRegistryType) {
         if (topic.isInternalTopic()) {
             return null;
         }
@@ -356,6 +383,11 @@ public class Record {
 
             ByteBuffer buffer = ByteBuffer.wrap(payload);
             byte magicBytes = buffer.get();
+
+            if (schemaRegistryType == SchemaRegistryType.AZURE){
+                return extractSchemaIdFromHeaders();
+            }
+
             int schemaId = buffer.getInt();
 
             if (magicBytes == MAGIC_BYTE && schemaId >= 0) {

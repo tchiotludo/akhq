@@ -46,6 +46,7 @@ module.exports = {
             children: [
               '/docs/configuration/schema-registry/tibco.md',
                 '/docs/configuration/schema-registry/glue.md',
+                '/docs/configuration/schema-registry/azure.md',
                 '/docs/configuration/schema-registry/schema-references.md',
             ]
           },
