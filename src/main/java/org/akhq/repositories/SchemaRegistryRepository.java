@@ -100,10 +100,30 @@ public class SchemaRegistryRepository extends AbstractRepository {
         if(maybeRegistryRestClient.isEmpty()){
             return List.of();
         }
-        return maybeRegistryRestClient.get()
+
+        List<String> nameMatched = maybeRegistryRestClient.get()
             .getAllSubjects()
             .stream()
             .filter(s -> isSearchMatch(search, s) && isMatchRegex(filters, s))
+            .collect(Collectors.toList());
+
+        List<String> idMatched = List.of();
+        if (search.isPresent()) {
+            try {
+                int schemaId = Integer.parseInt(search.get());
+                idMatched = getSubjectsBySchemaId(clusterId, schemaId).stream()
+                    .map(Schema::getSubject)
+                    .filter(s -> isMatchRegex(filters, s))
+                    .collect(Collectors.toList());
+            } catch (NumberFormatException ignored) {
+            } catch (IOException | RestClientException ignored) {
+            }
+        }
+
+        LinkedHashSet<String> merged = new LinkedHashSet<>(nameMatched);
+        merged.addAll(idMatched);
+
+        return merged.stream()
             .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
     }
