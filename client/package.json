@@ -21,7 +21,7 @@
     "lossless-json": "^4.3.1",
     "prop-types": "^15.8.1",
     "react": "^19.2.7",
-    "react-dom": "^19.2.8",
+    "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.3",
     "react-timeago": "^8.3.0",
     "react-toastify": "^11.1.0",
