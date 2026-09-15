@@ -106,6 +106,30 @@ class RecordRepositoryTest extends AbstractTest {
     }
 
     @Test
+    void consumeOldestFirstPageSpansAllPartitions() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_INTERLEAVED);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        List<Record> firstPage = repository.consume(KafkaTestCluster.CLUSTER_ID, options);
+
+        // The interleaved topic round-robins strictly increasing timestamps across the 3 partitions, so
+        // the oldest page must merge candidates from every partition. A single-poll implementation
+        // returns a full page from just one partition, which this assertion catches.
+        Set<Integer> partitions = firstPage.stream()
+            .map(Record::getPartition)
+            .collect(Collectors.toSet());
+        assertEquals(3, partitions.size(), "Oldest page should contain records from all 3 partitions");
+
+        // The page must be the true globally-oldest 'size' records: keys key_0..key_(size-1).
+        Set<String> expectedKeys = new HashSet<>();
+        for (int i = 0; i < options.getSize(); i++) {
+            expectedKeys.add("key_" + i);
+        }
+        Set<String> actualKeys = firstPage.stream().map(Record::getKey).collect(Collectors.toSet());
+        assertEquals(expectedKeys, actualKeys, "Oldest page should be the globally-oldest records by timestamp");
+    }
+
+    @Test
     void consumeNewest() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
         options.setSort(RecordRepository.Options.Sort.NEWEST);

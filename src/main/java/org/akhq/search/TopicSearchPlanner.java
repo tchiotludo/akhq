@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,9 @@ public class TopicSearchPlanner {
      * consumer orchestration rather than on offset math.
      */
     public PartitionRangePlan resolvePartitionRangePlan(Topic topic, RecordRepository.Options options, KafkaConsumer<byte[], byte[]> consumer, boolean newestOnly) {
-        Map<TopicPartition, Long> starts = getTopicPartitionForSortOldest(topic, options, consumer);
+        Map<TopicPartition, Long> starts = newestOnly
+            ? getTopicPartitionForSortNewest(topic, options, consumer)
+            : getTopicPartitionForSortOldest(topic, options, consumer);
         if (starts.isEmpty()) {
             return PartitionRangePlan.empty();
         }
@@ -53,8 +56,21 @@ public class TopicSearchPlanner {
                 if (partition == null) {
                     continue;
                 }
-                long last = partition.getLastOffset() - 1;
-                adjustedEnds.put(tp, endOffsets.getOrDefault(tp, last));
+
+                long endExclusive = partition.getLastOffset();
+                if (options.getAfter().containsKey(partition.getId())) {
+                    endExclusive = options.getAfter().get(partition.getId());
+                }
+
+                // The end of a newest window is the exclusive upper bound derived from the 'after'
+                // cursor (or the live end on the first page). When an end timestamp narrows the
+                // window further, we cap the bound with the timestamp-resolved offset. Using the raw
+                // live end here would make every window re-read the tail and never move older.
+                if (options.getEndTimestamp() != null && endOffsets.containsKey(tp)) {
+                    endExclusive = Math.min(endExclusive, endOffsets.get(tp));
+                }
+
+                adjustedEnds.put(tp, endExclusive);
             }
             endOffsets = adjustedEnds;
         }
@@ -83,6 +99,16 @@ public class TopicSearchPlanner {
                     resolvedEndOffsets.put(tp, offsetAndTimestamp.offset());
                 }
             });
+
+            // When after timestamp is after the last message timestamp, offset will be null
+            // Therefore we need to use the actual last offset of the partition
+            Set<TopicPartition> unresolved = starts.keySet().stream()
+                .filter(tp -> !resolvedEndOffsets.containsKey(tp))
+                .collect(Collectors.toSet());
+            if (!unresolved.isEmpty()) {
+                resolvedEndOffsets.putAll(consumer.endOffsets(unresolved));
+            }
+
             return resolvedEndOffsets;
         }
 
@@ -104,20 +130,17 @@ public class TopicSearchPlanner {
                 continue;
             }
 
-            long last = partition.getLastOffset() - 1;
+            long first = entry.getValue();
+            long endExclusive = partition.getLastOffset();
             if (options.getAfter().containsKey(partition.getId())) {
-                last = options.getAfter().get(partition.getId()) - 1;
+                endExclusive = options.getAfter().get(partition.getId());
             }
-            if (last < 0) {
+            if (endExclusive <= first) {
                 continue;
             }
 
-            long first = entry.getValue();
-            if (!(last - options.getSize() < first)) {
-                first = last - options.getSize() + 1;
-            }
-
-            newestStarts.put(entry.getKey(), first);
+            long candidateStart = Math.max(first, endExclusive - options.getSize());
+            newestStarts.put(entry.getKey(), candidateStart);
         }
 
         return newestStarts;
@@ -131,6 +154,31 @@ public class TopicSearchPlanner {
             .filter(p -> p.getId() == partitionId)
             .findFirst()
             .orElse(null);
+    }
+
+    /**
+     * Like the oldest strategy, but without applying the pagination "after" cursor to the lower bound.
+     * For newest scans, the cursor is used to bound the end of the window and must not be mistaken for
+     * a resume offset. If we reuse the cursor as the actual start offset, each page can re-read the same
+     * tail window on compacted topics and the client sees a non-terminating loop.
+     */
+    private Map<TopicPartition, Long> getTopicPartitionForSortNewest(
+        Topic topic,
+        RecordRepository.Options options,
+        KafkaConsumer<byte[], byte[]> consumer
+    ) {
+        return topic
+            .getPartitions()
+            .stream()
+            .map(partition -> getFirstOffset(consumer, partition, options)
+                .map(firstOffset -> Map.entry(
+                    new TopicPartition(partition.getTopic(), partition.getId()),
+                    firstOffset
+                ))
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
