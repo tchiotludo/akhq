@@ -177,7 +177,9 @@ public class RecordRepository extends AbstractRepository {
         }
 
         return list.stream()
-            .sorted(Comparator.comparing(Record::getTimestamp))
+            .sorted(Comparator.comparing(Record::getTimestamp)
+                .thenComparingInt(Record::getPartition)
+                .thenComparingLong(Record::getOffset))
             .limit(options.size)
             .toList();
     }
@@ -269,8 +271,10 @@ public class RecordRepository extends AbstractRepository {
             }
 
             List<Record> result = list.stream()
-                .sorted(Comparator.comparing(Record::getTimestamp).reversed()
-                    .thenComparing(Comparator.comparingLong(Record::getOffset).reversed()))
+                .sorted(Comparator.comparing(Record::getTimestamp)
+                    .thenComparingInt(Record::getPartition)
+                    .thenComparingLong(Record::getOffset)
+                    .reversed())
                 .limit(options.size)
                 .collect(Collectors.toList());
 

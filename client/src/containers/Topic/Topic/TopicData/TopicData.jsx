@@ -263,7 +263,10 @@ class TopicData extends Root {
                 .reduce((acc, all) => [...acc, ...all], []);
 
               if (records.length) {
-                const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
+                const tableMessages = self._sortMessages(
+                  self._handleMessages(records),
+                  self.state.sortBy === 'Oldest'
+                );
                 self.setState({
                   recordCount: tableMessages.length,
                   messages: tableMessages,
@@ -411,7 +414,7 @@ class TopicData extends Root {
   };
 
   _fetchMessages(requests, changePage = false) {
-    const { nextPage, pageNumber, partitionCount, recordCount, offsets, sortBy } = this.state;
+    const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
 
     Promise.all(requests).then(data => {
       let tableMessages = [],
@@ -425,7 +428,7 @@ class TopicData extends Root {
       const partitionData = data[1].data;
 
       if (messagesData.results) {
-        tableMessages = this._handleMessages(messagesData.results, sortBy === 'Oldest');
+        tableMessages = this._handleMessages(messagesData.results);
       } else {
         pageNumberTemp = 1;
       }
@@ -591,10 +594,8 @@ class TopicData extends Root {
       });
   };
 
-  _handleMessages = (messages, startWithOldest = true) => {
-    let tableMessages = [];
-
-    let mappedMessages = messages.map(message => ({
+  _handleMessages = messages => {
+    return messages.map(message => ({
       key: message.key || '',
       value: message.truncated
         ? message.value + '...\nToo large message. Full body in share button.' || ''
@@ -610,13 +611,27 @@ class TopicData extends Root {
       },
       exceptions: message.exceptions || []
     }));
+  };
 
-    tableMessages.push(...mappedMessages);
-
+  // Only needed when the client accumulates records from several progressive batches (streaming
+  // search): the union of already-sorted batches is not globally ordered. The paginated data endpoint
+  // returns a fully-ordered page and does not go through this. Uses a proper 3-way comparator with an
+  // offset tie-break so records sharing the same timestamp keep a stable, deterministic order (a simple
+  // ternary never returns 0 for equal timestamps and makes the engine reverse those runs).
+  _sortMessages = (messages, startWithOldest = true) => {
     const isBefore = startWithOldest ? -1 : 1;
     const isAfter = startWithOldest ? 1 : -1;
 
-    return tableMessages.sort((a, b) => (a.timestamp > b.timestamp ? isAfter : isBefore));
+    return [...messages].sort((a, b) => {
+      if (a.timestamp < b.timestamp) return isBefore;
+      if (a.timestamp > b.timestamp) return isAfter;
+
+      const offsetA = Number(a.offset);
+      const offsetB = Number(b.offset);
+      if (offsetA < offsetB) return isBefore;
+      if (offsetA > offsetB) return isAfter;
+      return 0;
+    });
   };
 
   _downloadAllMatchingFilters = () => {
