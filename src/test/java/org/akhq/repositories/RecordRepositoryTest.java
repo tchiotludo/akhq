@@ -13,6 +13,7 @@ import org.akhq.models.Topic;
 import org.akhq.utils.Album;
 import org.akhq.utils.ResourceTestUtil;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
@@ -50,6 +51,45 @@ class RecordRepositoryTest extends AbstractTest {
     private JsonMapper jsonMapper;
 
     @Test
+    void buildPartitionRangesSkipsEmptyWindows() {
+        Map<TopicPartition, Long> starts = new LinkedHashMap<>();
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 10L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 20L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2), 30L);
+
+        Map<TopicPartition, Long> ends = new LinkedHashMap<>();
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 10L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 40L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2), 35L);
+
+        Map<TopicPartition, RecordRepository.PartitionRange> ranges = RecordRepository.buildPartitionRanges(starts, ends);
+
+        assertEquals(2, ranges.size());
+        assertEquals(20L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1)).getBegin());
+        assertEquals(40L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1)).getEnd());
+        assertEquals(30L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2)).getBegin());
+        assertEquals(35L, ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 2)).getEnd());
+    }
+
+    @Test
+    void buildPartitionRangesKeepsTimestampBoundedRange() {
+        Map<TopicPartition, Long> starts = new LinkedHashMap<>();
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 100L);
+        starts.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 200L);
+
+        Map<TopicPartition, Long> ends = new LinkedHashMap<>();
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0), 150L);
+        ends.put(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 1), 200L);
+
+        Map<TopicPartition, RecordRepository.PartitionRange> ranges = RecordRepository.buildPartitionRanges(starts, ends);
+
+        assertEquals(1, ranges.size());
+        RecordRepository.PartitionRange range = ranges.get(new TopicPartition(KafkaTestCluster.TOPIC_RANDOM, 0));
+        assertEquals(100L, range.getBegin());
+        assertEquals(150L, range.getEnd());
+    }
+
+    @Test
     void consumeEmpty() throws ExecutionException, InterruptedException {
         RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_EMPTY);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
@@ -63,6 +103,30 @@ class RecordRepositoryTest extends AbstractTest {
         options.setSort(RecordRepository.Options.Sort.OLDEST);
 
         assertEquals(300, consumeAll(options));
+    }
+
+    @Test
+    void consumeOldestFirstPageSpansAllPartitions() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_INTERLEAVED);
+        options.setSort(RecordRepository.Options.Sort.OLDEST);
+
+        List<Record> firstPage = repository.consume(KafkaTestCluster.CLUSTER_ID, options);
+
+        // The interleaved topic round-robins strictly increasing timestamps across the 3 partitions, so
+        // the oldest page must merge candidates from every partition. A single-poll implementation
+        // returns a full page from just one partition, which this assertion catches.
+        Set<Integer> partitions = firstPage.stream()
+            .map(Record::getPartition)
+            .collect(Collectors.toSet());
+        assertEquals(3, partitions.size(), "Oldest page should contain records from all 3 partitions");
+
+        // The page must be the true globally-oldest 'size' records: keys key_0..key_(size-1).
+        Set<String> expectedKeys = new HashSet<>();
+        for (int i = 0; i < options.getSize(); i++) {
+            expectedKeys.add("key_" + i);
+        }
+        Set<String> actualKeys = firstPage.stream().map(Record::getKey).collect(Collectors.toSet());
+        assertEquals(expectedKeys, actualKeys, "Oldest page should be the globally-oldest records by timestamp");
     }
 
     @Test
