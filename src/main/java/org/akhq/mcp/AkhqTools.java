@@ -54,6 +54,11 @@ public class AkhqTools extends AbstractController {
             - Provide at least one of: `searchByKey`, `searchByValue`, `searchByHeaderKey`, `searchByHeaderValue`.
             - `timestamp` and `endTimestamp` accept ISO-8601 timestamps.
             - `maxMatches` defaults to 1 and is capped at 25.
+
+            When presenting search results to a user, include each match's `partition`, `offset`,
+            `timestamp`, `key`, and `valueOverview`. Do not reduce a matching message to only its
+            partition, offset, and timestamp. Use `akhq.get_message_detail` when the full value
+            payload or headers are needed.
             """
     )
     public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments, MicronautMcpTransportContext transportContext)
@@ -85,6 +90,9 @@ public class AkhqTools extends AbstractController {
             Rules:
             - `cluster`, `topic`, `partition`, `offset` are required.
             - `partition` and `offset` must be non-negative.
+
+            When presenting a message to a user, preserve `headers` as an array of objects with
+            `key` and `value` properties. Do not rewrite headers as a prose sentence or omit them.
             """
     )
     public GetMessageDetailResult getMessageDetail(GetMessageDetailArguments arguments, MicronautMcpTransportContext transportContext)

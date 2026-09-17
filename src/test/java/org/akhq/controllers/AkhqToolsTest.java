@@ -52,13 +52,31 @@ class AkhqToolsTest extends AbstractTest {
         Map<String, Object> result = map(response.get("result"));
 
         assertEquals("2.0", response.get("jsonrpc"));
-        java.util.List<String> names = list(result.get("tools")).stream()
+        java.util.List<Map<String, Object>> tools = list(result.get("tools")).stream()
             .map(this::map)
+            .toList();
+        java.util.List<String> names = tools.stream()
             .map(tool -> String.valueOf(tool.get("name")))
             .toList();
 
         assertTrue(names.contains("akhq.find_message_in_topic"));
         assertTrue(names.contains("akhq.get_message_detail"));
+
+        Map<String, Object> searchTool = tools.stream()
+            .filter(tool -> "akhq.find_message_in_topic".equals(tool.get("name")))
+            .findFirst()
+            .orElseThrow();
+        String description = String.valueOf(searchTool.get("description"));
+        assertTrue(description.contains("`key`, and `valueOverview`"), description);
+        assertTrue(description.contains("Do not reduce a matching message"), description);
+
+        Map<String, Object> detailTool = tools.stream()
+            .filter(tool -> "akhq.get_message_detail".equals(tool.get("name")))
+            .findFirst()
+            .orElseThrow();
+        String detailDescription = String.valueOf(detailTool.get("description"));
+        assertTrue(detailDescription.contains("`headers` as an array of objects"), detailDescription);
+        assertTrue(detailDescription.contains("`key` and `value` properties"), detailDescription);
     }
 
     @Test
