@@ -10,6 +10,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AkhqToolsTest extends AbstractTest {
@@ -61,6 +62,7 @@ class AkhqToolsTest extends AbstractTest {
 
         assertTrue(names.contains("akhq.find_message_in_topic"));
         assertTrue(names.contains("akhq.get_message_detail"));
+        assertTrue(names.contains("akhq.get_topic_last_record_timestamp"));
 
         Map<String, Object> searchTool = tools.stream()
             .filter(tool -> "akhq.find_message_in_topic".equals(tool.get("name")))
@@ -199,6 +201,76 @@ class AkhqToolsTest extends AbstractTest {
             assertTrue(content.contains("\"partition\":0"), content);
             assertTrue(content.contains("\"offset\":0"), content);
             assertTrue(content.contains("\"value\":"), content);
+        }
+    }
+
+    @Test
+    void toolsCallTopicLastRecordTimestamp() {
+        Map<String, Object> payload = Map.of(
+            "jsonrpc", "2.0",
+            "id", "call-4",
+            "method", "tools/call",
+            "params", Map.of(
+                "name", "akhq.get_topic_last_record_timestamp",
+                "arguments", Map.of(
+                    "arguments", Map.of(
+                        "cluster", KafkaTestCluster.CLUSTER_ID,
+                        "topic", KafkaTestCluster.TOPIC_RANDOM
+                    )
+                )
+            )
+        );
+
+        Map<String, Object> response = this.retrieve(HttpRequest.POST(URL, payload), Map.class);
+        assertNotNull(response.get("result"), String.valueOf(response));
+        Map<String, Object> result = map(response.get("result"));
+
+        assertEquals("2.0", response.get("jsonrpc"));
+        Map<String, Object> structured = tryGetStructuredContent(result);
+        if (structured != null) {
+            assertTrue((Boolean) structured.get("found"));
+            assertEquals(KafkaTestCluster.TOPIC_RANDOM, structured.get("topic"));
+            assertNotNull(structured.get("timestamp"));
+        } else {
+            String content = flattenContent(result);
+            assertTrue(content.contains("\"found\":true"), content);
+            assertTrue(content.contains("\"topic\":\"" + KafkaTestCluster.TOPIC_RANDOM + "\""), content);
+            assertTrue(content.contains("\"timestamp\":"), content);
+        }
+    }
+
+    @Test
+    void toolsCallTopicLastRecordTimestampNotFound() {
+        Map<String, Object> payload = Map.of(
+            "jsonrpc", "2.0",
+            "id", "call-5",
+            "method", "tools/call",
+            "params", Map.of(
+                "name", "akhq.get_topic_last_record_timestamp",
+                "arguments", Map.of(
+                    "arguments", Map.of(
+                        "cluster", KafkaTestCluster.CLUSTER_ID,
+                        "topic", KafkaTestCluster.TOPIC_EMPTY
+                    )
+                )
+            )
+        );
+
+        Map<String, Object> response = this.retrieve(HttpRequest.POST(URL, payload), Map.class);
+        assertNotNull(response.get("result"), String.valueOf(response));
+        Map<String, Object> result = map(response.get("result"));
+
+        assertEquals("2.0", response.get("jsonrpc"));
+        Map<String, Object> structured = tryGetStructuredContent(result);
+        if (structured != null) {
+            assertFalse((Boolean) structured.get("found"));
+            assertEquals(KafkaTestCluster.TOPIC_EMPTY, structured.get("topic"));
+            assertNull(structured.get("timestamp"));
+        } else {
+            String content = flattenContent(result);
+            assertTrue(content.contains("\"found\":false"), content);
+            assertTrue(content.contains("\"topic\":\"" + KafkaTestCluster.TOPIC_EMPTY + "\""), content);
+            assertTrue(content.contains("\"timestamp\":null"), content);
         }
     }
 

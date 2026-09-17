@@ -31,6 +31,7 @@ Current tools:
 
 * `akhq.find_message_in_topic`: search message(s) and return message overviews (`partition`, `offset`, `timestamp`, `key`, short value preview).
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
+* `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
 
 For every search literal, use the matching `*MatchType` field to select `CONTAINS` (the default), `EQUALS`, or `NOT_CONTAINS`. Do not append AKHQ's internal `_C`, `_E`, or `_N` suffixes to a literal.
 

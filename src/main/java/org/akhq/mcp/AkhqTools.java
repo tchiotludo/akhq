@@ -10,6 +10,8 @@ import org.akhq.mcp.model.FindMessageInTopicArguments;
 import org.akhq.mcp.model.FindMessageInTopicResult;
 import org.akhq.mcp.model.GetMessageDetailArguments;
 import org.akhq.mcp.model.GetMessageDetailResult;
+import org.akhq.mcp.model.GetTopicLastRecordTimestampArguments;
+import org.akhq.mcp.model.GetTopicLastRecordTimestampResult;
 import org.akhq.configs.security.Role;
 import org.akhq.mcp.services.AkhqTopicDataToolService;
 import org.akhq.security.annotation.AKHQSecured;
@@ -106,6 +108,38 @@ public class AkhqTools extends AbstractController {
         String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
         checkIfClusterAndResourceAllowed(cluster, topicName);
         return topicDataService.getMessageDetail(arguments);
+    }
+
+    @Tool(
+        name = "akhq.get_topic_last_record_timestamp",
+        description = """
+            Get the timestamp of the latest record across all partitions of a topic.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "topic": "<topic-name>"
+            }
+
+            Rules:
+            - `cluster` and `topic` are required.
+            - The returned timestamp is ISO-8601 UTC.
+            - `found` is false and `timestamp` is null when the topic contains no records.
+            """
+    )
+    public GetTopicLastRecordTimestampResult getTopicLastRecordTimestamp(
+        GetTopicLastRecordTimestampArguments arguments,
+        MicronautMcpTransportContext transportContext
+    ) throws ExecutionException, InterruptedException {
+        ensureTransportContext(transportContext);
+        if (arguments == null) {
+            throw new IllegalArgumentException("`arguments` is required");
+        }
+
+        String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
+        String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+        return topicDataService.getTopicLastRecordTimestamp(arguments);
     }
 
     private void ensureTransportContext(MicronautMcpTransportContext transportContext) {

@@ -7,6 +7,8 @@ import org.akhq.mcp.model.FindMessageInTopicArguments;
 import org.akhq.mcp.model.FindMessageInTopicResult;
 import org.akhq.mcp.model.GetMessageDetailArguments;
 import org.akhq.mcp.model.GetMessageDetailResult;
+import org.akhq.mcp.model.GetTopicLastRecordTimestampArguments;
+import org.akhq.mcp.model.GetTopicLastRecordTimestampResult;
 import org.akhq.mcp.model.MessageHeader;
 import org.akhq.mcp.model.MessageOverview;
 import org.akhq.mcp.model.SearchMatchType;
@@ -148,6 +150,33 @@ public class AkhqTopicDataToolService {
             record.getValue(),
             headers,
             "Message found."
+        );
+    }
+
+    public GetTopicLastRecordTimestampResult getTopicLastRecordTimestamp(GetTopicLastRecordTimestampArguments arguments)
+        throws ExecutionException, InterruptedException {
+        if (arguments == null) {
+            throw new IllegalArgumentException("`arguments` is required");
+        }
+
+        String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
+        String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
+        Record record = recordRepository.getLastRecord(cluster, List.of(topicName)).get(topicName);
+
+        if (record == null) {
+            return new GetTopicLastRecordTimestampResult(
+                false,
+                topicName,
+                null,
+                "No records found in topic '" + topicName + "'."
+            );
+        }
+
+        return new GetTopicLastRecordTimestampResult(
+            true,
+            topicName,
+            record.getTimestamp().toInstant().toString(),
+            "Last record timestamp found."
         );
     }
 
