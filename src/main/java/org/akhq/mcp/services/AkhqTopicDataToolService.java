@@ -9,6 +9,7 @@ import org.akhq.mcp.model.GetMessageDetailArguments;
 import org.akhq.mcp.model.GetMessageDetailResult;
 import org.akhq.mcp.model.MessageHeader;
 import org.akhq.mcp.model.MessageOverview;
+import org.akhq.mcp.model.SearchMatchType;
 import org.akhq.mcp.model.TimeWindowSuggestion;
 import org.akhq.models.KeyValue;
 import org.akhq.models.Record;
@@ -60,10 +61,10 @@ public class AkhqTopicDataToolService {
         options.setSize(maxMatches);
 
         asInteger(arguments.partition()).ifPresent(options::setPartition);
-        asString(arguments.searchByKey()).map(this::toContainsFilter).ifPresent(options::setSearchByKey);
-        asString(arguments.searchByValue()).map(this::toContainsFilter).ifPresent(options::setSearchByValue);
-        asString(arguments.searchByHeaderKey()).map(this::toContainsFilter).ifPresent(options::setSearchByHeaderKey);
-        asString(arguments.searchByHeaderValue()).map(this::toContainsFilter).ifPresent(options::setSearchByHeaderValue);
+        asString(arguments.searchByKey()).map(value -> toSearchFilter(value, arguments.searchByKeyMatchType())).ifPresent(options::setSearchByKey);
+        asString(arguments.searchByValue()).map(value -> toSearchFilter(value, arguments.searchByValueMatchType())).ifPresent(options::setSearchByValue);
+        asString(arguments.searchByHeaderKey()).map(value -> toSearchFilter(value, arguments.searchByHeaderKeyMatchType())).ifPresent(options::setSearchByHeaderKey);
+        asString(arguments.searchByHeaderValue()).map(value -> toSearchFilter(value, arguments.searchByHeaderValueMatchType())).ifPresent(options::setSearchByHeaderValue);
         asEpochMillis(arguments.timestamp()).ifPresent(options::setTimestamp);
         asEpochMillis(arguments.endTimestamp()).ifPresent(options::setEndTimestamp);
 
@@ -296,8 +297,8 @@ public class AkhqTopicDataToolService {
         return asString(value).isEmpty();
     }
 
-    private String toContainsFilter(String value) {
-        return value.matches(".*_[ECN]$") ? value : value + "_C";
+    private String toSearchFilter(String value, SearchMatchType matchType) {
+        SearchMatchType effectiveMatchType = matchType == null ? SearchMatchType.CONTAINS : matchType;
+        return value + "_" + effectiveMatchType.repositorySuffix();
     }
 }
-

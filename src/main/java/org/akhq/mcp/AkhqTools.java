@@ -35,10 +35,14 @@ public class AkhqTools extends AbstractController {
             {
               "cluster": "<cluster-name>",
               "topic": "<topic-name>",
-              "searchByKey": "optional substring",
-              "searchByValue": "optional substring",
-              "searchByHeaderKey": "optional substring",
-              "searchByHeaderValue": "optional substring",
+              "searchByKey": "optional literal",
+              "searchByKeyMatchType": "CONTAINS",
+              "searchByValue": "optional literal",
+              "searchByValueMatchType": "EQUALS",
+              "searchByHeaderKey": "optional literal",
+              "searchByHeaderKeyMatchType": "NOT_CONTAINS",
+              "searchByHeaderValue": "optional literal",
+              "searchByHeaderValueMatchType": "CONTAINS",
               "partition": 0,
               "timestamp": "2026-09-14T10:00:00Z",
               "endTimestamp": "2026-09-14T10:15:00Z",
@@ -48,7 +52,7 @@ public class AkhqTools extends AbstractController {
             Rules:
             - `cluster` and `topic` are required.
             - Provide at least one of: `searchByKey`, `searchByValue`, `searchByHeaderKey`, `searchByHeaderValue`.
-            - `timestamp` and `endTimestamp` accept ISO-8601 timestamps or epoch milliseconds.
+            - `timestamp` and `endTimestamp` accept ISO-8601 timestamps.
             - `maxMatches` defaults to 1 and is capped at 25.
             """
     )

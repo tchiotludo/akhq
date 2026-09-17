@@ -73,7 +73,7 @@ class AkhqToolsTest extends AbstractTest {
                     "arguments", Map.of(
                         "cluster", KafkaTestCluster.CLUSTER_ID,
                         "topic", KafkaTestCluster.TOPIC_RANDOM,
-                        "searchByValue", "42_C",
+                        "searchByValue", "42",
                         "maxMatches", 1
                     )
                 )
@@ -116,7 +116,7 @@ class AkhqToolsTest extends AbstractTest {
                     "arguments", Map.of(
                         "cluster", KafkaTestCluster.CLUSTER_ID,
                         "topic", KafkaTestCluster.TOPIC_RANDOM,
-                        "searchByValue", "value-does-not-exist_C",
+                        "searchByValue", "value-does-not-exist",
                         "maxMatches", 1
                     )
                 )
