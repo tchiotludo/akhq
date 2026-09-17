@@ -1,11 +1,9 @@
 package org.akhq.mcp.model;
 
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.jsonschema.JsonSchema;
 
 import java.util.List;
 
-@JsonSchema
 @Introspected
 public record FindMessageInTopicResult(
     boolean found,
@@ -16,4 +14,3 @@ public record FindMessageInTopicResult(
     TimeWindowSuggestion timeWindowSuggestion
 ) {
 }
-
