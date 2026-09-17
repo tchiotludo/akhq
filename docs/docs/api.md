@@ -41,6 +41,42 @@ Timestamps must be ISO-8601 strings, such as `2026-09-14T10:00:00Z`. Numeric epo
 
 Current tool methods use an argument envelope, so `params.arguments` contains an inner `arguments` object.
 
+### OAuth 2.0 for MCP clients
+
+AKHQ can authenticate MCP clients with OAuth 2.0 access tokens issued by a standards-compliant OIDC provider. This is separate from AKHQ's browser-login OIDC configuration: the MCP client obtains an access token directly from the provider and sends it in the `Authorization` header.
+
+```yaml
+micronaut:
+  security:
+    token:
+      bearer:
+        enabled: false # AKHQ validates MCP bearer tokens separately from UI cookies.
+
+akhq:
+  security:
+    mcp-oauth:
+      enabled: true
+      authorization-server: https://identity.example.com/realms/akhq
+      issuer: https://identity.example.com/realms/akhq
+      jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs
+      audience: akhq-mcp
+      # Set this when AKHQ is behind a proxy that changes its public URL.
+      resource: https://akhq.example.com/mcp
+      username-claim: preferred_username
+      groups-claim: groups
+      required-scope: akhq.mcp.read
+      default-group: topic-reader
+      groups:
+        - name: mcp-topic-readers
+          groups: [topic-reader]
+```
+
+When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource` and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. This validation is scoped to `/mcp`, so AKHQ's existing UI cookie authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
+
+The MCP OAuth implementation separates request matching, token validation, and claim resolution. It currently validates JWT access tokens through JWKS; the token-validator interface allows adding opaque-token introspection without changing MCP routing or AKHQ authorization.
+
+Register the Copilot App as a public OIDC client with Authorization Code + PKCE, configure the exact redirect URI shown by the Copilot App at the provider, and request an access token for the configured `audience` and `required-scope`. Enter that registered client ID in Copilot. The authorization server must expose standard OIDC discovery, authorization, token, and JWKS endpoints.
+
 ### Example request (`akhq.find_message_in_topic`)
 
 ```bash

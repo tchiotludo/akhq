@@ -37,6 +37,8 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
     Oidc oidcProperties;
     @Inject
     Oauth oauthProperties;
+    @Inject
+    McpOauth mcpOauthProperties;
 
     @Cacheable(condition = "#{request.providerType == T(org.akhq.models.security.ClaimProviderType).valueOf('OIDC')}")
     @Override
@@ -86,6 +88,12 @@ public class LocalSecurityClaimProvider implements ClaimProvider {
                 userMappings = oauthPropertiesProvider.getUsers();
                 groupMappings = oauthPropertiesProvider.getGroups();
                 defaultGroup = oauthPropertiesProvider.getDefaultGroup();
+                akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
+                break;
+            case MCP_OAUTH:
+                userMappings = mcpOauthProperties.getUsers();
+                groupMappings = mcpOauthProperties.getGroups();
+                defaultGroup = mcpOauthProperties.getDefaultGroup();
                 akhqGroups.addAll(mapToAkhqGroups(request.getUsername(), request.getGroups(), groupMappings, userMappings, defaultGroup));
                 break;
             default:

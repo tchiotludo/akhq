@@ -12,6 +12,7 @@ import org.akhq.configs.security.Group;
 import org.akhq.configs.security.SecurityProperties;
 import org.akhq.models.security.ClaimProvider;
 import org.akhq.security.annotation.AKHQSecured;
+import org.akhq.security.authentication.McpOauthGroupResolver;
 import org.akhq.security.rule.AKHQSecurityRule;
 
 import java.lang.reflect.Method;
@@ -33,6 +34,8 @@ abstract public class AbstractController {
 
     @Inject
     private ClaimProvider claimProvider;
+    @Inject
+    private McpOauthGroupResolver mcpOauthGroupResolver;
 
     @Value("${micronaut.server.context-path:}")
     protected String basePath;
@@ -61,12 +64,17 @@ abstract public class AbstractController {
         }
 
         // Add user groups
-        authentication.ifPresent(value -> groups.addAll(
-            AKHQSecurityRule.unrollGroups(value, claimProvider).values().stream()
+        authentication.ifPresent(value -> {
+            if (mcpOauthGroupResolver.isMcpOauthAuthentication(value)) {
+                groups.addAll(mcpOauthGroupResolver.groups(value));
+                return;
+            }
+
+            groups.addAll(AKHQSecurityRule.unrollGroups(value, claimProvider).values().stream()
                 .flatMap(Collection::stream)
                 .map(gb -> new ObjectMapper().convertValue(gb, Group.class))
-                .toList())
-        );
+                .toList());
+        });
 
         return groups;
     }
