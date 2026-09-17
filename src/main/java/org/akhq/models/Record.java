@@ -75,6 +75,9 @@ public class Record {
     @JsonIgnore
     private AvroToJsonDeserializer avroToJsonDeserializer;
 
+    @JsonIgnore
+    private org.akhq.utils.BufProtobufToJsonDeserializer bsrProtobufDeserializer;
+
     @Getter(AccessLevel.NONE)
     private byte[] bytesKey;
 
@@ -122,7 +125,9 @@ public class Record {
 
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
-                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer) {
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer,
+                  org.akhq.utils.BufProtobufToJsonDeserializer bsrProtobufDeserializer,
+                  byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -149,6 +154,7 @@ public class Record {
         this.kafkaAvroDeserializer = kafkaAvroDeserializer;
         this.protobufToJsonDeserializer = protobufToJsonDeserializer;
         this.avroToJsonDeserializer = avroToJsonDeserializer;
+        this.bsrProtobufDeserializer = bsrProtobufDeserializer;
         this.kafkaProtoDeserializer = kafkaProtoDeserializer;
         this.avroToJsonSerializer = avroToJsonSerializer;
         this.kafkaJsonDeserializer = kafkaJsonDeserializer;
@@ -258,6 +264,20 @@ public class Record {
                 return new String(payload);
             }
         } else {
+            // Try BSR first if configured
+            if (bsrProtobufDeserializer != null) {
+                try {
+                    String record = bsrProtobufDeserializer.deserialize(topic.getName(), payload, isKey, this.headers);
+                    if (record != null) {
+                        return record;
+                    }
+                } catch (Exception exception) {
+                    this.exceptions.add(exception.getMessage());
+                    return new String(payload);
+                }
+            }
+
+            // Then try custom protobuf deserializer
             if (protobufToJsonDeserializer != null) {
                 try {
                     String record = protobufToJsonDeserializer.deserialize(topic.getName(), payload, isKey);

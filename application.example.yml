@@ -60,12 +60,15 @@ akhq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
-        type: "confluent" # schema registry type (optional). Supported types are "confluent" (default) or "tibco"
+        type: "confluent" # schema registry type (optional). Supported types are "confluent", "tibco", "bsr", or "glue"
         # Basic Auth user / pass
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass
         properties: # standard kafka properties (optional)
           ssl.protocol: TLS
+        # BSR (Buf Schema Registry) specific configuration (only when type: "bsr")
+        # bsr-host: "buf.build" # or "bufbuild.internal" for enterprise
+        # bsr-token: "your-api-token" # API token for authentication (optional for public modules)
       connect:
         - name: connect-1
           url: "http://connect:8083"
@@ -92,6 +95,7 @@ akhq:
           # (optional) if descriptor-file properties are used
           descriptors-folder: "/app/protobuf_desc"
           topics-mapping:
+            # Standard protobuf deserialization (using descriptor files)
             - topic-regex: "album.*"
               descriptor-file-base64: "Cs4BCgthbGJ1bS5wcm90bxIXY29tLm5ldGNyYWNrZXIucHJvdG9idWYidwoFQWxidW0SFAoFdGl0bGUYASABKAlSBXRpdGxlEhYKBmFydGlzdBgCIAMoCVIGYXJ0aXN0EiEKDHJlbGVhc2VfeWVhchgDIAEoBVILcmVsZWFzZVllYXISHQoKc29uZ190aXRsZRgEIAMoCVIJc29uZ1RpdGxlQiUKF2NvbS5uZXRjcmFja2VyLnByb3RvYnVmQgpBbGJ1bVByb3RvYgZwcm90bzM="
               value-message-type: "org.akhq.utils.Album"
@@ -102,6 +106,14 @@ akhq:
               descriptor-file: "other.desc"
               key-message-type: "org.akhq.utils.Row"
               value-message-type: "org.akhq.utils.Envelope"
+            # BSR protobuf deserialization (when schema-registry type is "bsr")
+            # Prefers headers (automatically added by BSR Kafka serializers):
+            #   - buf.registry.value.schema.commit (BSR commit ID)
+            #   - buf.registry.value.schema.message (fully-qualified message name)
+            # Falls back to topic mapping if headers not present:
+            # - topic-regex: "orders.*"
+            #   bsr-commit: "a1b2c3d4e5f6..."
+            #   bsr-message-type: "com.myorg.Order"
       # Ui Cluster Options (optional)
       ui-options:
         topic:

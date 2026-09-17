@@ -35,6 +35,11 @@ public class Connection extends AbstractProperties {
         SchemaRegistryType type = SchemaRegistryType.CONFLUENT;
         String glueSchemaRegistryName;
         String awsRegion;
+
+        // BSR specific fields
+        String bsrHost;   // e.g., "buf.build" or "bufbuild.internal"
+        String bsrToken;  // API token for authentication
+
         @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
         Map<String, String> properties;
     }

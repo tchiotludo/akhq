@@ -51,6 +51,11 @@ public class ProtobufToJsonDeserializer {
     private Map<String, List<Descriptor>> buildAllDescriptors() {
         Map<String, List<Descriptor>> allDescriptors = new HashMap<>();
         for (TopicsMapping mapping : topicsMapping) {
+            // Skip BSR-only mappings (they don't use descriptor files)
+            if (mapping.getBsrCommit() != null || mapping.getBsrMessageType() != null) {
+                continue;
+            }
+
             byte[] fileBytes = new byte[0];
             try {
                 fileBytes = getDescriptorFileAsBytes(mapping);
@@ -148,7 +153,8 @@ public class ProtobufToJsonDeserializer {
                 return new TopicsMapping(
                         mapping.getTopicRegex(),
                         mapping.getDescriptorFile(), mapping.getDescriptorFileBase64(),
-                        mapping.getKeyMessageType(), mapping.getValueMessageType());
+                        mapping.getKeyMessageType(), mapping.getValueMessageType(),
+                        mapping.getBsrCommit(), mapping.getBsrMessageType());
             }
         }
         return null;
