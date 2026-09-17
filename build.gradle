@@ -154,7 +154,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // avro
-    implementation("org.apache.avro:avro:1.12.1")
+    implementation("org.apache.avro:avro:1.12.2")
 
     // jackson-module-scala
     implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.2")
