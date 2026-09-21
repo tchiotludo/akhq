@@ -160,8 +160,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.2")
 
     // protobuf
-    implementation("com.google.protobuf:protobuf-java:4.36.1")
-    implementation("com.google.protobuf:protobuf-java-util:4.36.1")
+    implementation("com.google.protobuf:protobuf-java:4.36.2")
+    implementation("com.google.protobuf:protobuf-java-util:4.36.2")
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
