@@ -5,6 +5,7 @@ import lombok.Data;
 import org.akhq.configs.security.ldap.GroupMapping;
 import org.akhq.configs.security.ldap.UserMapping;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,16 @@ public class McpOauth {
     private String groupsClaim = "groups";
     private String requiredScope;
     private String defaultGroup;
+    private List<String> jwsAlgorithms = new ArrayList<>();
+    private Duration jwksConnectTimeout = Duration.ofSeconds(5);
+    private Duration jwksReadTimeout = Duration.ofSeconds(5);
     private List<GroupMapping> groups = new ArrayList<>();
     private List<UserMapping> users = new ArrayList<>();
+
+    /**
+     * @return the authorization server advertised in the protected resource metadata, defaulting to the issuer.
+     */
+    public String getAuthorizationServer() {
+        return authorizationServer == null || authorizationServer.isBlank() ? issuer : authorizationServer;
+    }
 }

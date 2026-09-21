@@ -14,7 +14,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.Group;
-import org.akhq.configs.security.McpOauth;
 import org.akhq.configs.security.Role;
 import org.akhq.configs.security.SecurityProperties;
 import org.akhq.models.security.ClaimProvider;
@@ -22,8 +21,7 @@ import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
 import org.akhq.security.annotation.AKHQSecured;
-import org.akhq.security.authentication.McpOauthGroupResolver;
-import org.akhq.security.authentication.McpOauthRequestMatcher;
+import org.akhq.security.authentication.UserGroupsResolver;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
@@ -52,11 +50,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     @Inject
     private ClaimProvider claimProvider;
     @Inject
-    private McpOauth mcpOauth;
-    @Inject
-    private McpOauthGroupResolver mcpOauthGroupResolver;
-    @Inject
-    private McpOauthRequestMatcher mcpOauthRequestMatcher;
+    private UserGroupsResolver userGroupsResolver;
 
     @Override
     public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
@@ -91,11 +85,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
         List<Group> userGroups = new ArrayList<>();
 
         if (authentication != null) {
-            userGroups = mcpOauthRequestMatcher.matches(request) && mcpOauthGroupResolver.isMcpOauthAuthentication(authentication)
-                ? mcpOauthGroupResolver.groups(authentication)
-                : unrollGroups(authentication, claimProvider).values().stream()
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+            userGroups = new ArrayList<>(userGroupsResolver.resolve(authentication));
         }
 
         // Add default group anyway

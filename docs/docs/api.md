@@ -56,7 +56,6 @@ akhq:
   security:
     mcp-oauth:
       enabled: true
-      authorization-server: https://identity.example.com/realms/akhq
       issuer: https://identity.example.com/realms/akhq
       jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs
       audience: akhq-mcp
@@ -71,7 +70,17 @@ akhq:
           groups: [topic-reader]
 ```
 
-When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource` and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. This validation is scoped to `/mcp`, so AKHQ's existing UI cookie authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
+`issuer`, `jwks-url` and `audience` are mandatory: AKHQ validates them at startup and fails fast with an explicit message when one is missing or is not an absolute URL. `authorization-server` defaults to `issuer`, and the following properties are optional:
+
+| Property | Default | Description |
+| --- | --- | --- |
+| `authorization-server` | `issuer` | Authorization server advertised in the protected-resource metadata. |
+| `resource` | Request origin + `endpoint` | Resource identifier advertised in the metadata and the `WWW-Authenticate` challenge. |
+| `jws-algorithms` | Every RSA, EC and EdDSA algorithm of the JWK set | Restricts the accepted token signature algorithms. |
+| `jwks-connect-timeout` | `5s` | Connect timeout for the JWKS endpoint. |
+| `jwks-read-timeout` | `5s` | Read timeout for the JWKS endpoint. |
+
+When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource` and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. Only asymmetric signature algorithms are accepted, so a token signed with `none` or with a symmetric key is rejected. This validation is scoped to `/mcp`, so AKHQ's existing UI cookie authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
 
 The MCP OAuth implementation separates request matching, token validation, and claim resolution. It currently validates JWT access tokens through JWKS; the token-validator interface allows adding opaque-token introspection without changing MCP routing or AKHQ authorization.
 

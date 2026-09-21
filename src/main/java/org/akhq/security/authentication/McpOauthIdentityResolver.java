@@ -43,6 +43,15 @@ public class McpOauthIdentityResolver {
 
     @SuppressWarnings("unchecked")
     private Object claimValue(Map<String, Object> claims, String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+
+        // Namespaced claims such as `https://acme.com/groups` contain dots and are not a nested path.
+        if (claims.containsKey(path)) {
+            return claims.get(path);
+        }
+
         Object value = claims;
         for (String field : path.split("\\.")) {
             if (!(value instanceof Map<?, ?> map)) {

@@ -5,9 +5,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.filters.AuthenticationFetcher;
-import io.micronaut.security.rules.SecurityRule;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.security.McpOauth;
@@ -15,17 +13,12 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @Singleton
 @Requires(property = "akhq.security.mcp-oauth.enabled", value = "true")
 public class McpOauthAuthenticationFetcher implements AuthenticationFetcher<HttpRequest<?>> {
-    public static final String AUTHENTICATION_ATTRIBUTE = "akhq.mcp-oauth.authentication";
-
     private final McpOauth mcpOauth;
     private final McpOauthTokenValidator tokenValidator;
     private final McpOauthIdentityResolver identityResolver;
@@ -67,9 +60,6 @@ public class McpOauthAuthenticationFetcher implements AuthenticationFetcher<Http
 
     private Authentication authenticate(String token) throws Exception {
         JWTClaimsSet claims = tokenValidator.validate(token);
-        String username = identityResolver.username(claims);
-        Map<String, Object> attributes = new LinkedHashMap<>(claims.getClaims());
-        attributes.put(AUTHENTICATION_ATTRIBUTE, true);
-        return new ServerAuthentication(username, List.of(SecurityRule.IS_AUTHENTICATED), attributes);
+        return new McpOauthAuthentication(identityResolver.username(claims), claims.getClaims());
     }
 }

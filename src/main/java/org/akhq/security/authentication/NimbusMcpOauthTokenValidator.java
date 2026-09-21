@@ -1,21 +1,27 @@
 package org.akhq.security.authentication;
 
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
-import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTProcessor;
+import io.micronaut.context.annotation.Requires;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.McpOauth;
 
-import java.net.URL;
+import java.net.URI;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
+@Requires(property = "akhq.security.mcp-oauth.enabled", value = "true")
 public class NimbusMcpOauthTokenValidator implements McpOauthTokenValidator {
     private final McpOauth mcpOauth;
     private JWTProcessor<SecurityContext> jwtProcessor;
@@ -26,16 +32,9 @@ public class NimbusMcpOauthTokenValidator implements McpOauthTokenValidator {
 
     @PostConstruct
     void init() throws Exception {
-        if (isBlank(mcpOauth.getIssuer()) || isBlank(mcpOauth.getJwksUrl()) || isBlank(mcpOauth.getAudience())) {
-            throw new IllegalStateException(
-                "`akhq.security.mcp-oauth.issuer`, `jwks-url`, and `audience` are required when MCP OAuth is enabled"
-            );
-        }
-
         DefaultJWTProcessor<SecurityContext> processor = new DefaultJWTProcessor<>();
-        RemoteJWKSet<SecurityContext> jwkSource = new RemoteJWKSet<>(new URL(mcpOauth.getJwksUrl()));
-        processor.setJWSKeySelector(new JWSAlgorithmFamilyJWSKeySelector<>(JWSAlgorithm.Family.SIGNATURE, jwkSource));
-        processor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<SecurityContext>(
+        processor.setJWSKeySelector(keySelector(jwkSource()));
+        processor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(
             mcpOauth.getAudience(),
             new JWTClaimsSet.Builder().issuer(mcpOauth.getIssuer()).build(),
             Set.of("exp", "sub")
@@ -48,7 +47,32 @@ public class NimbusMcpOauthTokenValidator implements McpOauthTokenValidator {
         return jwtProcessor.process(token, null);
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private JWKSource<SecurityContext> jwkSource() throws Exception {
+        DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
+            (int) mcpOauth.getJwksConnectTimeout().toMillis(),
+            (int) mcpOauth.getJwksReadTimeout().toMillis()
+        );
+
+        return JWKSourceBuilder.create(URI.create(mcpOauth.getJwksUrl()).toURL(), resourceRetriever)
+            .retrying(true)
+            .build();
+    }
+
+    /**
+     * Restricts accepted signatures to the configured algorithms, or to asymmetric ones when none is configured,
+     * so that a symmetric key published on the JWKS endpoint cannot be used to sign tokens.
+     */
+    private JWSVerificationKeySelector<SecurityContext> keySelector(JWKSource<SecurityContext> jwkSource) {
+        Set<JWSAlgorithm> algorithms = mcpOauth.getJwsAlgorithms().stream()
+            .map(JWSAlgorithm::parse)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (algorithms.isEmpty()) {
+            algorithms.addAll(JWSAlgorithm.Family.RSA);
+            algorithms.addAll(JWSAlgorithm.Family.EC);
+            algorithms.addAll(JWSAlgorithm.Family.ED);
+        }
+
+        return new JWSVerificationKeySelector<>(algorithms, jwkSource);
     }
 }

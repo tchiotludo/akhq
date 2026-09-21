@@ -302,6 +302,32 @@ akhq:
               groups:
                 - admin
 
+    # OAuth 2.0 bearer-token authentication for the MCP endpoint.
+    # Configure the same issuer, JWKS URL, and audience under `micronaut.security.token.jwt`.
+    mcp-oauth:
+      enabled: true
+      endpoint: /mcp
+      issuer: https://identity.example.com/realms/akhq # mandatory (expected `iss` claim of the access tokens)
+      jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs # mandatory (used to verify token signatures)
+      audience: akhq-mcp # mandatory (expected `aud` claim of the access tokens)
+      # authorization-server: https://identity.example.com/realms/akhq # Defaults to `issuer`.
+      # resource: https://akhq.example.com/mcp # Defaults to the public request origin plus `endpoint`.
+      # jws-algorithms: [RS256, ES256] # Defaults to every RSA, EC and EdDSA algorithm advertised by the JWK set.
+      # jwks-connect-timeout: 5s # optional (timeout to connect to the JWKS endpoint)
+      # jwks-read-timeout: 5s # optional (timeout to read the JWKS response)
+      username-claim: preferred_username
+      groups-claim: groups
+      required-scope: akhq.mcp.read
+      default-group: topic-reader
+      groups:
+        - name: mcp-topic-readers
+          groups:
+            - topic-reader
+      users:
+        - username: einstein
+          groups:
+            - admin
+
     # Header configuration (reverse proxy)
     header-auth:
       user-header: x-akhq-user # mandatory (the header name that will contain username)

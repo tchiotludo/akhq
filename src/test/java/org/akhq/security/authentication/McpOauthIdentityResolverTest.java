@@ -24,4 +24,29 @@ class McpOauthIdentityResolverTest {
         assertEquals("alice", resolver.username(claims, "subject-123"));
         assertEquals(List.of("akhq-topic-readers"), resolver.groups(claims));
     }
+
+    @Test
+    void resolvesNamespacedClaimContainingDots() {
+        McpOauth configuration = new McpOauth();
+        configuration.setUsernameClaim("https://acme.com/email");
+        configuration.setGroupsClaim("https://acme.com/groups");
+        McpOauthIdentityResolver resolver = new McpOauthIdentityResolver(configuration);
+
+        Map<String, Object> claims = Map.of(
+            "https://acme.com/email", "alice@acme.com",
+            "https://acme.com/groups", List.of("topic-readers", "operators")
+        );
+
+        assertEquals("alice@acme.com", resolver.username(claims, "subject-123"));
+        assertEquals(List.of("topic-readers", "operators"), resolver.groups(claims));
+    }
+
+    @Test
+    void fallsBackToSubjectAndNoGroupWhenClaimsAreMissing() {
+        McpOauth configuration = new McpOauth();
+        McpOauthIdentityResolver resolver = new McpOauthIdentityResolver(configuration);
+
+        assertEquals("subject-123", resolver.username(Map.of(), "subject-123"));
+        assertEquals(List.of(), resolver.groups(Map.of()));
+    }
 }
