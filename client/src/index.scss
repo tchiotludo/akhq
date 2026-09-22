@@ -76,7 +76,7 @@ $theme-colors: (
 }
 
 .table-hover tbody tr:hover code:after {
-  background: linear-gradient(transparent, $body-bg);
+  background: linear-gradient(transparent, var(--bs-body-bg, $body-bg));
 }
 
 #content {
@@ -93,10 +93,10 @@ $theme-colors: (
   bottom: 0;
   left: 0;
   right: 0;
-  background: red;
   padding: 5px 15px;
-  background: $black;
-  border-top: 1px solid $nav-tabs-border-color;
+  background: var(--bs-body-bg, #171819);
+  border-top: 1px solid var(--bs-border-color, #444);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: flex-end;
   z-index: $zindex-fixed;
@@ -125,7 +125,7 @@ ul.nav-tabs {
     border-bottom-width: 4px;
     border-bottom-color: transparent;
     padding: 10px 30px;
-    color: white;
+    color: var(--bs-body-color, #fff);
 
     &.active,
     &:hover.active {
@@ -138,7 +138,7 @@ ul.nav-tabs {
 
     &:hover {
       transition-duration: 0ms;
-      border-bottom-color: $gray-400;
+      border-bottom-color: var(--bs-border-color, $gray-400);
       border-bottom-width: 4px;
     }
   }
@@ -147,7 +147,7 @@ ul.nav-tabs {
 .tabs-container {
   .tab-content {
     padding: 20px;
-    border: 1px solid $nav-tabs-border-color;
+    border: 1px solid var(--bs-border-color, #444);
     border-top: 0;
   }
 }
@@ -192,7 +192,7 @@ table {
         overflow-wrap: break-word;
         word-break: break-all;
         display: block;
-        color: $gray-500;
+        color: var(--bs-secondary-color, $gray-500);
         font-size: 12px;
 
         &:after {
@@ -202,7 +202,7 @@ table {
           position: absolute;
           left: 0;
           bottom: 0;
-          background: linear-gradient(transparent, $body-bg-dark);
+          background: linear-gradient(transparent, var(--bs-body-bg, #171819));
         }
       }
     }

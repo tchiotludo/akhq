@@ -7,11 +7,16 @@ import { setUIOptions } from '../../utils/localstorage';
 import { toast } from 'react-toastify';
 import { getClusterUIOptions } from '../../utils/functions';
 import { withRouter } from '../../utils/withRouter';
+import { ThemeContext } from '../../context/ThemeContext';
+import { THEME_DARK, THEME_LIGHT, THEME_SYSTEM, getStoredTheme } from '../../utils/theme';
 
 class Settings extends Form {
+  static contextType = ThemeContext;
+
   state = {
     clusterId: '',
     formData: {
+      theme: getStoredTheme(),
       topicDefaultView: '',
       topicDataSort: '',
       topicDataDateTimeFormat: '',
@@ -46,7 +51,14 @@ class Settings extends Form {
     })
   );
 
+  themeOptions = [
+    { _id: THEME_DARK, name: 'Dark' },
+    { _id: THEME_LIGHT, name: 'Light' },
+    { _id: THEME_SYSTEM, name: 'System Default' }
+  ];
+
   schema = {
+    theme: Joi.string().optional(),
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
     topicDataDateTimeFormat: Joi.string().required(),
@@ -63,6 +75,7 @@ class Settings extends Form {
       this._initializeVars(() => {
         this.setState({
           formData: {
+            theme: (this.context && this.context.theme) || getStoredTheme(),
             topicDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.defaultView
@@ -94,7 +107,7 @@ class Settings extends Form {
             groupsDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.groupsDefaultView
-                : '',
+                : ''
           }
         });
       });
@@ -119,6 +132,9 @@ class Settings extends Form {
 
   doSubmit() {
     const { clusterId, formData } = this.state;
+    if (this.context && this.context.setTheme && formData.theme) {
+      this.context.setTheme(formData.theme);
+    }
     setUIOptions(clusterId, {
       topic: {
         defaultView: formData.topicDefaultView,
@@ -145,6 +161,26 @@ class Settings extends Form {
           onSubmit={() => this.doSubmit()}
         >
           <Header title="Settings" />
+          <fieldset id="appearance" key="appearance">
+            <legend id="appearance">Appearance</legend>
+            {this.renderSelect(
+              'theme',
+              'Theme',
+              this.themeOptions,
+              ({ currentTarget: input }) => {
+                const { formData } = this.state;
+                formData.theme = input.value;
+                this.setState({ formData });
+                if (this.context && this.context.setTheme) {
+                  this.context.setTheme(input.value);
+                }
+              },
+              'col-sm-10',
+              'select-wrapper settings-wrapper',
+              true,
+              { className: 'form-control' }
+            )}
+          </fieldset>
           <fieldset id="topic" key="topic">
             <legend id="topic">Topic</legend>
             {this.renderSelect(
