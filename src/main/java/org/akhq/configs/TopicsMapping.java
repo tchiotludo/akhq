@@ -13,4 +13,8 @@ public class TopicsMapping {
     String descriptorFileBase64;
     String keyMessageType;
     String valueMessageType;
+
+    // BSR specific fields
+    String bsrCommit;         // Specific commit/version (optional, can use headers instead)
+    String bsrMessageType;    // Full protobuf message name for BSR (e.g., "com.myorg.Order")
 }
