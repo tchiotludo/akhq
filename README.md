@@ -87,4 +87,21 @@ Many thanks to:
 
 
 ## License
-Apache 2.0 © [tchiotludo](https://github.com/tchiotludo)
+
+This project is licensed under the **Apache License 2.0**, a widely used open-source license that provides:
+
+- Permission for personal and commercial use  
+- Permission to modify and redistribute the software  
+- Protection via disclaimers and limitations of liability  
+
+To comply with the license requirements, users must:
+
+- Include a copy of the Apache 2.0 License in any distribution  
+- Provide proper attribution to the original authors  
+- Clearly state any modifications made  
+
+Full license text is available at:
+
+👉 https://www.apache.org/licenses/LICENSE-2.0
+
+This update improves clarity, formatting, and ensures better alignment with standard open-source documentation practices.
