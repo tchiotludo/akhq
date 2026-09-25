@@ -9,6 +9,6 @@ import java.util.List;
 @Data
 public class JsonMaskingFilter {
     String description = "UNKNOWN";
-    String topic = "UNKNOWN";
+    String topic;
     List<String> keys = List.of("UNKNOWN");
 }

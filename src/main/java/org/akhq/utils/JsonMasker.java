@@ -1,34 +1,44 @@
 package org.akhq.utils;
 
 import org.akhq.configs.DataMasking;
-import org.akhq.configs.JsonMaskingFilter;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 public abstract class JsonMasker implements Masker {
-    private final Map<String, List<String>> topicToKeysMap;
+    private final List<Map.Entry<Pattern, List<String>>> topicPatternToKeys;
     protected final String jsonMaskReplacement;
 
     public JsonMasker(DataMasking dataMasking) {
         this.jsonMaskReplacement = dataMasking.getJsonMaskReplacement();
-        this.topicToKeysMap = buildTopicKeysMap(dataMasking);
+        this.topicPatternToKeys = buildTopicPatternToKeys(dataMasking);
     }
 
-    private Map<String, List<String>> buildTopicKeysMap(DataMasking dataMasking) {
+    private List<Map.Entry<Pattern, List<String>>> buildTopicPatternToKeys(DataMasking dataMasking) {
+        boolean regexEnabled = dataMasking.isEnableRegexTopicFilters();
         return dataMasking.getJsonFilters().stream()
-            .collect(Collectors.toMap(
-                JsonMaskingFilter::getTopic,
-                JsonMaskingFilter::getKeys,
-                (a, b) -> a,
-                HashMap::new
-            ));
+            .filter(filter -> {
+                if (filter.getTopic() == null) {
+                    LOG.warn("Ignoring json-filter '{}' because it has no topic", filter.getDescription());
+                    return false;
+                }
+                return true;
+            })
+            .map(filter -> Map.entry(
+                Pattern.compile(
+                    regexEnabled ? filter.getTopic() : Pattern.quote(filter.getTopic()),
+                    Pattern.CASE_INSENSITIVE
+                ),
+                filter.getKeys()
+            ))
+            .toList();
     }
 
     protected List<String> getKeysForTopic(String topic) {
-        return topicToKeysMap.getOrDefault(topic.toLowerCase(), Collections.emptyList());
+        return topicPatternToKeys.stream()
+            .filter(entry -> entry.getKey().matcher(topic).matches())
+            .flatMap(entry -> entry.getValue().stream())
+            .toList();
     }
 }

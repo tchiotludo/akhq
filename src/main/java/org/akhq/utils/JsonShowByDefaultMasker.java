@@ -29,7 +29,7 @@ public class JsonShowByDefaultMasker extends JsonMasker {
             if (!isJson(record)) {
                 return record;
             }
-            String topic = record.getTopic().getName().toLowerCase();
+            String topic = record.getTopic().getName();
             List<String> keysToMask = getKeysForTopic(topic);
             return keysToMask.isEmpty() ? record : applyMasking(record, keysToMask);
         } catch (Exception e) {
