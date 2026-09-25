@@ -50,12 +50,20 @@ BytesValue
 type_url (	RtypeUrl
 value (RvalueBo
 com.google.protobufBAnyProtoPZ%github.com/golang/protobuf/ptypes/any¢GPBªGoogle.Protobuf.WellKnownTypesbproto3
-ô
-complex.protoorg.akhq.utilsalbum.proto
-film.protogoogle/protobuf/wrappers.protogoogle/protobuf/any.proto"Ö
-Complex+
+¡
+complexWithBookOutside.protoorg.akhq.utilsalbum.proto
+film.protogoogle/protobuf/wrappers.protogoogle/protobuf/any.proto"å
+ComplexWithBookOutside+
 album (2.org.akhq.utils.AlbumRalbum(
 film (2.org.akhq.utils.FilmRfilmB
 stringWrapper (2.google.protobuf.StringValueRstringWrapper0
-anything (2.google.protobuf.AnyRanythingB
-org.akhq.utilsBComplexProtobproto3
+anything (2.google.protobuf.AnyRanythingB-
+org.akhq.utilsBComplexWithBookOutsideProtobproto3
+Ê
+multipleLayerComplex.protoorg.akhq.utilsalbum.proto
+film.protocomplexWithBookOutside.proto"¯
+MultipleLayerComplex+
+album (2.org.akhq.utils.AlbumRalbum(
+film (2.org.akhq.utils.FilmRfilm@
+complex (2&.org.akhq.utils.ComplexWithBookOutsideRcomplexB+
+org.akhq.utilsBMultipleLayerComplexProtobproto3
