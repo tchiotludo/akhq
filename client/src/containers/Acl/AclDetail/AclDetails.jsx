@@ -8,27 +8,36 @@ import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
 import Root from '../../../components/Root';
 import { withRouter } from '../../../utils/withRouter';
+import {
+  decodeBase64PathSegment,
+  decodeUtf8FromBase64,
+  encodeBase64PathSegment
+} from '../../../utils/base64';
 
 class AclDetails extends Root {
   state = {
     clusterId: this.props.params.clusterId,
-    principalEncoded: this.props.params.principalEncoded,
+    principalEncoded: decodeBase64PathSegment(this.props.params.principalEncoded),
     selectedTab: 'topics'
   };
 
   tabs = ['topics', 'groups', 'clusters', 'transactionalids'];
 
   componentDidMount() {
-    const { clusterId, principalEncoded } = this.props.params;
+    const { clusterId } = this.props.params;
+    const principalEncoded = decodeBase64PathSegment(this.props.params.principalEncoded);
     const tabSelected = getSelectedTab(this.props, this.tabs);
     this.setState(
       {
+        principalEncoded,
         selectedTab: tabSelected ? tabSelected : 'topics'
       },
       () => {
         this.props.router.navigate(
           {
-            pathname: `/ui/${clusterId}/acls/${principalEncoded}/${this.state.selectedTab}`
+            pathname: `/ui/${clusterId}/acls/${encodeBase64PathSegment(principalEncoded)}/${
+              this.state.selectedTab
+            }`
           },
           { replace: true }
         );
@@ -39,7 +48,10 @@ class AclDetails extends Root {
   componentDidUpdate(prevProps) {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       const tabSelected = getSelectedTab(this.props, this.tabs);
-      this.setState({ selectedTab: tabSelected });
+      this.setState({
+        principalEncoded: decodeBase64PathSegment(this.props.params.principalEncoded),
+        selectedTab: tabSelected
+      });
     }
   }
 
@@ -67,7 +79,8 @@ class AclDetails extends Root {
 
   render() {
     const { principalEncoded, clusterId } = this.state;
-    const principal = atob(principalEncoded);
+    const principal = decodeUtf8FromBase64(principalEncoded);
+    const principalPathSegment = encodeBase64PathSegment(principalEncoded);
     return (
       <div>
         <Header title={`Acl: ${principal}`} />
@@ -75,7 +88,7 @@ class AclDetails extends Root {
           <ul className="nav nav-tabs" role="tablist">
             <li className="nav-item">
               <Link
-                to={`/ui/${clusterId}/acls/${principalEncoded}/topics`}
+                to={`/ui/${clusterId}/acls/${principalPathSegment}/topics`}
                 className={this.tabClassName('topics')}
               >
                 Topics
@@ -83,7 +96,7 @@ class AclDetails extends Root {
             </li>
             <li className="nav-item">
               <Link
-                to={`/ui/${clusterId}/acls/${principalEncoded}/groups`}
+                to={`/ui/${clusterId}/acls/${principalPathSegment}/groups`}
                 className={this.tabClassName('groups')}
               >
                 Groups
@@ -91,7 +104,7 @@ class AclDetails extends Root {
             </li>
             <li className="nav-item">
               <Link
-                to={`/ui/${clusterId}/acls/${principalEncoded}/clusters`}
+                to={`/ui/${clusterId}/acls/${principalPathSegment}/clusters`}
                 className={this.tabClassName('clusters')}
               >
                 Clusters
@@ -99,7 +112,7 @@ class AclDetails extends Root {
             </li>
             <li className="nav-item">
               <Link
-                to={`/ui/${clusterId}/acls/${principalEncoded}/transactionalids`}
+                to={`/ui/${clusterId}/acls/${principalPathSegment}/transactionalids`}
                 className={this.tabClassName('transactionalids')}
               >
                 Transactional Ids
