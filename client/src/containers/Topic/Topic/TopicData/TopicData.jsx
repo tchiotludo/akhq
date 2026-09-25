@@ -263,10 +263,7 @@ class TopicData extends Root {
                 .reduce((acc, all) => [...acc, ...all], []);
 
               if (records.length) {
-                const tableMessages = self._sortMessages(
-                  self._handleMessages(records),
-                  self.state.sortBy === 'Oldest'
-                );
+const tableMessages = self._sortMessages(self._handleMessages(records));
                 self.setState({
                   recordCount: tableMessages.length,
                   messages: tableMessages,
