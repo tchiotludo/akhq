@@ -4,12 +4,18 @@ import { basePath } from './utils/endpoints';
 import Routes from './utils/AkhqRoutes';
 import { ToastContainer } from 'react-toastify';
 
+import { ThemeContext } from './context/ThemeContext';
+
 class App extends React.Component {
   render() {
     return (
       <Router basename={basePath}>
         <Routes />
-        <ToastContainer draggable={false} closeOnClick={false} theme="dark" />
+        <ThemeContext.Consumer>
+          {({ resolvedTheme }) => (
+            <ToastContainer draggable={false} closeOnClick={false} theme={resolvedTheme} />
+          )}
+        </ThemeContext.Consumer>
       </Router>
     );
   }

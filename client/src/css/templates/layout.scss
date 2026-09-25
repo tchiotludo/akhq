@@ -27,7 +27,7 @@ h1 {
   font-family: $font-family-title;
   font-weight: 700;
   font-size: 2rem;
-  color: white;
+  color: var(--bs-heading-color, var(--bs-body-color, #fff));
   margin-bottom: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -54,7 +54,7 @@ h3.logo {
   font-family: $font-family-monospace;
   background-color: transparent;
   border-radius: $input-border-radius;
-  border: 1px solid #262424;
+  border: 1px solid var(--bs-border-color, #262424);
 }
 
 .khq-sticky {
@@ -175,10 +175,10 @@ form.khq-form div.khq-submit,
   position: fixed;
   bottom: 0;
   left: 0;
-  background: red;
   padding: 5px 15px;
-  background: $black;
-  border-top: 1px solid $nav-tabs-border-color;
+  background: var(--bs-body-bg, #171819);
+  border-top: 1px solid var(--bs-border-color, $nav-tabs-border-color);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: flex-end;
   width: calc(100vw - 15px);
@@ -214,7 +214,7 @@ form.khq-form div.khq-submit,
 }
 
 .btn.disabled-black-button {
-  color: #b3b3b3;
-  background-color: #222;
-  border-color: #333;
+  color: var(--bs-secondary-color, #b3b3b3);
+  background-color: var(--bs-secondary-bg, #222);
+  border-color: var(--bs-border-color, #333);
 }

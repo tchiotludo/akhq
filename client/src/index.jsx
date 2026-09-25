@@ -5,11 +5,20 @@ import * as serviceWorker from './serviceWorker';
 import { basePath } from './utils/endpoints';
 import { createRoot } from 'react-dom/client';
 
+import { ThemeProvider } from './context/ThemeContext';
+import { getStoredTheme, resolveTheme, applyThemeToDOM } from './utils/theme';
+
+applyThemeToDOM(resolveTheme(getStoredTheme()));
+
 let pathPrefix = basePath + '/ui';
 
 const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
-root.render(<App pathPrefix={pathPrefix} />);
+root.render(
+  <ThemeProvider>
+    <App pathPrefix={pathPrefix} />
+  </ThemeProvider>
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
