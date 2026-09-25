@@ -77,6 +77,7 @@ public class TopicController extends AbstractController {
     private Integer pageSize;
 
     @Get ("api/topic/defaults-configs")
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Operation(tags = {"topic"}, summary = "Get default topic configuration")
     public Map<String,Object> getDefaultConf(){
         return Map.of(
