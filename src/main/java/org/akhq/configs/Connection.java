@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,9 @@ public class Connection extends AbstractProperties {
 
         @ConfigurationBuilder(configurationPrefix = "topic-data")
         private UiOptionsTopicData topicData = new UiOptionsTopicData();
+
+        @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
+        private Map<String, String> topicAliases = new HashMap<>();
     }
 
     public UiOptions mergeOptions(UIOptions defaultOptions) {
@@ -85,6 +89,8 @@ public class Connection extends AbstractProperties {
             StringUtils.isNotEmpty(this.uiOptions.topicData.getSort()) ? this.uiOptions.topicData.getSort() : defaultOptions.getTopicData().getSort(),
             this.uiOptions.topicData.getDateTimeFormat()
         );
+
+        options.topicAliases = this.uiOptions.topicAliases;
 
         return options;
     }

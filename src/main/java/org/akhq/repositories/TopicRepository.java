@@ -11,6 +11,8 @@ import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 
+import org.akhq.configs.Connection;
+
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.*;
@@ -32,6 +34,9 @@ public class TopicRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
+
+    @Inject
+    private List<Connection> connections;
 
     @Value("${akhq.topic.internal-regexps}")
     protected List<String> internalRegexps;
@@ -61,7 +66,7 @@ public class TopicRepository extends AbstractRepository {
         return kafkaWrapper.listTopics(clusterId)
             .stream()
             .map(TopicListing::name)
-            .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
+            .filter(name -> (isSearchMatch(search, name) || isSearchMatch(search, getAlias(clusterId, name).orElse(""))) && isMatchRegex(filters, name))
             .filter(name -> isListViewMatch(view, name))
             .sorted(Comparator.comparing(String::toLowerCase))
             .collect(Collectors.toList());
@@ -99,7 +104,8 @@ public class TopicRepository extends AbstractRepository {
                         logDirRepository.findByTopic(clusterId, description.getValue().name()),
                         topicOffsets.get(description.getValue().name()),
                         isInternal(description.getValue().name()),
-                        isStream(description.getValue().name())
+                        isStream(description.getValue().name()),
+                        getAlias(clusterId, description.getValue().name()).orElse(null)
                     )
                 );
         }
@@ -139,5 +145,12 @@ public class TopicRepository extends AbstractRepository {
         }, delay = "${akhq.topic.retry.topic-exists.delay:3s}")
     void checkIfTopicExists(String clusterId, String name) throws ExecutionException {
         kafkaWrapper.describeTopics(clusterId, Collections.singletonList(name));
+    }
+
+    private Optional<String> getAlias(String clusterId, String topicName) {
+        return connections.stream()
+            .filter(c -> c.getName().equals(clusterId))
+            .findFirst()
+            .map(c -> c.getUiOptions().getTopicAliases().get(topicName));
     }
 }
