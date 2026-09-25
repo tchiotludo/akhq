@@ -1171,7 +1171,10 @@ public class RecordRepository extends AbstractRepository {
         }
     }
 
-    private void filterMessageLength(Record record) {
+    /**
+     * Truncates values larger than {@code akhq.topic-data.kafka-max-message-length} for UI display.
+     */
+    public void filterMessageLength(Record record) {
         if (maxKafkaMessageLength == Integer.MAX_VALUE || record.getValue() == null) {
             return;
         }

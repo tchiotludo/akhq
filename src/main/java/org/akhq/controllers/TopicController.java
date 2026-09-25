@@ -440,7 +440,9 @@ public class TopicController extends AbstractController {
                     event.getData().getAfter()
                 );
 
-                if (event.getData().getRecords().size() > 0) {
+                if (!event.getData().getRecords().isEmpty()) {
+                    // Truncated for UI display only; download reuses search() and keeps full values.
+                    event.getData().getRecords().forEach(recordRepository::filterMessageLength);
                     searchRecord.records = event.getData().getRecords();
                 }
 
