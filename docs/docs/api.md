@@ -16,10 +16,25 @@ You can discover the api endpoint here :
 
 AKHQ also exposes an MCP JSON-RPC endpoint on `POST /mcp`.
 
+The MCP server is **disabled by default** and must be enabled explicitly:
+
+```yaml
+akhq:
+  mcp:
+    enabled: true
+```
+
+Enable it only on an instance that has an authentication mechanism configured. AKHQ ships with
+`micronaut.security.enabled: false`, and on such an instance the MCP endpoint would be reachable anonymously.
+
 Authentication is the same as the other AKHQ API endpoints:
 
 * If you already authenticated in the UI, send the same session cookie.
 * For programmatic clients, send a JWT as `Authorization: Bearer <token>`.
+
+When MCP OAuth 2.0 is enabled (see below), those two options no longer apply to `/mcp`: the endpoint then accepts
+**only** access tokens issued by the configured authorization server, and an AKHQ session cookie or an AKHQ-issued
+JWT is rejected with `401`. The rest of the API keeps accepting them.
 
 Authorization is also the same model as classic endpoints:
 
@@ -70,7 +85,10 @@ akhq:
           groups: [topic-reader]
 ```
 
-`issuer`, `jwks-url` and `audience` are mandatory: AKHQ validates them at startup and fails fast with an explicit message when one is missing or is not an absolute URL. `authorization-server` defaults to `issuer`, and the following properties are optional:
+`issuer`, `jwks-url` and `audience` are mandatory: AKHQ validates them at startup and fails fast with an explicit
+message when one is missing or is not an absolute URL. This validation aborts the startup of the whole application,
+web UI included, so an instance never runs with a half configured MCP OAuth setup. Set
+`akhq.security.mcp-oauth.enabled: false` to disable both the feature and its validation. `authorization-server` defaults to `issuer`, and the following properties are optional:
 
 | Property | Default | Description |
 | --- | --- | --- |

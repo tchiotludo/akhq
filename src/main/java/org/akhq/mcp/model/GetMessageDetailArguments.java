@@ -15,6 +15,6 @@ public record GetMessageDetailArguments(
     Integer partition,
     @Schema(description = "Exact offset to fetch.", example = "42", requiredMode = Schema.RequiredMode.REQUIRED)
     Long offset
-) {
+) implements TopicScopedArguments {
 }
 

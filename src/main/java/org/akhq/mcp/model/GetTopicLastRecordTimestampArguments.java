@@ -11,5 +11,5 @@ public record GetTopicLastRecordTimestampArguments(
     String cluster,
     @Schema(description = "Kafka topic name.", example = "orders", requiredMode = Schema.RequiredMode.REQUIRED)
     String topic
-) {
+) implements TopicScopedArguments {
 }

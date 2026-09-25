@@ -9,6 +9,7 @@ import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.McpOauth;
+import org.akhq.security.authentication.McpOauthAuthentication;
 import org.akhq.security.authentication.McpOauthRequestMatcher;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
@@ -33,10 +34,9 @@ public class McpBearerSecurityRule extends AbstractSecurityRule<HttpRequest<?>> 
             return Mono.just(SecurityRuleResult.UNKNOWN);
         }
 
-        boolean hasBearerToken = request.getHeaders().getAuthorization()
-            .map(value -> value.regionMatches(true, 0, "Bearer ", 0, "Bearer ".length()))
-            .orElse(false);
-        if (!hasBearerToken || (authentication != null && !hasRequiredScope(authentication))) {
+        // Only an identity built from a validated MCP OAuth access token may reach the MCP endpoint. Any other
+        // authentication, such as an AKHQ issued UI token replayed as a bearer token, is rejected.
+        if (!(authentication instanceof McpOauthAuthentication) || !hasRequiredScope(authentication)) {
             return Mono.just(SecurityRuleResult.REJECTED);
         }
         return Mono.just(SecurityRuleResult.UNKNOWN);

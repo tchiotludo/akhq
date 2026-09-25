@@ -35,5 +35,5 @@ public record FindMessageInTopicArguments(
     String endTimestamp,
     @Schema(description = "Maximum number of matches to return. Defaults to 1, max 25.", example = "5")
     Integer maxMatches
-) {
+) implements TopicScopedArguments {
 }

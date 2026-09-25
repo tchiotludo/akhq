@@ -35,6 +35,11 @@ micronaut:
                      # behind a reverse proxy with url http://my-server/akhq, set context-path: "/akhq".
                      # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
 akhq:
+  # MCP server configuration (optional)
+  mcp:
+    enabled: false # false by default. Exposes the MCP JSON-RPC endpoint on `POST /mcp`.
+                   # Only enable it on an instance with an authentication mechanism configured.
+
   server:
     access-log: # Access log configuration (optional)
       enabled: true # true by default

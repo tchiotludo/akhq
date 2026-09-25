@@ -55,7 +55,14 @@ public class UserGroupsResolver {
                 .flatMap(Collection::stream)
                 .toList();
         } catch (Exception e) {
-            log.warn("Unable to map MCP OAuth groups: {}", e.getMessage());
+            // Fail closed: the caller ends up with the default group only. A custom ClaimProvider that does not
+            // handle ClaimProviderType.MCP_OAUTH is the usual cause, so log it loudly enough to be actionable.
+            log.error(
+                "Unable to map the MCP OAuth claims of user '{}' to AKHQ groups, no group is granted. Check that the "
+                    + "ClaimProvider in use handles ClaimProviderType.MCP_OAUTH.",
+                request.getUsername(),
+                e
+            );
             return List.of();
         }
     }

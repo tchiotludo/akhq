@@ -1,5 +1,6 @@
 package org.akhq.mcp;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.annotation.Order;
 import io.micronaut.mcp.server.exceptions.McpErrorExceptionMapper;
@@ -9,6 +10,7 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Requires(property = "akhq.mcp.enabled", value = "true")
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Slf4j
 public class McpToolExceptionMapper implements McpErrorExceptionMapper<Exception> {
