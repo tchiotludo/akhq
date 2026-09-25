@@ -1,5 +1,6 @@
 package org.akhq.repositories;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
@@ -46,7 +47,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -98,6 +98,10 @@ public class RecordRepository extends AbstractRepository {
     @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
     protected int maxKafkaMessageLength;
 
+    private static final Comparator<Record> OLDEST_FIRST = Comparator.comparing(Record::getTimestamp)
+        .thenComparingInt(Record::getPartition)
+        .thenComparingLong(Record::getOffset);
+
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
             Topic topicsDetail = topicRepository.findByName(clusterId, options.topic);
@@ -111,214 +115,97 @@ public class RecordRepository extends AbstractRepository {
     }
 
     private List<Record> consumeOldest(Topic topic, Options options) {
-        List<Record> list = new ArrayList<>();
-
         Properties properties = new Properties() {{
             put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
         }};
 
         try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, false);
-            if (rangePlan.isEmpty()) {
-                return list;
+            TopicSearchPlanner.PartitionRangePlan plan = topicSearchPlanner.planOldest(topic, options, consumer);
+            if (plan.isEmpty()) {
+                return new ArrayList<>();
             }
 
-            consumer.assign(rangePlan.ranges().keySet());
-            rangePlan.ranges().values().forEach(range -> consumer.seek(range.topicPartition(), range.begin()));
+            PartitionScan scan = new PartitionScan(consumer, topic, options, plan.ranges(), options.size, new HashMap<>(), new ArrayList<>());
+            scan.run();
 
-            Map<TopicPartition, Long> rangeEnds = rangePlan.getRangeEnds();
-
-            // Build the candidate pool that the final sort/limit will run on.
-            // To build a correct oldest page we must collect each partition's own oldest slice first,
-            // then merge and sort.
-            // We drain every assigned partition until it has either yielded 'size' matching candidates
-            // or reached its window end (which also covers short or empty partitions without waiting
-            // for records that do not exist).
-            Set<TopicPartition> pending = new HashSet<>(rangePlan.ranges().keySet());
-            Map<TopicPartition, Integer> collected = new HashMap<>();
-            int emptyPolls = 0;
-
-            while (!pending.isEmpty() && emptyPolls < 2) {
-                ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-                if (records.isEmpty()) {
-                    emptyPolls++;
-                    continue;
-                }
-                emptyPolls = 0;
-
-                for (ConsumerRecord<byte[], byte[]> record : records) {
-                    TopicPartition tp = new TopicPartition(record.topic(), record.partition());
-                    long end = rangeEnds.getOrDefault(tp, record.offset());
-                    if (record.offset() >= end) {
-                        continue;
-                    }
-
-                    Record current = newRecord(record, options, topic);
-                    if (recordSearchFilter.matchFilters(options, current)) {
-                        filterMessageLength(current);
-                        list.add(current);
-                        collected.merge(tp, 1, Integer::sum);
-                    }
-                }
-
-                // A partition is done when it reached its window end (short/exhausted) or already handed
-                // over enough candidates (dense). Pause finished partitions so the consumer stops
-                // fetching them and spends the next polls draining the partitions we still need.
-                Set<TopicPartition> completed = pending.stream()
-                    .filter(tp -> consumer.position(tp) >= rangeEnds.getOrDefault(tp, 0L)
-                        || collected.getOrDefault(tp, 0) >= options.size)
-                    .collect(Collectors.toSet());
-                if (!completed.isEmpty()) {
-                    consumer.pause(completed);
-                    pending.removeAll(completed);
-                }
-            }
-
-            List<Record> page = list.stream()
-                .sorted(Comparator.comparing(Record::getTimestamp)
-                    .thenComparingInt(Record::getPartition)
-                    .thenComparingLong(Record::getOffset))
-                .limit(options.size)
-                .toList();
-
-            Map<Integer, Long> nextCursor = nextOldestCursor(options.getAfter(), scannedUpTo(consumer, rangeEnds), collected, page);
-            options.after.clear();
-            options.after.putAll(nextCursor);
+            List<Record> page = scan.page(OLDEST_FIRST);
+            page.forEach(this::filterMessageLength);
+            setAfter(options, nextOldestCursor(options.getAfter(), scan.scannedUpTo(), scan.collected, page));
 
             return page;
         }
     }
 
+    /**
+     * Reads each partition backward, one window of 'size' offsets at a time, until it yields 'size'
+     * matches or reaches its range begin. Each window is read forward, so it must be fully drained
+     * before moving to the older one.
+     */
     private List<Record> consumeNewest(Topic topic, Options options) {
         Properties properties = new Properties() {{
             put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
         }};
 
         try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-            List<Record> list = new ArrayList<>();
+            TopicSearchPlanner.PartitionRangePlan plan = topicSearchPlanner.planNewest(topic, options, consumer);
+            Map<TopicPartition, Integer> collected = new HashMap<>();
+            List<Record> candidates = new ArrayList<>();
+            // Exclusive end of the next window to read, per partition.
+            Map<TopicPartition, Long> windowEnds = new HashMap<>(plan.rangeEnds());
+            // Lowest offset each partition was read down to without gaps. Dropped on an incomplete window.
+            Map<TopicPartition, Long> scannedDownTo = new HashMap<>(plan.rangeEnds());
 
-            // Incoming request cursor: the per-partition exclusive upper bound for this page.
-            Map<Integer, Long> requestAfter = new HashMap<>(options.getAfter());
-            // Internal window state, used only inside this call: the exclusive upper bound of the
-            // window currently being scanned. It moves strictly older after each fully drained
-            // window until the beginning of every partition is reached.
-            Map<Integer, Long> windowAfter = new HashMap<>(requestAfter);
-            // Matches per partition: like consumeOldest, each partition must hand over 'size' candidates
-            // (or be exhausted) before the global sort/limit, otherwise a page can miss newer records.
-            Map<Integer, Integer> collected = new HashMap<>();
-            // Lowest offset each partition was fully scanned down to, without gaps. Partitions with no
-            // match skip straight to it on the next page instead of being rescanned.
-            Map<Integer, Long> scannedDownTo = new HashMap<>();
-            Set<Integer> scanGaps = new HashSet<>();
-            boolean keepScanning = true;
-
-            while (keepScanning) {
-                // Feed the current window bound to the planner, then immediately restore the request
-                // cursor so our loop bookkeeping never leaks into the request-level pagination state.
-                options.after.clear();
-                options.after.putAll(windowAfter);
-                TopicSearchPlanner.PartitionRangePlan rangePlan =
-                    topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, true);
-                options.after.clear();
-                options.after.putAll(requestAfter);
-
-                if (rangePlan.isEmpty()) {
+            while (true) {
+                Map<TopicPartition, TopicSearchPlanner.PartitionRange> windows = new LinkedHashMap<>();
+                plan.ranges().forEach((tp, range) -> {
+                    long end = windowEnds.get(tp);
+                    if (end > range.begin() && collected.getOrDefault(tp, 0) < options.size) {
+                        windows.put(tp, new TopicSearchPlanner.PartitionRange(tp, Math.max(range.begin(), end - options.size), end));
+                    }
+                });
+                if (windows.isEmpty()) {
                     break;
                 }
 
-                consumer.assign(rangePlan.ranges().keySet());
-                rangePlan.ranges().values().forEach(range -> {
-                    consumer.seek(range.topicPartition(), range.begin());
-                    log.trace(
-                        "Consume Newest [topic: {}] [partition: {}] [start: {}] [end: {}]",
-                        range.topicPartition().topic(),
-                        range.topicPartition().partition(),
-                        range.begin(),
-                        range.end()
-                    );
-                });
+                PartitionScan scan = new PartitionScan(consumer, topic, options, windows, Integer.MAX_VALUE, collected, candidates);
+                scan.run();
 
-                Map<TopicPartition, Long> rangeEnds = rangePlan.getRangeEnds();
-
-                // Fully drain every window in this set before moving older. A single poll only
-                // returns the lower part of a window (records are fetched ascending from 'begin'),
-                // so advancing after one poll would skip the newer offsets we have not read yet.
-                Set<TopicPartition> pending = new HashSet<>(rangePlan.ranges().keySet());
-                int emptyPolls = 0;
-                while (!pending.isEmpty() && emptyPolls < 2) {
-                    ConsumerRecords<byte[], byte[]> polled = this.poll(consumer);
-                    if (polled.isEmpty()) {
-                        emptyPolls++;
-                        continue;
-                    }
-                    emptyPolls = 0;
-
-                    for (ConsumerRecord<byte[], byte[]> record : polled) {
-                        TopicPartition tp = new TopicPartition(record.topic(), record.partition());
-                        long end = rangeEnds.getOrDefault(tp, record.offset());
-                        if (record.offset() >= end) {
-                            continue;
-                        }
-                        Record current = newRecord(record, options, topic);
-                        if (recordSearchFilter.matchFilters(options, current)) {
-                            filterMessageLength(current);
-                            list.add(current);
-                            collected.merge(tp.partition(), 1, Integer::sum);
-                        }
-                    }
-
-                    pending.removeIf(tp -> consumer.position(tp) >= rangeEnds.getOrDefault(tp, 0L));
-                }
-
-                // Move each scanned window strictly older: the next exclusive upper bound is the
-                // begin offset of the window we just drained. Partitions keep their bound across
-                // iterations so an already-exhausted partition is never reset back to the tail.
-                // A partition with enough candidates gets an empty bound (0) so it is not planned again.
-                Map<Integer, Long> nextWindow = new HashMap<>(windowAfter);
-                rangePlan.ranges().forEach((tp, range) -> {
-                    int partition = tp.partition();
-                    boolean drained = consumer.position(tp) >= range.end();
-                    if (drained && !scanGaps.contains(partition) && scannedDownTo.getOrDefault(partition, range.end()) == range.end()) {
-                        scannedDownTo.put(partition, range.begin());
+                windows.forEach((tp, window) -> {
+                    if (scan.drained(tp)) {
+                        windowEnds.put(tp, window.begin());
+                        scannedDownTo.computeIfPresent(tp, (ignored, lowest) -> lowest == window.end() ? window.begin() : lowest);
                     } else {
-                        scanGaps.add(partition);
+                        // Not fully read (poll timeouts): stop reading this partition for this page.
+                        windowEnds.put(tp, plan.ranges().get(tp).begin());
+                        scannedDownTo.remove(tp);
                     }
-
-                    nextWindow.put(partition, collected.getOrDefault(partition, 0) >= options.size ? 0L : range.begin());
                 });
-
-                if (nextWindow.equals(windowAfter)) {
-                    keepScanning = false;
-                } else {
-                    windowAfter = nextWindow;
-                }
             }
 
-            List<Record> result = list.stream()
-                .sorted(Comparator.comparing(Record::getTimestamp)
-                    .thenComparingInt(Record::getPartition)
-                    .thenComparingLong(Record::getOffset)
-                    .reversed())
+            List<Record> page = candidates.stream()
+                .sorted(OLDEST_FIRST.reversed())
                 .limit(options.size)
                 .collect(Collectors.toList());
+            page.forEach(this::filterMessageLength);
 
-            // Request-level pagination cursor: move each returned partition's exclusive bound back to
-            // the oldest returned offset, keeping untouched partitions at their previous bound so the
-            // next page never re-reads or skips records.
-            Map<Integer, Long> nextCursor = new HashMap<>(requestAfter);
-            scannedDownTo.forEach((partition, lowest) -> {
-                if (!collected.containsKey(partition)) {
-                    nextCursor.merge(partition, lowest, Math::min);
+            // Next exclusive upper bound per partition: the oldest emitted offset, or how far a
+            // partition without match was read. Partitions with dropped candidates keep their bound.
+            Map<Integer, Long> nextCursor = new HashMap<>(options.getAfter());
+            scannedDownTo.forEach((tp, lowest) -> {
+                if (!collected.containsKey(tp)) {
+                    nextCursor.merge(tp.partition(), lowest, Math::min);
                 }
             });
-            for (Record record : result) {
-                nextCursor.merge(record.getPartition(), record.getOffset(), Math::min);
-            }
-            options.after.clear();
-            options.after.putAll(nextCursor);
+            page.forEach(record -> nextCursor.merge(record.getPartition(), record.getOffset(), Math::min));
+            setAfter(options, nextCursor);
 
-            return result;
+            return page;
         }
+    }
+
+    private static void setAfter(Options options, Map<Integer, Long> after) {
+        options.after.clear();
+        options.after.putAll(after);
     }
 
     public Optional<Record> consumeSingleRecord(String clusterId, Topic topic, Options options) throws ExecutionException, InterruptedException {
@@ -355,131 +242,39 @@ public class RecordRepository extends AbstractRepository {
         // Topic search is always a forward scan. Newest-to-oldest pagination is only supported by
         // the regular data endpoint and does not provide meaningful search semantics.
         options.setSort(Options.Sort.OLDEST);
-        AtomicInteger iteration = new AtomicInteger();
 
         return Flux.generate(() -> {
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(
-                topic,
-                options,
-                consumer,
-                false
-            );
-
-            if (rangePlan.isEmpty()) {
-                return new SearchState(consumer, null, Collections.emptyMap(), Collections.emptySet(), Collections.emptyList(), Collections.emptyMap(), 0);
+            TopicSearchPlanner.PartitionRangePlan plan = topicSearchPlanner.planOldest(topic, options, consumer);
+            if (plan.isEmpty()) {
+                return new SearchState(consumer, null, null);
             }
 
-            consumer.assign(rangePlan.ranges().keySet());
-            rangePlan.ranges().values().forEach(range -> consumer.seek(range.topicPartition(), range.begin()));
-
-            rangePlan.ranges().values().forEach(range ->
-                log.trace(
-                    "Search [topic: {}] [partition: {}] [start: {}] [end: {}]",
-                    range.topicPartition().topic(),
-                    range.topicPartition().partition(),
-                    range.begin(),
-                    range.end()
-                )
-            );
-
-            return new SearchState(
-                consumer,
-                new SearchEvent(topic),
-                rangePlan.getRangeEnds(),
-                new HashSet<>(rangePlan.ranges().keySet()),
-                new ArrayList<>(),
-                new HashMap<>(),
-                0
-            );
+            PartitionScan scan = new PartitionScan(consumer, topic, options, plan.ranges(), options.getSize(), new HashMap<>(), new ArrayList<>());
+            return new SearchState(consumer, new SearchEvent(topic), scan);
         }, (searchState, emitter) -> {
             SearchEvent searchEvent = searchState.getSearchEvent();
-            KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
 
-            // end
-            if (searchEvent == null || searchEvent.emptyPoll >= 1) {
-                emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
+            if (searchEvent == null || searchEvent.lastPage) {
+                emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after : null));
                 emitter.complete();
 
                 return searchState;
             }
 
+            // One poll per event, so the client gets progress while the scan runs.
             SearchEvent currentEvent = new SearchEvent(searchEvent);
-            int currentIteration = iteration.incrementAndGet();
-
-            ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
-            ConsumerRecords<byte[], byte[]> filteredRecords = filterRecordsByPartitionRange(records, searchState.getRangeEnds());
-            int emptyPolls = records.isEmpty() ? searchState.getEmptyPolls() + 1 : 0;
-
-            Set<TopicPartition> pending = new HashSet<>(searchState.getPending());
-            Map<TopicPartition, Integer> collected = new HashMap<>(searchState.getCollected());
-            List<Record> candidates = new ArrayList<>(searchState.getCandidates());
-
-            log.trace(
-                "Search poll iteration #{} [topic: {}] [ranges: {}] [pollRecords: {}] [filteredRecords: {}]",
-                currentIteration,
-                topic.getName(),
-                currentEvent.getOffsets().entrySet().stream()
-                    .map(entry -> entry.getKey() + ":" + entry.getValue().begin + "-" + entry.getValue().end)
-                    .collect(Collectors.toList()),
-                records.count(),
-                filteredRecords.count()
-            );
-
-            for (ConsumerRecord<byte[], byte[]> rawRecord : filteredRecords) {
-                Record record = newRecord(rawRecord, options, topic);
-                currentEvent.updateProgress(record);
-
-                if (recordSearchFilter.matchFilters(options, record)) {
-                    candidates.add(record);
-                    TopicPartition tp = new TopicPartition(rawRecord.topic(), rawRecord.partition());
-                    collected.merge(tp, 1, Integer::sum);
-                    SearchEvent.Offset partitionOffset = currentEvent.getOffsets().get(record.getPartition());
-                    log.trace(
-                        "Search matched record [topic: {}] [partition: {}] [offset: {}] [key: {}] [iteration: {}] [bounds: {}]",
-                        record.getTopic(),
-                        record.getPartition(),
-                        record.getOffset(),
-                        record.getKey(),
-                        currentIteration,
-                        partitionOffset == null ? "n/a" : partitionOffset.begin + "-" + partitionOffset.end
-                    );
-                }
-            }
-
-            Set<TopicPartition> completed = pending.stream()
-                .filter(tp -> consumer.position(tp) >= searchState.getRangeEnds().getOrDefault(tp, 0L)
-                    || collected.getOrDefault(tp, 0) >= options.getSize())
-                .collect(Collectors.toSet());
-            if (!completed.isEmpty()) {
-                consumer.pause(completed);
-                pending.removeAll(completed);
-            }
-
-            // Same guard as consumeOldest: stop waiting for partitions that can't reach their range end
-            // and return what we have. The cursor only moves as far as each partition was scanned.
-            if (pending.isEmpty() || emptyPolls >= 2) {
-                Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp)
-                    .thenComparingInt(Record::getPartition)
-                    .thenComparingLong(Record::getOffset);
-                currentEvent.records = candidates.stream()
-                    .sorted(options.getSort() == Options.Sort.NEWEST ? comparator.reversed() : comparator)
-                    .limit(options.getSize())
-                    .collect(Collectors.toList());
-                currentEvent.after = options.paginationLink(nextOldestCursor(
-                    options.getAfter(),
-                    scannedUpTo(consumer, searchState.getRangeEnds()),
-                    collected,
-                    currentEvent.records
-                ));
-                currentEvent.emptyPoll = 1;
-            } else {
-                currentEvent.records = Collections.emptyList();
-                currentEvent.emptyPoll = 0;
+            PartitionScan scan = searchState.getScan();
+            if (scan.step(currentEvent::updateProgress)) {
+                currentEvent.records = scan.page(OLDEST_FIRST);
+                currentEvent.after = options.paginationLink(
+                    nextOldestCursor(options.getAfter(), scan.scannedUpTo(), scan.collected, currentEvent.records)
+                );
+                currentEvent.lastPage = true;
             }
             emitter.next(currentEvent.progress());
 
-            return new SearchState(consumer, currentEvent, searchState.getRangeEnds(), pending, candidates, collected, emptyPolls);
+            return new SearchState(searchState.getConsumer(), currentEvent, scan);
         }, searchState -> searchState.getConsumer().close());
     }
 
@@ -508,13 +303,120 @@ public class RecordRepository extends AbstractRepository {
     }
 
     /**
-     * Exclusive offset each partition was scanned up to: its position, capped at its range end since
-     * records fetched past the end were not scanned.
+     * Forward scan of a set of ranges. Each partition is read until it yields {@code quota} matches
+     * or reaches its range end. Two polls in a row without records also end the scan, so a partition
+     * that can't reach its end (e.g. aborted transactions) doesn't block it.
+     * Matches are added to {@code candidates} and counted in {@code collected}; both can be shared
+     * between scans.
      */
-    private static Map<TopicPartition, Long> scannedUpTo(KafkaConsumer<byte[], byte[]> consumer, Map<TopicPartition, Long> rangeEnds) {
-        Map<TopicPartition, Long> scanned = new HashMap<>();
-        rangeEnds.forEach((tp, end) -> scanned.put(tp, Math.min(consumer.position(tp), end)));
-        return scanned;
+    private class PartitionScan {
+        private final KafkaConsumer<byte[], byte[]> consumer;
+        private final Topic topic;
+        private final Options options;
+        private final Map<TopicPartition, Long> rangeEnds = new HashMap<>();
+        private final int quota;
+        private final Set<TopicPartition> pending;
+        private final Map<TopicPartition, Integer> collected;
+        private final List<Record> candidates;
+        private int emptyPolls = 0;
+
+        PartitionScan(
+            KafkaConsumer<byte[], byte[]> consumer,
+            Topic topic,
+            Options options,
+            Map<TopicPartition, TopicSearchPlanner.PartitionRange> ranges,
+            int quota,
+            Map<TopicPartition, Integer> collected,
+            List<Record> candidates
+        ) {
+            this.consumer = consumer;
+            this.topic = topic;
+            this.options = options;
+            this.quota = quota;
+            this.collected = collected;
+            this.candidates = candidates;
+            this.pending = new HashSet<>(ranges.keySet());
+
+            consumer.assign(ranges.keySet());
+            // A reused consumer keeps partitions paused by a previous scan.
+            consumer.resume(consumer.paused());
+            ranges.values().forEach(range -> {
+                rangeEnds.put(range.topicPartition(), range.end());
+                consumer.seek(range.topicPartition(), range.begin());
+                log.trace(
+                    "Scan [topic: {}] [partition: {}] [start: {}] [end: {}]",
+                    range.topicPartition().topic(),
+                    range.topicPartition().partition(),
+                    range.begin(),
+                    range.end()
+                );
+            });
+        }
+
+        void run() {
+            while (!isDone()) {
+                step(record -> { });
+            }
+        }
+
+        /**
+         * Polls once and returns true when the scan is done.
+         */
+        boolean step(java.util.function.Consumer<Record> onScanned) {
+            ConsumerRecords<byte[], byte[]> records = poll(consumer);
+            emptyPolls = records.isEmpty() ? emptyPolls + 1 : 0;
+
+            for (ConsumerRecord<byte[], byte[]> rawRecord : records) {
+                TopicPartition tp = new TopicPartition(rawRecord.topic(), rawRecord.partition());
+                if (rawRecord.offset() >= rangeEnds.getOrDefault(tp, 0L)) {
+                    continue;
+                }
+
+                Record record = newRecord(rawRecord, options, topic);
+                onScanned.accept(record);
+                if (recordSearchFilter.matchFilters(options, record)) {
+                    candidates.add(record);
+                    collected.merge(tp, 1, Integer::sum);
+                }
+            }
+
+            // Pause finished partitions so the next polls only fetch the ones still needed.
+            Set<TopicPartition> done = pending.stream()
+                .filter(tp -> drained(tp) || collected.getOrDefault(tp, 0) >= quota)
+                .collect(Collectors.toSet());
+            consumer.pause(done);
+            pending.removeAll(done);
+
+            return isDone();
+        }
+
+        boolean isDone() {
+            return pending.isEmpty() || emptyPolls >= 2;
+        }
+
+        boolean drained(TopicPartition tp) {
+            return consumer.position(tp) >= rangeEnds.get(tp);
+        }
+
+        /**
+         * Sorted and limited to 'size'.
+         */
+        List<Record> page(Comparator<Record> order) {
+            return candidates.stream()
+                .sorted(order)
+                .limit(options.getSize())
+                .collect(Collectors.toList());
+        }
+
+        /**
+         * Exclusive offset each partition was scanned up to: its position, capped at its range end
+         * since records fetched past the end were not scanned.
+         */
+        Map<TopicPartition, Long> scannedUpTo() {
+            Map<TopicPartition, Long> scanned = new HashMap<>();
+            rangeEnds.forEach((tp, end) -> scanned.put(tp, Math.min(consumer.position(tp), end)));
+            return scanned;
+        }
     }
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
@@ -796,7 +698,7 @@ public class RecordRepository extends AbstractRepository {
         }};
 
         try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-            Map<TopicPartition, Long> partitions = topicSearchPlanner.resolvePartitionRangePlan(fromTopic, options, consumer, false)
+            Map<TopicPartition, Long> partitions = topicSearchPlanner.planOldest(fromTopic, options, consumer)
                 .ranges()
                 .entrySet()
                 .stream()
@@ -883,29 +785,6 @@ public class RecordRepository extends AbstractRepository {
         }, "Offsets for " + partitions + " Timestamp " + timestamp, null);
     }
 
-    private ConsumerRecords<byte[], byte[]> filterRecordsByPartitionRange(
-        ConsumerRecords<byte[], byte[]> records,
-        Map<TopicPartition, Long> rangeEnds
-    ) {
-        if (records.isEmpty() || rangeEnds.isEmpty()) {
-            return records;
-        }
-
-        Map<TopicPartition, List<ConsumerRecord<byte[], byte[]>>> filtered = new HashMap<>();
-        rangeEnds.forEach((topicPartition, endOffset) -> {
-            List<ConsumerRecord<byte[], byte[]>> partitionRecords = records.records(topicPartition)
-                .stream()
-                .filter(record -> record.offset() < endOffset)
-                .collect(Collectors.toList());
-
-            if (!partitionRecords.isEmpty()) {
-                filtered.put(topicPartition, partitionRecords);
-            }
-        });
-
-        return filtered.isEmpty() ? new ConsumerRecords<>(Collections.emptyMap()) : new ConsumerRecords<>(filtered);
-    }
-
     /**
      * Polls the records and filters them with a maximum offset
      *
@@ -984,21 +863,6 @@ public class RecordRepository extends AbstractRepository {
         ));
     }
 
-    public static Map<TopicPartition, PartitionRange> buildPartitionRanges(Map<TopicPartition, Long> starts, Map<TopicPartition, Long> ends) {
-        return TopicSearchPlanner.buildPartitionRanges(starts, ends).entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, entry -> new PartitionRange(entry.getKey(), entry.getValue().begin(), entry.getValue().end())));
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @AllArgsConstructor
-    public static class PartitionRange {
-        private final TopicPartition topicPartition;
-        private final long begin;
-        private final long end;
-    }
-
     @ToString
     @EqualsAndHashCode
     @Getter
@@ -1035,18 +899,12 @@ public class RecordRepository extends AbstractRepository {
         private final Map<Map<String, Integer>, Long> offsets = new HashMap<>();
     }
 
-    @ToString
-    @EqualsAndHashCode
     @Getter
     @AllArgsConstructor
-    public static class SearchState {
+    private static class SearchState {
         private final KafkaConsumer<byte[], byte[]> consumer;
         private final SearchEvent searchEvent;
-        private final Map<TopicPartition, Long> rangeEnds;
-        private final Set<TopicPartition> pending;
-        private final List<Record> candidates;
-        private final Map<TopicPartition, Integer> collected;
-        private final int emptyPolls;
+        private final PartitionScan scan;
     }
 
     @ToString
@@ -1057,7 +915,9 @@ public class RecordRepository extends AbstractRepository {
         private List<Record> records = new ArrayList<>();
         private String after;
         private double percent;
-        private int emptyPoll = 0;
+        // Set on the event carrying the page: the next call ends the stream.
+        @JsonIgnore
+        private boolean lastPage = false;
 
         private SearchEvent(SearchEvent event) {
             this.offsets = event.offsets;
