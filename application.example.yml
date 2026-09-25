@@ -58,6 +58,19 @@ akhq:
     my-cluster-plain-text: # url friendly name for the cluster (letter, number, _, -, ... dot are not allowed here)
       properties: # standard kafka properties (optional)
         bootstrap.servers: "kafka:9092"
+      # Optional per-connection topic discovery allowlist. When absent or empty,
+      # AKHQ keeps requesting the complete topic list from Kafka.
+      #
+      # Values are exact topic names only: regex, wildcard and prefix matching
+      # are not supported. With a non-empty allowlist, full topic listing is
+      # skipped and missing topics are ignored with a warning.
+      #
+      # This is a discovery/performance option, not an authorization rule.
+      # Use AKHQ security group patterns to restrict access.
+      topic-discovery:
+        allowlist:
+          - "topic-a"
+          - "topic-b"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
         type: "confluent" # schema registry type (optional). Supported types are "confluent" (default) or "tibco"
@@ -188,7 +201,7 @@ akhq:
     cluster:
       order: # Cluster display order (optional). Controls sidebar cluster ordering
         - "my-cluster-plain-text"
-        - "my-cluster-ssl" 
+        - "my-cluster-ssl"
         - "my-cluster-sasl"
 
   # Auth & Roles (optional)

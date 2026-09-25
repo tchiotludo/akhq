@@ -2,6 +2,7 @@ package org.akhq.modules;
 
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.kafka.common.KafkaFuture;
 import org.akhq.models.Partition;
 import org.akhq.models.audit.ConsumerGroupAuditEvent;
 import org.akhq.models.audit.TopicAuditEvent;
@@ -20,6 +21,7 @@ import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.apache.kafka.common.errors.UnsupportedVersionException;
 
 import java.util.*;
@@ -84,6 +86,45 @@ abstract public class AbstractKafkaWrapper {
                 topics
             );
 
+            this.describeTopics.get(clusterId).putAll(description);
+        }
+
+        return this.describeTopics
+            .get(clusterId)
+            .entrySet()
+            .stream()
+            .filter(e -> topics.contains(e.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public Map<String, TopicDescription> describeExistingTopics(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+        describeTopics.computeIfAbsent(clusterId, s -> new HashMap<>());
+
+        List<String> list = new ArrayList<>(topics);
+
+        if (!list.isEmpty()) {
+            Map<String, KafkaFuture<TopicDescription>> topicNameValues = Logger.call(
+                () -> kafkaModule.getAdminClient(clusterId)
+                    .describeTopics(list)
+                    .topicNameValues(),
+                "Describe Existing Topics {}",
+                topics
+            );
+
+            Map<String, TopicDescription> description = new HashMap<>();
+            for (Map.Entry<String, KafkaFuture<TopicDescription>> entry : topicNameValues.entrySet()) {
+                try {
+                    description.put(entry.getKey(), entry.getValue().get());
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof UnknownTopicOrPartitionException) {
+                        continue;
+                    }
+
+                    throw e;
+                }
+            }
+
+            list.forEach(topic -> this.describeTopics.get(clusterId).remove(topic));
             this.describeTopics.get(clusterId).putAll(description);
         }
 
