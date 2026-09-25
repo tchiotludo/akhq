@@ -26,7 +26,7 @@ micronaut:
         mapping: "/swagger/**"
   mcp:
     server:
-      enabled: true
+      enabled: ${akhq.mcp.enabled:false}
       transport: HTTP
       endpoint: "/mcp"
       info:
@@ -106,6 +106,11 @@ endpoints:
     write-sensitive: false
 
 akhq:
+  # The MCP server exposes Kafka data over HTTP on `/mcp`. It is disabled by default: enable it only together with
+  # an authentication mechanism, otherwise the endpoint is reachable anonymously.
+  mcp:
+    enabled: false
+
   server:
     access-log:
       enabled: true
