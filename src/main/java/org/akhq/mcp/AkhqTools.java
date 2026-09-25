@@ -1,11 +1,11 @@
 package org.akhq.mcp;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.mcp.annotations.Tool;
 import io.micronaut.mcp.server.context.MicronautMcpTransportContext;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import jakarta.inject.Singleton;
-import org.akhq.controllers.AbstractController;
 import org.akhq.mcp.model.FindMessageInTopicArguments;
 import org.akhq.mcp.model.FindMessageInTopicResult;
 import org.akhq.mcp.model.GetMessageDetailArguments;
@@ -21,7 +21,8 @@ import java.util.concurrent.ExecutionException;
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
 @Singleton
-public class AkhqTools extends AbstractController {
+@Requires(property = "akhq.mcp.enabled", value = "true")
+public class AkhqTools extends AbstractMcpTool {
     private final AkhqTopicDataToolService topicDataService;
 
     public AkhqTools(AkhqTopicDataToolService topicDataService) {
@@ -65,14 +66,7 @@ public class AkhqTools extends AbstractController {
     )
     public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments, MicronautMcpTransportContext transportContext)
         throws ExecutionException, InterruptedException {
-        ensureTransportContext(transportContext);
-        if (arguments == null) {
-            throw new IllegalArgumentException("`arguments` is required");
-        }
-
-        String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
-        String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
-        checkIfClusterAndResourceAllowed(cluster, topicName);
+        authorizeTopicScope(arguments, transportContext);
         return topicDataService.findMessageInTopic(arguments);
     }
 
@@ -99,14 +93,7 @@ public class AkhqTools extends AbstractController {
     )
     public GetMessageDetailResult getMessageDetail(GetMessageDetailArguments arguments, MicronautMcpTransportContext transportContext)
         throws ExecutionException, InterruptedException {
-        ensureTransportContext(transportContext);
-        if (arguments == null) {
-            throw new IllegalArgumentException("`arguments` is required");
-        }
-
-        String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
-        String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
-        checkIfClusterAndResourceAllowed(cluster, topicName);
+        authorizeTopicScope(arguments, transportContext);
         return topicDataService.getMessageDetail(arguments);
     }
 
@@ -131,27 +118,7 @@ public class AkhqTools extends AbstractController {
         GetTopicLastRecordTimestampArguments arguments,
         MicronautMcpTransportContext transportContext
     ) throws ExecutionException, InterruptedException {
-        ensureTransportContext(transportContext);
-        if (arguments == null) {
-            throw new IllegalArgumentException("`arguments` is required");
-        }
-
-        String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
-        String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
-        checkIfClusterAndResourceAllowed(cluster, topicName);
+        authorizeTopicScope(arguments, transportContext);
         return topicDataService.getTopicLastRecordTimestamp(arguments);
-    }
-
-    private void ensureTransportContext(MicronautMcpTransportContext transportContext) {
-        if (transportContext == null) {
-            throw new IllegalArgumentException("MCP transport context is required");
-        }
-    }
-
-    private String asRequiredString(String value, String errorMessage) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(errorMessage);
-        }
-        return value.trim();
     }
 }
