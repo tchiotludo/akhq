@@ -117,6 +117,7 @@ dependencies {
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")
     implementation("io.micronaut.cache:micronaut-cache-core")
     implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    implementation("io.micronaut.mcp:micronaut-mcp-server-java-sdk:2.0.0")
 
     // kafka
     implementation("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)

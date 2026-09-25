@@ -24,6 +24,14 @@ micronaut:
       swagger:
         paths: classpath:META-INF/swagger
         mapping: "/swagger/**"
+  mcp:
+    server:
+      enabled: true
+      transport: HTTP
+      endpoint: "/mcp"
+      info:
+        name: "akhq-mcp-poc"
+        version: "0.1.0"
   security:
     enabled: false
     authentication: cookie
@@ -61,6 +69,10 @@ micronaut:
         access: "isAnonymous()"
       - pattern: "/swagger/**"
         access: "isAnonymous()"
+      - pattern: "/mcp/**"
+        access: "isAuthenticated()"
+      - pattern: "/mcp"
+        access: "isAuthenticated()"
     oauth2:
       login-uri: "${micronaut.server.context-path:}/oauth/login{/provider}"
       callback-uri: "${micronaut.server.context-path:}/oauth/callback{/provider}"
