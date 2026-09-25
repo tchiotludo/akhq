@@ -24,8 +24,11 @@ import PageSize from '../../../components/PageSize';
 import { withRouter } from '../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { getTopicFavorites, toggleTopicFavorite } from '../../../utils/localstorage';
 
 class TopicList extends Root {
+  topicRequestId = 0;
+
   state = {
     topics: [],
     showDeleteModal: false,
@@ -52,7 +55,9 @@ class TopicList extends Root {
     loading: true,
     cancel: undefined,
     collapseConsumerGroups: {},
-    uiOptions: {}
+    uiOptions: {},
+    favorites: [],
+    preserveTopicsDuringNextLoad: false
   };
 
   componentDidMount() {
@@ -128,7 +133,8 @@ class TopicList extends Root {
         keepSearch: keepSearchTmp,
         uiOptions: uiOptions ?? {},
         pageNumber: pageNumber,
-        currentPageSize: currentPageSize
+        currentPageSize: currentPageSize,
+        favorites: getTopicFavorites(clusterId)
       },
       callBackFunction
     );
@@ -182,18 +188,25 @@ class TopicList extends Root {
   };
 
   async getTopics() {
-    const { selectedCluster, pageNumber, currentPageSize } = this.state;
+    const topicRequestId = ++this.topicRequestId;
+    const { selectedCluster, pageNumber, currentPageSize, favorites, preserveTopicsDuringNextLoad } =
+      this.state;
     const { search, topicListView } = this.state.searchData;
-    this.setState({ loading: true });
+    if (!preserveTopicsDuringNextLoad) {
+      this.setState({ loading: true });
+    }
 
     let response = await this.getApi(
-      uriTopics(selectedCluster, search, topicListView, pageNumber, currentPageSize)
+      uriTopics(selectedCluster, search, topicListView, pageNumber, currentPageSize, favorites)
     );
+    if (topicRequestId !== this.topicRequestId) {
+      return;
+    }
     let data = response.data;
 
     if (data) {
       if (data.results) {
-        this.handleTopics(data.results);
+        this.handleTopics(data.results, topicRequestId);
       } else {
         this.setState({ topics: [] });
       }
@@ -201,18 +214,19 @@ class TopicList extends Root {
         selectedCluster,
         totalPageNumber: data.page < 1 ? 1 : data.page,
         currentPageSize: data.pageSize,
-        loading: false
+        loading: false,
+        preserveTopicsDuringNextLoad: false
       });
     } else {
-      this.setState({ topics: [], loading: false });
+      this.setState({ topics: [], loading: false, preserveTopicsDuringNextLoad: false });
     }
   }
 
-  handleTopics(topics) {
+  handleTopics(topics, topicRequestId = this.topicRequestId) {
     let tableTopics = {};
     const collapseConsumerGroups = {};
 
-    const { selectedCluster, uiOptions, roles } = this.state;
+    const { selectedCluster, uiOptions, roles, favorites } = this.state;
     const uiOptionsTopic = uiOptions.topic ?? {};
 
     const setState = () => {
@@ -230,7 +244,8 @@ class TopicList extends Root {
         replicationFactor: topic.replicaCount,
         replicationInSync: topic.inSyncReplicaCount,
         groupComponent: undefined,
-        internal: topic.internal
+        internal: topic.internal,
+        favorite: favorites.includes(topic.name)
       };
       collapseConsumerGroups[topic.name] = uiOptionsTopic.showAllConsumerGroups ? true : false;
     });
@@ -248,6 +263,9 @@ class TopicList extends Root {
       this.getApi(
         uriConsumerGroupByTopics(selectedCluster, encodeURIComponent(topicsName), groupsListView)
       ).then(value => {
+        if (topicRequestId !== this.topicRequestId) {
+          return;
+        }
         topics.forEach(topic => {
           tableTopics[topic.name].groupComponent =
             value && value.data
@@ -266,6 +284,9 @@ class TopicList extends Root {
     if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName))).then(
         value => {
+          if (topicRequestId !== this.topicRequestId) {
+            return;
+          }
           topics.forEach(topic => {
             tableTopics[topic.name].lastWrite = value.data[topic.name]
               ? value.data[topic.name].timestamp
@@ -327,6 +348,25 @@ class TopicList extends Root {
       localStorage.removeItem('topicListSearch');
     }
   }
+
+  handleFavorite = topic => {
+    const refreshCurrentPage = this.state.pageNumber === 1;
+    const favorites = toggleTopicFavorite(this.state.selectedCluster, topic.id);
+    this.setState(({ topics }) => ({
+      favorites,
+      pageNumber: 1,
+      // The server response will reorder page one; update the star without replacing the table first.
+      topics: topics.map(currentTopic =>
+        currentTopic.id === topic.id ? { ...currentTopic, favorite: favorites.includes(topic.id) } : currentTopic
+      ),
+      preserveTopicsDuringNextLoad: true
+    }), () => {
+      this.navigateWithQuery(this.state.searchData, 1, this.state.currentPageSize, true);
+      if (refreshCurrentPage) {
+        this.getTopics();
+      }
+    });
+  };
 
   render() {
     const {
@@ -467,7 +507,7 @@ class TopicList extends Root {
     }
 
     let detailsHref = undefined;
-    const actions = [constants.TABLE_CONFIG];
+    const actions = [constants.TABLE_FAVORITE, constants.TABLE_CONFIG];
     if (roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
       actions.push(constants.TABLE_DETAILS);
       detailsHref = id => `/ui/${selectedCluster}/topic/${id}/data`;
@@ -532,6 +572,7 @@ class TopicList extends Root {
           onDelete={topic => {
             this.handleOnDelete(topic);
           }}
+          onFavorite={this.handleFavorite}
           detailsHref={detailsHref}
           configHref={id => `/ui/${selectedCluster}/topic/${id}/configs`}
           actions={actions}
@@ -562,4 +603,5 @@ class TopicList extends Root {
   }
 }
 
+export { TopicList };
 export default withRouter(TopicList);
