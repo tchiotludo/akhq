@@ -626,6 +626,11 @@ class TopicData extends Root {
       if (a.timestamp < b.timestamp) return isBefore;
       if (a.timestamp > b.timestamp) return isAfter;
 
+      const partitionA = Number(a.partition);
+      const partitionB = Number(b.partition);
+      if (partitionA < partitionB) return isBefore;
+      if (partitionA > partitionB) return isAfter;
+
       const offsetA = Number(a.offset);
       const offsetB = Number(b.offset);
       if (offsetA < offsetB) return isBefore;

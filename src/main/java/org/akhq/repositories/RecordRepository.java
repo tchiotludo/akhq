@@ -10,7 +10,6 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.sse.Event;
 import java.time.Duration;
-import java.util.stream.StreamSupport;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.configs.SchemaRegistryType;
@@ -174,14 +173,20 @@ public class RecordRepository extends AbstractRepository {
                     pending.removeAll(completed);
                 }
             }
-        }
 
-        return list.stream()
-            .sorted(Comparator.comparing(Record::getTimestamp)
-                .thenComparingInt(Record::getPartition)
-                .thenComparingLong(Record::getOffset))
-            .limit(options.size)
-            .toList();
+            List<Record> page = list.stream()
+                .sorted(Comparator.comparing(Record::getTimestamp)
+                    .thenComparingInt(Record::getPartition)
+                    .thenComparingLong(Record::getOffset))
+                .limit(options.size)
+                .toList();
+
+            Map<Integer, Long> nextCursor = nextOldestCursor(options.getAfter(), scannedUpTo(consumer, rangeEnds), collected, page);
+            options.after.clear();
+            options.after.putAll(nextCursor);
+
+            return page;
+        }
     }
 
     private List<Record> consumeNewest(Topic topic, Options options) {
@@ -198,9 +203,16 @@ public class RecordRepository extends AbstractRepository {
             // window currently being scanned. It moves strictly older after each fully drained
             // window until the beginning of every partition is reached.
             Map<Integer, Long> windowAfter = new HashMap<>(requestAfter);
+            // Matches per partition: like consumeOldest, each partition must hand over 'size' candidates
+            // (or be exhausted) before the global sort/limit, otherwise a page can miss newer records.
+            Map<Integer, Integer> collected = new HashMap<>();
+            // Lowest offset each partition was fully scanned down to, without gaps. Partitions with no
+            // match skip straight to it on the next page instead of being rescanned.
+            Map<Integer, Long> scannedDownTo = new HashMap<>();
+            Set<Integer> scanGaps = new HashSet<>();
             boolean keepScanning = true;
 
-            while (keepScanning && list.size() < options.size) {
+            while (keepScanning) {
                 // Feed the current window bound to the planner, then immediately restore the request
                 // cursor so our loop bookkeeping never leaks into the request-level pagination state.
                 options.after.clear();
@@ -251,6 +263,7 @@ public class RecordRepository extends AbstractRepository {
                         if (recordSearchFilter.matchFilters(options, current)) {
                             filterMessageLength(current);
                             list.add(current);
+                            collected.merge(tp.partition(), 1, Integer::sum);
                         }
                     }
 
@@ -260,8 +273,19 @@ public class RecordRepository extends AbstractRepository {
                 // Move each scanned window strictly older: the next exclusive upper bound is the
                 // begin offset of the window we just drained. Partitions keep their bound across
                 // iterations so an already-exhausted partition is never reset back to the tail.
+                // A partition with enough candidates gets an empty bound (0) so it is not planned again.
                 Map<Integer, Long> nextWindow = new HashMap<>(windowAfter);
-                rangePlan.ranges().forEach((tp, range) -> nextWindow.put(tp.partition(), range.begin()));
+                rangePlan.ranges().forEach((tp, range) -> {
+                    int partition = tp.partition();
+                    boolean drained = consumer.position(tp) >= range.end();
+                    if (drained && !scanGaps.contains(partition) && scannedDownTo.getOrDefault(partition, range.end()) == range.end()) {
+                        scannedDownTo.put(partition, range.begin());
+                    } else {
+                        scanGaps.add(partition);
+                    }
+
+                    nextWindow.put(partition, collected.getOrDefault(partition, 0) >= options.size ? 0L : range.begin());
+                });
 
                 if (nextWindow.equals(windowAfter)) {
                     keepScanning = false;
@@ -282,6 +306,11 @@ public class RecordRepository extends AbstractRepository {
             // the oldest returned offset, keeping untouched partitions at their previous bound so the
             // next page never re-reads or skips records.
             Map<Integer, Long> nextCursor = new HashMap<>(requestAfter);
+            scannedDownTo.forEach((partition, lowest) -> {
+                if (!collected.containsKey(partition)) {
+                    nextCursor.merge(partition, lowest, Math::min);
+                }
+            });
             for (Record record : result) {
                 nextCursor.merge(record.getPartition(), record.getOffset(), Math::min);
             }
@@ -323,15 +352,22 @@ public class RecordRepository extends AbstractRepository {
     }
 
     public Flux<Event<SearchEvent>> search(Topic topic, Options options) throws ExecutionException, InterruptedException {
-        AtomicInteger matchesCount = new AtomicInteger();
+        // Topic search is always a forward scan. Newest-to-oldest pagination is only supported by
+        // the regular data endpoint and does not provide meaningful search semantics.
+        options.setSort(Options.Sort.OLDEST);
         AtomicInteger iteration = new AtomicInteger();
 
         return Flux.generate(() -> {
             KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId);
-            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(topic, options, consumer, false);
+            TopicSearchPlanner.PartitionRangePlan rangePlan = topicSearchPlanner.resolvePartitionRangePlan(
+                topic,
+                options,
+                consumer,
+                false
+            );
 
             if (rangePlan.isEmpty()) {
-                return new SearchState(consumer, null, Collections.emptyMap());
+                return new SearchState(consumer, null, Collections.emptyMap(), Collections.emptySet(), Collections.emptyList(), Collections.emptyMap(), 0);
             }
 
             consumer.assign(rangePlan.ranges().keySet());
@@ -347,7 +383,15 @@ public class RecordRepository extends AbstractRepository {
                 )
             );
 
-            return new SearchState(consumer, new SearchEvent(topic), rangePlan.getRangeEnds());
+            return new SearchState(
+                consumer,
+                new SearchEvent(topic),
+                rangePlan.getRangeEnds(),
+                new HashSet<>(rangePlan.ranges().keySet()),
+                new ArrayList<>(),
+                new HashMap<>(),
+                0
+            );
         }, (searchState, emitter) -> {
             SearchEvent searchEvent = searchState.getSearchEvent();
             KafkaConsumer<byte[], byte[]> consumer = searchState.getConsumer();
@@ -357,7 +401,7 @@ public class RecordRepository extends AbstractRepository {
                 emitter.next(new SearchEvent(topic).end(searchEvent != null ? searchEvent.after: null));
                 emitter.complete();
 
-                return new SearchState(consumer, searchEvent, searchState.getRangeEnds());
+                return searchState;
             }
 
             SearchEvent currentEvent = new SearchEvent(searchEvent);
@@ -365,12 +409,11 @@ public class RecordRepository extends AbstractRepository {
 
             ConsumerRecords<byte[], byte[]> records = this.poll(consumer);
             ConsumerRecords<byte[], byte[]> filteredRecords = filterRecordsByPartitionRange(records, searchState.getRangeEnds());
+            int emptyPolls = records.isEmpty() ? searchState.getEmptyPolls() + 1 : 0;
 
-            if (filteredRecords.isEmpty()) {
-                currentEvent.emptyPoll = 1;
-            } else {
-                currentEvent.emptyPoll = 0;
-            }
+            Set<TopicPartition> pending = new HashSet<>(searchState.getPending());
+            Map<TopicPartition, Integer> collected = new HashMap<>(searchState.getCollected());
+            List<Record> candidates = new ArrayList<>(searchState.getCandidates());
 
             log.trace(
                 "Search poll iteration #{} [topic: {}] [ranges: {}] [pollRecords: {}] [filteredRecords: {}]",
@@ -383,26 +426,14 @@ public class RecordRepository extends AbstractRepository {
                 filteredRecords.count()
             );
 
-            Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp);
-
-            List<Record> sortedRecords = StreamSupport.stream(filteredRecords.spliterator(), false)
-                .map(record -> newRecord(record, options, topic))
-                .sorted(Options.Sort.NEWEST.equals(options.sort) ? comparator.reversed() : comparator)
-                .toList();
-
-            List<Record> list = new ArrayList<>();
-
-            for (Record record : sortedRecords) {
-                if (matchesCount.get() >= options.size) {
-                    break;
-                }
-
+            for (ConsumerRecord<byte[], byte[]> rawRecord : filteredRecords) {
+                Record record = newRecord(rawRecord, options, topic);
                 currentEvent.updateProgress(record);
 
                 if (recordSearchFilter.matchFilters(options, record)) {
-                    list.add(record);
-                    matchesCount.getAndIncrement();
-
+                    candidates.add(record);
+                    TopicPartition tp = new TopicPartition(rawRecord.topic(), rawRecord.partition());
+                    collected.merge(tp, 1, Integer::sum);
                     SearchEvent.Offset partitionOffset = currentEvent.getOffsets().get(record.getPartition());
                     log.trace(
                         "Search matched record [topic: {}] [partition: {}] [offset: {}] [key: {}] [iteration: {}] [bounds: {}]",
@@ -416,24 +447,74 @@ public class RecordRepository extends AbstractRepository {
                 }
             }
 
-            currentEvent.records = list;
-
-            // No more records, poll was empty: stop here
-            if (currentEvent.emptyPoll == 1) {
-                emitter.next(currentEvent.end(searchEvent.getAfter()));
-            }
-            // More records than expected, send the records and then stop
-            else if (matchesCount.get() >= options.getSize()) {
-                currentEvent.emptyPoll = 666;
-                emitter.next(currentEvent.progress(options));
-            }
-            // Continue to search
-            else {
-                emitter.next(currentEvent.progress(options));
+            Set<TopicPartition> completed = pending.stream()
+                .filter(tp -> consumer.position(tp) >= searchState.getRangeEnds().getOrDefault(tp, 0L)
+                    || collected.getOrDefault(tp, 0) >= options.getSize())
+                .collect(Collectors.toSet());
+            if (!completed.isEmpty()) {
+                consumer.pause(completed);
+                pending.removeAll(completed);
             }
 
-            return new SearchState(consumer, currentEvent, searchState.getRangeEnds());
+            // Same guard as consumeOldest: stop waiting for partitions that can't reach their range end
+            // and return what we have. The cursor only moves as far as each partition was scanned.
+            if (pending.isEmpty() || emptyPolls >= 2) {
+                Comparator<Record> comparator = Comparator.comparing(Record::getTimestamp)
+                    .thenComparingInt(Record::getPartition)
+                    .thenComparingLong(Record::getOffset);
+                currentEvent.records = candidates.stream()
+                    .sorted(options.getSort() == Options.Sort.NEWEST ? comparator.reversed() : comparator)
+                    .limit(options.getSize())
+                    .collect(Collectors.toList());
+                currentEvent.after = options.paginationLink(nextOldestCursor(
+                    options.getAfter(),
+                    scannedUpTo(consumer, searchState.getRangeEnds()),
+                    collected,
+                    currentEvent.records
+                ));
+                currentEvent.emptyPoll = 1;
+            } else {
+                currentEvent.records = Collections.emptyList();
+                currentEvent.emptyPoll = 0;
+            }
+            emitter.next(currentEvent.progress());
+
+            return new SearchState(consumer, currentEvent, searchState.getRangeEnds(), pending, candidates, collected, emptyPolls);
         }, searchState -> searchState.getConsumer().close());
+    }
+
+    /**
+     * Next oldest-first cursor (partition -> last consumed offset).
+     * A partition with candidates resumes after its last emitted record, so candidates dropped by the
+     * global sort/limit are matched again. A partition with no candidate resumes after the last offset
+     * it scanned ({@code scannedUpTo} is exclusive).
+     */
+    static Map<Integer, Long> nextOldestCursor(
+        Map<Integer, Long> previous,
+        Map<TopicPartition, Long> scannedUpTo,
+        Map<TopicPartition, Integer> collected,
+        List<Record> emitted
+    ) {
+        Map<Integer, Long> next = new HashMap<>(previous);
+
+        scannedUpTo.forEach((tp, upTo) -> {
+            if (!collected.containsKey(tp) && upTo > 0) {
+                next.merge(tp.partition(), upTo - 1, Math::max);
+            }
+        });
+        emitted.forEach(record -> next.merge(record.getPartition(), record.getOffset(), Math::max));
+
+        return next;
+    }
+
+    /**
+     * Exclusive offset each partition was scanned up to: its position, capped at its range end since
+     * records fetched past the end were not scanned.
+     */
+    private static Map<TopicPartition, Long> scannedUpTo(KafkaConsumer<byte[], byte[]> consumer, Map<TopicPartition, Long> rangeEnds) {
+        Map<TopicPartition, Long> scanned = new HashMap<>();
+        rangeEnds.forEach((tp, end) -> scanned.put(tp, Math.min(consumer.position(tp), end)));
+        return scanned;
     }
 
     public Map<String, Record> getLastRecord(String clusterId, List<String> topicsName) throws ExecutionException, InterruptedException {
@@ -962,6 +1043,10 @@ public class RecordRepository extends AbstractRepository {
         private final KafkaConsumer<byte[], byte[]> consumer;
         private final SearchEvent searchEvent;
         private final Map<TopicPartition, Long> rangeEnds;
+        private final Set<TopicPartition> pending;
+        private final List<Record> candidates;
+        private final Map<TopicPartition, Integer> collected;
+        private final int emptyPolls;
     }
 
     @ToString
@@ -992,7 +1077,7 @@ public class RecordRepository extends AbstractRepository {
             return Event.of(this).name("searchEnd");
         }
 
-        public Event<SearchEvent> progress(Options options) {
+        public Event<SearchEvent> progress() {
             long total = 0;
             long current = 0;
 
@@ -1002,7 +1087,6 @@ public class RecordRepository extends AbstractRepository {
             }
 
             this.percent = (double) (current * 100) / total;
-            this.after = options.pagination(offsets);
 
             return Event.of(this).name("searchBody");
         }
@@ -1166,20 +1250,6 @@ public class RecordRepository extends AbstractRepository {
                 .withKeyValueSeparator('-')
                 .split(after)
                 .forEach((key, value) -> this.after.put(Integer.valueOf(key), Long.valueOf(value)));
-        }
-
-        public String pagination(Map<Integer, SearchEvent.Offset> offsets) {
-            Map<Integer, Long> next = new HashMap<>(this.after);
-
-            for (Map.Entry<Integer, SearchEvent.Offset> offset : offsets.entrySet()) {
-                if (this.sort == Sort.OLDEST && (!next.containsKey(offset.getKey()) || next.get(offset.getKey()) < offset.getValue().current)) {
-                    next.put(offset.getKey(), offset.getValue().current);
-                } else if (this.sort == Sort.NEWEST && (!next.containsKey(offset.getKey()) || next.get(offset.getKey()) > offset.getValue().current)) {
-                    next.put(offset.getKey(), offset.getValue().current);
-                }
-            }
-
-            return paginationLink(next);
         }
 
         public String pagination(List<Record> records) {

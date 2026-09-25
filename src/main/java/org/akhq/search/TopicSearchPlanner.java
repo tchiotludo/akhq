@@ -1,6 +1,5 @@
 package org.akhq.search;
 
-import com.google.common.collect.ImmutableMap;
 import jakarta.inject.Singleton;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +14,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,18 +24,9 @@ import java.util.stream.Collectors;
 @Singleton
 public class TopicSearchPlanner {
     /**
-     * Builds the bounded search window that each partition should scan for a single request.
-     * This planner is the main optimization point for AKHQ topic search on large or sparse Kafka
-     * topics. Instead of blindly polling every partition from the beginning or from a stale guess,
-     * we resolve a start offset and an end offset for each partition once, then reuse that plan for
-     * the actual consumer iteration. This keeps the search path predictable for topics with a single
-     * partition and a tiny amount of data, but also prevents runaway scans on topics with millions of
-     * records spread across many partitions.
-     * Product-wise the key rule is: when the user is searching a topic, prefer a timestamp window to
-     * an open-ended scan. Timestamps are the safest way to keep search bounded on a generic product
-     * where topics can be tiny or extremely large, and where some partitions may be empty while others
-     * are dense. This planner centralizes that logic so the rest of the repository can stay focused on
-     * consumer orchestration rather than on offset math.
+     * Resolves the per-partition begin/end offsets to scan for one request.
+     * Set newestOnly to plan a tail window (used by the regular data endpoint's NEWEST sort);
+     * otherwise plans a forward, oldest-first window (used by search and OLDEST consumption).
      */
     public PartitionRangePlan resolvePartitionRangePlan(Topic topic, RecordRepository.Options options, KafkaConsumer<byte[], byte[]> consumer, boolean newestOnly) {
         Map<TopicPartition, Long> starts = newestOnly
@@ -46,44 +37,35 @@ public class TopicSearchPlanner {
         }
 
         Map<TopicPartition, Long> endOffsets = resolveRangeEnds(options, consumer, starts);
-        Map<TopicPartition, Long> adjustedStarts = newestOnly ? adjustStartsForNewest(topic, options, starts) : starts;
-
         if (newestOnly) {
             Map<TopicPartition, Long> adjustedEnds = new HashMap<>();
-            for (Map.Entry<TopicPartition, Long> entry : adjustedStarts.entrySet()) {
+            for (Map.Entry<TopicPartition, Long> entry : starts.entrySet()) {
                 TopicPartition tp = entry.getKey();
                 Partition partition = getPartition(topic, tp.partition());
                 if (partition == null) {
                     continue;
                 }
 
-                long endExclusive = partition.getLastOffset();
+                long endExclusive = endOffsets.getOrDefault(tp, partition.getLastOffset());
                 if (options.getAfter().containsKey(partition.getId())) {
-                    endExclusive = options.getAfter().get(partition.getId());
-                }
-
-                // The end of a newest window is the exclusive upper bound derived from the 'after'
-                // cursor (or the live end on the first page). When an end timestamp narrows the
-                // window further, we cap the bound with the timestamp-resolved offset. Using the raw
-                // live end here would make every window re-read the tail and never move older.
-                if (options.getEndTimestamp() != null && endOffsets.containsKey(tp)) {
-                    endExclusive = Math.min(endExclusive, endOffsets.get(tp));
+                    endExclusive = Math.min(endExclusive, options.getAfter().get(partition.getId()));
                 }
 
                 adjustedEnds.put(tp, endExclusive);
             }
-            endOffsets = adjustedEnds;
+            return new PartitionRangePlan(buildPartitionRanges(
+                adjustStartsForNewest(starts, adjustedEnds, options.getSize()),
+                adjustedEnds
+            ));
         }
 
-        return new PartitionRangePlan(buildPartitionRanges(adjustedStarts, endOffsets));
+        return new PartitionRangePlan(buildPartitionRanges(starts, endOffsets));
     }
 
     /**
-     * Resolves the end offset for each partition in the search window.
-     * When an end timestamp is provided, we ask Kafka for the first offset at or after that moment.
-     * This is the most useful case for user-driven searches because it keeps the search bounded even
-     * when a partition is very large. If there is no end timestamp, we fall back to the broker's live
-     * end offset for each partition.
+     * Resolves the exclusive end offset for each partition.
+     * With an end timestamp, looks up the first offset at or after endTimestamp + 1 (see below);
+     * otherwise falls back to the broker's live end offset.
      */
     private Map<TopicPartition, Long> resolveRangeEnds(
         RecordRepository.Options options,
@@ -91,8 +73,13 @@ public class TopicSearchPlanner {
         Map<TopicPartition, Long> starts
     ) {
         if (options.getEndTimestamp() != null) {
+            // endTimestamp is inclusive for the caller, but offsetsForTimes() and the range end are
+            // both exclusive, so shift by one ms (guarding against overflow) to keep the boundary record.
+            long exclusiveTimestamp = options.getEndTimestamp() == Long.MAX_VALUE
+                ? Long.MAX_VALUE
+                : options.getEndTimestamp() + 1;
             Map<TopicPartition, Long> endOffsetsToSearch = starts.keySet().stream()
-                .collect(Collectors.toMap(Function.identity(), ignored -> options.getEndTimestamp()));
+                .collect(Collectors.toMap(Function.identity(), ignored -> exclusiveTimestamp));
             Map<TopicPartition, Long> resolvedEndOffsets = new HashMap<>();
             consumer.offsetsForTimes(endOffsetsToSearch).forEach((tp, offsetAndTimestamp) -> {
                 if (offsetAndTimestamp != null) {
@@ -116,30 +103,23 @@ public class TopicSearchPlanner {
     }
 
     /**
-     * Narrow the computed start offsets when the request asks for the most recent records only.
-     * This behaves like a windowed "tail" search: we keep the last N records of each partition,
-     * bounded by the current partition end and the optional 'after' offset. This preserves the
-     * semantics of "newest only" while avoiding a full partition scan when the topic is large.
+     * Narrows the start of a newest ("tail") window to the last `size` offsets before its end.
      */
-    private Map<TopicPartition, Long> adjustStartsForNewest(Topic topic, RecordRepository.Options options, Map<TopicPartition, Long> starts) {
+    private Map<TopicPartition, Long> adjustStartsForNewest(
+        Map<TopicPartition, Long> starts,
+        Map<TopicPartition, Long> ends,
+        int size
+    ) {
         Map<TopicPartition, Long> newestStarts = new HashMap<>();
 
         for (Map.Entry<TopicPartition, Long> entry : starts.entrySet()) {
-            Partition partition = getPartition(topic, entry.getKey().partition());
-            if (partition == null) {
-                continue;
-            }
-
             long first = entry.getValue();
-            long endExclusive = partition.getLastOffset();
-            if (options.getAfter().containsKey(partition.getId())) {
-                endExclusive = options.getAfter().get(partition.getId());
-            }
+            long endExclusive = ends.getOrDefault(entry.getKey(), first);
             if (endExclusive <= first) {
                 continue;
             }
 
-            long candidateStart = Math.max(first, endExclusive - options.getSize());
+            long candidateStart = Math.max(first, endExclusive - size);
             newestStarts.put(entry.getKey(), candidateStart);
         }
 
@@ -157,118 +137,97 @@ public class TopicSearchPlanner {
     }
 
     /**
-     * Like the oldest strategy, but without applying the pagination "after" cursor to the lower bound.
-     * For newest scans, the cursor is used to bound the end of the window and must not be mistaken for
-     * a resume offset. If we reuse the cursor as the actual start offset, each page can re-read the same
-     * tail window on compacted topics and the client sees a non-terminating loop.
+     * Resolves each partition's raw first offset (see getFirstOffsets); the 'after' cursor is applied
+     * later, only for the end of the window (see resolvePartitionRangePlan).
      */
     private Map<TopicPartition, Long> getTopicPartitionForSortNewest(
         Topic topic,
         RecordRepository.Options options,
         KafkaConsumer<byte[], byte[]> consumer
     ) {
-        return topic
-            .getPartitions()
-            .stream()
-            .map(partition -> getFirstOffset(consumer, partition, options)
-                .map(firstOffset -> Map.entry(
-                    new TopicPartition(partition.getTopic(), partition.getId()),
-                    firstOffset
-                ))
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return getFirstOffsets(topic, options, consumer);
     }
 
     /**
-     * Resolves the first valid offset to start scanning for each partition.
-     * The logic is intentionally defensive: if a partition is filtered out by the request's selected
-     * partition id, we skip it. If the request includes a timestamp, we convert it to the first Kafka
-     * offset at or after that timestamp. If the request includes an explicit 'after' offset, we move the
-     * candidate beginning past that marker. At the end, partitions whose first valid offset is already
-     * beyond the last offset are discarded because they contain no work to do.
+     * Resolves the begin offset to scan for each partition, applying the 'after' cursor and
+     * dropping partitions with no work left (see getFirstOffsetForSortOldest).
      */
     private Map<TopicPartition, Long> getTopicPartitionForSortOldest(
         Topic topic,
         RecordRepository.Options options,
         KafkaConsumer<byte[], byte[]> consumer
     ) {
-        return topic
-            .getPartitions()
-            .stream()
-            .map(partition -> getFirstOffsetForSortOldest(consumer, partition, options)
-                .map(offsetBound -> offsetBound.withTopicPartition(
-                    new TopicPartition(
-                        partition.getTopic(),
-                        partition.getId()
-                    )
-                ))
-            )
+        return getFirstOffsets(topic, options, consumer).entrySet().stream()
+            .map(entry -> getFirstOffsetForSortOldest(
+                entry.getKey(),
+                entry.getValue(),
+                topic,
+                options
+            ))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toMap(OffsetBound::getTopicPartition, OffsetBound::getBegin));
     }
 
     /**
-     * Computes the first valid offset to read for one partition.
-     * In a timestamp-based search, this depends on Kafka's offsetsForTimes call. That call is the main
-     * guardrail for large topics because it moves the search window from an unbounded idea ("start from
-     * the beginning") to a concrete offset boundary derived from the user's time requirement.
+     * Resolves each selected partition's first offset: partition's first offset, or (if a start
+     * timestamp is set) the first offset at or after it, resolved in one batched offsetsForTimes call.
+     * Partitions with no match for the timestamp are omitted.
      */
-    private Optional<Long> getFirstOffset(KafkaConsumer<byte[], byte[]> consumer, Partition partition, RecordRepository.Options options) {
-        if (options.getPartition() != null && partition.getId() != options.getPartition()) {
-            return Optional.empty();
-        }
+    private Map<TopicPartition, Long> getFirstOffsets(
+        Topic topic,
+        RecordRepository.Options options,
+        KafkaConsumer<byte[], byte[]> consumer
+    ) {
+        List<Partition> partitions = topic.getPartitions().stream()
+            .filter(partition -> options.getPartition() == null || partition.getId() == options.getPartition())
+            .toList();
+        Map<TopicPartition, Long> result = new HashMap<>();
+        Map<TopicPartition, Long> timestampRequests = options.getTimestamp() == null
+            ? Collections.emptyMap()
+            : partitions.stream().collect(Collectors.toMap(
+                partition -> new TopicPartition(partition.getTopic(), partition.getId()),
+                ignored -> options.getTimestamp()
+            ));
+        Map<TopicPartition, OffsetAndTimestamp> timestampOffsets = options.getTimestamp() == null
+            ? Collections.emptyMap()
+            : consumer.offsetsForTimes(timestampRequests);
 
-        long first = partition.getFirstOffset();
-
-        if (options.getTimestamp() != null) {
-            Map<TopicPartition, OffsetAndTimestamp> timestampOffset = consumer.offsetsForTimes(
-                ImmutableMap.of(
-                    new TopicPartition(partition.getTopic(), partition.getId()),
-                    options.getTimestamp()
-                )
-            );
-
-            for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : timestampOffset.entrySet()) {
-                if (entry.getValue() == null) {
-                    return Optional.empty();
-                }
-                first = entry.getValue().offset();
+        for (Partition partition : partitions) {
+            TopicPartition tp = new TopicPartition(partition.getTopic(), partition.getId());
+            OffsetAndTimestamp offset = timestampOffsets.get(tp);
+            if (options.getTimestamp() == null) {
+                result.put(tp, partition.getFirstOffset());
+            } else if (offset != null) {
+                result.put(tp, offset.offset());
             }
         }
-
-        return Optional.of(first);
+        return result;
     }
 
     /**
-     * Converts the partition start candidate into a real search boundary for the request.
-     * This is where we honor the request's 'after' cursor, skip empty partitions, and ensure that the
-     * search never asks Kafka to read a range whose beginning is already past the last known offset.
+     * Applies the 'after' cursor to a partition's first offset, and drops it if there is no more
+     * data past that cursor.
      */
-    private Optional<OffsetBound> getFirstOffsetForSortOldest(KafkaConsumer<byte[], byte[]> consumer, Partition partition, RecordRepository.Options options) {
-        return getFirstOffset(consumer, partition, options)
-            .map(first -> {
-                if (!options.getAfter().isEmpty() && options.getAfter().containsKey(partition.getId())) {
-                    first = options.getAfter().get(partition.getId()) + 1;
-                }
-
-                if (first > partition.getLastOffset()) {
-                    return null;
-                }
-
-                return OffsetBound.builder()
-                    .begin(first)
-                    .build();
-            });
+    private Optional<OffsetBound> getFirstOffsetForSortOldest(
+        TopicPartition tp,
+        long resolvedFirst,
+        Topic topic,
+        RecordRepository.Options options
+    ) {
+        Partition partition = getPartition(topic, tp.partition());
+        long first = resolvedFirst;
+        if (options.getAfter().containsKey(partition.getId())) {
+            first = options.getAfter().get(partition.getId()) + 1;
+        }
+        if (first > partition.getLastOffset()) {
+            return Optional.empty();
+        }
+        return Optional.of(OffsetBound.builder().topicPartition(tp).begin(first).build());
     }
 
     /**
-     * Builds the final per-partition search windows from the resolved start and end offsets.
-     * Each range represents a narrow slice of one partition that should be consumed. We keep only
-     * ranges where begin < end because an empty or already-exhausted partition is not useful work. The
-     * ranges are sorted by partition number to keep a deterministic scan order.
+     * Builds one [begin, end) range per partition, dropping empty/exhausted ones, sorted by partition.
      */
     public static Map<TopicPartition, PartitionRange> buildPartitionRanges(Map<TopicPartition, Long> starts, Map<TopicPartition, Long> ends) {
         return starts.entrySet().stream()
@@ -283,30 +242,25 @@ public class TopicSearchPlanner {
     }
 
     /**
-     * Represents the complete range plan for one search request.
-     * The planner resolves one range per Kafka partition, and each range is intentionally narrow: it is
-     * the slice of records we believe is relevant for the request. Keeping this plan immutable and
-     * reusable makes it easier to reason about the search flow, avoid duplicated broker calls, and keep
-     * performance stable when the request spans empty partitions or large high-volume partitions.
+     * One request's resolved plan: one range per partition to scan.
      */
     public record PartitionRangePlan(Map<TopicPartition, PartitionRange> ranges) {
         /**
-         * Empty plan used when a request is filtered out before any real work is possible.
+         * Plan used when the request has no partition left to scan.
          */
         static PartitionRangePlan empty() {
             return new PartitionRangePlan(Collections.emptyMap());
         }
 
         /**
-         * True when no partition has a meaningful range to scan.
+         * True when no partition has a range to scan.
          */
         public boolean isEmpty() {
             return ranges.isEmpty();
         }
 
         /**
-         * Exposes the end offset of each range, which is useful for follow-up filtering or consumer
-         * bookkeeping without re-deriving the same information.
+         * End offset of each range, keyed by partition.
          */
         public Map<TopicPartition, Long> getRangeEnds() {
             return ranges.entrySet().stream()
@@ -315,17 +269,12 @@ public class TopicSearchPlanner {
     }
 
     /**
-     * A single Kafka partition range, expressed as begin/end offsets.
-     * This is the unit of work we give to the consumer loop. It avoids scanning whole partitions when
-     * only a small window is relevant; it also allows the system to skip empty or already-consumed
-     * windows without leaving the search logic in the repository.
+     * One partition's [begin, end) offset range to scan.
      */
     public record PartitionRange(TopicPartition topicPartition, long begin, long end) { }
 
     /**
-     * Temporary container used while computing the start boundary for a partition.
-     * The planner first computes a begin offset and only then attaches the TopicPartition metadata,
-     * which keeps the code simple while still producing the final map that the range plan needs.
+     * Holds a partition's begin offset until its TopicPartition key is attached.
      */
     @Getter
     @AllArgsConstructor
@@ -334,8 +283,5 @@ public class TopicSearchPlanner {
         private TopicPartition topicPartition;
         private final long begin;
 
-        OffsetBound withTopicPartition(TopicPartition topicPartition) {
-            return new OffsetBound(topicPartition, begin);
-        }
     }
 }

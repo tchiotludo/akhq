@@ -547,8 +547,12 @@ public class TopicController extends AbstractController {
                 return;
             }
 
-            // No more records, add the end array ] and stop here
-            if (event.getData().getEmptyPoll() == 1) {
+            // A "searchEnd" event with no "after" cursor means this call's range plan had nothing
+            // left to scan at all: the topic is fully drained, so stop here and close the array.
+            // "emptyPoll" alone can't be used for this: it is also set to 1 on the last "searchBody"
+            // event of a call that did find matches (see RecordRepository#search), so relying on it
+            // here would never detect the real end and loop forever re-issuing empty searches.
+            if ("searchEnd".equals(event.getName()) && event.getData().getAfter() == null) {
                 out.write(']');
                 out.flush();
                 continueSearch.set(false);
