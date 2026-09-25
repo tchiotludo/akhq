@@ -3,6 +3,7 @@ package org.akhq.models;
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser;
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.Message;
@@ -96,7 +97,7 @@ public class Record {
     @Getter(AccessLevel.NONE)
     private byte MAGIC_BYTE;
 
-    @JsonIgnore
+    @Getter(AccessLevel.NONE)
     private Boolean truncated;
     @JsonIgnore
     private Deserializer awsGlueKafkaDeserializer;
@@ -190,6 +191,14 @@ public class Record {
 
     public void setTruncated(Boolean truncated) {
         this.truncated = truncated;
+    }
+
+    /**
+     * Only serialized when the value was truncated, so the UI can flag it and exports stay unchanged.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean getTruncated() {
+        return Boolean.TRUE.equals(truncated) ? Boolean.TRUE : null;
     }
 
     private String convertToString(byte[] payload, String schemaId, boolean isKey) {

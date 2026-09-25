@@ -204,8 +204,11 @@ public class TopicControllerTest extends AbstractTest {
     @Order(4)
     void dataGet() {
         ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
-        assertEquals(1, records.getResults().size());
-        assertEquals("my-value", records.getResults().get(0).getValue());
+        assertEquals(2, records.getResults().size());
+        assertTrue(records.getResults().stream()
+            .anyMatch(record -> "my-value".equals(record.getValue())));
+        assertTrue(records.getResults().stream()
+            .anyMatch(record -> "my-key-tomb".equals(record.getKey()) && record.getValue() == null));
     }
 
     @Test
