@@ -20,3 +20,6 @@ ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 USER akhq
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["./akhq"]
+
+
+
