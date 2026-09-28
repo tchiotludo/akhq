@@ -65,6 +65,7 @@ class AkhqToolsTest extends AbstractTest {
         assertTrue(names.contains("akhq.find_message_in_topic"));
         assertTrue(names.contains("akhq.get_message_detail"));
         assertTrue(names.contains("akhq.get_topic_last_record_timestamp"));
+        assertTrue(names.contains("akhq.search_topics"));
 
         Map<String, Object> searchTool = tools.stream()
             .filter(tool -> "akhq.find_message_in_topic".equals(tool.get("name")))
@@ -274,6 +275,64 @@ class AkhqToolsTest extends AbstractTest {
             assertTrue(content.contains("\"topic\":\"" + KafkaTestCluster.TOPIC_EMPTY + "\""), content);
             assertFalse(content.contains("\"timestamp\":\""), content);
         }
+    }
+
+    @Test
+    void toolsCallSearchTopics() {
+        Map<String, Object> structured = searchTopics(Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "search", "STREAM"
+        ));
+
+        assertEquals(KafkaTestCluster.CLUSTER_ID, structured.get("cluster"));
+        assertFalse((Boolean) structured.get("truncated"));
+        java.util.List<Map<String, Object>> topics = list(structured.get("topics")).stream()
+            .map(this::map)
+            .toList();
+        java.util.List<String> names = topics.stream().map(topic -> String.valueOf(topic.get("name"))).toList();
+
+        assertTrue(names.contains(KafkaTestCluster.TOPIC_STREAM_IN), String.valueOf(names));
+        assertTrue(names.contains(KafkaTestCluster.TOPIC_STREAM_MAP), String.valueOf(names));
+        assertTrue(names.stream().allMatch(name -> name.toLowerCase().contains("stream")), String.valueOf(names));
+        assertEquals(names.size(), structured.get("totalMatches"));
+
+        Map<String, Object> streamIn = topics.stream()
+            .filter(topic -> KafkaTestCluster.TOPIC_STREAM_IN.equals(topic.get("name")))
+            .findFirst()
+            .orElseThrow();
+        assertTrue(((Number) streamIn.get("partitions")).intValue() > 0, String.valueOf(streamIn));
+    }
+
+    @Test
+    void toolsCallSearchTopicsIncludesInternalAndTruncates() {
+        Map<String, Object> all = searchTopics(Map.of("cluster", KafkaTestCluster.CLUSTER_ID));
+        assertEquals(KafkaTestCluster.TOPIC_ALL_COUNT, all.get("totalMatches"));
+
+        Map<String, Object> truncated = searchTopics(Map.of("cluster", KafkaTestCluster.CLUSTER_ID, "maxResults", 2));
+        assertTrue((Boolean) truncated.get("truncated"));
+        assertEquals(2, list(truncated.get("topics")).size());
+        assertEquals(KafkaTestCluster.TOPIC_ALL_COUNT, truncated.get("totalMatches"));
+    }
+
+    private Map<String, Object> searchTopics(Map<String, Object> arguments) {
+        Map<String, Object> payload = Map.of(
+            "jsonrpc", "2.0",
+            "id", "call-topics",
+            "method", "tools/call",
+            "params", Map.of(
+                "name", "akhq.search_topics",
+                "arguments", Map.of("arguments", arguments)
+            )
+        );
+
+        Map<String, Object> response = this.retrieve(HttpRequest.POST(URL, payload), Map.class);
+        assertNotNull(response.get("result"), String.valueOf(response));
+        Map<String, Object> result = map(response.get("result"));
+        assertFalse(Boolean.TRUE.equals(result.get("isError")), String.valueOf(result));
+
+        Map<String, Object> structured = tryGetStructuredContent(result);
+        assertNotNull(structured, String.valueOf(result));
+        return structured;
     }
 
     @SuppressWarnings("unchecked")

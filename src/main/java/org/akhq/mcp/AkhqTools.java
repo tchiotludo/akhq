@@ -12,8 +12,11 @@ import org.akhq.mcp.model.GetMessageDetailArguments;
 import org.akhq.mcp.model.GetMessageDetailResult;
 import org.akhq.mcp.model.GetTopicLastRecordTimestampArguments;
 import org.akhq.mcp.model.GetTopicLastRecordTimestampResult;
+import org.akhq.mcp.model.SearchTopicsArguments;
+import org.akhq.mcp.model.SearchTopicsResult;
 import org.akhq.configs.security.Role;
 import org.akhq.mcp.services.AkhqTopicDataToolService;
+import org.akhq.mcp.services.AkhqTopicToolService;
 import org.akhq.security.annotation.AKHQSecured;
 
 import java.util.concurrent.ExecutionException;
@@ -24,9 +27,42 @@ import java.util.concurrent.ExecutionException;
 @Requires(property = "akhq.mcp.enabled", value = "true")
 public class AkhqTools extends AbstractMcpTool {
     private final AkhqTopicDataToolService topicDataService;
+    private final AkhqTopicToolService topicService;
 
-    public AkhqTools(AkhqTopicDataToolService topicDataService) {
+    public AkhqTools(AkhqTopicDataToolService topicDataService, AkhqTopicToolService topicService) {
         this.topicDataService = topicDataService;
+        this.topicService = topicService;
+    }
+
+    @Tool(
+        name = "akhq.search_topics",
+        description = """
+            Search topics of a cluster by name.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "search": "optional space separated terms",
+              "maxResults": 50
+            }
+
+            Rules:
+            - `cluster` is required.
+            - A topic matches when its name contains every `search` term, case insensitive.
+              Omit `search` to list every topic.
+            - Internal topics are included.
+            - `maxResults` defaults to 50 and is capped at 200. Topics are sorted by name.
+            - Only topics the caller is allowed to see are returned.
+
+            When presenting results to a user, include each topic's `name` and `partitions`. When `truncated` is true, tell the user that `totalMatches` topics
+            matched and only part of them are shown.
+            """
+    )
+    @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
+    public SearchTopicsResult searchTopics(SearchTopicsArguments arguments, MicronautMcpTransportContext transportContext)
+        throws ExecutionException, InterruptedException {
+        ClusterScope scope = authorizeClusterScope(arguments, transportContext);
+        return topicService.searchTopics(scope.cluster(), scope.resourceFilters(), arguments);
     }
 
     @Tool(

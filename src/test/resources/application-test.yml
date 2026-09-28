@@ -85,6 +85,8 @@ akhq:
     page-size: 5
 
   security:
+    mcp-oauth:
+      enabled: false
     roles:
       topic-read:
         - resources: [ "TOPIC", "TOPIC_DATA" ]
