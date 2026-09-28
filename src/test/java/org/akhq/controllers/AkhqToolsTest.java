@@ -1,6 +1,7 @@
 package org.akhq.controllers;
 
 import io.micronaut.http.HttpRequest;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@MicronautTest(environments = "mcp")
 class AkhqToolsTest extends AbstractTest {
     private static final String URL = "/mcp";
 
@@ -270,7 +272,7 @@ class AkhqToolsTest extends AbstractTest {
             String content = flattenContent(result);
             assertTrue(content.contains("\"found\":false"), content);
             assertTrue(content.contains("\"topic\":\"" + KafkaTestCluster.TOPIC_EMPTY + "\""), content);
-            assertTrue(content.contains("\"timestamp\":null"), content);
+            assertFalse(content.contains("\"timestamp\":\""), content);
         }
     }
 

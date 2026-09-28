@@ -55,11 +55,15 @@ public class KafkaTestCluster implements Runnable {
     public static final String TOPIC_CONNECT = "connect-sink";
     public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
     public static final String TOPIC_AUDIT = "audit";
+    public static final String TOPIC_INTERLEAVED = "interleaved";
 
-    public static final int TOPIC_ALL_COUNT = 24;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 14;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 12;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 22;
+    public static final int TOPIC_ALL_COUNT = 25;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 15;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 13;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 23;
+
+    // Number of records per partition in TOPIC_INTERLEAVED (3 partitions).
+    public static final int TOPIC_INTERLEAVED_PER_PARTITION = 60;
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
@@ -257,6 +261,31 @@ public class KafkaTestCluster implements Runnable {
         // empty topic
         testUtils.createTopic(TOPIC_JSON_SCHEMA, 3, (short) 1);
         log.debug("{} topic created", TOPIC_JSON_SCHEMA);
+
+        // Interleaved topic: records are round-robined across the 3 partitions with strictly increasing
+        // timestamps, so the globally-oldest records are spread evenly across every partition instead of
+        // being concentrated in a single one. This is the realistic shape of an event stream and is what
+        // makes an "oldest" page require merging candidates from all partitions before sorting.
+        testUtils.createTopic(TOPIC_INTERLEAVED, 3, (short) 1);
+        KafkaProducer<String, String> interleavedProducer = testUtils.getKafkaProducer(
+            StringSerializer.class,
+            StringSerializer.class
+        );
+        long interleavedBaseTimestamp = System.currentTimeMillis() - (TOPIC_INTERLEAVED_PER_PARTITION * 3 * 10L);
+        int interleavedTotal = TOPIC_INTERLEAVED_PER_PARTITION * 3;
+        for (int i = 0; i < interleavedTotal; i++) {
+            int partition = i % 3;
+            long timestamp = interleavedBaseTimestamp + (i * 10L);
+            interleavedProducer.send(new ProducerRecord<>(
+                TOPIC_INTERLEAVED,
+                partition,
+                timestamp,
+                "key_" + i,
+                "value_" + i
+            )).get();
+        }
+        interleavedProducer.flush();
+        log.debug("{} topic created", TOPIC_INTERLEAVED);
 
         // KsqlDB create transaction topic manually instead of auto created by KsqlDB queries
         // else test will fail depending on the test class execution order.

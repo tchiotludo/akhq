@@ -10,6 +10,9 @@ import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourceType;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,11 +28,19 @@ public class AccessControl {
     private String encodedPrincipal;
 
     public static String encodePrincipal(String principal) {
-        return Base64.getEncoder().encodeToString(principal.getBytes());
+        return Base64.getEncoder().encodeToString(principal.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String decodePrincipal(String encodedPrincipal) {
-        return new String(Base64.getDecoder().decode(encodedPrincipal));
+        return new String(Base64.getDecoder().decode(decodePathSegment(encodedPrincipal)), StandardCharsets.UTF_8);
+    }
+
+    private static String decodePathSegment(String encodedPrincipal) {
+        try {
+            return URLDecoder.decode(encodedPrincipal.replace("+", "%2B"), StandardCharsets.UTF_8.name());
+        } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+            return encodedPrincipal;
+        }
     }
 
     public AccessControl(String principal, Collection<AclBinding> aclBinding) {
