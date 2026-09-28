@@ -7,8 +7,3 @@ micronaut:
       info:
         name: "akhq-mcp-poc"
         version: "0.1.0"
-
-akhq:
-  security:
-    mcp-oauth:
-      enabled: true

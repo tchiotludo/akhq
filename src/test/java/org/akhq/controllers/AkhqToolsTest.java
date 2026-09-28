@@ -1,5 +1,8 @@
 package org.akhq.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.akhq.AbstractTest;
@@ -331,8 +334,15 @@ class AkhqToolsTest extends AbstractTest {
         assertFalse(Boolean.TRUE.equals(result.get("isError")), String.valueOf(result));
 
         Map<String, Object> structured = tryGetStructuredContent(result);
-        assertNotNull(structured, String.valueOf(result));
-        return structured;
+        if (structured != null) {
+            return structured;
+        }
+
+        try {
+            return new ObjectMapper().readValue(flattenContent(result), new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new AssertionError("Tool result is not JSON: " + result, e);
+        }
     }
 
     @SuppressWarnings("unchecked")
