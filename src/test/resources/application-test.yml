@@ -7,15 +7,6 @@ micronaut:
     netty:
       logLevel: TRACE
 
-  mcp:
-    server:
-      enabled: true
-      transport: HTTP
-      endpoint: "/mcp"
-      info:
-        name: "akhq-mcp-poc"
-        version: "0.1.0"
-
   security:
     enabled: true
     endpoints:
