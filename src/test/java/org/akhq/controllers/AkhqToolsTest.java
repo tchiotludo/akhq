@@ -270,7 +270,7 @@ class AkhqToolsTest extends AbstractTest {
             String content = flattenContent(result);
             assertTrue(content.contains("\"found\":false"), content);
             assertTrue(content.contains("\"topic\":\"" + KafkaTestCluster.TOPIC_EMPTY + "\""), content);
-            assertTrue(content.contains("\"timestamp\":null"), content);
+            assertFalse(content.contains("\"timestamp\":\""), content);
         }
     }
 

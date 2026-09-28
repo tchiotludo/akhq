@@ -26,7 +26,7 @@ micronaut:
         mapping: "/swagger/**"
   mcp:
     server:
-      enabled: true
+      enabled: false
       transport: HTTP
       endpoint: "/mcp"
       info:
