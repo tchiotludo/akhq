@@ -1,4 +1,4 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import io.micronaut.security.authentication.ServerAuthentication;
 

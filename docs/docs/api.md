@@ -25,7 +25,15 @@ akhq:
 ```
 
 Enable it only on an instance that has an authentication mechanism configured. AKHQ ships with
-`micronaut.security.enabled: false`, and on such an instance the MCP endpoint would be reachable anonymously.
+`micronaut.security.enabled: false`, and on such an instance the MCP endpoint would be reachable anonymously:
+AKHQ logs a warning at startup in that case.
+
+Additional `akhq.mcp` properties:
+
+| Property | Default | Description |
+| --- | --- | --- |
+| `allowed-origins` | empty | Browser origins (for example `https://mcp-client.example.com`) allowed to call `/mcp`. Requests without an `Origin` header, as sent by native MCP clients, are always accepted; any other origin is rejected with `403` to protect against DNS rebinding. |
+| `search-timeout` | `30s` | Maximum duration of an `akhq.find_message_in_topic` search. When reached, the tool returns the matches found so far with a notice. |
 
 Authentication is the same as the other AKHQ API endpoints:
 
@@ -60,13 +68,9 @@ Current tool methods use an argument envelope, so `params.arguments` contains an
 
 AKHQ can authenticate MCP clients with OAuth 2.0 access tokens issued by a standards-compliant OIDC provider. This is separate from AKHQ's browser-login OIDC configuration: the MCP client obtains an access token directly from the provider and sends it in the `Authorization` header.
 
-```yaml
-micronaut:
-  security:
-    token:
-      bearer:
-        enabled: false # AKHQ validates MCP bearer tokens separately from UI cookies.
+MCP OAuth requires `micronaut.security.enabled: true`; AKHQ refuses to start otherwise.
 
+```yaml
 akhq:
   security:
     mcp-oauth:
@@ -93,16 +97,20 @@ web UI included, so an instance never runs with a half configured MCP OAuth setu
 | Property | Default | Description |
 | --- | --- | --- |
 | `authorization-server` | `issuer` | Authorization server advertised in the protected-resource metadata. |
-| `resource` | Request origin + `endpoint` | Resource identifier advertised in the metadata and the `WWW-Authenticate` challenge. |
+| `resource` | Public AKHQ origin + context path + MCP endpoint | Resource identifier advertised in the metadata and the `WWW-Authenticate` challenge. |
 | `jws-algorithms` | Every RSA, EC and EdDSA algorithm of the JWK set | Restricts the accepted token signature algorithms. |
 | `jwks-connect-timeout` | `5s` | Connect timeout for the JWKS endpoint. |
 | `jwks-read-timeout` | `5s` | Read timeout for the JWKS endpoint. |
 
-When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource` and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. Only asymmetric signature algorithms are accepted, so a token signed with `none` or with a symmetric key is rejected. This validation is scoped to `/mcp`, so AKHQ's existing UI cookie authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
+When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource/mcp` (and at `/.well-known/oauth-protected-resource`, both under the configured context path) and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. Tokens typed `JWT` or `at+jwt` (RFC 9068), or untyped, are accepted. Set `audience` to a dedicated resource identifier such as `akhq-mcp`, never to an OIDC client ID, otherwise ID tokens issued to that client would also be accepted. Only asymmetric signature algorithms are accepted, so a token signed with `none` or with a symmetric key is rejected. This validation is scoped to `/mcp` and takes precedence over AKHQ's own JWT validation there, so no change to `micronaut.security.token.*` is needed and AKHQ's existing UI authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
 
 The MCP OAuth implementation separates request matching, token validation, and claim resolution. It currently validates JWT access tokens through JWKS; the token-validator interface allows adding opaque-token introspection without changing MCP routing or AKHQ authorization.
 
 Register the Copilot App as a public OIDC client with Authorization Code + PKCE, configure the exact redirect URI shown by the Copilot App at the provider, and request an access token for the configured `audience` and `required-scope`. Enter that registered client ID in Copilot. The authorization server must expose standard OIDC discovery, authorization, token, and JWKS endpoints.
+
+For programmatic (non-interactive) MCP clients, register a confidential client at the provider and use the
+client-credentials grant to obtain an access token with the same `audience` and `required-scope`, then send it as a
+bearer token to `/mcp`.
 
 ### Example request (`akhq.find_message_in_topic`)
 

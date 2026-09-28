@@ -1,4 +1,4 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import org.akhq.configs.security.McpOauth;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class McpOauthConfigurationValidatorTest {
     @Test
     void acceptsCompleteConfiguration() {
-        assertDoesNotThrow(() -> new McpOauthConfigurationValidator(configuration()).validate());
+        assertDoesNotThrow(() -> new McpOauthConfigurationValidator(configuration(), true).validate());
     }
 
     @Test
@@ -22,7 +22,7 @@ class McpOauthConfigurationValidatorTest {
 
         IllegalStateException exception = assertThrows(
             IllegalStateException.class,
-            () -> new McpOauthConfigurationValidator(configuration).validate()
+            () -> new McpOauthConfigurationValidator(configuration, true).validate()
         );
 
         assertTrue(exception.getMessage().contains("`issuer` is required"), exception.getMessage());
@@ -32,13 +32,23 @@ class McpOauthConfigurationValidatorTest {
     }
 
     @Test
+    void rejectsDisabledSecurity() {
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> new McpOauthConfigurationValidator(configuration(), false).validate()
+        );
+
+        assertTrue(exception.getMessage().contains("`micronaut.security.enabled` must be true"), exception.getMessage());
+    }
+
+    @Test
     void rejectsRelativeUrls() {
         McpOauth configuration = configuration();
         configuration.setResource("/mcp");
 
         IllegalStateException exception = assertThrows(
             IllegalStateException.class,
-            () -> new McpOauthConfigurationValidator(configuration).validate()
+            () -> new McpOauthConfigurationValidator(configuration, true).validate()
         );
 
         assertTrue(exception.getMessage().contains("`resource` must be an absolute URL"), exception.getMessage());

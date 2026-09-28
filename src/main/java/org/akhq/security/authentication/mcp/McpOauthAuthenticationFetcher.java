@@ -1,8 +1,9 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.async.publisher.Publishers;
+import io.micronaut.core.order.Ordered;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.filters.AuthenticationFetcher;
@@ -56,6 +57,16 @@ public class McpOauthAuthenticationFetcher implements AuthenticationFetcher<Http
                 log.debug("Rejected MCP OAuth access token: {}", exception.getMessage());
                 return Mono.empty();
             });
+    }
+
+    /**
+     * Runs before Micronaut's token fetcher. When a UI OIDC provider is configured, Micronaut trusts that provider's
+     * signing keys for its own bearer tokens too, so without precedence a valid MCP access token could be claimed
+     * as a generic authentication and then be rejected on the MCP endpoint.
+     */
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
     private Authentication authenticate(String token) throws Exception {

@@ -3,6 +3,7 @@ package org.akhq.mcp.services;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.env.Environment;
 import jakarta.inject.Singleton;
+import org.akhq.configs.Mcp;
 import org.akhq.mcp.model.FindMessageInTopicArguments;
 import org.akhq.mcp.model.FindMessageInTopicResult;
 import org.akhq.mcp.model.GetMessageDetailArguments;
@@ -19,6 +20,7 @@ import org.akhq.models.Topic;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -33,11 +35,18 @@ public class AkhqTopicDataToolService {
     private final TopicRepository topicRepository;
     private final RecordRepository recordRepository;
     private final ApplicationContext applicationContext;
+    private final Mcp mcp;
 
-    public AkhqTopicDataToolService(TopicRepository topicRepository, RecordRepository recordRepository, ApplicationContext applicationContext) {
+    public AkhqTopicDataToolService(
+        TopicRepository topicRepository,
+        RecordRepository recordRepository,
+        ApplicationContext applicationContext,
+        Mcp mcp
+    ) {
         this.topicRepository = topicRepository;
         this.recordRepository = recordRepository;
         this.applicationContext = applicationContext;
+        this.mcp = mcp;
     }
 
     public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments) throws ExecutionException, InterruptedException {
@@ -71,18 +80,30 @@ public class AkhqTopicDataToolService {
         asEpochMillis(arguments.endTimestamp()).ifPresent(options::setEndTimestamp);
 
         Topic topic = topicRepository.findByName(cluster, topicName);
+        // Without a time window a search scans the whole topic, so bound it: the scan is cancelled once the budget
+        // is spent, which closes its consumer, and the matches found so far are returned.
+        Duration searchTimeout = mcp.getSearchTimeout();
+        long startedAt = System.nanoTime();
         List<Record> matches = recordRepository.search(topic, options)
+            .take(searchTimeout)
             .flatMapIterable(event -> event.getData().getRecords())
             .take(maxMatches)
             .collectList()
             .blockOptional()
             .orElse(List.of());
+        boolean timedOut = matches.size() < maxMatches
+            && Duration.ofNanos(System.nanoTime() - startedAt).compareTo(searchTimeout) >= 0;
+        String timeoutNotice = timedOut
+            ? " The search stopped after " + searchTimeout.toSeconds() + "s before scanning the whole topic, so "
+                + "results may be incomplete: narrow it with `timestamp`/`endTimestamp` or `partition`."
+            : "";
 
         if (matches.isEmpty()) {
             boolean hasTimeWindow = asString(arguments.timestamp()).isPresent() || asString(arguments.endTimestamp()).isPresent();
             String message = hasTimeWindow
                 ? "No matching message found in topic '" + topicName + "' in the provided time window."
                 : "No matching message found in topic '" + topicName + "'. Provide `timestamp` and `endTimestamp` to narrow the search window.";
+            message += timeoutNotice;
 
             TimeWindowSuggestion suggestion = hasTimeWindow
                 ? null
@@ -104,7 +125,7 @@ public class AkhqTopicDataToolService {
             topicName,
             matches.size(),
             overviews,
-            "Found " + matches.size() + " matching message(s) in topic '" + topicName + "'.",
+            "Found " + matches.size() + " matching message(s) in topic '" + topicName + "'." + timeoutNotice,
             null
         );
     }

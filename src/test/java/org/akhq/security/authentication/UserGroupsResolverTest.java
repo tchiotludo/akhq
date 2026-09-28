@@ -7,6 +7,8 @@ import org.akhq.models.security.ClaimProvider;
 import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthIdentityResolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

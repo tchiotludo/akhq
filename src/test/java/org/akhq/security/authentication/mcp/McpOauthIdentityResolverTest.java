@@ -1,4 +1,4 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import org.akhq.configs.security.McpOauth;
 import org.junit.jupiter.api.Test;

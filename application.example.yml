@@ -38,7 +38,11 @@ akhq:
   # MCP server configuration (optional)
   mcp:
     enabled: false # false by default. Exposes the MCP JSON-RPC endpoint on `POST /mcp`.
-                   # Only enable it on an instance with an authentication mechanism configured.
+                   # Only enable it on an instance with an authentication mechanism configured
+                   # (a warning is logged at startup when `micronaut.security.enabled` is false).
+    # allowed-origins: # optional. Browser origins allowed to call `/mcp`. Requests without an `Origin` header
+    #   - https://mcp-client.example.com # (native MCP clients) are always accepted, others are rejected with 403.
+    # search-timeout: 30s # optional. Maximum duration of an `akhq.find_message_in_topic` search.
 
   server:
     access-log: # Access log configuration (optional)
@@ -307,16 +311,15 @@ akhq:
               groups:
                 - admin
 
-    # OAuth 2.0 bearer-token authentication for the MCP endpoint.
-    # Configure the same issuer, JWKS URL, and audience under `micronaut.security.token.jwt`.
+    # OAuth 2.0 bearer-token authentication for the MCP endpoint (requires `micronaut.security.enabled: true`).
+    # Independent from the UI `micronaut.security.oauth2` / `micronaut.security.token.jwt` configuration.
     mcp-oauth:
       enabled: true
-      endpoint: /mcp
       issuer: https://identity.example.com/realms/akhq # mandatory (expected `iss` claim of the access tokens)
       jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs # mandatory (used to verify token signatures)
-      audience: akhq-mcp # mandatory (expected `aud` claim of the access tokens)
+      audience: akhq-mcp # mandatory (expected `aud` claim of the access tokens). Do not use a client ID here.
       # authorization-server: https://identity.example.com/realms/akhq # Defaults to `issuer`.
-      # resource: https://akhq.example.com/mcp # Defaults to the public request origin plus `endpoint`.
+      # resource: https://akhq.example.com/mcp # Defaults to the public AKHQ origin + context path + MCP endpoint.
       # jws-algorithms: [RS256, ES256] # Defaults to every RSA, EC and EdDSA algorithm advertised by the JWK set.
       # jwks-connect-timeout: 5s # optional (timeout to connect to the JWKS endpoint)
       # jwks-read-timeout: 5s # optional (timeout to read the JWKS response)

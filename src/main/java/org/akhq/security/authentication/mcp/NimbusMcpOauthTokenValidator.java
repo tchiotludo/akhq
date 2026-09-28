@@ -1,8 +1,10 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
@@ -11,10 +13,11 @@ import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTProcessor;
 import io.micronaut.context.annotation.Requires;
-import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.McpOauth;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -23,17 +26,28 @@ import java.util.stream.Collectors;
 @Singleton
 @Requires(property = "akhq.security.mcp-oauth.enabled", value = "true")
 public class NimbusMcpOauthTokenValidator implements McpOauthTokenValidator {
-    private final McpOauth mcpOauth;
-    private JWTProcessor<SecurityContext> jwtProcessor;
+    /**
+     * Accepted {@code typ} headers: plain JWTs (Keycloak, Entra ID), RFC 9068 access tokens in both their short and
+     * media type forms, and tokens without {@code typ}.
+     */
+    private static final DefaultJOSEObjectTypeVerifier<SecurityContext> TYPE_VERIFIER = new DefaultJOSEObjectTypeVerifier<>(
+        JOSEObjectType.JWT,
+        new JOSEObjectType("at+jwt"),
+        new JOSEObjectType("application/at+jwt"),
+        null
+    );
 
+    private final JWTProcessor<SecurityContext> jwtProcessor;
+
+    @Inject
     public NimbusMcpOauthTokenValidator(McpOauth mcpOauth) {
-        this.mcpOauth = mcpOauth;
+        this(mcpOauth, remoteJwkSource(mcpOauth));
     }
 
-    @PostConstruct
-    void init() throws Exception {
+    NimbusMcpOauthTokenValidator(McpOauth mcpOauth, JWKSource<SecurityContext> jwkSource) {
         DefaultJWTProcessor<SecurityContext> processor = new DefaultJWTProcessor<>();
-        processor.setJWSKeySelector(keySelector(jwkSource()));
+        processor.setJWSTypeVerifier(TYPE_VERIFIER);
+        processor.setJWSKeySelector(keySelector(mcpOauth, jwkSource));
         processor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(
             mcpOauth.getAudience(),
             new JWTClaimsSet.Builder().issuer(mcpOauth.getIssuer()).build(),
@@ -47,22 +61,26 @@ public class NimbusMcpOauthTokenValidator implements McpOauthTokenValidator {
         return jwtProcessor.process(token, null);
     }
 
-    private JWKSource<SecurityContext> jwkSource() throws Exception {
+    private static JWKSource<SecurityContext> remoteJwkSource(McpOauth mcpOauth) {
         DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
             (int) mcpOauth.getJwksConnectTimeout().toMillis(),
             (int) mcpOauth.getJwksReadTimeout().toMillis()
         );
 
-        return JWKSourceBuilder.create(URI.create(mcpOauth.getJwksUrl()).toURL(), resourceRetriever)
-            .retrying(true)
-            .build();
+        try {
+            return JWKSourceBuilder.create(URI.create(mcpOauth.getJwksUrl()).toURL(), resourceRetriever)
+                .retrying(true)
+                .build();
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("Invalid `akhq.security.mcp-oauth.jwks-url`: " + mcpOauth.getJwksUrl(), e);
+        }
     }
 
     /**
      * Restricts accepted signatures to the configured algorithms, or to asymmetric ones when none is configured,
      * so that a symmetric key published on the JWKS endpoint cannot be used to sign tokens.
      */
-    private JWSVerificationKeySelector<SecurityContext> keySelector(JWKSource<SecurityContext> jwkSource) {
+    private static JWSVerificationKeySelector<SecurityContext> keySelector(McpOauth mcpOauth, JWKSource<SecurityContext> jwkSource) {
         Set<JWSAlgorithm> algorithms = mcpOauth.getJwsAlgorithms().stream()
             .map(JWSAlgorithm::parse)
             .collect(Collectors.toCollection(LinkedHashSet::new));

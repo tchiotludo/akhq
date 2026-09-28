@@ -1,7 +1,8 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Value;
 import jakarta.annotation.PostConstruct;
 import org.akhq.configs.security.McpOauth;
 
@@ -23,14 +24,25 @@ import java.util.List;
 @Requires(property = "akhq.security.mcp-oauth.enabled", value = "true")
 public class McpOauthConfigurationValidator {
     private final McpOauth mcpOauth;
+    private final boolean securityEnabled;
 
-    public McpOauthConfigurationValidator(McpOauth mcpOauth) {
+    public McpOauthConfigurationValidator(
+        McpOauth mcpOauth,
+        @Value("${micronaut.security.enabled:true}") boolean securityEnabled
+    ) {
         this.mcpOauth = mcpOauth;
+        this.securityEnabled = securityEnabled;
     }
 
     @PostConstruct
     void validate() {
         List<String> errors = new ArrayList<>();
+
+        // Without the security filter, neither the MCP token check nor the tool permission checks run, which would
+        // leave the MCP endpoint anonymous while the configuration claims it is protected.
+        if (!securityEnabled) {
+            errors.add("`micronaut.security.enabled` must be true, otherwise the MCP endpoint is not protected");
+        }
 
         requireText(errors, mcpOauth.getIssuer(), "issuer");
         requireText(errors, mcpOauth.getJwksUrl(), "jwks-url");

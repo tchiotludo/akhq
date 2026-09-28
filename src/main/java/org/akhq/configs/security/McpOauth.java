@@ -18,7 +18,6 @@ public class McpOauth {
     private String jwksUrl;
     private String audience;
     private String resource;
-    private String endpoint = "/mcp";
     private String usernameClaim = "preferred_username";
     private String groupsClaim = "groups";
     private String requiredScope;

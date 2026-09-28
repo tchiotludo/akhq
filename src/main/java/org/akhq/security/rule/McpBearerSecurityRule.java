@@ -9,8 +9,8 @@ import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import jakarta.inject.Singleton;
 import org.akhq.configs.security.McpOauth;
-import org.akhq.security.authentication.McpOauthAuthentication;
-import org.akhq.security.authentication.McpOauthRequestMatcher;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthRequestMatcher;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 

@@ -1,4 +1,4 @@
-package org.akhq.security.authentication;
+package org.akhq.security.authentication.mcp;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 

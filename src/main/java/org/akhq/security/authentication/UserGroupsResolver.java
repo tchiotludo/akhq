@@ -8,6 +8,8 @@ import org.akhq.configs.security.Group;
 import org.akhq.models.security.ClaimProvider;
 import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthIdentityResolver;
 import org.akhq.security.rule.AKHQSecurityRule;
 
 import java.util.Collection;

@@ -5,8 +5,9 @@ import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.authentication.ServerAuthentication;
 import io.micronaut.security.rules.SecurityRuleResult;
 import org.akhq.configs.security.McpOauth;
-import org.akhq.security.authentication.McpOauthAuthentication;
-import org.akhq.security.authentication.McpOauthRequestMatcher;
+import org.akhq.mcp.McpEndpoint;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthRequestMatcher;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
@@ -78,7 +79,7 @@ class McpBearerSecurityRuleTest {
         McpOauth configuration = new McpOauth();
         configuration.setEnabled(true);
         configuration.setRequiredScope(requiredScope);
-        return new McpBearerSecurityRule(null, configuration, new McpOauthRequestMatcher(configuration));
+        return new McpBearerSecurityRule(null, configuration, new McpOauthRequestMatcher(configuration, new McpEndpoint("", "/mcp")));
     }
 
     private Authentication mcpAuthentication(Map<String, Object> attributes) {

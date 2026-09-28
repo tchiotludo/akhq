@@ -69,6 +69,8 @@ micronaut:
         access: "isAnonymous()"
       - pattern: "/swagger/**"
         access: "isAnonymous()"
+      - pattern: "/.well-known/oauth-protected-resource"
+        access: "isAnonymous()"
       - pattern: "/mcp/**"
         access: "isAuthenticated()"
       - pattern: "/mcp"
