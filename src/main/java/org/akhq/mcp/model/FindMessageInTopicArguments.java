@@ -4,6 +4,8 @@ import io.micronaut.core.annotation.Introspected;
 import io.micronaut.jsonschema.JsonSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
+
 @JsonSchema
 @Introspected
 public record FindMessageInTopicArguments(
@@ -33,7 +35,15 @@ public record FindMessageInTopicArguments(
     String timestamp,
     @Schema(description = "Inclusive end timestamp in ISO-8601 format.", example = "2026-09-14T10:15:00Z")
     String endTimestamp,
-    @Schema(description = "Maximum number of matches to return. Defaults to 1, max 25.", example = "5")
-    Integer maxMatches
+    @Schema(description = "Maximum number of matches to return. Defaults to 1, max 25, or max 500 with `fields`.", example = "5")
+    Integer maxMatches,
+    @Schema(
+        description = "Optional paths to extract from JSON message values instead of returning the whole value. "
+            + "Paths are dot separated, a numeric segment indexes an array.",
+        example = "[\"amount\", \"customer.id\", \"items.0.price\"]"
+    )
+    List<String> fields,
+    @Schema(description = "Cursor to fetch the next matches, taken from the `nextCursor` of a previous result.", example = "0-41_1-38_2-40")
+    String after
 ) implements TopicScopedArguments {
 }

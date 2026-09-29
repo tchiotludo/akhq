@@ -23,7 +23,10 @@ import org.akhq.repositories.TopicRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -31,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 public class AkhqTopicDataToolService {
     private static final int DEFAULT_MAX_MATCHES = 1;
     private static final int MAX_ALLOWED_MATCHES = 25;
+    private static final int MAX_ALLOWED_PROJECTED_MATCHES = 500;
 
     private final TopicRepository topicRepository;
     private final RecordRepository recordRepository;
@@ -64,12 +68,18 @@ public class AkhqTopicDataToolService {
             throw new IllegalArgumentException("At least one of searchByKey/searchByValue/searchByHeaderKey/searchByHeaderValue is required");
         }
 
-        int maxMatches = clampMaxMatches(arguments.maxMatches() == null ? DEFAULT_MAX_MATCHES : arguments.maxMatches());
+        List<String> fields = fields(arguments.fields());
+        int maxMatches = clampMaxMatches(
+            arguments.maxMatches() == null ? DEFAULT_MAX_MATCHES : arguments.maxMatches(),
+            fields.isEmpty() ? MAX_ALLOWED_MATCHES : MAX_ALLOWED_PROJECTED_MATCHES
+        );
 
         Environment environment = applicationContext.getEnvironment();
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
         options.setSort(RecordRepository.Options.Sort.OLDEST);
-        options.setSize(maxMatches);
+        // One more match than requested tells whether more matches remain.
+        options.setSize(maxMatches + 1);
+        asString(arguments.after()).ifPresent(after -> setCursor(options, after));
 
         asInteger(arguments.partition()).ifPresent(options::setPartition);
         asString(arguments.searchByKey()).map(value -> toSearchFilter(value, arguments.searchByKeyMatchType())).ifPresent(options::setSearchByKey);
@@ -87,11 +97,11 @@ public class AkhqTopicDataToolService {
         List<Record> matches = recordRepository.search(topic, options)
             .take(searchTimeout)
             .flatMapIterable(event -> event.getData().getRecords())
-            .take(maxMatches)
+            .take(maxMatches + 1)
             .collectList()
             .blockOptional()
             .orElse(List.of());
-        boolean timedOut = matches.size() < maxMatches
+        boolean timedOut = matches.size() <= maxMatches
             && Duration.ofNanos(System.nanoTime() - startedAt).compareTo(searchTimeout) >= 0;
         String timeoutNotice = timedOut
             ? " The search stopped after " + searchTimeout.toSeconds() + "s before scanning the whole topic, so "
@@ -113,21 +123,123 @@ public class AkhqTopicDataToolService {
                     Instant.now().toString()
                 );
 
-            return new FindMessageInTopicResult(false, topicName, 0, List.of(), message, suggestion);
+            return new FindMessageInTopicResult(false, topicName, 0, false, null, List.of(), message, suggestion);
         }
 
-        List<MessageOverview> overviews = matches.stream()
-            .map(this::toMessageOverview)
-            .toList();
+        boolean moreMatches = matches.size() > maxMatches;
+        List<Record> page = moreMatches ? matches.subList(0, maxMatches) : matches;
+        Page overviews = fields.isEmpty() ? valuePage(page) : projectedPage(page, fields);
+        List<Record> returned = page.subList(0, overviews.messages().size());
+        boolean hasMore = moreMatches || returned.size() < page.size();
+        String nextCursor = hasMore ? options.pagination(returned) : null;
+
+        StringBuilder message = new StringBuilder("Found ")
+            .append(returned.size())
+            .append(" matching message(s) in topic '")
+            .append(topicName)
+            .append("'.");
+        if (hasMore) {
+            message.append(returned.size() < page.size() ? " The result size budget is reached." : "")
+                .append(" More matches remain: call again with `after` set to `nextCursor` to get them.");
+        }
+        if (overviews.truncatedValues() > 0) {
+            message.append(" ")
+                .append(overviews.truncatedValues())
+                .append(" value(s) were truncated to fit the result: use `fields` to extract what you need, or ")
+                .append("`akhq.get_message_detail` for a full message.");
+        }
+        if (overviews.notJson() > 0) {
+            message.append(" ")
+                .append(overviews.notJson())
+                .append(" value(s) are not JSON, so `fields` could not be extracted and the value is returned instead.");
+        }
+        message.append(timeoutNotice);
 
         return new FindMessageInTopicResult(
             true,
             topicName,
-            matches.size(),
-            overviews,
-            "Found " + matches.size() + " matching message(s) in topic '" + topicName + "'." + timeoutNotice,
+            returned.size(),
+            hasMore,
+            nextCursor,
+            overviews.messages(),
+            message.toString(),
             null
         );
+    }
+
+    /**
+     * Returns the whole values when they fit the result budget, and truncates the longest ones evenly otherwise.
+     */
+    private Page valuePage(List<Record> records) {
+        int maxValueLength = MessageValues.maxValueLength(
+            records.stream().map(record -> record.getValue() == null ? 0 : record.getValue().length()).toList(),
+            mcp.getMaxResultLength()
+        );
+
+        int truncated = 0;
+        List<MessageOverview> messages = new ArrayList<>();
+        for (Record record : records) {
+            String value = MessageValues.truncate(record.getValue(), maxValueLength);
+            boolean valueTruncated = value != null && !value.equals(record.getValue());
+            truncated += valueTruncated ? 1 : 0;
+            messages.add(toMessageOverview(record, value, valueTruncated ? true : null, null));
+        }
+
+        return new Page(messages, truncated, 0);
+    }
+
+    /**
+     * Returns the requested fields of each value, and stops once the result budget is reached so the remaining
+     * matches can be fetched with the next cursor.
+     */
+    private Page projectedPage(List<Record> records, List<String> fields) {
+        int budget = mcp.getMaxResultLength();
+        int notJson = 0;
+        List<MessageOverview> messages = new ArrayList<>();
+
+        for (Record record : records) {
+            Optional<Map<String, Object>> projection = MessageValues.project(record.getValue(), fields);
+            String value = projection.isPresent() ? null : MessageValues.truncate(record.getValue(), MessageValues.MIN_VALUE_LENGTH);
+            MessageOverview overview = toMessageOverview(
+                record,
+                value,
+                value != null && !value.equals(record.getValue()) ? true : null,
+                projection.orElse(null)
+            );
+
+            budget -= MessageValues.length(overview);
+            if (budget < 0 && !messages.isEmpty()) {
+                break;
+            }
+            notJson += projection.isPresent() ? 0 : 1;
+            messages.add(overview);
+        }
+
+        return new Page(messages, 0, notJson);
+    }
+
+    private record Page(List<MessageOverview> messages, int truncatedValues, int notJson) {
+    }
+
+    private static List<String> fields(List<String> fields) {
+        if (fields == null) {
+            return List.of();
+        }
+
+        return fields.stream()
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(field -> !field.isEmpty())
+            .distinct()
+            .toList();
+    }
+
+    private static void setCursor(RecordRepository.Options options, String after) {
+        try {
+            options.setAfter(after);
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("`arguments.after` must be a `nextCursor` returned by a previous search");
+        }
     }
 
     public GetMessageDetailResult getMessageDetail(GetMessageDetailArguments arguments) throws ExecutionException, InterruptedException {
@@ -227,13 +339,20 @@ public class AkhqTopicDataToolService {
         );
     }
 
-    private MessageOverview toMessageOverview(Record record) {
+    private static MessageOverview toMessageOverview(
+        Record record,
+        String value,
+        Boolean valueTruncated,
+        Map<String, Object> fields
+    ) {
         return new MessageOverview(
             record.getPartition(),
             record.getOffset(),
             record.getTimestamp() == null ? null : record.getTimestamp().toInstant().toString(),
             record.getKey(),
-            toValueOverview(record.getValue())
+            value,
+            valueTruncated,
+            fields
         );
     }
 
@@ -244,23 +363,11 @@ public class AkhqTopicDataToolService {
         return headers.stream().map(header -> new MessageHeader(header.getKey(), header.getValue())).toList();
     }
 
-    private String toValueOverview(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String normalized = value.replaceAll("\\s+", " ").trim();
-        int maxLength = 200;
-        return normalized.length() <= maxLength
-            ? normalized
-            : normalized.substring(0, maxLength) + "...";
-    }
-
-    private int clampMaxMatches(int maxMatches) {
+    private static int clampMaxMatches(int maxMatches, int maxAllowed) {
         if (maxMatches < 1) {
             return DEFAULT_MAX_MATCHES;
         }
-        return Math.min(maxMatches, MAX_ALLOWED_MATCHES);
+        return Math.min(maxMatches, maxAllowed);
     }
 
     private Optional<String> asString(Object value) {

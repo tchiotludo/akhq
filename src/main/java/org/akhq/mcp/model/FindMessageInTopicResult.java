@@ -9,6 +9,8 @@ public record FindMessageInTopicResult(
     boolean found,
     String topic,
     int matchCount,
+    boolean hasMore,
+    String nextCursor,
     List<MessageOverview> messages,
     String message,
     TimeWindowSuggestion timeWindowSuggestion

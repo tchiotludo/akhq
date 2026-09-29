@@ -68,7 +68,7 @@ public class AkhqTools extends AbstractMcpTool {
     @Tool(
         name = "akhq.find_message_in_topic",
         description = """
-            Search topic data and return matching message overviews.
+            Search topic data and return the matching messages with their values.
 
             Expected `arguments` JSON object:
             {
@@ -85,19 +85,29 @@ public class AkhqTools extends AbstractMcpTool {
               "partition": 0,
               "timestamp": "2026-09-14T10:00:00Z",
               "endTimestamp": "2026-09-14T10:15:00Z",
-              "maxMatches": 5
+              "maxMatches": 5,
+              "fields": ["amount", "customer.id"],
+              "after": "<nextCursor of a previous result>"
             }
 
             Rules:
             - `cluster` and `topic` are required.
             - Provide at least one of: `searchByKey`, `searchByValue`, `searchByHeaderKey`, `searchByHeaderValue`.
             - `timestamp` and `endTimestamp` accept ISO-8601 timestamps.
-            - `maxMatches` defaults to 1 and is capped at 25.
+            - `maxMatches` defaults to 1 and is capped at 25, or at 500 when `fields` is set.
+            - Each match includes its full `value` when the result fits the size budget. Otherwise the
+              longest values are truncated and flagged with `valueTruncated: true`.
+            - `fields` lists dot-separated paths to extract from JSON values, e.g. `customer.id` or
+              `items.0.price`. Each match then includes a `fields` object instead of `value`, and a
+              missing path is null. Use it to read or aggregate a few fields over many messages,
+              instead of calling `akhq.get_message_detail` for each one.
+            - When `hasMore` is true, call again with the same arguments and `after` set to
+              `nextCursor` to get the next matches. Repeat until `hasMore` is false to get all of them.
 
             When presenting search results to a user, include each match's `partition`, `offset`,
-            `timestamp`, `key`, and `valueOverview`. Do not reduce a matching message to only its
-            partition, offset, and timestamp. Use `akhq.get_message_detail` when the full value
-            payload or headers are needed.
+            `timestamp`, `key`, and `value` or `fields`. Do not reduce a matching message to only its
+            partition, offset, and timestamp. Use `akhq.get_message_detail` when a truncated value
+            or the headers are needed.
             """
     )
     public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments, MicronautMcpTransportContext transportContext)

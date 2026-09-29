@@ -43,6 +43,7 @@ akhq:
     # allowed-origins: # optional. Browser origins allowed to call `/mcp`. Requests without an `Origin` header
     #   - https://mcp-client.example.com # (native MCP clients) are always accepted, others are rejected with 403.
     # search-timeout: 30s # optional. Maximum duration of an `akhq.find_message_in_topic` search.
+    # max-result-length: 100000 # optional. Size budget, in characters, of the values returned by an `akhq.find_message_in_topic` call.
 
   server:
     access-log: # Access log configuration (optional)

@@ -22,4 +22,10 @@ public class Mcp {
      * Maximum duration of a topic search, after which the matches found so far are returned.
      */
     private Duration searchTimeout = Duration.ofSeconds(30);
+    /**
+     * Budget, in characters, of the message values or projected fields returned by a single topic search. Values are
+     * returned in full when they fit and are truncated evenly otherwise, to keep tool results within the context of
+     * an LLM.
+     */
+    private int maxResultLength = 100_000;
 }

@@ -79,7 +79,7 @@ class AkhqToolsTest extends AbstractTest {
             .findFirst()
             .orElseThrow();
         String description = String.valueOf(searchTool.get("description"));
-        assertTrue(description.contains("`key`, and `valueOverview`"), description);
+        assertTrue(description.contains("`key`, and `value` or `fields`"), description);
         assertTrue(description.contains("Do not reduce a matching message"), description);
 
         Map<String, Object> detailTool = tools.stream()
@@ -128,7 +128,7 @@ class AkhqToolsTest extends AbstractTest {
             assertNotNull(firstMessage.get("offset"));
             assertNotNull(firstMessage.get("timestamp"));
             assertTrue(firstMessage.containsKey("key"));
-            assertNotNull(firstMessage.get("valueOverview"));
+            assertNotNull(firstMessage.get("value"));
         } else {
             assertTrue(flattenContent(result).contains("Found"), String.valueOf(result));
         }
@@ -322,6 +322,57 @@ class AkhqToolsTest extends AbstractTest {
     }
 
     @Test
+    void toolsCallFindMessagePaginatesWithCursor() {
+        Map<String, Object> arguments = new java.util.HashMap<>(Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "topic", KafkaTestCluster.TOPIC_RANDOM,
+            "searchByValue", "value_4",
+            "maxMatches", 25
+        ));
+
+        Map<String, Object> first = callTool("akhq.find_message_in_topic", arguments);
+        assertEquals(25, first.get("matchCount"), String.valueOf(first));
+        assertEquals(true, first.get("hasMore"), String.valueOf(first));
+        assertNotNull(first.get("nextCursor"), String.valueOf(first));
+
+        arguments.put("after", first.get("nextCursor"));
+        Map<String, Object> second = callTool("akhq.find_message_in_topic", arguments);
+        assertEquals(8, second.get("matchCount"), String.valueOf(second));
+        assertEquals(false, second.get("hasMore"), String.valueOf(second));
+        assertEquals(null, second.get("nextCursor"), String.valueOf(second));
+
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (Map<String, Object> result : java.util.List.of(first, second)) {
+            for (Object message : list(result.get("messages"))) {
+                Map<String, Object> overview = map(message);
+                assertTrue(String.valueOf(overview.get("value")).contains("value_4"), String.valueOf(overview));
+                assertTrue(seen.add(overview.get("partition") + "-" + overview.get("offset")), String.valueOf(overview));
+            }
+        }
+        assertEquals(33, seen.size());
+    }
+
+    @Test
+    void toolsCallFindMessageWithFieldsOnNonJsonValues() {
+        Map<String, Object> result = callTool("akhq.find_message_in_topic", Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "topic", KafkaTestCluster.TOPIC_RANDOM,
+            "searchByValue", "value_42",
+            "searchByValueMatchType", "EQUALS",
+            "maxMatches", 100,
+            "fields", java.util.List.of("amount")
+        ));
+
+        assertEquals(3, result.get("matchCount"), String.valueOf(result));
+        assertTrue(String.valueOf(result.get("message")).contains("3 value(s) are not JSON"), String.valueOf(result));
+        for (Object message : list(result.get("messages"))) {
+            Map<String, Object> overview = map(message);
+            assertEquals("value_42", overview.get("value"));
+            assertFalse(overview.containsKey("fields"), String.valueOf(overview));
+        }
+    }
+
+    @Test
     void unsupportedTransportMethodsAreNotAllowed() {
         for (io.micronaut.http.HttpMethod method : java.util.List.of(io.micronaut.http.HttpMethod.GET, io.micronaut.http.HttpMethod.DELETE)) {
             HttpResponse<String> response = exchangeRaw(HttpRequest.create(method, URL));
@@ -376,12 +427,16 @@ class AkhqToolsTest extends AbstractTest {
     }
 
     private Map<String, Object> searchTopics(Map<String, Object> arguments) {
+        return callTool("akhq.search_topics", arguments);
+    }
+
+    private Map<String, Object> callTool(String name, Map<String, Object> arguments) {
         Map<String, Object> payload = Map.of(
             "jsonrpc", "2.0",
-            "id", "call-topics",
+            "id", "call-" + name,
             "method", "tools/call",
             "params", Map.of(
-                "name", "akhq.search_topics",
+                "name", name,
                 "arguments", Map.of("arguments", arguments)
             )
         );

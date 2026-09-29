@@ -34,6 +34,7 @@ Additional `akhq.mcp` properties:
 | --- | --- | --- |
 | `allowed-origins` | empty | Browser origins (for example `https://mcp-client.example.com`) allowed to call `/mcp`. Requests without an `Origin` header, as sent by native MCP clients, are always accepted; any other origin is rejected with `403` to protect against DNS rebinding. |
 | `search-timeout` | `30s` | Maximum duration of an `akhq.find_message_in_topic` search. When reached, the tool returns the matches found so far with a notice. |
+| `max-result-length` | `100000` | Size budget, in characters, of the values returned by an `akhq.find_message_in_topic` call. Above it, the longest values are truncated evenly (never below 200 characters), or fewer projected matches are returned with a cursor to the next ones. |
 
 Authentication is the same as the other AKHQ API endpoints:
 
@@ -52,7 +53,7 @@ Authorization is also the same model as classic endpoints:
 
 Current tools:
 
-* `akhq.find_message_in_topic`: search message(s) and return message overviews (`partition`, `offset`, `timestamp`, `key`, short value preview).
+* `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
 
