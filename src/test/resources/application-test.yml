@@ -87,6 +87,8 @@ akhq:
   security:
     mcp-oauth:
       enabled: false
+    rest:
+      enabled: false
     roles:
       topic-read:
         - resources: [ "TOPIC", "TOPIC_DATA" ]

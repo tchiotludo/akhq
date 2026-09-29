@@ -3,7 +3,11 @@ package org.akhq.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
@@ -315,6 +319,60 @@ class AkhqToolsTest extends AbstractTest {
         assertTrue((Boolean) truncated.get("truncated"));
         assertEquals(2, list(truncated.get("topics")).size());
         assertEquals(KafkaTestCluster.TOPIC_ALL_COUNT, truncated.get("totalMatches"));
+    }
+
+    @Test
+    void unsupportedTransportMethodsAreNotAllowed() {
+        for (io.micronaut.http.HttpMethod method : java.util.List.of(io.micronaut.http.HttpMethod.GET, io.micronaut.http.HttpMethod.DELETE)) {
+            HttpResponse<String> response = exchangeRaw(HttpRequest.create(method, URL));
+
+            assertEquals(405, response.getStatus().getCode(), method.name());
+            assertEquals("POST", response.getHeaders().get(HttpHeaders.ALLOW), method.name());
+        }
+    }
+
+    @Test
+    void jsonRpcErrorsAreAnsweredWithOk() {
+        HttpResponse<String> unknownMethod = exchangeRaw(HttpRequest.POST(URL, Map.of(
+            "jsonrpc", "2.0",
+            "id", "unknown-1",
+            "method", "logging/setLevel",
+            "params", Map.of("level", "info")
+        )));
+        assertEquals(200, unknownMethod.getStatus().getCode(), unknownMethod.body());
+        assertTrue(unknownMethod.body().contains("\"code\":-32601"), unknownMethod.body());
+
+        HttpResponse<String> forbidden = exchangeRaw(HttpRequest.POST(URL, Map.of(
+            "jsonrpc", "2.0",
+            "id", "unknown-tool",
+            "method", "tools/call",
+            "params", Map.of("name", "akhq.does_not_exist", "arguments", Map.of())
+        )));
+        assertEquals(200, forbidden.getStatus().getCode(), forbidden.body());
+        assertTrue(forbidden.body().contains("\"error\""), forbidden.body());
+    }
+
+    @Test
+    void invalidMessagesAreRejectedWithoutStackTrace() {
+        HttpResponse<String> response = exchangeRaw(HttpRequest.POST(URL, Map.of(
+            "jsonrpc", "2.0",
+            "id", "response-1",
+            "result", Map.of()
+        )));
+
+        assertEquals(400, response.getStatus().getCode(), response.body());
+        assertTrue(response.body().contains("\"code\":-32600"), response.body());
+        assertFalse(response.body().contains("stackTrace"), response.body());
+    }
+
+    @SuppressWarnings("unchecked")
+    private HttpResponse<String> exchangeRaw(io.micronaut.http.MutableHttpRequest<?> request) {
+        request.basicAuth("admin", "pass").accept(MediaType.APPLICATION_JSON_TYPE, MediaType.TEXT_EVENT_STREAM_TYPE);
+        try {
+            return client.toBlocking().exchange(request, String.class);
+        } catch (HttpClientResponseException e) {
+            return (HttpResponse<String>) e.getResponse();
+        }
     }
 
     private Map<String, Object> searchTopics(Map<String, Object> arguments) {
