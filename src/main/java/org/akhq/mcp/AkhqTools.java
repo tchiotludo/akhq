@@ -4,16 +4,14 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.mcp.annotations.Tool;
 import io.micronaut.mcp.server.context.MicronautMcpTransportContext;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import jakarta.inject.Singleton;
 import org.akhq.mcp.model.FindMessageInTopicArguments;
-import org.akhq.mcp.model.FindMessageInTopicResult;
 import org.akhq.mcp.model.GetMessageDetailArguments;
-import org.akhq.mcp.model.GetMessageDetailResult;
 import org.akhq.mcp.model.GetTopicLastRecordTimestampArguments;
-import org.akhq.mcp.model.GetTopicLastRecordTimestampResult;
 import org.akhq.mcp.model.SearchTopicsArguments;
-import org.akhq.mcp.model.SearchTopicsResult;
 import org.akhq.configs.security.Role;
 import org.akhq.mcp.services.AkhqTopicDataToolService;
 import org.akhq.mcp.services.AkhqTopicToolService;
@@ -59,10 +57,14 @@ public class AkhqTools extends AbstractMcpTool {
             """
     )
     @AKHQSecured(resource = Role.Resource.TOPIC, action = Role.Action.READ)
-    public SearchTopicsResult searchTopics(SearchTopicsArguments arguments, MicronautMcpTransportContext transportContext)
+    public CallToolResult searchTopics(SearchTopicsArguments arguments, MicronautMcpTransportContext transportContext)
         throws ExecutionException, InterruptedException {
-        ClusterScope scope = authorizeClusterScope(arguments, transportContext);
-        return topicService.searchTopics(scope.cluster(), scope.resourceFilters(), arguments);
+        try {
+            ClusterScope scope = authorizeClusterScope(arguments, transportContext);
+            return toolResult(topicService.searchTopics(scope.cluster(), scope.resourceFilters(), arguments));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
     }
 
     @Tool(
@@ -110,10 +112,14 @@ public class AkhqTools extends AbstractMcpTool {
             or the headers are needed.
             """
     )
-    public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments, MicronautMcpTransportContext transportContext)
+    public CallToolResult findMessageInTopic(FindMessageInTopicArguments arguments, MicronautMcpTransportContext transportContext)
         throws ExecutionException, InterruptedException {
-        authorizeTopicScope(arguments, transportContext);
-        return topicDataService.findMessageInTopic(arguments);
+        try {
+            authorizeTopicScope(arguments, transportContext);
+            return toolResult(topicDataService.findMessageInTopic(arguments));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
     }
 
     @Tool(
@@ -137,10 +143,14 @@ public class AkhqTools extends AbstractMcpTool {
             `key` and `value` properties. Do not rewrite headers as a prose sentence or omit them.
             """
     )
-    public GetMessageDetailResult getMessageDetail(GetMessageDetailArguments arguments, MicronautMcpTransportContext transportContext)
+    public CallToolResult getMessageDetail(GetMessageDetailArguments arguments, MicronautMcpTransportContext transportContext)
         throws ExecutionException, InterruptedException {
-        authorizeTopicScope(arguments, transportContext);
-        return topicDataService.getMessageDetail(arguments);
+        try {
+            authorizeTopicScope(arguments, transportContext);
+            return toolResult(topicDataService.getMessageDetail(arguments));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
     }
 
     @Tool(
@@ -160,11 +170,15 @@ public class AkhqTools extends AbstractMcpTool {
             - `found` is false and `timestamp` is null when the topic contains no records.
             """
     )
-    public GetTopicLastRecordTimestampResult getTopicLastRecordTimestamp(
+    public CallToolResult getTopicLastRecordTimestamp(
         GetTopicLastRecordTimestampArguments arguments,
         MicronautMcpTransportContext transportContext
     ) throws ExecutionException, InterruptedException {
-        authorizeTopicScope(arguments, transportContext);
-        return topicDataService.getTopicLastRecordTimestamp(arguments);
+        try {
+            authorizeTopicScope(arguments, transportContext);
+            return toolResult(topicDataService.getTopicLastRecordTimestamp(arguments));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
     }
 }

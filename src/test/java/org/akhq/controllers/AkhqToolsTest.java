@@ -373,6 +373,29 @@ class AkhqToolsTest extends AbstractTest {
     }
 
     @Test
+    void toolsCallInvalidArgumentsAreToolExecutionErrors() {
+        Map<String, Object> missingCriteria = callToolResult("akhq.find_message_in_topic", Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "topic", KafkaTestCluster.TOPIC_RANDOM
+        ));
+        assertEquals(true, missingCriteria.get("isError"), String.valueOf(missingCriteria));
+        assertTrue(flattenContent(missingCriteria).contains("At least one of searchByKey"), String.valueOf(missingCriteria));
+
+        Map<String, Object> invalidCursor = callToolResult("akhq.find_message_in_topic", Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "topic", KafkaTestCluster.TOPIC_RANDOM,
+            "searchByValue", "value_4",
+            "after", "not-a-cursor"
+        ));
+        assertEquals(true, invalidCursor.get("isError"), String.valueOf(invalidCursor));
+        assertTrue(flattenContent(invalidCursor).contains("`arguments.after`"), String.valueOf(invalidCursor));
+
+        Map<String, Object> missingCluster = callToolResult("akhq.search_topics", Map.of("search", "stream"));
+        assertEquals(true, missingCluster.get("isError"), String.valueOf(missingCluster));
+        assertTrue(flattenContent(missingCluster).contains("`arguments.cluster` is required"), String.valueOf(missingCluster));
+    }
+
+    @Test
     void unsupportedTransportMethodsAreNotAllowed() {
         for (io.micronaut.http.HttpMethod method : java.util.List.of(io.micronaut.http.HttpMethod.GET, io.micronaut.http.HttpMethod.DELETE)) {
             HttpResponse<String> response = exchangeRaw(HttpRequest.create(method, URL));
@@ -428,6 +451,23 @@ class AkhqToolsTest extends AbstractTest {
 
     private Map<String, Object> searchTopics(Map<String, Object> arguments) {
         return callTool("akhq.search_topics", arguments);
+    }
+
+    private Map<String, Object> callToolResult(String name, Map<String, Object> arguments) {
+        Map<String, Object> payload = Map.of(
+            "jsonrpc", "2.0",
+            "id", "call-" + name,
+            "method", "tools/call",
+            "params", Map.of(
+                "name", name,
+                "arguments", Map.of("arguments", arguments)
+            )
+        );
+
+        Map<String, Object> response = this.retrieve(HttpRequest.POST(URL, payload), Map.class);
+        assertNull(response.get("error"), String.valueOf(response));
+        assertNotNull(response.get("result"), String.valueOf(response));
+        return map(response.get("result"));
     }
 
     private Map<String, Object> callTool(String name, Map<String, Object> arguments) {

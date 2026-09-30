@@ -4,11 +4,15 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.annotation.Order;
 import io.micronaut.mcp.server.exceptions.McpErrorExceptionMapper;
-import io.micronaut.security.authentication.AuthorizationException;
 import io.modelcontextprotocol.spec.McpError;
+import io.modelcontextprotocol.spec.McpSchema;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Maps the unexpected failures of a tool to an internal JSON-RPC error without leaking their details. Invalid
+ * arguments and missing permissions are not handled here: tools report them as tool execution errors.
+ */
 @Singleton
 @Requires(property = "akhq.mcp.enabled", value = "true")
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -21,20 +25,8 @@ public class McpToolExceptionMapper implements McpErrorExceptionMapper<Exception
 
     @Override
     public McpError map(Exception exception) {
-        if (exception instanceof AuthorizationException) {
-            return McpError.builder(-32001)
-                .message("Forbidden: insufficient permissions")
-                .build();
-        }
-
-        if (exception instanceof IllegalArgumentException && exception.getMessage() != null) {
-            return McpError.builder(-32602)
-                .message(exception.getMessage())
-                .build();
-        }
-
         log.error("MCP tool execution failed", exception);
-        return McpError.builder(-32603)
+        return McpError.builder(McpSchema.ErrorCodes.INTERNAL_ERROR)
             .message("MCP tool execution failed")
             .build();
     }

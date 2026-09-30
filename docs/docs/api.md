@@ -62,6 +62,8 @@ For every search literal, use the matching `*MatchType` field to select `CONTAIN
 
 Timestamps must be ISO-8601 strings, such as `2026-09-14T10:00:00Z`. Numeric epoch-millisecond timestamps are not part of the MCP input schema.
 
+Invalid arguments and missing permissions are returned as tool execution errors: a regular result with `isError: true` and the reason as text, so the language model can correct its call. Unknown tools, malformed requests, and unexpected failures are returned as JSON-RPC errors, without internal details.
+
 ### Request shape
 
 Current tool methods use an argument envelope, so `params.arguments` contains an inner `arguments` object.

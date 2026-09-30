@@ -55,7 +55,6 @@ class McpOauthRestApiClaimProviderTest extends AbstractTest {
     private static final String SCOPE = "akhq.mcp.read";
     private static final String AUTHORIZED_USER = "mcp-alice";
     private static final String USER_WITHOUT_GROUP = "mcp-bob";
-    private static final int FORBIDDEN = -32001;
 
     private static final RSAKey SIGNING_KEY = generateSigningKey();
     private static final List<ClaimRequest> CLAIM_REQUESTS = new CopyOnWriteArrayList<>();
@@ -164,9 +163,11 @@ class McpOauthRestApiClaimProviderTest extends AbstractTest {
 
     @SuppressWarnings("unchecked")
     private static void assertForbidden(Map<String, Object> response) {
-        Map<String, Object> error = (Map<String, Object>) response.get("error");
-        assertNotNull(error, String.valueOf(response));
-        assertEquals(FORBIDDEN, ((Number) error.get("code")).intValue(), String.valueOf(response));
+        assertNull(response.get("error"), String.valueOf(response));
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertNotNull(result, String.valueOf(response));
+        assertEquals(true, result.get("isError"), String.valueOf(result));
+        assertTrue(text(result).startsWith("Forbidden"), String.valueOf(result));
     }
 
     @SuppressWarnings("unchecked")

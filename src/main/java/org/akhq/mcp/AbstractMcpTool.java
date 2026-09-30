@@ -1,10 +1,16 @@
 package org.akhq.mcp;
 
+import io.micronaut.json.JsonMapper;
 import io.micronaut.mcp.server.context.MicronautMcpTransportContext;
+import io.micronaut.security.authentication.AuthorizationException;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import jakarta.inject.Inject;
 import org.akhq.controllers.AbstractController;
 import org.akhq.mcp.model.ClusterScopedArguments;
 import org.akhq.mcp.model.TopicScopedArguments;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 /**
@@ -20,9 +26,20 @@ import java.util.List;
  * The guard lives in this class on purpose: {@code AbstractController} resolves the {@code @AKHQSecured} annotation
  * by walking the stack up to the first frame declared by the concrete tool class. Keeping the guard in a superclass
  * means the walker still lands on the tool method itself, so a per-method {@code @AKHQSecured} annotation keeps
- * taking precedence over the class-level one.
+ * taking precedence over the class-level one. For the same reason, a tool must call the guard directly from its
+ * method body, not from a lambda.
+ * <p>
+ * Tools return a {@link CallToolResult}: invalid arguments and missing permissions are reported with
+ * {@link #toolError(RuntimeException)} as tool execution errors ({@code isError: true}), as required by the MCP
+ * specification, so the language model gets the reason and can correct its call. Only unexpected failures end up
+ * as JSON-RPC errors.
  */
 abstract class AbstractMcpTool extends AbstractController {
+    static final String FORBIDDEN_MESSAGE = "Forbidden: you are not allowed to access this cluster or resource";
+
+    @Inject
+    private JsonMapper jsonMapper;
+
     /**
      * Validates the common arguments of a topic scoped tool and checks that the caller is allowed to access the
      * requested cluster and topic.
@@ -70,6 +87,31 @@ abstract class AbstractMcpTool extends AbstractController {
             throw new IllegalArgumentException(errorMessage);
         }
         return value.trim();
+    }
+
+    /**
+     * @return the result serialized as JSON text
+     */
+    protected CallToolResult toolResult(Object result) {
+        try {
+            return CallToolResult.builder()
+                .addTextContent(jsonMapper.writeValueAsString(result))
+                .isError(false)
+                .build();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * @return a tool execution error for an invalid argument or a missing permission
+     */
+    protected CallToolResult toolError(RuntimeException exception) {
+        String message = exception instanceof AuthorizationException ? FORBIDDEN_MESSAGE : exception.getMessage();
+        return CallToolResult.builder()
+            .addTextContent(message)
+            .isError(true)
+            .build();
     }
 
     protected record TopicScope(String cluster, String topic) {
