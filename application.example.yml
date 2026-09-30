@@ -318,7 +318,7 @@ akhq:
       enabled: true
       issuer: https://identity.example.com/realms/akhq # mandatory (expected `iss` claim of the access tokens)
       jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs # mandatory (used to verify token signatures)
-      audience: akhq-mcp # mandatory (expected `aud` claim of the access tokens). Do not use a client ID here.
+      audience: https://akhq.example.com/mcp # mandatory (expected `aud` claim of the access tokens), ideally AKHQ's MCP resource URL. Do not use a client ID here.
       # authorization-server: https://identity.example.com/realms/akhq # Defaults to `issuer`.
       # resource: https://akhq.example.com/mcp # Defaults to the public AKHQ origin + context path + MCP endpoint.
       # jws-algorithms: [RS256, ES256] # Defaults to every RSA, EC and EdDSA algorithm advertised by the JWK set.

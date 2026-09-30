@@ -48,11 +48,12 @@ JWT is rejected with `401`. The rest of the API keeps accepting them.
 Authorization is also the same model as classic endpoints:
 
 * Request must be authenticated.
-* Caller must have `TOPIC_DATA` / `READ` permission on the target cluster.
-* For `tools/call`, caller must also be allowed on the requested topic name pattern.
+* Caller must have `TOPIC_DATA` / `READ` permission on the target cluster (`TOPIC` / `READ` for `akhq.search_topics`).
+* For `tools/call`, caller must also be allowed on the requested topic name pattern. `akhq.search_topics` only returns the topics matching the caller's patterns.
 
 Current tools:
 
+* `akhq.search_topics`: list the topics of a cluster (`name`, `partitions`), sorted by name, internal topics included. Optional space-separated `search` terms must all appear in the name (case insensitive). `maxResults` defaults to 50 and is capped at 200; `truncated` and `totalMatches` tell when more topics matched.
 * `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
@@ -78,7 +79,8 @@ akhq:
       enabled: true
       issuer: https://identity.example.com/realms/akhq
       jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs
-      audience: akhq-mcp
+      # Expected `aud` claim of the access tokens, ideally AKHQ's resource URL.
+      audience: https://akhq.example.com/mcp
       # Set this when AKHQ is behind a proxy that changes its public URL.
       resource: https://akhq.example.com/mcp
       username-claim: preferred_username
@@ -103,11 +105,11 @@ web UI included, so an instance never runs with a half configured MCP OAuth setu
 | `jwks-connect-timeout` | `5s` | Connect timeout for the JWKS endpoint. |
 | `jwks-read-timeout` | `5s` | Read timeout for the JWKS endpoint. |
 
-When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource/mcp` (and at `/.well-known/oauth-protected-resource`, both under the configured context path) and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. Tokens typed `JWT` or `at+jwt` (RFC 9068), or untyped, are accepted. Set `audience` to a dedicated resource identifier such as `akhq-mcp`, never to an OIDC client ID, otherwise ID tokens issued to that client would also be accepted. Only asymmetric signature algorithms are accepted, so a token signed with `none` or with a symmetric key is rejected. This validation is scoped to `/mcp` and takes precedence over AKHQ's own JWT validation there, so no change to `micronaut.security.token.*` is needed and AKHQ's existing UI authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
+When enabled, AKHQ serves RFC 9728 protected-resource metadata at `/.well-known/oauth-protected-resource/mcp` (and at `/.well-known/oauth-protected-resource`, both under the configured context path) and requires `Authorization: Bearer <access-token>` for `/mcp`. A missing or invalid MCP token receives `401 Unauthorized` with a `WWW-Authenticate` challenge pointing to that metadata; authorization failures after authentication return `403 Forbidden`. AKHQ validates the access token's signature against `jwks-url`, as well as its issuer, audience, expiry, and subject. Tokens typed `JWT` or `at+jwt` (RFC 9068), or untyped, are accepted. `audience` must match the `aud` claim of the tokens. Never use an OIDC client ID, otherwise ID tokens issued to that client would also be accepted. We recommend using AKHQ's resource URL (the `resource` value advertised in the metadata, such as `https://akhq.example.com/mcp`): MCP clients send it to the provider as the RFC 8707 `resource` parameter, and providers supporting it put it in `aud` without extra configuration. Providers ignoring this parameter, such as Keycloak, need an audience mapper on the MCP client that adds this same value to its access tokens. Only asymmetric signature algorithms are accepted, so a token signed with `none` or with a symmetric key is rejected. This validation is scoped to `/mcp` and takes precedence over AKHQ's own JWT validation there, so no change to `micronaut.security.token.*` is needed and AKHQ's existing UI authentication remains unchanged. Its `groups-claim` values are mapped to AKHQ groups using the configured `groups`, `users`, and `default-group` mappings.
 
 The MCP OAuth implementation separates request matching, token validation, and claim resolution. It currently validates JWT access tokens through JWKS; the token-validator interface allows adding opaque-token introspection without changing MCP routing or AKHQ authorization.
 
-Register the Copilot App as a public OIDC client with Authorization Code + PKCE, configure the exact redirect URI shown by the Copilot App at the provider, and request an access token for the configured `audience` and `required-scope`. Enter that registered client ID in Copilot. The authorization server must expose standard OIDC discovery, authorization, token, and JWKS endpoints.
+For interactive MCP clients (IDE or desktop AI assistants), register the client at the provider as a public OIDC client with Authorization Code + PKCE, allow the exact redirect URI used by that MCP client, and make sure its access tokens carry the configured `audience` and `required-scope`. Then configure that client ID in the MCP client. The authorization server must expose standard OIDC discovery, authorization, token, and JWKS endpoints.
 
 For programmatic (non-interactive) MCP clients, register a confidential client at the provider and use the
 client-credentials grant to obtain an access token with the same `audience` and `required-scope`, then send it as a
