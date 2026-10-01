@@ -220,9 +220,11 @@ class TopicList extends Root {
     };
 
     topics.forEach(topic => {
+      const displayName = topic.alias?.trim() || topic.name;
       tableTopics[topic.name] = {
         id: topic.name,
-        name: topic.name,
+        name: displayName,
+        realName: displayName !== topic.name ? topic.name : null,
         count: topic.size,
         lastWrite: undefined,
         size: showBytes(topic.logDirSize),
@@ -354,7 +356,13 @@ class TopicList extends Root {
         id: 'name',
         accessor: 'name',
         colName: 'Name',
-        type: 'text'
+        type: 'text',
+        cell: (obj, col) => (
+          <span>
+            {obj[col.accessor]}
+            {obj.realName && <><br /><small className="text-muted">{obj.realName}</small></>}
+          </span>
+        )
       },
       {
         id: 'count',

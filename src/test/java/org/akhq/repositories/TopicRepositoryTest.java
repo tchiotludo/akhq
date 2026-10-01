@@ -23,6 +23,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +34,25 @@ import java.util.function.Predicate;
 
 import static org.akhq.controllers.TopicControllerTest.CREATE_TOPIC_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(KafkaClusterExtension.class)
 class TopicRepositoryTest extends AbstractTest {
+
+    static final String TOPIC_RANDOM_ALIAS = "Random Topic Alias";
+
+    @Override
+    public Map<String, String> getProperties() {
+        return ImmutableMap.<String, String>builder()
+            .putAll(super.getProperties())
+            .put(
+                "akhq.connections." + KafkaTestCluster.CLUSTER_ID + ".ui-options.topic-aliases." + KafkaTestCluster.TOPIC_RANDOM,
+                TOPIC_RANDOM_ALIAS
+            )
+            .build();
+    }
 
     @Inject
     @InjectMocks
@@ -210,6 +226,32 @@ class TopicRepositoryTest extends AbstractTest {
                 // Ignore if topic doesn't exist
             }
         }
+    }
+
+    @Test
+    void aliasIsEnrichedOnTopic() throws ExecutionException, InterruptedException {
+        Topic topic = topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_RANDOM);
+        assertEquals(TOPIC_RANDOM_ALIAS, topic.getAlias());
+    }
+
+    @Test
+    void aliasIsNullWhenNotConfigured() throws ExecutionException, InterruptedException {
+        Topic topic = topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_COMPACTED);
+        assertNull(topic.getAlias());
+    }
+
+    @Test
+    void searchByAlias() throws ExecutionException, InterruptedException {
+        // "Alias" only appears in the configured alias, not in any real topic name,
+        // so this search can only match via the alias path.
+        List<String> results = topicRepository.all(
+            KafkaTestCluster.CLUSTER_ID,
+            TopicRepository.TopicListView.ALL,
+            Optional.of("Alias"),
+            List.of()
+        );
+        assertEquals(1, results.size());
+        assertEquals(KafkaTestCluster.TOPIC_RANDOM, results.get(0));
     }
 
     private void mockApplicationContext() {

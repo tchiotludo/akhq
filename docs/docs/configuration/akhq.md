@@ -32,6 +32,19 @@ These parameters are the default values used in the topic creation page.
 * `akhq.ui-options.topic.show-all-consumer-groups` expand lists of consumer groups on topic list
 * `akhq.ui-options.topic.groups-default-view` is the default consumer groups list view on topic screen/consumer groups tab (ALL, HIDE_EMPTY) (default: ALL). HIDE_EMPTY increases performance, especially on cluster with a lot of consumer groups
 
+### Topic Aliases
+* `akhq.connections.<cluster>.ui-options.topic-aliases` is a per-cluster map of Kafka topic name to human-readable alias. The alias is shown as the primary name in the topic list, with the real topic name displayed below in muted text. Search works on both the alias and the real topic name.
+
+```yaml
+akhq:
+  connections:
+    my-cluster:
+      ui-options:
+        topic-aliases:
+          org.company.billing.events.v2: "Billing Events"
+          1de5cb5d-9f92-4ff8-bda2-084158c0cd06: "Payment Transactions"
+```
+
 ### Topic Data
 * `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
 

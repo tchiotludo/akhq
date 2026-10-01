@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Topic {
     private String name;
+    private String alias;
     private boolean internal;
     @JsonIgnore
     private boolean configInternal;
@@ -38,10 +39,12 @@ public class Topic {
         List<LogDir> logDirs,
         List<Partition.Offsets> offsets,
         boolean configInternal,
-        boolean configStream
+        boolean configStream,
+        String alias
     ) {
         this.name = description.name();
         this.internal = description.isInternal();
+        this.alias = alias;
 
         this.configInternal = configInternal;
         this.configStream = configStream;
