@@ -1,0 +1,22 @@
+# MCP OAuth authentication combined with the external REST API claim provider.
+# The JWKS URL and the server port are set by McpOauthRestApiClaimProviderTest.
+micronaut:
+  caches:
+    rest-api-claim-provider:
+      expire-after-write: 600s
+
+akhq:
+  security:
+    mcp-oauth:
+      enabled: true
+      issuer: https://idp.mcp-rest-api.test
+      audience: akhq-mcp
+      required-scope: akhq.mcp.read
+      username-claim: preferred_username
+      groups-claim: groups
+    rest:
+      enabled: true
+      url: /mcp-external-claims
+      headers:
+        - name: X-Mcp-Test
+          value: mcp-rest-api

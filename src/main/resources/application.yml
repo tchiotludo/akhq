@@ -24,6 +24,14 @@ micronaut:
       swagger:
         paths: classpath:META-INF/swagger
         mapping: "/swagger/**"
+  mcp:
+    server:
+      enabled: ${akhq.mcp.enabled:false}
+      transport: HTTP
+      endpoint: "/mcp"
+      info:
+        name: "akhq-mcp-poc"
+        version: "0.1.0"
   security:
     enabled: false
     authentication: cookie
@@ -61,6 +69,12 @@ micronaut:
         access: "isAnonymous()"
       - pattern: "/swagger/**"
         access: "isAnonymous()"
+      - pattern: "/.well-known/oauth-protected-resource"
+        access: "isAnonymous()"
+      - pattern: "/mcp/**"
+        access: "isAuthenticated()"
+      - pattern: "/mcp"
+        access: "isAuthenticated()"
     oauth2:
       login-uri: "${micronaut.server.context-path:}/oauth/login{/provider}"
       callback-uri: "${micronaut.server.context-path:}/oauth/callback{/provider}"
@@ -94,6 +108,11 @@ endpoints:
     write-sensitive: false
 
 akhq:
+  # The MCP server exposes Kafka data over HTTP on `/mcp`. It is disabled by default: enable it only together with
+  # an authentication mechanism, otherwise the endpoint is reachable anonymously.
+  mcp:
+    enabled: false
+
   server:
     access-log:
       enabled: true
