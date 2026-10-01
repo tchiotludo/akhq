@@ -51,19 +51,35 @@ public class TopicRepository extends AbstractRepository {
         HIDE_EMPTY
     }
 
-    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
-        List<String> all = all(clusterId, view, search, filters);
+    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters, List<String> favorites) throws ExecutionException, InterruptedException {
+        List<String> all = all(clusterId, view, search, filters, favorites);
 
-        return PagedList.of(all, pagination, topicList -> this.findByName(clusterId, topicList));
+        return PagedList.of(all, pagination, topicList -> this.findByNameInOrder(clusterId, topicList));
+    }
+
+    public PagedList<Topic> list(String clusterId, Pagination pagination, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
+        return list(clusterId, pagination, view, search, filters, List.of());
     }
 
     public List<String> all(String clusterId, TopicListView view, Optional<String> search, List<String> filters) throws ExecutionException, InterruptedException {
+        return all(clusterId, view, search, filters, List.of());
+    }
+
+    public List<String> all(String clusterId, TopicListView view, Optional<String> search, List<String> filters, List<String> favorites) throws ExecutionException, InterruptedException {
+        Map<String, Integer> favoritePositions = new HashMap<>();
+        for (String favorite : favorites) {
+            favoritePositions.putIfAbsent(favorite, favoritePositions.size());
+        }
+
         return kafkaWrapper.listTopics(clusterId)
             .stream()
             .map(TopicListing::name)
             .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
             .filter(name -> isListViewMatch(view, name))
-            .sorted(Comparator.comparing(String::toLowerCase))
+            .sorted(
+                Comparator.comparingInt((String name) -> favoritePositions.getOrDefault(name, Integer.MAX_VALUE))
+                    .thenComparing(name -> name.toLowerCase())
+            )
             .collect(Collectors.toList());
     }
 
@@ -107,6 +123,14 @@ public class TopicRepository extends AbstractRepository {
         list.sort(Comparator.comparing(Topic::getName));
 
         return list;
+    }
+
+    private List<Topic> findByNameInOrder(String clusterId, List<String> topics) throws ExecutionException, InterruptedException {
+        Map<String, Topic> topicsByName = this.findByName(clusterId, topics)
+            .stream()
+            .collect(Collectors.toMap(Topic::getName, topic -> topic));
+
+        return topics.stream().map(topicsByName::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private boolean isInternal(String name) {

@@ -13,6 +13,7 @@ import {
   faSearch,
   faShare,
   faSort,
+  faStar,
   faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
@@ -338,13 +339,46 @@ class Table extends Component {
   }
 
   renderActions(row) {
-    const { actions, onAdd, onDelete, onEdit, onRestart, onShare, onDownload, onCopy, idCol } =
+    const {
+      actions,
+      onAdd,
+      onDelete,
+      onEdit,
+      onRestart,
+      onShare,
+      onDownload,
+      onCopy,
+      onFavorite,
+      idCol
+    } =
       this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 
     return (
       <>
+        {actions.find(el => el === constants.TABLE_FAVORITE) && onFavorite && (
+          <td className="khq-row-action khq-row-action-main action-hover">
+            <span
+              role="button"
+              tabIndex={0}
+              className={`favorite-action ${row.favorite ? 'is-favorite' : ''}`}
+              title={row.favorite ? 'Remove from favourites' : 'Add to favourites'}
+              aria-label={row.favorite ? 'Remove from favourites' : 'Add to favourites'}
+              onClick={() => {
+                onFavorite(row);
+              }}
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onFavorite(row);
+                }
+              }}
+            >
+              <FontAwesomeIcon icon={faStar} />
+            </span>
+          </td>
+        )}
         {actions.find(el => el === constants.TABLE_ADD) && (
           <td className="khq-row-action khq-row-action-main action-hover">
             <span
@@ -565,6 +599,7 @@ Table.propTypes = {
   onDownload: PropTypes.func,
   updateCheckbox: PropTypes.func,
   onCopy: PropTypes.func,
+  onFavorite: PropTypes.func,
 
   idCol: PropTypes.string,
   toPresent: PropTypes.array,
