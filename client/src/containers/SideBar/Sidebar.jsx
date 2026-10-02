@@ -21,7 +21,7 @@ import {
   faRocket
 } from '@fortawesome/free-solid-svg-icons';
 
-class Sidebar extends Component {
+export class Sidebar extends Component {
   state = {
     selectedTab: constants.TOPIC,
     selectedCluster: '',
@@ -37,8 +37,7 @@ class Sidebar extends Component {
     registryType: '',
     enableConnect: false,
     enableKsqlDB: false,
-    roles: JSON.parse(sessionStorage.getItem('roles')),
-    height: 'auto'
+    roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -95,9 +94,6 @@ class Sidebar extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.location !== prevProps.location) {
-      this.setState({ height: document.getElementById('root').offsetHeight });
-    }
     if (this.props.clusters !== prevProps.clusters) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
         this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
@@ -286,7 +282,6 @@ class Sidebar extends Component {
       showConnects,
       showKsqlDBs,
       selectedTab,
-      height,
       enableRegistry,
       registryType,
       enableConnect,
@@ -304,10 +299,10 @@ class Sidebar extends Component {
         }}
         style={{
           background: 'black',
-          height: height,
+          height: '100vh',
           position: 'fixed',
           paddingBottom: '60px',
-          ...(expanded ? { overflowY: 'auto' } : {})
+          overflowY: 'auto'
         }}
       >
         <SideNav.Toggle />
@@ -317,17 +312,18 @@ class Sidebar extends Component {
               <image xlinkHref={logoUrl}></image>
             </svg>
           </span>
-          <p
-            style={{
-              color: 'white',
-              fontStyle: 'Italic',
-              textAlign: 'center',
-              margin: '20px 0 0 0'
-            }}
-          >
-            {''}
-            {this.props.expanded && tag}
-          </p>
+          {this.props.expanded && (
+            <p
+              style={{
+                color: 'white',
+                fontStyle: 'Italic',
+                textAlign: 'center',
+                margin: '20px 0 0 0'
+              }}
+            >
+              {tag}
+            </p>
+          )}
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
           <NavItem eventKey="cluster">
