@@ -2,7 +2,6 @@ akhq:
   security:
     data-masking:
       mode: json_mask_by_default
-      enable-regex-topic-filters: true
       json-filters:
         - description: Unmask non-sensitive values
           topic: users
@@ -16,14 +15,11 @@ akhq:
             - metadata.other.shouldBeUnmasked
             - metadata.other.arrayToShow
             - metadata.other.jsonArray.showThis
-        - description: Unmask specialId for user events (regex)
+        - description: Regex-looking filter that must be treated literally when regex is disabled
           topic: user-events-.*
           keys:
             - specialId
-        - description: Unmask status for user events (regex, uppercase pattern)
-          topic: 'USER-EVENTS-\d+'
+        - description: Dot must be a literal character when regex is disabled
+          topic: orders.v1
           keys:
             - status
-        - description: Misconfigured filter without a topic (ignored)
-          keys:
-            - name
