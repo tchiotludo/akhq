@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
+import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
 import io.micronaut.http.hateoas.JsonError;
@@ -87,6 +88,14 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, HttpStatusException e) {
+        JsonError error = new JsonError(e.getMessage() != null ? e.getMessage() : e.getStatus().getReason())
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.status(e.getStatus()).body(error);
+    }
+
+    @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
         if (mcpOauthRequestMatcher.matches(request)) {
             // Only a validated MCP access token can be "forbidden". Any other identity, such as an AKHQ cookie sent
@@ -99,7 +108,7 @@ public class ErrorController extends AbstractController {
                 .body(new JsonError("OAuth access token required or invalid"));
         }
 
-        if (request.getUri().toString().startsWith(getBasePath()+"/api")) {
+        if (request.getPath().startsWith(getBasePath() + "/api")) {
             if (e.isForbidden()) {
                 String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);
                 String action = request.getAttribute(AKHQSecurityRule.REJECTED_ACTION, String.class).orElse(null);
