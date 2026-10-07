@@ -78,6 +78,21 @@ public final class FilmProto {
      */
     com.google.protobuf.ByteString
         getStarringBytes(int index);
+
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     * @return Whether the timestamp field is set.
+     */
+    boolean hasTimestamp();
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     * @return The timestamp.
+     */
+    com.google.protobuf.Any getTimestamp();
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     */
+    com.google.protobuf.AnyOrBuilder getTimestampOrBuilder();
   }
   /**
    * Protobuf type {@code org.akhq.utils.Film}
@@ -157,6 +172,19 @@ public final class FilmProto {
                 mutable_bitField0_ |= 0x00000001;
               }
               starring_.add(s);
+              break;
+            }
+            case 50: {
+              com.google.protobuf.Any.Builder subBuilder = null;
+              if (timestamp_ != null) {
+                subBuilder = timestamp_.toBuilder();
+              }
+              timestamp_ = input.readMessage(com.google.protobuf.Any.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(timestamp_);
+                timestamp_ = subBuilder.buildPartial();
+              }
+
               break;
             }
             default: {
@@ -321,6 +349,29 @@ public final class FilmProto {
       return starring_.getByteString(index);
     }
 
+    public static final int TIMESTAMP_FIELD_NUMBER = 6;
+    private com.google.protobuf.Any timestamp_;
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     * @return Whether the timestamp field is set.
+     */
+    public boolean hasTimestamp() {
+      return timestamp_ != null;
+    }
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     * @return The timestamp.
+     */
+    public com.google.protobuf.Any getTimestamp() {
+      return timestamp_ == null ? com.google.protobuf.Any.getDefaultInstance() : timestamp_;
+    }
+    /**
+     * <code>.google.protobuf.Any timestamp = 6;</code>
+     */
+    public com.google.protobuf.AnyOrBuilder getTimestampOrBuilder() {
+      return getTimestamp();
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -349,6 +400,9 @@ public final class FilmProto {
       }
       for (int i = 0; i < starring_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, starring_.getRaw(i));
+      }
+      if (timestamp_ != null) {
+        output.writeMessage(6, getTimestamp());
       }
       unknownFields.writeTo(output);
     }
@@ -381,6 +435,10 @@ public final class FilmProto {
         size += dataSize;
         size += 1 * getStarringList().size();
       }
+      if (timestamp_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getTimestamp());
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -406,6 +464,11 @@ public final class FilmProto {
           != other.getDuration()) return false;
       if (!getStarringList()
           .equals(other.getStarringList())) return false;
+      if (hasTimestamp() != other.hasTimestamp()) return false;
+      if (hasTimestamp()) {
+        if (!getTimestamp()
+            .equals(other.getTimestamp())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -428,6 +491,10 @@ public final class FilmProto {
       if (getStarringCount() > 0) {
         hash = (37 * hash) + STARRING_FIELD_NUMBER;
         hash = (53 * hash) + getStarringList().hashCode();
+      }
+      if (hasTimestamp()) {
+        hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+        hash = (53 * hash) + getTimestamp().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -572,6 +639,12 @@ public final class FilmProto {
 
         starring_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
+        if (timestampBuilder_ == null) {
+          timestamp_ = null;
+        } else {
+          timestamp_ = null;
+          timestampBuilder_ = null;
+        }
         return this;
       }
 
@@ -608,6 +681,11 @@ public final class FilmProto {
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.starring_ = starring_;
+        if (timestampBuilder_ == null) {
+          result.timestamp_ = timestamp_;
+        } else {
+          result.timestamp_ = timestampBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -679,6 +757,9 @@ public final class FilmProto {
             starring_.addAll(other.starring_);
           }
           onChanged();
+        }
+        if (other.hasTimestamp()) {
+          mergeTimestamp(other.getTimestamp());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1031,6 +1112,125 @@ public final class FilmProto {
         onChanged();
         return this;
       }
+
+      private com.google.protobuf.Any timestamp_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder> timestampBuilder_;
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       * @return Whether the timestamp field is set.
+       */
+      public boolean hasTimestamp() {
+        return timestampBuilder_ != null || timestamp_ != null;
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       * @return The timestamp.
+       */
+      public com.google.protobuf.Any getTimestamp() {
+        if (timestampBuilder_ == null) {
+          return timestamp_ == null ? com.google.protobuf.Any.getDefaultInstance() : timestamp_;
+        } else {
+          return timestampBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public Builder setTimestamp(com.google.protobuf.Any value) {
+        if (timestampBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          timestamp_ = value;
+          onChanged();
+        } else {
+          timestampBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public Builder setTimestamp(
+          com.google.protobuf.Any.Builder builderForValue) {
+        if (timestampBuilder_ == null) {
+          timestamp_ = builderForValue.build();
+          onChanged();
+        } else {
+          timestampBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public Builder mergeTimestamp(com.google.protobuf.Any value) {
+        if (timestampBuilder_ == null) {
+          if (timestamp_ != null) {
+            timestamp_ =
+              com.google.protobuf.Any.newBuilder(timestamp_).mergeFrom(value).buildPartial();
+          } else {
+            timestamp_ = value;
+          }
+          onChanged();
+        } else {
+          timestampBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public Builder clearTimestamp() {
+        if (timestampBuilder_ == null) {
+          timestamp_ = null;
+          onChanged();
+        } else {
+          timestamp_ = null;
+          timestampBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public com.google.protobuf.Any.Builder getTimestampBuilder() {
+        
+        onChanged();
+        return getTimestampFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      public com.google.protobuf.AnyOrBuilder getTimestampOrBuilder() {
+        if (timestampBuilder_ != null) {
+          return timestampBuilder_.getMessageOrBuilder();
+        } else {
+          return timestamp_ == null ?
+              com.google.protobuf.Any.getDefaultInstance() : timestamp_;
+        }
+      }
+      /**
+       * <code>.google.protobuf.Any timestamp = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder> 
+          getTimestampFieldBuilder() {
+        if (timestampBuilder_ == null) {
+          timestampBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder>(
+                  getTimestamp(),
+                  getParentForChildren(),
+                  isClean());
+          timestamp_ = null;
+        }
+        return timestampBuilder_;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1098,22 +1298,25 @@ public final class FilmProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\nfilm.proto\022\016org.akhq.utils\"`\n\004Film\022\014\n\004" +
-      "name\030\001 \001(\t\022\020\n\010producer\030\002 \001(\t\022\024\n\014release_" +
-      "year\030\003 \001(\005\022\020\n\010duration\030\004 \001(\005\022\020\n\010starring" +
-      "\030\005 \003(\tB\033\n\016org.akhq.utilsB\tFilmProtob\006pro" +
-      "to3"
+      "\n\nfilm.proto\022\016org.akhq.utils\032\031google/pro" +
+      "tobuf/any.proto\"\211\001\n\004Film\022\014\n\004name\030\001 \001(\t\022\020" +
+      "\n\010producer\030\002 \001(\t\022\024\n\014release_year\030\003 \001(\005\022\020" +
+      "\n\010duration\030\004 \001(\005\022\020\n\010starring\030\005 \003(\t\022\'\n\tti" +
+      "mestamp\030\006 \001(\0132\024.google.protobuf.AnyB\033\n\016o" +
+      "rg.akhq.utilsB\tFilmProtob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          com.google.protobuf.AnyProto.getDescriptor(),
         });
     internal_static_org_akhq_utils_Film_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_org_akhq_utils_Film_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_akhq_utils_Film_descriptor,
-        new java.lang.String[] { "Name", "Producer", "ReleaseYear", "Duration", "Starring", });
+        new java.lang.String[] { "Name", "Producer", "ReleaseYear", "Duration", "Starring", "Timestamp", });
+    com.google.protobuf.AnyProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
