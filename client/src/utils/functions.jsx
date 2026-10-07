@@ -10,17 +10,23 @@ export const getSelectedTab = (props, tabs) => {
 
 export async function getClusterUIOptions(clusterId) {
   const uiOptions = getUIOptions(clusterId);
-  if (!uiOptions && clusterId) {
-    try {
-      const resOptions = await get(uriUIOptions(clusterId));
-      setUIOptions(clusterId, resOptions.data);
-      return resOptions.data;
-    } catch (err) {
-      console.error('Error:', err);
-      return {};
-    }
-  } else {
+  if (!clusterId) {
     return uiOptions;
+  }
+
+  try {
+    const resOptions = await get(uriUIOptions(clusterId));
+    const serverOptions = resOptions.data;
+
+    if (!uiOptions || serverOptions.refreshFromServer) {
+      setUIOptions(clusterId, serverOptions);
+      return serverOptions;
+    }
+
+    return uiOptions;
+  } catch (err) {
+    console.error('Error:', err);
+    return uiOptions ?? {};
   }
 }
 

@@ -25,6 +25,8 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic-data.kafka-max-message-length`: Max message length allowed to send to UI when retrieving a list of records (dafault: 1000000 bytes).
 
 ## Ui Settings
+* `akhq.ui-options.refresh-from-server` when true, always refresh UI settings from the server instead of using cached browser settings. Server-provided options take precedence on every load and overwrite user-level customizations made via the Settings page (default: false)
+
 ### Topics
 * `akhq.ui-options.topic.default-view` is default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM) (default: HIDE_INTERNAL)
 * `akhq.ui-options.topic.skip-consumer-groups` hide consumer groups columns on topic list
