@@ -15,6 +15,7 @@ import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
+import org.akhq.clients.connect.KafkaConnectApiClient;
 import org.akhq.clients.connect.dto.ConnectorExpanded;
 import org.akhq.clients.connect.dto.ConnectorPluginInfo;
 import org.akhq.clients.connect.dto.ConnectorPluginValidation;
@@ -22,12 +23,17 @@ import org.akhq.clients.connect.error.ConnectBadRequestException;
 import org.akhq.clients.connect.error.ConnectConflictException;
 import org.akhq.clients.connect.error.ConnectNotFoundException;
 
+import io.micronaut.scheduling.TaskExecutors;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -40,6 +46,10 @@ public class ConnectRepository extends AbstractRepository {
 
     @Inject
     private ApplicationContext applicationContext;
+
+    @Inject
+    @Named(TaskExecutors.BLOCKING)
+    private ExecutorService executorService;
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -63,31 +73,72 @@ public class ConnectRepository extends AbstractRepository {
     }, delay = "3s", attempts = "5")
     public PagedList<ConnectDefinition> getPaginatedDefinitions (String clusterId, String connectId, Pagination pagination, Optional<String> search, Optional<String> status, List<String> filters)
             throws IOException, RestClientException, ExecutionException, InterruptedException{
-        List<ConnectDefinition> definitions = getDefinitions(clusterId, connectId, search, status, filters);
+        KafkaConnectApiClient client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
+        List<String> names = getFilteredConnectorNames(client, search, status, filters);
 
-        // I'm not sure of how to use the last parameter in this case
-        // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
-        return PagedList.of(definitions, pagination, list -> list);
+        // Only fetch the full definitions (info + status) of the connectors of the requested page:
+        // the expanded listing of every connector can be too large on big Connect clusters
+        return PagedList.of(names, pagination, page -> fetchDefinitions(client, page));
     }
 
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {
-        Map<String, ConnectorExpanded> expanded = this.kafkaModule
-            .getConnectRestClient(clusterId)
-            .get(connectId)
-            .getConnectorsExpanded();
+        KafkaConnectApiClient client = this.kafkaModule.getConnectRestClient(clusterId).get(connectId);
 
-        List<ConnectDefinition> filtered = expanded.entrySet().stream()
-            .filter(e -> isSearchMatch(search, e.getKey()) && isMatchRegex(filters, e.getKey()))
-            .map(e -> new ConnectDefinition(e.getValue().getInfo(), e.getValue().getStatus()))
+        return fetchDefinitions(client, getFilteredConnectorNames(client, search, status, filters));
+    }
+
+    private List<String> getFilteredConnectorNames(KafkaConnectApiClient client, Optional<String> search, Optional<String> status, List<String> filters) {
+        List<String> names = client.getConnectorNames()
+            .stream()
+            .filter(name -> isSearchMatch(search, name) && isMatchRegex(filters, name))
+            .sorted()
             .collect(Collectors.toList());
 
-        if (status.isPresent() && !status.get().isEmpty()) {
-            filtered.removeIf(def -> def.getTasks().stream().noneMatch(
-                task -> task.getState().equalsIgnoreCase(status.get())
-            ));
+        if (status.isPresent() && !status.get().isEmpty() && !names.isEmpty()) {
+            Map<String, ConnectorExpanded> statuses = client.getConnectorsStatus();
+
+            names.removeIf(name -> {
+                ConnectorExpanded expanded = statuses.get(name);
+                if (expanded == null || expanded.getStatus() == null || expanded.getStatus().getTasks() == null) {
+                    return true;
+                }
+
+                return expanded.getStatus().getTasks().stream().noneMatch(
+                    task -> status.get().equalsIgnoreCase(task.getState())
+                );
+            });
         }
 
-        return filtered;
+        return names;
+    }
+
+    private List<ConnectDefinition> fetchDefinitions(KafkaConnectApiClient client, List<String> names) {
+        List<CompletableFuture<Optional<ConnectDefinition>>> futures = names
+            .stream()
+            .map(name -> CompletableFuture.supplyAsync(() -> fetchDefinition(client, name), executorService))
+            .toList();
+
+        try {
+            return futures
+                .stream()
+                .map(CompletableFuture::join)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toList());
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof RuntimeException cause) {
+                throw cause;
+            }
+            throw e;
+        }
+    }
+
+    private Optional<ConnectDefinition> fetchDefinition(KafkaConnectApiClient client, String name) {
+        try {
+            return Optional.of(new ConnectDefinition(client.getConnector(name), client.getConnectorStatus(name)));
+        } catch (ConnectNotFoundException e) {
+            // connector deleted between the listing and the fetch
+            return Optional.empty();
+        }
     }
 
     public Optional<ConnectPlugin> validatePlugin(String clusterId, String connectId, String className,
