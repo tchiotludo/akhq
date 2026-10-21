@@ -333,6 +333,6 @@ processResources.dependsOn ":client:installFrontend"
 processResources.dependsOn ":client:assembleFrontend"
 processResources.dependsOn ":client:copyClientResources"
 
-tasks.matching { it.name == "inspectRuntimeClasspath" }.configureEach {
-    mustRunAfter("generateGitProperties")
+tasks.named("inspectRuntimeClasspath") {
+    dependsOn(tasks.named("generateGitProperties"))
 }
