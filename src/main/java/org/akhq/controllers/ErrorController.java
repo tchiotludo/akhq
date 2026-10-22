@@ -12,9 +12,13 @@ import io.micronaut.http.hateoas.Link;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
 import org.akhq.security.rule.AKHQSecurityRule;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthRequestMatcher;
+import org.akhq.security.authentication.mcp.McpOauthResourceMetadata;
 import org.apache.kafka.common.errors.ApiException;
 import org.akhq.clients.connect.error.ConnectBadRequestException;
 import org.akhq.clients.connect.error.ConnectConflictException;
@@ -29,6 +33,11 @@ import java.util.regex.Pattern;
 @Slf4j
 @Controller("/errors")
 public class ErrorController extends AbstractController {
+    @Inject
+    private McpOauthRequestMatcher mcpOauthRequestMatcher;
+    @Inject
+    private McpOauthResourceMetadata mcpOauthResourceMetadata;
+
     // Kafka
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ApiException e) {
@@ -79,6 +88,17 @@ public class ErrorController extends AbstractController {
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
+        if (mcpOauthRequestMatcher.matches(request)) {
+            // Only a validated MCP access token can be "forbidden". Any other identity, such as an AKHQ cookie sent
+            // along with an expired MCP token, gets the challenge so that the MCP client re-authenticates.
+            if (e.getAuthentication() instanceof McpOauthAuthentication) {
+                return HttpResponse.status(HttpStatus.FORBIDDEN).body(new JsonError("Forbidden: insufficient permissions"));
+            }
+            return HttpResponse.unauthorized()
+                .header("WWW-Authenticate", mcpOauthResourceMetadata.challenge(request))
+                .body(new JsonError("OAuth access token required or invalid"));
+        }
+
         if (request.getUri().toString().startsWith(getBasePath()+"/api")) {
             if (e.isForbidden()) {
                 String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);

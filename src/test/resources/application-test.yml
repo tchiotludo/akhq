@@ -51,6 +51,8 @@ endpoints:
     port: 0
 
 akhq:
+  mcp:
+    enabled: true
   server:
     access-log:
       enabled: false
@@ -83,6 +85,10 @@ akhq:
     page-size: 5
 
   security:
+    mcp-oauth:
+      enabled: false
+    rest:
+      enabled: false
     roles:
       topic-read:
         - resources: [ "TOPIC", "TOPIC_DATA" ]

@@ -90,7 +90,7 @@ class TopicGroups extends Root {
 
   handleState(state) {
     return (
-      <span className={state === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>{state}</span>
+      <span className={state.toUpperCase() === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>{state}</span>
     );
   }
 

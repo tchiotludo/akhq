@@ -21,6 +21,7 @@ import org.akhq.models.security.ClaimProviderType;
 import org.akhq.models.security.ClaimRequest;
 import org.akhq.models.security.ClaimResponse;
 import org.akhq.security.annotation.AKHQSecured;
+import org.akhq.security.authentication.UserGroupsResolver;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
@@ -48,6 +49,8 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
     private SecurityProperties securityProperties;
     @Inject
     private ClaimProvider claimProvider;
+    @Inject
+    private UserGroupsResolver userGroupsResolver;
 
     @Override
     public Publisher<SecurityRuleResult> check(HttpRequest<?> request, Authentication authentication) {
@@ -82,10 +85,7 @@ public class AKHQSecurityRule extends AbstractSecurityRule<HttpRequest<?>> {
         List<Group> userGroups = new ArrayList<>();
 
         if (authentication != null) {
-            // Add user groups from the user token
-            userGroups = unrollGroups(authentication, claimProvider).values().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+            userGroups = new ArrayList<>(userGroupsResolver.resolve(authentication));
         }
 
         // Add default group anyway

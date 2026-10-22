@@ -127,11 +127,11 @@ class ConsumerGroupList extends Root {
   handleState(state) {
     let className = '';
 
-    switch (state) {
+    switch (state.toUpperCase()) {
       case 'STABLE':
         className = 'badge bg-success';
         break;
-      case 'PREPARING_REBALANCE':
+      case 'PREPARINGREBALANCE':
         className = 'badge bg-primary';
         break;
       default:

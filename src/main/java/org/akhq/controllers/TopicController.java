@@ -95,7 +95,8 @@ public class TopicController extends AbstractController {
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
         Optional<Integer> page,
-        Optional<Integer> uiPageSize
+        Optional<Integer> uiPageSize,
+        Optional<List<String>> favorite
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
@@ -107,7 +108,8 @@ public class TopicController extends AbstractController {
             pagination,
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search,
-            buildUserBasedResourceFilters(cluster)
+            buildUserBasedResourceFilters(cluster),
+            favorite.orElse(List.of())
         ));
     }
 
@@ -440,7 +442,9 @@ public class TopicController extends AbstractController {
                     event.getData().getAfter()
                 );
 
-                if (event.getData().getRecords().size() > 0) {
+                if (!event.getData().getRecords().isEmpty()) {
+                    // Truncated for UI display only; download reuses search() and keeps full values.
+                    event.getData().getRecords().forEach(recordRepository::filterMessageLength);
                     searchRecord.records = event.getData().getRecords();
                 }
 
@@ -547,8 +551,9 @@ public class TopicController extends AbstractController {
                 return;
             }
 
-            // No more records, add the end array ] and stop here
-            if (event.getData().getEmptyPoll() == 1) {
+            // A "searchEnd" event with no "after" cursor means this call's range plan had nothing
+            // left to scan at all: the topic is fully drained, so stop here and close the array.
+            if ("searchEnd".equals(event.getName()) && event.getData().getAfter() == null) {
                 out.write(']');
                 out.flush();
                 continueSearch.set(false);
@@ -745,4 +750,3 @@ public class TopicController extends AbstractController {
         private long offset;
     }
 }
-

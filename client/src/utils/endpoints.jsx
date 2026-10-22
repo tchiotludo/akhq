@@ -1,4 +1,5 @@
 import prefix from './../prefix';
+import { encodeBase64PathSegment } from './base64';
 
 const baseUrl =
   import.meta.env.VITE_BASE_URL ||
@@ -36,12 +37,23 @@ export const uriUIOptions = clusterId => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };
 
-export const uriTopics = (clusterId, search, show, page, pageSize) => {
-  if (pageSize === 1) {
-    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}`;
-  } else {
-    return `${apiUrl}/${clusterId}/topic?search=${search}&show=${show}&page=${page}&uiPageSize=${pageSize}`;
+export const uriTopics = (clusterId, search, show, page, pageSize, favorites = []) => {
+  const maxFavoriteQueryLength = 4096;
+  const params = new URLSearchParams({ search, show, page: String(page) });
+  if (pageSize !== 1) {
+    params.set('uiPageSize', pageSize);
   }
+  [...new Set(favorites.filter(favorite => typeof favorite === 'string' && favorite.length > 0))].forEach(
+    favorite => {
+      const nextParams = new URLSearchParams(params);
+      nextParams.append('favorite', favorite);
+      if (nextParams.toString().length + 1 <= maxFavoriteQueryLength) {
+        params.append('favorite', favorite);
+      }
+    }
+  );
+
+  return `${apiUrl}/${clusterId}/topic?${params.toString()}`;
 };
 
 export const uriTopicDefaultConf = () => `${apiUrl}/topic/defaults-configs`;
@@ -321,7 +333,9 @@ export const uriConsumerGroupByTopics = (clusterId, topicList, groupsListView) =
 };
 
 export const uriAclsByPrincipal = (clusterId, principalEncoded, resourceType = 'ANY') => {
-  return `${apiUrl}/${clusterId}/acls/${principalEncoded}?resourceType=${resourceType}`;
+  return `${apiUrl}/${clusterId}/acls/${encodeBase64PathSegment(
+    principalEncoded
+  )}?resourceType=${resourceType}`;
 };
 
 export const uriLiveTail = (clusterId, search, topics, size) => {

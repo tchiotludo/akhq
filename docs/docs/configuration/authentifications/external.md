@@ -129,7 +129,9 @@ public interface ClaimProvider {
 enum ClaimProviderType {
   BASIC_AUTH,
   LDAP,
-  OIDC
+  OIDC,
+  OAUTH,
+  MCP_OAUTH
 }
 
 public class ClaimRequest {
@@ -143,3 +145,9 @@ public class ClaimResponse {
   private Map<String, List<Group>> groups;
 }
 ````
+
+:::warning
+A custom `ClaimProvider` must handle every `ClaimProviderType` it can receive, including `MCP_OAUTH` when the
+[MCP OAuth 2.0](../../api.md) authentication is enabled. When the provider throws or returns no group for a type it
+does not know, AKHQ fails closed: the user only gets `akhq.security.default-group`, and an error is logged.
+:::

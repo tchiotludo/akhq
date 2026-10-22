@@ -35,6 +35,16 @@ micronaut:
                      # behind a reverse proxy with url http://my-server/akhq, set context-path: "/akhq".
                      # Not needed if you're behind a reverse proxy with subdomain http://akhq.my-server/
 akhq:
+  # MCP server configuration (optional)
+  mcp:
+    enabled: false # false by default. Exposes the MCP JSON-RPC endpoint on `POST /mcp`.
+                   # Only enable it on an instance with an authentication mechanism configured
+                   # (a warning is logged at startup when `micronaut.security.enabled` is false).
+    # allowed-origins: # optional. Browser origins allowed to call `/mcp`. Requests without an `Origin` header
+    #   - https://mcp-client.example.com # (native MCP clients) are always accepted, others are rejected with 403.
+    # search-timeout: 30s # optional. Maximum duration of an `akhq.find_message_in_topic` search.
+    # max-result-length: 100000 # optional. Size budget, in characters, of the values returned by an `akhq.find_message_in_topic` call.
+
   server:
     access-log: # Access log configuration (optional)
       enabled: true # true by default
@@ -301,6 +311,31 @@ akhq:
             - username: einstein
               groups:
                 - admin
+
+    # OAuth 2.0 bearer-token authentication for the MCP endpoint (requires `micronaut.security.enabled: true`).
+    # Independent from the UI `micronaut.security.oauth2` / `micronaut.security.token.jwt` configuration.
+    mcp-oauth:
+      enabled: true
+      issuer: https://identity.example.com/realms/akhq # mandatory (expected `iss` claim of the access tokens)
+      jwks-url: https://identity.example.com/realms/akhq/protocol/openid-connect/certs # mandatory (used to verify token signatures)
+      audience: https://akhq.example.com/mcp # mandatory (expected `aud` claim of the access tokens), ideally AKHQ's MCP resource URL. Do not use a client ID here.
+      # authorization-server: https://identity.example.com/realms/akhq # Defaults to `issuer`.
+      # resource: https://akhq.example.com/mcp # Defaults to the public AKHQ origin + context path + MCP endpoint.
+      # jws-algorithms: [RS256, ES256] # Defaults to every RSA, EC and EdDSA algorithm advertised by the JWK set.
+      # jwks-connect-timeout: 5s # optional (timeout to connect to the JWKS endpoint)
+      # jwks-read-timeout: 5s # optional (timeout to read the JWKS response)
+      username-claim: preferred_username
+      groups-claim: groups
+      required-scope: akhq.mcp.read
+      default-group: topic-reader
+      groups:
+        - name: mcp-topic-readers
+          groups:
+            - topic-reader
+      users:
+        - username: einstein
+          groups:
+            - admin
 
     # Header configuration (reverse proxy)
     header-auth:
