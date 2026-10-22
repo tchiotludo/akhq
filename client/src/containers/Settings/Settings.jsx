@@ -50,7 +50,7 @@ class Settings extends Form {
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
     topicDataDateTimeFormat: Joi.string().required(),
-    topicDataSize: Joi.string().optional(),
+    topicDataSize: Joi.string().allow('').optional(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional(),
