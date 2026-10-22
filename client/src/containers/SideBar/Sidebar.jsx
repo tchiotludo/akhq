@@ -303,7 +303,6 @@ class Sidebar extends Component {
           this.props.toggleSidebar(expanded);
         }}
         style={{
-          background: 'black',
           height: height,
           position: 'fixed',
           paddingBottom: '60px',
@@ -329,7 +328,7 @@ class Sidebar extends Component {
             {this.props.expanded && tag}
           </p>
         </div>
-        <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
+        <SideNav.Nav defaultSelected={`${constants.TOPIC}`}>
           <NavItem eventKey="cluster">
             <NavIcon>
               <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
