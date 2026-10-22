@@ -4,7 +4,8 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.security.authentication.Authentication;
-import io.micronaut.security.authentication.AuthorizationException;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.security.utils.SecurityService;
 import jakarta.inject.Inject;
 import org.akhq.configs.security.Group;
@@ -167,8 +168,7 @@ abstract public class AbstractController {
         }
 
         if (!isAllowed) {
-            throw new AuthorizationException(applicationContext.getBean(SecurityService.class).getAuthentication()
-                .orElse(null));
+            throw new HttpStatusException(HttpStatus.FORBIDDEN, "Forbidden: insufficient permissions");
         }
     }
 }
