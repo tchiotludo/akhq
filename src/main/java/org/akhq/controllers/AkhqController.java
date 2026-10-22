@@ -197,7 +197,7 @@ public class AkhqController extends AbstractController {
             "  <link rel=\"shortcut icon\" type=\"image/png\" href=\"/static/icon_black.png\" />\n" +
             "  <meta name='viewport' content='width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes'/>\n" +
             "  <link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300,600&display=swap\" rel=\"stylesheet\">\n" +
-            "  <script src='https://unpkg.com/rapidoc/dist/rapidoc-min.js'></script>\n" +
+            "  <script src='https://unpkg.com/rapidoc@9.3.8/dist/rapidoc-min.js'></script>\n" +
             "</head>\n" +
             "<body>\n" +
             "  <rapi-doc id='rapidoc'\n" +
