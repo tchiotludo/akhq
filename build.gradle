@@ -4,11 +4,11 @@ plugins {
     id "io.micronaut.application" version "5.0.2"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.5.7"
+    id "com.gorylenko.gradle-git-properties" version "4.0.1"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.6.5'
+    id 'org.gradle.test-retry' version '1.6.6'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.61.0"
+    id "com.github.ben-manes.versions" version "0.66.0"
     id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
@@ -129,7 +129,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
-    implementation("at.yawk.lz4:lz4-java:1.11.2")
+    implementation("at.yawk.lz4:lz4-java:1.12.0")
 
     implementation("io.confluent.ksql:ksqldb-api-client:${confluentVersion}")
     implementation("io.confluent:kafka-schema-registry-client:${confluentVersion}")
@@ -143,26 +143,26 @@ dependencies {
     implementation("io.strimzi:kafka-oauth-client:0.18.0")
 
     // log
-    implementation("org.slf4j:slf4j-api:2.0.19")
-    implementation("org.slf4j:jul-to-slf4j:2.0.19")
-    implementation("org.slf4j:log4j-over-slf4j:2.0.19")
+    implementation("org.slf4j:slf4j-api:2.0.20")
+    implementation("org.slf4j:jul-to-slf4j:2.0.20")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.20")
 
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
-    implementation("com.google.guava:guava:33.7.1-jre")
+    implementation("com.google.guava:guava:33.7.2-jre")
     implementation("com.google.code.gson:gson:2.14.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // avro
-    implementation("org.apache.avro:avro:1.12.1")
+    implementation("org.apache.avro:avro:1.12.2")
 
     // jackson-module-scala
-    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.3.1")
 
     // protobuf
-    implementation("com.google.protobuf:protobuf-java:4.36.1")
-    implementation("com.google.protobuf:protobuf-java-util:4.36.1")
+    implementation("com.google.protobuf:protobuf-java:4.36.2")
+    implementation("com.google.protobuf:protobuf-java-util:4.36.2")
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
@@ -175,17 +175,17 @@ dependencies {
     // Password hashing
     implementation("org.mindrot:jbcrypt:0.4")
 
-    implementation("org.apache.groovy:groovy-all:5.1.2")
+    implementation("org.apache.groovy:groovy-all:6.0.0")
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.7")
+    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.9")
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.27")
+    implementation ("software.amazon.glue:schema-registry-serde:2.0.1")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }
@@ -195,6 +195,7 @@ dependencies {
  **********************************************************************************************************************/
 test {
     useJUnitPlatform()
+    systemProperty 'org.apache.avro.SERIALIZABLE_PACKAGES', 'org.akhq'
 
     testLogging {
         exceptionFormat = 'full'
@@ -254,7 +255,7 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
     testImplementation("io.confluent:kafka-streams-avro-serde:${confluentVersion}")
     testImplementation("io.confluent:kafka-connect-avro-converter:${confluentVersion}")
-    testImplementation("commons-codec:commons-codec:1.22.1")
+    testImplementation("commons-codec:commons-codec:1.23.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
     testImplementation("org.hamcrest:hamcrest-library:3.0")
     testImplementation("org.mockito:mockito-junit-jupiter")
@@ -288,6 +289,7 @@ task testInjectData(type:JavaExec) {
     description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
     mainClass = "org.akhq.KafkaTestCluster"
+    systemProperty 'org.apache.avro.SERIALIZABLE_PACKAGES', 'org.akhq'
     args 'inject'
 }
 
@@ -305,6 +307,7 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.akhq.KafkaTestCluster'
     waitForOutput = 'Test data injected sleep done'
+    jvmArgs = ['-Dorg.apache.avro.SERIALIZABLE_PACKAGES=org.akhq']
     timeout = 300
 }
 
@@ -329,3 +332,7 @@ shadowJar {
 processResources.dependsOn ":client:installFrontend"
 processResources.dependsOn ":client:assembleFrontend"
 processResources.dependsOn ":client:copyClientResources"
+
+tasks.named("inspectRuntimeClasspath") {
+    dependsOn(tasks.named("generateGitProperties"))
+}
