@@ -8,7 +8,7 @@ repositories {
 }
 
 frontend {
-    nodeVersion = '26.3.1'
+    nodeVersion = '26.12.1'
     corepackVersion = '0.35.0'
     assembleScript = 'run build'
     maxDownloadAttempts = 5
