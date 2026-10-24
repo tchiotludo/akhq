@@ -95,17 +95,23 @@ export function showTime(milliseconds) {
  * @returns
  */
 export function showBytes(bytes, decimals = 3) {
-  if (bytes === null || bytes === undefined || bytes < 0) return '';
-  if (bytes === 0) return '0 B';
+  if (bytes === null || bytes === undefined || bytes === '') return '';
+
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value < 0) return '';
+  if (value === 0) return '0 B';
 
   const kbytes = 1024;
   const decimalCheck = decimals < 0 ? 0 : decimals;
   const measures = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
-  const identification = Math.floor(Math.log(bytes) / Math.log(kbytes));
+  const identification = Math.min(
+    Math.max(Math.floor(Math.log(value) / Math.log(kbytes)), 0),
+    measures.length - 1
+  );
 
   return (
-    parseFloat((bytes / Math.pow(kbytes, identification)).toFixed(decimalCheck)) +
+    parseFloat((value / Math.pow(kbytes, identification)).toFixed(decimalCheck)) +
     ' ' +
     measures[identification]
   );
