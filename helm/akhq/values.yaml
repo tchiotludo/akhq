@@ -201,6 +201,18 @@ livenessProbe:
   failureThreshold: 3
   httpGetExtra: {}
 
+startupProbe:
+  enabled: false
+  prefix: "" # set same as `micronaut.server.context-path`
+  path: /health
+  port: management
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 30
+  httpGetExtra: {}
+
 resources: {}
   # limits:
   #  cpu: 100m
