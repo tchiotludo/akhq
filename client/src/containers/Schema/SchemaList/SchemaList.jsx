@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { isSameLocation } from '../../../utils/functions';
 import { withRouter } from '../../../utils/withRouter';
 
 class SchemaList extends Root {
@@ -49,10 +50,22 @@ class SchemaList extends Root {
     const searchParams = new URLSearchParams();
     searchParams.set('search', search || '');
     searchParams.set('page', pageNumber);
+
+    const pathname = `/ui/${clusterId}/schema`;
+    const query = searchParams.toString();
+
+    if (isSameLocation(this.props.location, pathname, query)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getSchemaRegistry();
+      return;
+    }
+
     this.props.router.navigate(
       {
-        pathname: `/ui/${clusterId}/schema`,
-        search: searchParams.toString()
+        pathname,
+        search: query
       },
       { replace }
     );
@@ -339,4 +352,5 @@ class SchemaList extends Root {
   }
 }
 
+export { SchemaList };
 export default withRouter(SchemaList);

@@ -23,7 +23,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import DateTime from '../../../../components/DateTime';
-import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
+import { capitalizeTxt, getClusterUIOptions, isSameLocation } from '../../../../utils/functions';
 import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
 import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
@@ -701,10 +701,18 @@ class TopicData extends Root {
 
   _navigateWithFilters(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
+    const pathname = `/ui/${selectedCluster}/topic/${selectedTopic}/data`;
+
+    if (isSameLocation(this.props.location, pathname, filters)) {
+      // Re-submitting the same filters would not change the URL: reload the data in place.
+      this._stopEventSource(false);
+      this._loadFromCurrentLocation(new URLSearchParams(this.props.location.search));
+      return;
+    }
 
     this.props.router.navigate(
       {
-        pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+        pathname,
         search: filters
       },
       { replace: replaceInNavigation }
@@ -1502,4 +1510,5 @@ const withRouterInnerRef = WrappedComponent => {
   });
 };
 
+export { TopicData };
 export default withRouterInnerRef(TopicData);
