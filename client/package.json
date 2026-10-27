@@ -60,7 +60,7 @@
     "@testing-library/user-event": "^14.6.8",
     "@vitejs/plugin-react": "^6.1.2",
     "convert-units": "^2.3.4",
-    "eslint": "^9.39.4",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-react": "^7.37.5",
