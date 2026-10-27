@@ -18,7 +18,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Collapse } from 'react-bootstrap';
 import Root from '../../../components/Root';
 import DateTime from '../../../components/DateTime';
-import { getClusterUIOptions } from '../../../utils/functions';
+import { getClusterUIOptions, isSameLocation } from '../../../utils/functions';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
 import PageSize from '../../../components/PageSize';
 import { withRouter } from '../../../utils/withRouter';
@@ -74,10 +74,21 @@ class TopicList extends Root {
     searchParams.set('page', pageNumber);
     searchParams.set('uiPageSize', currentPageSize);
 
+    const pathname = `/ui/${clusterId}/topic`;
+    const search = searchParams.toString();
+
+    if (isSameLocation(this.props.location, pathname, search)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getTopics();
+      return;
+    }
+
     this.props.router.navigate(
       {
-        pathname: `/ui/${clusterId}/topic`,
-        search: searchParams.toString()
+        pathname,
+        search
       },
       { replace }
     );
@@ -350,7 +361,6 @@ class TopicList extends Root {
   }
 
   handleFavorite = topic => {
-    const refreshCurrentPage = this.state.pageNumber === 1;
     const favorites = toggleTopicFavorite(this.state.selectedCluster, topic.id);
     this.setState(({ topics }) => ({
       favorites,
@@ -361,10 +371,8 @@ class TopicList extends Root {
       ),
       preserveTopicsDuringNextLoad: true
     }), () => {
+      // navigateWithQuery refreshes the list in place when staying on an unchanged page one URL.
       this.navigateWithQuery(this.state.searchData, 1, this.state.currentPageSize, true);
-      if (refreshCurrentPage) {
-        this.getTopics();
-      }
     });
   };
 

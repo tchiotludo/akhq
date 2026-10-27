@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { Link } from 'react-router-dom';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { isSameLocation } from '../../../utils/functions';
 import { withRouter } from '../../../utils/withRouter';
 
 class ConsumerGroupList extends Root {
@@ -42,10 +43,22 @@ class ConsumerGroupList extends Root {
     const searchParams = new URLSearchParams();
     searchParams.set('search', search || '');
     searchParams.set('page', pageNumber);
+
+    const pathname = `/ui/${clusterId}/group`;
+    const query = searchParams.toString();
+
+    if (isSameLocation(this.props.location, pathname, query)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getConsumerGroup();
+      return;
+    }
+
     this.props.router.navigate(
       {
-        pathname: `/ui/${clusterId}/group`,
-        search: searchParams.toString()
+        pathname,
+        search: query
       },
       { replace }
     );
@@ -289,4 +302,5 @@ class ConsumerGroupList extends Root {
     );
   }
 }
+export { ConsumerGroupList };
 export default withRouter(ConsumerGroupList);
