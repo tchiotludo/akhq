@@ -3,7 +3,6 @@ package org.akhq.mcp;
 import io.micronaut.mcp.annotations.Tool;
 import io.micronaut.mcp.server.context.MicronautMcpTransportContext;
 import org.akhq.mcp.model.ClusterScopedArguments;
-import org.akhq.mcp.model.ListClustersArguments;
 import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.mcp.model.TopicScopedArguments;
 import org.junit.jupiter.api.Test;
@@ -81,7 +80,7 @@ class McpToolAuthorizationContractTest {
 
         tools.stream()
             // akhq.list_clusters targets no cluster: the list is already limited to the caller's groups
-            .filter(tool -> !Arrays.asList(tool.getParameterTypes()).contains(ListClustersArguments.class))
+            .filter(tool -> !tool.getName().equals("listClusters"))
             .forEach(tool -> assertTrue(
                 Arrays.stream(tool.getParameterTypes()).anyMatch(ClusterScopedArguments.class::isAssignableFrom),
                 "Tool '" + tool.getName() + "' must take ClusterScopedArguments so it can be authorized by "

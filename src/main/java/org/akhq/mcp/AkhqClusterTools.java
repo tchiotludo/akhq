@@ -30,13 +30,13 @@ public class AkhqClusterTools extends AbstractMcpTool {
             List the Kafka clusters the caller can access, with the optional Schema Registry, Kafka Connect and ksqlDB
             clusters configured on each.
 
-            Expected `arguments` JSON object: {}
+            This tool takes no argument.
 
             Use each cluster `name` as the `cluster` argument of the other tools, and each name of `connects` as the
             `connect` argument of the connector tools. `schemaRegistry` is false when the cluster has no Schema Registry.
             """
     )
-    public CallToolResult listClusters(ListClustersArguments arguments, MicronautMcpTransportContext transportContext) {
+    public CallToolResult listClusters(MicronautMcpTransportContext transportContext) {
         if (transportContext == null) {
             return toolError(new IllegalArgumentException("MCP transport context is required"));
         }
