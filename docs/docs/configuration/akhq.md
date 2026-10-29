@@ -23,6 +23,9 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic-data.size`: max record per page (default: 50)
 * `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the buffer (default: 1000).
 * `akhq.topic-data.kafka-max-message-length`: Max message length allowed to send to UI when retrieving a list of records (dafault: 1000000 bytes).
+* `akhq.topic-data.search.max-groups`: max number of groups in a structured message search expression (default: 10).
+* `akhq.topic-data.search.max-conditions`: max number of conditions in a structured message search expression, all groups included (default: 50).
+* `akhq.topic-data.search.max-value-length`: max length of a search condition value, regular expressions included (default: 1000).
 
 ## Ui Settings
 ### Topics
