@@ -1,19 +1,26 @@
 import React from 'react';
 import { conditionText } from './preview';
 
-const AppliedFilters = ({ applied, notShareable }) => {
+const AppliedFilters = ({ applied, notShareable, inline = false }) => {
   if (!applied) {
     return null;
   }
-  const conditions = applied.groups.flatMap(g => g.conditions);
   return (
-    <div className="applied-filters" data-testid="applied-filters">
-      <div className="small text-muted">Applied filters</div>
+    <div className={`applied-filters${inline ? ' inline' : ''}`} data-testid="applied-filters">
       <div className="filters-active">
-        {conditions.map((c, i) => (
-          <span key={i} className="chip">
-            {conditionText(c)}
-          </span>
+        <span className="small text-muted">Applied filters</span>
+        {applied.groups.map((group, gi) => (
+          <React.Fragment key={gi}>
+            {gi > 0 && <span className="join-badge group-join-badge">{group.join}</span>}
+            <span className={`chip-group${group.conditions.length > 1 ? ' multi' : ''}`}>
+              {group.conditions.map((c, ci) => (
+                <React.Fragment key={ci}>
+                  {ci > 0 && <span className="join-badge">{c.join}</span>}
+                  <span className="chip">{conditionText(c)}</span>
+                </React.Fragment>
+              ))}
+            </span>
+          </React.Fragment>
         ))}
       </div>
       {notShareable && (

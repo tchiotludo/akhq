@@ -24,7 +24,7 @@ describe('searchQuery codec', () => {
   it('round trips with the v1 prefix and url-safe characters', () => {
     const encoded = encodeSearchQuery(expression);
     expect(encoded.startsWith('v1.')).toBe(true);
-    expect(encoded).toMatch(/^v1\.[A-Za-z0-9_-]+$/);
+    expect(encoded).toMatch(/^v1\.(z\.)?[A-Za-z0-9_-]+$/);
     expect(decodeSearchQuery(encoded)).toEqual({ expression });
   });
 
@@ -40,9 +40,33 @@ describe('searchQuery codec', () => {
     expect(decodeSearchQuery(undefined).error).toBeDefined();
   });
 
-  it('rejects a payload that is not a version 1 expression', () => {
-    const wrong = encodeSearchQuery({ version: 2, groups: [] });
+  it('rejects a payload that is not a list of groups', () => {
+    const wrong = 'v1.' + btoa('{"a":1}').replace(/=+$/, '');
     expect(decodeSearchQuery(wrong).error).toBeDefined();
+  });
+
+  it('keeps a typical query short and deflates large ones', () => {
+    const small = {
+      version: 1,
+      groups: [{ conditions: [{ field: 'value', operator: 'contains', value: 'error' }] }]
+    };
+    expect(encodeSearchQuery(small).length).toBeLessThan(40);
+    const repeated = {
+      version: 1,
+      groups: [
+        {
+          conditions: Array.from({ length: 20 }, (_, i) => ({
+            ...(i ? { join: 'OR' } : {}),
+            field: 'value',
+            operator: 'contains',
+            value: 'repeated-value-repeated-value'
+          }))
+        }
+      ]
+    };
+    const encoded = encodeSearchQuery(repeated);
+    expect(encoded.startsWith('v1.z.')).toBe(true);
+    expect(decodeSearchQuery(encoded)).toEqual({ expression: repeated });
   });
 
   it('flags queries over the shareable cap', () => {

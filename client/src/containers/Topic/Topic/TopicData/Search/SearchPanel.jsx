@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import SimpleSearch from './SimpleSearch';
 import AdvancedSearch from './AdvancedSearch';
 import AppliedFilters from './AppliedFilters';
-import { expressionPreview } from './preview';
 import {
   advancedToSimple,
   draftToExpression,
@@ -24,6 +23,7 @@ const SearchPanel = ({
   limits
 }) => {
   const [blockedReason, setBlockedReason] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const errors = useMemo(() => validateDraft(draft, limits), [draft, limits]);
   const errorsByPath = useMemo(
     () => Object.fromEntries(errors.map(e => [e.path, e.message])),
@@ -68,8 +68,6 @@ const SearchPanel = ({
     onClear();
   };
 
-  const preview = expressionPreview(draftToExpression(draft));
-
   const actions = isSearching ? (
     <>
       <button type="button" className="btn btn-secondary" onClick={onStop}>
@@ -102,61 +100,73 @@ const SearchPanel = ({
 
   return (
     <form className="search-panel" onSubmit={submit} data-testid="search-panel">
-      <div className="search-panel-header">
+      <div className={`search-panel-header${expanded ? ' is-open' : ''}`}>
         <strong>Search messages</strong>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={draft.mode === 'simple' ? switchToAdvanced : switchToSimple}
-        >
-          {draft.mode === 'simple' ? 'Advanced filters' : 'Simple search'}
-        </button>
-      </div>
-
-      {blockedReason && (
-        <div className="alert alert-warning" role="alert" data-testid="switch-blocked">
-          This search cannot be shown in Simple mode. {blockedReason}
-          <button type="button" className="btn btn-sm btn-link" onClick={startNewSimple}>
-            Start a new simple search
+        {!expanded && <AppliedFilters inline applied={applied} notShareable={notShareable} />}
+        <div className="search-panel-header-actions">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={draft.mode === 'simple' ? switchToAdvanced : switchToSimple}
+          >
+            {draft.mode === 'simple' ? 'Advanced filters' : 'Simple search'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            aria-expanded={expanded}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? 'Collapse' : 'Expand'}
           </button>
         </div>
-      )}
+      </div>
 
-      {draft.mode === 'simple' ? (
-        <SimpleSearch
-          simple={draft.simple}
-          actions={actions}
-          onChange={simple => onDraftChange({ ...draft, simple })}
-        />
-      ) : (
+      {expanded && (
         <>
-          <AdvancedSearch
-            advanced={draft.advanced}
-            errors={errorsByPath}
-            onChange={advanced => onDraftChange({ ...draft, advanced })}
-          />
-          <div className="query-preview">
-            <span>
-              Query preview: <code data-testid="query-preview">{preview || '—'}</code>
-              <small className="d-block">Conditions are evaluated from left to right.</small>
-            </span>
-            <div className="query-actions">{actions}</div>
+          {blockedReason && (
+            <div className="alert alert-warning" role="alert" data-testid="switch-blocked">
+              This search cannot be shown in Simple mode. {blockedReason}
+              <button type="button" className="btn btn-sm btn-link" onClick={startNewSimple}>
+                Start a new simple search
+              </button>
+            </div>
+          )}
+
+          {draft.mode === 'simple' ? (
+            <SimpleSearch
+              simple={draft.simple}
+              actions={actions}
+              onChange={simple => onDraftChange({ ...draft, simple })}
+            />
+          ) : (
+            <>
+              <AdvancedSearch
+                advanced={draft.advanced}
+                errors={errorsByPath}
+                onChange={advanced => onDraftChange({ ...draft, advanced })}
+              />
+              <div className="query-preview">
+                <small>Conditions are evaluated from left to right.</small>
+                <div className="query-actions">{actions}</div>
+              </div>
+            </>
+          )}
+
+          <div aria-live="polite">
+            {draft.mode === 'simple' && errorsByPath['groups.0.conditions.0'] && (
+              <div className="text-danger small">{errorsByPath['groups.0.conditions.0']}</div>
+            )}
+            {globalErrors.map(e => (
+              <div key={e.path} className="text-danger small">
+                {e.message}
+              </div>
+            ))}
           </div>
         </>
       )}
 
-      <div aria-live="polite">
-        {draft.mode === 'simple' && errorsByPath['groups.0.conditions.0'] && (
-          <div className="text-danger small">{errorsByPath['groups.0.conditions.0']}</div>
-        )}
-        {globalErrors.map(e => (
-          <div key={e.path} className="text-danger small">
-            {e.message}
-          </div>
-        ))}
-      </div>
-
-      <AppliedFilters applied={applied} notShareable={notShareable} />
+      {expanded && <AppliedFilters applied={applied} notShareable={notShareable} />}
     </form>
   );
 };

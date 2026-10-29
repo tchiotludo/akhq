@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SearchPanel from './SearchPanel';
+import AppliedFilters from './AppliedFilters';
 import { emptyDraft } from './searchModel';
 import { expressionPreview } from './preview';
 
@@ -31,11 +32,31 @@ const Harness = ({
 
 afterEach(cleanup);
 
+const renderOpen = async ui => {
+  const result = render(ui);
+  await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+  return result;
+};
+
 describe('SearchPanel', () => {
+  it('is collapsed by default and toggles with Expand/Collapse', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    expect(screen.getByText('Search messages')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Advanced filters' })).toBeInTheDocument();
+    expect(screen.queryByTestId('simple-search')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    expect(screen.getByTestId('simple-search')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Collapse' }));
+    expect(screen.queryByTestId('simple-search')).toBeNull();
+  });
+
   it('shows only the simple editor by default and applies the expression', async () => {
     const user = userEvent.setup();
     const onApply = vi.fn();
-    render(<Harness onApply={onApply} />);
+    await renderOpen(<Harness onApply={onApply} />);
 
     expect(screen.getByTestId('simple-search')).toBeInTheDocument();
     expect(screen.queryByTestId('advanced-search')).toBeNull();
@@ -58,7 +79,7 @@ describe('SearchPanel', () => {
 
   it('hides the Match terms select for non-Contains operators', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     expect(screen.getByLabelText('Match terms')).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Operator'), 'equals');
     expect(screen.queryByLabelText('Match terms')).toBeNull();
@@ -66,7 +87,7 @@ describe('SearchPanel', () => {
 
   it('converts Simple to Advanced and hides the simple editor', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
     await user.selectOptions(screen.getByLabelText('Match terms'), 'all');
     await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
@@ -80,7 +101,7 @@ describe('SearchPanel', () => {
 
   it('shows Mixed scope, adds rows and groups, and removes rows', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
     await user.click(screen.getAllByRole('button', { name: 'Add condition' })[0]);
     await user.selectOptions(screen.getAllByLabelText('Field')[1], 'key');
@@ -95,7 +116,7 @@ describe('SearchPanel', () => {
 
   it('disables Search while a value is missing in Advanced', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
     expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('A value is required.');
@@ -105,7 +126,7 @@ describe('SearchPanel', () => {
 
   it('refuses Advanced -> Simple when lossy and offers a new simple search', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
     await user.click(screen.getByRole('button', { name: '+ Group' }));
     await user.click(screen.getByRole('button', { name: 'Simple search' }));
@@ -120,7 +141,7 @@ describe('SearchPanel', () => {
 
   it('converts a representable Advanced draft back to Simple', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    await renderOpen(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
     await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
     await user.click(screen.getByRole('button', { name: 'Simple search' }));
@@ -130,7 +151,7 @@ describe('SearchPanel', () => {
   it('shows Stop while searching and calls onStop', async () => {
     const user = userEvent.setup();
     const onStop = vi.fn();
-    render(<Harness isSearching onStop={onStop} />);
+    await renderOpen(<Harness isSearching onStop={onStop} />);
     expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     expect(onStop).toHaveBeenCalled();
@@ -143,15 +164,37 @@ describe('SearchPanel', () => {
       version: 1,
       groups: [{ conditions: [{ field: 'key', operator: 'equals', value: 'k1' }] }]
     };
-    render(<Harness applied={applied} onClear={onClear} />);
+    await renderOpen(<Harness applied={applied} onClear={onClear} />);
     expect(screen.getByTestId('applied-filters')).toHaveTextContent('Key equals "k1"');
     await user.click(screen.getByRole('button', { name: 'Clear' }));
     expect(onClear).toHaveBeenCalled();
   });
 });
 
+describe('AppliedFilters', () => {
+  it('shows AND/OR joins inside and between groups', () => {
+    const c = (value, join) => ({
+      field: 'value',
+      operator: 'contains',
+      value,
+      ...(join && { join })
+    });
+    render(
+      <AppliedFilters
+        applied={{
+          version: 1,
+          groups: [{ conditions: [c('a'), c('b', 'AND')] }, { join: 'OR', conditions: [c('c')] }]
+        }}
+      />
+    );
+    expect(screen.getByTestId('applied-filters')).toHaveTextContent(
+      'Value contains "a"ANDValue contains "b"ORValue contains "c"'
+    );
+  });
+});
+
 describe('expressionPreview', () => {
-  it('groups explicitly and is empty without an expression', () => {
+  it('groups explicitly and is empty without an expression', async () => {
     expect(expressionPreview(null)).toBe('');
     expect(
       expressionPreview({

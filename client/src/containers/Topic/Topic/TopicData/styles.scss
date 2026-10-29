@@ -181,35 +181,46 @@ code {
 }
 
 .topic-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
   width: 100%;
-  padding: 4px 0;
+  padding: 0;
 
-  .filter-group {
+  .filter-pills {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-pill {
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    color: inherit;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    strong {
+      opacity: 0.65;
+    }
+
+    &.open {
+      border-color: #fff;
+    }
+  }
+
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 4px;
+    padding: 6px 10px;
     border: 1px solid rgba(128, 128, 128, 0.45);
     border-radius: 4px;
-    padding: 4px 8px;
-  }
 
-  .filter-group > strong {
-    white-space: nowrap;
-  }
-
-  .btn-group {
-    flex-wrap: nowrap;
-    width: auto;
-
-    .btn {
-      flex: 0 0 auto;
-      width: auto;
-      margin: 0;
+    .small {
+      opacity: 0.75;
     }
   }
 
@@ -241,4 +252,13 @@ code {
 
 .khq-data-filter > .navbar-collapse {
   flex-grow: 1;
+}
+
+.khq-data-filter {
+  align-items: flex-start;
+
+  .pagination-data {
+    order: 2;
+    margin-left: auto;
+  }
 }

@@ -38,7 +38,7 @@ import { faDownload } from '@fortawesome/free-solid-svg-icons';
 class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
-    showOffsets: false,
+    openFilter: null,
     sortOptions: ['Oldest', 'Newest'],
     partitionCount: 0,
     partition: 'All',
@@ -157,10 +157,13 @@ class TopicData extends Root {
       this._getSingleMessage(query.get('partition'), query.get('offset'));
       this.setState({ canDownload: true });
     } else {
-      this.setState({ canDownload: false }, () => {
-        // Delegate mode selection to _searchMessages so active filters always use /data/search.
-        this._searchMessages(false);
-      });
+      this.setState(
+        { canDownload: false, ...(this._forcesOldest() ? { sortBy: 'Oldest' } : {}) },
+        () => {
+          // Delegate mode selection to _searchMessages so active filters always use /data/search.
+          this._searchMessages(false);
+        }
+      );
     }
   };
 
@@ -289,9 +292,12 @@ class TopicData extends Root {
 
   _applySearch = expression => {
     const { notShareable } = writeSearchToParams(new URLSearchParams(), expression);
-    this.setState({ applied: expression, searchNotShareable: notShareable, nextPage: '' }, () => {
-      this._navigateWithCurrentFilters(false);
-    });
+    this.setState(
+      { applied: expression, searchNotShareable: notShareable, nextPage: '', sortBy: 'Oldest' },
+      () => {
+        this._navigateWithCurrentFilters(false);
+      }
+    );
   };
 
   // Scope filters only: these are the API query parameters; the search expression travels in the body.
@@ -756,23 +762,98 @@ class TopicData extends Root {
     });
   };
 
-  _renderOptionGroup(label, options, current, onSelect) {
+  _toggleFilter(name) {
+    this.setState(prev => ({ openFilter: prev.openFilter === name ? null : name }));
+  }
+
+  _formatFilterDate(date) {
+    return formatDateTime(
+      {
+        year: date.getFullYear(),
+        monthValue: date.getMonth(),
+        dayOfMonth: date.getDate(),
+        hour: date.getHours(),
+        minute: date.getMinutes(),
+        second: date.getSeconds()
+      },
+      'dd-MM-yyyy HH:mm'
+    );
+  }
+
+  _renderPill(name, label, summary) {
+    const open = this.state.openFilter === name;
     return (
-      <div className="filter-group">
-        <strong>{label}</strong>
-        <div className="btn-group btn-group-sm" role="group" aria-label={label}>
-          {options.map(({ value, text }) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={current === value}
-              className={`btn ${current === value ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => current !== value && onSelect(value)}
-            >
-              {text}
-            </button>
-          ))}
-        </div>
+      <button
+        type="button"
+        className={`filter-pill${open ? ' open' : ''}`}
+        aria-expanded={open}
+        onClick={() => this._toggleFilter(name)}
+      >
+        <strong>{label}</strong> {summary}
+      </button>
+    );
+  }
+
+  _renderTogglePill(label, current, onToggle, disabledReason) {
+    return (
+      <button
+        type="button"
+        className="filter-pill"
+        disabled={!!disabledReason}
+        title={disabledReason || 'Click to switch'}
+        onClick={() => {
+          this.setState({ openFilter: null });
+          onToggle();
+        }}
+      >
+        <strong>{label}</strong> ({current})
+      </button>
+    );
+  }
+
+  // Searches and timestamp windows only scan forward, so they force the Oldest sort.
+  _forcesOldest(state = this.state) {
+    return !!state.applied || state.datetime !== '' || state.endDatetime !== '';
+  }
+
+  _toggleSort = () => {
+    if (this._forcesOldest()) {
+      return;
+    }
+    const { sortOptions, sortBy } = this.state;
+    const next = sortOptions.find(o => o !== sortBy) || sortBy;
+    this.setState({ sortBy: next }, () => this._navigateWithCurrentFilters(false));
+  };
+
+  _toggleTimeFormat = () => {
+    const { DATE_TIME_FORMAT } = constants.SETTINGS_VALUES.TOPIC_DATA;
+    this._handleOnDateTimeFormatChanged(
+      this.state.dateTimeFormat === DATE_TIME_FORMAT.RELATIVE
+        ? DATE_TIME_FORMAT.ISO
+        : DATE_TIME_FORMAT.RELATIVE
+    );
+  };
+
+  _renderOptionPanel(title, options, current, onSelect) {
+    return (
+      <div className="filter-panel">
+        <strong>{title}</strong>
+        {options.map(({ value, text }) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={current === value}
+            className={`btn ${current === value ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => {
+              this.setState({ openFilter: null });
+              if (current !== value) {
+                onSelect(value);
+              }
+            }}
+          >
+            {text}
+          </button>
+        ))}
       </div>
     );
   }
@@ -786,87 +867,119 @@ class TopicData extends Root {
         timeIntervals={15}
         dateFormat="dd-MM-yyyy HH:mm"
         placeholderText={label}
-        ariaLabelledBy={label}
         isClearable
         className="form-control form-control-sm"
       />
     );
   }
 
-  _renderFilterBar() {
-    const { sortBy, partition, datetime, endDatetime, offsetsSearch, showOffsets, sortOptions } =
-      this.state;
-    const { DATE_TIME_FORMAT } = constants.SETTINGS_VALUES.TOPIC_DATA;
-    const partitionOptions = this._createPartitionOptions();
+  _applyTimestamps = () => {
+    this.setState(
+      {
+        openFilter: null,
+        ...(this.state.datetime !== '' || this.state.endDatetime !== '' ? { sortBy: 'Oldest' } : {})
+      },
+      () => this._navigateWithCurrentFilters(false)
+    );
+  };
 
-    return (
-      <div className="topic-filters" data-testid="topic-filters">
-        {this._renderOptionGroup(
-          'Sort:',
-          sortOptions.map(o => ({ value: o, text: o })),
-          sortBy,
-          option => {
-            if (option === 'Newest' && this.state.endDatetime !== '') {
-              toast.warn('Sorting by newest with timestamp in large topics may not show data.');
-            }
-            this.setState({ sortBy: option }, () => this._navigateWithCurrentFilters(false));
-          }
-        )}
-        {this._renderOptionGroup(
-          'Partition:',
-          partitionOptions.map(o => ({ value: o, text: o })),
+  _offsetsSummary() {
+    const { offsetsSearch } = this.state;
+    if (!offsetsSearch) {
+      return '(none)';
+    }
+    return offsetsSearch
+      .split('_')
+      .map(o => `P${o.replace('-', ':')}`)
+      .join(' ');
+  }
+
+  _renderFilterPanel() {
+    const { openFilter, partition, datetime, endDatetime } = this.state;
+
+    switch (openFilter) {
+      case 'partition':
+        return this._renderOptionPanel(
+          'Partition',
+          this._createPartitionOptions().map(o => ({ value: o, text: o })),
           partition,
           option =>
             this.setState({ partition: option }, () => this._navigateWithCurrentFilters(false))
-        )}
-        <div className="filter-group">
-          <strong>Timestamp {format(new Date(), 'z')}:</strong>
-          {this._renderDateFilter('Start', datetime, value =>
-            this.setState({ datetime: value }, () => this._navigateWithCurrentFilters(false))
-          )}
-          <span>to</span>
-          {this._renderDateFilter('End', endDatetime, value =>
-            this.setState({ endDatetime: value, ...(value ? { sortBy: 'Oldest' } : {}) }, () =>
-              this._navigateWithCurrentFilters(false)
-            )
-          )}
-        </div>
-        <div className="filter-group">
-          <button
-            type="button"
-            className="btn btn-sm btn-secondary"
-            aria-expanded={!!showOffsets}
-            onClick={() => this.setState({ showOffsets: !showOffsets })}
-          >
-            <strong>Offsets:</strong> {offsetsSearch ? offsetsSearch : 'none'}
-          </button>
-        </div>
-        {this._renderOptionGroup(
-          'Time Format:',
-          [
-            { value: DATE_TIME_FORMAT.RELATIVE, text: 'Relative' },
-            { value: DATE_TIME_FORMAT.ISO, text: 'ISO' }
-          ],
-          this.state.dateTimeFormat,
-          value => this._handleOnDateTimeFormatChanged(value)
-        )}
-        <button
-          type="button"
-          onClick={() => this.setState({ showDownloadModal: true })}
-          className="btn btn-primary btn-sm ml-auto"
-        >
-          <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
-        </button>
-        {showOffsets && (
-          <div className="filter-offsets w-100" data-testid="offsets-filter">
+        );
+      case 'timestamp':
+        return (
+          <div className="filter-panel">
+            <span className="small">Start</span>
+            {this._renderDateFilter('Start', datetime, value => this.setState({ datetime: value }))}
+            <span className="small">End</span>
+            {this._renderDateFilter('End', endDatetime, value =>
+              this.setState({ endDatetime: value })
+            )}
+            <button type="button" className="btn btn-primary" onClick={this._applyTimestamps}>
+              Apply
+            </button>
+          </div>
+        );
+      case 'offsets':
+        return (
+          <div className="filter-panel filter-offsets" data-testid="offsets-filter">
+            <strong>Offsets</strong>
+            <span className="small">Per-partition start offset</span>
             <table>
               <tbody>{this._renderOffsetsOptions()}</tbody>
             </table>
-            <button type="button" className="btn btn-primary btn-sm" onClick={this._applyOffsets}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                this.setState({ openFilter: null });
+                this._applyOffsets();
+              }}
+            >
               Apply offsets
             </button>
           </div>
-        )}
+        );
+      default:
+        return null;
+    }
+  }
+
+  _renderFilterBar() {
+    const { sortBy, partition, datetime, endDatetime } = this.state;
+    const timestampSummary =
+      datetime === '' && endDatetime === ''
+        ? '(none)'
+        : `${datetime !== '' ? `From ${this._formatFilterDate(datetime)}` : ''}${
+            endDatetime !== '' ? ` To ${this._formatFilterDate(endDatetime)}` : ''
+          }`.trim();
+
+    return (
+      <div className="topic-filters" data-testid="topic-filters">
+        <div className="filter-pills">
+          {this._renderTogglePill(
+            'Sort:',
+            sortBy,
+            this._toggleSort,
+            this._forcesOldest() && 'Sorting is always Oldest when a search or timestamp is set'
+          )}
+          {this._renderPill('partition', 'Partition:', `(${partition})`)}
+          {this._renderPill('timestamp', `Timestamp ${format(new Date(), 'z')}:`, timestampSummary)}
+          {this._renderPill('offsets', 'Offsets:', this._offsetsSummary())}
+          {this._renderTogglePill(
+            'Time Format:',
+            this.state.dateTimeFormat,
+            this._toggleTimeFormat
+          )}
+          <button
+            type="button"
+            onClick={() => this.setState({ showDownloadModal: true })}
+            className="btn btn-primary btn-sm ml-auto"
+          >
+            <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
+          </button>
+        </div>
+        {this._renderFilterPanel()}
       </div>
     );
   }

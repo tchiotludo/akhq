@@ -2,8 +2,8 @@
   --search-border: rgba(128, 128, 128, 0.45);
   border: 1px solid var(--search-border);
   border-radius: 4px;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 6px 10px;
+  margin: 6px 0;
 
   .small,
   .help-text,
@@ -15,15 +15,33 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+
+    &.is-open {
+      margin-bottom: 6px;
+    }
+  }
+
+  .applied-filters.inline {
+    flex: 1;
+    min-width: 0;
+    margin: 0 12px;
+
+    .filters-active {
+      margin-top: 0;
+    }
+  }
+
+  .search-panel-header-actions {
+    display: flex;
+    gap: 8px;
   }
 
   .quick-search,
   .search-group {
     border: 1px solid var(--search-border);
     border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
   }
 
   .quick-search-row {
@@ -38,7 +56,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 4px;
     font-size: 0.85rem;
 
     .form-control {
@@ -56,7 +74,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 
     .join-select {
       width: auto;
@@ -98,8 +116,34 @@
   .filters-active {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
-    margin-top: 6px;
+    margin-top: 4px;
+  }
+
+  .chip-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    &.multi {
+      border: 1px dashed var(--search-border);
+      border-radius: 999px;
+      padding: 3px 6px;
+    }
+  }
+
+  .join-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    opacity: 0.8;
+  }
+
+  .group-join-badge {
+    color: #ffc107;
+    opacity: 1;
   }
 
   .chip {

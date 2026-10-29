@@ -194,6 +194,25 @@ export const draftToExpression = draft => {
   return groups.length > 0 ? { version: SEARCH_QUERY_VERSION, groups } : null;
 };
 
+// Key-order independent comparison (expressions built in different places order keys differently).
+const canonical = value => {
+  if (Array.isArray(value)) {
+    return value.map(canonical);
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .filter(k => value[k] !== undefined)
+        .sort()
+        .map(k => [k, canonical(value[k])])
+    );
+  }
+  return value;
+};
+
+export const sameExpression = (a, b) =>
+  JSON.stringify(canonical(a || null)) === JSON.stringify(canonical(b || null));
+
 // Applied expression (URL / legacy) -> draft; Simple when it can be represented, else Advanced.
 export const expressionToDraft = expression => {
   if (!expression || !expression.groups || expression.groups.length === 0) {
@@ -214,7 +233,7 @@ export const expressionToDraft = expression => {
   if (converted.simple) {
     // Make sure the Simple round trip yields the very same expression.
     const roundTrip = draftToExpression({ mode: 'simple', simple: converted.simple });
-    if (JSON.stringify(roundTrip) === JSON.stringify(expression)) {
+    if (sameExpression(roundTrip, expression)) {
       return { mode: 'simple', simple: converted.simple, advanced: null };
     }
   }

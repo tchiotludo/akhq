@@ -60,6 +60,32 @@ describe('TopicData filter submission', () => {
   });
 });
 
+describe('TopicData forward-only sort', () => {
+  it('forces Oldest when a search or a timestamp is applied', () => {
+    const searched = createTopicData('?sort=Newest');
+    searched.state.sortBy = 'Newest';
+    searched._applySearch(expression);
+    expect(searched.state.sortBy).toBe('Oldest');
+
+    const dated = createTopicData('?sort=Newest');
+    dated.state.sortBy = 'Newest';
+    dated.state.datetime = new Date('2024-01-01T00:00:00Z');
+    dated._applyTimestamps();
+    expect(dated.state.sortBy).toBe('Oldest');
+  });
+
+  it('does not toggle to Newest while a search or timestamp is active', () => {
+    const topicData = createTopicData('?sort=Oldest');
+    topicData.state.applied = expression;
+    topicData._toggleSort();
+    expect(topicData.state.sortBy).toBe('Oldest');
+
+    topicData.state.applied = null;
+    topicData._toggleSort();
+    expect(topicData.state.sortBy).toBe('Newest');
+  });
+});
+
 describe('TopicData search expression', () => {
   it('applying a search stores it and navigates with a compact searchQuery', () => {
     const topicData = createTopicData('?sort=Oldest');
@@ -69,7 +95,7 @@ describe('TopicData search expression', () => {
     expect(topicData.state.applied).toEqual(expression);
     expect(topicData.state.searchNotShareable).toBe(false);
     expect(topicData.props.router.navigate.mock.calls[0][0].search).toMatch(
-      /searchQuery=v1\.[\w-]+/
+      /searchQuery=v1\.[\w.-]+/
     );
   });
 

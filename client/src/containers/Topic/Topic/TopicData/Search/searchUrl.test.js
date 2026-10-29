@@ -92,3 +92,44 @@ describe('searchUrl', () => {
     expect(sameExpression(expression, null)).toBe(false);
   });
 });
+
+describe('sameExpression key order', () => {
+  it('ignores key order and undefined joins', () => {
+    const a = {
+      version: 1,
+      groups: [
+        {
+          conditions: [
+            { field: 'value', operator: 'contains', value: 'a' },
+            { join: 'OR', field: 'value', operator: 'contains', value: 'b' }
+          ]
+        }
+      ]
+    };
+    const b = {
+      groups: [
+        {
+          conditions: [
+            { value: 'a', operator: 'contains', field: 'value', join: undefined },
+            { value: 'b', operator: 'contains', field: 'value', join: 'OR' }
+          ]
+        }
+      ],
+      version: 1
+    };
+    expect(sameExpression(a, b)).toBe(true);
+  });
+});
+
+describe('simple search URL round trip', () => {
+  it('stays in Simple mode after applying multiple terms', async () => {
+    const { draftToExpression, emptyDraft, expressionToDraft } = await import('./searchModel');
+    const draft = emptyDraft();
+    draft.simple = { ...draft.simple, text: 'foo bar', termLogic: 'any' };
+    const applied = draftToExpression(draft);
+    const decoded = readSearchFromQuery(
+      new URLSearchParams(writeSearchToParams(new URLSearchParams(), applied).params)
+    ).applied;
+    expect(expressionToDraft(decoded).mode).toBe('simple');
+  });
+});

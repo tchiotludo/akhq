@@ -51,4 +51,4 @@ export const writeSearchToParams = (params, applied) => {
   return { params, notShareable: false };
 };
 
-export const sameExpression = (a, b) => JSON.stringify(a || null) === JSON.stringify(b || null);
+export { sameExpression } from './searchModel';
