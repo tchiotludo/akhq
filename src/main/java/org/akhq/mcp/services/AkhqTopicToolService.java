@@ -1,14 +1,22 @@
 package org.akhq.mcp.services;
 
 import jakarta.inject.Singleton;
+import org.akhq.mcp.model.GetConfigsResult;
+import org.akhq.mcp.model.GetTopicResult;
 import org.akhq.mcp.model.SearchTopicsArguments;
 import org.akhq.mcp.model.SearchTopicsResult;
 import org.akhq.mcp.model.TopicOverview;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.akhq.models.Partition;
+import org.akhq.models.Topic;
+import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.TopicRepository;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.apache.kafka.clients.admin.TopicDescription;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -20,10 +28,76 @@ public class AkhqTopicToolService {
 
     private final TopicRepository topicRepository;
     private final AbstractKafkaWrapper kafkaWrapper;
+    private final ConfigRepository configRepository;
 
-    public AkhqTopicToolService(TopicRepository topicRepository, AbstractKafkaWrapper kafkaWrapper) {
+    public AkhqTopicToolService(TopicRepository topicRepository, AbstractKafkaWrapper kafkaWrapper, ConfigRepository configRepository) {
         this.topicRepository = topicRepository;
         this.kafkaWrapper = kafkaWrapper;
+        this.configRepository = configRepository;
+    }
+
+    public GetTopicResult getTopic(String cluster, String name, Integer maxResults) throws ExecutionException, InterruptedException {
+        int limit = McpLimits.maxItems(maxResults);
+        Topic topic = findTopic(cluster, name);
+        List<Partition> sorted = topic.getPartitions().stream()
+            .sorted(Comparator.comparingInt(Partition::getId))
+            .toList();
+        List<GetTopicResult.Partition> returned = sorted.stream()
+            .limit(limit)
+            .map(partition -> new GetTopicResult.Partition(
+                partition.getId(),
+                partition.getLeader().getId(),
+                partition.getFirstOffset(),
+                partition.getLastOffset(),
+                partition.getLastOffset() - partition.getFirstOffset(),
+                partition.getLogDirSize(),
+                partition.getNodes().stream()
+                    .sorted(Comparator.comparingInt(org.akhq.models.Node::getId))
+                    .map(node -> new GetTopicResult.Replica(node.getId(), node.isLeader(), node.isInSyncReplicas()))
+                    .toList()
+            ))
+            .toList();
+        boolean truncated = sorted.size() > returned.size();
+        int underReplicated = (int) sorted.stream()
+            .filter(partition -> partition.getNodes().stream().anyMatch(node -> !node.isInSyncReplicas()))
+            .count();
+
+        return new GetTopicResult(
+            cluster, topic.getName(), topic.isInternalTopic(), sorted.size(), topic.getReplicaCount(),
+            underReplicated, topic.getSize(), topic.getLogDirSize(), truncated, returned,
+            truncated
+                ? "Topic has " + sorted.size() + " partitions, returning the first " + returned.size() + ". Raise `maxResults` to see the others."
+                : "Topic has " + sorted.size() + " partition(s)."
+        );
+    }
+
+    public GetConfigsResult getTopicConfigs(String cluster, String name, String search, Boolean onlyOverridden, Integer maxResults)
+        throws ExecutionException, InterruptedException {
+        try {
+            return McpConfigs.result(
+                cluster, "TOPIC", name, configRepository.findByTopic(cluster, name), search, onlyOverridden, maxResults
+            );
+        } catch (ExecutionException e) {
+            throw notFoundOrRethrow(e, name);
+        }
+    }
+
+    private Topic findTopic(String cluster, String name) throws ExecutionException, InterruptedException {
+        try {
+            return topicRepository.findByName(cluster, name);
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("Topic '" + name + "' doesn't exist", e);
+        } catch (ExecutionException e) {
+            throw notFoundOrRethrow(e, name);
+        }
+    }
+
+    private static ExecutionException notFoundOrRethrow(ExecutionException e, String name) throws ExecutionException {
+        if (e.getCause() instanceof UnknownTopicOrPartitionException) {
+            throw new IllegalArgumentException("Topic '" + name + "' doesn't exist", e);
+        }
+
+        throw e;
     }
 
     /**

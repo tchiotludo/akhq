@@ -17,6 +17,7 @@ import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.akhq.clients.connect.KafkaConnectApiClient;
 import org.akhq.clients.connect.dto.ConnectorExpanded;
+import org.akhq.clients.connect.dto.ConnectorStatus;
 import org.akhq.clients.connect.dto.ConnectorPluginInfo;
 import org.akhq.clients.connect.dto.ConnectorPluginValidation;
 import org.akhq.clients.connect.error.ConnectBadRequestException;
@@ -79,6 +80,10 @@ public class ConnectRepository extends AbstractRepository {
         // Only fetch the full definitions (info + status) of the connectors of the requested page:
         // the expanded listing of every connector can be too large on big Connect clusters
         return PagedList.of(names, pagination, page -> fetchDefinitions(client, page));
+    }
+
+    public ConnectorStatus getStatus(String clusterId, String connectId, String name) {
+        return this.kafkaModule.getConnectRestClient(clusterId).get(connectId).getConnectorStatus(name);
     }
 
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {
