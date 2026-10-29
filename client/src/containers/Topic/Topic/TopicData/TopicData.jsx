@@ -1,5 +1,4 @@
 import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Table from '../../../../components/Table/Table';
 import { formatDateTime } from '../../../../utils/converters';
@@ -14,7 +13,7 @@ import {
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
 import PageSize from '../../../../components/PageSize';
-import DatePicker from '../../../../components/DatePicker';
+import ReactDatePicker from 'react-datepicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
 import AceEditor from '../../../../components/AceEditor/AceEditor';
@@ -34,11 +33,12 @@ import { readSearchFromQuery, sameExpression, writeSearchToParams } from './Sear
 import { withRouter } from '../../../../utils/withRouter';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faSortNumericDesc } from '@fortawesome/free-solid-svg-icons';
+import { faDownload } from '@fortawesome/free-solid-svg-icons';
 
 class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
+    showOffsets: false,
     sortOptions: ['Oldest', 'Newest'],
     partitionCount: 0,
     partition: 'All',
@@ -740,50 +740,136 @@ class TopicData extends Root {
     });
   }
 
-  _renderSortOptions() {
-    const { sortOptions } = this.state;
+  _applyOffsets = () => {
+    const { offsets } = this.state;
+    let offsetsSearch = '';
+    for (let i = 0; i < Object.keys(offsets).length; i++) {
+      if (Object.values(offsets)[i] !== '') {
+        if (offsetsSearch !== '') {
+          offsetsSearch += '_';
+        }
+        offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
+      }
+    }
+    this.setState({ offsetsSearch }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
+  };
 
-    let renderedOptions = [];
-    for (let option of sortOptions) {
-      renderedOptions.push(
-        <Dropdown.Item
-          key={option}
-          onClick={() => {
+  _renderOptionGroup(label, options, current, onSelect) {
+    return (
+      <div className="filter-group">
+        <strong>{label}</strong>
+        <div className="btn-group btn-group-sm" role="group" aria-label={label}>
+          {options.map(({ value, text }) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={current === value}
+              className={`btn ${current === value ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => current !== value && onSelect(value)}
+            >
+              {text}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  _renderDateFilter(label, value, onChange) {
+    return (
+      <ReactDatePicker
+        selected={value === '' ? null : value}
+        onChange={date => onChange(date || '')}
+        showTimeSelect
+        timeIntervals={15}
+        dateFormat="dd-MM-yyyy HH:mm"
+        placeholderText={label}
+        ariaLabelledBy={label}
+        isClearable
+        className="form-control form-control-sm"
+      />
+    );
+  }
+
+  _renderFilterBar() {
+    const { sortBy, partition, datetime, endDatetime, offsetsSearch, showOffsets, sortOptions } =
+      this.state;
+    const { DATE_TIME_FORMAT } = constants.SETTINGS_VALUES.TOPIC_DATA;
+    const partitionOptions = this._createPartitionOptions();
+
+    return (
+      <div className="topic-filters" data-testid="topic-filters">
+        {this._renderOptionGroup(
+          'Sort:',
+          sortOptions.map(o => ({ value: o, text: o })),
+          sortBy,
+          option => {
             if (option === 'Newest' && this.state.endDatetime !== '') {
               toast.warn('Sorting by newest with timestamp in large topics may not show data.');
             }
-            this.setState({ sortBy: option }, () => {
-              this._navigateWithCurrentFilters(false);
-            });
-          }}
-        >
-          <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
-        </Dropdown.Item>
-      );
-    }
-    return renderedOptions;
-  }
-
-  _renderPartitionOptions = () => {
-    const partitionOptions = this._createPartitionOptions();
-
-    let renderedOptions = [];
-    for (let option of partitionOptions) {
-      renderedOptions.push(
-        <Dropdown.Item
-          key={option}
-          onClick={() =>
-            this.setState({ partition: option }, () => {
-              this._navigateWithCurrentFilters(false);
-            })
+            this.setState({ sortBy: option }, () => this._navigateWithCurrentFilters(false));
           }
+        )}
+        {this._renderOptionGroup(
+          'Partition:',
+          partitionOptions.map(o => ({ value: o, text: o })),
+          partition,
+          option =>
+            this.setState({ partition: option }, () => this._navigateWithCurrentFilters(false))
+        )}
+        <div className="filter-group">
+          <strong>Timestamp {format(new Date(), 'z')}:</strong>
+          {this._renderDateFilter('Start', datetime, value =>
+            this.setState({ datetime: value }, () => this._navigateWithCurrentFilters(false))
+          )}
+          <span>to</span>
+          {this._renderDateFilter('End', endDatetime, value =>
+            this.setState({ endDatetime: value, ...(value ? { sortBy: 'Oldest' } : {}) }, () =>
+              this._navigateWithCurrentFilters(false)
+            )
+          )}
+        </div>
+        <div className="filter-group">
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            aria-expanded={!!showOffsets}
+            onClick={() => this.setState({ showOffsets: !showOffsets })}
+          >
+            <strong>Offsets:</strong> {offsetsSearch ? offsetsSearch : 'none'}
+          </button>
+        </div>
+        {this._renderOptionGroup(
+          'Time Format:',
+          [
+            { value: DATE_TIME_FORMAT.RELATIVE, text: 'Relative' },
+            { value: DATE_TIME_FORMAT.ISO, text: 'ISO' }
+          ],
+          this.state.dateTimeFormat,
+          value => this._handleOnDateTimeFormatChanged(value)
+        )}
+        <button
+          type="button"
+          onClick={() => this.setState({ showDownloadModal: true })}
+          className="btn btn-primary btn-sm ml-auto"
         >
-          {option}
-        </Dropdown.Item>
-      );
-    }
-    return renderedOptions;
-  };
+          <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
+        </button>
+        {showOffsets && (
+          <div className="filter-offsets w-100" data-testid="offsets-filter">
+            <table>
+              <tbody>{this._renderOffsetsOptions()}</tbody>
+            </table>
+            <button type="button" className="btn btn-primary btn-sm" onClick={this._applyOffsets}>
+              Apply offsets
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   _renderOffsetsOptions = () => {
     const offsetsOptions = this._createOffsetsOptions();
@@ -957,183 +1043,7 @@ class TopicData extends Root {
           </nav>
 
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Sort:</strong> ({sortBy})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Partition:</strong> ({partition})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      {this._renderPartitionOptions()}
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp {format(new Date(), 'z')}:</strong>
-                    {datetime !== '' &&
-                      ' From ' +
-                        formatDateTime(
-                          {
-                            year: datetime.getFullYear(),
-                            monthValue: datetime.getMonth(),
-                            dayOfMonth: datetime.getDate(),
-                            hour: datetime.getHours(),
-                            minute: datetime.getMinutes(),
-                            second: datetime.getSeconds()
-                          },
-                          'dd-MM-yyyy HH:mm'
-                        )}
-                    {endDatetime !== '' &&
-                      ' To ' +
-                        formatDateTime(
-                          {
-                            year: endDatetime.getFullYear(),
-                            monthValue: endDatetime.getMonth(),
-                            dayOfMonth: endDatetime.getDate(),
-                            hour: endDatetime.getHours(),
-                            minute: endDatetime.getMinutes(),
-                            second: endDatetime.getSeconds()
-                          },
-                          'dd-MM-yyyy HH:mm'
-                        )}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ display: 'flex' }}>
-                      <div>
-                        <DatePicker
-                          label="Start"
-                          onClear={() => {
-                            this.setState({ datetime: '' }, () => {
-                              this._navigateWithCurrentFilters(false);
-                            });
-                          }}
-                          showDateTimeInput
-                          showTimeSelect
-                          value={datetime}
-                          onChange={value => {
-                            this.setState({ datetime: value }, () => {
-                              this._navigateWithCurrentFilters(false);
-                            });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <DatePicker
-                          label="End"
-                          onClear={() => {
-                            this.setState({ endDatetime: '' }, () => {
-                              this._navigateWithCurrentFilters(false);
-                            });
-                          }}
-                          showDateTimeInput
-                          showTimeSelect
-                          value={endDatetime}
-                          onChange={value => {
-                            this.setState({ endDatetime: value, sortBy: 'Oldest' }, () => {
-                              this._navigateWithCurrentFilters(false);
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Offsets:</strong>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      <div className="input-group">
-                        <table>{this._renderOffsetsOptions()}</table>
-                        <div className="input-group-append">
-                          <button
-                            className="btn btn-primary offsets-ok"
-                            type="button"
-                            onClick={() => {
-                              let offsetsSearch = '';
-                              for (let i = 0; i < Object.keys(offsets).length; i++) {
-                                if (Object.values(offsets)[i] !== '') {
-                                  if (offsetsSearch !== '') {
-                                    offsetsSearch += '_';
-                                  }
-                                  offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
-                                }
-                              }
-                              this.setState({ offsetsSearch }, () => {
-                                this._navigateWithCurrentFilters(false);
-                              });
-                            }}
-                          >
-                            OK
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li>
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Time Format: ({this.state.dateTimeFormat})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() =>
-                        this._handleOnDateTimeFormatChanged(
-                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
-                        )
-                      }
-                    >
-                      Show relative time
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        this._handleOnDateTimeFormatChanged(
-                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
-                        )
-                      }
-                    >
-                      Show ISO timestamp
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <div
-                style={{ borderLeft: '1px solid ', padding: 0, margin: '0 10px' }}
-                className="nav-link"
-              ></div>
-              <li>
-                <button
-                  type="button"
-                  aria-label="Toggle navigation"
-                  onClick={() => {
-                    this.setState({
-                      showDownloadModal: true
-                    });
-                  }}
-                  className="nav-link"
-                  style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
-                >
-                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
-                </button>
-              </li>
-            </ul>
+            {this._renderFilterBar()}
           </div>
         </nav>
         {this._renderSearchGroup()}

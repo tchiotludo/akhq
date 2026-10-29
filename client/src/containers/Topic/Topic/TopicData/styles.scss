@@ -179,3 +179,66 @@ code {
     max-width: 150px;
   }
 }
+
+.topic-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  width: 100%;
+  padding: 4px 0;
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+
+  .filter-group > strong {
+    white-space: nowrap;
+  }
+
+  .btn-group {
+    flex-wrap: nowrap;
+    width: auto;
+
+    .btn {
+      flex: 0 0 auto;
+      width: auto;
+      margin: 0;
+    }
+  }
+
+  .react-datepicker-wrapper {
+    width: 11rem;
+    margin-right: 0;
+  }
+
+  .react-datepicker-popper {
+    z-index: 1100;
+  }
+
+  .filter-offsets table tbody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+
+    tr {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input {
+      width: 8rem;
+    }
+  }
+}
+
+.khq-data-filter > .navbar-collapse {
+  flex-grow: 1;
+}
