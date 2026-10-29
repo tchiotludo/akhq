@@ -165,3 +165,14 @@ describe('TopicData search expression', () => {
     );
   });
 });
+
+describe('TopicData sort normalization', () => {
+  it('toggles on the first click even when the sort is not in the canonical case', () => {
+    const topicData = createTopicData('');
+    topicData.state.sortBy = 'OLDEST';
+    topicData._toggleSort();
+    expect(topicData.state.sortBy).toBe('Newest');
+    expect(topicData._normalizeSort('NEWEST')).toBe('Newest');
+    expect(topicData._normalizeSort(undefined)).toBe('Newest');
+  });
+});

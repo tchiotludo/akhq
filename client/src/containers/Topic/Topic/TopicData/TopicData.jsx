@@ -119,11 +119,9 @@ class TopicData extends Root {
         selectedCluster: clusterId,
         selectedTopic: topicId,
         registryType: this.props.registryType,
-        sortBy: query.get('sort')
-          ? query.get('sort')
-          : uiOptions && uiOptions.topicData && uiOptions.topicData.sort
-            ? uiOptions.topicData.sort
-            : this.state.sortBy,
+        sortBy: this._normalizeSort(
+          query.get('sort') || (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)
+        ),
         partition: query.get('partition') ? query.get('partition') : this.state.partition,
         datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : this.state.datetime,
         endDatetime: query.get('endTimestamp')
@@ -816,12 +814,19 @@ class TopicData extends Root {
     return !!state.applied || state.datetime !== '' || state.endDatetime !== '';
   }
 
+  // Config and links may use any case (e.g. NEWEST); the UI options are Oldest / Newest.
+  _normalizeSort(value) {
+    const { sortOptions, sortBy } = this.state;
+    return sortOptions.find(o => o.toLowerCase() === String(value || '').toLowerCase()) || sortBy;
+  }
+
   _toggleSort = () => {
     if (this._forcesOldest()) {
       return;
     }
     const { sortOptions, sortBy } = this.state;
-    const next = sortOptions.find(o => o !== sortBy) || sortBy;
+    const current = this._normalizeSort(sortBy);
+    const next = sortOptions.find(o => o !== current) || current;
     this.setState({ sortBy: next }, () => this._navigateWithCurrentFilters(false));
   };
 
