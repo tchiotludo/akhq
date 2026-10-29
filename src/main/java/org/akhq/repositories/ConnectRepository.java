@@ -16,6 +16,7 @@ import org.akhq.modules.KafkaModule;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.akhq.clients.connect.dto.ConnectorExpanded;
+import org.akhq.clients.connect.dto.ConnectorStatus;
 import org.akhq.clients.connect.dto.ConnectorPluginInfo;
 import org.akhq.clients.connect.dto.ConnectorPluginValidation;
 import org.akhq.clients.connect.error.ConnectBadRequestException;
@@ -68,6 +69,10 @@ public class ConnectRepository extends AbstractRepository {
         // I'm not sure of how to use the last parameter in this case
         // I look at the implementation for the Schema Registry part, but I don't see how make a similar thing here
         return PagedList.of(definitions, pagination, list -> list);
+    }
+
+    public ConnectorStatus getStatus(String clusterId, String connectId, String name) {
+        return this.kafkaModule.getConnectRestClient(clusterId).get(connectId).getConnectorStatus(name);
     }
 
     public List<ConnectDefinition> getDefinitions(String clusterId, String connectId, Optional<String> search, Optional<String> status, List<String> filters) {

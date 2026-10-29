@@ -48,8 +48,8 @@ JWT is rejected with `401`. The rest of the API keeps accepting them.
 Authorization is also the same model as classic endpoints:
 
 * Request must be authenticated.
-* Caller must have `TOPIC_DATA` / `READ` permission on the target cluster (`TOPIC` / `READ` for `akhq.search_topics`).
-* For `tools/call`, caller must also be allowed on the requested topic name pattern. `akhq.search_topics` only returns the topics matching the caller's patterns.
+* Caller must have the `READ` permission of the resource the tool reads on the target cluster: `TOPIC_DATA` for the message tools, `TOPIC` for `akhq.search_topics`, `CONSUMER_GROUP` for the consumer group tools, `SCHEMA` for the schema tools, `CONNECTOR` for the connector tools and `ACL` for the ACL tools. `akhq.list_clusters` only returns the clusters of the caller's groups.
+* For `tools/call`, caller must also be allowed on the requested resource name pattern (topic, consumer group, schema subject, connector or ACL principal). The search tools only return the resources matching the caller's patterns.
 
 Current tools:
 
@@ -57,6 +57,20 @@ Current tools:
 * `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
+* `akhq.list_clusters`: list the clusters the caller can access (`name`, `schemaRegistry`, `schemaRegistryType`, `connects`, `ksqldbs`). Use it to discover the `cluster` and `connect` arguments of the other tools.
+* `akhq.search_consumer_groups`: list consumer groups by name (`state`, `memberCount`, `topics`, `totalLag`), sorted by id. Same `search`/`maxResults` rules as `akhq.search_topics`.
+* `akhq.get_consumer_group`: state, assignor, coordinator, member count and lag per topic of one group.
+* `akhq.get_consumer_group_offsets`: committed offset, first/last offset and lag per topic partition of one group, optionally for one `topic`. `maxResults` defaults to 100 and is capped at 500.
+* `akhq.get_consumer_group_members`: active members of one group (`clientId`, `host`, assigned partitions per topic).
+* `akhq.search_schemas`: list Schema Registry subjects by name, sorted, with `search`/`maxResults` as above.
+* `akhq.get_schema`: definition, type, compatibility level, references and all versions of one subject. `version` defaults to the latest; a definition over 100000 characters is cut and flagged with `schemaTruncated`.
+* `akhq.search_connectors`: list the connectors of one Kafka Connect cluster (`connect`) by name, optionally keeping only those with a task in a given `status`.
+* `akhq.get_connector`: type, connector class, task count and configuration of one connector. Configurations are returned as Kafka Connect exposes them, like the REST API does, so they may contain credentials.
+* `akhq.get_connector_status`: state of one connector and of each of its tasks, with worker and failure trace (cut at 2000 characters).
+* `akhq.search_acls`: list the principals having ACLs, with their ACL count.
+* `akhq.get_principal_acls`: ACLs of one exact principal (for example `User:alice`), optionally for one `resourceType`. `maxResults` defaults to 100 and is capped at 500.
+
+All these tools are read only.
 
 For every search literal, use the matching `*MatchType` field to select `CONTAINS` (the default), `EQUALS`, or `NOT_CONTAINS`. Do not append AKHQ's internal `_C`, `_E`, or `_N` suffixes to a literal.
 
