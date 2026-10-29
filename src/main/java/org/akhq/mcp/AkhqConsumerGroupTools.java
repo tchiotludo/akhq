@@ -136,4 +136,33 @@ public class AkhqConsumerGroupTools extends AbstractMcpTool {
             return toolError(e);
         }
     }
+
+    @Tool(
+        name = "akhq.get_consumer_group_lag",
+        description = """
+            Get the lag of a consumer group: total lag, lag per topic and the most lagging partitions.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "group": "<consumer-group-id>",
+              "topic": "optional topic name",
+              "maxResults": 20
+            }
+
+            Rules:
+            - `cluster` and `group` are required.
+            - `topic` restricts the lag to one topic.
+            - `partitions` only lists lagging partitions (lag > 0), the most lagging first. `maxResults` defaults to 20 and is capped at 200.
+            - Use `akhq.get_consumer_group_offsets` for the offsets of every partition.
+            """
+    )
+    public CallToolResult getConsumerGroupLag(GetConsumerGroupLagArguments arguments, MicronautMcpTransportContext transportContext) throws Exception {
+        try {
+            ResourceScope scope = authorizeResourceScope(arguments, transportContext, arguments.group(), "group");
+            return toolResult(service.getLag(scope.cluster(), scope.resourceFilters(), scope.resource(), arguments.topic(), arguments.maxResults()));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
+    }
 }

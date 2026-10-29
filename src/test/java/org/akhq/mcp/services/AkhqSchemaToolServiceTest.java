@@ -58,4 +58,40 @@ class AkhqSchemaToolServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.getSchema("local", "orders-value", 0));
         assertThrows(IllegalArgumentException.class, () -> service.getSchema("local", "missing", null));
     }
+
+    @Test
+    void findSchemasForTopicOnlyUsesVisibleSubjects() throws Exception {
+        when(repository.all("local", Optional.of("orders"), List.of("orders.*")))
+            .thenReturn(List.of("orders-value", "orders-extra"));
+        when(repository.getAllVersions("local", "orders-value")).thenReturn(List.of(new Schema(12, "orders-value", 1)));
+
+        var result = service.findSchemasForTopic("local", List.of("orders.*"), "orders");
+
+        assertEquals(null, result.keySchema());
+        assertEquals(12, result.valueSchema().id());
+        assertEquals(List.of("orders-extra"), result.otherSubjects());
+    }
+
+    @Test
+    void getSchemaByIdHidesSubjectsTheCallerCannotSee() throws Exception {
+        when(repository.getSubjectsBySchemaId("local", 12))
+            .thenReturn(List.of(new Schema(12, "secret-value", 1), new Schema(12, "orders-value", 3)));
+        when(repository.all("local", Optional.empty(), List.of("orders.*"))).thenReturn(List.of("orders-value"));
+        when(repository.getAllVersions("local", "orders-value")).thenReturn(List.of(new Schema(12, "orders-value", 3)));
+
+        var result = service.getSchemaById("local", List.of("orders.*"), 12, null);
+
+        assertEquals(1, result.subjects().size());
+        assertEquals("orders-value", result.schema().subject());
+    }
+
+    @Test
+    void getSchemaByIdReportsUnknownId() throws Exception {
+        when(repository.getSubjectsBySchemaId("local", 99)).thenThrow(new RestClientException("nf", 404, 40403));
+
+        var result = service.getSchemaById("local", List.of(), 99, null);
+
+        assertTrue(result.subjects().isEmpty());
+        assertEquals(null, result.schema());
+    }
 }

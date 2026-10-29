@@ -80,4 +80,60 @@ public class AkhqSchemaTools extends AbstractMcpTool {
             return toolError(e);
         }
     }
+
+    @Tool(
+        name = "akhq.find_schemas_for_topic",
+        description = """
+            Find the key and value schemas of a topic, using the default TopicNameStrategy subjects `<topic>-key` and `<topic>-value`.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "topic": "<topic-name>"
+            }
+
+            Rules:
+            - `cluster` and `topic` are required.
+            - `keySchema` and `valueSchema` are the latest versions, null when the subject doesn't exist.
+            - `otherSubjects` lists other visible subjects containing the topic name, for topics using another naming strategy. Read them with `akhq.get_schema`.
+            """
+    )
+    public CallToolResult findSchemasForTopic(FindSchemasForTopicArguments arguments, MicronautMcpTransportContext transportContext) throws Exception {
+        try {
+            ResourceScope scope = authorizeResourceScope(arguments, transportContext, arguments.topic(), "topic");
+            return toolResult(service.findSchemasForTopic(scope.cluster(), scope.resourceFilters(), scope.resource()));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
+    }
+
+    @Tool(
+        name = "akhq.get_schema_by_id",
+        description = """
+            Resolve a global schema id (as found at the start of Kafka messages produced with a Schema Registry serializer)
+            to its schema and the subjects using it.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "id": 42,
+              "topic": "optional topic name"
+            }
+
+            Rules:
+            - `cluster` and `id` are required.
+            - `subjects` lists the visible subjects and versions registering this schema. `schema` is the one of the subject matching `topic`, else the first one.
+            """
+    )
+    public CallToolResult getSchemaById(GetSchemaByIdArguments arguments, MicronautMcpTransportContext transportContext) throws Exception {
+        try {
+            ClusterScope scope = authorizeClusterScope(arguments, transportContext);
+            if (arguments.id() == null) {
+                throw new IllegalArgumentException("`arguments.id` is required");
+            }
+            return toolResult(service.getSchemaById(scope.cluster(), scope.resourceFilters(), arguments.id(), arguments.topic()));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
+    }
 }

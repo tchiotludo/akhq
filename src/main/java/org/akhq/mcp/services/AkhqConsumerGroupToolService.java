@@ -2,6 +2,7 @@ package org.akhq.mcp.services;
 
 import jakarta.inject.Singleton;
 import org.akhq.mcp.model.GetConsumerGroupMembersResult;
+import org.akhq.mcp.model.GetConsumerGroupLagResult;
 import org.akhq.mcp.model.GetConsumerGroupOffsetsResult;
 import org.akhq.mcp.model.GetConsumerGroupResult;
 import org.akhq.mcp.model.SearchConsumerGroupsResult;
@@ -13,7 +14,6 @@ import org.akhq.repositories.ConsumerGroupRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -132,6 +132,56 @@ public class AkhqConsumerGroupToolService {
                 : truncated
                     ? "Found " + members.size() + " members, returning the first " + returned.size() + "."
                     : "Found " + members.size() + " member(s)."
+        );
+    }
+
+    public GetConsumerGroupLagResult getLag(String cluster, List<String> filters, String name, String topic, Integer maxResults)
+        throws ExecutionException, InterruptedException {
+        int limit = McpLimits.bound(maxResults, 20, McpLimits.MAX_ALLOWED_RESULTS);
+        String topicFilter = topic == null || topic.isBlank() ? null : topic.trim();
+        ConsumerGroup group = find(cluster, filters, name);
+        List<TopicPartition.ConsumerGroupOffset> offsets = group.getOffsets().stream()
+            .filter(offset -> topicFilter == null || offset.getTopic().equals(topicFilter))
+            .toList();
+
+        List<GetConsumerGroupLagResult.TopicLag> topics = offsets.stream()
+            .collect(Collectors.groupingBy(TopicPartition.ConsumerGroupOffset::getTopic))
+            .entrySet().stream()
+            .map(entry -> new GetConsumerGroupLagResult.TopicLag(
+                entry.getKey(),
+                entry.getValue().stream().mapToLong(offset -> offset.getOffsetLag().orElse(0L)).sum(),
+                (int) entry.getValue().stream().filter(offset -> offset.getOffsetLag().orElse(0L) > 0).count()
+            ))
+            .sorted(Comparator.comparingLong(GetConsumerGroupLagResult.TopicLag::lag).reversed()
+                .thenComparing(GetConsumerGroupLagResult.TopicLag::topic))
+            .toList();
+        List<TopicPartition.ConsumerGroupOffset> lagging = offsets.stream()
+            .filter(offset -> offset.getOffsetLag().orElse(0L) > 0)
+            .sorted(Comparator.comparingLong((TopicPartition.ConsumerGroupOffset offset) -> offset.getOffsetLag().orElse(0L)).reversed()
+                .thenComparing(TopicPartition.ConsumerGroupOffset::getTopic)
+                .thenComparingInt(TopicPartition.ConsumerGroupOffset::getPartition))
+            .toList();
+        List<GetConsumerGroupLagResult.PartitionLag> returned = lagging.stream()
+            .limit(limit)
+            .map(offset -> new GetConsumerGroupLagResult.PartitionLag(
+                offset.getTopic(),
+                offset.getPartition(),
+                offset.getOffset().orElse(null),
+                offset.getLastOffset().orElse(null),
+                offset.getOffsetLag().orElse(0L)
+            ))
+            .toList();
+        boolean truncated = lagging.size() > returned.size();
+
+        return new GetConsumerGroupLagResult(
+            cluster, name.trim(), String.valueOf(group.getState()),
+            topics.stream().mapToLong(GetConsumerGroupLagResult.TopicLag::lag).sum(),
+            topics, lagging.size(), truncated, returned,
+            lagging.isEmpty()
+                ? "No lag" + (topicFilter == null ? "" : " on topic '" + topicFilter + "'") + " for this consumer group."
+                : truncated
+                    ? lagging.size() + " partitions are lagging, returning the " + returned.size() + " most lagging. Raise `maxResults` or set `topic` to see more."
+                    : lagging.size() + " partition(s) lagging."
         );
     }
 

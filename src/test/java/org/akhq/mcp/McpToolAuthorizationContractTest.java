@@ -31,7 +31,9 @@ class McpToolAuthorizationContractTest {
         AkhqConsumerGroupTools.class,
         AkhqSchemaTools.class,
         AkhqConnectTools.class,
-        AkhqAclTools.class
+        AkhqAclTools.class,
+        AkhqBrokerTools.class,
+        AkhqTopicDetailTools.class
     );
 
     @Test
