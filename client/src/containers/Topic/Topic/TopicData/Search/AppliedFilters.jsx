@@ -1,5 +1,5 @@
 import React from 'react';
-import { conditionText, expressionPreview } from './preview';
+import { conditionText } from './preview';
 
 const AppliedFilters = ({ applied, notShareable }) => {
   if (!applied) {
@@ -8,18 +8,16 @@ const AppliedFilters = ({ applied, notShareable }) => {
   const conditions = applied.groups.flatMap(g => g.conditions);
   return (
     <div className="applied-filters" data-testid="applied-filters">
-      <span className="text-muted">Applied:</span>
-      {conditions.map((c, i) => (
-        <span key={i} className="badge badge-secondary applied-chip">
-          {conditionText(c)}
-        </span>
-      ))}
-      <div className="query-preview text-muted" data-testid="query-preview">
-        {expressionPreview(applied)}
-        <small className="d-block">Conditions are evaluated from left to right.</small>
+      <div className="small text-muted">Applied filters</div>
+      <div className="filters-active">
+        {conditions.map((c, i) => (
+          <span key={i} className="chip">
+            {conditionText(c)}
+          </span>
+        ))}
       </div>
       {notShareable && (
-        <div className="text-warning" role="status">
+        <div className="text-warning small" role="status">
           This search is too long to be shared by link.
         </div>
       )}

@@ -56,47 +56,47 @@ describe('SearchPanel', () => {
     });
   });
 
-  it('hides the Any/All toggle for non-Contains operators', async () => {
+  it('hides the Match terms select for non-Contains operators', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    expect(screen.getByRole('group', { name: 'Term logic' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Match terms')).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Operator'), 'equals');
-    expect(screen.queryByRole('group', { name: 'Term logic' })).toBeNull();
+    expect(screen.queryByLabelText('Match terms')).toBeNull();
   });
 
   it('converts Simple to Advanced and hides the simple editor', async () => {
     const user = userEvent.setup();
     render(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
-    await user.click(screen.getByRole('button', { name: 'All' }));
-    await user.click(screen.getByRole('button', { name: 'Advanced' }));
+    await user.selectOptions(screen.getByLabelText('Match terms'), 'all');
+    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
 
     expect(screen.queryByTestId('simple-search')).toBeNull();
     const rows = screen.getAllByTestId('condition-row');
     expect(rows).toHaveLength(2);
     expect(within(rows[1]).getByLabelText('Join for condition 2')).toHaveValue('AND');
-    expect(screen.getByTestId('group-scope')).toHaveTextContent('Scope: Value');
+    expect(screen.getByTestId('group-scope')).toHaveTextContent('Fields: Value');
   });
 
   it('shows Mixed scope, adds rows and groups, and removes rows', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced' }));
-    await user.click(screen.getByRole('button', { name: '+ Add condition' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getAllByRole('button', { name: 'Add condition' })[0]);
     await user.selectOptions(screen.getAllByLabelText('Field')[1], 'key');
     expect(screen.getByTestId('group-scope')).toHaveTextContent('Mixed');
 
     await user.click(screen.getAllByRole('button', { name: 'Remove condition' })[1]);
     expect(screen.getAllByTestId('condition-row')).toHaveLength(1);
 
-    await user.click(screen.getByRole('button', { name: '+ Add group' }));
+    await user.click(screen.getByRole('button', { name: '+ Group' }));
     expect(screen.getAllByTestId('search-group')).toHaveLength(2);
   });
 
   it('disables Search while a value is missing in Advanced', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
     expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('A value is required.');
     await user.type(screen.getByLabelText('Value'), 'x');
@@ -106,9 +106,9 @@ describe('SearchPanel', () => {
   it('refuses Advanced -> Simple when lossy and offers a new simple search', async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced' }));
-    await user.click(screen.getByRole('button', { name: '+ Add group' }));
-    await user.click(screen.getByRole('button', { name: 'Simple' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getByRole('button', { name: '+ Group' }));
+    await user.click(screen.getByRole('button', { name: 'Simple search' }));
 
     expect(screen.getByTestId('switch-blocked')).toHaveTextContent('more than one group');
     expect(screen.getByTestId('advanced-search')).toBeInTheDocument();
@@ -122,8 +122,8 @@ describe('SearchPanel', () => {
     const user = userEvent.setup();
     render(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
-    await user.click(screen.getByRole('button', { name: 'Advanced' }));
-    await user.click(screen.getByRole('button', { name: 'Simple' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getByRole('button', { name: 'Simple search' }));
     expect(screen.getByLabelText('Search text')).toHaveValue('a b');
   });
 

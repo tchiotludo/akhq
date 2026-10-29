@@ -1,40 +1,119 @@
 .search-panel {
-  .simple-search,
-  .condition-row {
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+  --search-border: rgba(128, 128, 128, 0.45);
+  border: 1px solid var(--search-border);
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px 0;
+
+  .small,
+  .help-text,
+  .group-scope {
+    opacity: 0.75;
+  }
+
+  .search-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .quick-search,
+  .search-group {
+    border: 1px solid var(--search-border);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .quick-search-row {
+    display: grid;
+    grid-template-columns: auto 135px 160px minmax(220px, 1fr) auto auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .quick-search-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.85rem;
 
     .form-control {
       width: auto;
     }
 
-    .search-text {
-      flex: 1 1 14rem;
-    }
-
-    .join-select,
-    .join-placeholder {
-      width: 5.5rem;
+    .help-text {
+      margin-left: auto;
     }
   }
 
-  .search-group {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-
-    .group-title {
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-  }
-
-  .search-actions {
+  .group-join,
+  .group-header {
     display: flex;
-    gap: 0.5rem;
-    margin: 0.5rem 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .join-select {
+      width: auto;
+    }
   }
 
-  .applied-chip {
-    margin-left: 0.25rem;
+  .condition-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .condition-row {
+    display: grid;
+    grid-template-columns: 88px 130px 135px minmax(220px, 1fr) 38px 38px;
+    gap: 8px;
+    align-items: center;
+
+    .row-prefix {
+      text-align: right;
+      opacity: 0.75;
+      font-size: 0.85rem;
+    }
+  }
+
+  .query-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+
+    .query-actions {
+      display: inline-flex;
+      gap: 8px;
+    }
+  }
+
+  .filters-active {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .chip {
+    border: 1px solid #005f81;
+    background: rgba(0, 95, 129, 0.22);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 900px) {
+    .quick-search-row,
+    .condition-row {
+      grid-template-columns: 1fr;
+    }
   }
 }

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import SimpleSearch from './SimpleSearch';
 import AdvancedSearch from './AdvancedSearch';
 import AppliedFilters from './AppliedFilters';
+import { expressionPreview } from './preview';
 import {
   advancedToSimple,
   draftToExpression,
@@ -67,41 +68,50 @@ const SearchPanel = ({
     onClear();
   };
 
+  const preview = expressionPreview(draftToExpression(draft));
+
+  const actions = isSearching ? (
+    <>
+      <button type="button" className="btn btn-secondary" onClick={onStop}>
+        Stop
+      </button>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        disabled={!hasCriteria && !applied}
+        onClick={clear}
+      >
+        Clear
+      </button>
+    </>
+  ) : (
+    <>
+      <button type="submit" className="btn btn-primary" disabled={errors.length > 0}>
+        Search
+      </button>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        disabled={!hasCriteria && !applied}
+        onClick={clear}
+      >
+        Clear
+      </button>
+    </>
+  );
+
   return (
     <form className="search-panel" onSubmit={submit} data-testid="search-panel">
-      <div className="d-flex align-items-center search-panel-header">
-        <div className="btn-group" role="group" aria-label="Search mode">
-          <button
-            type="button"
-            className={`btn btn-sm ${draft.mode === 'simple' ? 'btn-primary' : 'btn-secondary'}`}
-            aria-pressed={draft.mode === 'simple'}
-            onClick={draft.mode === 'simple' ? undefined : switchToSimple}
-          >
-            Simple
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm ${draft.mode === 'advanced' ? 'btn-primary' : 'btn-secondary'}`}
-            aria-pressed={draft.mode === 'advanced'}
-            onClick={draft.mode === 'advanced' ? undefined : switchToAdvanced}
-          >
-            Advanced
-          </button>
-        </div>
+      <div className="search-panel-header">
+        <strong>Search messages</strong>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={draft.mode === 'simple' ? switchToAdvanced : switchToSimple}
+        >
+          {draft.mode === 'simple' ? 'Advanced filters' : 'Simple search'}
+        </button>
       </div>
-
-      {draft.mode === 'simple' ? (
-        <SimpleSearch
-          simple={draft.simple}
-          onChange={simple => onDraftChange({ ...draft, simple })}
-        />
-      ) : (
-        <AdvancedSearch
-          advanced={draft.advanced}
-          errors={errorsByPath}
-          onChange={advanced => onDraftChange({ ...draft, advanced })}
-        />
-      )}
 
       {blockedReason && (
         <div className="alert alert-warning" role="alert" data-testid="switch-blocked">
@@ -112,35 +122,38 @@ const SearchPanel = ({
         </div>
       )}
 
+      {draft.mode === 'simple' ? (
+        <SimpleSearch
+          simple={draft.simple}
+          actions={actions}
+          onChange={simple => onDraftChange({ ...draft, simple })}
+        />
+      ) : (
+        <>
+          <AdvancedSearch
+            advanced={draft.advanced}
+            errors={errorsByPath}
+            onChange={advanced => onDraftChange({ ...draft, advanced })}
+          />
+          <div className="query-preview">
+            <span>
+              Query preview: <code data-testid="query-preview">{preview || '—'}</code>
+              <small className="d-block">Conditions are evaluated from left to right.</small>
+            </span>
+            <div className="query-actions">{actions}</div>
+          </div>
+        </>
+      )}
+
       <div aria-live="polite">
         {draft.mode === 'simple' && errorsByPath['groups.0.conditions.0'] && (
-          <div className="text-danger">{errorsByPath['groups.0.conditions.0']}</div>
+          <div className="text-danger small">{errorsByPath['groups.0.conditions.0']}</div>
         )}
         {globalErrors.map(e => (
-          <div key={e.path} className="text-danger">
+          <div key={e.path} className="text-danger small">
             {e.message}
           </div>
         ))}
-      </div>
-
-      <div className="search-actions">
-        {isSearching ? (
-          <button type="button" className="btn btn-secondary" onClick={onStop}>
-            Stop
-          </button>
-        ) : (
-          <button type="submit" className="btn btn-primary" disabled={errors.length > 0}>
-            Search
-          </button>
-        )}
-        <button
-          type="button"
-          className="btn btn-secondary"
-          disabled={!hasCriteria && !applied}
-          onClick={clear}
-        >
-          Clear
-        </button>
       </div>
 
       <AppliedFilters applied={applied} notShareable={notShareable} />

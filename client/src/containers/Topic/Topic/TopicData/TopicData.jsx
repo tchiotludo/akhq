@@ -31,7 +31,6 @@ import { streamSearch, SearchRequestError } from '../../../../utils/sseClient';
 import SearchPanel from './Search/SearchPanel';
 import { emptyDraft, expressionToDraft } from './Search/searchModel';
 import { readSearchFromQuery, sameExpression, writeSearchToParams } from './Search/searchUrl';
-import { expressionPreview } from './Search/preview';
 import { withRouter } from '../../../../utils/withRouter';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -837,24 +836,17 @@ class TopicData extends Root {
     const { draft, applied, isSearching, searchNotShareable } = this.state;
 
     return (
-      <div style={{ minWidth: '560px', padding: '0 1rem' }}>
-        <SearchPanel
-          draft={draft}
-          onDraftChange={next => this.setState({ draft: next })}
-          applied={applied}
-          onApply={this._applySearch}
-          onClear={this._clearSearch}
-          onStop={() => this._stopEventSource()}
-          isSearching={!!isSearching}
-          notShareable={searchNotShareable}
-        />
-      </div>
+      <SearchPanel
+        draft={draft}
+        onDraftChange={next => this.setState({ draft: next })}
+        applied={applied}
+        onApply={this._applySearch}
+        onClear={this._clearSearch}
+        onStop={() => this._stopEventSource()}
+        isSearching={!!isSearching}
+        notShareable={searchNotShareable}
+      />
     );
-  }
-
-  _renderCurrentSearchText() {
-    const { applied } = this.state;
-    return applied ? expressionPreview(applied) : '';
   }
 
   _handleSingleCheckboxChange = event => {
@@ -1060,14 +1052,6 @@ class TopicData extends Root {
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Dropdown autoClose="outside">
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Search:</strong> {this._renderCurrentSearchText()}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
                 <Dropdown>
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Offsets:</strong>
@@ -1152,6 +1136,7 @@ class TopicData extends Root {
             </ul>
           </div>
         </nav>
+        {this._renderSearchGroup()}
         {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
           <Table
