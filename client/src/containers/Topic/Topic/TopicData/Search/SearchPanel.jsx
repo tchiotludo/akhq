@@ -107,7 +107,10 @@ const SearchPanel = ({
           <button
             type="button"
             className="btn btn-secondary btn-sm"
-            onClick={draft.mode === 'simple' ? switchToAdvanced : switchToSimple}
+            onClick={() => {
+              setExpanded(true);
+              draft.mode === 'simple' ? switchToAdvanced() : switchToSimple();
+            }}
           >
             {draft.mode === 'simple' ? 'Advanced filters' : 'Simple search'}
           </button>

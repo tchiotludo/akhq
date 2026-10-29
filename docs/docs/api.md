@@ -54,7 +54,7 @@ Authorization is also the same model as classic endpoints:
 Current tools:
 
 * `akhq.search_topics`: list the topics of a cluster (`name`, `partitions`), sorted by name, internal topics included. Optional space-separated `search` terms must all appear in the name (case insensitive). `maxResults` defaults to 50 and is capped at 200; `truncated` and `totalMatches` tell when more topics matched.
-* `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
+* `akhq.find_message_in_topic`: search message(s) with either the `searchBy*` literal filters or a structured `expression` (the same model as the UI search, see [Topic data search](topic-data-search.md); the two cannot be combined) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
 
@@ -136,6 +136,38 @@ curl -X POST "http://localhost:8081/mcp" \
           "searchByValue": "needle",
           "searchByValueMatchType": "CONTAINS",
           "maxMatches": 1
+        }
+      }
+    }
+  }'
+```
+
+### Example request (`akhq.find_message_in_topic` with a structured expression)
+
+```bash
+curl -X POST "http://localhost:8081/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: ******" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "call-3",
+    "method": "tools/call",
+    "params": {
+      "name": "akhq.find_message_in_topic",
+      "arguments": {
+        "arguments": {
+          "cluster": "local",
+          "topic": "my-topic",
+          "expression": {
+            "version": 1,
+            "groups": [
+              {"conditions": [
+                {"field": "value", "operator": "matchesRegex", "value": "error-\\d+"},
+                {"join": "AND", "field": "key", "operator": "contains", "value": "customer-42"}
+              ]}
+            ]
+          },
+          "maxMatches": 5
         }
       }
     }
