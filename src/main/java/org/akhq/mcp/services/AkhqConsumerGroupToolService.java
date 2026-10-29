@@ -3,6 +3,7 @@ package org.akhq.mcp.services;
 import jakarta.inject.Singleton;
 import org.akhq.mcp.model.GetConsumerGroupMembersResult;
 import org.akhq.mcp.model.GetConsumerGroupLagResult;
+import org.akhq.mcp.model.GetTopicConsumerGroupsResult;
 import org.akhq.mcp.model.GetConsumerGroupOffsetsResult;
 import org.akhq.mcp.model.GetConsumerGroupResult;
 import org.akhq.mcp.model.SearchConsumerGroupsResult;
@@ -182,6 +183,29 @@ public class AkhqConsumerGroupToolService {
                 : truncated
                     ? lagging.size() + " partitions are lagging, returning the " + returned.size() + " most lagging. Raise `maxResults` or set `topic` to see more."
                     : lagging.size() + " partition(s) lagging."
+        );
+    }
+
+    public GetTopicConsumerGroupsResult getTopicConsumerGroups(String cluster, List<String> filters, String topic, Boolean onlyActive, Integer maxResults)
+        throws ExecutionException, InterruptedException {
+        int limit = McpLimits.maxResults(maxResults);
+        List<ConsumerGroup> groups = (Boolean.TRUE.equals(onlyActive)
+            ? repository.findActiveByTopic(cluster, topic, filters)
+            : repository.findByTopic(cluster, topic, filters)).stream()
+            .sorted(Comparator.comparing(ConsumerGroup::getId, String::compareToIgnoreCase))
+            .toList();
+        List<GetTopicConsumerGroupsResult.Group> returned = groups.stream()
+            .limit(limit)
+            .map(group -> new GetTopicConsumerGroupsResult.Group(
+                group.getId(), String.valueOf(group.getState()), group.getMembers().size(),
+                group.isActiveTopic(topic), group.getOffsetLag(topic)
+            ))
+            .toList();
+        boolean truncated = groups.size() > returned.size();
+
+        return new GetTopicConsumerGroupsResult(
+            cluster, topic, groups.size(), truncated, returned,
+            McpLimits.listMessage("consumer group", groups.size(), returned.size(), truncated)
         );
     }
 

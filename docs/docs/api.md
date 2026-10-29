@@ -48,7 +48,7 @@ JWT is rejected with `401`. The rest of the API keeps accepting them.
 Authorization is also the same model as classic endpoints:
 
 * Request must be authenticated.
-* Caller must have the `READ` permission of the resource the tool reads on the target cluster: `TOPIC_DATA` for the message tools, `TOPIC` for `akhq.search_topics`, `akhq.get_topic` and `akhq.get_topic_configs`, `CONSUMER_GROUP` for the consumer group tools, `SCHEMA` for the schema tools, `CONNECTOR` for the connector tools and `ACL` for the ACL tools and `NODE` for the broker tools. `akhq.get_topic_configs` and `akhq.get_broker_configs` additionally need `READ_CONFIG`. `akhq.list_clusters` only returns the clusters of the caller's groups.
+* Caller must have the `READ` permission of the resource the tool reads on the target cluster: `TOPIC_DATA` for the message tools, `TOPIC` for `akhq.search_topics`, `akhq.get_topic`, `akhq.get_topic_acls` and `akhq.get_topic_configs`, `CONSUMER_GROUP` for the consumer group tools, `SCHEMA` for the schema tools, `CONNECTOR` for the connector tools and `ACL` for the ACL tools and `NODE` for the broker tools. `akhq.get_topic_configs` and `akhq.get_broker_configs` additionally need `READ_CONFIG`. `akhq.list_clusters` only returns the clusters of the caller's groups.
 * For `tools/call`, caller must also be allowed on the requested resource name pattern (topic, consumer group, schema subject, connector or ACL principal). The search tools only return the resources matching the caller's patterns.
 
 Current tools:
@@ -56,6 +56,7 @@ Current tools:
 * `akhq.search_topics`: list the topics of a cluster (`name`, `partitions`), sorted by name, internal topics included. Optional space-separated `search` terms must all appear in the name (case insensitive). `maxResults` defaults to 50 and is capped at 200; `truncated` and `totalMatches` tell when more topics matched.
 * `akhq.get_topic`: partitions of one topic (leader, replicas with in-sync state, first/last offset, record count, size), replication factor and under-replicated partition count. `maxResults` is the maximum number of partitions, default 100, capped at 500.
 * `akhq.get_topic_configs`: configs of one topic (`name`, `value`, `source`, `readOnly`, `sensitive`). Optional `search` terms, `onlyOverridden` and `maxResults` (default 100, capped at 500). Sensitive values are never returned.
+* `akhq.get_topic_acls`: ACLs granted on one topic, grouped by principal. `maxResults` is the maximum number of principals, default 50, capped at 200.
 * `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
@@ -65,6 +66,7 @@ Current tools:
 * `akhq.get_consumer_group_offsets`: committed offset, first/last offset and lag per topic partition of one group, optionally for one `topic`. `maxResults` defaults to 100 and is capped at 500.
 * `akhq.get_consumer_group_members`: active members of one group (`clientId`, `host`, assigned partitions per topic).
 * `akhq.get_consumer_group_lag`: total lag, lag per topic and the most lagging partitions of one group, optionally for one `topic`. `maxResults` defaults to 20 and is capped at 200.
+* `akhq.get_topic_consumer_groups`: consumer groups consuming one topic (`state`, `memberCount`, `lagOnTopic`). `onlyActive` skips empty groups and is much faster on large clusters. `maxResults` defaults to 50 and is capped at 200.
 * `akhq.search_schemas`: list Schema Registry subjects by name, sorted, with `search`/`maxResults` as above.
 * `akhq.get_schema`: definition, type, compatibility level, references and all versions of one subject. `version` defaults to the latest; a definition over 100000 characters is cut and flagged with `schemaTruncated`.
 * `akhq.find_schemas_for_topic`: latest key and value schemas of a topic (`<topic>-key` and `<topic>-value` subjects) plus other visible subjects containing the topic name.

@@ -11,6 +11,8 @@ import jakarta.inject.Singleton;
 import org.akhq.configs.security.Role;
 import org.akhq.mcp.model.GetTopicArguments;
 import org.akhq.mcp.model.GetTopicConfigsArguments;
+import org.akhq.mcp.model.GetTopicAclsArguments;
+import org.akhq.mcp.services.AkhqAclToolService;
 import org.akhq.mcp.services.AkhqTopicToolService;
 import org.akhq.security.annotation.AKHQSecured;
 
@@ -21,8 +23,11 @@ import org.akhq.security.annotation.AKHQSecured;
 public class AkhqTopicDetailTools extends AbstractMcpTool {
     private final AkhqTopicToolService service;
 
-    public AkhqTopicDetailTools(AkhqTopicToolService service) {
+    private final AkhqAclToolService aclService;
+
+    public AkhqTopicDetailTools(AkhqTopicToolService service, AkhqAclToolService aclService) {
         this.service = service;
+        this.aclService = aclService;
     }
 
     @Tool(
@@ -83,6 +88,33 @@ public class AkhqTopicDetailTools extends AbstractMcpTool {
             return toolResult(service.getTopicConfigs(
                 scope.cluster(), scope.topic(), arguments.search(), arguments.onlyOverridden(), arguments.maxResults()
             ));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
+    }
+
+    @Tool(
+        name = "akhq.get_topic_acls",
+        description = """
+            List the ACLs granted on a topic, grouped by principal.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "topic": "<topic-name>",
+              "maxResults": 50
+            }
+
+            Rules:
+            - `cluster` and `topic` are required.
+            - `maxResults` is the maximum number of principals, default 50, capped at 200. Principals are sorted by name.
+            - Use `akhq.get_principal_acls` for every ACL of one principal.
+            """
+    )
+    public CallToolResult getTopicAcls(GetTopicAclsArguments arguments, MicronautMcpTransportContext transportContext) throws Exception {
+        try {
+            TopicScope scope = authorizeTopicScope(arguments, transportContext);
+            return toolResult(aclService.getTopicAcls(scope.cluster(), scope.topic(), arguments.maxResults()));
         } catch (IllegalArgumentException | AuthorizationException e) {
             return toolError(e);
         }

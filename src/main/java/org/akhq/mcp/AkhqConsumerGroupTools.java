@@ -165,4 +165,38 @@ public class AkhqConsumerGroupTools extends AbstractMcpTool {
             return toolError(e);
         }
     }
+
+    @Tool(
+        name = "akhq.get_topic_consumer_groups",
+        description = """
+            List the consumer groups consuming a topic, with their state and their lag on this topic.
+
+            Expected `arguments` JSON object:
+            {
+              "cluster": "<cluster-name>",
+              "topic": "<topic-name>",
+              "onlyActive": false,
+              "maxResults": 50
+            }
+
+            Rules:
+            - `cluster` and `topic` are required. Only consumer groups the caller is allowed to see are returned.
+            - `onlyActive` restricts to groups with an active member; it is much faster on clusters with many groups, because the default also scans empty groups.
+            - `maxResults` defaults to 50 and is capped at 200. Groups are sorted by id.
+            - Use `akhq.get_consumer_group_lag` for the lag detail of a group.
+            """
+    )
+    public CallToolResult getTopicConsumerGroups(GetTopicConsumerGroupsArguments arguments, MicronautMcpTransportContext transportContext) throws Exception {
+        try {
+            ClusterScope scope = authorizeClusterScope(arguments, transportContext);
+            if (arguments.topic() == null || arguments.topic().isBlank()) {
+                throw new IllegalArgumentException("`arguments.topic` is required");
+            }
+            return toolResult(service.getTopicConsumerGroups(
+                scope.cluster(), scope.resourceFilters(), arguments.topic().trim(), arguments.onlyActive(), arguments.maxResults()
+            ));
+        } catch (IllegalArgumentException | AuthorizationException e) {
+            return toolError(e);
+        }
+    }
 }

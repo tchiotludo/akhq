@@ -2,6 +2,7 @@ package org.akhq.mcp.services;
 
 import jakarta.inject.Singleton;
 import org.akhq.mcp.model.GetPrincipalAclsResult;
+import org.akhq.mcp.model.GetTopicAclsResult;
 import org.akhq.mcp.model.SearchAclsResult;
 import org.akhq.models.AccessControl;
 import org.akhq.repositories.AccessControlListRepository;
@@ -45,7 +46,39 @@ public class AkhqAclToolService {
             cluster, AccessControl.encodePrincipal(principal), parseResourceType(resourceType)
         );
 
-        List<GetPrincipalAclsResult.Acl> acls = Optional.ofNullable(control.getAcls()).orElse(List.of()).stream()
+        List<GetPrincipalAclsResult.Acl> acls = toAcls(control);
+        List<GetPrincipalAclsResult.Acl> returned = acls.subList(0, Math.min(limit, acls.size()));
+        boolean truncated = acls.size() > returned.size();
+
+        return new GetPrincipalAclsResult(
+            cluster, principal, acls.size(), truncated, returned,
+            acls.isEmpty()
+                ? "No ACL found for this principal. Use the exact principal, including its type, such as `User:alice`."
+                : truncated
+                    ? "Found " + acls.size() + " ACLs, returning the first " + returned.size()
+                        + ". Set `resourceType` or raise `maxResults` to see the others."
+                    : "Found " + acls.size() + " ACL(s)."
+        );
+    }
+
+    public GetTopicAclsResult getTopicAcls(String cluster, String topic, Integer maxResults)
+        throws ExecutionException, InterruptedException {
+        int limit = McpLimits.maxResults(maxResults);
+        List<GetTopicAclsResult.PrincipalAcls> principals = repository.findByResourceType(cluster, ResourceType.TOPIC, topic).stream()
+            .map(control -> new GetTopicAclsResult.PrincipalAcls(control.getPrincipal(), toAcls(control)))
+            .sorted(Comparator.comparing(GetTopicAclsResult.PrincipalAcls::principal, String::compareToIgnoreCase))
+            .toList();
+        List<GetTopicAclsResult.PrincipalAcls> returned = principals.subList(0, Math.min(limit, principals.size()));
+        boolean truncated = principals.size() > returned.size();
+
+        return new GetTopicAclsResult(
+            cluster, topic, principals.size(), truncated, returned,
+            McpLimits.listMessage("principal", principals.size(), returned.size(), truncated)
+        );
+    }
+
+    private static List<GetPrincipalAclsResult.Acl> toAcls(AccessControl control) {
+        return Optional.ofNullable(control.getAcls()).orElse(List.of()).stream()
             .map(acl -> new GetPrincipalAclsResult.Acl(
                 acl.getResource().getResourceType().name(),
                 acl.getResource().getName(),
@@ -59,18 +92,6 @@ public class AkhqAclToolService {
                 .thenComparing(GetPrincipalAclsResult.Acl::resourceName, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparing(GetPrincipalAclsResult.Acl::operation))
             .toList();
-        List<GetPrincipalAclsResult.Acl> returned = acls.subList(0, Math.min(limit, acls.size()));
-        boolean truncated = acls.size() > returned.size();
-
-        return new GetPrincipalAclsResult(
-            cluster, principal, acls.size(), truncated, returned,
-            acls.isEmpty()
-                ? "No ACL found for this principal. Use the exact principal, including its type, such as `User:alice`."
-                : truncated
-                    ? "Found " + acls.size() + " ACLs, returning the first " + returned.size()
-                        + ". Set `resourceType` or raise `maxResults` to see the others."
-                    : "Found " + acls.size() + " ACL(s)."
-        );
     }
 
     private static Optional<ResourceType> parseResourceType(String value) {
