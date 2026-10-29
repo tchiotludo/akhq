@@ -14,6 +14,9 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.annotation.Error;
+import io.micronaut.http.hateoas.JsonError;
+import io.micronaut.http.hateoas.Link;
 import io.micronaut.http.server.types.files.StreamedFile;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
@@ -26,11 +29,14 @@ import org.akhq.configs.security.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.*;
+import org.akhq.search.SearchExpression;
+import org.akhq.search.SearchExpressionValidator;
 import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
 import org.akhq.utils.TopicDataResultNextList;
+import tools.jackson.core.JacksonException;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
@@ -66,6 +72,8 @@ public class TopicController extends AbstractController {
     private AccessControlListRepository aclRepository;
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+    @Inject
+    private SearchExpressionValidator searchExpressionValidator;
 
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
@@ -432,6 +440,46 @@ public class TopicController extends AbstractController {
             size
         );
 
+        return searchEvents(cluster, topicName, options);
+    }
+
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
+    @ExecuteOn(TaskExecutors.IO)
+    @Post(value = "api/{cluster}/topic/{topicName}/data/search", consumes = MediaType.APPLICATION_JSON, produces = MediaType.TEXT_EVENT_STREAM)
+    @Operation(tags = {"topic data"}, summary = "Search for data for a topic with a structured search expression")
+    public Publisher<Event<SearchRecord>> sseWithExpression(
+        String cluster,
+        String topicName,
+        @Body SearchExpression searchExpression,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> endTimestamp,
+        Optional<Integer> size
+    ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            searchExpression,
+            size
+        );
+
+        return searchEvents(cluster, topicName, options);
+    }
+
+    private Publisher<Event<SearchRecord>> searchEvents(
+        String cluster,
+        String topicName,
+        RecordRepository.Options options
+    ) throws ExecutionException, InterruptedException {
         Topic topic = topicRepository.findByName(cluster, topicName);
 
         return recordRepository
@@ -492,6 +540,45 @@ public class TopicController extends AbstractController {
             Optional.empty()
         );
 
+        return downloadRecords(cluster, topicName, options);
+    }
+
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
+    @ExecuteOn(TaskExecutors.IO)
+    @Post(value = "api/{cluster}/topic/{topicName}/data/download", consumes = MediaType.APPLICATION_JSON)
+    @Operation(tags = {"topic data download"}, summary = "Download data for a topic with a structured search expression")
+    public HttpResponse<StreamedFile> downloadWithExpression(
+        String cluster,
+        String topicName,
+        @Body SearchExpression searchExpression,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> endTimestamp
+    ) throws ExecutionException, InterruptedException, IOException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            searchExpression,
+            Optional.empty()
+        );
+
+        return downloadRecords(cluster, topicName, options);
+    }
+
+    private HttpResponse<StreamedFile> downloadRecords(
+        String cluster,
+        String topicName,
+        RecordRepository.Options options
+    ) throws ExecutionException, InterruptedException, IOException {
         // Set in MAX_POLL_RECORDS_CONFIG, big number increases speed
         options.setSize(10000);
 
@@ -687,6 +774,48 @@ public class TopicController extends AbstractController {
     @Getter
     public static class CopyResponse {
         int records;
+    }
+
+    @Error
+    public HttpResponse<?> invalidJsonBody(HttpRequest<?> request, JacksonException e) {
+        JsonError error = new JsonError("Invalid request body: unknown or malformed field, operator or value")
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.<JsonError>badRequest()
+            .body(error);
+    }
+
+    private RecordRepository.Options dataSearchOptions(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> endTimestamp,
+        SearchExpression searchExpression,
+        Optional<Integer> size
+    ) {
+        searchExpressionValidator.validate(searchExpression);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            size
+        );
+        options.setSearchExpression(searchExpression);
+        return options;
     }
 
     private RecordRepository.Options dataSearchOptions(
