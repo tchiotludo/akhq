@@ -23,22 +23,19 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import DateTime from '../../../../components/DateTime';
-import { capitalizeTxt, getClusterUIOptions, isSameLocation } from '../../../../utils/functions';
+import { getClusterUIOptions, isSameLocation } from '../../../../utils/functions';
 import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
-import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
-import { EventSourcePolyfill } from 'event-source-polyfill';
+import { streamSearch, SearchRequestError } from '../../../../utils/sseClient';
+import SearchPanel from './Search/SearchPanel';
+import { emptyDraft, expressionToDraft } from './Search/searchModel';
+import { readSearchFromQuery, sameExpression, writeSearchToParams } from './Search/searchUrl';
+import { expressionPreview } from './Search/preview';
 import { withRouter } from '../../../../utils/withRouter';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faDownload,
-  faSearch,
-  faSortNumericDesc,
-  faSpinner
-} from '@fortawesome/free-solid-svg-icons';
-import { fromEvent, map, scan } from 'rxjs';
+import { faDownload, faSortNumericDesc } from '@fortawesome/free-solid-svg-icons';
 
 class TopicData extends Root {
   state = {
@@ -50,14 +47,9 @@ class TopicData extends Root {
     offsetsOptions: [],
     timestamp: '',
     endTimestamp: '',
-    search: {
-      key: { text: '', type: 'C' },
-      value: { text: '', type: 'C' },
-      headerKey: { text: '', type: 'C' },
-      headerValue: { text: '', type: 'C' },
-      keySubject: { text: '', type: 'C' },
-      valueSubject: { text: '', type: 'C' }
-    },
+    draft: emptyDraft(),
+    applied: null,
+    searchNotShareable: false,
     offsets: {},
     offsetsSearch: '',
     openDateModal: false,
@@ -87,22 +79,8 @@ class TopicData extends Root {
     messagesToExport: []
   };
 
-  searchFilterTypes = [
-    {
-      _id: 'C',
-      name: 'Contains'
-    },
-    {
-      _id: 'N',
-      name: 'Not Contains'
-    },
-    {
-      _id: 'E',
-      name: 'Equals'
-    }
-  ];
-
-  eventSource;
+  searchAbort;
+  searchRunId = 0;
 
   constructor(props) {
     super(props);
@@ -153,7 +131,7 @@ class TopicData extends Root {
           ? new Date(query.get('endTimestamp'))
           : this.state.endDatetime,
         offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
-        search: this._buildSearchFromQueryString(query),
+        ...this._searchStateFromQuery(query, prevState),
         offsets: query.get('offset')
           ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
           : query.get('after')
@@ -187,106 +165,115 @@ class TopicData extends Root {
     }
   };
 
-  _buildSearchFromQueryString(query) {
-    const search = {
-      key: { text: '', type: 'C' },
-      value: { text: '', type: 'C' },
-      headerKey: { text: '', type: 'C' },
-      headerValue: { text: '', type: 'C' },
-      keySubject: { text: '', type: 'C' },
-      valueSubject: { text: '', type: 'C' }
-    };
+  _searchStateFromQuery(query, prevState) {
+    const { applied, error } = readSearchFromQuery(query);
+    if (error) {
+      toast.warn(`The search in this link could not be restored: ${error}`);
+    }
 
-    Object.keys(search).forEach(value => {
-      const searchFilter = query.get(`searchBy${capitalizeTxt(value)}`);
-      if (searchFilter) {
-        const pos = searchFilter.lastIndexOf('_');
-        search[value].text = searchFilter.substr(0, pos);
-        search[value].type = searchFilter.substr(pos + 1);
-      } else {
-        search[value].text = '';
-        search[value].type = 'C';
-      }
-    });
-    return search;
+    // A search too long for the URL only lives in the state: keep it across our own navigations.
+    if (!applied && !error && prevState.searchNotShareable && !query.get('searchQuery')) {
+      return {};
+    }
+
+    return {
+      applied,
+      searchNotShareable: false,
+      draft: sameExpression(applied, prevState.applied)
+        ? prevState.draft
+        : expressionToDraft(applied)
+    };
   }
 
   _startEventSource = changePage => {
-    let { selectedCluster, selectedTopic, nextPage } = this.state;
+    const { selectedCluster, selectedTopic, nextPage, applied } = this.state;
 
     let lastPercentVal = 0.0;
     const percentUpdateDelta = 0.5;
+    const results = [];
+    const runId = ++this.searchRunId;
+    const isCurrent = () => runId === this.searchRunId;
 
-    let self = this;
     this.setState(
       { messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 },
       () => {
-        const filters = this._buildFilters();
-        this.eventSource = new EventSourcePolyfill(
-          uriTopicDataSearch(
+        this.searchAbort = new AbortController();
+
+        const onBody = data => {
+          results.push(data);
+          const lastResult = data;
+          const percentDiff = lastResult.percent - lastPercentVal;
+
+          // to avoid UI slowdowns, only update the percentage in fixed increments
+          if (percentDiff >= percentUpdateDelta) {
+            lastPercentVal = lastResult.percent;
+            this.setState(prev => ({
+              nextPage: lastResult.after ? lastResult.after : prev.nextPage,
+              recordCount: prev.recordCount + (lastResult.records ? lastResult.records.length : 0),
+              percent: lastResult.percent.toFixed(2)
+            }));
+          }
+
+          const records = results
+            .map(result => result.records)
+            .filter(records => records?.length > 0)
+            .reduce((acc, all) => [...acc, ...all], []);
+
+          if (records.length) {
+            const tableMessages = this._sortMessages(this._handleMessages(records));
+            this.setState({
+              recordCount: tableMessages.length,
+              messages: tableMessages,
+              loading: false
+            });
+          }
+        };
+
+        streamSearch({
+          url: uriTopicDataSearch(
             selectedCluster,
             selectedTopic,
-            filters,
+            this._buildScopeFilters(),
             changePage ? nextPage : undefined
           ),
-          localStorage.getItem('jwtToken')
-            ? {
-                headers: {
-                  Authorization: 'Bearer ' + localStorage.getItem('jwtToken')
-                }
-              }
-            : {}
-        );
-
-        fromEvent(this.eventSource, 'searchBody')
-          .pipe(map(e => JSON.parse(e.data) || {}))
-          .pipe(scan((acc, one) => [...acc, one], []))
-          .subscribe(results => {
-            if (results.length > 0) {
-              const lastResult = results[results.length - 1];
-              const percentDiff = lastResult.percent - lastPercentVal;
-
-              // to avoid UI slowdowns, only update the percentage in fixed increments
-              if (percentDiff >= percentUpdateDelta) {
-                lastPercentVal = lastResult.percent;
-                self.setState({
-                  nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
-                  recordCount:
-                    self.state.recordCount + (lastResult.records ? lastResult.records.length : 0),
-                  percent: lastResult.percent.toFixed(2)
-                });
-              }
-
-              const records = results
-                .map(result => result.records)
-                .filter(records => records?.length > 0)
-                .reduce((acc, all) => [...acc, ...all], []);
-
-              if (records.length) {
-                const tableMessages = self._sortMessages(self._handleMessages(records));
-                self.setState({
-                  recordCount: tableMessages.length,
-                  messages: tableMessages,
-                  loading: false
-                });
-              }
+          body: applied,
+          signal: this.searchAbort.signal,
+          onEvent: ({ event, data }) => {
+            if (!isCurrent()) {
+              return;
             }
-          });
-
-        fromEvent(this.eventSource, 'searchEnd')
-          .pipe(map(e => JSON.parse(e.data) || []))
-          .subscribe(result => {
-            const nextPage = result.after ? result.after : self.state.nextPage;
-            self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
-            self.eventSource.close();
-          });
+            if (event === 'searchBody') {
+              onBody(JSON.parse(data) || {});
+            } else if (event === 'searchEnd') {
+              const result = JSON.parse(data) || {};
+              this.setState(prev => ({
+                percent: 100,
+                nextPage: result.after ? result.after : prev.nextPage,
+                isSearching: false,
+                loading: false
+              }));
+              this.searchAbort.abort();
+            }
+          }
+        }).catch(error => {
+          if (!isCurrent()) {
+            return;
+          }
+          if (error instanceof SearchRequestError) {
+            toast.warn(error.message);
+          } else {
+            toast.error('The search failed: ' + (error.message || 'unexpected error'));
+          }
+          this.setState({ isSearching: false, loading: false });
+        });
       }
     );
   };
 
   _stopEventSource = (resetLoading = true) => {
-    if (this.eventSource) {
-      this.eventSource.close();
+    this.searchRunId++;
+    if (this.searchAbort) {
+      this.searchAbort.abort();
     }
 
     this.cancelAxiosRequests();
@@ -296,30 +283,21 @@ class TopicData extends Root {
   };
 
   _clearSearch = () => {
-    this.setState(
-      {
-        search: {
-          key: { text: '', type: 'C' },
-          value: { text: '', type: 'C' },
-          headerKey: { text: '', type: 'C' },
-          headerValue: { text: '', type: 'C' },
-          keySubject: { text: '', type: 'C' },
-          valueSubject: { text: '', type: 'C' }
-        }
-      },
-      () => {
-        this._navigateWithCurrentFilters(false);
-      }
-    );
+    this.setState({ draft: emptyDraft(), applied: null, searchNotShareable: false }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
   };
 
-  _hasAnyFilterFilled() {
-    const { search } = this.state;
-    return Object.keys(search).find(value => search[value].text.length > 0) !== undefined;
-  }
+  _applySearch = expression => {
+    const { notShareable } = writeSearchToParams(new URLSearchParams(), expression);
+    this.setState({ applied: expression, searchNotShareable: notShareable, nextPage: '' }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
+  };
 
-  _buildFilters() {
-    const { sortBy, partition, datetime, endDatetime, offsetsSearch, search, size } = this.state;
+  // Scope filters only: these are the API query parameters; the search expression travels in the body.
+  _buildScopeFilters() {
+    const { sortBy, partition, datetime, endDatetime, offsetsSearch, size } = this.state;
 
     const filters = [];
 
@@ -336,16 +314,15 @@ class TopicData extends Root {
       filters.push(`endTimestamp=${encodeURIComponent(this._buildTimestampFilter(endDatetime))}`);
     }
 
-    Object.keys(search)
-      .filter(value => search[value].text.length > 0)
-      .forEach(value => {
-        filters.push(
-          `searchBy${capitalizeTxt(value)}=${encodeURIComponent(search[value].text)}_${
-            search[value].type
-          }`
-        );
-      });
     return filters.join('&');
+  }
+
+  // Page URL: scope filters plus the compact searchQuery (omitted when too long to share).
+  _buildFilters() {
+    const filters = this._buildScopeFilters();
+    const { params } = writeSearchToParams(new URLSearchParams(), this.state.applied);
+    const searchQuery = params.get('searchQuery');
+    return searchQuery ? `${filters}&searchQuery=${searchQuery}` : filters;
   }
 
   async _handlePageSizeChange(newSize) {
@@ -374,7 +351,7 @@ class TopicData extends Root {
   _searchMessages(changePage = false) {
     this._stopEventSource(false);
     this.setState({ loading: true });
-    if (this._hasAnyFilterFilled()) {
+    if (this.state.applied) {
       this._startEventSource(changePage);
     } else {
       this._getMessages(changePage);
@@ -399,7 +376,7 @@ class TopicData extends Root {
 
     this.setState({ loading: true });
 
-    const filters = this._buildFilters();
+    const filters = this._buildScopeFilters();
     const requests = [
       this.getApi(
         uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)
@@ -637,11 +614,14 @@ class TopicData extends Root {
   };
 
   _downloadAllMatchingFilters = () => {
-    const { selectedCluster, selectedTopic } = this.state;
+    const { selectedCluster, selectedTopic, applied } = this.state;
 
-    const filters = this._buildFilters();
+    const filters = this._buildScopeFilters();
 
-    this.getApi(uriTopicDataDownload(selectedCluster, selectedTopic, filters)).then(response => {
+    this.postApi(
+      uriTopicDataDownload(selectedCluster, selectedTopic, filters),
+      applied || { version: 1, groups: [] }
+    ).then(response => {
       const a = document.createElement('a');
       const type = 'application/json';
       a.href = URL.createObjectURL(
@@ -751,12 +731,10 @@ class TopicData extends Root {
 
     this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
-            schemaId: response.data.subject
-          }
-        );
+        this.props.router.navigate({
+          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+          schemaId: response.data.subject
+        });
       } else {
         toast.warn(`Unable to find the registry schema with id  ${id} !`);
       }
@@ -855,94 +833,28 @@ class TopicData extends Root {
     }
   }
 
-  _renderSearchFilter(name, label) {
-    const { search } = this.state;
-
-    return (
-      <div className="search-input-fields">
-        <label>{label}</label>
-        <input
-          className="form-group form-control"
-          name={`${name}_text`}
-          type="text"
-          value={search[name].text}
-          onChange={({ currentTarget: input }) => {
-            search[name].text = input.value;
-            this.setState({ search });
-          }}
-        />
-        <Select
-          name={`${name}_select`}
-          selectClass={'col-xs-2'}
-          value={search[name].type}
-          label=""
-          items={this.searchFilterTypes}
-          onChange={value => {
-            search[name].type = value.target.value;
-            this.setState({ search });
-          }}
-        />
-      </div>
-    );
-  }
-
   _renderSearchGroup() {
-    const { isSearching } = this.state;
+    const { draft, applied, isSearching, searchNotShareable } = this.state;
 
     return (
-      <div style={{ minWidth: '400px' }} className="input-group">
-        {this._renderSearchFilter('key', 'Key')}
-        {this._renderSearchFilter('value', 'Value')}
-        {this._renderSearchFilter('headerKey', 'Header Key')}
-        {this._renderSearchFilter('headerValue', 'Header Value')}
-        {this._renderSearchFilter('keySubject', 'Key Subject')}
-        {this._renderSearchFilter('valueSubject', 'Value Subject')}
-
-        <p style={{ fontStyle: 'italic' }}>
-          * Whitespaces in search string are considered as separators for search patterns unless
-          enclosed with double quotes
-          <br />
-          In case of multiple patterns, OR operator is applied for Contains / Equals. AND is applied
-          for Not contains
-        </p>
-
-        <div style={{ display: 'flex' }}>
-          <button
-            className="btn btn-primary inline-block search"
-            type="button"
-            onClick={() => this._navigateWithCurrentFilters(false)}
-          >
-            {isSearching ? (
-              <FontAwesomeIcon icon={faSpinner} spin={true} />
-            ) : (
-              <FontAwesomeIcon icon={faSearch} />
-            )}
-          </button>
-          <button
-            className="btn btn-primary btn-border inline-block"
-            type="button"
-            disabled={!isSearching}
-            onClick={() => this._stopEventSource()}
-          >
-            Stop
-          </button>
-          <button
-            className="btn btn-primary btn-border inline-block"
-            type="button"
-            disabled={isSearching}
-            onClick={() => this._clearSearch()}
-          >
-            Clear
-          </button>
-        </div>
+      <div style={{ minWidth: '560px', padding: '0 1rem' }}>
+        <SearchPanel
+          draft={draft}
+          onDraftChange={next => this.setState({ draft: next })}
+          applied={applied}
+          onApply={this._applySearch}
+          onClear={this._clearSearch}
+          onStop={() => this._stopEventSource()}
+          isSearching={!!isSearching}
+          notShareable={searchNotShareable}
+        />
       </div>
     );
   }
 
   _renderCurrentSearchText() {
-    const { search } = this.state;
-    const filterKey = Object.keys(search).find(value => search[value].text.length > 0);
-    return filterKey !== undefined ? search[filterKey].text : '';
+    const { applied } = this.state;
+    return applied ? expressionPreview(applied) : '';
   }
 
   _handleSingleCheckboxChange = event => {
@@ -1026,8 +938,8 @@ class TopicData extends Root {
           <nav className="pagination-data">
             <div>
               <PageSize
-                  currentPageSize={size}
-                  onChange={value => this._handlePageSizeChange(value)}
+                currentPageSize={size}
+                onChange={value => this._handlePageSizeChange(value)}
               />
               <Pagination
                 pageNumber={pageNumber}
@@ -1148,7 +1060,7 @@ class TopicData extends Root {
                 </Dropdown>
               </li>
               <li className="nav-item dropdown">
-                <Dropdown>
+                <Dropdown autoClose="outside">
                   <Dropdown.Toggle className="nav-link dropdown-toggle">
                     <strong>Search:</strong> {this._renderCurrentSearchText()}
                   </Dropdown.Toggle>
