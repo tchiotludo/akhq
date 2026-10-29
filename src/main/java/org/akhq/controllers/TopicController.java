@@ -814,7 +814,9 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             size
         );
-        options.setSearchExpression(searchExpression);
+        if (!searchExpression.groups().isEmpty()) {
+            options.setSearchExpression(searchExpression);
+        }
         return options;
     }
 

@@ -46,7 +46,7 @@ class SearchExpressionValidatorTest {
 
     @Test
     void rejectsEmptyGroupsAndConditions() {
-        assertInvalid(new SearchExpression(1, Collections.emptyList()), "at least one group");
+        assertInvalid(new SearchExpression(1, null), "list of groups");
         assertInvalid(new SearchExpression(1, List.of(new SearchExpression.Group(null, Collections.emptyList()))), "at least one condition");
     }
 

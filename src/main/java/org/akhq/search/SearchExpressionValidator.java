@@ -32,8 +32,13 @@ public class SearchExpressionValidator {
         }
 
         List<SearchExpression.Group> groups = expression.groups();
-        if (groups == null || groups.isEmpty()) {
-            throw new SearchExpressionException("The search expression must contain at least one group");
+        if (groups == null) {
+            throw new SearchExpressionException("The search expression must contain a list of groups");
+        }
+
+        // An empty list means "no message filter"; the scope filters still apply.
+        if (groups.isEmpty()) {
+            return;
         }
 
         if (groups.size() > config.getMaxGroups()) {

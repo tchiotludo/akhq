@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -69,6 +70,25 @@ class SseControllerTest extends AbstractTest {
             .collect(Collectors.toList());
 
         assertThat(records.size(), is(3));
+    }
+
+    @Test
+    void searchApiWithEmptyExpressionDoesNotFilter() {
+        SseClient sseClient = embeddedServer.getApplicationContext().createBean(SseClient.class, embeddedServer.getURL());
+
+        HttpRequest<?> request = HttpRequest.POST(URI.create(BASE_URL + "/" + KafkaTestCluster.TOPIC_HUGE + "/data/search"), "{\"version\":1,\"groups\":[]}")
+            .contentType(MediaType.APPLICATION_JSON_TYPE)
+            .basicAuth("admin", "pass");
+
+        List<Record> records = Flux.from(sseClient.eventStream(request, TopicController.SearchRecord.class))
+            .collectList()
+            .block()
+            .stream()
+            .map(Event::getData)
+            .flatMap(r -> r != null && r.getRecords() != null ? r.getRecords().stream() : Stream.empty())
+            .collect(Collectors.toList());
+
+        assertThat(records.size(), is(greaterThan(3)));
     }
 
     @Test
