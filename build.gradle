@@ -184,6 +184,9 @@ dependencies {
     //AWS MSK IAM Auth
     implementation("software.amazon.msk:aws-msk-iam-auth:2.3.9")
 
+    // GCP Managed Service for Apache Kafka IAM Auth
+    implementation("com.google.cloud.hosted.kafka:managed-kafka-auth-login-handler:1.0.6")
+
     // AWS Glue serde
     implementation ("software.amazon.glue:schema-registry-serde:2.0.1")
 
