@@ -13,7 +13,6 @@
 
   .search-panel-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 
     &.is-open {
@@ -31,9 +30,24 @@
     }
   }
 
-  .search-panel-header-actions {
-    display: flex;
-    gap: 8px;
+  .search-panel-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    margin-right: 12px;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .search-mode {
+    margin-left: auto;
+  }
+
+  .search-panel-chevron {
+    width: 10px;
   }
 
   .quick-search,

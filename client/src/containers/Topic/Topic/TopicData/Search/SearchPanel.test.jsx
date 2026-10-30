@@ -34,7 +34,7 @@ afterEach(cleanup);
 
 const renderOpen = async ui => {
   const result = render(ui);
-  await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+  await userEvent.click(screen.getByRole('button', { name: /Search messages/ }));
   return result;
 };
 
@@ -43,13 +43,13 @@ describe('SearchPanel', () => {
     const user = userEvent.setup();
     render(<Harness />);
     expect(screen.getByText('Search messages')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Advanced filters' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Advanced' })).toBeInTheDocument();
     expect(screen.queryByTestId('simple-search')).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    await user.click(screen.getByRole('button', { name: /Search messages/ }));
     expect(screen.getByTestId('simple-search')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Collapse' }));
+    await user.click(screen.getByRole('button', { name: /Search messages/ }));
     expect(screen.queryByTestId('simple-search')).toBeNull();
   });
 
@@ -90,7 +90,7 @@ describe('SearchPanel', () => {
     await renderOpen(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
     await user.selectOptions(screen.getByLabelText('Match terms'), 'all');
-    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced' }));
 
     expect(screen.queryByTestId('simple-search')).toBeNull();
     const rows = screen.getAllByTestId('condition-row');
@@ -102,7 +102,7 @@ describe('SearchPanel', () => {
   it('shows Mixed scope, adds rows and groups, and removes rows', async () => {
     const user = userEvent.setup();
     await renderOpen(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced' }));
     await user.click(screen.getAllByRole('button', { name: 'Add condition' })[0]);
     await user.selectOptions(screen.getAllByLabelText('Field')[1], 'key');
     expect(screen.getByTestId('group-scope')).toHaveTextContent('Mixed');
@@ -114,22 +114,36 @@ describe('SearchPanel', () => {
     expect(screen.getAllByTestId('search-group')).toHaveLength(2);
   });
 
-  it('disables Search while a value is missing in Advanced', async () => {
+  it('shows a missing value only after a search attempt, in Advanced', async () => {
     const user = userEvent.setup();
-    await renderOpen(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
-    expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled();
+    const onApply = vi.fn();
+    await renderOpen(<Harness onApply={onApply} />);
+    await user.click(screen.getByRole('button', { name: 'Advanced' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Search' }));
     expect(screen.getByRole('alert')).toHaveTextContent('A value is required.');
+    expect(onApply).not.toHaveBeenCalled();
     await user.type(screen.getByLabelText('Value'), 'x');
-    expect(screen.getByRole('button', { name: 'Search' })).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: 'Search' }));
+    expect(onApply).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a missing term only after a search attempt, in Simple', async () => {
+    const user = userEvent.setup();
+    const onApply = vi.fn();
+    await renderOpen(<Harness onApply={onApply} />);
+    expect(screen.queryByText('Enter a term to search.')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Search' }));
+    expect(screen.getByText('Enter a term to search.')).toBeInTheDocument();
+    expect(onApply).not.toHaveBeenCalled();
   });
 
   it('refuses Advanced -> Simple when lossy and offers a new simple search', async () => {
     const user = userEvent.setup();
     await renderOpen(<Harness />);
-    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced' }));
     await user.click(screen.getByRole('button', { name: '+ Group' }));
-    await user.click(screen.getByRole('button', { name: 'Simple search' }));
+    await user.click(screen.getByRole('button', { name: 'Simple' }));
 
     expect(screen.getByTestId('switch-blocked')).toHaveTextContent('more than one group');
     expect(screen.getByTestId('advanced-search')).toBeInTheDocument();
@@ -143,8 +157,8 @@ describe('SearchPanel', () => {
     const user = userEvent.setup();
     await renderOpen(<Harness />);
     await user.type(screen.getByLabelText('Search text'), 'a b');
-    await user.click(screen.getByRole('button', { name: 'Advanced filters' }));
-    await user.click(screen.getByRole('button', { name: 'Simple search' }));
+    await user.click(screen.getByRole('button', { name: 'Advanced' }));
+    await user.click(screen.getByRole('button', { name: 'Simple' }));
     expect(screen.getByLabelText('Search text')).toHaveValue('a b');
   });
 

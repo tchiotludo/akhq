@@ -24,13 +24,22 @@ const SearchPanel = ({
 }) => {
   const [blockedReason, setBlockedReason] = useState(null);
   const [expanded, setExpanded] = useState(false);
-  const errors = useMemo(() => validateDraft(draft, limits), [draft, limits]);
-  const errorsByPath = useMemo(
-    () => Object.fromEntries(errors.map(e => [e.path, e.message])),
-    [errors]
-  );
-  const globalErrors = errors.filter(e => e.path === 'groups' || e.path === 'conditions');
+  // Errors are only shown once the user tries to search, in both modes.
+  const [showErrors, setShowErrors] = useState(false);
   const hasCriteria = draftToExpression(draft) !== null;
+  const errors = useMemo(() => {
+    const found = validateDraft(draft, limits);
+    if (draft.mode === 'simple' && !hasCriteria && found.length === 0) {
+      found.push({ path: 'groups.0.conditions.0', message: 'Enter a term to search.' });
+    }
+    return found;
+  }, [draft, limits, hasCriteria]);
+  const shownErrors = showErrors ? errors : [];
+  const errorsByPath = useMemo(
+    () => Object.fromEntries(shownErrors.map(e => [e.path, e.message])),
+    [shownErrors]
+  );
+  const globalErrors = shownErrors.filter(e => e.path === 'groups' || e.path === 'conditions');
 
   const switchToAdvanced = () => {
     setBlockedReason(null);
@@ -51,6 +60,13 @@ const SearchPanel = ({
     }
   };
 
+  const selectMode = mode => {
+    setExpanded(true);
+    if (mode === draft.mode) return;
+    setShowErrors(false);
+    mode === 'advanced' ? switchToAdvanced() : switchToSimple();
+  };
+
   const startNewSimple = () => {
     setBlockedReason(null);
     onDraftChange({ mode: 'simple', simple: emptySimple(), advanced: null });
@@ -58,13 +74,18 @@ const SearchPanel = ({
 
   const submit = e => {
     e.preventDefault();
-    if (errors.length === 0 && !isSearching) {
-      onApply(draftToExpression(draft));
+    if (isSearching) return;
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
     }
+    setShowErrors(false);
+    onApply(draftToExpression(draft));
   };
 
   const clear = () => {
     setBlockedReason(null);
+    setShowErrors(false);
     onClear();
   };
 
@@ -84,7 +105,7 @@ const SearchPanel = ({
     </>
   ) : (
     <>
-      <button type="submit" className="btn btn-primary" disabled={errors.length > 0}>
+      <button type="submit" className="btn btn-primary">
         Search
       </button>
       <button
@@ -101,27 +122,30 @@ const SearchPanel = ({
   return (
     <form className="search-panel" onSubmit={submit} data-testid="search-panel">
       <div className={`search-panel-header${expanded ? ' is-open' : ''}`}>
-        <strong>Search messages</strong>
+        <button
+          type="button"
+          className="search-panel-toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(!expanded)}
+        >
+          <span className="search-panel-chevron" aria-hidden="true">
+            {expanded ? '▾' : '▸'}
+          </span>
+          <strong>Search messages</strong>
+        </button>
         {!expanded && <AppliedFilters inline applied={applied} notShareable={notShareable} />}
-        <div className="search-panel-header-actions">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => {
-              setExpanded(true);
-              draft.mode === 'simple' ? switchToAdvanced() : switchToSimple();
-            }}
-          >
-            {draft.mode === 'simple' ? 'Advanced filters' : 'Simple search'}
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            aria-expanded={expanded}
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? 'Collapse' : 'Expand'}
-          </button>
+        <div className="btn-group btn-group-sm search-mode" role="group" aria-label="Search mode">
+          {['simple', 'advanced'].map(mode => (
+            <button
+              key={mode}
+              type="button"
+              className={`btn ${draft.mode === mode ? 'btn-primary' : 'btn-secondary'}`}
+              aria-pressed={draft.mode === mode}
+              onClick={() => selectMode(mode)}
+            >
+              {mode === 'simple' ? 'Simple' : 'Advanced'}
+            </button>
+          ))}
         </div>
       </div>
 
