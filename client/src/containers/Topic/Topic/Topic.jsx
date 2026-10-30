@@ -238,7 +238,7 @@ class Topic extends Root {
     return (
       <div>
         <Header title={`Topic: ${topicId}`} />
-        <div className="tabs-container" style={{ marginBottom: '4%' }}>
+        <div className="tabs-container" style={{ marginBottom: '4%', marginTop: '-24px' }}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
               <li className="nav-item">

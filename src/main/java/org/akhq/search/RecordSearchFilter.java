@@ -16,6 +16,10 @@ public class RecordSearchFilter {
     public static final String SEARCH_SPLIT_REGEX = " (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
 
     public boolean matchFilters(RecordRepository.BaseOptions options, Record record) {
+        if (options.getSearchExpressionMatcher() != null) {
+            return options.getSearchExpressionMatcher().matches(record);
+        }
+
         if (options.getSearch() != null) {
             return matchFilter(options.getSearch(), Arrays.asList(record.getKey(), record.getValue()));
         } else {
