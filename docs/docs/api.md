@@ -48,15 +48,38 @@ JWT is rejected with `401`. The rest of the API keeps accepting them.
 Authorization is also the same model as classic endpoints:
 
 * Request must be authenticated.
-* Caller must have `TOPIC_DATA` / `READ` permission on the target cluster (`TOPIC` / `READ` for `akhq.search_topics`).
-* For `tools/call`, caller must also be allowed on the requested topic name pattern. `akhq.search_topics` only returns the topics matching the caller's patterns.
+* Caller must have the `READ` permission of the resource the tool reads on the target cluster: `TOPIC_DATA` for the message tools, `TOPIC` for `akhq.search_topics`, `akhq.get_topic`, `akhq.get_topic_acls` and `akhq.get_topic_configs`, `CONSUMER_GROUP` for the consumer group tools, `SCHEMA` for the schema tools, `CONNECTOR` for the connector tools and `ACL` for the ACL tools and `NODE` for the broker tools. `akhq.get_topic_configs` and `akhq.get_broker_configs` additionally need `READ_CONFIG`. `akhq.list_clusters` only returns the clusters of the caller's groups.
+* For `tools/call`, caller must also be allowed on the requested resource name pattern (topic, consumer group, schema subject, connector or ACL principal). The search tools only return the resources matching the caller's patterns.
 
 Current tools:
 
 * `akhq.search_topics`: list the topics of a cluster (`name`, `partitions`), sorted by name, internal topics included. Optional space-separated `search` terms must all appear in the name (case insensitive). `maxResults` defaults to 50 and is capped at 200; `truncated` and `totalMatches` tell when more topics matched.
+* `akhq.get_topic`: partitions of one topic (leader, replicas with in-sync state, first/last offset, record count, size), replication factor and under-replicated partition count. `maxResults` is the maximum number of partitions, default 100, capped at 500.
+* `akhq.get_topic_configs`: configs of one topic (`name`, `value`, `source`, `readOnly`, `sensitive`). Optional `search` terms, `onlyOverridden` and `maxResults` (default 100, capped at 500). Sensitive values are never returned.
+* `akhq.get_topic_acls`: ACLs granted on one topic, grouped by principal. `maxResults` is the maximum number of principals, default 50, capped at 200.
 * `akhq.find_message_in_topic`: search message(s) with either the `searchBy*` literal filters or a structured `expression` (the same model as the UI search, see [Topic data search](topic-data-search.md); the two cannot be combined) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
+* `akhq.list_clusters`: list the clusters the caller can access (`name`, `schemaRegistry`, `schemaRegistryType`, `connects`, `ksqldbs`). Use it to discover the `cluster` and `connect` arguments of the other tools.
+* `akhq.search_consumer_groups`: list consumer groups by name (`state`, `memberCount`, `topics`, `totalLag`), sorted by id. Same `search`/`maxResults` rules as `akhq.search_topics`.
+* `akhq.get_consumer_group`: state, assignor, coordinator, member count and lag per topic of one group.
+* `akhq.get_consumer_group_offsets`: committed offset, first/last offset and lag per topic partition of one group, optionally for one `topic`. `maxResults` defaults to 100 and is capped at 500.
+* `akhq.get_consumer_group_members`: active members of one group (`clientId`, `host`, assigned partitions per topic).
+* `akhq.get_consumer_group_lag`: total lag, lag per topic and the most lagging partitions of one group, optionally for one `topic`. `maxResults` defaults to 20 and is capped at 200.
+* `akhq.get_topic_consumer_groups`: consumer groups consuming one topic (`state`, `memberCount`, `lagOnTopic`). `onlyActive` skips empty groups and is much faster on large clusters. `maxResults` defaults to 50 and is capped at 200.
+* `akhq.search_schemas`: list Schema Registry subjects by name, sorted, with `search`/`maxResults` as above.
+* `akhq.get_schema`: definition, type, compatibility level, references and all versions of one subject. `version` defaults to the latest; a definition over 100000 characters is cut and flagged with `schemaTruncated`.
+* `akhq.find_schemas_for_topic`: latest key and value schemas of a topic (`<topic>-key` and `<topic>-value` subjects) plus other visible subjects containing the topic name.
+* `akhq.get_schema_by_id`: resolves a global schema id to the visible subjects registering it and to its schema, preferring the subject matching the optional `topic`.
+* `akhq.list_brokers`: brokers of a cluster (`id`, `host`, `port`, `rack`, controller flag).
+* `akhq.get_broker_configs`: configs of one broker, which are the cluster settings since Kafka has no cluster-wide config. Same `search`, `onlyOverridden`, `maxResults` and sensitive-value rules as `akhq.get_topic_configs`.
+* `akhq.search_connectors`: list the connectors of one Kafka Connect cluster (`connect`) by name, optionally keeping only those with a task in a given `status`.
+* `akhq.get_connector`: type, connector class, task count and configuration of one connector. Configurations are returned as Kafka Connect exposes them, like the REST API does, so they may contain credentials.
+* `akhq.get_connector_status`: state of one connector and of each of its tasks, with worker and failure trace (cut at 2000 characters).
+* `akhq.search_acls`: list the principals having ACLs, with their ACL count.
+* `akhq.get_principal_acls`: ACLs of one exact principal (for example `User:alice`), optionally for one `resourceType`. `maxResults` defaults to 100 and is capped at 500.
+
+All these tools are read only.
 
 For every search literal, use the matching `*MatchType` field to select `CONTAINS` (the default), `EQUALS`, or `NOT_CONTAINS`. Do not append AKHQ's internal `_C`, `_E`, or `_N` suffixes to a literal.
 

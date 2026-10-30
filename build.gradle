@@ -129,7 +129,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
-    implementation("at.yawk.lz4:lz4-java:1.12.0")
+    implementation("at.yawk.lz4:lz4-java:1.12.1")
 
     implementation("io.confluent.ksql:ksqldb-api-client:${confluentVersion}")
     implementation("io.confluent:kafka-schema-registry-client:${confluentVersion}")
@@ -159,7 +159,7 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.2")
 
     // jackson-module-scala
-    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.3.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.4")
 
     // protobuf
     implementation("com.google.protobuf:protobuf-java:4.36.2")
@@ -171,7 +171,7 @@ dependencies {
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.inject:jakarta.inject-api")
     implementation("org.reactivestreams:reactive-streams")
-    implementation("io.projectreactor:reactor-core:3.8.7")
+    implementation("io.projectreactor:reactor-core:3.8.8")
 
     // Password hashing
     implementation("org.mindrot:jbcrypt:0.4")
