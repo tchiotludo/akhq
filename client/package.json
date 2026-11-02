@@ -30,7 +30,7 @@
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4",
     "react-timeago": "^8.3.0",
-    "react-toastify": "^11.1.0"
+    "react-toastify": "^11.2.0"
   },
   "scripts": {
     "start": "vite",
