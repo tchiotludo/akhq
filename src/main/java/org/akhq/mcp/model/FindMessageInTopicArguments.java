@@ -4,6 +4,8 @@ import io.micronaut.core.annotation.Introspected;
 import io.micronaut.jsonschema.JsonSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import org.akhq.search.SearchExpression;
+
 import java.util.List;
 
 @JsonSchema
@@ -29,6 +31,11 @@ public record FindMessageInTopicArguments(
     String searchByHeaderValue,
     @Schema(description = "How to match searchByHeaderValue. Defaults to CONTAINS.")
     SearchMatchType searchByHeaderValueMatchType,
+    @Schema(
+        description = "Structured search expression: groups of conditions joined with AND/OR, supporting regular expressions "
+            + "(`matchesRegex`, RE2 syntax, a hit anywhere in the text is a match). Cannot be combined with the searchBy* arguments."
+    )
+    SearchExpression expression,
     @Schema(description = "Optional partition to restrict the search.", example = "0")
     Integer partition,
     @Schema(description = "Inclusive start timestamp in ISO-8601 format.", example = "2026-09-14T10:00:00Z")

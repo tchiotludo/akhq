@@ -47,6 +47,9 @@ public class AkhqController extends AbstractController {
     private UIOptions uIOptions;
 
     @Inject
+    private SearchExpressionConfig searchExpressionConfig;
+
+    @Inject
     @Nullable
     private HeaderAuth headerAuth;
 
@@ -237,6 +240,17 @@ public class AkhqController extends AbstractController {
             .findAny();
     }
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("api/search-limits")
+    @Operation(tags = {"AKHQ"}, summary = "Get the limits applied to structured topic data searches")
+    public SearchLimits searchLimits() {
+        return new SearchLimits(
+            searchExpressionConfig.getMaxGroups(),
+            searchExpressionConfig.getMaxConditions(),
+            searchExpressionConfig.getMaxValueLength()
+        );
+    }
+
     private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
         SecurityProperties securityProperties = applicationContext.getBean(SecurityProperties.class);
 
@@ -267,6 +281,16 @@ public class AkhqController extends AbstractController {
 
         // Authentication enabled and user logged in
         return expandRoles(getUserGroups());
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Introspected
+    public static class SearchLimits {
+        private int maxGroups;
+        private int maxConditions;
+        private int maxValueLength;
     }
 
     @AllArgsConstructor

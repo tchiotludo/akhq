@@ -150,6 +150,7 @@ dependencies {
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
     implementation("com.google.guava:guava:33.7.2-jre")
+    implementation("com.google.re2j:re2j:1.8")
     implementation("com.google.code.gson:gson:2.14.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")

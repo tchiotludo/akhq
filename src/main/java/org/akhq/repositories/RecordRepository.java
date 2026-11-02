@@ -27,6 +27,8 @@ import org.akhq.modules.schemaregistry.SchemaSerializer;
 import org.akhq.modules.schemaregistry.RecordWithSchemaSerializerFactory;
 import org.akhq.search.TopicSearchPlanner;
 import org.akhq.search.RecordSearchFilter;
+import org.akhq.search.SearchExpression;
+import org.akhq.search.SearchExpressionMatcher;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.Debug;
 import org.akhq.utils.Masker;
@@ -1034,7 +1036,21 @@ public class RecordRepository extends AbstractRepository {
         protected Search searchByKeySubject;
         protected Search searchByValueSubject;
 
+        @EqualsAndHashCode.Exclude
+        @ToString.Exclude
+        @Setter(AccessLevel.NONE)
+        protected SearchExpressionMatcher searchExpressionMatcher;
+        protected SearchExpression searchExpression;
+
         public BaseOptions() {
+        }
+
+        /**
+         * Sets a validated search expression; it takes precedence over the legacy {@code searchBy*} filters.
+         */
+        public void setSearchExpression(SearchExpression searchExpression) {
+            this.searchExpression = searchExpression;
+            this.searchExpressionMatcher = searchExpression != null ? SearchExpressionMatcher.compile(searchExpression) : null;
         }
 
         public void setSearchByKey(String searchByKey) {

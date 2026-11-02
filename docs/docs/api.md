@@ -57,7 +57,7 @@ Current tools:
 * `akhq.get_topic`: partitions of one topic (leader, replicas with in-sync state, first/last offset, record count, size), replication factor and under-replicated partition count. `maxResults` is the maximum number of partitions, default 100, capped at 500.
 * `akhq.get_topic_configs`: configs of one topic (`name`, `value`, `source`, `readOnly`, `sensitive`). Optional `search` terms, `onlyOverridden` and `maxResults` (default 100, capped at 500). Sensitive values are never returned.
 * `akhq.get_topic_acls`: ACLs granted on one topic, grouped by principal. `maxResults` is the maximum number of principals, default 50, capped at 200.
-* `akhq.find_message_in_topic`: search message(s) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
+* `akhq.find_message_in_topic`: search message(s) with either the `searchBy*` literal filters or a structured `expression` (the same model as the UI search, see [Topic data search](topic-data-search.md); the two cannot be combined) and return the matches (`partition`, `offset`, `timestamp`, `key`, `value`). Values are returned in full within the `max-result-length` budget. `fields` extracts dot-separated paths from JSON values instead (up to 500 matches per call), and `hasMore`/`nextCursor` with the `after` argument page through all the matches.
 * `akhq.get_message_detail`: fetch one exact message with full `value` payload and all headers.
 * `akhq.get_topic_last_record_timestamp`: return the latest record timestamp across every partition of one topic. It returns `found: false` with a null timestamp when the topic has no records.
 * `akhq.list_clusters`: list the clusters the caller can access (`name`, `schemaRegistry`, `schemaRegistryType`, `connects`, `ksqldbs`). Use it to discover the `cluster` and `connect` arguments of the other tools.
@@ -159,6 +159,38 @@ curl -X POST "http://localhost:8081/mcp" \
           "searchByValue": "needle",
           "searchByValueMatchType": "CONTAINS",
           "maxMatches": 1
+        }
+      }
+    }
+  }'
+```
+
+### Example request (`akhq.find_message_in_topic` with a structured expression)
+
+```bash
+curl -X POST "http://localhost:8081/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: ******" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "call-3",
+    "method": "tools/call",
+    "params": {
+      "name": "akhq.find_message_in_topic",
+      "arguments": {
+        "arguments": {
+          "cluster": "local",
+          "topic": "my-topic",
+          "expression": {
+            "version": 1,
+            "groups": [
+              {"conditions": [
+                {"field": "value", "operator": "matchesRegex", "value": "error-\\d+"},
+                {"join": "AND", "field": "key", "operator": "contains", "value": "customer-42"}
+              ]}
+            ]
+          },
+          "maxMatches": 5
         }
       }
     }

@@ -15,6 +15,7 @@ import io.micronaut.security.rules.SecurityRule;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.akhq.modules.InvalidClusterException;
+import org.akhq.search.SearchExpressionException;
 import org.akhq.security.rule.AKHQSecurityRule;
 import org.akhq.security.authentication.mcp.McpOauthAuthentication;
 import org.akhq.security.authentication.mcp.McpOauthRequestMatcher;
@@ -83,6 +84,15 @@ public class ErrorController extends AbstractController {
             .link(Link.SELF, Link.of(request.getUri()));
 
         return HttpResponse.<JsonError>status(HttpStatus.CONFLICT)
+            .body(error);
+    }
+
+    @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, SearchExpressionException e) {
+        JsonError error = new JsonError(e.getMessage())
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.<JsonError>badRequest()
             .body(error);
     }
 

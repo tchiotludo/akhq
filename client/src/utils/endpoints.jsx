@@ -33,6 +33,10 @@ export const uriClusters = () => {
   return `${apiUrl}/cluster`;
 };
 
+export const uriSearchLimits = () => {
+  return `${apiUrl}/search-limits`;
+};
+
 export const uriUIOptions = clusterId => {
   return `${apiUrl}/${clusterId}/ui-options`;
 };
@@ -43,15 +47,15 @@ export const uriTopics = (clusterId, search, show, page, pageSize, favorites = [
   if (pageSize !== 1) {
     params.set('uiPageSize', pageSize);
   }
-  [...new Set(favorites.filter(favorite => typeof favorite === 'string' && favorite.length > 0))].forEach(
-    favorite => {
-      const nextParams = new URLSearchParams(params);
-      nextParams.append('favorite', favorite);
-      if (nextParams.toString().length + 1 <= maxFavoriteQueryLength) {
-        params.append('favorite', favorite);
-      }
+  [
+    ...new Set(favorites.filter(favorite => typeof favorite === 'string' && favorite.length > 0))
+  ].forEach(favorite => {
+    const nextParams = new URLSearchParams(params);
+    nextParams.append('favorite', favorite);
+    if (nextParams.toString().length + 1 <= maxFavoriteQueryLength) {
+      params.append('favorite', favorite);
     }
-  );
+  });
 
   return `${apiUrl}/${clusterId}/topic?${params.toString()}`;
 };
