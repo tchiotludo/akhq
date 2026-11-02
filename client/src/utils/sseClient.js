@@ -110,7 +110,11 @@ export const streamSearch = async ({
     throw new SearchRequestError(response.status, await readErrorMessage(response));
   }
 
-  const parser = createSseParser(onEvent);
+  let ended = false;
+  const parser = createSseParser(frame => {
+    ended = ended || frame.event === 'searchEnd';
+    onEvent(frame);
+  });
   const decoder = new TextDecoder();
   const reader = response.body.getReader();
   try {
@@ -123,6 +127,9 @@ export const streamSearch = async ({
     }
     parser.feed(decoder.decode());
     parser.end();
+    if (!ended && !signal?.aborted) {
+      throw new Error('The search was interrupted before completion');
+    }
   } catch (e) {
     if (e.name !== 'AbortError') {
       throw e;

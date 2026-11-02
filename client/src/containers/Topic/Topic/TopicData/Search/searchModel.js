@@ -246,11 +246,6 @@ const regexHint = value => {
   if (/\(\?<?[=!]|\\[1-9]/.test(value)) {
     return 'Lookarounds and backreferences are not supported.';
   }
-  try {
-    new RegExp(value, 'i');
-  } catch (e) {
-    return 'Invalid regular expression.';
-  }
   return null;
 };
 

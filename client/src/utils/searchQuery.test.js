@@ -40,6 +40,22 @@ describe('searchQuery codec', () => {
     expect(decodeSearchQuery(undefined).error).toBeDefined();
   });
 
+  it('rejects malformed fields, operators and joins', () => {
+    const enc = payload =>
+      'v1.' +
+      btoa(JSON.stringify(payload)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+    expect(decodeSearchQuery(enc([['', ['', 'v', null, 'x']]])).error).toBeDefined();
+    expect(decodeSearchQuery(enc([['', ['', 'zz', 'c', 'x']]])).error).toBeDefined();
+    expect(decodeSearchQuery(enc([['A', ['', 'v', 'c', 'x']]])).error).toBeDefined();
+    expect(
+      decodeSearchQuery(enc([['', ['', 'v', 'c', 'x'], ['', 'v', 'c', 'y']]])).error
+    ).toBeDefined();
+    expect(decodeSearchQuery(enc([[]])).error).toBeDefined();
+    expect(
+      decodeSearchQuery(enc([['', ['', 'v', 'c', 'x'], ['O', 'k', 'r', 'y']]])).expression
+    ).toBeDefined();
+  });
+
   it('rejects a payload that is not a list of groups', () => {
     const wrong = 'v1.' + btoa('{"a":1}').replace(/=+$/, '');
     expect(decodeSearchQuery(wrong).error).toBeDefined();

@@ -92,6 +92,16 @@ describe('streamSearch', () => {
     expect(events.map(e => e.event)).toEqual(['searchBody', 'searchEnd']);
   });
 
+  it('rejects when the stream ends without searchEnd', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      body: streamOf(['event: searchBody\ndata: {"percent":1}\n\n'])
+    });
+    await expect(
+      streamSearch({ url: '/x', body: {}, headers: {}, onEvent: () => {}, fetchImpl })
+    ).rejects.toThrow(/interrupted/);
+  });
+
   it('maps a 4xx JSON error to SearchRequestError', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: false,

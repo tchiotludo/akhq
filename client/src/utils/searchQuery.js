@@ -75,6 +75,31 @@ export const encodeSearchQuery = expression => {
 
 export const isShareable = encoded => !!encoded && encoded.length <= MAX_SHAREABLE_LENGTH;
 
+const isValidStructure = groups => {
+  const validJoin = (join, first) => (first ? join === '' : Object.hasOwn(JOINS, join));
+  return (
+    Array.isArray(groups) &&
+    groups.length > 0 &&
+    groups.every(
+      (group, gi) =>
+        Array.isArray(group) &&
+        group.length > 1 &&
+        validJoin(group[0], gi === 0) &&
+        group
+          .slice(1)
+          .every(
+            (c, ci) =>
+              Array.isArray(c) &&
+              c.length === 4 &&
+              validJoin(c[0], ci === 0) &&
+              Object.hasOwn(FIELDS, c[1]) &&
+              Object.hasOwn(OPERATORS, c[2]) &&
+              typeof c[3] === 'string'
+          )
+    )
+  );
+};
+
 // Returns { expression } or { error }; never throws.
 export const decodeSearchQuery = encoded => {
   if (typeof encoded !== 'string' || encoded.length === 0) {
@@ -93,14 +118,7 @@ export const decodeSearchQuery = encoded => {
     }
     const bytes = fromBase64Url(payload);
     const groups = JSON.parse(strFromU8(deflated ? inflateSync(bytes) : bytes));
-    if (
-      !Array.isArray(groups) ||
-      !groups.every(
-        g =>
-          Array.isArray(g) &&
-          g.slice(1).every(c => Array.isArray(c) && c.length === 4 && typeof c[3] === 'string')
-      )
-    ) {
+    if (!isValidStructure(groups)) {
       return { error: 'Invalid search query structure' };
     }
     return { expression: expand(groups) };

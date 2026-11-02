@@ -172,7 +172,16 @@ class TopicData extends Root {
     }
 
     // A search too long for the URL only lives in the state: keep it across our own navigations.
-    if (!applied && !error && prevState.searchNotShareable && !query.get('searchQuery')) {
+    const sameTopic =
+      prevState.selectedCluster === this.props.params.clusterId &&
+      prevState.selectedTopic === this.props.params.topicId;
+    if (
+      !applied &&
+      !error &&
+      prevState.searchNotShareable &&
+      sameTopic &&
+      !query.get('searchQuery')
+    ) {
       return {};
     }
 

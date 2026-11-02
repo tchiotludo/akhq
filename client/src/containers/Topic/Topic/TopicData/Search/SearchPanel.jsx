@@ -181,9 +181,14 @@ const SearchPanel = ({
           )}
 
           <div aria-live="polite">
-            {draft.mode === 'simple' && errorsByPath['groups.0.conditions.0'] && (
-              <div className="text-danger small">{errorsByPath['groups.0.conditions.0']}</div>
-            )}
+            {draft.mode === 'simple' &&
+              Object.entries(errorsByPath)
+                .filter(([path]) => path.startsWith('groups.0.conditions.'))
+                .map(([path, message]) => (
+                  <div key={path} className="text-danger small">
+                    {message}
+                  </div>
+                ))}
             {globalErrors.map(e => (
               <div key={e.path} className="text-danger small">
                 {e.message}

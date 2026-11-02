@@ -189,7 +189,7 @@ describe('validateDraft', () => {
 
   it('flags regex problems', () => {
     const rx = v => validateDraft(adv([cond(v, { operator: 'matchesRegex' })]));
-    expect(rx('(')).toHaveLength(1);
+    expect(rx('(?s)error.*timeout')).toEqual([]);
     expect(rx('(?=a)')).toHaveLength(1);
     expect(rx('(a)\\1')).toHaveLength(1);
     expect(rx('^a+$')).toEqual([]);
