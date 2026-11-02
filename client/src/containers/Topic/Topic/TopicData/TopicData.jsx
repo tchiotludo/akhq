@@ -139,13 +139,13 @@ class TopicData extends Root {
         endDatetime: query.get('endTimestamp')
           ? new Date(query.get('endTimestamp'))
           : this.state.endDatetime,
-        offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
+        offsetsSearch: query.get('after') || '',
         ...this._searchStateFromQuery(query, prevState),
         offsets: query.get('offset')
           ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
           : query.get('after')
             ? this._getOffsetsByAfterString(query.get('after'))
-            : this.state.offsets,
+            : {},
         dateTimeFormat:
           uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat
             ? uiOptions.topicData.dateTimeFormat
@@ -312,7 +312,14 @@ class TopicData extends Root {
   _applySearch = expression => {
     const { notShareable } = writeSearchToParams(new URLSearchParams(), expression);
     this.setState(
-      { applied: expression, searchNotShareable: notShareable, nextPage: '', sortBy: 'Oldest' },
+      {
+        applied: expression,
+        searchNotShareable: notShareable,
+        nextPage: '',
+        sortBy: 'Oldest',
+        offsetsSearch: '',
+        offsets: {}
+      },
       () => {
         this._navigateWithCurrentFilters(false);
       }
@@ -376,9 +383,23 @@ class TopicData extends Root {
     this._stopEventSource(false);
     this.setState({ loading: true });
     if (this.state.applied) {
+      this._loadPartitionCount();
       this._startEventSource(changePage);
     } else {
       this._getMessages(changePage);
+    }
+  }
+
+  // The search stream doesn't return the partition list that the scope filters are built from.
+  async _loadPartitionCount() {
+    const { selectedCluster, selectedTopic } = this.state;
+    try {
+      const { data } = await this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic));
+      if (data && data.length) {
+        this.setState({ partitionCount: data.length });
+      }
+    } catch (e) {
+      // the scope filters stay limited until the next load
     }
   }
 
@@ -899,10 +920,18 @@ class TopicData extends Root {
     );
   }
 
+  _selectPartition = option => {
+    this.setState({ partition: option, offsetsSearch: '', offsets: {} }, () =>
+      this._navigateWithCurrentFilters(false)
+    );
+  };
+
   _applyTimestamps = () => {
     this.setState(
       {
         openFilter: null,
+        offsetsSearch: '',
+        offsets: {},
         ...(this.state.datetime !== '' || this.state.endDatetime !== '' ? { sortBy: 'Oldest' } : {})
       },
       () => this._navigateWithCurrentFilters(false)
@@ -929,8 +958,7 @@ class TopicData extends Root {
           'Partition',
           this._createPartitionOptions().map(o => ({ value: o, text: o })),
           partition,
-          option =>
-            this.setState({ partition: option }, () => this._navigateWithCurrentFilters(false))
+          this._selectPartition
         );
       case 'timestamp':
         return (

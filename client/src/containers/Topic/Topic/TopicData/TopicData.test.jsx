@@ -60,6 +60,51 @@ describe('TopicData filter submission', () => {
   });
 });
 
+describe('TopicData pagination cursor', () => {
+  const paged = () => {
+    const topicData = createTopicData('?sort=Oldest&partition=All&size=50&after=0-38_2-16');
+    topicData.state.offsetsSearch = '0-38_2-16';
+    topicData.state.offsets = { partition0: '38', partition2: '16' };
+    return topicData;
+  };
+
+  it('drops the cursor when a new search is applied', () => {
+    const topicData = paged();
+    topicData._applySearch(expression);
+    expect(topicData.state.offsetsSearch).toBe('');
+    expect(topicData.state.offsets).toEqual({});
+    expect(topicData.props.router.navigate.mock.calls[0][0].search).not.toContain('after=');
+  });
+
+  it('drops the cursor when the timestamps are applied', () => {
+    const topicData = paged();
+    topicData._applyTimestamps();
+    expect(topicData.state.offsetsSearch).toBe('');
+    expect(topicData.state.offsets).toEqual({});
+  });
+
+  it('drops the cursor when the partition changes', () => {
+    const topicData = paged();
+    topicData._selectPartition('1');
+    expect(topicData.state.partition).toBe('1');
+    expect(topicData.state.offsetsSearch).toBe('');
+    expect(topicData.state.offsets).toEqual({});
+  });
+
+  it('feeds the offsets from `after` and clears them when the url has none', async () => {
+    const topicData = createTopicData('?after=0-38_2-16');
+    topicData._loadFromCurrentLocation = vi.fn();
+    await topicData._syncStateFromLocationAndLoad();
+    expect(topicData.state.offsetsSearch).toBe('0-38_2-16');
+    expect(topicData.state.offsets.partition2).toBe('16');
+
+    topicData.props.location.search = '?partition=1';
+    await topicData._syncStateFromLocationAndLoad();
+    expect(topicData.state.offsetsSearch).toBe('');
+    expect(topicData.state.offsets).toEqual({});
+  });
+});
+
 describe('TopicData forward-only sort', () => {
   it('forces Oldest when a search or a timestamp is applied', () => {
     const searched = createTopicData('?sort=Newest');
