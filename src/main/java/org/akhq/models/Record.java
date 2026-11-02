@@ -341,7 +341,8 @@ public class Record {
 
     private String decodeTransactionState(byte[] payload, boolean isKey) throws Exception {
         if (isKey) {
-            return TransactionLog.readTxnRecordKey(ByteBuffer.wrap(payload));
+            TransactionLog.ReadResult result = TransactionLog.read(ByteBuffer.wrap(payload), null);
+            return result instanceof TransactionLog.TxnTombstone tombstone ? tombstone.transactionId() : result.toString();
         }
         if (this.bytesKey == null) {
             return new String(payload);

@@ -134,11 +134,19 @@ public class KafkaConnectApiClient {
     }
 
     /**
-     * GET /connectors?expand=info&expand=status
-     * Returns a map of connector name -> expanded info+status.
+     * GET /connectors
+     * Returns the names of all connectors.
      */
-    public Map<String, ConnectorExpanded> getConnectorsExpanded() {
-        return call(HttpRequest.GET(uri("/connectors?expand=info&expand=status")),
+    public List<String> getConnectorNames() {
+        return call(HttpRequest.GET(uri("/connectors")), Argument.listOf(String.class));
+    }
+
+    /**
+     * GET /connectors?expand=status
+     * Returns a map of connector name -> expanded status (info is not included to keep the payload small).
+     */
+    public Map<String, ConnectorExpanded> getConnectorsStatus() {
+        return call(HttpRequest.GET(uri("/connectors?expand=status")),
             Argument.mapOf(String.class, ConnectorExpanded.class));
     }
 

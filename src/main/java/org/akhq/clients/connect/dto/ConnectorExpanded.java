@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.Map;
 
 /**
- * Represents the expanded info+status entry from GET /connectors?expand=info&expand=status
+ * Represents an expanded entry from GET /connectors?expand=info and/or expand=status
  */
 @Data
 @NoArgsConstructor

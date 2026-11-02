@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests for KafkaConnectApiClient focused on behaviour not covered by ConnectRepositoryTest:
  * - HTTP error mapping (404, 400)
- * - getConnectorsExpanded (expand=info&status endpoint)
+ * - getConnectorNames and getConnectorsStatus (expand=status endpoint)
  * - validateConnectorPluginConfig
  */
 class KafkaConnectApiClientIntegrationTest extends AbstractTest {
@@ -53,8 +53,8 @@ class KafkaConnectApiClientIntegrationTest extends AbstractTest {
     }
 
     @Test
-    void getConnectorsExpandedContainsInfoAndStatus() {
-        // Create a connector so the expanded list is non-empty
+    void getConnectorNamesAndStatus() {
+        // Create a connector so the lists are non-empty
         String name = "client-test-expanded";
         client.createConnector(name, Map.of(
             "connector.class", "FileStreamSinkConnector",
@@ -66,12 +66,11 @@ class KafkaConnectApiClientIntegrationTest extends AbstractTest {
             Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(500))
-                .until(() -> client.getConnectorsExpanded().containsKey(name));
+                .until(() -> client.getConnectorNames().contains(name));
 
-            Map<String, ConnectorExpanded> expanded = client.getConnectorsExpanded();
+            Map<String, ConnectorExpanded> expanded = client.getConnectorsStatus();
             assertTrue(expanded.containsKey(name));
-            assertNotNull(expanded.get(name).getInfo());
-            assertNotNull(expanded.get(name).getInfo().getConfig());
+            assertNull(expanded.get(name).getInfo());
             assertNotNull(expanded.get(name).getStatus());
             assertNotNull(expanded.get(name).getStatus().getConnector().getState());
         } finally {

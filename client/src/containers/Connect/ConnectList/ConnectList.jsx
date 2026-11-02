@@ -12,6 +12,7 @@ import Root from '../../../components/Root';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { isSameLocation } from '../../../utils/functions';
 import { withRouter } from '../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
@@ -103,9 +104,19 @@ class ConnectList extends Root {
       searchParams += `&status=${statusFilter}`;
     }
 
+    const pathname = `/ui/${clusterId}/connect/${connectId}`;
+
+    if (isSameLocation(this.props.location, pathname, searchParams)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getConnectDefinitions();
+      return;
+    }
+
     this.props.router.navigate(
       {
-        pathname: `/ui/${clusterId}/connect/${connectId}`,
+        pathname,
         search: searchParams
       },
       { replace: replaceInNavigation }
@@ -414,4 +425,5 @@ class ConnectList extends Root {
   }
 }
 
+export { ConnectList };
 export default withRouter(ConnectList);

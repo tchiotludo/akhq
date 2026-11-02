@@ -20,7 +20,8 @@ import java.util.List;
  * {@code @AKHQSecured} annotations of a tool class are not enforced by the HTTP security filters the way they are
  * for a regular controller. Every tool must therefore run the AKHQ permission check itself.
  * {@link #authorizeTopicScope(TopicScopedArguments, MicronautMcpTransportContext)} and
- * {@link #authorizeClusterScope(ClusterScopedArguments, MicronautMcpTransportContext)} make that check a single
+ * {@link #authorizeClusterScope(ClusterScopedArguments, MicronautMcpTransportContext)} and
+ * {@link #authorizeResourceScope(ClusterScopedArguments, MicronautMcpTransportContext, String, String)} make that check a single
  * mandatory call that also yields the validated arguments, so a tool cannot read Kafka data without it.
  * <p>
  * The guard lives in this class on purpose: {@code AbstractController} resolves the {@code @AKHQSecured} annotation
@@ -71,6 +72,30 @@ abstract class AbstractMcpTool extends AbstractController {
         return new ClusterScope(cluster, buildUserBasedResourceFilters(cluster));
     }
 
+    /**
+     * Validates the common arguments of a tool targeting one named resource of a cluster (consumer group, schema
+     * subject, connector, ACL principal), checks that the caller is allowed to access the requested cluster and
+     * resource name, and resolves the resource name patterns the caller is restricted to.
+     *
+     * @param resource     the requested resource name
+     * @param argumentName the argument holding the resource name, used in the error message
+     * @return the trimmed cluster and resource names and the resource name patterns to apply
+     * @throws IllegalArgumentException                              when the transport context or an argument is missing
+     * @throws io.micronaut.security.authentication.AuthorizationException when the caller lacks the permission
+     */
+    protected ResourceScope authorizeResourceScope(
+        ClusterScopedArguments arguments,
+        MicronautMcpTransportContext transportContext,
+        String resource,
+        String argumentName
+    ) {
+        String cluster = requiredCluster(arguments, transportContext);
+        String name = required(resource, "`arguments." + argumentName + "` is required");
+        checkIfClusterAndResourceAllowed(cluster, name);
+
+        return new ResourceScope(cluster, name, buildUserBasedResourceFilters(cluster));
+    }
+
     private String requiredCluster(ClusterScopedArguments arguments, MicronautMcpTransportContext transportContext) {
         if (transportContext == null) {
             throw new IllegalArgumentException("MCP transport context is required");
@@ -115,6 +140,9 @@ abstract class AbstractMcpTool extends AbstractController {
     }
 
     protected record TopicScope(String cluster, String topic) {
+    }
+
+    protected record ResourceScope(String cluster, String resource, List<String> resourceFilters) {
     }
 
     protected record ClusterScope(String cluster, List<String> resourceFilters) {
