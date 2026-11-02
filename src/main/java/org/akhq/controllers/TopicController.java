@@ -451,12 +451,12 @@ public class TopicController extends AbstractController {
         String cluster,
         String topicName,
         @Body SearchExpression searchExpression,
-        Optional<String> after,
-        Optional<Integer> partition,
-        Optional<RecordRepository.Options.Sort> sort,
-        Optional<String> timestamp,
-        Optional<String> endTimestamp,
-        Optional<Integer> size
+        @QueryValue Optional<String> after,
+        @QueryValue Optional<Integer> partition,
+        @QueryValue Optional<RecordRepository.Options.Sort> sort,
+        @QueryValue Optional<String> timestamp,
+        @QueryValue Optional<String> endTimestamp,
+        @QueryValue Optional<Integer> size
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
@@ -551,11 +551,11 @@ public class TopicController extends AbstractController {
         String cluster,
         String topicName,
         @Body SearchExpression searchExpression,
-        Optional<String> after,
-        Optional<Integer> partition,
-        Optional<RecordRepository.Options.Sort> sort,
-        Optional<String> timestamp,
-        Optional<String> endTimestamp
+        @QueryValue Optional<String> after,
+        @QueryValue Optional<Integer> partition,
+        @QueryValue Optional<RecordRepository.Options.Sort> sort,
+        @QueryValue Optional<String> timestamp,
+        @QueryValue Optional<String> endTimestamp
     ) throws ExecutionException, InterruptedException, IOException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 

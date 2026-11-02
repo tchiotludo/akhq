@@ -73,6 +73,34 @@ class SseControllerTest extends AbstractTest {
     }
 
     @Test
+    void searchApiWithExpressionHonoursQueryParameters() {
+        SseClient sseClient = embeddedServer.getApplicationContext().createBean(SseClient.class, embeddedServer.getURL());
+        String url = BASE_URL + "/" + KafkaTestCluster.TOPIC_HUGE + "/data/search";
+
+        List<Record> all = searchWithExpression(sseClient, url);
+        Record first = all.get(0);
+
+        List<Record> next = searchWithExpression(sseClient, url + "?after=" + first.getPartition() + "-" + first.getOffset());
+
+        assertThat(next.size(), is(all.size() - 1));
+        assertThat(next.stream().anyMatch(r -> r.getPartition() == first.getPartition() && r.getOffset() == first.getOffset()), is(false));
+    }
+
+    private List<Record> searchWithExpression(SseClient sseClient, String url) {
+        HttpRequest<?> request = HttpRequest.POST(URI.create(url), KEY_100_EXPRESSION)
+            .contentType(MediaType.APPLICATION_JSON_TYPE)
+            .basicAuth("admin", "pass");
+
+        return Flux.from(sseClient.eventStream(request, TopicController.SearchRecord.class))
+            .collectList()
+            .block()
+            .stream()
+            .map(Event::getData)
+            .flatMap(r -> r != null && r.getRecords() != null ? r.getRecords().stream() : Stream.empty())
+            .collect(Collectors.toList());
+    }
+
+    @Test
     void searchApiWithEmptyExpressionDoesNotFilter() {
         SseClient sseClient = embeddedServer.getApplicationContext().createBean(SseClient.class, embeddedServer.getURL());
 
