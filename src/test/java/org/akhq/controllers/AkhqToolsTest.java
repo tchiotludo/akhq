@@ -13,6 +13,7 @@ import org.akhq.AbstractTest;
 import org.akhq.KafkaTestCluster;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -379,7 +380,17 @@ class AkhqToolsTest extends AbstractTest {
             "topic", KafkaTestCluster.TOPIC_RANDOM
         ));
         assertEquals(true, missingCriteria.get("isError"), String.valueOf(missingCriteria));
-        assertTrue(flattenContent(missingCriteria).contains("At least one of searchByKey"), String.valueOf(missingCriteria));
+        assertTrue(flattenContent(missingCriteria).contains("Provide `expression` or at least one of searchByKey"), String.valueOf(missingCriteria));
+
+        Map<String, Object> invalidExpression = callToolResult("akhq.find_message_in_topic", Map.of(
+            "cluster", KafkaTestCluster.CLUSTER_ID,
+            "topic", KafkaTestCluster.TOPIC_RANDOM,
+            "expression", Map.of("version", 1, "groups", List.of(Map.of("conditions", List.of(
+                Map.of("field", "value", "operator", "matchesRegex", "value", "(")
+            ))))
+        ));
+        assertEquals(true, invalidExpression.get("isError"), String.valueOf(invalidExpression));
+        assertTrue(flattenContent(invalidExpression).contains("Invalid `expression`"), String.valueOf(invalidExpression));
 
         Map<String, Object> invalidCursor = callToolResult("akhq.find_message_in_topic", Map.of(
             "cluster", KafkaTestCluster.CLUSTER_ID,
