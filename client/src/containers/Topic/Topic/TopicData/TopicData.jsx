@@ -4,6 +4,7 @@ import Table from '../../../../components/Table/Table';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriSchemaId,
+  uriSearchLimits,
   uriTopicData,
   uriTopicDataDelete,
   uriTopicDataDownload,
@@ -28,7 +29,7 @@ import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
 import { streamSearch, SearchRequestError } from '../../../../utils/sseClient';
 import SearchPanel from './Search/SearchPanel';
-import { emptyDraft, expressionToDraft } from './Search/searchModel';
+import { DEFAULT_LIMITS, emptyDraft, expressionToDraft } from './Search/searchModel';
 import { readSearchFromQuery, sameExpression, writeSearchToParams } from './Search/searchUrl';
 import { withRouter } from '../../../../utils/withRouter';
 import { format } from 'date-fns';
@@ -49,6 +50,7 @@ class TopicData extends Root {
     draft: emptyDraft(),
     applied: null,
     searchNotShareable: false,
+    searchLimits: DEFAULT_LIMITS,
     offsets: {},
     offsetsSearch: '',
     openDateModal: false,
@@ -87,6 +89,7 @@ class TopicData extends Root {
   }
 
   componentDidMount = () => {
+    this._loadSearchLimits();
     this._syncStateFromLocationAndLoad();
   };
 
@@ -101,6 +104,15 @@ class TopicData extends Root {
 
       this._stopEventSource(false);
       this._syncStateFromLocationAndLoad();
+    }
+  }
+
+  async _loadSearchLimits() {
+    try {
+      const { data } = await this.getApi(uriSearchLimits());
+      this.setState({ searchLimits: { ...DEFAULT_LIMITS, ...data } });
+    } catch (e) {
+      // keep the default limits; the backend still enforces the configured ones
     }
   }
 
@@ -1046,7 +1058,7 @@ class TopicData extends Root {
   }
 
   _renderSearchGroup() {
-    const { draft, applied, isSearching, searchNotShareable } = this.state;
+    const { draft, applied, isSearching, searchNotShareable, searchLimits } = this.state;
 
     return (
       <SearchPanel
@@ -1058,6 +1070,7 @@ class TopicData extends Root {
         onStop={() => this._stopEventSource()}
         isSearching={!!isSearching}
         notShareable={searchNotShareable}
+        limits={searchLimits}
       />
     );
   }

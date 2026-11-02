@@ -54,6 +54,8 @@ are still executed but not written in the URL, and the UI warns that the search 
 | `akhq.topic-data.search.max-conditions` | 50 |
 | `akhq.topic-data.search.max-value-length` | 1000 |
 
+The UI reads the configured values from `GET /api/search-limits`.
+
 See the [configuration](configuration/akhq.md#topic-data).
 
 ## REST API

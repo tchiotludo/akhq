@@ -44,6 +44,18 @@ class AkhqControllerTest extends AbstractTest {
     }
 
     @Test
+    void searchLimits() {
+        AkhqController.SearchLimits result = this.retrieve(
+            HttpRequest.GET("/api/search-limits"),
+            AkhqController.SearchLimits.class
+        );
+
+        assertEquals(10, result.getMaxGroups());
+        assertEquals(50, result.getMaxConditions());
+        assertEquals(1000, result.getMaxValueLength());
+    }
+
+    @Test
     void user() {
         AkhqController.AuthUser result = this.retrieve(
             HttpRequest.GET("/api/me"),
