@@ -19,6 +19,9 @@ import org.akhq.models.Record;
 import org.akhq.models.Topic;
 import org.akhq.repositories.RecordRepository;
 import org.akhq.repositories.TopicRepository;
+import org.akhq.search.SearchExpression;
+import org.akhq.search.SearchExpressionException;
+import org.akhq.search.SearchExpressionValidator;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -40,17 +43,20 @@ public class AkhqTopicDataToolService {
     private final RecordRepository recordRepository;
     private final ApplicationContext applicationContext;
     private final Mcp mcp;
+    private final SearchExpressionValidator searchExpressionValidator;
 
     public AkhqTopicDataToolService(
         TopicRepository topicRepository,
         RecordRepository recordRepository,
         ApplicationContext applicationContext,
-        Mcp mcp
+        Mcp mcp,
+        SearchExpressionValidator searchExpressionValidator
     ) {
         this.topicRepository = topicRepository;
         this.recordRepository = recordRepository;
         this.applicationContext = applicationContext;
         this.mcp = mcp;
+        this.searchExpressionValidator = searchExpressionValidator;
     }
 
     public FindMessageInTopicResult findMessageInTopic(FindMessageInTopicArguments arguments) throws ExecutionException, InterruptedException {
@@ -61,11 +67,19 @@ public class AkhqTopicDataToolService {
         String cluster = asRequiredString(arguments.cluster(), "`arguments.cluster` is required");
         String topicName = asRequiredString(arguments.topic(), "`arguments.topic` is required");
 
-        if (isEmpty(arguments.searchByKey())
-            && isEmpty(arguments.searchByValue())
-            && isEmpty(arguments.searchByHeaderKey())
-            && isEmpty(arguments.searchByHeaderValue())) {
-            throw new IllegalArgumentException("At least one of searchByKey/searchByValue/searchByHeaderKey/searchByHeaderValue is required");
+        boolean hasLiteralFilter = !isEmpty(arguments.searchByKey())
+            || !isEmpty(arguments.searchByValue())
+            || !isEmpty(arguments.searchByHeaderKey())
+            || !isEmpty(arguments.searchByHeaderValue());
+        boolean hasExpression = arguments.expression() != null;
+        if (hasExpression && hasLiteralFilter) {
+            throw new IllegalArgumentException("`expression` cannot be combined with searchByKey/searchByValue/searchByHeaderKey/searchByHeaderValue");
+        }
+        if (!hasExpression && !hasLiteralFilter) {
+            throw new IllegalArgumentException("Provide `expression` or at least one of searchByKey/searchByValue/searchByHeaderKey/searchByHeaderValue");
+        }
+        if (hasExpression) {
+            validateExpression(arguments.expression());
         }
 
         List<String> fields = fields(arguments.fields());
@@ -82,6 +96,9 @@ public class AkhqTopicDataToolService {
         asString(arguments.after()).ifPresent(after -> setCursor(options, after));
 
         asInteger(arguments.partition()).ifPresent(options::setPartition);
+        if (hasExpression) {
+            options.setSearchExpression(arguments.expression());
+        }
         asString(arguments.searchByKey()).map(value -> toSearchFilter(value, arguments.searchByKeyMatchType())).ifPresent(options::setSearchByKey);
         asString(arguments.searchByValue()).map(value -> toSearchFilter(value, arguments.searchByValueMatchType())).ifPresent(options::setSearchByValue);
         asString(arguments.searchByHeaderKey()).map(value -> toSearchFilter(value, arguments.searchByHeaderKeyMatchType())).ifPresent(options::setSearchByHeaderKey);
@@ -165,6 +182,17 @@ public class AkhqTopicDataToolService {
             message.toString(),
             null
         );
+    }
+
+    private void validateExpression(SearchExpression expression) {
+        try {
+            searchExpressionValidator.validate(expression);
+        } catch (SearchExpressionException e) {
+            throw new IllegalArgumentException("Invalid `expression`: " + e.getMessage(), e);
+        }
+        if (expression.groups().isEmpty()) {
+            throw new IllegalArgumentException("Invalid `expression`: at least one group is required");
+        }
     }
 
     /**

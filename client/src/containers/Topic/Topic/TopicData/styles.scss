@@ -179,3 +179,86 @@ code {
     max-width: 150px;
   }
 }
+
+.topic-filters {
+  width: 100%;
+  padding: 0;
+
+  .filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-pill {
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    color: inherit;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    strong {
+      opacity: 0.65;
+    }
+
+    &.open {
+      border-color: #fff;
+    }
+  }
+
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 4px;
+    padding: 6px 10px;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    border-radius: 4px;
+
+    .small {
+      opacity: 0.75;
+    }
+  }
+
+  .react-datepicker-wrapper {
+    width: 11rem;
+    margin-right: 0;
+  }
+
+  .react-datepicker-popper {
+    z-index: 1100;
+  }
+
+  .filter-offsets table tbody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+
+    tr {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input {
+      width: 8rem;
+    }
+  }
+}
+
+.khq-data-filter > .navbar-collapse {
+  flex-grow: 1;
+}
+
+.khq-data-filter {
+  align-items: flex-start;
+
+  .pagination-data {
+    order: 2;
+    margin-left: auto;
+  }
+}

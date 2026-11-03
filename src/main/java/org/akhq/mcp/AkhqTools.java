@@ -84,6 +84,18 @@ public class AkhqTools extends AbstractMcpTool {
               "searchByHeaderKeyMatchType": "NOT_CONTAINS",
               "searchByHeaderValue": "optional literal",
               "searchByHeaderValueMatchType": "CONTAINS",
+              "expression": {
+                "version": 1,
+                "groups": [
+                  {"conditions": [
+                    {"field": "value", "operator": "matchesRegex", "value": "error-\\\\d+"},
+                    {"join": "AND", "field": "key", "operator": "contains", "value": "customer-42"}
+                  ]},
+                  {"join": "OR", "conditions": [
+                    {"field": "headerValue", "operator": "equals", "value": "checkout"}
+                  ]}
+                ]
+              },
               "partition": 0,
               "timestamp": "2026-09-14T10:00:00Z",
               "endTimestamp": "2026-09-14T10:15:00Z",
@@ -94,7 +106,16 @@ public class AkhqTools extends AbstractMcpTool {
 
             Rules:
             - `cluster` and `topic` are required.
-            - Provide at least one of: `searchByKey`, `searchByValue`, `searchByHeaderKey`, `searchByHeaderValue`.
+            - Provide either `expression` or at least one of: `searchByKey`, `searchByValue`, `searchByHeaderKey`,
+              `searchByHeaderValue`. They cannot be combined.
+            - `expression` is the structured search of the AKHQ UI: `version` is 1, `groups` are joined with
+              `join` (AND/OR, omitted on the first group), each group has `conditions` joined the same way.
+              A condition has a `field` (`value`, `key`, `headerKey`, `headerValue`, `keySubject`, `valueSubject`),
+              an `operator` (`contains`, `notContains`, `equals`, `matchesRegex`) and a `value`.
+              `matchesRegex` uses RE2 syntax and matches anywhere in the text (no implicit anchors).
+              Matching is case insensitive. Joins are applied strictly left to right inside a group, then
+              between groups (no AND-before-OR precedence). Searches always scan oldest first. Limits apply
+              (`akhq.topic-data.search.*`).
             - `timestamp` and `endTimestamp` accept ISO-8601 timestamps.
             - `maxMatches` defaults to 1 and is capped at 25, or at 500 when `fields` is set.
             - Each match includes its full `value` when the result fits the size budget. Otherwise the
