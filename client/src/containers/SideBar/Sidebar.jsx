@@ -37,7 +37,8 @@ export class Sidebar extends Component {
     registryType: '',
     enableConnect: false,
     enableKsqlDB: false,
-    roles: JSON.parse(sessionStorage.getItem('roles'))
+    roles: JSON.parse(sessionStorage.getItem('roles')),
+    flyoutPosition: null
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -46,6 +47,7 @@ export class Sidebar extends Component {
   }
 
   componentDidMount() {
+    window.addEventListener('resize', this.updateFlyoutPosition);
     let tabs = [
       constants.CLUSTER,
       constants.CONNECT,
@@ -94,11 +96,61 @@ export class Sidebar extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.expanded !== prevProps.expanded) {
+      this.flyoutAnchor = null;
+      this.setState({ flyoutPosition: null });
+    }
     if (this.props.clusters !== prevProps.clusters) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
         this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       });
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateFlyoutPosition);
+  }
+
+  updateFlyoutPosition = () => {
+    if (this.props.expanded || !this.flyoutAnchor) {
+      return;
+    }
+    const { key, element } = this.flyoutAnchor;
+    const rect = element.getBoundingClientRect();
+    const menu = element.parentElement.querySelector('[role="menu"]');
+    const height = Math.min(menu ? menu.scrollHeight : 0, window.innerHeight * 0.3);
+    this.setState({
+      flyoutPosition: {
+        key,
+        left: element.parentElement.getBoundingClientRect().right,
+        top: Math.max(0, Math.min(rect.top, window.innerHeight - height - 60))
+      }
+    });
+  };
+
+  flyoutProps(key) {
+    const position = this.state.flyoutPosition;
+    return {
+      onMouseEnter: event => {
+        this.flyoutAnchor = { key, element: event.currentTarget };
+        this.updateFlyoutPosition();
+      },
+      // Fixed positioning lets the hover menu escape the sidebar's scroll clip.
+      subnavStyle: this.props.expanded
+        ? undefined
+        : {
+            position: 'fixed',
+            visibility: position && position.key === key ? 'visible' : 'hidden',
+            left: position && position.key === key ? position.left : 0,
+            top: position && position.key === key ? position.top : 0
+          }
+    };
+  }
+
+  isPlainClick(event) {
+    return (
+      event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey
+    );
   }
 
   handleRegistryAndConnectsAndKsqlDBs(selectedCluster) {
@@ -250,15 +302,7 @@ export class Sidebar extends Component {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
-      <NavItem
-        eventKey={label}
-        className={pathname.includes(tab) ? 'active' : ''}
-        onClick={() => {
-          this.setState({ selectedTab: tab });
-          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: false });
-          return false;
-        }}
-      >
+      <NavItem eventKey={label} className={pathname.includes(tab) ? 'active' : ''}>
         <NavIcon>
           {' '}
           <span>
@@ -269,6 +313,14 @@ export class Sidebar extends Component {
           {' '}
           <span>{label}</span>
         </NavText>
+        <Link
+          className="sidebar-menu-link"
+          aria-label={label}
+          to={`/ui/${selectedCluster}/${tab}`}
+          onClick={event => {
+            if (this.isPlainClick(event)) this.setState({ selectedTab: tab });
+          }}
+        />
       </NavItem>
     );
   }
@@ -293,6 +345,7 @@ export class Sidebar extends Component {
     const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
     return (
       <SideNav
+        onScrollCapture={this.updateFlyoutPosition}
         expanded={expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
@@ -302,6 +355,7 @@ export class Sidebar extends Component {
           height: '100vh',
           position: 'fixed',
           paddingBottom: '60px',
+          overflowX: 'hidden',
           overflowY: 'auto'
         }}
       >
@@ -326,7 +380,7 @@ export class Sidebar extends Component {
           )}
         </div>
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
-          <NavItem eventKey="cluster">
+          <NavItem eventKey="cluster" {...this.flyoutProps('cluster')}>
             <NavIcon>
               <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
             </NavIcon>
@@ -374,6 +428,7 @@ export class Sidebar extends Component {
           {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
             <NavItem
               eventKey="connects"
+              {...this.flyoutProps('connects')}
               className={selectedTab === constants.CONNECT ? 'active' : ''}
             >
               <NavIcon>
@@ -399,6 +454,7 @@ export class Sidebar extends Component {
           {enableKsqlDB && roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
             <NavItem
               eventKey="ksqlDBs"
+              {...this.flyoutProps('ksqlDBs')}
               className={selectedTab === constants.KSQLDB ? 'active' : ''}
             >
               <NavIcon>
