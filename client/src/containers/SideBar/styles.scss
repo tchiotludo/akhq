@@ -1,6 +1,10 @@
 $sidebarTransition: 0.5s;
 
 .sidenav---sidenav---_2tBP {
+  .sidebar-menu-link {
+    position: absolute;
+    inset: 0;
+  }
   a {
     text-decoration: none;
     &:hover {
