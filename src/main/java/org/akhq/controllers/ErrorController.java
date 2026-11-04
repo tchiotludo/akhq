@@ -14,6 +14,7 @@ import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.mcp.McpEndpoint;
 import org.akhq.modules.InvalidClusterException;
 import org.akhq.search.SearchExpressionException;
 import org.akhq.security.rule.AKHQSecurityRule;
@@ -38,6 +39,8 @@ public class ErrorController extends AbstractController {
     private McpOauthRequestMatcher mcpOauthRequestMatcher;
     @Inject
     private McpOauthResourceMetadata mcpOauthResourceMetadata;
+    @Inject
+    private McpEndpoint mcpEndpoint;
 
     // Kafka
     @Error(global = true)
@@ -109,7 +112,7 @@ public class ErrorController extends AbstractController {
                 .body(new JsonError("OAuth access token required or invalid"));
         }
 
-        if (request.getUri().toString().startsWith(getBasePath()+"/api")) {
+        if (request.getUri().toString().startsWith(getBasePath()+"/api") || mcpEndpoint.matches(request)) {
             if (e.isForbidden()) {
                 String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);
                 String action = request.getAttribute(AKHQSecurityRule.REJECTED_ACTION, String.class).orElse(null);
