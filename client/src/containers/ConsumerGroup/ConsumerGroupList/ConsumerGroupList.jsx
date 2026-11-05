@@ -169,11 +169,13 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-dark btn-sm mb-1 me-1"
+          className="btn btn-secondary btn-theme-secondary btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
           {topicId}{' '}
-          <div className="badge bg-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
+          <div className="badge badge-theme-secondary">
+            Lag: {Number(offsetLag).toLocaleString()}
+          </div>
         </Link>
       );
     });

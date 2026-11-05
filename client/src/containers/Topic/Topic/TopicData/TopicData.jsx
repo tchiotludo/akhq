@@ -1425,7 +1425,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #171819)'
                       }}
                     >
                       {header.key}
@@ -1436,7 +1436,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #171819)'
                       }}
                     >
                       {header.value}

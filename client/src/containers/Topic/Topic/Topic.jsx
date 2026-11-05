@@ -343,7 +343,7 @@ class Topic extends Root {
                   to={{
                     pathname: `/ui/${clusterId}/topic/${topicId}/copy`
                   }}
-                  className="btn btn-secondary me-2"
+                  className="btn btn-secondary btn-theme-secondary me-2"
                 >
                   <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Copy Topic
                 </Link>
@@ -355,7 +355,7 @@ class Topic extends Root {
                     pathname: `/ui/${clusterId}/tail`,
                     search: `?topicId=${topicId}`
                   }}
-                  className="btn btn-secondary me-2"
+                  className="btn btn-secondary btn-theme-secondary me-2"
                 >
                   <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Live Tail
                 </Link>

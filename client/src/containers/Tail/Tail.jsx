@@ -254,7 +254,10 @@ class Tail extends Root {
               inputClass={'tail-search-input'}
             />
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle">
+              <Dropdown.Toggle
+                variant="secondary"
+                className="btn dropdown-toggle btn-theme-secondary"
+              >
                 {selectedTopics.length === 0
                   ? 'Topics'
                   : selectedTopics.length === 1
@@ -324,7 +327,10 @@ class Tail extends Root {
             </Dropdown>
 
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle">
+              <Dropdown.Toggle
+                variant="secondary"
+                className="btn dropdown-toggle btn-theme-secondary"
+              >
                 Max Records: {maxRecords}
               </Dropdown.Toggle>
               <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>

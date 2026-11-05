@@ -51,7 +51,7 @@
 }
 
 .headers-modal {
-  background-color: #171819;
+  background-color: var(--bs-body-bg, #171819);
   padding-bottom: 1rem;
   position: relative;
   top: 30%;
@@ -78,9 +78,9 @@
   display: none;
 }
 
-.dropdown-toggle,
-.dropdown-toggle:hover,
-.dropdown-toggle:focus {
+.dropdown-toggle:not(.btn-theme-secondary),
+.dropdown-toggle:not(.btn-theme-secondary):hover,
+.dropdown-toggle:not(.btn-theme-secondary):focus {
   background-color: transparent !important;
   border-color: transparent !important;
 }

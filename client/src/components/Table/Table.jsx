@@ -269,7 +269,7 @@ class Table extends Component {
           }}
           key={'row-expanded-' + row.id}
         >
-          <td style={{ '--bs-table-bg-state': '#171819' }} colSpan={this.colspan()}>
+          <td style={{ '--bs-table-bg-state': 'var(--bs-body-bg, #fff)' }} colSpan={this.colspan()}>
             {' '}
             {extraExpanded &&
             JSON.stringify(
@@ -350,8 +350,7 @@ class Table extends Component {
       onCopy,
       onFavorite,
       idCol
-    } =
-      this.props;
+    } = this.props;
 
     let idColVal = idCol ? row[this.props.idCol] : row.id;
 

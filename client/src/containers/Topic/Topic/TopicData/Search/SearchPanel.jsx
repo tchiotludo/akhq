@@ -139,7 +139,9 @@ const SearchPanel = ({
             <button
               key={mode}
               type="button"
-              className={`btn ${draft.mode === mode ? 'btn-primary' : 'btn-secondary'}`}
+              className={`btn ${
+                draft.mode === mode ? 'btn-primary' : 'btn-secondary btn-theme-secondary'
+              }`}
               aria-pressed={draft.mode === mode}
               onClick={() => selectMode(mode)}
             >

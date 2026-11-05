@@ -43,7 +43,8 @@ describe('SearchPanel', () => {
     const user = userEvent.setup();
     render(<Harness />);
     expect(screen.getByText('Search messages')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Advanced' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Advanced' })).toHaveClass('btn-theme-secondary');
+    expect(screen.getByRole('button', { name: 'Simple' })).toHaveClass('btn-primary');
     expect(screen.queryByTestId('simple-search')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /Search messages/ }));

@@ -16,3 +16,21 @@
     }
   }
 }
+
+[data-bs-theme='dark'] .khq-data-filter {
+  --bs-navbar-color: var(--bs-body-color);
+  --bs-navbar-hover-color: var(--bs-emphasis-color);
+  --bs-navbar-disabled-color: var(--bs-secondary-color);
+  --bs-navbar-active-color: var(--bs-emphasis-color);
+
+  background-color: var(--bs-secondary-bg) !important;
+  color: var(--bs-body-color);
+
+  .navbar-toggler {
+    border-color: var(--bs-border-color);
+  }
+
+  .navbar-toggler-icon {
+    filter: invert(1);
+  }
+}
