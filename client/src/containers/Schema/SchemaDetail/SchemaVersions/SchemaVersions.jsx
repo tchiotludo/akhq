@@ -178,7 +178,7 @@ class SchemaVersions extends Root {
                       display: 'flex',
                       borderStyle: 'dashed',
                       borderWidth: '1px',
-                      backgroundColor: '#171819'
+                      backgroundColor: 'var(--bs-body-bg, #fff)'
                     }}
                   >
                     {header}
@@ -189,7 +189,7 @@ class SchemaVersions extends Root {
                       display: 'flex',
                       borderStyle: 'dashed',
                       borderWidth: '1px',
-                      backgroundColor: '#171819'
+                      backgroundColor: 'var(--bs-body-bg, #fff)'
                     }}
                   >
                     {obj.headers[header]}
