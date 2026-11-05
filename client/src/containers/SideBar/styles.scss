@@ -2,15 +2,15 @@ $sidebarTransition: 0.5s;
 
 :root,
 [data-bs-theme='light'] {
-  --akhq-sidebar-bg: #f8f9fa;
-  --akhq-sidebar-color: #212529;
+  --akhq-sidebar-bg: #f6f8fa;
+  --akhq-sidebar-color: #1f2328;
   --akhq-sidebar-label-weight: 600;
-  --akhq-sidebar-icon-color: #495057;
-  --akhq-sidebar-hover-bg: rgba(0, 0, 0, 0.07);
+  --akhq-sidebar-icon-color: #59636e;
+  --akhq-sidebar-hover-bg: rgba(31, 35, 40, 0.06);
   --akhq-sidebar-active-bg: rgba(0, 95, 129, 0.12);
   --akhq-sidebar-active-color: #005f81;
-  --akhq-sidebar-border: #dee2e6;
-  --akhq-sidebar-toggle-color: #495057;
+  --akhq-sidebar-border: #d1d9e0;
+  --akhq-sidebar-toggle-color: #59636e;
 }
 
 [data-bs-theme='dark'] {

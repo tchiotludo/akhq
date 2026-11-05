@@ -77,20 +77,30 @@ nav.navbar {
   background-color: var(--bs-secondary-bg) !important;
 }
 
+[data-bs-theme='light'] .table,
 [data-bs-theme='dark'] .table {
   --bs-table-bg: var(--bs-body-bg);
   --bs-table-color: var(--bs-body-color);
   --bs-table-border-color: var(--bs-border-color);
   --bs-table-striped-bg: transparent;
   --bs-table-striped-color: var(--bs-body-color);
-  --bs-table-hover-bg: rgba(110, 118, 129, 0.12);
   --bs-table-hover-color: var(--bs-body-color);
 }
 
+[data-bs-theme='light'] .table {
+  --bs-table-hover-bg: rgba(31, 35, 40, 0.04);
+}
+
+[data-bs-theme='dark'] .table {
+  --bs-table-hover-bg: rgba(110, 118, 129, 0.12);
+}
+
+[data-bs-theme='light'] .table > thead,
 [data-bs-theme='dark'] .table > thead {
   --bs-table-bg: var(--bs-secondary-bg);
 }
 
+[data-bs-theme='light'] .table-bordered > :not(caption) > * > *,
 [data-bs-theme='dark'] .table-bordered > :not(caption) > * > * {
   border: 0;
   border-bottom: var(--bs-border-width) solid var(--bs-table-border-color);

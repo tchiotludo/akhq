@@ -79,8 +79,11 @@ $dark: $gray-900 !default;
 $yiq-contrasted-threshold: 175 !default;
 
 // Body (Light default)
-$body-bg: $white !default;
-$body-color: $gray-900 !default;
+$body-bg: #fff !default;
+$body-color: #1f2328 !default;
+$body-secondary-bg: #f6f8fa !default;
+$body-tertiary-bg: #eaeef2 !default;
+$border-color: #d1d9e0 !default;
 
 // Bootstrap 5.3 dark color mode variables
 $body-bg-dark: #0d1117 !default;

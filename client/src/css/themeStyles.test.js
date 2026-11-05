@@ -42,8 +42,21 @@ describe('theme-aware styles', () => {
     );
   });
 
+  it('uses a soft light palette and horizontal-only table separators', () => {
+    expect(compiledStyles).toContain('--bs-body-color: #1f2328;');
+    expect(compiledStyles).toContain('--bs-secondary-bg: #f6f8fa;');
+    expect(compiledStyles).toContain('--bs-tertiary-bg: #eaeef2;');
+    expect(compiledStyles).toContain('--bs-border-color: #d1d9e0;');
+    expect(compiledStyles).toMatch(
+      /\[data-bs-theme=light\] \.table,\s*\[data-bs-theme=dark\] \.table\s*\{[^}]*--bs-table-striped-bg: transparent;/
+    );
+    expect(compiledStyles).toMatch(
+      /\[data-bs-theme=light\] \.table-bordered > :not\(caption\) > \* > \*,\s*\[data-bs-theme=dark\] \.table-bordered > :not\(caption\) > \* > \*\s*\{\s*border: 0;\s*border-bottom: var\(--bs-border-width\) solid var\(--bs-table-border-color\);/
+    );
+  });
+
   it('keeps light sidebar labels dark and semibold', () => {
-    expect(compiledStyles).toContain('--akhq-sidebar-color: #212529;');
+    expect(compiledStyles).toContain('--akhq-sidebar-color: #1f2328;');
     expect(compiledStyles).toContain('--akhq-sidebar-label-weight: 600;');
     expect(compiledStyles).toContain('font-weight: var(--akhq-sidebar-label-weight, 400);');
     expect(compiledStyles).toMatch(
