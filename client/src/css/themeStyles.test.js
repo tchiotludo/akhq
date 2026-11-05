@@ -30,6 +30,18 @@ describe('theme-aware styles', () => {
     );
   });
 
+  it('uses a softer dark palette and horizontal-only table separators', () => {
+    expect(compiledStyles).toContain('--bs-body-bg: #0d1117;');
+    expect(compiledStyles).toContain('--bs-body-color: #e6edf3;');
+    expect(compiledStyles).toContain('--bs-secondary-bg: #161b22;');
+    expect(compiledStyles).toMatch(
+      /\[data-bs-theme=dark\] \.table\s*\{[^}]*--bs-table-striped-bg: transparent;/
+    );
+    expect(compiledStyles).toMatch(
+      /\[data-bs-theme=dark\] \.table-bordered > :not\(caption\) > \* > \*\s*\{\s*border: 0;\s*border-bottom: var\(--bs-border-width\) solid var\(--bs-table-border-color\);/
+    );
+  });
+
   it('keeps light sidebar labels dark and semibold', () => {
     expect(compiledStyles).toContain('--akhq-sidebar-color: #212529;');
     expect(compiledStyles).toContain('--akhq-sidebar-label-weight: 600;');
@@ -43,7 +55,8 @@ describe('theme-aware styles', () => {
   });
 
   it('retains the dark sidebar palette and theme-aware topic-data backgrounds', () => {
-    expect(compiledStyles).toContain('--akhq-sidebar-color: #f8f9fa;');
+    expect(compiledStyles).toContain('--akhq-sidebar-color: #e6edf3;');
+    expect(compiledStyles).toContain('--akhq-sidebar-icon-color: #c9d1d9;');
     expect(compiledStyles).toContain('--akhq-sidebar-label-weight: 600;');
     expect(compiledStyles).toContain('--akhq-sidebar-active-color: #7ddcff;');
     expect(compiledStyles).toMatch(
