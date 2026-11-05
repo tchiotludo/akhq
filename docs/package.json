@@ -28,7 +28,7 @@
     "@vuepress/plugin-register-components": "^2.0.0-rc.135",
     "@vuepress/plugin-search": "^2.0.0-rc.137",
     "@vuepress/theme-default": "^2.0.0-rc.137",
-    "glob": "^13.0.6",
+    "glob": "^14.0.3",
     "http-server": "^14.1.1",
     "inflection": "^3.0.2",
     "lodash.sortby": "^4.7.0",
