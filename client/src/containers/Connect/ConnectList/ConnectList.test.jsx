@@ -48,4 +48,13 @@ describe('ConnectList search submission', () => {
     expect(list.props.router.navigate).toHaveBeenCalledOnce();
     expect(list.getConnectDefinitions).not.toHaveBeenCalled();
   });
+
+  it('uses theme-aware colors for task status pills', () => {
+    const list = createConnectList({});
+    const [taskFragment] = list.renderTasks([{ id: 1, workerId: 'worker-a', state: 'RUNNING' }]);
+    const [taskButton] = taskFragment.props.children;
+    const [, statusBadge] = taskButton.props.children;
+
+    expect(statusBadge.props.className).toBe('badge badge-theme-secondary');
+  });
 });

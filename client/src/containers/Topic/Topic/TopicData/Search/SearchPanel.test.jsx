@@ -43,7 +43,8 @@ describe('SearchPanel', () => {
     const user = userEvent.setup();
     render(<Harness />);
     expect(screen.getByText('Search messages')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Advanced' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Advanced' })).toHaveClass('btn-theme-secondary');
+    expect(screen.getByRole('button', { name: 'Simple' })).toHaveClass('btn-primary');
     expect(screen.queryByTestId('simple-search')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /Search messages/ }));
@@ -60,6 +61,7 @@ describe('SearchPanel', () => {
 
     expect(screen.getByTestId('simple-search')).toBeInTheDocument();
     expect(screen.queryByTestId('advanced-search')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Clear' })).toHaveClass('btn-theme-secondary');
 
     await user.type(screen.getByLabelText('Search text'), 'foo bar');
     await user.click(screen.getByRole('button', { name: 'Search' }));
@@ -93,6 +95,10 @@ describe('SearchPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Advanced' }));
 
     expect(screen.queryByTestId('simple-search')).toBeNull();
+    screen
+      .getAllByRole('button', { name: 'Add condition' })
+      .forEach(button => expect(button).toHaveClass('btn-theme-secondary'));
+    expect(screen.getByRole('button', { name: '+ Group' })).toHaveClass('btn-theme-secondary');
     const rows = screen.getAllByTestId('condition-row');
     expect(rows).toHaveLength(2);
     expect(within(rows[1]).getByLabelText('Join for condition 2')).toHaveValue('AND');

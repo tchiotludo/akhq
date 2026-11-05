@@ -38,6 +38,27 @@ const createTopicData = (locationSearch = '') => {
 };
 
 describe('TopicData filter submission', () => {
+  it('uses theme-aware secondary styles for inactive partition options', () => {
+    const topicData = createTopicData();
+    const panel = topicData._renderOptionPanel(
+      'Partition',
+      [
+        { value: 'All', text: 'All' },
+        { value: '0', text: '0' },
+        { value: '1', text: '1' }
+      ],
+      'All',
+      vi.fn()
+    );
+    const [, selected, ...inactive] = panel.props.children.flat();
+
+    expect(selected.props.className).toContain('btn-primary');
+    expect(inactive.map(option => option.props.className)).toEqual([
+      'btn btn-secondary btn-theme-secondary',
+      'btn btn-secondary btn-theme-secondary'
+    ]);
+  });
+
   it('reloads in place when re-submitting unchanged filters', () => {
     const topicData = createTopicData('?sort=Oldest&partition=All&size=50');
 

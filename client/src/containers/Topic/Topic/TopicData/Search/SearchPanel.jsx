@@ -91,12 +91,12 @@ const SearchPanel = ({
 
   const actions = isSearching ? (
     <>
-      <button type="button" className="btn btn-secondary" onClick={onStop}>
+      <button type="button" className="btn btn-secondary btn-theme-secondary" onClick={onStop}>
         Stop
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-secondary btn-theme-secondary"
         disabled={!hasCriteria && !applied}
         onClick={clear}
       >
@@ -110,7 +110,7 @@ const SearchPanel = ({
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-secondary btn-theme-secondary"
         disabled={!hasCriteria && !applied}
         onClick={clear}
       >
@@ -139,7 +139,9 @@ const SearchPanel = ({
             <button
               key={mode}
               type="button"
-              className={`btn ${draft.mode === mode ? 'btn-primary' : 'btn-secondary'}`}
+              className={`btn ${
+                draft.mode === mode ? 'btn-primary' : 'btn-secondary btn-theme-secondary'
+              }`}
               aria-pressed={draft.mode === mode}
               onClick={() => selectMode(mode)}
             >

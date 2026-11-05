@@ -235,7 +235,7 @@ class ConnectList extends Root {
         <React.Fragment>
           <span className={`btn btn-sm mb-1 ${className}`}>
             {`${task.workerId} (${task.id}) `}
-            <span className="badge bg-light">{task.state}</span>
+            <span className="badge badge-theme-secondary">{task.state}</span>
           </span>
           <br />
         </React.Fragment>
@@ -246,8 +246,16 @@ class ConnectList extends Root {
   };
 
   render() {
-    const { clusterId, connectId, tableData, loading, searchData, pageNumber, totalPageNumber, statusFilter } =
-      this.state;
+    const {
+      clusterId,
+      connectId,
+      tableData,
+      loading,
+      searchData,
+      pageNumber,
+      totalPageNumber,
+      statusFilter
+    } = this.state;
     const roles = this.state.roles || {};
 
     return (
@@ -385,7 +393,7 @@ class ConnectList extends Root {
                       display: 'flex',
                       borderStyle: 'dashed',
                       borderWidth: '1px',
-                      backgroundColor: '#171819'
+                      backgroundColor: 'var(--bs-body-bg, #fff)'
                     }}
                   >
                     {header}
@@ -396,7 +404,7 @@ class ConnectList extends Root {
                       display: 'flex',
                       borderStyle: 'dashed',
                       borderWidth: '1px',
-                      backgroundColor: '#171819'
+                      backgroundColor: 'var(--bs-body-bg, #fff)'
                     }}
                   >
                     {obj.headers[header]}

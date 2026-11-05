@@ -75,7 +75,7 @@ export const ConditionRow = ({
         />
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-secondary btn-theme-secondary"
           aria-label="Remove condition"
           disabled={disabled || !canRemove}
           onClick={onRemove}
@@ -84,7 +84,7 @@ export const ConditionRow = ({
         </button>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-secondary btn-theme-secondary"
           aria-label="Add condition"
           disabled={disabled}
           onClick={onAdd}
@@ -136,7 +136,7 @@ export const GroupCard = ({ group, index, count, errors, onChange, onRemove, dis
         {count > 1 && (
           <button
             type="button"
-            className="btn btn-secondary ml-auto"
+            className="btn btn-secondary btn-theme-secondary ml-auto"
             disabled={disabled}
             onClick={onRemove}
           >
@@ -188,7 +188,7 @@ const AdvancedSearch = ({ advanced, errors, onChange, disabled }) => {
       <div className="groups-toolbar">
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-secondary btn-theme-secondary"
           disabled={disabled}
           onClick={() =>
             onChange({

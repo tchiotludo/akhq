@@ -3,6 +3,15 @@
     cursor: pointer;
   }
 
+  &.khq-row-action {
+    color: var(--bs-body-color);
+
+    a,
+    a:hover {
+      color: var(--bs-body-color);
+    }
+  }
+
   .favorite-action {
     color: inherit;
   }

@@ -351,7 +351,6 @@ export class Sidebar extends Component {
           this.props.toggleSidebar(expanded);
         }}
         style={{
-          background: 'black',
           height: '100vh',
           position: 'fixed',
           paddingBottom: '60px',
@@ -379,7 +378,7 @@ export class Sidebar extends Component {
             </p>
           )}
         </div>
-        <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
+        <SideNav.Nav defaultSelected={`${constants.TOPIC}`}>
           <NavItem eventKey="cluster" {...this.flyoutProps('cluster')}>
             <NavIcon>
               <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
