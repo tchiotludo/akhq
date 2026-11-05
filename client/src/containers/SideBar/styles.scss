@@ -8,6 +8,7 @@ $sidebarTransition: 0.5s;
   --akhq-sidebar-icon-color: #495057;
   --akhq-sidebar-hover-bg: rgba(0, 0, 0, 0.07);
   --akhq-sidebar-active-bg: rgba(0, 95, 129, 0.12);
+  --akhq-sidebar-active-color: #005f81;
   --akhq-sidebar-border: #dee2e6;
   --akhq-sidebar-toggle-color: #495057;
 }
@@ -19,6 +20,7 @@ $sidebarTransition: 0.5s;
   --akhq-sidebar-icon-color: #e9ecef;
   --akhq-sidebar-hover-bg: rgba(255, 255, 255, 0.08);
   --akhq-sidebar-active-bg: rgba(0, 95, 129, 0.35);
+  --akhq-sidebar-active-color: #7ddcff;
   --akhq-sidebar-border: #303030;
   --akhq-sidebar-toggle-color: #f8f9fa;
 }
@@ -80,17 +82,17 @@ $sidebarTransition: 0.5s;
     > .sidenav---sidenav-navitem---uwIJ-.active
     > .sidenav---navitem---9uL5T {
     background: var(--akhq-sidebar-active-bg);
-    color: var(--bs-primary, #005f81);
+    color: var(--akhq-sidebar-active-color, var(--bs-primary, #005f81));
 
     .sidenav---navicon---3gCRo,
     .sidenav---navtext---1AE_f {
-      color: var(--bs-primary, #005f81);
+      color: var(--akhq-sidebar-active-color, var(--bs-primary, #005f81));
       font-weight: 600;
     }
 
     .sidenav---navicon---3gCRo > *,
     .sidenav---navtext---1AE_f > * {
-      color: var(--bs-primary, #005f81);
+      color: var(--akhq-sidebar-active-color, var(--bs-primary, #005f81));
       font-weight: 600;
     }
   }

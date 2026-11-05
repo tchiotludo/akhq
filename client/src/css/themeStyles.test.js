@@ -15,6 +15,21 @@ describe('theme-aware styles', () => {
     );
   });
 
+  it('uses the active theme text color for the editable page number', () => {
+    expect(compiledStyles).toMatch(
+      /input\.page-input\s*\{[^}]*color:\s*var\(--bs-body-color, #212529\)/
+    );
+  });
+
+  it('uses the active theme text color for table action icons and links', () => {
+    expect(compiledStyles).toMatch(
+      /\.action-hover\.khq-row-action\s*\{\s*color: var\(--bs-body-color\);/
+    );
+    expect(compiledStyles).toMatch(
+      /\.action-hover\.khq-row-action a,\s*\.action-hover\.khq-row-action a:hover\s*\{\s*color: var\(--bs-body-color\);/
+    );
+  });
+
   it('keeps light sidebar labels dark and semibold', () => {
     expect(compiledStyles).toContain('--akhq-sidebar-color: #212529;');
     expect(compiledStyles).toContain('--akhq-sidebar-label-weight: 600;');
@@ -30,9 +45,11 @@ describe('theme-aware styles', () => {
   it('retains the dark sidebar palette and theme-aware topic-data backgrounds', () => {
     expect(compiledStyles).toContain('--akhq-sidebar-color: #f8f9fa;');
     expect(compiledStyles).toContain('--akhq-sidebar-label-weight: 600;');
+    expect(compiledStyles).toContain('--akhq-sidebar-active-color: #7ddcff;');
     expect(compiledStyles).toMatch(
-      /\.sidenav---navtext---1AE_f > \*[^{}]*\{\s*color: var\(--bs-primary, #005f81\)/
+      /\.sidenav---navtext---1AE_f > \*[^{}]*\{\s*color: var\(--akhq-sidebar-active-color, var\(--bs-primary, #005f81\)\)/
     );
+    expect(compiledStyles).toContain('--akhq-sidebar-active-color: #005f81;');
     expect(compiledStyles).toMatch(
       /\.page-item\.info \.page-link\s*\{\s*color: var\(--bs-body-color\);\s*background: var\(--bs-secondary-bg\)/
     );

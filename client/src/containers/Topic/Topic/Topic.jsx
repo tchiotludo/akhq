@@ -322,14 +322,14 @@ class Topic extends Root {
                     onClick={() => {
                       this.handleOnEmpty();
                     }}
-                    className="btn btn-secondary me-2"
+                    className="btn btn-secondary btn-theme-secondary me-2"
                   >
                     <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 ) : (
                   <div
                     title="Only enabled for topics with Delete Cleanup Policy"
-                    className="btn disabled-black-button me-2"
+                    className="btn btn-theme-secondary disabled-black-button me-2"
                   >
                     <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>

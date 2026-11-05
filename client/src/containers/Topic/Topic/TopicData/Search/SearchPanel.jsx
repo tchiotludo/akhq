@@ -91,12 +91,12 @@ const SearchPanel = ({
 
   const actions = isSearching ? (
     <>
-      <button type="button" className="btn btn-secondary" onClick={onStop}>
+      <button type="button" className="btn btn-secondary btn-theme-secondary" onClick={onStop}>
         Stop
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-secondary btn-theme-secondary"
         disabled={!hasCriteria && !applied}
         onClick={clear}
       >
@@ -110,7 +110,7 @@ const SearchPanel = ({
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-secondary btn-theme-secondary"
         disabled={!hasCriteria && !applied}
         onClick={clear}
       >

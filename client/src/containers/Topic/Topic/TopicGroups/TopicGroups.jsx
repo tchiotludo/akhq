@@ -8,7 +8,7 @@ import { withRouter } from '../../../../utils/withRouter.jsx';
 import SearchBar from '../../../../components/SearchBar/index.jsx';
 import { getClusterUIOptions } from '../../../../utils/functions.jsx';
 
-class TopicGroups extends Root {
+export class TopicGroups extends Root {
   state = {
     consumerGroups: [],
     topicId: this.props.topicId,
@@ -90,7 +90,9 @@ class TopicGroups extends Root {
 
   handleState(state) {
     return (
-      <span className={state.toUpperCase() === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>{state}</span>
+      <span className={state.toUpperCase() === 'STABLE' ? 'badge bg-success' : 'badge bg-warning'}>
+        {state}
+      </span>
     );
   }
 
@@ -105,11 +107,13 @@ class TopicGroups extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topic}`}
           key={`lagTopic.${topic}`}
-          className="btn btn-secondary btn-sm mb-1 me-1"
+          className="btn btn-secondary btn-theme-secondary btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
           {topic}{' '}
-          <div className="badge bg-secondary">Lag: {Number(topics[topic]).toLocaleString()}</div>
+          <div className="badge badge-theme-secondary">
+            Lag: {Number(topics[topic]).toLocaleString()}
+          </div>
         </Link>
       );
     });

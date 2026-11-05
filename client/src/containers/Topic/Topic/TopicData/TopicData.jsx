@@ -890,7 +890,9 @@ class TopicData extends Root {
             key={value}
             type="button"
             aria-pressed={current === value}
-            className={`btn ${current === value ? 'btn-primary' : 'btn-secondary'}`}
+            className={`btn ${
+              current === value ? 'btn-primary' : 'btn-secondary btn-theme-secondary'
+            }`}
             onClick={() => {
               this.setState({ openFilter: null });
               if (current !== value) {
