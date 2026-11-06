@@ -200,6 +200,17 @@ public class AvroSerializer {
     }
 
     private static Object unionSerializer(Object value, Schema schema) {
+        if (value instanceof Map && ((Map<?, ?>) value).size() == 1) {
+            Map.Entry<?, ?> entry = ((Map<?, ?>) value).entrySet().iterator().next();
+            String typeName = entry.getKey().toString();
+            Schema matchingSchema = schema.getTypes().stream()
+                .filter(type -> type.getName().equals(typeName))
+                .findFirst()
+                .orElse(null);
+            if (matchingSchema != null) {
+                return AvroSerializer.objectSerializer(entry.getValue(), matchingSchema);
+            }
+        }
         return AvroSerializer.objectSerializer(value, schema
             .getTypes()
             .stream()

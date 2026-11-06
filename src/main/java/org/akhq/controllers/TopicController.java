@@ -14,24 +14,29 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.annotation.Error;
+import io.micronaut.http.hateoas.JsonError;
+import io.micronaut.http.hateoas.Link;
 import io.micronaut.http.server.types.files.StreamedFile;
 import io.micronaut.http.sse.Event;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
-import io.reactivex.schedulers.Schedulers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.*;
 import org.akhq.configs.security.Role;
 import org.akhq.models.*;
 import org.akhq.modules.AbstractKafkaWrapper;
 import org.akhq.repositories.*;
+import org.akhq.search.SearchExpression;
+import org.akhq.search.SearchExpressionValidator;
 import org.akhq.security.annotation.AKHQSecured;
 import org.akhq.utils.Pagination;
 import org.akhq.utils.ResultNextList;
 import org.akhq.utils.ResultPagedList;
 import org.akhq.utils.TopicDataResultNextList;
+import tools.jackson.core.JacksonException;
 import org.apache.kafka.common.resource.ResourceType;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.reactivestreams.Publisher;
@@ -67,6 +72,8 @@ public class TopicController extends AbstractController {
     private AccessControlListRepository aclRepository;
     @Inject
     private SchemaRegistryRepository schemaRegistryRepository;
+    @Inject
+    private SearchExpressionValidator searchExpressionValidator;
 
     @Value("${akhq.topic.replication}")
     private Short replicationFactor;
@@ -96,7 +103,8 @@ public class TopicController extends AbstractController {
         Optional<String> search,
         Optional<TopicRepository.TopicListView> show,
         Optional<Integer> page,
-        Optional<Integer> uiPageSize
+        Optional<Integer> uiPageSize,
+        Optional<List<String>> favorite
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAllowed(cluster);
 
@@ -108,7 +116,8 @@ public class TopicController extends AbstractController {
             pagination,
             show.orElse(TopicRepository.TopicListView.HIDE_INTERNAL),
             search,
-            buildUserBasedResourceFilters(cluster)
+            buildUserBasedResourceFilters(cluster),
+            favorite.orElse(List.of())
         ));
     }
 
@@ -215,7 +224,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
@@ -233,7 +243,8 @@ public class TopicController extends AbstractController {
                         searchByHeaderKey,
                         searchByHeaderValue,
                         searchByKeySubject,
-                        searchByValueSubject);
+                        searchByValueSubject,
+                        size);
         URIBuilder uri = URIBuilder.fromURI(request.getUri());
         List<Record> data = this.recordRepository.consume(cluster, options);
 
@@ -407,7 +418,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topicName);
 
@@ -424,9 +436,50 @@ public class TopicController extends AbstractController {
             searchByHeaderKey,
             searchByHeaderValue,
             searchByKeySubject,
-            searchByValueSubject
+            searchByValueSubject,
+            size
         );
 
+        return searchEvents(cluster, topicName, options);
+    }
+
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
+    @ExecuteOn(TaskExecutors.IO)
+    @Post(value = "api/{cluster}/topic/{topicName}/data/search", consumes = MediaType.APPLICATION_JSON, produces = MediaType.TEXT_EVENT_STREAM)
+    @Operation(tags = {"topic data"}, summary = "Search for data for a topic with a structured search expression")
+    public Publisher<Event<SearchRecord>> sseWithExpression(
+        String cluster,
+        String topicName,
+        @Body SearchExpression searchExpression,
+        @QueryValue Optional<String> after,
+        @QueryValue Optional<Integer> partition,
+        @QueryValue Optional<RecordRepository.Options.Sort> sort,
+        @QueryValue Optional<String> timestamp,
+        @QueryValue Optional<String> endTimestamp,
+        @QueryValue Optional<Integer> size
+    ) throws ExecutionException, InterruptedException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            searchExpression,
+            size
+        );
+
+        return searchEvents(cluster, topicName, options);
+    }
+
+    private Publisher<Event<SearchRecord>> searchEvents(
+        String cluster,
+        String topicName,
+        RecordRepository.Options options
+    ) throws ExecutionException, InterruptedException {
         Topic topic = topicRepository.findByName(cluster, topicName);
 
         return recordRepository
@@ -437,7 +490,9 @@ public class TopicController extends AbstractController {
                     event.getData().getAfter()
                 );
 
-                if (event.getData().getRecords().size() > 0) {
+                if (!event.getData().getRecords().isEmpty()) {
+                    // Truncated for UI display only; download reuses search() and keeps full values.
+                    event.getData().getRecords().forEach(recordRepository::filterMessageLength);
                     searchRecord.records = event.getData().getRecords();
                 }
 
@@ -481,9 +536,49 @@ public class TopicController extends AbstractController {
             searchByHeaderKey,
             searchByHeaderValue,
             searchByKeySubject,
-            searchByValueSubject
+            searchByValueSubject,
+            Optional.empty()
         );
 
+        return downloadRecords(cluster, topicName, options);
+    }
+
+    @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
+    @ExecuteOn(TaskExecutors.IO)
+    @Post(value = "api/{cluster}/topic/{topicName}/data/download", consumes = MediaType.APPLICATION_JSON)
+    @Operation(tags = {"topic data download"}, summary = "Download data for a topic with a structured search expression")
+    public HttpResponse<StreamedFile> downloadWithExpression(
+        String cluster,
+        String topicName,
+        @Body SearchExpression searchExpression,
+        @QueryValue Optional<String> after,
+        @QueryValue Optional<Integer> partition,
+        @QueryValue Optional<RecordRepository.Options.Sort> sort,
+        @QueryValue Optional<String> timestamp,
+        @QueryValue Optional<String> endTimestamp
+    ) throws ExecutionException, InterruptedException, IOException {
+        checkIfClusterAndResourceAllowed(cluster, topicName);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            searchExpression,
+            Optional.empty()
+        );
+
+        return downloadRecords(cluster, topicName, options);
+    }
+
+    private HttpResponse<StreamedFile> downloadRecords(
+        String cluster,
+        String topicName,
+        RecordRepository.Options options
+    ) throws ExecutionException, InterruptedException, IOException {
         // Set in MAX_POLL_RECORDS_CONFIG, big number increases speed
         options.setSize(10000);
 
@@ -509,40 +604,53 @@ public class TopicController extends AbstractController {
                 while(continueSearch.get()) {
                     recordRepository
                         .search(topic, options)
-                        .observeOn(Schedulers.io())
-                        .map(event -> {
-                            if (!event.getData().getRecords().isEmpty()) {
-                                if (!isFirstBatch.getAndSet(false)) {
-                                    // Add a comma between batches records
-                                    out.write(',');
-                                }
-
-                                byte[] bytes = mapper.writeValueAsString(event.getData().getRecords()).getBytes();
-                                // Remove start [ and end ] to concatenate records in the same array
-                                out.write(Arrays.copyOfRange(bytes, 1, bytes.length - 1));
-
-                            } else {
-                                // No more records, add the end array ] and stop here
-                                if (event.getData().getEmptyPoll() == 1) {
-                                    out.write(']');
-                                    out.flush();
-                                    continueSearch.set(false);
-                                }
-                                else if (event.getData().getAfter() != null) {
-                                    // Continue to search from the last offsets
-                                    options.setAfter(event.getData().getAfter());
-                                }
-                            }
-
-                            return 0;
-                        }).blockingSubscribe();
+                        .doOnNext(event -> writeDownloadBatch(event, isFirstBatch, continueSearch, out, mapper, options))
+                        .blockLast();
                 }
             } catch (IOException | ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (UncheckedIOException e) {
+                throw new RuntimeException(e.getCause());
             }
         }).start();
 
         return HttpResponse.ok(new StreamedFile(in, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    private static void writeDownloadBatch(
+        Event<RecordRepository.SearchEvent> event,
+        AtomicBoolean isFirstBatch,
+        AtomicBoolean continueSearch,
+        PipedOutputStream out,
+        ObjectMapper mapper,
+        RecordRepository.Options options
+    ) {
+        try {
+            if (!event.getData().getRecords().isEmpty()) {
+                if (!isFirstBatch.getAndSet(false)) {
+                    // Add a comma between batches records
+                    out.write(',');
+                }
+
+                byte[] bytes = mapper.writeValueAsString(event.getData().getRecords()).getBytes();
+                // Remove start [ and end ] to concatenate records in the same array
+                out.write(Arrays.copyOfRange(bytes, 1, bytes.length - 1));
+                return;
+            }
+
+            // A "searchEnd" event with no "after" cursor means this call's range plan had nothing
+            // left to scan at all: the topic is fully drained, so stop here and close the array.
+            if ("searchEnd".equals(event.getName()) && event.getData().getAfter() == null) {
+                out.write(']');
+                out.flush();
+                continueSearch.set(false);
+            } else if (event.getData().getAfter() != null) {
+                // Continue to search from the last offsets
+                options.setAfter(event.getData().getAfter());
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 
@@ -566,6 +674,7 @@ public class TopicController extends AbstractController {
             topicName,
             offset - 1 < 0 ? Optional.empty() : Optional.of(String.join("-", String.valueOf(partition), String.valueOf(offset - 1))),
             Optional.of(partition),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
@@ -653,6 +762,7 @@ public class TopicController extends AbstractController {
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Optional.empty()
         );
 
@@ -664,6 +774,50 @@ public class TopicController extends AbstractController {
     @Getter
     public static class CopyResponse {
         int records;
+    }
+
+    @Error
+    public HttpResponse<?> invalidJsonBody(HttpRequest<?> request, JacksonException e) {
+        JsonError error = new JsonError("Invalid request body: unknown or malformed field, operator or value")
+            .link(Link.SELF, Link.of(request.getUri()));
+
+        return HttpResponse.<JsonError>badRequest()
+            .body(error);
+    }
+
+    private RecordRepository.Options dataSearchOptions(
+        String cluster,
+        String topicName,
+        Optional<String> after,
+        Optional<Integer> partition,
+        Optional<RecordRepository.Options.Sort> sort,
+        Optional<String> timestamp,
+        Optional<String> endTimestamp,
+        SearchExpression searchExpression,
+        Optional<Integer> size
+    ) {
+        searchExpressionValidator.validate(searchExpression);
+
+        RecordRepository.Options options = dataSearchOptions(
+            cluster,
+            topicName,
+            after,
+            partition,
+            sort,
+            timestamp,
+            endTimestamp,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            size
+        );
+        if (!searchExpression.groups().isEmpty()) {
+            options.setSearchExpression(searchExpression);
+        }
+        return options;
     }
 
     private RecordRepository.Options dataSearchOptions(
@@ -679,7 +833,8 @@ public class TopicController extends AbstractController {
         Optional<String> searchByHeaderKey,
         Optional<String> searchByHeaderValue,
         Optional<String> searchByKeySubject,
-        Optional<String> searchByValueSubject
+        Optional<String> searchByValueSubject,
+        Optional<Integer> size
     ) {
         RecordRepository.Options options = new RecordRepository.Options(environment, cluster, topicName);
 
@@ -695,6 +850,7 @@ public class TopicController extends AbstractController {
         searchByHeaderValue.ifPresent(options::setSearchByHeaderValue);
         searchByKeySubject.ifPresent(options::setSearchByKeySubject);
         searchByValueSubject.ifPresent(options::setSearchByValueSubject);
+        size.ifPresent(options::setSize);
         return options;
     }
 
@@ -725,4 +881,3 @@ public class TopicController extends AbstractController {
         private long offset;
     }
 }
-

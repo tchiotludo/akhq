@@ -1,16 +1,9 @@
 volumes:
-  zookeeper-data-0:
-    driver: local
-  zookeeper-log-0:
-    driver: local
   kafka-data-0:
-    driver: local
-  zookeeper-data-1:
-    driver: local
-  zookeeper-log-1:
     driver: local
   kafka-data-1:
     driver: local
+
 services:
   akhq:
     image: tchiotludo/akhq
@@ -39,25 +32,25 @@ services:
       - connect-0
       - connect-1
       - kafka-1
-  zookeeper-0:
-    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
-    restart: unless-stopped
-    volumes:
-      - zookeeper-data-0:/var/lib/zookeeper/data:Z
-      - zookeeper-log-0:/var/lib/zookeeper/log:Z
-    environment:
-      ZOOKEEPER_CLIENT_PORT: '2181'
-      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
+
   kafka-0:
     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
     volumes:
-      - kafka-data-0:/var/lib/kafka:Z
+      - kafka-data-0:/var/lib/kafka/data:Z
     ports:
       - 9092:9092
+      - 9091:9091
     environment:
-      KAFKA_BROKER_ID: '0'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-0:2181'
+      KAFKA_NODE_ID: '1'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-0:9093'
+      KAFKA_LISTENERS: 'INTERNAL://kafka-0:29092,OUTSIDE://kafka-0:9092,CONTROLLER://kafka-0:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka-0:29092,OUTSIDE://kafka-0:9092'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
       KAFKA_NUM_PARTITIONS: '12'
       KAFKA_COMPRESSION_TYPE: 'gzip'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
@@ -66,14 +59,9 @@ services:
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
       KAFKA_JMX_PORT: '9091'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.authorizer.AclAuthorizer'
+      KAFKA_AUTHORIZER_CLASS_NAME: 'org.apache.kafka.metadata.authorizer.StandardAuthorizer'
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
-      KAFKA_LISTENERS: 'INTERNAL://kafka-0:29092,OUTSIDE://kafka-0:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka-0:29092,OUTSIDE://localhost:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
-    links:
-      - zookeeper-0
+
   schema-registry-0:
     image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
@@ -86,6 +74,7 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: 'schema-registry-0'
       SCHEMA_REGISTRY_LISTENERS: 'http://schema-registry-0:8085'
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: 'INFO'
+
   connect-0:
     image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
@@ -117,6 +106,7 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
+
   connect-1:
     image: confluentinc/cp-kafka-connect:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
@@ -148,26 +138,26 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: '1'
       CONNECT_PLUGIN_PATH: ' /usr/share/java/'
+
 # ANOTHER CLUSTER
-  zookeeper-1:
-    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION:-latest}
-    restart: unless-stopped
-    volumes:
-      - zookeeper-data-1:/var/lib/zookeeper/data:Z
-      - zookeeper-log-1:/var/lib/zookeeper/log:Z
-    environment:
-      ZOOKEEPER_CLIENT_PORT: '2171'
-      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
   kafka-1:
     image: confluentinc/cp-kafka:${CONFLUENT_VERSION:-latest}
     restart: unless-stopped
     volumes:
-      - kafka-data-1:/var/lib/kafka:Z
+      - kafka-data-1:/var/lib/kafka/data:Z
     ports:
       - 9072:9072
+      - 9071:9071
     environment:
-      KAFKA_BROKER_ID: '0'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2171'
+      KAFKA_NODE_ID: '2'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '2@kafka-1:9073'
+      KAFKA_LISTENERS: 'INTERNAL://kafka-1:29072,OUTSIDE://kafka-1:9072,CONTROLLER://kafka-1:9073'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka-1:29072,OUTSIDE://kafka-1:9072'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
       KAFKA_NUM_PARTITIONS: '12'
       KAFKA_COMPRESSION_TYPE: 'gzip'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
@@ -176,11 +166,5 @@ services:
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
       KAFKA_JMX_PORT: '9071'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.authorizer.AclAuthorizer'
+      KAFKA_AUTHORIZER_CLASS_NAME: 'org.apache.kafka.metadata.authorizer.StandardAuthorizer'
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
-      KAFKA_LISTENERS: 'INTERNAL://kafka-1:29072,OUTSIDE://kafka-1:9072'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka-1:29072,OUTSIDE://localhost:9072'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
-    links:
-      - zookeeper-1

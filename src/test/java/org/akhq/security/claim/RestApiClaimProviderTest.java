@@ -16,11 +16,13 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
-import io.micronaut.rxjava2.http.client.RxHttpClient;
+import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +49,7 @@ public class RestApiClaimProviderTest {
 
     @Inject
     @Client("/")
-    protected RxHttpClient client;
+    protected HttpClient client;
 
     @Test
     void loginExternalClaim() throws ParseException, JsonProcessingException {
@@ -89,6 +91,7 @@ public class RestApiClaimProviderTest {
 
     @Requires(property = "akhq.security.rest.enabled", value = StringUtils.TRUE)
     @PermitAll
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Controller("/external-mock")
     static class RestApiExternalService {
         @Post

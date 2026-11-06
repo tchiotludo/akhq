@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.MutableHttpRequest;
-import io.micronaut.rxjava2.http.client.RxHttpClient;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
@@ -20,13 +20,13 @@ import jakarta.inject.Inject;
 
 // https://github.com/micronaut-projects/micronaut-test/commit/0f32d13876decfc33f3f94238e280552422bf170#diff-985f52f80183621fbb0bc4f031044158R16
 // https://github.com/micronaut-projects/micronaut-test/issues/32
-@MicronautTest(propertySources = "application.yml")
+@MicronautTest(environments = "test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(KafkaClusterExtension.class)
 abstract public class AbstractTest implements TestPropertyProvider {
     @Inject
     @Client("/")
-    protected RxHttpClient client;
+    protected HttpClient client;
 
     protected <I, O> List<O> retrieveList(MutableHttpRequest<I> request, Class<O> bodyType) {
         return client.toBlocking().retrieve(

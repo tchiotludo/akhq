@@ -7,11 +7,10 @@ import Input from './Input';
 import Select from './Select';
 import RadioGroup from './RadioGroup';
 import DatePicker from '../DatePicker';
-import AceEditor from 'react-ace';
+import AceEditor from '../AceEditor/AceEditor';
 import Dropdown from 'react-bootstrap/Dropdown';
 
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+
 import Root from '../Root';
 
 class Form extends Root {
@@ -111,7 +110,7 @@ class Form extends Root {
     );
   };
 
-  renderJSONInput = (name, label, onChange, textMode, options, rest) => {
+  renderJSONInput = (name, label, onChange, textMode, _options, rest) => {
     const { formData, errors } = this.state;
     const inputMode = textMode ? 'text' : formData.schemaType === 'PROTOBUF' ? 'protobuf' : 'json';
     return (
@@ -125,16 +124,12 @@ class Form extends Root {
         )}
         <div id={name} className="col-sm-10" style={{ height: '100%' }}>
           <AceEditor
-            setOptions={{ ...options, useWorker: false }}
             mode={inputMode}
-            theme="merbivore_soft"
             value={formData[name]}
             onChange={value => {
               onChange(value);
             }}
-            name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
-            style={{ width: '100%', minHeight: '25vh' }}
+            style={{ width: '100%', minHeight: '25vh', maxHeight: '500px' }}
             {...rest}
           />
           {errors[name] && <div className="alert alert-danger mt-1 p-1">{errors[name]}</div>}

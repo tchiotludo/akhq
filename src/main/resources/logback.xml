@@ -40,4 +40,6 @@
     <logger name="io.micronaut" level="WARN"/>
     <logger name="io.micronaut.context.DefaultApplicationContext" level="INFO" />
     <logger name="io.micronaut.runtime.Micronaut" level="INFO" />
+    <!-- Suppress benign Kafka 4.3.1+ warning during consumer rebalancing (Kafka issue KAFKA-20449) -->
+    <logger name="org.apache.kafka.clients.consumer.internals.OffsetFetcherUtils" level="ERROR" />
 </configuration>

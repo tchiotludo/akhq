@@ -3,6 +3,7 @@ package org.akhq.repositories;
 import com.google.common.collect.ImmutableMap;
 import org.akhq.models.Config;
 import org.akhq.modules.AbstractKafkaWrapper;
+import org.apache.kafka.clients.admin.AlterConfigOp;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.common.config.ConfigResource;
 
@@ -66,28 +67,39 @@ public class ConfigRepository extends AbstractRepository {
     }
 
     private void update(String clusterId, ConfigResource.Type type, String name, List<Config> configs) throws ExecutionException, InterruptedException {
-        List<ConfigEntry> entries = new ArrayList<>();
+        List<AlterConfigOp> entries = new ArrayList<>();
 
-        List<String> configNamesToReset = configs.stream()
-            .filter(Config::shouldResetToDefault)
-            .map(Config::getName)
-            .collect(Collectors.toList());
-
-        this.find(clusterId, type, Collections.singletonList(name))
+        // Get current configs to compare values
+        Map<String, String> currentConfigValues = this.find(clusterId, type, Collections.singletonList(name))
             .get(name)
             .stream()
-            .filter(config -> config.getSource().name().startsWith("DYNAMIC_"))
-            .filter(config -> !configNamesToReset.contains(config.getName()))
-            .forEach(config -> entries.add(new ConfigEntry(config.getName(), config.getValue())));
+            .collect(Collectors.toMap(Config::getName, config -> config.getValue() != null ? config.getValue() : ""));
 
+        // Add SET operations for configs being updated (only if value actually changed)
         configs.stream()
             .filter(config -> !config.shouldResetToDefault())
-            .map(config -> new ConfigEntry(config.getName(), config.getValue()))
+            .filter(config -> {
+                String currentValue = currentConfigValues.getOrDefault(config.getName(), "");
+                String newValue = config.getValue() != null ? config.getValue() : "";
+                return !currentValue.equals(newValue);
+            })
+            .map(config -> new AlterConfigOp(new ConfigEntry(config.getName(), config.getValue()), AlterConfigOp.OpType.SET))
             .forEach(entries::add);
+
+        // Add DELETE operations for configs that should be reset to default
+        configs.stream()
+            .filter(Config::shouldResetToDefault)
+            .map(config -> new AlterConfigOp(new ConfigEntry(config.getName(), null), AlterConfigOp.OpType.DELETE))
+            .forEach(entries::add);
+
+        if (entries.isEmpty()) {
+            // No actual changes detected - this is fine, just return without doing anything
+            return;
+        }
 
         kafkaWrapper.alterConfigs(clusterId, ImmutableMap.of(
             new ConfigResource(type, name),
-            new org.apache.kafka.clients.admin.Config(entries)
+            entries
         ));
     }
 

@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { Link } from 'react-router-dom';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { isSameLocation } from '../../../utils/functions';
 import { withRouter } from '../../../utils/withRouter';
 
 class ConsumerGroupList extends Root {
@@ -29,69 +30,85 @@ class ConsumerGroupList extends Root {
     loading: true
   };
 
-  componentDidMount() {
-    const { clusterId } = this.props.params;
-    const { search, pageNumber } = this.state;
+  getSearchAndPageFromLocation = () => {
     const query = new URLSearchParams(this.props.location.search);
+    return {
+      search: query.get('search') ?? '',
+      pageNumber: query.get('page') ? parseInt(query.get('page')) : 1
+    };
+  };
+
+  navigateWithQuery = (search, pageNumber, replace = false) => {
+    const { clusterId } = this.props.params;
+    const searchParams = new URLSearchParams();
+    searchParams.set('search', search || '');
+    searchParams.set('page', pageNumber);
+
+    const pathname = `/ui/${clusterId}/group`;
+    const query = searchParams.toString();
+
+    if (isSameLocation(this.props.location, pathname, query)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getConsumerGroup();
+      return;
+    }
+
+    this.props.router.navigate(
+      {
+        pathname,
+        search: query
+      },
+      { replace }
+    );
+  };
+
+  syncStateFromLocation = callback => {
+    const { clusterId } = this.props.params;
+    const { search, pageNumber } = this.getSearchAndPageFromLocation();
 
     this.setState(
       {
         selectedCluster: clusterId,
-        search: query.get('search') ? query.get('search') : search,
-        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+        search,
+        pageNumber
       },
-      () => {
-        this.getConsumerGroup();
-      }
+      callback
     );
+  };
+
+  componentDidMount() {
+    this.syncStateFromLocation(() => {
+      this.getConsumerGroup();
+    });
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.props.location.search !== prevProps.location.search) {
-      // Handle back navigation
-      if (this.props.router.navigationType === 'POP') {
-        let { clusterId } = this.props.params;
-        const { search, pageNumber } = this.state;
-        const query = new URLSearchParams(this.props.location.search);
-        this.setState(
-          {
-            selectedCluster: clusterId,
-            search: query.get('search'),
-            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
-          },
-          () => {
-            this.getConsumerGroup(false);
-          }
-        );
-      } else if (this.props.location.search === '') {
-        // Handle sidebar click on schema registry from the component
-        this.setState(
-          {
-            searchData: { search: '' },
-            pageNumber: 1
-          },
-          () => {
-            this.getConsumerGroup(false);
-          }
-        );
-      }
+  componentDidUpdate(prevProps) {
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
+
+    if (pathnameChanged || searchChanged) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this.syncStateFromLocation(() => {
+        this.getConsumerGroup();
+      });
     }
   }
 
   handleSearch = data => {
-    this.setState({ pageNumber: 1, search: data.searchData.search }, () => {
-      this.getConsumerGroup(false);
-    });
+    const nextSearch = data.searchData.search || '';
+    this.navigateWithQuery(nextSearch, 1, false);
   };
 
   handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = getPageNumber(value, this.state.totalPageNumber);
-    this.setState({ pageNumber: pageNumber }, () => {
-      this.getConsumerGroup(replaceInNavigation);
-    });
+    this.navigateWithQuery(this.state.search, pageNumber, replaceInNavigation);
   };
 
-  async getConsumerGroup(replaceInNavigation = true) {
+  async getConsumerGroup() {
     const { selectedCluster, pageNumber, search } = this.state;
     this.setState({ loading: true });
 
@@ -99,15 +116,7 @@ class ConsumerGroupList extends Root {
     response = response.data;
     if (response.results) {
       this.handleConsumerGroup(response.results);
-      this.setState({ selectedCluster, totalPageNumber: response.page }, () =>
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${this.state.selectedCluster}/group`,
-            search: `search=${this.state.search}&page=${pageNumber}`
-          },
-          { replace: replaceInNavigation }
-        )
-      );
+      this.setState({ selectedCluster, totalPageNumber: response.page });
     } else {
       this.setState({ selectedCluster, consumerGroups: [], totalPageNumber: 1, loading: false });
     }
@@ -131,11 +140,11 @@ class ConsumerGroupList extends Root {
   handleState(state) {
     let className = '';
 
-    switch (state) {
+    switch (state.toUpperCase()) {
       case 'STABLE':
         className = 'badge bg-success';
         break;
-      case 'PREPARING_REBALANCE':
+      case 'PREPARINGREBALANCE':
         className = 'badge bg-primary';
         break;
       default:
@@ -160,11 +169,13 @@ class ConsumerGroupList extends Root {
         <Link
           to={`/ui/${this.state.selectedCluster}/topic/${topicId}`}
           key={group + '-' + topicId}
-          className="btn btn-dark btn-sm mb-1 me-1"
+          className="btn btn-secondary btn-theme-secondary btn-sm mb-1 me-1"
           onClick={noPropagation}
         >
           {topicId}{' '}
-          <div className="badge bg-secondary">Lag: {Number(offsetLag).toLocaleString()}</div>
+          <div className="badge badge-theme-secondary">
+            Lag: {Number(offsetLag).toLocaleString()}
+          </div>
         </Link>
       );
     });
@@ -293,4 +304,5 @@ class ConsumerGroupList extends Root {
     );
   }
 }
+export { ConsumerGroupList };
 export default withRouter(ConsumerGroupList);

@@ -12,6 +12,7 @@ import org.akhq.KafkaTestCluster;
 import org.akhq.models.Config;
 import org.akhq.models.Partition;
 import org.akhq.models.Topic;
+import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.apache.kafka.common.config.TopicConfig;
 import org.codehaus.httpcache4j.uri.URIBuilder;
@@ -32,6 +33,7 @@ import java.util.function.Predicate;
 
 import static org.akhq.controllers.TopicControllerTest.CREATE_TOPIC_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -137,6 +139,72 @@ class TopicRepositoryTest extends AbstractTest {
     }
 
     @Test
+    void listFavoritesBeforeAlphabeticalTopics() throws ExecutionException, InterruptedException {
+        List<String> alphabeticalTopics = topicRepository.all(
+            KafkaTestCluster.CLUSTER_ID,
+            TopicRepository.TopicListView.HIDE_INTERNAL,
+            Optional.empty(),
+            List.of()
+        );
+        List<String> favorites = List.of(KafkaTestCluster.TOPIC_RANDOM, KafkaTestCluster.TOPIC_COMPACTED);
+
+        PagedList<Topic> firstPage = topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(2, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.HIDE_INTERNAL,
+            Optional.empty(),
+            List.of(),
+            List.of(KafkaTestCluster.TOPIC_RANDOM, KafkaTestCluster.TOPIC_COMPACTED, KafkaTestCluster.TOPIC_RANDOM, "missing-topic")
+        );
+        PagedList<Topic> secondPage = topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(2, URIBuilder.empty(), 2),
+            TopicRepository.TopicListView.HIDE_INTERNAL,
+            Optional.empty(),
+            List.of(),
+            favorites
+        );
+
+        List<String> nonFavorites = alphabeticalTopics.stream()
+            .filter(topic -> !favorites.contains(topic))
+            .toList();
+
+        assertEquals(favorites, firstPage.stream().map(Topic::getName).toList());
+        assertEquals(nonFavorites.subList(0, 2), secondPage.stream().map(Topic::getName).toList());
+        assertEquals(alphabeticalTopics.size(), firstPage.total());
+        assertEquals(alphabeticalTopics.size(), secondPage.total());
+    }
+
+    @Test
+    void listFavoritesKeepsAlphabeticalOrderAfterFavoritesAndAppliesFilters() throws ExecutionException, InterruptedException {
+        String favorite = KafkaTestCluster.TOPIC_STREAM_IN;
+        List<String> matchingTopics = topicRepository.all(
+            KafkaTestCluster.CLUSTER_ID,
+            TopicRepository.TopicListView.ALL,
+            Optional.of("stream"),
+            List.of()
+        );
+
+        List<Topic> result = topicRepository.list(
+            KafkaTestCluster.CLUSTER_ID,
+            new Pagination(10, URIBuilder.empty(), 1),
+            TopicRepository.TopicListView.ALL,
+            Optional.of("stream"),
+            List.of(),
+            List.of(favorite, KafkaTestCluster.TOPIC_COMPACTED)
+        );
+
+        List<String> expected = matchingTopics.stream()
+            .filter(topic -> !topic.equals(favorite))
+            .toList();
+        expected = new java.util.ArrayList<>(expected);
+        expected.add(0, favorite);
+
+        assertEquals(expected, result.stream().map(Topic::getName).toList());
+        assertFalse(result.stream().map(Topic::getName).toList().contains(KafkaTestCluster.TOPIC_COMPACTED));
+    }
+
+    @Test
     void create() throws ExecutionException, InterruptedException {
         topicRepository.create(KafkaTestCluster.CLUSTER_ID, "createEmptyConfig", 8, (short) 1, Collections.emptyList()
         );
@@ -187,13 +255,29 @@ class TopicRepositoryTest extends AbstractTest {
 
     @Test
     void increasePartition() throws ExecutionException, InterruptedException {
-        topicRepository.create(KafkaTestCluster.CLUSTER_ID, "increasePartition", 8, (short) 1, Collections.emptyList()
-        );
-        topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, "increasePartition", 9);
+        String topicName = "increasePartition";
+        try {
+            topicRepository.create(KafkaTestCluster.CLUSTER_ID, topicName, 8, (short) 1, Collections.emptyList());
 
-        assertEquals(9, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, "increasePartition").getPartitions().size());
+            // Give Kafka time to create the topic
+            Thread.sleep(2000);
 
-        topicRepository.delete(KafkaTestCluster.CLUSTER_ID, "increasePartition");
+            topicRepository.increasePartition(KafkaTestCluster.CLUSTER_ID, topicName, 9);
+
+            // Give Kafka time to update partitions
+            Thread.sleep(2000);
+
+            assertEquals(9, topicRepository.findByName(KafkaTestCluster.CLUSTER_ID, topicName).getPartitions().size());
+        } finally {
+            // Ensure cleanup happens even if test fails
+            try {
+                topicRepository.delete(KafkaTestCluster.CLUSTER_ID, topicName);
+                // Give Kafka time to delete the topic
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                // Ignore if topic doesn't exist
+            }
+        }
     }
 
     private void mockApplicationContext() {

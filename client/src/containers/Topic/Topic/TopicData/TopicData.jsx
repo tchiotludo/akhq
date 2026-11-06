@@ -1,10 +1,10 @@
 import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Table from '../../../../components/Table/Table';
 import { formatDateTime } from '../../../../utils/converters';
 import {
   uriSchemaId,
+  uriSearchLimits,
   uriTopicData,
   uriTopicDataDelete,
   uriTopicDataDownload,
@@ -13,39 +13,33 @@ import {
   uriTopicsPartitions
 } from '../../../../utils/endpoints';
 import Pagination from '../../../../components/Pagination/Pagination';
-import DatePicker from '../../../../components/DatePicker';
+import PageSize from '../../../../components/PageSize';
+import ReactDatePicker from 'react-datepicker';
 import camelCase from 'lodash/camelCase';
 import constants, { SETTINGS_VALUES } from '../../../../utils/constants';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import ConfirmModal from '../../../../components/Modal/ConfirmModal';
-
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-dracula';
-import 'ace-builds/src-noconflict/ext-searchbox';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../../components/Root';
 import DateTime from '../../../../components/DateTime';
-import { capitalizeTxt, getClusterUIOptions } from '../../../../utils/functions';
+import { getClusterUIOptions, isSameLocation } from '../../../../utils/functions';
 import { setProduceToTopicValues, setUIOptions } from '../../../../utils/localstorage';
-import Select from '../../../../components/Form/Select';
 import * as LosslessJson from 'lossless-json';
 import { Buffer } from 'buffer';
-import { EventSourcePolyfill } from 'event-source-polyfill';
+import { streamSearch, SearchRequestError } from '../../../../utils/sseClient';
+import SearchPanel from './Search/SearchPanel';
+import { DEFAULT_LIMITS, emptyDraft, expressionToDraft } from './Search/searchModel';
+import { readSearchFromQuery, sameExpression, writeSearchToParams } from './Search/searchUrl';
 import { withRouter } from '../../../../utils/withRouter';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faDownload,
-  faSearch,
-  faSortNumericDesc,
-  faSpinner
-} from '@fortawesome/free-solid-svg-icons';
-import { fromEvent, map, scan } from 'rxjs';
+import { faDownload } from '@fortawesome/free-solid-svg-icons';
 
 class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
+    openFilter: null,
     sortOptions: ['Oldest', 'Newest'],
     partitionCount: 0,
     partition: 'All',
@@ -53,14 +47,10 @@ class TopicData extends Root {
     offsetsOptions: [],
     timestamp: '',
     endTimestamp: '',
-    search: {
-      key: { text: '', type: 'C' },
-      value: { text: '', type: 'C' },
-      headerKey: { text: '', type: 'C' },
-      headerValue: { text: '', type: 'C' },
-      keySubject: { text: '', type: 'C' },
-      valueSubject: { text: '', type: 'C' }
-    },
+    draft: emptyDraft(),
+    applied: null,
+    searchNotShareable: false,
+    searchLimits: DEFAULT_LIMITS,
     offsets: {},
     offsetsSearch: '',
     openDateModal: false,
@@ -85,26 +75,13 @@ class TopicData extends Root {
     loading: true,
     canDownload: false,
     dateTimeFormat: constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE,
+    size: 50,
     checkboxes: {},
     messagesToExport: []
   };
 
-  searchFilterTypes = [
-    {
-      _id: 'C',
-      name: 'Contains'
-    },
-    {
-      _id: 'N',
-      name: 'Not Contains'
-    },
-    {
-      _id: 'E',
-      name: 'Equals'
-    }
-  ];
-
-  eventSource;
+  searchAbort;
+  searchRunId = 0;
 
   constructor(props) {
     super(props);
@@ -112,33 +89,30 @@ class TopicData extends Root {
   }
 
   componentDidMount = () => {
-    this._checkProps();
+    this._loadSearchLimits();
+    this._syncStateFromLocationAndLoad();
   };
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    // Handle back navigation
-    if (
-      this.props.location.search !== prevProps.location.search &&
-      this.props.router.navigationType === 'POP'
-    ) {
-      const { clusterId, topicId } = this.props.params;
-      const query = new URLSearchParams(this.props.location.search);
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
 
-      this.setState(
-        {
-          selectedCluster: clusterId,
-          selectedTopic: topicId,
-          sortBy: query.get('sort'),
-          partition: query.get('partition'),
-          datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : '',
-          endDatetime: query.get('endTimestamp') ? new Date(query.get('endTimestamp')) : '',
-          offsetsSearch: query.get('after'),
-          search: this._buildSearchFromQueryString(query)
-        },
-        () => {
-          this._searchMessages(false, true);
-        }
-      );
+    if (pathnameChanged || searchChanged) {
+      if (!this.props.location.pathname.endsWith('/data')) {
+        return;
+      }
+
+      this._stopEventSource(false);
+      this._syncStateFromLocationAndLoad();
+    }
+  }
+
+  async _loadSearchLimits() {
+    try {
+      const { data } = await this.getApi(uriSearchLimits());
+      this.setState({ searchLimits: { ...DEFAULT_LIMITS, ...data } });
+    } catch (e) {
+      // keep the default limits; the backend still enforces the configured ones
     }
   }
 
@@ -147,187 +121,221 @@ class TopicData extends Root {
     this._stopEventSource();
   };
 
-  async _checkProps() {
+  async _syncStateFromLocationAndLoad() {
     const { clusterId, topicId } = this.props.params;
     const query = new URLSearchParams(this.props.location.search);
     const uiOptions = await getClusterUIOptions(clusterId);
+
     this.setState(
       prevState => ({
         selectedCluster: clusterId,
         selectedTopic: topicId,
         registryType: this.props.registryType,
-        sortBy: query.get('sort')
-          ? query.get('sort')
-          : uiOptions && uiOptions.topicData && uiOptions.topicData.sort
-            ? uiOptions.topicData.sort
-            : this.state.sortBy,
+        sortBy: this._normalizeSort(
+          query.get('sort') || (uiOptions && uiOptions.topicData && uiOptions.topicData.sort)
+        ),
         partition: query.get('partition') ? query.get('partition') : this.state.partition,
         datetime: query.get('timestamp') ? new Date(query.get('timestamp')) : this.state.datetime,
         endDatetime: query.get('endTimestamp')
           ? new Date(query.get('endTimestamp'))
           : this.state.endDatetime,
-        offsetsSearch: query.get('after') ? query.get('after') : this.state.offsetsSearch,
-        search: this._buildSearchFromQueryString(query),
+        offsetsSearch: query.get('after') || '',
+        ...this._searchStateFromQuery(query, prevState),
         offsets: query.get('offset')
           ? this._getOffsetsByOffset(query.get('partition'), query.get('offset'))
           : query.get('after')
             ? this._getOffsetsByAfterString(query.get('after'))
-            : this.state.offsets,
+            : {},
         dateTimeFormat:
           uiOptions && uiOptions.topicData && uiOptions.topicData.dateTimeFormat
             ? uiOptions.topicData.dateTimeFormat
-            : prevState.dateTimeFormat
+            : prevState.dateTimeFormat,
+        size: query.get('size')
+          ? parseInt(query.get('size'))
+          : uiOptions && uiOptions.topicData && uiOptions.topicData.size
+            ? uiOptions.topicData.size
+            : prevState.size
       }),
       () => {
-        if (query.get('single') !== null) {
-          this._getSingleMessage(query.get('partition'), query.get('offset'));
-          this.setState({ canDownload: true });
-        } else if (Object.keys(this.state.offsets).length) {
-          this._getMessages(false, true);
-        } else {
-          this._searchMessages(false, true);
-        }
+        this._loadFromCurrentLocation(query);
       }
     );
   }
 
-  _buildSearchFromQueryString(query) {
-    const { search } = this.state;
+  _loadFromCurrentLocation = query => {
+    if (query.get('single') !== null) {
+      this._getSingleMessage(query.get('partition'), query.get('offset'));
+      this.setState({ canDownload: true });
+    } else {
+      this.setState(
+        { canDownload: false, ...(this._forcesOldest() ? { sortBy: 'Oldest' } : {}) },
+        () => {
+          // Delegate mode selection to _searchMessages so active filters always use /data/search.
+          this._searchMessages(false);
+        }
+      );
+    }
+  };
 
-    Object.keys(search).forEach(value => {
-      const searchFilter = query.get(`searchBy${capitalizeTxt(value)}`);
-      if (searchFilter) {
-        const pos = searchFilter.lastIndexOf('_');
-        search[value].text = searchFilter.substr(0, pos);
-        search[value].type = searchFilter.substr(pos + 1);
-      } else {
-        search[value].text = '';
-        search[value].type = 'C';
-      }
-    });
-    return search;
+  _searchStateFromQuery(query, prevState) {
+    const { applied, error } = readSearchFromQuery(query);
+    if (error) {
+      toast.warn(`The search in this link could not be restored: ${error}`);
+    }
+
+    // A search too long for the URL only lives in the state: keep it across our own navigations.
+    const sameTopic =
+      prevState.selectedCluster === this.props.params.clusterId &&
+      prevState.selectedTopic === this.props.params.topicId;
+    if (
+      !applied &&
+      !error &&
+      prevState.searchNotShareable &&
+      sameTopic &&
+      !query.get('searchQuery')
+    ) {
+      return {};
+    }
+
+    return {
+      applied,
+      searchNotShareable: false,
+      draft: sameExpression(applied, prevState.applied)
+        ? prevState.draft
+        : expressionToDraft(applied)
+    };
   }
 
-  _startEventSource = (changePage, replaceInNavigation = false) => {
-    let { selectedCluster, selectedTopic, nextPage } = this.state;
+  _startEventSource = changePage => {
+    const { selectedCluster, selectedTopic, nextPage, applied } = this.state;
 
     let lastPercentVal = 0.0;
     const percentUpdateDelta = 0.5;
+    const results = [];
+    const runId = ++this.searchRunId;
+    const isCurrent = () => runId === this.searchRunId;
 
-    let self = this;
     this.setState(
       { messages: [], pageNumber: 1, percent: 0, isSearching: true, recordCount: 0 },
       () => {
-        const filters = this._buildFilters();
-        if (changePage) {
-          this._setUrlHistory(filters + '&after=' + nextPage, replaceInNavigation);
-        } else {
-          this._setUrlHistory(filters, replaceInNavigation);
-        }
-        this.eventSource = new EventSourcePolyfill(
-          uriTopicDataSearch(
+        this.searchAbort = new AbortController();
+
+        const onBody = data => {
+          results.push(data);
+          const lastResult = data;
+          const percentDiff = lastResult.percent - lastPercentVal;
+
+          // to avoid UI slowdowns, only update the percentage in fixed increments
+          if (percentDiff >= percentUpdateDelta) {
+            lastPercentVal = lastResult.percent;
+            this.setState(prev => ({
+              nextPage: lastResult.after ? lastResult.after : prev.nextPage,
+              recordCount: prev.recordCount + (lastResult.records ? lastResult.records.length : 0),
+              percent: lastResult.percent.toFixed(2)
+            }));
+          }
+
+          const records = results
+            .map(result => result.records)
+            .filter(records => records?.length > 0)
+            .reduce((acc, all) => [...acc, ...all], []);
+
+          if (records.length) {
+            const tableMessages = this._sortMessages(this._handleMessages(records));
+            this.setState({
+              recordCount: tableMessages.length,
+              messages: tableMessages,
+              loading: false
+            });
+          }
+        };
+
+        streamSearch({
+          url: uriTopicDataSearch(
             selectedCluster,
             selectedTopic,
-            filters,
+            this._buildScopeFilters(),
             changePage ? nextPage : undefined
           ),
-          localStorage.getItem('jwtToken')
-            ? {
-                headers: {
-                  Authorization: 'Bearer ' + localStorage.getItem('jwtToken')
-                }
-              }
-            : {}
-        );
-
-        fromEvent(this.eventSource, 'searchBody')
-          .pipe(map(e => JSON.parse(e.data) || {}))
-          .pipe(scan((acc, one) => [...acc, one], []))
-          .subscribe(results => {
-            if (results.length > 0) {
-              const lastResult = results[results.length - 1];
-              const percentDiff = lastResult.percent - lastPercentVal;
-
-              // to avoid UI slowdowns, only update the percentage in fixed increments
-              if (percentDiff >= percentUpdateDelta) {
-                lastPercentVal = lastResult.percent;
-                self.setState({
-                  nextPage: lastResult.after ? lastResult.after : self.state.nextPage,
-                  recordCount:
-                    self.state.recordCount + (lastResult.records ? lastResult.records.length : 0),
-                  percent: lastResult.percent.toFixed(2)
-                });
-              }
-
-              const records = results
-                .map(result => result.records)
-                .filter(records => records?.length > 0)
-                .reduce((acc, all) => [...acc, ...all], []);
-
-              if (records.length) {
-                const tableMessages = self._handleMessages(records, self.state.sortBy === 'Oldest');
-                self.setState({
-                  recordCount: tableMessages.length,
-                  messages: tableMessages,
-                  loading: false
-                });
-              }
+          body: applied,
+          signal: this.searchAbort.signal,
+          onEvent: ({ event, data }) => {
+            if (!isCurrent()) {
+              return;
             }
-          });
-
-        fromEvent(this.eventSource, 'searchEnd')
-          .pipe(map(e => JSON.parse(e.data) || []))
-          .subscribe(result => {
-            const nextPage = result.after ? result.after : self.state.nextPage;
-            self.setState({ percent: 100, nextPage, isSearching: false, loading: false });
-            self.eventSource.close();
-          });
+            if (event === 'searchBody') {
+              onBody(JSON.parse(data) || {});
+            } else if (event === 'searchEnd') {
+              const result = JSON.parse(data) || {};
+              this.setState(prev => ({
+                percent: 100,
+                nextPage: result.after ? result.after : prev.nextPage,
+                isSearching: false,
+                loading: false
+              }));
+              this.searchAbort.abort();
+            }
+          }
+        }).catch(error => {
+          if (!isCurrent()) {
+            return;
+          }
+          if (error instanceof SearchRequestError) {
+            toast.warn(error.message);
+          } else {
+            toast.error('The search failed: ' + (error.message || 'unexpected error'));
+          }
+          this.setState({ isSearching: false, loading: false });
+        });
       }
     );
   };
 
-  _stopEventSource = () => {
-    if (this.eventSource) {
-      this.eventSource.close();
+  _stopEventSource = (resetLoading = true) => {
+    this.searchRunId++;
+    if (this.searchAbort) {
+      this.searchAbort.abort();
     }
 
     this.cancelAxiosRequests();
     this.renewCancelToken();
 
-    this.setState({ isSearching: false, loading: false });
+    this.setState({ isSearching: false, ...(resetLoading ? { loading: false } : {}) });
   };
 
   _clearSearch = () => {
+    this.setState({ draft: emptyDraft(), applied: null, searchNotShareable: false }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
+  };
+
+  _applySearch = expression => {
+    const { notShareable } = writeSearchToParams(new URLSearchParams(), expression);
     this.setState(
       {
-        search: {
-          key: { text: '', type: 'C' },
-          value: { text: '', type: 'C' },
-          headerKey: { text: '', type: 'C' },
-          headerValue: { text: '', type: 'C' },
-          keySubject: { text: '', type: 'C' },
-          valueSubject: { text: '', type: 'C' }
-        }
+        applied: expression,
+        searchNotShareable: notShareable,
+        nextPage: '',
+        sortBy: 'Oldest',
+        offsetsSearch: '',
+        offsets: {}
       },
       () => {
-        this._searchMessages();
+        this._navigateWithCurrentFilters(false);
       }
     );
   };
 
-  _hasAnyFilterFilled() {
-    const { search } = this.state;
-    return Object.keys(search).find(value => search[value].text.length > 0) !== undefined;
-  }
-
-  _buildFilters() {
-    const { sortBy, partition, datetime, endDatetime, offsetsSearch, search } = this.state;
+  // Scope filters only: these are the API query parameters; the search expression travels in the body.
+  _buildScopeFilters() {
+    const { sortBy, partition, datetime, endDatetime, offsetsSearch, size } = this.state;
 
     const filters = [];
 
     if (sortBy) filters.push(`sort=${sortBy}`);
     if (offsetsSearch) filters.push(`after=${offsetsSearch}`);
     if (partition) filters.push(`partition=${partition}`);
+    if (size) filters.push(`size=${size}`);
 
     if (datetime) {
       filters.push(`timestamp=${encodeURIComponent(this._buildTimestampFilter(datetime))}`);
@@ -337,16 +345,21 @@ class TopicData extends Root {
       filters.push(`endTimestamp=${encodeURIComponent(this._buildTimestampFilter(endDatetime))}`);
     }
 
-    Object.keys(search)
-      .filter(value => search[value].text.length > 0)
-      .forEach(value => {
-        filters.push(
-          `searchBy${capitalizeTxt(value)}=${encodeURIComponent(search[value].text)}_${
-            search[value].type
-          }`
-        );
-      });
     return filters.join('&');
+  }
+
+  // Page URL: scope filters plus the compact searchQuery (omitted when too long to share).
+  _buildFilters() {
+    const filters = this._buildScopeFilters();
+    const { params } = writeSearchToParams(new URLSearchParams(), this.state.applied);
+    const searchQuery = params.get('searchQuery');
+    return searchQuery ? `${filters}&searchQuery=${searchQuery}` : filters;
+  }
+
+  async _handlePageSizeChange(newSize) {
+    this.setState({ size: newSize, nextPage: '' }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
   }
 
   _buildTimestampFilter(datetime) {
@@ -366,18 +379,34 @@ class TopicData extends Root {
     }
   }
 
-  _searchMessages(changePage = false, replaceInNavigation = false) {
-    this._stopEventSource();
+  _searchMessages(changePage = false) {
+    this._stopEventSource(false);
     this.setState({ loading: true });
-    if (this._hasAnyFilterFilled()) {
-      this._startEventSource(changePage, replaceInNavigation);
+    if (this.state.applied) {
+      this._loadPartitionCount();
+      this._startEventSource(changePage);
     } else {
-      this._getMessages(changePage, replaceInNavigation);
+      this._getMessages(changePage);
+    }
+  }
+
+  // The search stream doesn't return the partition list that the scope filters are built from.
+  async _loadPartitionCount() {
+    const { selectedCluster, selectedTopic } = this.state;
+    try {
+      const { data } = await this.getApi(uriTopicsPartitions(selectedCluster, selectedTopic));
+      if (data && data.length) {
+        this.setState({ partitionCount: data.length });
+      }
+    } catch (e) {
+      // the scope filters stay limited until the next load
     }
   }
 
   _getSingleMessage(partition, offset) {
     const { selectedCluster, selectedTopic } = this.state;
+
+    this.setState({ loading: true });
 
     const requests = [
       this.getApi(uriTopicDataSingleRecord(selectedCluster, selectedTopic, partition, offset)),
@@ -387,10 +416,12 @@ class TopicData extends Root {
     this._fetchMessages(requests);
   }
 
-  _getMessages = (changePage = false, replaceInNavigation = false) => {
+  _getMessages = (changePage = false) => {
     const { selectedCluster, selectedTopic, nextPage } = this.state;
 
-    const filters = this._buildFilters();
+    this.setState({ loading: true });
+
+    const filters = this._buildScopeFilters();
     const requests = [
       this.getApi(
         uriTopicData(selectedCluster, selectedTopic, filters, changePage ? nextPage : undefined)
@@ -399,19 +430,10 @@ class TopicData extends Root {
     ];
 
     this._fetchMessages(requests, changePage);
-
-    if (changePage) {
-      this._setUrlHistory(
-        nextPage.substring(nextPage.indexOf('?') + 1, nextPage.length),
-        replaceInNavigation
-      );
-    } else {
-      this._setUrlHistory(filters, replaceInNavigation);
-    }
   };
 
   _fetchMessages(requests, changePage = false) {
-    const { nextPage, pageNumber, partitionCount, recordCount, offsets, sortBy } = this.state;
+    const { nextPage, pageNumber, partitionCount, recordCount, offsets } = this.state;
 
     Promise.all(requests).then(data => {
       let tableMessages = [],
@@ -425,7 +447,7 @@ class TopicData extends Root {
       const partitionData = data[1].data;
 
       if (messagesData.results) {
-        tableMessages = this._handleMessages(messagesData.results, sortBy === 'Oldest');
+        tableMessages = this._handleMessages(messagesData.results);
       } else {
         pageNumberTemp = 1;
       }
@@ -591,10 +613,8 @@ class TopicData extends Root {
       });
   };
 
-  _handleMessages = (messages, startWithOldest = true) => {
-    let tableMessages = [];
-
-    let mappedMessages = messages.map(message => ({
+  _handleMessages = messages => {
+    return messages.map(message => ({
       key: message.key || '',
       value: message.truncated
         ? message.value + '...\nToo large message. Full body in share button.' || ''
@@ -610,21 +630,43 @@ class TopicData extends Root {
       },
       exceptions: message.exceptions || []
     }));
+  };
 
-    tableMessages.push(...mappedMessages);
-
+  // Only needed when the client accumulates records from several progressive batches (streaming
+  // search): the union of already-sorted batches is not globally ordered. The paginated data endpoint
+  // returns a fully-ordered page and does not go through this. Uses a proper 3-way comparator with an
+  // offset tie-break so records sharing the same timestamp keep a stable, deterministic order (a simple
+  // ternary never returns 0 for equal timestamps and makes the engine reverse those runs).
+  _sortMessages = (messages, startWithOldest = true) => {
     const isBefore = startWithOldest ? -1 : 1;
     const isAfter = startWithOldest ? 1 : -1;
 
-    return tableMessages.sort((a, b) => (a.timestamp > b.timestamp ? isAfter : isBefore));
+    return [...messages].sort((a, b) => {
+      if (a.timestamp < b.timestamp) return isBefore;
+      if (a.timestamp > b.timestamp) return isAfter;
+
+      const partitionA = Number(a.partition);
+      const partitionB = Number(b.partition);
+      if (partitionA < partitionB) return isBefore;
+      if (partitionA > partitionB) return isAfter;
+
+      const offsetA = Number(a.offset);
+      const offsetB = Number(b.offset);
+      if (offsetA < offsetB) return isBefore;
+      if (offsetA > offsetB) return isAfter;
+      return 0;
+    });
   };
 
   _downloadAllMatchingFilters = () => {
-    const { selectedCluster, selectedTopic } = this.state;
+    const { selectedCluster, selectedTopic, applied } = this.state;
 
-    const filters = this._buildFilters();
+    const filters = this._buildScopeFilters();
 
-    this.getApi(uriTopicDataDownload(selectedCluster, selectedTopic, filters)).then(response => {
+    this.postApi(
+      uriTopicDataDownload(selectedCluster, selectedTopic, filters),
+      applied || { version: 1, groups: [] }
+    ).then(response => {
       const a = document.createElement('a');
       const type = 'application/json';
       a.href = URL.createObjectURL(
@@ -682,77 +724,321 @@ class TopicData extends Root {
     return offsetsOptions;
   };
 
-  _setUrlHistory(filters, replaceInNavigation = true) {
+  _navigateWithFilters(filters, replaceInNavigation = true) {
     const { selectedCluster, selectedTopic } = this.state;
+    const pathname = `/ui/${selectedCluster}/topic/${selectedTopic}/data`;
+
+    if (isSameLocation(this.props.location, pathname, filters)) {
+      // Re-submitting the same filters would not change the URL: reload the data in place.
+      this._stopEventSource(false);
+      this._loadFromCurrentLocation(new URLSearchParams(this.props.location.search));
+      return;
+    }
 
     this.props.router.navigate(
       {
-        pathname: `/ui/${selectedCluster}/topic/${selectedTopic}/data`,
+        pathname,
         search: filters
       },
       { replace: replaceInNavigation }
     );
   }
 
+  _navigateWithCurrentFilters = (replaceInNavigation = false) => {
+    this.setState({ loading: true }, () => {
+      this._navigateWithFilters(this._buildFilters(), replaceInNavigation);
+    });
+  };
+
+  _navigateToNextPage = (replaceInNavigation = false) => {
+    const { nextPage } = this.state;
+
+    if (!nextPage) {
+      return;
+    }
+
+    this.setState({ loading: true }, () => {
+      const currentParams = new URLSearchParams(this.props.location.search);
+
+      if (nextPage.includes('?')) {
+        const nextQuery = nextPage.substring(nextPage.indexOf('?') + 1);
+        this._navigateWithFilters(nextQuery, replaceInNavigation);
+      } else {
+        // EventSource search returns token-only `after` values (e.g. 0-106_1-55).
+        currentParams.set('after', nextPage);
+        this._navigateWithFilters(currentParams.toString(), replaceInNavigation);
+      }
+    });
+  };
+
   _redirectToSchema(id) {
     const { selectedCluster, selectedTopic } = this.state;
 
     this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
-            schemaId: response.data.subject
-          },
-          { replace: true }
-        );
+        this.props.router.navigate({
+          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+          schemaId: response.data.subject
+        });
       } else {
         toast.warn(`Unable to find the registry schema with id  ${id} !`);
       }
     });
   }
 
-  _renderSortOptions() {
-    const { sortOptions } = this.state;
-
-    let renderedOptions = [];
-    for (let option of sortOptions) {
-      renderedOptions.push(
-        <Dropdown.Item
-          key={option}
-          onClick={() =>
-            this.setState({ sortBy: option }, () => {
-              this._searchMessages();
-            })
-          }
-        >
-          <FontAwesomeIcon icon={faSortNumericDesc} aria-hidden={true} pull={'left'} /> {option}
-        </Dropdown.Item>
-      );
+  _applyOffsets = () => {
+    const { offsets } = this.state;
+    let offsetsSearch = '';
+    for (let i = 0; i < Object.keys(offsets).length; i++) {
+      if (Object.values(offsets)[i] !== '') {
+        if (offsetsSearch !== '') {
+          offsetsSearch += '_';
+        }
+        offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
+      }
     }
-    return renderedOptions;
+    this.setState({ offsetsSearch }, () => {
+      this._navigateWithCurrentFilters(false);
+    });
+  };
+
+  _toggleFilter(name) {
+    this.setState(prev => ({ openFilter: prev.openFilter === name ? null : name }));
   }
 
-  _renderPartitionOptions = () => {
-    const partitionOptions = this._createPartitionOptions();
+  _formatFilterDate(date) {
+    return formatDateTime(
+      {
+        year: date.getFullYear(),
+        monthValue: date.getMonth(),
+        dayOfMonth: date.getDate(),
+        hour: date.getHours(),
+        minute: date.getMinutes(),
+        second: date.getSeconds()
+      },
+      'dd-MM-yyyy HH:mm'
+    );
+  }
 
-    let renderedOptions = [];
-    for (let option of partitionOptions) {
-      renderedOptions.push(
-        <Dropdown.Item
-          key={option}
-          onClick={() =>
-            this.setState({ partition: option }, () => {
-              this._searchMessages();
-            })
-          }
-        >
-          {option}
-        </Dropdown.Item>
-      );
+  _renderPill(name, label, summary) {
+    const open = this.state.openFilter === name;
+    return (
+      <button
+        type="button"
+        className={`filter-pill${open ? ' open' : ''}`}
+        aria-expanded={open}
+        onClick={() => this._toggleFilter(name)}
+      >
+        <strong>{label}</strong> {summary}
+      </button>
+    );
+  }
+
+  _renderTogglePill(label, current, onToggle, disabledReason) {
+    return (
+      <button
+        type="button"
+        className="filter-pill"
+        disabled={!!disabledReason}
+        title={disabledReason || 'Click to switch'}
+        onClick={() => {
+          this.setState({ openFilter: null });
+          onToggle();
+        }}
+      >
+        <strong>{label}</strong> ({current})
+      </button>
+    );
+  }
+
+  // Searches and timestamp windows only scan forward, so they force the Oldest sort.
+  _forcesOldest(state = this.state) {
+    return !!state.applied || state.datetime !== '' || state.endDatetime !== '';
+  }
+
+  // Config and links may use any case (e.g. NEWEST); the UI options are Oldest / Newest.
+  _normalizeSort(value) {
+    const { sortOptions, sortBy } = this.state;
+    return sortOptions.find(o => o.toLowerCase() === String(value || '').toLowerCase()) || sortBy;
+  }
+
+  _toggleSort = () => {
+    if (this._forcesOldest()) {
+      return;
     }
-    return renderedOptions;
+    const { sortOptions, sortBy } = this.state;
+    const current = this._normalizeSort(sortBy);
+    const next = sortOptions.find(o => o !== current) || current;
+    this.setState({ sortBy: next }, () => this._navigateWithCurrentFilters(false));
   };
+
+  _toggleTimeFormat = () => {
+    const { DATE_TIME_FORMAT } = constants.SETTINGS_VALUES.TOPIC_DATA;
+    this._handleOnDateTimeFormatChanged(
+      this.state.dateTimeFormat === DATE_TIME_FORMAT.RELATIVE
+        ? DATE_TIME_FORMAT.ISO
+        : DATE_TIME_FORMAT.RELATIVE
+    );
+  };
+
+  _renderOptionPanel(title, options, current, onSelect) {
+    return (
+      <div className="filter-panel">
+        <strong>{title}</strong>
+        {options.map(({ value, text }) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={current === value}
+            className={`btn ${
+              current === value ? 'btn-primary' : 'btn-secondary btn-theme-secondary'
+            }`}
+            onClick={() => {
+              this.setState({ openFilter: null });
+              if (current !== value) {
+                onSelect(value);
+              }
+            }}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  _renderDateFilter(label, value, onChange) {
+    return (
+      <ReactDatePicker
+        selected={value === '' ? null : value}
+        onChange={date => onChange(date || '')}
+        showTimeSelect
+        timeIntervals={15}
+        dateFormat="dd-MM-yyyy HH:mm"
+        placeholderText={label}
+        isClearable
+        className="form-control form-control-sm"
+      />
+    );
+  }
+
+  _selectPartition = option => {
+    this.setState({ partition: option, offsetsSearch: '', offsets: {} }, () =>
+      this._navigateWithCurrentFilters(false)
+    );
+  };
+
+  _applyTimestamps = () => {
+    this.setState(
+      {
+        openFilter: null,
+        offsetsSearch: '',
+        offsets: {},
+        ...(this.state.datetime !== '' || this.state.endDatetime !== '' ? { sortBy: 'Oldest' } : {})
+      },
+      () => this._navigateWithCurrentFilters(false)
+    );
+  };
+
+  _offsetsSummary() {
+    const { offsetsSearch } = this.state;
+    if (!offsetsSearch) {
+      return '(none)';
+    }
+    return offsetsSearch
+      .split('_')
+      .map(o => `P${o.replace('-', ':')}`)
+      .join(' ');
+  }
+
+  _renderFilterPanel() {
+    const { openFilter, partition, datetime, endDatetime } = this.state;
+
+    switch (openFilter) {
+      case 'partition':
+        return this._renderOptionPanel(
+          'Partition',
+          this._createPartitionOptions().map(o => ({ value: o, text: o })),
+          partition,
+          this._selectPartition
+        );
+      case 'timestamp':
+        return (
+          <div className="filter-panel">
+            <span className="small">Start</span>
+            {this._renderDateFilter('Start', datetime, value => this.setState({ datetime: value }))}
+            <span className="small">End</span>
+            {this._renderDateFilter('End', endDatetime, value =>
+              this.setState({ endDatetime: value })
+            )}
+            <button type="button" className="btn btn-primary" onClick={this._applyTimestamps}>
+              Apply
+            </button>
+          </div>
+        );
+      case 'offsets':
+        return (
+          <div className="filter-panel filter-offsets" data-testid="offsets-filter">
+            <strong>Offsets</strong>
+            <span className="small">Per-partition start offset</span>
+            <table>
+              <tbody>{this._renderOffsetsOptions()}</tbody>
+            </table>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                this.setState({ openFilter: null });
+                this._applyOffsets();
+              }}
+            >
+              Apply offsets
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }
+
+  _renderFilterBar() {
+    const { sortBy, partition, datetime, endDatetime } = this.state;
+    const timestampSummary =
+      datetime === '' && endDatetime === ''
+        ? '(none)'
+        : `${datetime !== '' ? `From ${this._formatFilterDate(datetime)}` : ''}${
+            endDatetime !== '' ? ` To ${this._formatFilterDate(endDatetime)}` : ''
+          }`.trim();
+
+    return (
+      <div className="topic-filters" data-testid="topic-filters">
+        <div className="filter-pills">
+          {this._renderTogglePill(
+            'Sort:',
+            sortBy,
+            this._toggleSort,
+            this._forcesOldest() && 'Sorting is always Oldest when a search or timestamp is set'
+          )}
+          {this._renderPill('partition', 'Partition:', `(${partition})`)}
+          {this._renderPill('timestamp', `Timestamp ${format(new Date(), 'z')}:`, timestampSummary)}
+          {this._renderPill('offsets', 'Offsets:', this._offsetsSummary())}
+          {this._renderTogglePill(
+            'Time Format:',
+            this.state.dateTimeFormat,
+            this._toggleTimeFormat
+          )}
+          <button
+            type="button"
+            onClick={() => this.setState({ showDownloadModal: true })}
+            className="btn btn-primary btn-sm ml-auto"
+          >
+            <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
+          </button>
+        </div>
+        {this._renderFilterPanel()}
+      </div>
+    );
+  }
 
   _renderOffsetsOptions = () => {
     const offsetsOptions = this._createOffsetsOptions();
@@ -801,94 +1087,22 @@ class TopicData extends Root {
     }
   }
 
-  _renderSearchFilter(name, label) {
-    const { search } = this.state;
-
-    return (
-      <div className="search-input-fields">
-        <label>{label}</label>
-        <input
-          className="form-group form-control"
-          name={`${name}_text`}
-          type="text"
-          value={search[name].text}
-          onChange={({ currentTarget: input }) => {
-            search[name].text = input.value;
-            this.setState({ search });
-          }}
-        />
-        <Select
-          name={`${name}_select`}
-          selectClass={'col-xs-2'}
-          value={search[name].type}
-          label=""
-          items={this.searchFilterTypes}
-          onChange={value => {
-            search[name].type = value.target.value;
-            this.setState({ search });
-          }}
-        />
-      </div>
-    );
-  }
-
   _renderSearchGroup() {
-    const { isSearching } = this.state;
+    const { draft, applied, isSearching, searchNotShareable, searchLimits } = this.state;
 
     return (
-      <div style={{ minWidth: '400px' }} className="input-group">
-        {this._renderSearchFilter('key', 'Key')}
-        {this._renderSearchFilter('value', 'Value')}
-        {this._renderSearchFilter('headerKey', 'Header Key')}
-        {this._renderSearchFilter('headerValue', 'Header Value')}
-        {this._renderSearchFilter('keySubject', 'Key Subject')}
-        {this._renderSearchFilter('valueSubject', 'Value Subject')}
-
-        <p style={{ fontStyle: 'italic' }}>
-          * Whitespaces in search string are considered as separators for search patterns unless
-          enclosed with double quotes
-          <br />
-          In case of multiple patterns, OR operator is applied for Contains / Equals. AND is applied
-          for Not contains
-        </p>
-
-        <div style={{ display: 'flex' }}>
-          <button
-            className="btn btn-primary inline-block search"
-            type="button"
-            onClick={() => this._searchMessages()}
-          >
-            {isSearching ? (
-              <FontAwesomeIcon icon={faSpinner} spin={true} />
-            ) : (
-              <FontAwesomeIcon icon={faSearch} />
-            )}
-          </button>
-          <button
-            className="btn btn-primary btn-border inline-block"
-            type="button"
-            disabled={!isSearching}
-            onClick={() => this._stopEventSource()}
-          >
-            Stop
-          </button>
-          <button
-            className="btn btn-primary btn-border inline-block"
-            type="button"
-            disabled={isSearching}
-            onClick={() => this._clearSearch()}
-          >
-            Clear
-          </button>
-        </div>
-      </div>
+      <SearchPanel
+        draft={draft}
+        onDraftChange={next => this.setState({ draft: next })}
+        applied={applied}
+        onApply={this._applySearch}
+        onClear={this._clearSearch}
+        onStop={() => this._stopEventSource()}
+        isSearching={!!isSearching}
+        notShareable={searchNotShareable}
+        limits={searchLimits}
+      />
     );
-  }
-
-  _renderCurrentSearchText() {
-    const { search } = this.state;
-    const filterKey = Object.keys(search).find(value => search[value].text.length > 0);
-    return filterKey !== undefined ? search[filterKey].text : '';
   }
 
   _handleSingleCheckboxChange = event => {
@@ -933,7 +1147,8 @@ class TopicData extends Root {
       canDownload,
       percent,
       loading,
-      roles
+      roles,
+      size
     } = this.state;
 
     let actions = [constants.TABLE_SHARE, constants.TABLE_COPY];
@@ -970,6 +1185,10 @@ class TopicData extends Root {
 
           <nav className="pagination-data">
             <div>
+              <PageSize
+                currentPageSize={size}
+                onChange={value => this._handlePageSizeChange(value)}
+              />
               <Pagination
                 pageNumber={pageNumber}
                 totalRecords={recordCount}
@@ -983,7 +1202,7 @@ class TopicData extends Root {
                       pageNumber: pageNumber + 1
                     },
                     () => {
-                      this._searchMessages(true);
+                      this._navigateToNextPage(false);
                     }
                   );
                 }}
@@ -994,193 +1213,10 @@ class TopicData extends Root {
           </nav>
 
           <div className={`collapse navbar-collapse ${showFilters}`} id="topic-data">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Sort:</strong> ({sortBy})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>{this._renderSortOptions()}</Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Partition:</strong> ({partition})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      {this._renderPartitionOptions()}
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Timestamp {format(new Date(), 'z')}:</strong>
-                    {datetime !== '' &&
-                      ' From ' +
-                        formatDateTime(
-                          {
-                            year: datetime.getFullYear(),
-                            monthValue: datetime.getMonth(),
-                            dayOfMonth: datetime.getDate(),
-                            hour: datetime.getHours(),
-                            minute: datetime.getMinutes(),
-                            second: datetime.getSeconds()
-                          },
-                          'dd-MM-yyyy HH:mm'
-                        )}
-                    {endDatetime !== '' &&
-                      ' To ' +
-                        formatDateTime(
-                          {
-                            year: endDatetime.getFullYear(),
-                            monthValue: endDatetime.getMonth(),
-                            dayOfMonth: endDatetime.getDate(),
-                            hour: endDatetime.getHours(),
-                            minute: endDatetime.getMinutes(),
-                            second: endDatetime.getSeconds()
-                          },
-                          'dd-MM-yyyy HH:mm'
-                        )}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ display: 'flex' }}>
-                      <div>
-                        <DatePicker
-                          label="Start"
-                          onClear={() => {
-                            this.setState({ datetime: '' }, () => {
-                              this._searchMessages();
-                            });
-                          }}
-                          showDateTimeInput
-                          showTimeSelect
-                          value={datetime}
-                          onChange={value => {
-                            this.setState({ datetime: value }, () => {
-                              this._searchMessages();
-                            });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <DatePicker
-                          label="End"
-                          onClear={() => {
-                            this.setState({ endDatetime: '' }, () => {
-                              this._searchMessages();
-                            });
-                          }}
-                          showDateTimeInput
-                          showTimeSelect
-                          value={endDatetime}
-                          onChange={value => {
-                            this.setState({ endDatetime: value }, () => {
-                              this._searchMessages();
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Search:</strong> {this._renderCurrentSearchText()}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>{this._renderSearchGroup()}</Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li className="nav-item dropdown">
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    <strong>Offsets:</strong>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <div style={{ minWidth: '300px' }} className="khq-offset-navbar">
-                      <div className="input-group">
-                        <table>{this._renderOffsetsOptions()}</table>
-                        <div className="input-group-append">
-                          <button
-                            className="btn btn-primary offsets-ok"
-                            type="button"
-                            onClick={() => {
-                              let offsetsSearch = '';
-                              for (let i = 0; i < Object.keys(offsets).length; i++) {
-                                if (Object.values(offsets)[i] !== '') {
-                                  if (offsetsSearch !== '') {
-                                    offsetsSearch += '_';
-                                  }
-                                  offsetsSearch += `${i}-${Object.values(offsets)[i]}`;
-                                }
-                              }
-                              this.setState({ offsetsSearch }, () => {
-                                this._searchMessages();
-                              });
-                            }}
-                          >
-                            OK
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <li>
-                <Dropdown>
-                  <Dropdown.Toggle className="nav-link dropdown-toggle">
-                    Time Format: ({this.state.dateTimeFormat})
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() =>
-                        this._handleOnDateTimeFormatChanged(
-                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.RELATIVE
-                        )
-                      }
-                    >
-                      Show relative time
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        this._handleOnDateTimeFormatChanged(
-                          constants.SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT.ISO
-                        )
-                      }
-                    >
-                      Show ISO timestamp
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </li>
-              <div
-                style={{ borderLeft: '1px solid ', padding: 0, margin: '0 10px' }}
-                className="nav-link"
-              ></div>
-              <li>
-                <button
-                  type="button"
-                  aria-label="Toggle navigation"
-                  onClick={() => {
-                    this.setState({
-                      showDownloadModal: true
-                    });
-                  }}
-                  className="nav-link"
-                  style={{ backgroundColor: 'transparent', borderColor: 'transparent' }}
-                >
-                  <FontAwesomeIcon icon={faDownload} aria-hidden={true} /> Download query result
-                </button>
-              </li>
-            </ul>
+            {this._renderFilterBar()}
           </div>
         </nav>
+        {this._renderSearchGroup()}
         {isSearching && <ProgressBar style={{ height: '0.3rem' }} animated now={percent} />}
         <div className="table-responsive">
           <Table
@@ -1236,14 +1272,10 @@ class TopicData extends Root {
 
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={value ?? 'null'}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );
@@ -1395,7 +1427,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #171819)'
                       }}
                     >
                       {header.key}
@@ -1406,7 +1438,7 @@ class TopicData extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #171819)'
                       }}
                     >
                       {header.value}
@@ -1440,20 +1472,20 @@ class TopicData extends Root {
     );
   }
 }
-const withRouterInnerRef = (WrappedComponent) => {
-
+const withRouterInnerRef = WrappedComponent => {
   class InnerComponentWithRef extends React.Component {
-      render() {
-          const { forwardRef, ...rest } = this.props;
-          return <WrappedComponent {...rest} ref={forwardRef} />;
-      }
+    render() {
+      const { forwardRef, ...rest } = this.props;
+      return <WrappedComponent {...rest} ref={forwardRef} />;
+    }
   }
 
   const ComponentWithRef = withRouter(InnerComponentWithRef, { withRef: true });
 
   return React.forwardRef((props, ref) => {
-      return <ComponentWithRef {...props} forwardRef={ref} />;
-    });
-}
+    return <ComponentWithRef {...props} forwardRef={ref} />;
+  });
+};
 
+export { TopicData };
 export default withRouterInnerRef(TopicData);

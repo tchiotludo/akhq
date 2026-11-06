@@ -3,10 +3,10 @@ package org.akhq.security.claim;
 import io.micronaut.security.authentication.AuthenticationResponse;
 import io.micronaut.security.authentication.UsernamePasswordCredentials;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
 import org.akhq.configs.security.Group;
 import org.akhq.security.authentication.BasicAuthAuthenticationProvider;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 import jakarta.inject.Inject;
 
@@ -20,15 +20,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @MicronautTest(environments = "groovy")
 class GroovyClaimProviderTest {
     @Inject
-    BasicAuthAuthenticationProvider auth;
+    BasicAuthAuthenticationProvider<Object> auth;
 
     @Test
     void successUser() {
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = Mono
+                .from(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
 
         assertTrue(response.isAuthenticated());

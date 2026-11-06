@@ -2,9 +2,9 @@ package org.akhq.security.authentication;
 
 import io.micronaut.security.authentication.*;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
 import org.akhq.configs.security.Group;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,15 +20,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @MicronautTest
 class BasicAuthAuthenticationProviderTest {
     @Inject
-    BasicAuthAuthenticationProvider auth;
+    BasicAuthAuthenticationProvider<Object> auth;
 
     @Test
     void success() {
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-            .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = Mono
+            .from(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"
-            ))).blockingFirst();
+            ))).block();
 
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
@@ -47,11 +47,11 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void successCase() {
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-            .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = Mono
+            .from(auth.authenticate(null, new UsernamePasswordCredentials(
                 "MyUser3!@yàhöù.com",
                 "pass"
-            ))).blockingFirst();
+            ))).block();
 
 
         assertTrue(response.isAuthenticated());
@@ -71,11 +71,11 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void failed_UserNotFound() {
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-            .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = Mono
+            .from(auth.authenticate(null, new UsernamePasswordCredentials(
                 "user2",
                 "pass2"
-            ))).blockingFirst();
+            ))).block();
 
         assertFalse(response.isAuthenticated());
         AuthenticationFailed authenticationFailed = (AuthenticationFailed) response;
@@ -84,11 +84,11 @@ class BasicAuthAuthenticationProviderTest {
 
     @Test
     void failed_PasswordInvalid() {
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(auth.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = Mono
+                .from(auth.authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "invalid-pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertFalse(response.isAuthenticated());
         AuthenticationFailed authenticationFailed = (AuthenticationFailed) response;

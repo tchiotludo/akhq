@@ -1,8 +1,10 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.clients.admin.ReplicaInfo;
@@ -10,6 +12,7 @@ import org.apache.kafka.clients.admin.ReplicaInfo;
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class LogDir {
     private Integer brokerId;
@@ -20,13 +23,18 @@ public class LogDir {
     private long offsetLag;
     private boolean future;
 
+    @JsonIgnore
     public LogDir(Integer brokerId, String path, TopicPartition topicPartition, ReplicaInfo replicaInfo) {
         this.brokerId = brokerId;
         this.path = path;
-        this.topic = topicPartition.topic();
-        this.partition = topicPartition.partition();
-        this.size = replicaInfo.size();
-        this.offsetLag = replicaInfo.offsetLag();
-        this.future = replicaInfo.isFuture();
+        if (topicPartition != null) {
+            this.topic = topicPartition.topic();
+            this.partition = topicPartition.partition();
+        }
+        if (replicaInfo != null) {
+            this.size = replicaInfo.size();
+            this.offsetLag = replicaInfo.offsetLag();
+            this.future = replicaInfo.isFuture();
+        }
     }
 }

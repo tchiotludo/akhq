@@ -24,8 +24,8 @@
 }
 
 nav {
-  .show > .btn-secondary.dropdown-toggle {
-    background-color: $secondary !important;
+  .show > .btn-secondary.dropdown-toggle.btn-theme-secondary {
+    background-color: var(--bs-btn-active-bg) !important;
   }
 }
 
@@ -518,7 +518,7 @@ select.selectpicker {
 }
 
 .bootstrap-select .dropdown-toggle {
-  border-color: #ced4da;
+  border-color: var(--bs-border-color, #ced4da);
 }
 
 .bootstrap-select .dropdown-menu {

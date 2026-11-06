@@ -20,7 +20,7 @@ class KsqlDbControllerTest extends AbstractTest {
     void info() {
         KsqlDbServerInfo serverInfo = this.retrieve(HttpRequest.GET(BASE_URL + "/info"), KsqlDbServerInfo.class);
         assertNotNull(serverInfo.getKafkaClusterId());
-        assertEquals("7.4.4", serverInfo.getServerVersion());
+        assertEquals("8.1.0", serverInfo.getServerVersion());
         assertEquals("ksql", serverInfo.getKsqlServiceId());
     }
 
@@ -39,7 +39,7 @@ class KsqlDbControllerTest extends AbstractTest {
     @Order(2)
     void listStreams() {
         ResultPagedList<KsqlDbStream> ksqlDbStreamResultPagedList = this.retrievePagedList(HttpRequest.GET(BASE_URL + "/streams"), KsqlDbStream.class);
-        assertEquals(1, ksqlDbStreamResultPagedList.getResults().size());
+        assertEquals(2, ksqlDbStreamResultPagedList.getResults().size()); // One default stream KSQL_PROCESSING_LOG and the created ORDERS stream
     }
 
     @Test

@@ -1,7 +1,7 @@
 package org.akhq.controllers;
 
 import io.micronaut.http.HttpRequest;
-import io.micronaut.rxjava2.http.client.RxHttpClient;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.akhq.AbstractTest;
@@ -16,12 +16,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HeaderAuthControllerTest extends AbstractTest {
     @Inject
     @Client("/")
-    protected RxHttpClient client;
+    protected HttpClient client;
 
     @Test
     void user() {
@@ -111,7 +110,7 @@ class HeaderAuthControllerTest extends AbstractTest {
     static class UntrustedIp extends AbstractTest {
         @Inject
         @Client("/")
-        protected RxHttpClient client;
+        protected HttpClient client;
 
         @Test
         void invalidIp() {
@@ -124,7 +123,7 @@ class HeaderAuthControllerTest extends AbstractTest {
             );
 
             assertNull(result.getUsername());
-            assertTrue(result.getRoles().isEmpty());
+            assertNull(result.getRoles());
         }
     }
 }

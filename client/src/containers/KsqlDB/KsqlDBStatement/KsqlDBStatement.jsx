@@ -1,12 +1,10 @@
 import React from 'react';
 import { uriKsqlDBExecuteStatement } from '../../../utils/endpoints';
 import Header from '../../Header/Header';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { withRouter } from '../../../utils/withRouter';
 
 class KsqlDBStatement extends Root {
@@ -75,18 +73,14 @@ class KsqlDBStatement extends Root {
 
             <div className="col-sm-10">
               <AceEditor
-                setOptions={{ useWorker: false }}
                 mode="sql"
                 id={'sql'}
-                theme="merbivore_soft"
                 value={formData['sql']}
                 onChange={value => {
                   let { formData } = this.state;
                   formData['sql'] = value;
                   this.setState({ formData });
                 }}
-                name="UNIQUE_ID_OF_DIV"
-                editorProps={{ $blockScrolling: true }}
                 style={{ width: '100%', height: '200px' }}
               />
             </div>

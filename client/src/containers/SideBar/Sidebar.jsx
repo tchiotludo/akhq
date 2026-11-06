@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
 import logoUrl from '../../images/logo.svg';
-import sortBy from 'lodash/sortBy';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
@@ -22,7 +21,7 @@ import {
   faRocket
 } from '@fortawesome/free-solid-svg-icons';
 
-class Sidebar extends Component {
+export class Sidebar extends Component {
   state = {
     selectedTab: constants.TOPIC,
     selectedCluster: '',
@@ -39,7 +38,7 @@ class Sidebar extends Component {
     enableConnect: false,
     enableKsqlDB: false,
     roles: JSON.parse(sessionStorage.getItem('roles')),
-    height: 'auto'
+    flyoutPosition: null
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -48,6 +47,7 @@ class Sidebar extends Component {
   }
 
   componentDidMount() {
+    window.addEventListener('resize', this.updateFlyoutPosition);
     let tabs = [
       constants.CLUSTER,
       constants.CONNECT,
@@ -81,7 +81,7 @@ class Sidebar extends Component {
     );
 
     const clusterId = match ? match.params.clusterId || '' : '';
-    const allClusters = sortBy(clusters || [], cluster => cluster.id);
+    const allClusters = clusters || [];
     const cluster = allClusters.find(cluster => cluster.id === clusterId);
     this.setState(
       {
@@ -96,14 +96,61 @@ class Sidebar extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.location !== prevProps.location) {
-      this.setState({ height: document.getElementById('root').offsetHeight });
+    if (this.props.expanded !== prevProps.expanded) {
+      this.flyoutAnchor = null;
+      this.setState({ flyoutPosition: null });
     }
     if (this.props.clusters !== prevProps.clusters) {
       this.handleGetClusters(this.props.clusters || [], selectedCluster => {
         this.handleRegistryAndConnectsAndKsqlDBs(selectedCluster);
       });
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateFlyoutPosition);
+  }
+
+  updateFlyoutPosition = () => {
+    if (this.props.expanded || !this.flyoutAnchor) {
+      return;
+    }
+    const { key, element } = this.flyoutAnchor;
+    const rect = element.getBoundingClientRect();
+    const menu = element.parentElement.querySelector('[role="menu"]');
+    const height = Math.min(menu ? menu.scrollHeight : 0, window.innerHeight * 0.3);
+    this.setState({
+      flyoutPosition: {
+        key,
+        left: element.parentElement.getBoundingClientRect().right,
+        top: Math.max(0, Math.min(rect.top, window.innerHeight - height - 60))
+      }
+    });
+  };
+
+  flyoutProps(key) {
+    const position = this.state.flyoutPosition;
+    return {
+      onMouseEnter: event => {
+        this.flyoutAnchor = { key, element: event.currentTarget };
+        this.updateFlyoutPosition();
+      },
+      // Fixed positioning lets the hover menu escape the sidebar's scroll clip.
+      subnavStyle: this.props.expanded
+        ? undefined
+        : {
+            position: 'fixed',
+            visibility: position && position.key === key ? 'visible' : 'hidden',
+            left: position && position.key === key ? position.left : 0,
+            top: position && position.key === key ? position.top : 0
+          }
+    };
+  }
+
+  isPlainClick(event) {
+    return (
+      event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey
+    );
   }
 
   handleRegistryAndConnectsAndKsqlDBs(selectedCluster) {
@@ -233,16 +280,9 @@ class Sidebar extends Component {
   }
 
   changeSelectedConnect(connect) {
-    this.setState({ selectedConnect: connect, showConnects: false }, () => {
-      const { selectedConnect, selectedCluster } = this.state;
-      this.props.router.navigate(
-        {
-          pathname: `/ui/${selectedCluster}/connect/${selectedConnect}`,
-          selectedCluster
-        },
-        { replace: true }
-      );
-    });
+    // Navigation is handled by the <Link> inside listConnects.
+    // Only update sidebar UI state here to avoid a double navigate.
+    this.setState({ selectedConnect: connect, showConnects: false });
   }
 
   changeSelectedKsqlDB(ksqlDB) {
@@ -262,39 +302,25 @@ class Sidebar extends Component {
     const { selectedCluster } = this.state;
     const pathname = window.location.pathname;
     return (
-      <NavItem
-        eventKey={label}
-        className={pathname.includes(tab) ? 'active' : ''}
-        onClick={() => {
-          this.setState({ selectedTab: tab });
-          this.props.router.navigate(`/ui/${selectedCluster}/${tab}`, { replace: false });
-          return false;
-        }}
-      >
+      <NavItem eventKey={label} className={pathname.includes(tab) ? 'active' : ''}>
         <NavIcon>
           {' '}
-          <Link
-            to={`/ui/${selectedCluster}/${tab}`}
-            onClick={e => {
-              this.setState({ selectedTab: tab });
-              e.preventDefault();
-            }}
-          >
+          <span>
             <FontAwesomeIcon icon={icon} aria-hidden={true} />
-          </Link>
+          </span>
         </NavIcon>
         <NavText>
           {' '}
-          <Link
-            to={`/ui/${selectedCluster}/${tab}`}
-            onClick={e => {
-              this.setState({ selectedTab: tab });
-              e.preventDefault();
-            }}
-          >
-            {label}
-          </Link>
+          <span>{label}</span>
         </NavText>
+        <Link
+          className="sidebar-menu-link"
+          aria-label={label}
+          to={`/ui/${selectedCluster}/${tab}`}
+          onClick={event => {
+            if (this.isPlainClick(event)) this.setState({ selectedTab: tab });
+          }}
+        />
       </NavItem>
     );
   }
@@ -308,7 +334,6 @@ class Sidebar extends Component {
       showConnects,
       showKsqlDBs,
       selectedTab,
-      height,
       enableRegistry,
       registryType,
       enableConnect,
@@ -320,16 +345,17 @@ class Sidebar extends Component {
     const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
     return (
       <SideNav
+        onScrollCapture={this.updateFlyoutPosition}
         expanded={expanded}
         onToggle={expanded => {
           this.props.toggleSidebar(expanded);
         }}
         style={{
-          background: 'black',
-          height: height,
+          height: '100vh',
           position: 'fixed',
           paddingBottom: '60px',
-          ...(expanded ? { overflowY: 'auto' } : {})
+          overflowX: 'hidden',
+          overflowY: 'auto'
         }}
       >
         <SideNav.Toggle />
@@ -339,20 +365,21 @@ class Sidebar extends Component {
               <image xlinkHref={logoUrl}></image>
             </svg>
           </span>
-          <p
-            style={{
-              color: 'white',
-              fontStyle: 'Italic',
-              textAlign: 'center',
-              margin: '20px 0 0 0'
-            }}
-          >
-            {''}
-            {this.props.expanded && tag}
-          </p>
+          {this.props.expanded && (
+            <p
+              style={{
+                color: 'white',
+                fontStyle: 'Italic',
+                textAlign: 'center',
+                margin: '20px 0 0 0'
+              }}
+            >
+              {tag}
+            </p>
+          )}
         </div>
-        <SideNav.Nav defaultSelected={`${constants.TOPIC}`} style={{ background: 'black' }}>
-          <NavItem eventKey="cluster">
+        <SideNav.Nav defaultSelected={`${constants.TOPIC}`}>
+          <NavItem eventKey="cluster" {...this.flyoutProps('cluster')}>
             <NavIcon>
               <FontAwesomeIcon icon={faDatabase} aria-hidden={true} />
             </NavIcon>
@@ -400,6 +427,7 @@ class Sidebar extends Component {
           {enableConnect && roles && roles.CONNECTOR && roles.CONNECTOR.includes('READ') && (
             <NavItem
               eventKey="connects"
+              {...this.flyoutProps('connects')}
               className={selectedTab === constants.CONNECT ? 'active' : ''}
             >
               <NavIcon>
@@ -425,6 +453,7 @@ class Sidebar extends Component {
           {enableKsqlDB && roles && roles.KSQLDB && roles.KSQLDB.includes('READ') && (
             <NavItem
               eventKey="ksqlDBs"
+              {...this.flyoutProps('ksqlDBs')}
               className={selectedTab === constants.KSQLDB ? 'active' : ''}
             >
               <NavIcon>

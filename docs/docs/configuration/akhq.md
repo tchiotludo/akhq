@@ -23,6 +23,9 @@ These parameters are the default values used in the topic creation page.
 * `akhq.topic-data.size`: max record per page (default: 50)
 * `akhq.topic-data.poll-timeout`: The time, in milliseconds, spent waiting in poll if data is not available in the buffer (default: 1000).
 * `akhq.topic-data.kafka-max-message-length`: Max message length allowed to send to UI when retrieving a list of records (dafault: 1000000 bytes).
+* `akhq.topic-data.search.max-groups`: max number of groups in a structured message search expression (default: 10).
+* `akhq.topic-data.search.max-conditions`: max number of conditions in a structured message search expression, all groups included (default: 50).
+* `akhq.topic-data.search.max-value-length`: max length of a search condition value, regular expressions included (default: 1000).
 
 ## Ui Settings
 ### Topics
@@ -34,6 +37,20 @@ These parameters are the default values used in the topic creation page.
 
 ### Topic Data
 * `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
+
+### Cluster
+* `akhq.ui-options.cluster.order`: define custom ordering for clusters in the sidebar (optional). Clusters listed in this array will appear first in the specified order, followed by any unlisted clusters in alphabetical order.
+
+Example:
+```yaml
+akhq:
+  ui-options:
+    cluster:
+      order:
+        - "production-cluster"
+        - "staging-cluster"
+        - "development-cluster"
+```
 
 ### Inject some css or javascript
 * `akhq.html-head`: Append some head tags on the webserver application
@@ -101,10 +118,17 @@ This means, by default, nothing is masked. If you wish to mask data this way, yo
 - Set `akhq.security.data-masking.mode` to `json_show_by_default`
 - Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *mask*
 
-NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
+By default, the `topic` field in each filter is matched against the full topic name as an exact, case-insensitive string.
+Set `akhq.security.data-masking.enable-regex-topic-filters` to `true` to instead treat `topic` as a case-insensitive Java regular expression that must match the entire topic name.
+For example, with regex topic filters enabled, `topic: user-events-.*` will match topic names like `user-events-login` and `USER-EVENTS-AUDIT`, but `topic: users` will not match `users-archive`.
+When multiple filters match the same topic, the keys from all matching filters are combined, and the order of filters does not matter.
+
+A filter without a `topic` is ignored (with a warning in the logs).
+With regex topic filters enabled, a `topic` that is not a valid regular expression fails with a `PatternSyntaxException` when the masker is created; when they are disabled, any `topic` is safe because it is matched literally.
+
+NOTES: If you are using `RecordNameStrategy` on a topic with multiple record types,
 there is (currently) no way to distinguish between different records, so any records which have the JSON field at the
-selected path(s) will be masked. If you have a misconfiguration and have defined multiple filters per topic, only the first will
-actually be selected.
+selected path(s) will be masked.
 
 
 ```yaml
@@ -113,6 +137,7 @@ akhq:
     data-masking:
       mode: json_show_by_default
       jsonMaskReplacement: xxxx
+      enable-regex-topic-filters: true
       json-filters:
         - description: Mask sensitive values
           topic: users
@@ -122,6 +147,10 @@ akhq:
             - address.firstLine
             - address.town
             - metadata.notes
+        - description: Mask the status on all user-related topics
+          topic: user.*
+          keys:
+            - status
 ```
 
 Given a record on `users` that looks like:
@@ -152,12 +181,12 @@ Given a record on `users` that looks like:
 }
 ```
 
-With the above configuration, it will appear as:
+With the above configuration, both filters match the `users` topic (the exact name `users` also matches the regex `user.*`), so their keys are combined and the record will appear as:
 
 ```json
 {
   "specialId": 123,
-  "status": "ACTIVE",
+  "status": "xxxx",
   "name": "xxxx",
   "dateOfBirth": "xxxx",
   "address": [
@@ -218,16 +247,24 @@ If you wish to mask data this way, you can:
 - Set `akhq.security.data-masking.mode` to `json_mask_by_default`
 - Add as many filters as desired under `akhq.security.data-masking.json-filters` (see below for an example) to select fields you want to *show*
 
-NOTES: Only one filter per topic is currently supported. If you are using `RecordNameStrategy` on a topic with multiple record types,
+By default, the `topic` field in each filter is matched against the full topic name as an exact, case-insensitive string.
+Set `akhq.security.data-masking.enable-regex-topic-filters` to `true` to instead treat `topic` as a case-insensitive Java regular expression that must match the entire topic name.
+For example, with regex topic filters enabled, `topic: user-events-.*` will match topic names like `user-events-login` and `USER-EVENTS-AUDIT`, but `topic: users` will not match `users-archive`.
+When multiple filters match the same topic, the keys from all matching filters are combined, and the order of filters does not matter.
+
+A filter without a `topic` is ignored (with a warning in the logs).
+With regex topic filters enabled, a `topic` that is not a valid regular expression fails with a `PatternSyntaxException` when the masker is created; when they are disabled, any `topic` is safe because it is matched literally.
+
+NOTES: If you are using `RecordNameStrategy` on a topic with multiple record types,
 there is (currently) no way to distinguish between different records, so any records which have the JSON field at the
-selected path(s) will be shown. If you have a misconfiguration and have defined multiple filters per topic, only the first will
-actually be selected.
+selected path(s) will be shown.
 ```yaml
 akhq:
   security:
     data-masking:
       mode: json_mask_by_default
       jsonMaskReplacement: xxxx
+      enable-regex-topic-filters: true
       json-filters:
         - description: Unmask non-sensitive values
           topic: users
@@ -237,6 +274,10 @@ akhq:
             - address.country
             - metadata.trusted
             - metadata.rating
+        - description: Unmask the name on all user-related topics
+          topic: user.*
+          keys:
+            - name
 ```
 
 Given a record on `users` that looks like:
@@ -267,13 +308,13 @@ Given a record on `users` that looks like:
 }
 ```
 
-With the above configuration, it will appear as:
+With the above configuration, both filters match the `users` topic (the exact name `users` also matches the regex `user.*`), so their keys are combined and the record will appear as:
 
 ```json
 {
   "specialId": 123,
   "status": "ACTIVE",
-  "name": "xxxx",
+  "name": "John Smith",
   "dateOfBirth": "xxxx",
   "address": [
     {

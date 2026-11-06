@@ -7,14 +7,12 @@ import Header from '../../Header';
 import SearchBar from '../../../components/SearchBar';
 import Pagination from '../../../components/Pagination';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/mode-protobuf';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../../components/AceEditor/AceEditor';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../../components/Root';
 import { handlePageChange, getPageNumber } from './../../../utils/pagination';
+import { isSameLocation } from '../../../utils/functions';
 import { withRouter } from '../../../utils/withRouter';
 
 class SchemaList extends Root {
@@ -39,75 +37,85 @@ class SchemaList extends Root {
     loading: true
   };
 
-  componentDidMount() {
-    let { clusterId } = this.props.params;
-    const { searchData, pageNumber } = this.state;
+  getSearchAndPageFromLocation = () => {
     const query = new URLSearchParams(this.props.location.search);
+    return {
+      search: query.get('search') ?? '',
+      pageNumber: query.get('page') ? parseInt(query.get('page')) : 1
+    };
+  };
+
+  navigateWithQuery = (search, pageNumber, replace = false) => {
+    const { clusterId } = this.props.params;
+    const searchParams = new URLSearchParams();
+    searchParams.set('search', search || '');
+    searchParams.set('page', pageNumber);
+
+    const pathname = `/ui/${clusterId}/schema`;
+    const query = searchParams.toString();
+
+    if (isSameLocation(this.props.location, pathname, query)) {
+      // Re-submitting the same query would not change the URL: refresh the list in place.
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+      this.getSchemaRegistry();
+      return;
+    }
+
+    this.props.router.navigate(
+      {
+        pathname,
+        search: query
+      },
+      { replace }
+    );
+  };
+
+  syncStateFromLocation = callback => {
+    const { clusterId } = this.props.params;
+    const { search, pageNumber } = this.getSearchAndPageFromLocation();
 
     this.setState(
       {
         selectedCluster: clusterId,
-        searchData: { search: query.get('search') ? query.get('search') : searchData.search },
-        pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
+        searchData: { search },
+        pageNumber
       },
-      () => {
-        this.getSchemaRegistry(true);
-      }
+      callback
     );
+  };
+
+  componentDidMount() {
+    this.syncStateFromLocation(() => {
+      this.getSchemaRegistry();
+    });
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.props.location.search !== prevProps.location.search) {
-      // Handle back navigation
-      if (this.props.router.navigationType === 'POP') {
-        let { clusterId } = this.props.params;
-        const { searchData, pageNumber } = this.state;
-        const query = new URLSearchParams(this.props.location.search);
-        this.setState(
-          {
-            selectedCluster: clusterId,
-            searchData: { search: query.get('search') },
-            pageNumber: query.get('page') ? parseInt(query.get('page')) : parseInt(pageNumber)
-          },
-          () => {
-            this.getSchemaRegistry(false);
-          }
-        );
-      } else if (this.props.location.search === '') {
-        // Handle sidebar click on schema registry from the component
-        this.setState(
-          {
-            searchData: { search: '' },
-            pageNumber: 1
-          },
-          () => {
-            this.getSchemaRegistry(false);
-          }
-        );
-      }
+  componentDidUpdate(prevProps) {
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const searchChanged = this.props.location.search !== prevProps.location.search;
+
+    if (pathnameChanged || searchChanged) {
+      this.cancelAxiosRequests();
+      this.renewCancelToken();
+
+      this.syncStateFromLocation(() => {
+        this.getSchemaRegistry();
+      });
     }
   }
 
   handleSearch = data => {
     const { searchData } = data;
-
-    // Cancel previous requests is there are some to prevent UI issues
-    this.cancelAxiosRequests();
-    this.renewCancelToken();
-
-    this.setState({ pageNumber: 1, searchData }, () => {
-      this.getSchemaRegistry(false);
-    });
+    this.navigateWithQuery(searchData.search || '', 1, false);
   };
 
   handlePageChangeSubmission = (value, replaceInNavigation) => {
     let pageNumber = parseInt(getPageNumber(value, this.state.totalPageNumber));
-    this.setState({ pageNumber: pageNumber }, () => {
-      this.getSchemaRegistry(replaceInNavigation);
-    });
+    this.navigateWithQuery(this.state.searchData.search, pageNumber, replaceInNavigation);
   };
 
-  async getSchemaRegistry(replaceInNavigation = true) {
+  async getSchemaRegistry() {
     const { selectedCluster, pageNumber } = this.state;
     const { search } = this.state.searchData;
 
@@ -120,15 +128,7 @@ class SchemaList extends Root {
     let data = response.data;
     if (data.results) {
       this.handleSchemaRegistry(data.results);
-      this.setState({ selectedCluster, totalPageNumber: data.page }, () => {
-        this.props.router.navigate(
-          {
-            pathname: `/ui/${this.state.selectedCluster}/schema`,
-            search: `search=${this.state.searchData.search}&page=${pageNumber}`
-          },
-          { replace: replaceInNavigation }
-        );
-      });
+      this.setState({ selectedCluster, totalPageNumber: data.page });
     } else {
       this.setState({ selectedCluster, schemasRegistry: [], loading: false });
     }
@@ -256,15 +256,11 @@ class SchemaList extends Root {
               extraRowContent: (obj, col, index) => {
                 return (
                   <AceEditor
-                    setOptions={{ useWorker: false }}
                     mode={obj.schemaType === 'PROTOBUF' ? 'protobuf' : 'json'}
                     id={'value' + index}
-                    theme="merbivore_soft"
                     value={obj[col.accessor]}
                     readOnly
-                    name="UNIQUE_ID_OF_DIV"
-                    editorProps={{ $blockScrolling: true }}
-                    style={{ width: '100%', minHeight: '25vh' }}
+                    style={{ width: '100%', maxHeight: '500px' }}
                   />
                 );
               },
@@ -356,4 +352,5 @@ class SchemaList extends Root {
   }
 }
 
+export { SchemaList };
 export default withRouter(SchemaList);

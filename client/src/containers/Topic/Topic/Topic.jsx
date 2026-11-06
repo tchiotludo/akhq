@@ -157,7 +157,7 @@ class Topic extends Root {
   canEmptyTopic = () => {
     const { configs } = this.state;
     const res = configs.filter(config => config.name === 'cleanup.policy');
-    return res && res.length === 1 && res[0].value.includes('delete');
+    return res.length === 1 && res[0].value != null && res[0].value.includes('delete');
   };
 
   emptyTopic = () => {
@@ -238,7 +238,7 @@ class Topic extends Root {
     return (
       <div>
         <Header title={`Topic: ${topicId}`} />
-        <div className="tabs-container" style={{ marginBottom: '4%' }}>
+        <div className="tabs-container" style={{ marginBottom: '4%', marginTop: '-24px' }}>
           <ul className="nav nav-tabs" role="tablist">
             {roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ') && (
               <li className="nav-item">
@@ -322,14 +322,14 @@ class Topic extends Root {
                     onClick={() => {
                       this.handleOnEmpty();
                     }}
-                    className="btn btn-secondary me-2"
+                    className="btn btn-secondary btn-theme-secondary me-2"
                   >
                     <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
                 ) : (
                   <div
                     title="Only enabled for topics with Delete Cleanup Policy"
-                    className="btn disabled-black-button me-2"
+                    className="btn btn-theme-secondary disabled-black-button me-2"
                   >
                     <FontAwesomeIcon icon={faEraser} aria-hidden={true} /> Empty Topic
                   </div>
@@ -343,7 +343,7 @@ class Topic extends Root {
                   to={{
                     pathname: `/ui/${clusterId}/topic/${topicId}/copy`
                   }}
-                  className="btn btn-secondary me-2"
+                  className="btn btn-secondary btn-theme-secondary me-2"
                 >
                   <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Copy Topic
                 </Link>
@@ -355,7 +355,7 @@ class Topic extends Root {
                     pathname: `/ui/${clusterId}/tail`,
                     search: `?topicId=${topicId}`
                   }}
-                  className="btn btn-secondary me-2"
+                  className="btn btn-secondary btn-theme-secondary me-2"
                 >
                   <FontAwesomeIcon icon={faLevelDown} aria-hidden={true} /> Live Tail
                 </Link>

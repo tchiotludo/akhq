@@ -1,3 +1,6 @@
+// Use Dart Sass modules for color utilities
+@use "sass:color";
+
 /* ----------------------------------------------------------------------------------------------------------------- *\
     Bootstrap
 \* ----------------------------------------------------------------------------------------------------------------- */
@@ -69,7 +72,7 @@ $table-border-color: $gray-700 !default;
 $table-dark-bg: $black !default;
 $table-dark-border-color: $gray-700 !default;
 $table-dark-color: $white !default;
-$table-hover-bg: darken($primary, 25%);
+$table-hover-bg: color.adjust($primary, $lightness: -25%);
 
 // Forms
 $input-group-addon-color: $gray-500 !default;
@@ -112,12 +115,12 @@ $pagination-bg: $success !default;
 $pagination-border-width: 0 !default;
 $pagination-border-color: transparent !default;
 $pagination-hover-color: $white !default;
-$pagination-hover-bg: lighten($success, 10%) !default;
+$pagination-hover-bg: color.adjust($success, $lightness: 10%) !default;
 $pagination-hover-border-color: transparent !default;
 $pagination-active-bg: $pagination-hover-bg !default;
 $pagination-active-border-color: transparent !default;
 $pagination-disabled-color: $white !default;
-$pagination-disabled-bg: darken($success, 15%) !default;
+$pagination-disabled-bg: color.adjust($success, $lightness: -15%) !default;
 $pagination-disabled-border-color: transparent !default;
 
 // Jumbotron
@@ -213,4 +216,3 @@ $danger: $red !default;
 $light: $gray-800 !default;
 $dark: $gray-500 !default;
 // scss-docs-end theme-color-variables
-

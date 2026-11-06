@@ -2,6 +2,7 @@ akhq:
   security:
     data-masking:
       mode: json_show_by_default
+      enable-regex-topic-filters: true
       json-filters:
         - description: Mask sensitive values
           topic: users
@@ -13,3 +14,14 @@ akhq:
             - metadata.other.shouldBeMasked
             - metadata.other.arrayToMask
             - metadata.other.jsonArray.maskThis
+        - description: Mask name for user events (regex)
+          topic: user-events-.*
+          keys:
+            - name
+        - description: Mask dateOfBirth for user events (regex, uppercase pattern)
+          topic: 'USER-EVENTS-\d+'
+          keys:
+            - dateOfBirth
+        - description: Misconfigured filter without a topic (ignored)
+          keys:
+            - name

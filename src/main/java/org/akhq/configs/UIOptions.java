@@ -12,4 +12,7 @@ public class UIOptions {
 
     @ConfigurationBuilder(configurationPrefix = "topic-data")
     private UiOptionsTopicData topicData = new UiOptionsTopicData();
+
+    @ConfigurationBuilder(configurationPrefix = "cluster")
+    private UiOptionsCluster cluster = new UiOptionsCluster();
 }

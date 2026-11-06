@@ -1,65 +1,78 @@
 plugins {
     // micronaut
-    id "com.gradleup.shadow" version "8.3.6"
-    id "io.micronaut.application" version "4.5.4"
+    id "com.gradleup.shadow" version "9.6.1"
+    id "io.micronaut.application" version "5.0.2"
 
     // akhq
-    id "com.gorylenko.gradle-git-properties" version "2.5.0"
+    id "com.gorylenko.gradle-git-properties" version "4.0.1"
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.gradle.test-retry' version '1.6.2'
+    id 'org.gradle.test-retry' version '1.6.6'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.52.0"
-    id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
+    id "com.github.ben-manes.versions" version "0.66.0"
+    id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.3"
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
 }
 java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
 }
 application {
     mainClass.set("org.akhq.App")
 }
-group "org.akhq"
-version "0.26.0"
+group = "org.akhq"
+version = "0.28.0"
 
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'https://packages.confluent.io/maven/' }
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://packages.confluent.io/maven/' }
+    maven { url = 'https://jitpack.io' }
+    maven { url = "https://confluent-snapshots.public.confluent.io/" }
 }
 
 
 configurations.all {
     exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+    exclude group: 'io.confluent', module: 'confluent-log4j2-extensions'
+    // Exclude legacy org.lz4 provider so we can consistently use the relocated at.yawk.lz4
+    exclude group: 'org.lz4', module: 'lz4-java'
+    // Explicitly exclude missing Confluent telemetry modules from all configurations
+    exclude group: 'io.confluent', module: 'telemetry-events'
+    exclude group: 'io.confluent', module: 'telemetry-api'
 
     resolutionStrategy {
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
         force("org.apache.kafka:kafka-streams:" + kafkaVersion)
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
         force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-        force("com.google.protobuf:protobuf-java:3.25.2")
-        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
+        force("org.apache.kafka:kafka-metadata:" + kafkaVersion)
+        force("org.apache.kafka:kafka-server:" + kafkaVersion)
+        force("org.apache.kafka:kafka-raft:" + kafkaVersion)
+        force("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
+        force("org.apache.kafka:kafka-group-coordinator-api:" + kafkaVersion)
+        force("org.apache.kafka:kafka-transaction-coordinator:" + kafkaVersion)
+        force("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
     }
 }
 
-/**********************************************************************************************************************\
- * IntelliJ IDEA
- **********************************************************************************************************************/
-idea.project.settings {
-    taskTriggers {
-        beforeBuild generateAvroJava
-        beforeRebuild generateAvroJava
-    }
+// Apply Confluent-related exclusions to both runtime and test runtime classpaths
+[configurations.runtimeClasspath, configurations.testRuntimeClasspath].each { conf ->
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-events'
+    conf?.exclude group: 'io.confluent.observability', module: 'telemetry-api'
+    conf?.exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
+    // Exclude problematic transitive dependencies from ksqldb that don't exist in Confluent 8.x
+    conf?.exclude group: 'io.confluent.cloud', module: 'events-schema'
+    conf?.exclude group: 'io.confluent.rm', module: 'rm-core-schemas'
 }
 
 /**********************************************************************************************************************\
@@ -104,47 +117,53 @@ dependencies {
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")
     implementation("io.micronaut.cache:micronaut-cache-core")
     implementation("io.micronaut.cache:micronaut-cache-caffeine")
-
-    implementation("io.micronaut.rxjava2:micronaut-rxjava2")
-    implementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty")
+    implementation("io.micronaut.mcp:micronaut-mcp-server-java-sdk:2.1.0")
 
     // kafka
-    implementation group: "org.apache.kafka", name: "kafka_" + kafkaScalaVersion, version: kafkaVersion
-    implementation group: "org.apache.kafka", name: "kafka-clients", version: kafkaVersion
-    implementation group: "org.apache.kafka", name: "kafka-streams", version: kafkaVersion
-    implementation group: "io.confluent.ksql", name: "ksqldb-api-client", version: confluentVersion
-    implementation group: "io.confluent", name: "kafka-schema-registry-client", version: confluentVersion
-    implementation group: "io.confluent", name: "kafka-avro-serializer", version: confluentVersion
-    implementation group: "io.confluent", name: "kafka-json-schema-serializer", version: confluentVersion
-    implementation group: "io.confluent", name: "kafka-protobuf-serializer", version: confluentVersion
-    implementation group: "io.confluent", name: "kafka-client-plugins", version: confluentVersion + "-ce"
-    implementation ("org.sourcelab:kafka-connect-client:4.0.5")
+    implementation("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-clients:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
+    implementation("org.apache.kafka:kafka-server-common:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-group-coordinator:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-transaction-coordinator:" + kafkaVersion)
+    implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
+
+    // Prefer relocated LZ4 provider explicitly
+    implementation("at.yawk.lz4:lz4-java:1.12.1")
+
+    implementation("io.confluent.ksql:ksqldb-api-client:${confluentVersion}")
+    implementation("io.confluent:kafka-schema-registry-client:${confluentVersion}")
+    implementation("io.confluent:kafka-avro-serializer:${confluentVersion}")
+    implementation("io.confluent:kafka-json-schema-serializer:${confluentVersion}")
+    implementation("io.confluent:kafka-protobuf-serializer:${confluentVersion}")
+    implementation("io.confluent:kafka-client-plugins:${confluentVersion}-ce")
 
     // strimzi
-    implementation group: 'io.strimzi', name: 'kafka-oauth-common', version: '0.16.2'
-    implementation group: 'io.strimzi', name: 'kafka-oauth-client', version: '0.16.2'
+    implementation("io.strimzi:kafka-oauth-common:0.18.0")
+    implementation("io.strimzi:kafka-oauth-client:0.18.0")
 
     // log
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17'
-    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.17'
-    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.17'
+    implementation("org.slf4j:slf4j-api:2.0.20")
+    implementation("org.slf4j:jul-to-slf4j:2.0.20")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.20")
 
     // utils
-    implementation group: 'org.codehaus.httpcache4j.uribuilder', name: 'uribuilder', version: '2.0.0'
-    implementation 'com.google.guava:guava:33.4.8-jre'
-    implementation 'com.google.code.gson:gson:2.13.1'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
+    implementation("com.google.guava:guava:33.7.2-jre")
+    implementation("com.google.re2j:re2j:1.8")
+    implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // avro
-    implementation 'org.apache.avro:avro:1.12.0'
+    implementation("org.apache.avro:avro:1.12.2")
 
     // jackson-module-scala
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.17.2'
+    implementation("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.22.4")
 
     // protobuf
-    implementation group: "com.google.protobuf", name: "protobuf-java", version: '4.27.0'
-    implementation group: "com.google.protobuf", name: "protobuf-java-util", version: '4.27.1'
+    implementation("com.google.protobuf:protobuf-java:4.36.2")
+    implementation("com.google.protobuf:protobuf-java-util:4.36.2")
 
     //cenk is testing
     implementation("io.micronaut:micronaut-http-client")
@@ -152,28 +171,24 @@ dependencies {
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.inject:jakarta.inject-api")
     implementation("org.reactivestreams:reactive-streams")
-
-
+    implementation("io.projectreactor:reactor-core:3.8.8")
 
     // Password hashing
-    implementation group: "org.mindrot", name: "jbcrypt", version: "0.4"
+    implementation("org.mindrot:jbcrypt:0.4")
 
-    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.28'
+    implementation("org.apache.groovy:groovy-all:6.0.0")
     // api
 
     // client
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation group: 'software.amazon.msk', name: 'aws-msk-iam-auth', version: '2.3.2'
+    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.9")
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:1.1.24")
+    implementation ("software.amazon.glue:schema-registry-serde:2.0.1")
 
-
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.7.9'
-
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }
 
 /**********************************************************************************************************************\
@@ -181,6 +196,7 @@ dependencies {
  **********************************************************************************************************************/
 test {
     useJUnitPlatform()
+    systemProperty 'org.apache.avro.SERIALIZABLE_PACKAGES', 'org.akhq'
 
     testLogging {
         exceptionFormat = 'full'
@@ -198,59 +214,68 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic'
+    testImplementation("ch.qos.logback:logback-classic")
+
+    // Log4j dependencies needed by KsqlDB at test runtime
+    // KsqlDB requires actual Log4j implementation, not bridges
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.26.1")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-core:2.26.1")
 
     // micronaut test
-    testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
-    testCompileOnly 'org.projectlombok:lombok:' + lombokVersion
+    testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
 
-    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+    testAnnotationProcessor("io.micronaut:micronaut-inject-java")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testImplementation ("org.junit.jupiter:junit-jupiter-params")
+    testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
 
-    testImplementation ("io.micronaut:micronaut-http-client")
-    testImplementation ("io.micronaut:micronaut-runtime")
-    testImplementation ("io.micronaut:micronaut-management")
-    testImplementation ("io.micronaut:micronaut-inject")
-    testImplementation ("io.micronaut.rxjava2:micronaut-rxjava2-http-client")
+    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("io.micronaut:micronaut-runtime")
+    testImplementation("io.micronaut:micronaut-management")
+    testImplementation("io.micronaut:micronaut-inject")
     testImplementation("io.micronaut.test:micronaut-test-rest-assured")
+    testImplementation("io.netty:netty-all")
 
     // test
-    testImplementation "org.apache.kafka:kafka-clients:" + kafkaVersion + ":test"
-    testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion
-    testImplementation "org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion + ":test"
-    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion
-    testImplementation "io.confluent:kafka-schema-registry:" + confluentVersion + ":tests"
-    testImplementation "org.apache.kafka:connect-runtime:" + kafkaVersion
-    testImplementation "org.apache.kafka:connect-file:" + kafkaVersion
-    testImplementation 'io.confluent.ksql:ksqldb-rest-app:' + confluentVersion
+    testImplementation("org.apache.kafka:kafka-clients:${kafkaVersion}:test")
+    testImplementation("org.apache.kafka:kafka_${kafkaScalaVersion}:${kafkaVersion}")
+    testImplementation("org.apache.kafka:kafka_${kafkaScalaVersion}:${kafkaVersion}:test")
+    testImplementation("org.apache.kafka:kafka-server-common:${kafkaVersion}")
+    testImplementation("io.confluent:kafka-schema-registry:${confluentVersion}:tests")
+    testImplementation("org.apache.kafka:connect-runtime:${kafkaVersion}")
+    testImplementation("org.apache.kafka:connect-file:${kafkaVersion}")
+    testImplementation("io.confluent.ksql:ksqldb-rest-app:${confluentVersion}") {
+        exclude group: "io.netty", module: "netty-tcnative-fips-boringssl-static"
+    }
 
-    testImplementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaVersion
-    testImplementation group: "io.confluent", name: "kafka-streams-avro-serde", version: confluentVersion
-    testImplementation "io.confluent:kafka-connect-avro-converter:" + confluentVersion
-    testImplementation group: 'commons-codec', name: 'commons-codec', version: '1.19.0'
-    testImplementation 'org.hamcrest:hamcrest:3.0'
-    testImplementation 'org.hamcrest:hamcrest-library:3.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter'
-    testImplementation 'com.salesforce.kafka.test:kafka-junit5:3.2.5'
-    testImplementation 'org.apache.curator:curator-test:5.9.0'
+    testImplementation("org.apache.kafka:kafka-streams:${kafkaVersion}")
+    testImplementation("io.confluent:kafka-streams-avro-serde:${confluentVersion}")
+    testImplementation("io.confluent:kafka-connect-avro-converter:${confluentVersion}")
+    testImplementation("commons-codec:commons-codec:1.23.0")
+    testImplementation("org.hamcrest:hamcrest:3.0")
+    testImplementation("org.hamcrest:hamcrest-library:3.0")
+    testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("com.salesforce.kafka.test:kafka-junit5:3.2.5")
+    testImplementation("org.apache.curator:curator-test:5.9.0")
 
-    testImplementation 'org.awaitility:awaitility:4.3.0'
+    testImplementation("org.awaitility:awaitility:4.3.0")
+    testImplementation("org.testcontainers:kafka:1.21.4")
 }
 
 testlogger {
-    theme 'mocha'
-    showExceptions true
-    showFullStackTraces true
-    showCauses true
-    slowThreshold 2000
-    showStandardStreams true
-    showPassedStandardStreams false
-    showSkippedStandardStreams true
+    theme = 'mocha'
+    showExceptions = true
+    showFullStackTraces = true
+    showCauses = true
+    slowThreshold = 2000
+    showStandardStreams = true
+    showPassedStandardStreams = false
+    showSkippedStandardStreams = true
 }
 
 task testKafkaCluster(type:JavaExec) {
@@ -265,6 +290,7 @@ task testInjectData(type:JavaExec) {
     description = 'Inject data in a existing kafka cluster'
     classpath sourceSets.test.runtimeClasspath
     mainClass = "org.akhq.KafkaTestCluster"
+    systemProperty 'org.apache.avro.SERIALIZABLE_PACKAGES', 'org.akhq'
     args 'inject'
 }
 
@@ -282,7 +308,15 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
     classpath = sourceSets.test.runtimeClasspath
     main = 'org.akhq.KafkaTestCluster'
     waitForOutput = 'Test data injected sleep done'
+    jvmArgs = ['-Dorg.apache.avro.SERIALIZABLE_PACKAGES=org.akhq']
     timeout = 300
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.forkOptions.jvmArgs += [
+        '-Dmicronaut.openapi.filename=akhq'
+    ]
 }
 
 /**********************************************************************************************************************\
@@ -290,9 +324,16 @@ task startTestKafkaCluster(type: com.github.psxpaul.task.JavaExecFork) {
  **********************************************************************************************************************/
 shadowJar {
     mergeServiceFiles()
-    zip64 true
+    zip64 = true
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer) {
+        include('git.properties')
+    }
 }
 
 processResources.dependsOn ":client:installFrontend"
 processResources.dependsOn ":client:assembleFrontend"
 processResources.dependsOn ":client:copyClientResources"
+
+tasks.named("inspectRuntimeClasspath") {
+    dependsOn(tasks.named("generateGitProperties"))
+}

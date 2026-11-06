@@ -7,9 +7,7 @@ import { SETTINGS_VALUES } from '../../utils/constants';
 import { getClusterUIOptions } from '../../utils/functions';
 import { uriLiveTail, uriTopicsName } from '../../utils/endpoints';
 import Table from '../../components/Table';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
+import AceEditor from '../../components/AceEditor/AceEditor';
 import Root from '../../components/Root';
 import DateTime from '../../components/DateTime';
 import { EventSourcePolyfill } from 'event-source-polyfill';
@@ -256,7 +254,10 @@ class Tail extends Root {
               inputClass={'tail-search-input'}
             />
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle">
+              <Dropdown.Toggle
+                variant="secondary"
+                className="btn dropdown-toggle btn-theme-secondary"
+              >
                 {selectedTopics.length === 0
                   ? 'Topics'
                   : selectedTopics.length === 1
@@ -266,6 +267,7 @@ class Tail extends Root {
               <Dropdown.Menu
                 style={{
                   maxHeight: 'calc(100vh - 200px)',
+                  maxWidth: 'calc(100vw - 300px)',
                   overflow: 'hidden',
                   minHeight: '182px'
                 }}
@@ -325,7 +327,10 @@ class Tail extends Root {
             </Dropdown>
 
             <Dropdown className="form-group dropdown bootstrap-select show-tick khq-select show">
-              <Dropdown.Toggle className="btn dropdown-toggle">
+              <Dropdown.Toggle
+                variant="secondary"
+                className="btn dropdown-toggle btn-theme-secondary"
+              >
                 Max Records: {maxRecords}
               </Dropdown.Toggle>
               <Dropdown.Menu style={{ maxHeight: '771px', overflow: 'hidden', minHeight: '182px' }}>
@@ -482,14 +487,10 @@ class Tail extends Root {
 
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="json"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={value || 'null'}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );
@@ -528,7 +529,7 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #fff)'
                       }}
                     >
                       {header.key}
@@ -539,7 +540,7 @@ class Tail extends Root {
                         display: 'flex',
                         borderStyle: 'dashed',
                         borderWidth: '1px',
-                        backgroundColor: '#171819'
+                        backgroundColor: 'var(--bs-body-bg, #fff)'
                       }}
                     >
                       {header.value}

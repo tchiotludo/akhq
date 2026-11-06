@@ -52,14 +52,14 @@ see [Kafka Getting started guide](https://kafka.apache.org/quickstart). In the n
 git clone https://github.com/tchiotludo/akhq.git
 ```
 
-Open the checked out directory in IntelliJ IDEA. The current version of AKHQ is built with Java 17. If you
-don't have OpenJDK 17 installed already, do the following in IntelliJ IDEA:
+Open the checked out directory in IntelliJ IDEA. The current version of AKHQ is built with Java 25. If you
+don't have OpenJDK 25 installed already, do the following in IntelliJ IDEA:
 * _File > Project Structure... > Platform Settings >
-SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 17)
-* download + install. Make sure that JDK 17 is set under _Project Settings > Project SDK_
-* language level is Java 17.
-* Now tell Gradle to use Java 17
-as well: _File > Settings > Plugins > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM_: any JDK 17.
+SDKs > + > Download JDK... >_ select a vendor of your choice (but make sure it's version 25)
+* download + install. Make sure that JDK 25 is set under _Project Settings > Project SDK_
+* language level is Java 25.
+* Now tell Gradle to use Java 25
+as well: _File > Settings > Plugins > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM_: any JDK 25.
 
 To configure AKHQ for using the Kafka server you set up before, edit `application.yml` by adding the following under `akhq`:
 ```yaml

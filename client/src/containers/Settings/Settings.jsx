@@ -7,14 +7,20 @@ import { setUIOptions } from '../../utils/localstorage';
 import { toast } from 'react-toastify';
 import { getClusterUIOptions } from '../../utils/functions';
 import { withRouter } from '../../utils/withRouter';
+import { ThemeContext } from '../../context/ThemeContext';
+import { THEME_DARK, THEME_LIGHT, THEME_SYSTEM, getStoredTheme } from '../../utils/theme';
 
 class Settings extends Form {
+  static contextType = ThemeContext;
+
   state = {
     clusterId: '',
     formData: {
+      theme: getStoredTheme(),
       topicDefaultView: '',
       topicDataSort: '',
       topicDataDateTimeFormat: '',
+      topicDataSize: '',
       skipConsumerGroups: false,
       skipLastRecord: false,
       showAllConsumerGroups: true,
@@ -34,6 +40,10 @@ class Settings extends Form {
   topicDataDateTimeFormat = Object.entries(SETTINGS_VALUES.TOPIC_DATA.DATE_TIME_FORMAT).map(
     ([value]) => ({ _id: value, name: value })
   );
+  topicDataPageSizes = [10, 25, 50, 100, 150, 200].map(value => ({
+    _id: String(value),
+    name: String(value)
+  }));
   groupsDefaultView = Object.entries(SETTINGS_VALUES.TOPIC.CONSUMER_GROUP_DEFAULT_VIEW).map(
     ([value]) => ({
       _id: value,
@@ -41,10 +51,18 @@ class Settings extends Form {
     })
   );
 
+  themeOptions = [
+    { _id: THEME_DARK, name: 'Dark' },
+    { _id: THEME_LIGHT, name: 'Light' },
+    { _id: THEME_SYSTEM, name: 'System Default' }
+  ];
+
   schema = {
+    theme: Joi.string().optional(),
     topicDefaultView: Joi.string().optional(),
     topicDataSort: Joi.string().optional(),
     topicDataDateTimeFormat: Joi.string().required(),
+    topicDataSize: Joi.string().allow('').optional(),
     skipConsumerGroups: Joi.boolean().optional(),
     skipLastRecord: Joi.boolean().optional(),
     showAllConsumerGroups: Joi.boolean().optional(),
@@ -57,6 +75,7 @@ class Settings extends Form {
       this._initializeVars(() => {
         this.setState({
           formData: {
+            theme: (this.context && this.context.theme) || getStoredTheme(),
             topicDefaultView:
               this.state.uiOptions && this.state.uiOptions.topic
                 ? this.state.uiOptions.topic.defaultView
@@ -68,6 +87,10 @@ class Settings extends Form {
             topicDataDateTimeFormat:
               this.state.uiOptions && this.state.uiOptions.topicData
                 ? this.state.uiOptions.topicData.dateTimeFormat
+                : '',
+            topicDataSize:
+              this.state.uiOptions && this.state.uiOptions.topicData
+                ? String(this.state.uiOptions.topicData.size || '')
                 : '',
             skipConsumerGroups:
               this.state.uiOptions && this.state.uiOptions.topic
@@ -109,6 +132,9 @@ class Settings extends Form {
 
   doSubmit() {
     const { clusterId, formData } = this.state;
+    if (this.context && this.context.setTheme && formData.theme) {
+      this.context.setTheme(formData.theme);
+    }
     setUIOptions(clusterId, {
       topic: {
         defaultView: formData.topicDefaultView,
@@ -119,7 +145,8 @@ class Settings extends Form {
       },
       topicData: {
         sort: formData.topicDataSort,
-        dateTimeFormat: formData.topicDataDateTimeFormat
+        dateTimeFormat: formData.topicDataDateTimeFormat,
+        size: formData.topicDataSize ? parseInt(formData.topicDataSize) : undefined
       }
     });
     toast.success(`Settings for cluster '${clusterId}' updated successfully.`);
@@ -134,6 +161,26 @@ class Settings extends Form {
           onSubmit={() => this.doSubmit()}
         >
           <Header title="Settings" />
+          <fieldset id="appearance" key="appearance">
+            <legend id="appearance">Appearance</legend>
+            {this.renderSelect(
+              'theme',
+              'Theme',
+              this.themeOptions,
+              ({ currentTarget: input }) => {
+                const { formData } = this.state;
+                formData.theme = input.value;
+                this.setState({ formData });
+                if (this.context && this.context.setTheme) {
+                  this.context.setTheme(input.value);
+                }
+              },
+              'col-sm-10',
+              'select-wrapper settings-wrapper',
+              true,
+              { className: 'form-control' }
+            )}
+          </fieldset>
           <fieldset id="topic" key="topic">
             <legend id="topic">Topic</legend>
             {this.renderSelect(
@@ -230,6 +277,20 @@ class Settings extends Form {
               ({ currentTarget: input }) => {
                 const { formData } = this.state;
                 formData.topicDataDateTimeFormat = input.value;
+                this.setState({ formData });
+              },
+              'col-sm-10',
+              'select-wrapper settings-wrapper',
+              true,
+              { className: 'form-control' }
+            )}
+            {this.renderSelect(
+              'topicDataSize',
+              'Page Size',
+              this.topicDataPageSizes,
+              ({ currentTarget: input }) => {
+                const { formData } = this.state;
+                formData.topicDataSize = input.value;
                 this.setState({ formData });
               },
               'col-sm-10',

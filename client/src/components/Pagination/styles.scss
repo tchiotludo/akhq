@@ -4,7 +4,7 @@ input.page-input {
   border: 0;
   padding: 0;
   background: transparent;
-  color: $white;
+  color: var(--bs-body-color, #212529);
 }
 
 /*remove arrows from input*/

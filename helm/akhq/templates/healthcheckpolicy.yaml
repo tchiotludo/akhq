@@ -1,0 +1,30 @@
+{{- if and .Values.gke .Values.gke.healthCheckPolicy.enabled }}
+{{- $fullName := include "akhq.fullname" . -}}
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app.kubernetes.io/name: {{ include "akhq.name" . }}
+    helm.sh/chart: {{ include "akhq.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  default:
+    checkIntervalSec: {{ .Values.gke.healthCheckPolicy.checkIntervalSec }}
+    config:
+      httpHealthCheck:
+        port: {{ .Values.service.managementPort }}
+        portSpecification: USE_FIXED_PORT
+        requestPath: /health
+      type: HTTP
+    healthyThreshold: {{ .Values.gke.healthCheckPolicy.healthyThreshold }}
+    logConfig:
+      enabled: true
+    timeoutSec: {{ .Values.gke.healthCheckPolicy.timeoutSec }}
+    unhealthyThreshold: {{ .Values.gke.healthCheckPolicy.unhealthyThreshold }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ $fullName }}
+{{- end }}

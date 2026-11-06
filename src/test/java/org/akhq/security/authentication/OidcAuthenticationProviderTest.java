@@ -3,6 +3,7 @@ package org.akhq.security.authentication;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
+import io.micronaut.context.BeanProvider;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.security.authentication.*;
 import io.micronaut.security.authentication.provider.ReactiveAuthenticationProvider;
@@ -10,10 +11,9 @@ import io.micronaut.security.oauth2.client.DefaultOpenIdProviderMetadata;
 import io.micronaut.security.oauth2.endpoint.token.request.TokenEndpointClient;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdClaims;
 import io.micronaut.security.oauth2.endpoint.token.response.OpenIdTokenResponse;
-import io.micronaut.security.oauth2.endpoint.token.response.validation.OpenIdTokenResponseValidator;
+import io.micronaut.security.oauth2.endpoint.token.response.validation.ReactiveOpenIdTokenResponseValidator;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
 import org.akhq.configs.security.Group;
 import org.akhq.controllers.AkhqController;
 import org.akhq.models.security.ClaimProvider;
@@ -21,15 +21,14 @@ import org.akhq.security.rule.AKHQSecurityRule;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,13 +42,13 @@ class OidcAuthenticationProviderTest {
     @SuppressWarnings("rawtypes")
     @Named("oidc")
     @Inject
-    ReactiveAuthenticationProvider oidcProvider;
+    BeanProvider<ReactiveAuthenticationProvider> oidcProvider;
 
     @Inject
     TokenEndpointClient tokenEndpointClient;
 
     @Inject
-    OpenIdTokenResponseValidator openIdTokenResponseValidator;
+    ReactiveOpenIdTokenResponseValidator openIdTokenResponseValidator;
 
     @Inject
     AkhqController akhqController;
@@ -64,9 +63,9 @@ class OidcAuthenticationProviderTest {
     }
 
     @Named("oidc")
-    @MockBean(OpenIdTokenResponseValidator.class)
-    OpenIdTokenResponseValidator openIdTokenResponseValidator() {
-        return mock(OpenIdTokenResponseValidator.class);
+    @MockBean(ReactiveOpenIdTokenResponseValidator.class)
+    ReactiveOpenIdTokenResponseValidator openIdTokenResponseValidator() {
+        return mock(ReactiveOpenIdTokenResponseValidator.class);
     }
 
     @Named("oidc")
@@ -86,13 +85,13 @@ class OidcAuthenticationProviderTest {
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+                .thenReturn(Publishers.just(jwt));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = (AuthenticationResponse) Mono
+                .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
@@ -122,13 +121,13 @@ class OidcAuthenticationProviderTest {
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+                .thenReturn(Publishers.just(jwt));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = (AuthenticationResponse) Mono
+                .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
@@ -159,13 +158,13 @@ class OidcAuthenticationProviderTest {
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+                .thenReturn(Publishers.just(jwt));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = (AuthenticationResponse) Mono
+                .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
@@ -205,13 +204,13 @@ class OidcAuthenticationProviderTest {
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+                .thenReturn(Publishers.just(jwt));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = (AuthenticationResponse) Mono
+                .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                         "user2",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertTrue(response.isAuthenticated());
         assertTrue(response.getAuthentication().isPresent());
@@ -254,13 +253,13 @@ class OidcAuthenticationProviderTest {
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.of(jwt));
+                .thenReturn(Publishers.just(jwt));
 
-        AuthenticationResponse response = (AuthenticationResponse) Flowable
-                .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+        AuthenticationResponse response = (AuthenticationResponse) Mono
+                .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                         "user",
                         "pass"
-                ))).blockingFirst();
+                ))).block();
 
         assertTrue(response.isAuthenticated());
         assertEquals("user", response.getAuthentication().get().getName());
@@ -272,21 +271,17 @@ class OidcAuthenticationProviderTest {
 
     @Test
     void failure() {
-
         Mockito.when(tokenEndpointClient.sendRequest(ArgumentMatchers.any()))
                 .thenReturn(Publishers.just(new OpenIdTokenResponse()));
         Mockito.when(openIdTokenResponseValidator.validate(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .thenReturn(Optional.empty());
-        Flowable authenticateRequest = Flowable
-            .fromPublisher(oidcProvider.authenticate(null, new UsernamePasswordCredentials(
+                .thenReturn(Mono.empty());
+        Object response = Mono
+            .from(oidcProvider.get().authenticate(null, new UsernamePasswordCredentials(
                 "user",
                 "pass"
-            )));
-        AuthenticationException authenticationException = assertThrows(AuthenticationException.class, () -> authenticateRequest.blockingFirst());
-
-        assertThat(authenticationException.getResponse(), instanceOf(AuthenticationFailed.class));
-        assertNotNull(authenticationException.getResponse());
-        assertFalse(authenticationException.getResponse().isAuthenticated());
+            )))
+            .block();
+        assertNull(response);
     }
 
     @Test

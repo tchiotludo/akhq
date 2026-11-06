@@ -7,6 +7,10 @@ akhq can be configured to emit audit event to a kafka cluster for the following 
   - Topic configuration change
   - Topic partition increase
   - Topic deletion
+- Topic data level
+  - Produce records to a topic
+  - Delete a record
+  - Empty a topic
 - Consumer group level
   - Update offsets
   - Delete offsets

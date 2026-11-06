@@ -79,7 +79,23 @@ module.exports = {
     ]
   }),
   bundler: viteBundler({
-    viteOptions: {},
+    viteOptions: {
+      css: {
+        preprocessorOptions: {
+          scss: {
+            quietDeps: true,
+            /* Align with client Sass deprecation silencing */
+            silenceDeprecations: [
+              'mixed-decls',
+              'color-functions',
+              'global-builtin',
+              'import',
+              'if-function'
+            ]
+          }
+        }
+      }
+    },
     vuePluginOptions: {},
   }),
 }

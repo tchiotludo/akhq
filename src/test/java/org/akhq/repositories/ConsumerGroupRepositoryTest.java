@@ -82,13 +82,13 @@ class ConsumerGroupRepositoryTest extends AbstractTest {
     }
 
     @Test
-    void findByNameWithTopicRegex() throws ExecutionException, InterruptedException {
+    void findByNameWithTopicRegex() {
         mockApplicationContext();
         assertThrows(NoSuchElementException.class, () -> {
             consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, "cgroup-1", List.of("consumer-.*"));
         });
 
-        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-6", "cgroup-1"), List.of("consumer-.*")).size());
+        assertEquals(1, consumerGroupRepository.findByName(KafkaTestCluster.CLUSTER_ID, List.of("consumer-5", "cgroup-1"), List.of("consumer-.*")).size());
     }
 
     private void mockApplicationContext() {

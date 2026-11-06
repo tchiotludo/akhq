@@ -1,13 +1,15 @@
 package org.akhq.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.ConsumerGroupState;
+import org.apache.kafka.common.GroupState;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,16 +17,18 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 @Getter
+@Setter
 @NoArgsConstructor
 public class ConsumerGroup {
     private String id;
     private boolean simpleConsumerGroup;
     private String partitionAssignor;
-    private ConsumerGroupState state;
+    private GroupState state;
     private Node coordinator;
-    private final ArrayList<Consumer> members = new ArrayList<>();
-    private final ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
+    private ArrayList<Consumer> members = new ArrayList<>();
+    private ArrayList<TopicPartition.ConsumerGroupOffset> offsets = new ArrayList<>();
 
+    @JsonIgnore
     public ConsumerGroup(
         ConsumerGroupDescription groupDescription,
         Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> groupOffset,
@@ -33,7 +37,7 @@ public class ConsumerGroup {
         this.id = groupDescription.groupId();
         this.simpleConsumerGroup = groupDescription.isSimpleConsumerGroup();
         this.partitionAssignor = groupDescription.partitionAssignor();
-        this.state = groupDescription.state();
+        this.state = groupDescription.groupState();
         this.coordinator = new Node(groupDescription.coordinator());
 
         for (MemberDescription member : groupDescription.members()) {

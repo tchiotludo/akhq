@@ -9,7 +9,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../components/Root';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignIn } from '@fortawesome/free-solid-svg-icons';
+import { faSignIn, faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
+import { ThemeContext } from '../../context/ThemeContext';
 
 class Header extends Root {
   state = {
@@ -93,6 +94,22 @@ class Header extends Root {
           {' '}
           <h1>{title}</h1>{' '}
           <div>
+            <ThemeContext.Consumer>
+              {({ resolvedTheme, theme, setTheme }) => {
+                const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+                return (
+                  <button
+                    type="button"
+                    className="btn btn-secondary me-2"
+                    title={`Current theme: ${theme}. Switch to ${nextTheme} mode`}
+                    aria-label="Toggle theme"
+                    onClick={() => setTheme(nextTheme)}
+                  >
+                    <FontAwesomeIcon icon={resolvedTheme === 'dark' ? faSun : faMoon} />
+                  </button>
+                );
+              }}
+            </ThemeContext.Consumer>
             {this._renderLogin()}
             {children}
           </div>

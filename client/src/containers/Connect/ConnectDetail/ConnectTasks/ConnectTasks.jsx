@@ -11,7 +11,7 @@ import {
 import ConfirmModal from '../../../../components/Modal/ConfirmModal/ConfirmModal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AceEditor from 'react-ace';
+import AceEditor from '../../../../components/AceEditor/AceEditor';
 import Root from '../../../../components/Root';
 import { withRouter } from '../../../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -66,12 +66,50 @@ class ConnectTasks extends Root {
     this.setState({ definition: definition.data }, () => this.handleTasks());
   }
 
+  static POLL_INTERVAL = 1000;
+  static POLL_MAX_ATTEMPTS = 10;
+
+  async waitForStateChange(expectedAction, taskId) {
+    const { clusterId, connectId, definitionId } = this.state;
+
+    // For individual task restarts, just do a single delayed refresh
+    if (taskId !== undefined) {
+      await new Promise(resolve => setTimeout(resolve, ConnectTasks.POLL_INTERVAL));
+      await this.getDefinition();
+      return;
+    }
+
+    for (let i = 0; i < ConnectTasks.POLL_MAX_ATTEMPTS; i++) {
+      await new Promise(resolve => setTimeout(resolve, ConnectTasks.POLL_INTERVAL));
+      const response = await this.getApi(uriGetDefinition(clusterId, connectId, definitionId));
+      const tasks = response.data.tasks || [];
+
+      if (tasks.length === 0) continue;
+
+      let settled = false;
+      if (expectedAction === 'paused') {
+        settled = tasks.every(t => t.state === 'PAUSED');
+      } else if (expectedAction === 'resumed' || expectedAction === 'restarted') {
+        settled = tasks.every(t => t.state === 'RUNNING' || t.state === 'FAILED');
+      }
+
+      if (settled) {
+        this.setState({ definition: response.data }, () => this.handleTasks());
+        return;
+      }
+    }
+
+    // Exhausted attempts — refresh with whatever state we have
+    await this.getDefinition();
+  }
+
   modifyDefinitionState = () => {
     const { definitionId } = this.state;
     const { uri, action, taskId } = this.state.definitionModifyData;
 
+    this.setState({ loading: true });
     this.getApi(uri)
-      .then(() => this.getDefinition())
+      .then(() => this.waitForStateChange(action, taskId))
       .then(() => {
         toast.success(
           `${
@@ -80,6 +118,11 @@ class ConnectTasks extends Root {
               : `Definition '${definitionId}' is ${action}`
           }`
         );
+        this.closeActionModal();
+      })
+      .catch(() => {
+        toast.error(`Failed to ${this.state.definitionModifyData.failedAction} definition '${definitionId}'`);
+        this.getDefinition();
         this.closeActionModal();
       });
   };
@@ -220,14 +263,10 @@ class ConnectTasks extends Root {
                 extraRowContent: (obj, index) => {
                   return (
                     <AceEditor
-                      setOptions={{ useWorker: false }}
                       mode="text"
                       id={'value' + index}
-                      theme="merbivore_soft"
                       value={obj.trace}
                       readOnly
-                      name="UNIQUE_ID_OF_DIV"
-                      editorProps={{ $blockScrolling: true }}
                       style={{ width: '100%', minHeight: '25vh' }}
                     />
                   );

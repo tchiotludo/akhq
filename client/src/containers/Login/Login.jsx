@@ -42,6 +42,12 @@ class Login extends Form {
       };
 
       login(uriLogin(), body).then(res => {
+
+        // Handle opaqueredirect - Otherwise the flow breaks in Safari
+        if (res.type === 'opaqueredirect') {
+          this.getData();
+          return;
+        }
         // Handle login failed for bearer auth
         if (res.status === 500) {
           toast.error('Wrong Username or Password!');
@@ -79,7 +85,7 @@ class Login extends Form {
         const returnTo = sessionStorage.getItem('returnTo');
         sessionStorage.removeItem('returnTo');
 
-        window.location.replace(basePath + (returnTo || '/ui'));
+        window.location.replace((returnTo || basePath + '/ui'));
       } else {
         toast.error('User logged in but no roles assigned');
       }

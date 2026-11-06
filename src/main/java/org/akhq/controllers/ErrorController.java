@@ -2,8 +2,6 @@ package org.akhq.controllers;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.micrometer.core.instrument.util.StringUtils;
-import io.micronaut.core.annotation.AnnotationValue;
-import io.micronaut.http.HttpAttributes;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -14,14 +12,19 @@ import io.micronaut.http.hateoas.Link;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.AuthorizationException;
 import io.micronaut.security.rules.SecurityRule;
-import io.micronaut.web.router.UriRouteMatch;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import org.akhq.mcp.McpEndpoint;
 import org.akhq.modules.InvalidClusterException;
-import org.akhq.security.annotation.AKHQSecured;
+import org.akhq.search.SearchExpressionException;
+import org.akhq.security.rule.AKHQSecurityRule;
+import org.akhq.security.authentication.mcp.McpOauthAuthentication;
+import org.akhq.security.authentication.mcp.McpOauthRequestMatcher;
+import org.akhq.security.authentication.mcp.McpOauthResourceMetadata;
 import org.apache.kafka.common.errors.ApiException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ConcurrentConfigModificationException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.InvalidRequestException;
-import org.sourcelab.kafka.connect.apiclient.rest.exceptions.ResourceNotFoundException;
+import org.akhq.clients.connect.error.ConnectBadRequestException;
+import org.akhq.clients.connect.error.ConnectConflictException;
+import org.akhq.clients.connect.error.ConnectNotFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,10 +35,17 @@ import java.util.regex.Pattern;
 @Slf4j
 @Controller("/errors")
 public class ErrorController extends AbstractController {
+    @Inject
+    private McpOauthRequestMatcher mcpOauthRequestMatcher;
+    @Inject
+    private McpOauthResourceMetadata mcpOauthResourceMetadata;
+    @Inject
+    private McpEndpoint mcpEndpoint;
+
     // Kafka
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, ApiException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     @Error(global = true)
@@ -46,33 +56,33 @@ public class ErrorController extends AbstractController {
     // Registry
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, RestClientException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
     // Connect
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, InvalidRequestException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectBadRequestException e) {
+        return renderException(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ResourceNotFoundException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectNotFoundException e) {
+        return renderException(request, e);
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, ConcurrentConfigModificationException e) {
-        return renderExecption(request, e);
+    public HttpResponse<?> error(HttpRequest<?> request, ConnectConflictException e) {
+        return renderException(request, e);
     }
 
     // Akhq
 
     @Error(global = true)
     public HttpResponse<?> error(HttpRequest<?> request, IllegalArgumentException e) {
-        return renderExecption(request, e);
+        return renderException(request, e);
     }
 
-    private HttpResponse<?> renderExecption(HttpRequest<?> request, Exception e) {
+    private HttpResponse<?> renderException(HttpRequest<?> request, Exception e) {
         JsonError error = new JsonError(e.getMessage())
             .link(Link.SELF, Link.of(request.getUri()));
 
@@ -81,19 +91,35 @@ public class ErrorController extends AbstractController {
     }
 
     @Error(global = true)
-    public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
-        if (request.getUri().toString().startsWith("/api")) {
-            if (e.isForbidden()) {
-                if (request.getAttribute(HttpAttributes.ROUTE_MATCH).isPresent() &&
-                    ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).hasAnnotation(AKHQSecured.class)) {
-                    AnnotationValue<AKHQSecured> annotation =
-                        ((UriRouteMatch<?, ?>) request.getAttribute(HttpAttributes.ROUTE_MATCH).get()).getAnnotation(AKHQSecured.class);
+    public HttpResponse<?> error(HttpRequest<?> request, SearchExpressionException e) {
+        JsonError error = new JsonError(e.getMessage())
+            .link(Link.SELF, Link.of(request.getUri()));
 
-                    return HttpResponse.status(HttpStatus.FORBIDDEN)
-                        .body(new JsonError(String.format("Unauthorized: missing permission on resource %s and action %s",
-                            annotation.getValues().get("resource"),
-                            annotation.getValues().get("action"))));
-                }
+        return HttpResponse.<JsonError>badRequest()
+            .body(error);
+    }
+
+    @Error(global = true)
+    public HttpResponse<?> error(HttpRequest<?> request, AuthorizationException e) throws URISyntaxException {
+        if (mcpOauthRequestMatcher.matches(request)) {
+            // Only a validated MCP access token can be "forbidden". Any other identity, such as an AKHQ cookie sent
+            // along with an expired MCP token, gets the challenge so that the MCP client re-authenticates.
+            if (e.getAuthentication() instanceof McpOauthAuthentication) {
+                return HttpResponse.status(HttpStatus.FORBIDDEN).body(new JsonError("Forbidden: insufficient permissions"));
+            }
+            return HttpResponse.unauthorized()
+                .header("WWW-Authenticate", mcpOauthResourceMetadata.challenge(request))
+                .body(new JsonError("OAuth access token required or invalid"));
+        }
+
+        if (request.getUri().toString().startsWith(getBasePath()+"/api") || mcpEndpoint.matches(request)) {
+            if (e.isForbidden()) {
+                String resource = request.getAttribute(AKHQSecurityRule.REJECTED_RESOURCE, String.class).orElse(null);
+                String action = request.getAttribute(AKHQSecurityRule.REJECTED_ACTION, String.class).orElse(null);
+                String message = resource != null && action != null
+                    ? String.format("Unauthorized: missing permission on resource %s and action %s", resource, action)
+                    : "Forbidden: insufficient permissions";
+                return HttpResponse.status(HttpStatus.FORBIDDEN).body(new JsonError(message));
             } else {
                 return HttpResponse.unauthorized().body(new JsonError("User not authenticated or token expired"));
             }

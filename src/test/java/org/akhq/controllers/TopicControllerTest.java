@@ -55,6 +55,23 @@ public class TopicControllerTest extends AbstractTest {
 
     @Test
     @Order(1)
+    void listApiAcceptsRepeatedFavoritesAndLegacyRequests() {
+        ResultPagedList<Topic> legacy = this.retrievePagedList(HttpRequest.GET(BASE_URL), Topic.class);
+        ResultPagedList<Topic> withFavorites = this.retrievePagedList(
+            HttpRequest.GET(BASE_URL + "?favorite=" + KafkaTestCluster.TOPIC_RANDOM + "&favorite=" + KafkaTestCluster.TOPIC_COMPACTED),
+            Topic.class
+        );
+
+        assertEquals(DEFAULT_PAGE_SIZE, legacy.getResults().size());
+        assertEquals(KafkaTestCluster.TOPIC_AUDIT, legacy.getResults().get(0).getName());
+        assertEquals(DEFAULT_PAGE_SIZE, legacy.getPageSize());
+        assertEquals(KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT, legacy.getTotal());
+        assertEquals(KafkaTestCluster.TOPIC_RANDOM, withFavorites.getResults().get(0).getName());
+        assertEquals(KafkaTestCluster.TOPIC_COMPACTED, withFavorites.getResults().get(1).getName());
+    }
+
+    @Test
+    @Order(1)
     void homeApi() {
         Topic result = this.retrieve(HttpRequest.GET(TOPIC_URL), Topic.class);
         assertEquals(KafkaTestCluster.TOPIC_COMPACTED, result.getName());
@@ -106,12 +123,12 @@ public class TopicControllerTest extends AbstractTest {
         List<Config> result = this.retrieveList(
             HttpRequest.POST(
                 TOPIC_URL + "/configs",
-                ImmutableMap.of("configs", ImmutableMap.of("message.timestamp.difference.max.ms", s))
+                ImmutableMap.of("configs", ImmutableMap.of("message.timestamp.before.max.ms", s))
             ),
             Config.class
         );
 
-        assertEquals(s, result.stream().filter(config -> config.getName().equals("message.timestamp.difference.max.ms")).findFirst().orElseThrow().getValue());
+        assertEquals(s, result.stream().filter(config -> config.getName().equals("message.timestamp.before.max.ms")).findFirst().orElseThrow().getValue());
     }
 
     @Test
@@ -133,7 +150,9 @@ public class TopicControllerTest extends AbstractTest {
                 "name", CREATE_TOPIC_NAME,
                 "partition", 3,
                 "configs", ImmutableMap.of(
-                    TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT
+                    TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT,
+                    TopicConfig.SEGMENT_MS_CONFIG, "1",
+                    TopicConfig.MIN_COMPACTION_LAG_MS_CONFIG, "0"
                 )
             )
         ), Topic.class);
@@ -202,8 +221,11 @@ public class TopicControllerTest extends AbstractTest {
     @Order(4)
     void dataGet() {
         ResultNextList<Record> records = this.retrieveNextList(HttpRequest.GET(CREATE_TOPIC_URL + "/data"), Record.class);
-        assertEquals(1, records.getResults().size());
-        assertEquals("my-value", records.getResults().get(0).getValue());
+        assertEquals(2, records.getResults().size());
+        assertTrue(records.getResults().stream()
+            .anyMatch(record -> "my-value".equals(record.getValue())));
+        assertTrue(records.getResults().stream()
+            .anyMatch(record -> "my-key-tomb".equals(record.getKey()) && record.getValue() == null));
     }
 
     @Test

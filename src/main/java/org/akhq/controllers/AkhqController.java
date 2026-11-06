@@ -47,6 +47,9 @@ public class AkhqController extends AbstractController {
     private UIOptions uIOptions;
 
     @Inject
+    private SearchExpressionConfig searchExpressionConfig;
+
+    @Inject
     @Nullable
     private HeaderAuth headerAuth;
 
@@ -64,7 +67,7 @@ public class AkhqController extends AbstractController {
             .distinct()
             .collect(Collectors.toList());
 
-        return this.connections
+        List<ClusterDefinition> clusterDefinitions = this.connections
             .stream()
             // Keep only connections matching clusters the user has access
             .filter(c -> AbstractRepository.isMatchRegex(clusters, c.getName()))
@@ -82,6 +85,46 @@ public class AkhqController extends AbstractController {
                     .collect(Collectors.toList())
 
             ))
+            .collect(Collectors.toList());
+
+        // Apply custom ordering if configured
+        return sortClusters(clusterDefinitions);
+    }
+
+    private List<ClusterDefinition> sortClusters(List<ClusterDefinition> clusters) {
+        // Get cluster order from global UI options
+        List<String> clusterOrder = uIOptions.getCluster().getOrder();
+        
+        if (clusterOrder == null || clusterOrder.isEmpty()) {
+            // No custom order defined, sort alphabetically
+            return clusters.stream()
+                .sorted(Comparator.comparing(ClusterDefinition::getId))
+                .collect(Collectors.toList());
+        }
+        
+        // Custom ordering logic
+        Map<String, Integer> orderMap = new HashMap<>();
+        for (int i = 0; i < clusterOrder.size(); i++) {
+            orderMap.put(clusterOrder.get(i), i);
+        }
+        
+        return clusters.stream()
+            .sorted((c1, c2) -> {
+                Integer order1 = orderMap.get(c1.getId());
+                Integer order2 = orderMap.get(c2.getId());
+                
+                // If both clusters are in the order list, use the defined order
+                if (order1 != null && order2 != null) {
+                    return order1.compareTo(order2);
+                }
+                
+                // If only one cluster is in the order list, it comes first
+                if (order1 != null) return -1;
+                if (order2 != null) return 1;
+                
+                // If neither cluster is in the order list, sort alphabetically
+                return c1.getId().compareTo(c2.getId());
+            })
             .collect(Collectors.toList());
     }
 
@@ -157,7 +200,7 @@ public class AkhqController extends AbstractController {
             "  <link rel=\"shortcut icon\" type=\"image/png\" href=\"/static/icon_black.png\" />\n" +
             "  <meta name='viewport' content='width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes'/>\n" +
             "  <link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300,600&display=swap\" rel=\"stylesheet\">\n" +
-            "  <script src='https://unpkg.com/rapidoc/dist/rapidoc-min.js'></script>\n" +
+            "  <script src='https://unpkg.com/rapidoc@9.3.8/dist/rapidoc-min.js'></script>\n" +
             "</head>\n" +
             "<body>\n" +
             "  <rapi-doc id='rapidoc'\n" +
@@ -191,11 +234,21 @@ public class AkhqController extends AbstractController {
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("api/{cluster}/ui-options")
     @Operation(tags = {"AKHQ"}, summary = "Get ui options for cluster")
-    public Connection.UiOptions options(String cluster) {
+    public Optional<Connection.UiOptions> options(String cluster) {
         return this.connections.stream().filter(conn -> cluster.equals(conn.getName()))
             .map(conn -> conn.mergeOptions(this.uIOptions))
-            .findAny()
-            .orElseThrow(() -> new RuntimeException("No cluster found"));
+            .findAny();
+    }
+
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("api/search-limits")
+    @Operation(tags = {"AKHQ"}, summary = "Get the limits applied to structured topic data searches")
+    public SearchLimits searchLimits() {
+        return new SearchLimits(
+            searchExpressionConfig.getMaxGroups(),
+            searchExpressionConfig.getMaxConditions(),
+            searchExpressionConfig.getMaxValueLength()
+        );
     }
 
     private List<AuthUser.AuthPermissions> expandRoles(List<Group> groupBindings) {
@@ -228,6 +281,16 @@ public class AkhqController extends AbstractController {
 
         // Authentication enabled and user logged in
         return expandRoles(getUserGroups());
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Introspected
+    public static class SearchLimits {
+        private int maxGroups;
+        private int maxConditions;
+        private int maxValueLength;
     }
 
     @AllArgsConstructor

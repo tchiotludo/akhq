@@ -83,6 +83,8 @@ class NodeConfigs extends Form {
         return MILLI;
       case '.size':
         return BYTES;
+      case '.bytes':
+        return BYTES;
       default:
         return TEXT;
     }
