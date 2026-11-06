@@ -16,7 +16,7 @@
     "@trendmicro/react-sidenav": "^0.5.0",
     "@uiw/codemirror-theme-copilot": "^4.25.12",
     "@uiw/react-codemirror": "^4.25.12",
-    "axios": "^1.20.0",
+    "axios": "^1.21.0",
     "bootstrap": "^5.3.8",
     "buffer": "^6.0.3",
     "date-fns": "^4.4.0",
