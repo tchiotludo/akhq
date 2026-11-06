@@ -87,4 +87,14 @@ Many thanks to:
 
 
 ## License
-Apache 2.0 © [tchiotludo](https://github.com/tchiotludo)
+
+AKHQ is licensed under the **Apache License 2.0**.
+
+You are free to **use**, **modify**, and **distribute** this software
+in compliance with the terms of the Apache 2.0 license.
+
+For complete details and legal information,  
+please refer to the [LICENSE](LICENSE) file included in this repository.
+
+Copyright © [tchiotludo](https://github.com/tchiotludo)
+
