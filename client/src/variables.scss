@@ -79,15 +79,18 @@ $dark: $gray-900 !default;
 $yiq-contrasted-threshold: 175 !default;
 
 // Body (Light default)
-$body-bg: $white !default;
-$body-color: $gray-900 !default;
+$body-bg: #fff !default;
+$body-color: #1f2328 !default;
+$body-secondary-bg: #f6f8fa !default;
+$body-tertiary-bg: #eaeef2 !default;
+$border-color: #d1d9e0 !default;
 
 // Bootstrap 5.3 dark color mode variables
-$body-bg-dark: #171819 !default;
-$body-color-dark: $white !default;
-$body-secondary-bg-dark: $gray-800 !default;
-$body-tertiary-bg-dark: $gray-900 !default;
-$border-color-dark: $gray-700 !default;
+$body-bg-dark: #0d1117 !default;
+$body-color-dark: #e6edf3 !default;
+$body-secondary-bg-dark: #161b22 !default;
+$body-tertiary-bg-dark: #21262d !default;
+$border-color-dark: #30363d !default;
 
 // Links
 $link-color: $blue !default;
@@ -136,5 +139,3 @@ $close-text-shadow: none !default;
 
 // Code
 $pre-color: inherit !default;
-
-
