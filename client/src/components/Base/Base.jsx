@@ -101,9 +101,13 @@ class Base extends Root {
               selectedTab={selectedTab}
             />
           )}
-        <div id="content" className={expanded ? 'expanded' : 'collapsed'}>
-          {children}
-        </div>
+        {this.props.location.pathname !== '/ui/login' ? (
+          <div id="content" className={expanded ? 'expanded' : 'collapsed'}>
+            {children}
+          </div>
+        ) : (
+          children
+        )}
       </>
     );
   }
