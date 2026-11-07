@@ -1,11 +1,18 @@
 
-Õ
+Ý
+google/protobuf/any.protogoogle.protobuf"6
+Any
+type_url (	RtypeUrl
+value (RvalueBo
+com.google.protobufBAnyProtoPZ%github.com/golang/protobuf/ptypes/any¢GPBªGoogle.Protobuf.WellKnownTypesbproto3
+¤
 
-film.protoorg.akhq.utils"‘
+film.protoorg.akhq.utilsgoogle/protobuf/any.proto"Å
 Film
 name (	Rname
 producer (	Rproducer!
 release_year (RreleaseYear
 duration (Rduration
-starring (	RstarringB
+starring (	Rstarring2
+	timestamp (2.google.protobuf.AnyR	timestampB
 org.akhq.utilsB	FilmProtobproto3
