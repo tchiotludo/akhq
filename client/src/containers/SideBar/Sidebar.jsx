@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { matchPath } from 'react-router';
 import constants from '../../utils/constants';
+import { getHomePath } from '../../utils/functions';
 import logoUrl from '../../images/logo.svg';
+import iconUrl from '../../images/icon.svg';
 import SideNav, { NavIcon, NavItem, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { withRouter } from '../../utils/withRouter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faArrowRightFromBracket,
+  faArrowRightToBracket,
   faCogs,
   faDatabase,
   faExchange,
@@ -342,42 +346,52 @@ export class Sidebar extends Component {
     const { expanded } = this.props;
     const roles = this.state.roles || {};
     const tag = sessionStorage.getItem('version');
+    const homePath = getHomePath(selectedCluster, roles);
     const { listConnects, listKsqlDBs, listClusters } = this.setClustersAndConnectsAndKsqlDBs();
+    const sidebarToggle = (
+      <button
+        type="button"
+        className="sidebar-toggle"
+        aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+        aria-expanded={expanded}
+        title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+        onClick={() => this.props.toggleSidebar(!expanded)}
+      >
+        <FontAwesomeIcon
+          icon={expanded ? faArrowRightFromBracket : faArrowRightToBracket}
+          flip={expanded ? 'horizontal' : undefined}
+          aria-hidden={true}
+        />
+      </button>
+    );
+
     return (
       <SideNav
         onScrollCapture={this.updateFlyoutPosition}
         expanded={expanded}
-        onToggle={expanded => {
-          this.props.toggleSidebar(expanded);
-        }}
         style={{
           height: '100vh',
           position: 'fixed',
-          paddingBottom: '60px',
+          paddingBottom: expanded && tag ? '100px' : '60px',
           overflowX: 'hidden',
           overflowY: 'auto'
         }}
       >
-        <SideNav.Toggle />
         <div className="logo-wrapper">
-          <span className="logo">
-            <svg>
-              <image xlinkHref={logoUrl}></image>
-            </svg>
-          </span>
-          {this.props.expanded && (
-            <p
-              style={{
-                color: 'white',
-                fontStyle: 'Italic',
-                textAlign: 'center',
-                margin: '20px 0 0 0'
-              }}
-            >
-              {tag}
-            </p>
-          )}
+          <Link
+            to={homePath}
+            aria-label="AKHQ home"
+            onClick={event => {
+              if (this.isPlainClick(event)) {
+                this.setState({ selectedTab: homePath.split('/')[3] });
+              }
+            }}
+          >
+            <img className="logo" src={expanded ? logoUrl : iconUrl} alt="AKHQ" />
+          </Link>
+          {expanded && sidebarToggle}
         </div>
+        {!expanded && sidebarToggle}
         <SideNav.Nav defaultSelected={`${constants.TOPIC}`}>
           <NavItem eventKey="cluster" {...this.flyoutProps('cluster')}>
             <NavIcon>
@@ -478,6 +492,11 @@ export class Sidebar extends Component {
           )}
           {this.renderMenuItem(faGear, constants.SETTINGS, 'Settings')}
         </SideNav.Nav>
+        {expanded && tag && (
+          <p className="sidebar-version" title={tag}>
+            {tag}
+          </p>
+        )}
       </SideNav>
     );
   }

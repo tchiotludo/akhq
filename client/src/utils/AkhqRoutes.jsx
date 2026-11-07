@@ -27,6 +27,7 @@ import AclDetails from '../containers/Acl/AclDetail';
 import Login from '../containers/Login';
 import Settings from '../containers/Settings/Settings';
 import { organizeRoles } from './converters';
+import { getHomePath } from './functions';
 import { uriAuths, uriClusters, uriCurrentUser } from './endpoints';
 import Root from '../components/Root';
 import KsqlDBList from '../containers/KsqlDB/KsqlDBList/KsqlDBList';
@@ -121,17 +122,7 @@ class AkhqRoutes extends Root {
   }
 
   handleRedirect() {
-    let clusterId = this.state.clusterId;
-    const roles = JSON.parse(sessionStorage.getItem('roles'));
-    if (roles && roles.TOPIC && roles.TOPIC.includes('READ')) return `/ui/${clusterId}/topic`;
-    else if (roles && roles.NODE && roles.NODE.includes('READ')) return `/ui/${clusterId}/node`;
-    else if (roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ'))
-      return `/ui/${clusterId}/group`;
-    else if (roles && roles.ACL && roles.ACL.includes('READ')) return `/ui/${clusterId}/acls`;
-    else if (roles && roles.SCHEMA && roles.SCHEMA.includes('READ'))
-      return `/ui/${clusterId}/schema`;
-    else if (roles && Object.keys(roles).length > 0) return `/ui/${clusterId}/topic`;
-    else return '/ui/login';
+    return getHomePath(this.state.clusterId, JSON.parse(sessionStorage.getItem('roles')));
   }
 
   render() {
