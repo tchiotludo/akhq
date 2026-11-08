@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Root from '../../components/Root';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignIn, faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faSignIn, faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { ThemeContext } from '../../context/ThemeContext';
 
 class Header extends Root {
@@ -68,7 +68,7 @@ class Header extends Root {
               this.logout();
             }}
           >
-            <FontAwesomeIcon icon={faSignIn} aria-hidden={true} /> {username} (Logout)
+            <FontAwesomeIcon icon={faRightFromBracket} aria-hidden={true} /> {username} (Logout)
           </button>
         </Link>
       );

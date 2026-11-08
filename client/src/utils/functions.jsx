@@ -36,4 +36,15 @@ export const isSameLocation = (location, pathname, search) => {
   return location.pathname === pathname && location.search === normalizedSearch;
 };
 
-export default { getSelectedTab, getClusterUIOptions, capitalizeTxt, isSameLocation };
+export function getHomePath(clusterId, roles) {
+  if (roles && roles.TOPIC && roles.TOPIC.includes('READ')) return `/ui/${clusterId}/topic`;
+  else if (roles && roles.NODE && roles.NODE.includes('READ')) return `/ui/${clusterId}/node`;
+  else if (roles && roles.CONSUMER_GROUP && roles.CONSUMER_GROUP.includes('READ'))
+    return `/ui/${clusterId}/group`;
+  else if (roles && roles.ACL && roles.ACL.includes('READ')) return `/ui/${clusterId}/acls`;
+  else if (roles && roles.SCHEMA && roles.SCHEMA.includes('READ')) return `/ui/${clusterId}/schema`;
+  else if (roles && Object.keys(roles).length > 0) return `/ui/${clusterId}/topic`;
+  else return '/ui/login';
+}
+
+export default { getSelectedTab, getClusterUIOptions, capitalizeTxt, isSameLocation, getHomePath };
