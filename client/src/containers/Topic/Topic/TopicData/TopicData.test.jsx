@@ -119,15 +119,15 @@ describe('TopicData forward-only sort', () => {
     expect(dated.state.sortBy).toBe('Oldest');
   });
 
-  it('does not toggle to Newest while a search or timestamp is active', () => {
+  it('does not change sort while a search or timestamp is active', () => {
     const topicData = createTopicData('?sort=Oldest');
     topicData.state.applied = expression;
-    topicData._toggleSort();
+    topicData._selectSort('Offset');
     expect(topicData.state.sortBy).toBe('Oldest');
 
     topicData.state.applied = null;
-    topicData._toggleSort();
-    expect(topicData.state.sortBy).toBe('Newest');
+    topicData._selectSort('Offset');
+    expect(topicData.state.sortBy).toBe('Offset');
   });
 });
 
@@ -212,12 +212,22 @@ describe('TopicData search expression', () => {
 });
 
 describe('TopicData sort normalization', () => {
-  it('toggles on the first click even when the sort is not in the canonical case', () => {
+  it('normalizes sort values from any canonical case and keeps the current one when undefined', () => {
     const topicData = createTopicData('');
-    topicData.state.sortBy = 'OLDEST';
-    topicData._toggleSort();
-    expect(topicData.state.sortBy).toBe('Newest');
-    expect(topicData._normalizeSort('NEWEST')).toBe('Newest');
-    expect(topicData._normalizeSort(undefined)).toBe('Newest');
+    topicData.state.sortBy = 'Offset';
+    expect(topicData._normalizeSort('OLDEST')).toBe('Oldest');
+    expect(topicData._normalizeSort('newest')).toBe('Newest');
+    expect(topicData._normalizeSort('OFFSET')).toBe('Offset');
+    expect(topicData._normalizeSort(undefined)).toBe('Offset');
+  });
+
+  it('selects Offset without forcing Oldest when no search or timestamp is applied', () => {
+    const topicData = createTopicData('?sort=Oldest');
+    topicData.state.sortBy = 'Oldest';
+
+    topicData._selectSort('OFFSET');
+
+    expect(topicData.state.sortBy).toBe('Offset');
+    expect(topicData._buildScopeFilters()).toContain('sort=Offset');
   });
 });

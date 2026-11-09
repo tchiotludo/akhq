@@ -35,12 +35,12 @@ public class TopicSearchPlanner {
     }
 
     /**
-     * Plans the ranges for a newest-first scan (NEWEST consumption).
+     * Plans the ranges for a backward scan (NEWEST and OFFSET consumption).
      * Each partition starts at its first offset / start timestamp and ends at the end timestamp or
      * the partition end, capped by its 'after' cursor (exclusive upper bound). Callers read it
      * backward in windows.
      */
-    public PartitionRangePlan planNewest(Topic topic, RecordRepository.Options options, KafkaConsumer<byte[], byte[]> consumer) {
+    public PartitionRangePlan planBackward(Topic topic, RecordRepository.Options options, KafkaConsumer<byte[], byte[]> consumer) {
         Map<TopicPartition, Long> starts = getFirstOffsets(topic, options, consumer);
         Map<TopicPartition, Long> ends = resolveRangeEnds(options, consumer, starts.keySet());
         ends.replaceAll((tp, end) -> {

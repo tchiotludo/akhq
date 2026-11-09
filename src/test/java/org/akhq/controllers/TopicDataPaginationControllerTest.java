@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TopicDataPaginationControllerTest extends AbstractTest {
     private static final String INTERLEAVED_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/topic/" + KafkaTestCluster.TOPIC_INTERLEAVED;
+    private static final String OFFSET_ORDER_URL = "/api/" + KafkaTestCluster.CLUSTER_ID + "/topic/" + KafkaTestCluster.TOPIC_OFFSET_ORDER;
 
     @Test
     void dataOldestFollowsAfterLinkWithoutGapsOrDuplicates() {
@@ -27,6 +28,11 @@ class TopicDataPaginationControllerTest extends AbstractTest {
     @Test
     void dataNewestFollowsAfterLinkWithoutGapsOrDuplicates() {
         assertEquals(interleavedKeys(true, i -> true), followAfterLinks(INTERLEAVED_URL + "/data?sort=NEWEST&size=10"));
+    }
+
+    @Test
+    void dataOffsetFollowsAfterLinkWithoutGapsOrDuplicates() {
+        assertEquals(expectedOffsetOrderKeys(), followAfterLinks(OFFSET_ORDER_URL + "/data?sort=OFFSET&size=5"));
     }
 
     @Test
@@ -70,6 +76,21 @@ class TopicDataPaginationControllerTest extends AbstractTest {
             List<Map<String, Object>> results = page.getResults() == null ? List.of() : page.getResults();
             results.forEach(record -> keys.add((String) record.get("key")));
             url = results.isEmpty() ? null : page.getAfter();
+        }
+
+        return keys;
+    }
+
+    // TOPIC_OFFSET_ORDER has the same number of records in every partition, so its OFFSET pages are
+    // simply offset descending, partition ascending.
+    private static List<String> expectedOffsetOrderKeys() {
+        int perPartition = KafkaTestCluster.TOPIC_OFFSET_ORDER_PER_PARTITION;
+        List<String> keys = new ArrayList<>();
+
+        for (int offset = perPartition - 1; offset >= 0; offset--) {
+            for (int partition = 0; partition < 3; partition++) {
+                keys.add("offset_" + partition + "_" + offset);
+            }
         }
 
         return keys;

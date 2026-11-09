@@ -40,7 +40,7 @@ class TopicData extends Root {
   state = {
     sortBy: 'Oldest',
     openFilter: null,
-    sortOptions: ['Oldest', 'Newest'],
+    sortOptions: ['Oldest', 'Newest', 'Offset'],
     partitionCount: 0,
     partition: 'All',
     partitionOptions: [],
@@ -834,6 +834,32 @@ class TopicData extends Root {
     );
   }
 
+  _renderSortPill(sortBy) {
+    if (this._forcesOldest()) {
+      return (
+        <span
+          className="filter-pill"
+          title="Sorting is always Oldest when a search or timestamp is set"
+        >
+          <strong>Sort:</strong> ({sortBy})
+        </span>
+      );
+    }
+
+    const open = this.state.openFilter === 'sort';
+    return (
+      <button
+        type="button"
+        className={`filter-pill${open ? ' open' : ''}`}
+        aria-expanded={open}
+        title="Choose the sort order"
+        onClick={() => this._toggleFilter('sort')}
+      >
+        <strong>Sort:</strong> ({sortBy})
+      </button>
+    );
+  }
+
   _renderTogglePill(label, current, onToggle, disabledReason) {
     return (
       <button
@@ -856,20 +882,26 @@ class TopicData extends Root {
     return !!state.applied || state.datetime !== '' || state.endDatetime !== '';
   }
 
-  // Config and links may use any case (e.g. NEWEST); the UI options are Oldest / Newest.
+  // Config and links may use any case (e.g. NEWEST); the UI options are Oldest / Newest / Offset.
   _normalizeSort(value) {
     const { sortOptions, sortBy } = this.state;
     return sortOptions.find(o => o.toLowerCase() === String(value || '').toLowerCase()) || sortBy;
   }
 
-  _toggleSort = () => {
+  _selectSort = value => {
     if (this._forcesOldest()) {
       return;
     }
-    const { sortOptions, sortBy } = this.state;
-    const current = this._normalizeSort(sortBy);
-    const next = sortOptions.find(o => o !== current) || current;
-    this.setState({ sortBy: next }, () => this._navigateWithCurrentFilters(false));
+
+    const next = this._normalizeSort(value);
+    if (next === this.state.sortBy) {
+      this.setState({ openFilter: null });
+      return;
+    }
+
+    this.setState({ sortBy: next, openFilter: null }, () =>
+      this._navigateWithCurrentFilters(false)
+    );
   };
 
   _toggleTimeFormat = () => {
@@ -953,6 +985,13 @@ class TopicData extends Root {
     const { openFilter, partition, datetime, endDatetime } = this.state;
 
     switch (openFilter) {
+      case 'sort':
+        return this._renderOptionPanel(
+          'Sort',
+          this.state.sortOptions.map(option => ({ value: option, text: option })),
+          this._normalizeSort(this.state.sortBy),
+          this._selectSort
+        );
       case 'partition':
         return this._renderOptionPanel(
           'Partition',
@@ -1011,12 +1050,7 @@ class TopicData extends Root {
     return (
       <div className="topic-filters" data-testid="topic-filters">
         <div className="filter-pills">
-          {this._renderTogglePill(
-            'Sort:',
-            sortBy,
-            this._toggleSort,
-            this._forcesOldest() && 'Sorting is always Oldest when a search or timestamp is set'
-          )}
+          {this._renderSortPill(sortBy)}
           {this._renderPill('partition', 'Partition:', `(${partition})`)}
           {this._renderPill('timestamp', `Timestamp ${format(new Date(), 'z')}:`, timestampSummary)}
           {this._renderPill('offsets', 'Offsets:', this._offsetsSummary())}
