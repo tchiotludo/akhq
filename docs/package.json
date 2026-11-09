@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "1.20.0",
+    "axios": "1.21.0",
     "bootstrap": "^5.3.8",
     "font-awesome": "^4.7.0",
     "github-contributors-list": "^1.2.5",
@@ -28,13 +28,13 @@
     "@vuepress/plugin-register-components": "^2.0.0-rc.135",
     "@vuepress/plugin-search": "^2.0.0-rc.137",
     "@vuepress/theme-default": "^2.0.0-rc.137",
-    "glob": "^13.0.6",
+    "glob": "^14.0.4",
     "http-server": "^14.1.1",
     "inflection": "^3.0.2",
     "lodash.sortby": "^4.7.0",
     "markdown-it-meta": "0.0.1",
     "markdown-it-title": "^4.0.0",
-    "sass-embedded": "^1.105.2"
+    "sass-embedded": "^1.108.0"
   },
   "allowScripts": {
     "esbuild@0.28.1": true,
