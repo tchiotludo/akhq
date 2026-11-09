@@ -8,7 +8,7 @@ plugins {
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'org.gradle.test-retry' version '1.6.6'
     id 'com.github.psxpaul.execfork' version '0.2.2'
-    id "com.github.ben-manes.versions" version "0.66.0"
+    id "com.github.ben-manes.versions" version "0.67.0"
     id "eu.eventloopsoftware.avro-gradle-plugin" version "0.1.2"
     // idea
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
@@ -129,7 +129,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-coordinator-common:" + kafkaVersion)
 
     // Prefer relocated LZ4 provider explicitly
-    implementation("at.yawk.lz4:lz4-java:1.12.1")
+    implementation("at.yawk.lz4:lz4-java:1.14.0")
 
     implementation("io.confluent.ksql:ksqldb-api-client:${confluentVersion}")
     implementation("io.confluent:kafka-schema-registry-client:${confluentVersion}")
@@ -139,8 +139,8 @@ dependencies {
     implementation("io.confluent:kafka-client-plugins:${confluentVersion}-ce")
 
     // strimzi
-    implementation("io.strimzi:kafka-oauth-common:0.18.0")
-    implementation("io.strimzi:kafka-oauth-client:0.18.0")
+    implementation("io.strimzi:kafka-oauth-common:0.18.1")
+    implementation("io.strimzi:kafka-oauth-client:0.18.1")
 
     // log
     implementation("org.slf4j:slf4j-api:2.0.20")
@@ -149,9 +149,9 @@ dependencies {
 
     // utils
     implementation("org.codehaus.httpcache4j.uribuilder:uribuilder:2.0.0")
-    implementation("com.google.guava:guava:33.7.2-jre")
+    implementation("com.google.guava:guava:33.8.0-jre")
     implementation("com.google.re2j:re2j:1.8")
-    implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.google.code.gson:gson:2.15.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
