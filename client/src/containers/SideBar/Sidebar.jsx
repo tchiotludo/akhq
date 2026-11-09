@@ -401,7 +401,7 @@ export class Sidebar extends Component {
               <div
                 data-toggle="collapse"
                 aria-expanded={showClusters}
-                className="dropdown-toggle text-center"
+                className="dropdown-toggle text-center sidebar-dropdown-toggle"
                 onClick={() => {
                   this.setState({ showClusters: !showClusters, selectedTab: constants.CLUSTER });
                 }}
@@ -452,7 +452,7 @@ export class Sidebar extends Component {
                   to={`/ui/${selectedCluster}/connect/${selectedConnect}`}
                   data-toggle="collapse"
                   aria-expanded={showConnects}
-                  className="dropdown-toggle text-center"
+                  className="dropdown-toggle text-center sidebar-dropdown-toggle"
                   onClick={() => {
                     this.setState({ showConnects: !showConnects, selectedTab: constants.CONNECT });
                   }}
@@ -478,7 +478,7 @@ export class Sidebar extends Component {
                   to={`/ui/${selectedCluster}/ksqldb/${selectedKsqlDB}`}
                   data-toggle="collapse"
                   aria-expanded={showKsqlDBs}
-                  className="dropdown-toggle text-center"
+                  className="dropdown-toggle text-center sidebar-dropdown-toggle"
                   onClick={() => {
                     this.setState({ showKsqlDBs: !showKsqlDBs, selectedTab: constants.KSQLDB });
                   }}
