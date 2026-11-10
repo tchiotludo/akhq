@@ -117,6 +117,11 @@ dependencies {
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")
     implementation("io.micronaut.cache:micronaut-cache-core")
     implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    constraints {
+        implementation("tools.jackson.core:jackson-databind:3.2.4") {
+            because("micronaut-mcp-server-java-sdk 2.1.0 uses the vulnerable 3.2.3")
+        }
+    }
     implementation("io.micronaut.mcp:micronaut-mcp-server-java-sdk:2.1.0")
 
     // kafka
