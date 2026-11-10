@@ -104,6 +104,13 @@ public class RecordRepository extends AbstractRepository {
         .thenComparingInt(Record::getPartition)
         .thenComparingLong(Record::getOffset);
 
+    // Kafka offsets are only comparable inside one partition. A global OFFSET sort is therefore an
+    // explicit UI rule (highest offset first, then lowest partition), not a claim that the record
+    // was written most recently.
+    private static final Comparator<Record> HIGHEST_OFFSET_FIRST = Comparator
+        .comparingLong(Record::getOffset).reversed()
+        .thenComparingInt(Record::getPartition);
+
     public List<Record> consume(String clusterId, Options options) throws ExecutionException, InterruptedException {
         return Debug.call(() -> {
             Topic topicsDetail = topicRepository.findByName(clusterId, options.topic);
@@ -111,7 +118,7 @@ public class RecordRepository extends AbstractRepository {
             if (options.sort == Options.Sort.OLDEST) {
                 return consumeOldest(topicsDetail, options);
             } else {
-                return consumeNewest(topicsDetail, options);
+                return consumeBackward(topicsDetail, options);
             }
         }, "Consume with options {}", Collections.singletonList(options.toString()));
     }
@@ -143,13 +150,13 @@ public class RecordRepository extends AbstractRepository {
      * matches or reaches its range begin. Each window is read forward, so it must be fully drained
      * before moving to the older one.
      */
-    private List<Record> consumeNewest(Topic topic, Options options) {
+    private List<Record> consumeBackward(Topic topic, Options options) {
         Properties properties = new Properties() {{
             put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, options.size);
         }};
 
         try (KafkaConsumer<byte[], byte[]> consumer = this.kafkaModule.getConsumer(options.clusterId, properties)) {
-            TopicSearchPlanner.PartitionRangePlan plan = topicSearchPlanner.planNewest(topic, options, consumer);
+            TopicSearchPlanner.PartitionRangePlan plan = topicSearchPlanner.planBackward(topic, options, consumer);
             Map<TopicPartition, Integer> collected = new HashMap<>();
             List<Record> candidates = new ArrayList<>();
             // Exclusive end of the next window to read, per partition.
@@ -185,7 +192,7 @@ public class RecordRepository extends AbstractRepository {
             }
 
             List<Record> page = candidates.stream()
-                .sorted(OLDEST_FIRST.reversed())
+                .sorted(backwardComparator(options.sort))
                 .limit(options.size)
                 .collect(Collectors.toList());
             page.forEach(this::filterMessageLength);
@@ -203,6 +210,10 @@ public class RecordRepository extends AbstractRepository {
 
             return page;
         }
+    }
+
+    private static Comparator<Record> backwardComparator(Options.Sort sort) {
+        return sort == Options.Sort.OFFSET ? HIGHEST_OFFSET_FIRST : OLDEST_FIRST.reversed();
     }
 
     private static void setAfter(Options options, Map<Integer, Long> after) {
@@ -1100,6 +1111,7 @@ public class RecordRepository extends AbstractRepository {
         public enum Sort {
             OLDEST,
             NEWEST,
+            OFFSET,
         }
         private String topic;
         private int size;
@@ -1133,7 +1145,7 @@ public class RecordRepository extends AbstractRepository {
             for (Record record : records) {
                 if (this.sort == Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) < record.getOffset())) {
                     next.put(record.getPartition(), record.getOffset());
-                } else if (this.sort == Sort.NEWEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) > record.getOffset())) {
+                } else if (this.sort != Sort.OLDEST && (!next.containsKey(record.getPartition()) || next.get(record.getPartition()) > record.getOffset())) {
                     next.put(record.getPartition(), record.getOffset());
                 }
             }

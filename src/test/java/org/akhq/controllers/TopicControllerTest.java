@@ -48,8 +48,8 @@ public class TopicControllerTest extends AbstractTest {
         result = this.retrievePagedList(HttpRequest.GET(BASE_URL + "?page=2"), Topic.class);
         assertEquals(DEFAULT_PAGE_SIZE, result.getResults().size());
 
-        int expectedLastPageSize = KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT - 2 * DEFAULT_PAGE_SIZE;
-        result = this.retrievePagedList(HttpRequest.GET(BASE_URL + "?page=3"), Topic.class);
+        int expectedLastPageSize = KafkaTestCluster.TOPIC_HIDE_INTERNAL_COUNT - (expectedPageCount - 1) * DEFAULT_PAGE_SIZE;
+        result = this.retrievePagedList(HttpRequest.GET(BASE_URL + "?page=" + expectedPageCount), Topic.class);
         assertEquals(expectedLastPageSize, result.getResults().size());
     }
 

@@ -56,14 +56,19 @@ public class KafkaTestCluster implements Runnable {
     public static final String TOPIC_JSON_SCHEMA = "json-schema-topic";
     public static final String TOPIC_AUDIT = "audit";
     public static final String TOPIC_INTERLEAVED = "interleaved";
+    public static final String TOPIC_OFFSET_ORDER = "offset-order";
 
-    public static final int TOPIC_ALL_COUNT = 25;
-    public static final int TOPIC_HIDE_INTERNAL_COUNT = 15;
-    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 13;
-    public static final int TOPIC_HIDE_STREAM_COUNT = 23;
+    public static final int TOPIC_ALL_COUNT = 26;
+    public static final int TOPIC_HIDE_INTERNAL_COUNT = 16;
+    public static final int TOPIC_HIDE_INTERNAL_STREAM_COUNT = 14;
+    public static final int TOPIC_HIDE_STREAM_COUNT = 24;
 
     // Number of records per partition in TOPIC_INTERLEAVED (3 partitions).
     public static final int TOPIC_INTERLEAVED_PER_PARTITION = 60;
+
+    // Number of records per partition in TOPIC_OFFSET_ORDER (3 partitions).
+    public static final int TOPIC_OFFSET_ORDER_PER_PARTITION = 12;
+
     public static final int CONSUMER_GROUP_COUNT = 6;
 
     public static final String CONSUMER_STREAM_TEST = "stream-test-example";
@@ -267,25 +272,47 @@ public class KafkaTestCluster implements Runnable {
         // being concentrated in a single one. This is the realistic shape of an event stream and is what
         // makes an "oldest" page require merging candidates from all partitions before sorting.
         testUtils.createTopic(TOPIC_INTERLEAVED, 3, (short) 1);
-        KafkaProducer<String, String> interleavedProducer = testUtils.getKafkaProducer(
+        try (KafkaProducer<String, String> sortTestProducer = testUtils.getKafkaProducer(
             StringSerializer.class,
             StringSerializer.class
-        );
-        long interleavedBaseTimestamp = System.currentTimeMillis() - (TOPIC_INTERLEAVED_PER_PARTITION * 3 * 10L);
-        int interleavedTotal = TOPIC_INTERLEAVED_PER_PARTITION * 3;
-        for (int i = 0; i < interleavedTotal; i++) {
-            int partition = i % 3;
-            long timestamp = interleavedBaseTimestamp + (i * 10L);
-            interleavedProducer.send(new ProducerRecord<>(
-                TOPIC_INTERLEAVED,
-                partition,
-                timestamp,
-                "key_" + i,
-                "value_" + i
-            )).get();
+        )) {
+            long interleavedBaseTimestamp = System.currentTimeMillis() - (TOPIC_INTERLEAVED_PER_PARTITION * 3 * 10L);
+            int interleavedTotal = TOPIC_INTERLEAVED_PER_PARTITION * 3;
+            for (int i = 0; i < interleavedTotal; i++) {
+                int partition = i % 3;
+                long timestamp = interleavedBaseTimestamp + (i * 10L);
+                sortTestProducer.send(new ProducerRecord<>(
+                    TOPIC_INTERLEAVED,
+                    partition,
+                    timestamp,
+                    "key_" + i,
+                    "value_" + i
+                )).get();
+            }
+            sortTestProducer.flush();
+            log.debug("{} topic created", TOPIC_INTERLEAVED);
+
+            // Offset-order topic: each partition has strictly increasing offsets, but timestamps are shuffled
+            // across partitions and are not monotonic within a partition. It proves that OFFSET ordering
+            // follows Kafka offsets, while timestamps remain unreliable.
+            testUtils.createTopic(TOPIC_OFFSET_ORDER, 3, (short) 1);
+            long offsetOrderBaseTimestamp = System.currentTimeMillis() - (TOPIC_OFFSET_ORDER_PER_PARTITION * 3 * 10L);
+            for (int i = 0; i < TOPIC_OFFSET_ORDER_PER_PARTITION * 3; i++) {
+                int partition = i % 3;
+                int indexInPartition = i / 3;
+                // A stable, non-monotonic timestamp so OFFSET and NEWEST cannot both pass as time order.
+                long timestamp = offsetOrderBaseTimestamp + ((indexInPartition * 7L + partition * 5L) % (TOPIC_OFFSET_ORDER_PER_PARTITION * 3)) * 10L;
+                sortTestProducer.send(new ProducerRecord<>(
+                    TOPIC_OFFSET_ORDER,
+                    partition,
+                    timestamp,
+                    "offset_" + partition + "_" + indexInPartition,
+                    "value_" + partition + "_" + indexInPartition
+                )).get();
+            }
+            sortTestProducer.flush();
+            log.debug("{} topic created", TOPIC_OFFSET_ORDER);
         }
-        interleavedProducer.flush();
-        log.debug("{} topic created", TOPIC_INTERLEAVED);
 
         // KsqlDB create transaction topic manually instead of auto created by KsqlDB queries
         // else test will fail depending on the test class execution order.

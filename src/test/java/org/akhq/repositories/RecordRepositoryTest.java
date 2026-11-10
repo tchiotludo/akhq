@@ -416,6 +416,13 @@ class RecordRepositoryTest extends AbstractTest {
         return options;
     }
 
+    private RecordRepository.Options offsetOrderOptions(RecordRepository.Options.Sort sort, int size) {
+        RecordRepository.Options options = new RecordRepository.Options(environment, KafkaTestCluster.CLUSTER_ID, KafkaTestCluster.TOPIC_OFFSET_ORDER);
+        options.setSort(sort);
+        options.setSize(size);
+        return options;
+    }
+
     // Epoch millis of "key_<index>" in TOPIC_INTERLEAVED (timestamps are relative to injection time).
     private long interleavedTimestamp(int index) throws ExecutionException, InterruptedException {
         RecordRepository.Options options = interleavedOptions(RecordRepository.Options.Sort.OLDEST, KafkaTestCluster.TOPIC_INTERLEAVED_PER_PARTITION * 3);
@@ -460,6 +467,47 @@ class RecordRepositoryTest extends AbstractTest {
         options.setSearchByKey("key_1_C");
 
         assertEquals(interleavedKeys(true, RecordRepositoryTest::containsKey1), paginateConsume(options));
+    }
+
+    @Test
+    void consumeOffsetSortsByDescendingOffsetAcrossPartitions() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = offsetOrderOptions(RecordRepository.Options.Sort.OFFSET, 100);
+
+        List<Record> records = repository.consume(KafkaTestCluster.CLUSTER_ID, options);
+
+        assertEquals(KafkaTestCluster.TOPIC_OFFSET_ORDER_PER_PARTITION * 3, records.size());
+        assertEquals(expectedOffsetOrderKeys(100), records.stream().map(Record::getKey).toList());
+
+        for (int i = 1; i < records.size(); i++) {
+            Record previous = records.get(i - 1);
+            Record current = records.get(i);
+            assertTrue(
+                previous.getOffset() > current.getOffset()
+                    || (previous.getOffset() == current.getOffset() && previous.getPartition() < current.getPartition()),
+                "Records are not sorted by descending offset and ascending partition"
+            );
+        }
+    }
+
+    @Test
+    void consumeOffsetMultiPageWithFilterHasNoGapsOrDuplicates() throws ExecutionException, InterruptedException {
+        RecordRepository.Options options = offsetOrderOptions(RecordRepository.Options.Sort.OFFSET, 5);
+        options.setSearchByKey("offset_1_5_E");
+
+        assertEquals(List.of("offset_1_5"), paginateConsume(options));
+    }
+
+    private static List<String> expectedOffsetOrderKeys(int limit) {
+        List<String> keys = new ArrayList<>();
+        int perPartition = KafkaTestCluster.TOPIC_OFFSET_ORDER_PER_PARTITION;
+
+        for (int offset = perPartition - 1; offset >= 0 && keys.size() < limit; offset--) {
+            for (int partition = 0; partition < 3 && keys.size() < limit; partition++) {
+                keys.add("offset_" + partition + "_" + offset);
+            }
+        }
+
+        return keys;
     }
 
     @Test
