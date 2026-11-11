@@ -14,8 +14,10 @@ import org.akhq.models.*;
 import org.akhq.repositories.ClusterRepository;
 import org.akhq.repositories.ConfigRepository;
 import org.akhq.repositories.LogDirRepository;
+import org.akhq.repositories.MetadataQuorumRepository;
 import org.akhq.repositories.TopicRepository;
 import org.akhq.security.annotation.AKHQSecured;
+import io.micronaut.security.authentication.AuthorizationException;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -29,12 +31,15 @@ public class NodeController extends AbstractController {
     private final LogDirRepository logDirRepository;
     @Inject
     private TopicRepository topicRepository;
+    private final MetadataQuorumRepository metadataQuorumRepository;
 
     @Inject
-    public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository) {
+    public NodeController(ClusterRepository clusterRepository, ConfigRepository configRepository, LogDirRepository logDirRepository,
+                          MetadataQuorumRepository metadataQuorumRepository) {
         this.clusterRepository = clusterRepository;
         this.configRepository = configRepository;
         this.logDirRepository = logDirRepository;
+        this.metadataQuorumRepository = metadataQuorumRepository;
     }
 
     @Introspected
@@ -98,6 +103,26 @@ public class NodeController extends AbstractController {
         checkIfClusterAndResourceAllowed(cluster, nodeId.toString());
 
         return findNode(cluster, nodeId);
+    }
+
+    @Get("api/{cluster}/node/quorum")
+    @AKHQSecured(resource = Role.Resource.NODE, action = Role.Action.READ)
+    @Operation(tags = {"node"}, summary = "Retrieve KRaft metadata quorum voters")
+    public MetadataQuorum quorum(String cluster) throws ExecutionException, InterruptedException {
+        checkIfClusterAllowed(cluster);
+        MetadataQuorum quorum = metadataQuorumRepository.get(cluster);
+        List<MetadataQuorum.Voter> visible = new ArrayList<>();
+        for (MetadataQuorum.Voter voter : quorum.getVoters()) {
+            try {
+                checkIfClusterAndResourceAllowed(cluster, Integer.toString(voter.getId()));
+                visible.add(voter);
+            } catch (AuthorizationException ignored) {
+                // A cluster read permission does not grant access to every node ID.
+            }
+        }
+        Integer leaderId = visible.stream().filter(MetadataQuorum.Voter::isLeader)
+            .map(MetadataQuorum.Voter::getId).findFirst().orElse(null);
+        return quorum.toBuilder().voters(visible).leaderId(leaderId).build();
     }
 
     @Get("api/{cluster}/node/{nodeId}/logs")
