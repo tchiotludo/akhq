@@ -293,19 +293,19 @@ class TopicList extends Root {
     }
 
     if (!uiOptionsTopic.skipLastRecord && roles.TOPIC_DATA && roles.TOPIC_DATA.includes('READ')) {
-      this.getApi(uriTopicLastRecord(selectedCluster, encodeURIComponent(topicsName))).then(
-        value => {
-          if (topicRequestId !== this.topicRequestId) {
-            return;
-          }
-          topics.forEach(topic => {
-            tableTopics[topic.name].lastWrite = value.data[topic.name]
-              ? value.data[topic.name].timestamp
-              : '';
-          });
-          setState();
+      this.postApi(uriTopicLastRecord(selectedCluster), {
+        topics: topics.map(topic => topic.name)
+      }).then(value => {
+        if (topicRequestId !== this.topicRequestId) {
+          return;
         }
-      );
+        topics.forEach(topic => {
+          tableTopics[topic.name].lastWrite = value.data[topic.name]
+            ? value.data[topic.name].timestamp
+            : '';
+        });
+        setState();
+      });
     }
   }
 

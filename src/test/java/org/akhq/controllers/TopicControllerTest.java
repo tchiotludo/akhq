@@ -37,6 +37,21 @@ public class TopicControllerTest extends AbstractTest {
 
     @Test
     @Order(1)
+    void lastRecordApi() {
+        Map<String, Object> result = this.retrieve(
+            HttpRequest.POST(
+                BASE_URL + "/last-record",
+                ImmutableMap.of("topics", List.of(KafkaTestCluster.TOPIC_RANDOM, KafkaTestCluster.TOPIC_EMPTY))
+            ),
+            Map.class
+        );
+
+        assertTrue(result.containsKey(KafkaTestCluster.TOPIC_RANDOM));
+        assertFalse(result.containsKey(KafkaTestCluster.TOPIC_EMPTY));
+    }
+
+    @Test
+    @Order(1)
     void listApi() {
         ResultPagedList<Topic> result;
 

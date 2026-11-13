@@ -33,6 +33,7 @@ import org.junitpioneer.jupiter.RetryingTest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -792,6 +793,25 @@ class RecordRepositoryTest extends AbstractTest {
     void lastRecordTest() throws ExecutionException, InterruptedException {
         Map<String, Record> record = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, Collections.singletonList(KafkaTestCluster.TOPIC_RANDOM));
         assertTrue(record.containsKey(KafkaTestCluster.TOPIC_RANDOM));
+    }
+
+    @Test
+    void lastRecordMultipleTopicsTest() throws ExecutionException, InterruptedException {
+        List<String> topics = List.of(
+            KafkaTestCluster.TOPIC_RANDOM,
+            KafkaTestCluster.TOPIC_HUGE,
+            KafkaTestCluster.TOPIC_COMPACTED,
+            KafkaTestCluster.TOPIC_INTERLEAVED,
+            KafkaTestCluster.TOPIC_EMPTY
+        );
+
+        Map<String, Record> records = repository.getLastRecord(KafkaTestCluster.CLUSTER_ID, topics);
+
+        assertTrue(records.containsKey(KafkaTestCluster.TOPIC_RANDOM));
+        assertTrue(records.containsKey(KafkaTestCluster.TOPIC_HUGE));
+        assertTrue(records.containsKey(KafkaTestCluster.TOPIC_COMPACTED));
+        assertTrue(records.containsKey(KafkaTestCluster.TOPIC_INTERLEAVED));
+        assertFalse(records.containsKey(KafkaTestCluster.TOPIC_EMPTY));
     }
 
     @Test
