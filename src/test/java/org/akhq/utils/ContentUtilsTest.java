@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -73,6 +74,41 @@ public class ContentUtilsTest {
         String testValue = RandomStringUtils.random(10000, true, false);
 
         assertEquals(testValue, ContentUtils.convertToObject(testValue.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void testHeaderValueMultiBytesUTF8() {
+        String testValue = "日本語テキスト😀with emoji";
+
+        assertEquals(testValue, ContentUtils.convertToObject(testValue.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void testInvalidUtf8BytesAreNotDecodedAsString() {
+        // 0x80 is a continuation byte on its own, so this is not valid UTF-8: it must go down the
+        // numeric path instead of being shown as a (mojibake) string.
+        byte[] value = new byte[8];
+        Arrays.fill(value, (byte) 0x80);
+
+        assertEquals(Long.class, ContentUtils.convertToObject(value).getClass());
+    }
+
+    @Test
+    void testInvalidUtf8BytesUpToTheRegexLimitAreNotDecodedAsString() {
+        byte[] value = new byte[1000];
+        Arrays.fill(value, (byte) 0x80);
+
+        assertEquals(Long.class, ContentUtils.convertToObject(value).getClass());
+    }
+
+    @Test
+    void testValueAboveTheRegexLimitIsAlwaysDecodedAsString() {
+        // Above 1000 bytes the content is assumed to be a String, since matching the UTF-8 pattern
+        // on a long value used to throw a StackOverflowError.
+        byte[] value = new byte[1001];
+        Arrays.fill(value, (byte) 0x80);
+
+        assertEquals(new String(value), ContentUtils.convertToObject(value));
     }
 
 }
