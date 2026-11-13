@@ -47,7 +47,6 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -99,6 +98,9 @@ public class RecordRepository extends AbstractRepository {
 
     @Value("${akhq.topic-data.kafka-max-message-length:2147483647}")
     protected int maxKafkaMessageLength;
+
+    private static final long LAST_RECORD_WINDOW = 2;
+    private static final long LAST_RECORD_MAX_WINDOW = 1000;
 
     private static final Comparator<Record> OLDEST_FIRST = Comparator.comparing(Record::getTimestamp)
         .thenComparingInt(Record::getPartition)
@@ -431,32 +433,71 @@ public class RecordRepository extends AbstractRepository {
             .map(partition -> new TopicPartition(partition.getTopic(), partition.getId()))
             .collect(Collectors.toList());
 
-        ConcurrentHashMap<String, Record> records = new ConcurrentHashMap<>();
+        Map<String, ConsumerRecord<byte[], byte[]>> latest = new HashMap<>();
 
         try (KafkaConsumer<byte[], byte[]> consumer = kafkaModule.getConsumer(clusterId)) {
-            consumer.assign(topicPartitions);
+            Map<TopicPartition, Long> beginOffsets = consumer.beginningOffsets(topicPartitions);
+            Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
 
-            Map<TopicPartition, Long> beginOffsets = consumer.beginningOffsets(consumer.assignment());
-            consumer
-                .endOffsets(consumer.assignment())
-                .forEach((topicPartition, offset) -> {
-                    long beginOffset = beginOffsets.getOrDefault(topicPartition, 0L);
-                    consumer.seek(topicPartition, Math.max(beginOffset, offset - 2));
-                });
+            // Window begin of each non-empty partition; windows end at the partition end offset.
+            Map<TopicPartition, Long> windowBegins = new HashMap<>();
+            endOffsets.forEach((tp, end) -> {
+                long begin = beginOffsets.getOrDefault(tp, 0L);
+                if (end > begin) {
+                    windowBegins.put(tp, Math.max(begin, end - LAST_RECORD_WINDOW));
+                }
+            });
 
-            this.poll(consumer)
-                .forEach(record -> {
-                    if (!records.containsKey(record.topic())) {
-                        records.put(record.topic(), newRecord(record, clusterId, topics.get(record.topic())));
+            if (windowBegins.isEmpty()) {
+                return new HashMap<>();
+            }
+
+            consumer.assign(windowBegins.keySet());
+            windowBegins.forEach(consumer::seek);
+
+            Set<TopicPartition> pending = new HashSet<>(windowBegins.keySet());
+            Set<TopicPartition> found = new HashSet<>();
+            int emptyPolls = 0;
+
+            // A single poll only returns the fetches completed so far (often a single broker),
+            // so poll until every partition is read up to its end offset.
+            while (!pending.isEmpty() && emptyPolls < 2) {
+                ConsumerRecords<byte[], byte[]> polled = this.poll(consumer);
+                emptyPolls = polled.isEmpty() ? emptyPolls + 1 : 0;
+
+                for (ConsumerRecord<byte[], byte[]> record : polled) {
+                    found.add(new TopicPartition(record.topic(), record.partition()));
+                    latest.merge(record.topic(), record, (current, candidate) ->
+                        candidate.timestamp() > current.timestamp() ? candidate : current);
+                }
+
+                Set<TopicPartition> drained = pending.stream()
+                    .filter(tp -> consumer.position(tp) >= endOffsets.get(tp))
+                    .collect(Collectors.toSet());
+
+                Set<TopicPartition> done = new HashSet<>();
+                for (TopicPartition tp : drained) {
+                    long windowBegin = windowBegins.get(tp);
+                    long partitionBegin = beginOffsets.getOrDefault(tp, 0L);
+                    long windowSize = endOffsets.get(tp) - windowBegin;
+
+                    // The window only held transaction markers or aborted records: read further back.
+                    if (!found.contains(tp) && windowBegin > partitionBegin && windowSize < LAST_RECORD_MAX_WINDOW) {
+                        long newBegin = Math.max(partitionBegin, endOffsets.get(tp) - Math.min(windowSize * 10, LAST_RECORD_MAX_WINDOW));
+                        windowBegins.put(tp, newBegin);
+                        consumer.seek(tp, newBegin);
                     } else {
-                        Record current = records.get(record.topic());
-                        if (current.getTimestamp().toInstant().toEpochMilli() < record.timestamp()) {
-                            records.put(record.topic(), newRecord(record, clusterId, topics.get(record.topic())));
-                        }
+                        done.add(tp);
                     }
+                }
 
-                });
+                consumer.pause(done);
+                pending.removeAll(done);
+            }
         }
+
+        Map<String, Record> records = new HashMap<>();
+        latest.forEach((topic, record) -> records.put(topic, newRecord(record, clusterId, topics.get(topic))));
 
         return records;
     }

@@ -266,9 +266,9 @@ public class TopicController extends AbstractController {
     }
 
     @AKHQSecured(resource = Role.Resource.TOPIC_DATA, action = Role.Action.READ)
-    @Get("api/{cluster}/topic/last-record")
+    @Post("api/{cluster}/topic/last-record")
     @Operation(tags = {"topic"}, summary = "Retrieve the last record for a list of topics")
-    public Map<String, Record> lastRecord(String cluster, List<String> topics) throws ExecutionException, InterruptedException {
+    public Map<String, Record> lastRecord(String cluster, @Body("topics") List<String> topics) throws ExecutionException, InterruptedException {
         checkIfClusterAndResourceAllowed(cluster, topics);
 
         return this.recordRepository.getLastRecord(cluster, topics);
