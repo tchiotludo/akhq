@@ -36,6 +36,7 @@ module.exports = {
     sidebar: [
       '/docs/README.md',
       '/docs/installation.md',
+      '/docs/kafka-compatibility.md',
       {
         text: 'Configurations',
         link: '/docs/configuration/README.md',
