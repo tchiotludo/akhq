@@ -146,6 +146,15 @@ akhq:
         ssl.keystore.password: password
         ssl.key.password: password
 
+    # Google Cloud Managed Service for Apache Kafka (IAM Auth)
+    # my-cluster-gcp:
+    #   properties:
+    #     bootstrap.servers: "bootstrap.my-cluster.us-central1.managedkafka.my-project.cloud.goog:9092"
+    #     security.protocol: SASL_SSL
+    #     sasl.mechanism: OAUTHBEARER
+    #     sasl.login.callback.handler.class: com.google.cloud.hosted.kafka.auth.GcpLoginCallbackHandler
+    #     sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;
+
   pagination:
     page-size: 25 # number of elements per page (default : 25)
     threads: 16 # Number of parallel threads to resolve page
