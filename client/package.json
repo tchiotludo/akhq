@@ -58,7 +58,7 @@
     "@mui/material": "^9.5.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.8",
+    "@testing-library/user-event": "^14.6.10",
     "@vitejs/plugin-react": "^6.2.1",
     "convert-units": "^2.3.4",
     "eslint": "^9.39.4",
