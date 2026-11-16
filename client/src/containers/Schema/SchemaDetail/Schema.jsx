@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../../Header';
 import SchemaVersions from './SchemaVersions';
 import SchemaUpdate from './SchemaUpdate';
+import SchemaFields from './SchemaFields';
 import endpoints from '../../../utils/endpoints';
 import { getSelectedTab } from '../../../utils/functions';
 import { Link } from 'react-router-dom';
@@ -18,7 +19,7 @@ class Schema extends Root {
     roles: JSON.parse(sessionStorage.getItem('roles'))
   };
 
-  tabs = ['update', 'versions'];
+  tabs = ['update', 'versions', 'fields'];
 
   componentDidMount() {
     this.getSchemaVersions();
@@ -46,7 +47,7 @@ class Schema extends Root {
       {
         schemaVersions: schemas.data,
         totalVersions: schemas.data.length,
-        selectedTab: tabSelected === 'versions' ? tabSelected : 'update'
+        selectedTab: tabSelected
       },
       () => {
         this.props.router.navigate(
@@ -74,6 +75,8 @@ class Schema extends Root {
             schemaId={schemaId}
           />
         );
+      case 'fields':
+        return <SchemaFields schemas={schemaVersions} />;
       case 'versions':
         return (
           <SchemaVersions schemaName={schemaId} clusterId={clusterId} schemas={schemaVersions} />
@@ -107,6 +110,14 @@ class Schema extends Root {
                 className={this.tabClassName('versions')}
               >
                 Versions <span className="badge bg-secondary">{totalVersions}</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/ui/${clusterId}/schema/details/${schemaId}/fields`}
+                className={this.tabClassName('fields')}
+              >
+                Fields
               </Link>
             </li>
           </ul>
