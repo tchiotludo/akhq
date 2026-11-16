@@ -9,6 +9,24 @@ public class ContentUtils {
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 
     /**
+     * Matches a complete valid UTF-8 byte sequence, used by {@link #isValidUTF8(byte[])}.
+     * <p>
+     * Compiled once here instead of on every call: the pattern is evaluated for every field of every
+     * decoded record, so compiling it inline dominated CPU time and object allocation on the topic
+     * data path. {@link Pattern} is immutable and thread safe, so a single shared instance is safe.
+     */
+    private static final Pattern UTF8_VALIDATION_PATTERN = Pattern.compile("\\A(\n" +
+        "  [\\x09\\x0A\\x0D\\x20-\\x7E]             # ASCII\\n" +
+        "| [\\xC2-\\xDF][\\x80-\\xBF]               # non-overlong 2-byte\n" +
+        "|  \\xE0[\\xA0-\\xBF][\\x80-\\xBF]         # excluding overlongs\n" +
+        "| [\\xE1-\\xEC\\xEE\\xEF][\\x80-\\xBF]{2}  # straight 3-byte\n" +
+        "|  \\xED[\\x80-\\x9F][\\x80-\\xBF]         # excluding surrogates\n" +
+        "|  \\xF0[\\x90-\\xBF][\\x80-\\xBF]{2}      # planes 1-3\n" +
+        "| [\\xF1-\\xF3][\\x80-\\xBF]{3}            # planes 4-15\n" +
+        "|  \\xF4[\\x80-\\x8F][\\x80-\\xBF]{2}      # plane 16\n" +
+        ")*\\z", Pattern.COMMENTS);
+
+    /**
      * Detects if bytes contain a UTF-8 string or something else
      * Source: https://stackoverflow.com/questions/1193200/how-can-i-check-whether-a-byte-array-contains-a-unicode-string-in-java
      * @param value the bytes to test for a UTF-8 encoded {@code java.lang.String} value
@@ -19,19 +37,8 @@ public class ContentUtils {
     {
         //If the array is too long, it throws a StackOverflowError due to the regex, so we assume it is a String.
         if (value.length <= 1000) {
-            Pattern p = Pattern.compile("\\A(\n" +
-                "  [\\x09\\x0A\\x0D\\x20-\\x7E]             # ASCII\\n" +
-                "| [\\xC2-\\xDF][\\x80-\\xBF]               # non-overlong 2-byte\n" +
-                "|  \\xE0[\\xA0-\\xBF][\\x80-\\xBF]         # excluding overlongs\n" +
-                "| [\\xE1-\\xEC\\xEE\\xEF][\\x80-\\xBF]{2}  # straight 3-byte\n" +
-                "|  \\xED[\\x80-\\x9F][\\x80-\\xBF]         # excluding surrogates\n" +
-                "|  \\xF0[\\x90-\\xBF][\\x80-\\xBF]{2}      # planes 1-3\n" +
-                "| [\\xF1-\\xF3][\\x80-\\xBF]{3}            # planes 4-15\n" +
-                "|  \\xF4[\\x80-\\x8F][\\x80-\\xBF]{2}      # plane 16\n" +
-                ")*\\z", Pattern.COMMENTS);
-
             String phonyString = new String(value, "ISO-8859-1");
-            return p.matcher(phonyString).matches();
+            return UTF8_VALIDATION_PATTERN.matcher(phonyString).matches();
         }
         return true;
     }
