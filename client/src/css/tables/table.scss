@@ -80,7 +80,7 @@ table {
 
     td a,
     td a:hover {
-      color: $body-color;
+      color: var(--bs-body-color);
     }
   }
 }
