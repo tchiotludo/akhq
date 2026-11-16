@@ -2,6 +2,29 @@ apiVersion: v1
 entries:
   akhq:
   - apiVersion: v2
+    appVersion: 0.29.0
+    created: "2026-11-16T19:23:05.725504301Z"
+    description: Helm chart for AKHQ, the Kafka GUI for Apache Kafka to manage topics,
+      topics data, consumers group, schema registry, connect and more...
+    digest: c94c406c8c8d1f8681e508c7af7b98bc665070c05834aba78b900947c49ba20a
+    home: https://akhq.io
+    icon: https://raw.githubusercontent.com/tchiotludo/akhq/master/client/src/images/logo_black.png
+    keywords:
+    - kafka
+    - confluent
+    - gui
+    - schema-registry
+    - kafka-connect
+    maintainers:
+    - email: tchiot.ludo@gmail.com
+      name: tchiotludo
+    name: akhq
+    sources:
+    - https://github.com/tchiotludo/akhq
+    urls:
+    - https://github.com/tchiotludo/akhq/releases/download/akhq-0.29.0/akhq-0.29.0.tgz
+    version: 0.29.0
+  - apiVersion: v2
     appVersion: 0.28.0
     created: "2026-08-06T12:28:25.127023706Z"
     description: Helm chart for AKHQ, the Kafka GUI for Apache Kafka to manage topics,
@@ -504,4 +527,4 @@ entries:
     urls:
     - akhq-0.1.0.tgz
     version: 0.1.0
-generated: "2026-08-06T12:28:25.12718083Z"
+generated: "2026-11-16T19:23:05.725621154Z"
