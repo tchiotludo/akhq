@@ -1,6 +1,6 @@
 {
   "name": "akhq-front-end",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "private": true,
   "type": "module",
   "homepage": "./ui",
