@@ -21,7 +21,7 @@ application {
     mainClass.set("org.akhq.App")
 }
 group = "org.akhq"
-version = "0.28.0"
+version = "0.29.0"
 
 repositories {
     mavenLocal()
@@ -188,10 +188,10 @@ dependencies {
     implementation project(":client")
 
     //AWS MSK IAM Auth
-    implementation("software.amazon.msk:aws-msk-iam-auth:2.3.9")
+    implementation("software.amazon.msk:aws-msk-iam-auth:2.4.0")
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:2.0.1")
+    implementation ("software.amazon.glue:schema-registry-serde:2.0.2")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }
