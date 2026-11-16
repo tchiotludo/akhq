@@ -191,7 +191,7 @@ dependencies {
     implementation("software.amazon.msk:aws-msk-iam-auth:2.3.9")
 
     // AWS Glue serde
-    implementation ("software.amazon.glue:schema-registry-serde:2.0.1")
+    implementation ("software.amazon.glue:schema-registry-serde:2.0.2")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }
