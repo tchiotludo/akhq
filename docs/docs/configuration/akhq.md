@@ -36,7 +36,7 @@ These parameters are the default values used in the topic creation page.
 * `akhq.ui-options.topic.groups-default-view` is the default consumer groups list view on topic screen/consumer groups tab (ALL, HIDE_EMPTY) (default: ALL). HIDE_EMPTY increases performance, especially on cluster with a lot of consumer groups
 
 ### Topic Data
-* `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST) (default: OLDEST)
+* `akhq.ui-options.topic-data.sort`: default sort order (OLDEST, NEWEST, OFFSET) (default: OLDEST). OFFSET pages the topic data endpoint by descending Kafka offset; offsets are only comparable within a partition, so the global multi-partition order is offset descending, then partition ascending.
 
 ### Cluster
 * `akhq.ui-options.cluster.order`: define custom ordering for clusters in the sidebar (optional). Clusters listed in this array will appear first in the specified order, followed by any unlisted clusters in alphabetical order.

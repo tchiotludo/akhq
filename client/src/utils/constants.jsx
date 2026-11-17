@@ -66,7 +66,8 @@ export const SETTINGS_VALUES = {
   TOPIC_DATA: {
     SORT: {
       OLDEST: 'OLDEST',
-      NEWEST: 'NEWEST'
+      NEWEST: 'NEWEST',
+      OFFSET: 'OFFSET'
     },
     DATE_TIME_FORMAT: {
       RELATIVE: 'RELATIVE',
@@ -130,6 +131,6 @@ export const sortBy = (field, reverse, primer) => {
 
   return function (a, b) {
     // eslint-disable-next-line
-    return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
+    return ((a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a)));
   };
 };
