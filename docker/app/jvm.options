@@ -25,6 +25,11 @@
 # Do not rely on the system configuration
 -Dfile.encoding=UTF-8
 
+# Mitigation for CVE-2026-114938 ("Java4Shell"): the x86-64 Base64 decoder
+# intrinsic can write past the end of its output array on AVX-512 VBMI CPUs.
+# Remove once the base image ships a fixed JRE (Temurin 25.0.5.1 or later).
+-XX:-UseBASE64Intrinsics
+
 # Jmx Remote
 -Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=8686
