@@ -20,7 +20,7 @@ class SecurityPropertiesTest {
     @Test
     void shouldReturnAllBasicGroups() {
         assertEquals(
-                Set.of("admin", "limited", "operator", "no-filter"),
+                Set.of("reader", "admin", "limited", "operator", "no-filter"),
                 securityProperties.getGroups().keySet()
         );
     }
@@ -33,7 +33,7 @@ class SecurityPropertiesTest {
         @Test
         void shouldReturnAllBasicPlusConfiguredGroups() {
             assertEquals(
-                    Set.of("admin", "limited", "operator", "no-filter", "extra", "another"),
+                    Set.of("reader", "admin", "limited", "operator", "no-filter", "extra", "another"),
                     securityProperties.getGroups().keySet()
             );
         }
@@ -47,7 +47,7 @@ class SecurityPropertiesTest {
         @Test
         void shouldOverrideBasicGroups() {
             assertEquals(
-                    Set.of("admin", "limited", "operator", "no-filter", "extra"),
+                    Set.of("reader", "admin", "limited", "operator", "no-filter", "extra"),
                     securityProperties.getGroups().keySet()
             );
 
