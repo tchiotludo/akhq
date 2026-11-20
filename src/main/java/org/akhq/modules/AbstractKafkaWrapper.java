@@ -39,6 +39,15 @@ abstract public class AbstractKafkaWrapper {
 
     private final Map<String, DescribeClusterResult> cluster = new HashMap<>();
 
+    public QuorumInfo describeMetadataQuorum(String clusterId)
+        throws ExecutionException, InterruptedException, java.util.concurrent.TimeoutException {
+        // Do not cache: an election must be visible on the next Nodes refresh.
+        int timeoutMs = 5000;
+        return kafkaModule.getAdminClient(clusterId)
+            .describeMetadataQuorum(new DescribeMetadataQuorumOptions().timeoutMs(timeoutMs))
+            .quorumInfo().get(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
     public DescribeClusterResult describeCluster(String clusterId) throws ExecutionException {
         if (!this.cluster.containsKey(clusterId)) {
             DescribeClusterResult cluster = kafkaModule.getAdminClient(clusterId).describeCluster();
