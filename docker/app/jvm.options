@@ -5,7 +5,6 @@
 # - one flag should be specified per line                                 #
 # - lines that do not start with '-' will be ignored                      #
 # - only static flags are accepted (no variables or parameters)           #
-# - dynamic flags will be appended to these on cassandra-env              #
 ###########################################################################
 
 # Server Hotspot JVM
@@ -24,10 +23,3 @@
 
 # Do not rely on the system configuration
 -Dfile.encoding=UTF-8
-
-# Jmx Remote
--Dcom.sun.management.jmxremote
--Dcom.sun.management.jmxremote.port=8686
--Dcom.sun.management.jmxremote.local.only=false
--Dcom.sun.management.jmxremote.authenticate=false
--Dcom.sun.management.jmxremote.ssl=false
