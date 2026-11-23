@@ -118,7 +118,7 @@ dependencies {
     implementation("io.micronaut.cache:micronaut-cache-core")
     implementation("io.micronaut.cache:micronaut-cache-caffeine")
     constraints {
-        implementation("tools.jackson.core:jackson-databind:3.2.4") {
+        implementation("tools.jackson.core:jackson-databind:3.3.0") {
             because("micronaut-mcp-server-java-sdk 2.1.0 uses the vulnerable 3.2.3")
         }
     }
