@@ -1,0 +1,116 @@
+# Additional isolated role layouts. Never joins or changes the dedicated test cluster.
+name: akhq-kraft-layouts
+
+x-base: &base
+  image: apache/kafka:3.9.1
+
+x-common-env: &common-env
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+  KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  KAFKA_LOG_DIRS: /tmp/kraft-logs
+  KAFKA_HEAP_OPTS: -Xms128m -Xmx256m
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+
+x-combined-env: &combined-env
+  <<: *common-env
+  CLUSTER_ID: NdemuzAhQFOGP-roVqMtdw
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 11@combined1:9093,12@combined2:9093,13@combined3:9093
+
+x-mixed-env: &mixed-env
+  <<: *common-env
+  CLUSTER_ID: wySA2c7YQVO6ZiG6L8ZP2w
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 21@mixed-combined:9093,22@mixed-controller2:9093,23@mixed-controller3:9093
+
+services:
+  combined1:
+    <<: *base
+    profiles: [combined]
+    networks: [combined]
+    ports: ["127.0.0.1:19192:19192"]
+    environment:
+      <<: *combined-env
+      KAFKA_NODE_ID: 11
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:19192,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://combined1:9092,EXTERNAL://localhost:19192
+  combined2:
+    <<: *base
+    profiles: [combined]
+    networks: [combined]
+    ports: ["127.0.0.1:29192:29192"]
+    environment:
+      <<: *combined-env
+      KAFKA_NODE_ID: 12
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29192,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://combined2:9092,EXTERNAL://localhost:29192
+  combined3:
+    <<: *base
+    profiles: [combined]
+    networks: [combined]
+    ports: ["127.0.0.1:39192:39192"]
+    environment:
+      <<: *combined-env
+      KAFKA_NODE_ID: 13
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:39192,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://combined3:9092,EXTERNAL://localhost:39192
+  mixed-combined:
+    <<: *base
+    profiles: [mixed]
+    networks: [mixed]
+    ports: ["127.0.0.1:19292:19292"]
+    environment:
+      <<: *mixed-env
+      KAFKA_NODE_ID: 21
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:19292,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://mixed-combined:9092,EXTERNAL://localhost:19292
+  mixed-controller2:
+    <<: *base
+    profiles: [mixed]
+    networks: [mixed]
+    environment:
+      <<: *mixed-env
+      KAFKA_NODE_ID: 22
+      KAFKA_PROCESS_ROLES: controller
+      KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: ""
+  mixed-controller3:
+    <<: *base
+    profiles: [mixed]
+    networks: [mixed]
+    environment:
+      <<: *mixed-env
+      KAFKA_NODE_ID: 23
+      KAFKA_PROCESS_ROLES: controller
+      KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: ""
+  mixed-broker2:
+    <<: *base
+    profiles: [mixed]
+    networks: [mixed]
+    ports: ["127.0.0.1:29292:29292"]
+    environment:
+      <<: *mixed-env
+      KAFKA_NODE_ID: 24
+      KAFKA_PROCESS_ROLES: broker
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29292
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://mixed-broker2:9092,EXTERNAL://localhost:29292
+  mixed-broker3:
+    <<: *base
+    profiles: [mixed]
+    networks: [mixed]
+    ports: ["127.0.0.1:39292:39292"]
+    environment:
+      <<: *mixed-env
+      KAFKA_NODE_ID: 25
+      KAFKA_PROCESS_ROLES: broker
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:39292
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://mixed-broker3:9092,EXTERNAL://localhost:39292
+
+networks:
+  combined: {}
+  mixed: {}
