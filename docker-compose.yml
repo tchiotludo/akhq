@@ -58,6 +58,8 @@ services:
     restart: unless-stopped
     depends_on:
       - kafka
+    ports:
+      - "8085:8085"
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'PLAINTEXT://kafka:9092'
       SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
