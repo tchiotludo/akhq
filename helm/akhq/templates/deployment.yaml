@@ -115,6 +115,18 @@ spec:
             successThreshold: {{ $.Values.readinessProbe.successThreshold }}
             failureThreshold: {{ $.Values.readinessProbe.failureThreshold }}
           {{- end }}
+          {{- if $.Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.startupProbe.prefix | default "" }}{{ $.Values.startupProbe.path }}
+              port: {{ $.Values.startupProbe.port }}
+              {{- if $.Values.startupProbe.httpGetExtra }}{{ toYaml $.Values.startupProbe.httpGetExtra | trim | nindent 14 }}{{ end }}
+            initialDelaySeconds: {{ $.Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ $.Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ $.Values.startupProbe.timeoutSeconds }}
+            successThreshold: {{ $.Values.startupProbe.successThreshold }}
+            failureThreshold: {{ $.Values.startupProbe.failureThreshold }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
