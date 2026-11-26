@@ -74,12 +74,12 @@ class AkhqSchemaToolServiceTest {
 
     @Test
     void getSchemaByIdHidesSubjectsTheCallerCannotSee() throws Exception {
-        when(repository.getSubjectsBySchemaId("local", 12))
+        when(repository.getSubjectsBySchemaId("local", "12"))
             .thenReturn(List.of(new Schema(12, "secret-value", 1), new Schema(12, "orders-value", 3)));
         when(repository.all("local", Optional.empty(), List.of("orders.*"))).thenReturn(List.of("orders-value"));
         when(repository.getAllVersions("local", "orders-value")).thenReturn(List.of(new Schema(12, "orders-value", 3)));
 
-        var result = service.getSchemaById("local", List.of("orders.*"), 12, null);
+        var result = service.getSchemaById("local", List.of("orders.*"), "12", null);
 
         assertEquals(1, result.subjects().size());
         assertEquals("orders-value", result.schema().subject());
@@ -87,11 +87,24 @@ class AkhqSchemaToolServiceTest {
 
     @Test
     void getSchemaByIdReportsUnknownId() throws Exception {
-        when(repository.getSubjectsBySchemaId("local", 99)).thenThrow(new RestClientException("nf", 404, 40403));
+        when(repository.getSubjectsBySchemaId("local", "99")).thenThrow(new RestClientException("nf", 404, 40403));
 
-        var result = service.getSchemaById("local", List.of(), 99, null);
+        var result = service.getSchemaById("local", List.of(), "99", null);
 
+        assertEquals("99", result.id());
         assertTrue(result.subjects().isEmpty());
         assertEquals(null, result.schema());
+    }
+
+    @Test
+    void getSchemaByIdPassesOpaqueAzureIdToRepository() throws Exception {
+        when(repository.getSubjectsBySchemaId("azure", "schema-guid"))
+            .thenReturn(List.of(new Schema("schema-guid", "orders-value", 1)));
+        when(repository.all("azure", Optional.empty(), List.of())).thenReturn(List.of());
+
+        var result = service.getSchemaById("azure", List.of(), "schema-guid", null);
+
+        assertEquals("schema-guid", result.id());
+        assertTrue(result.subjects().isEmpty());
     }
 }

@@ -4,7 +4,7 @@
   * `properties`: all the configurations found on [Kafka consumer documentation](https://kafka.apache.org/documentation/#consumerconfigs). Most important is `bootstrap.servers` that is a list of host:port of your Kafka brokers.
   * `schema-registry`: *(optional)*
     * `url`: the schema registry url
-    * `type`: the type of schema registry used, either 'confluent' or 'tibco'
+    * `type`: the type of schema registry used, one of 'confluent', 'tibco', 'glue' or 'azure'
     * `basic-auth-username`: schema registry basic auth username
     * `basic-auth-password`: schema registry basic auth password
     * `properties`: all the configurations for registry client, especially ssl configuration
@@ -124,6 +124,44 @@ akhq:
         sasl.mechanism: OAUTHBEARER
 ```
 I put oauth.ssl.endpoint_identification_algorithm = "" for testing or my certificates did not match the FQDN. In a production, you have to remove it.
+
+## OAuth2 authentication for Azure Event Hub
+
+AKHQ can connect to Azure Event Hub (Kafka protocol endpoint) using OAuth2/`SASL_SSL` with the
+[Microsoft Entra ID (Azure AD)](https://learn.microsoft.com/en-us/azure/event-hubs/authenticate-application) identity of
+a Service Principal or a Managed Identity.
+
+Authentication is handled by the custom callback handler `org.akhq.azure.KafkaOAuth2AuthenticateCallbackHandler`
+(shipped with AKHQ), which uses the Azure Identity SDK
+[`DefaultAzureCredential`](https://learn.microsoft.com/en-us/java/api/overview/azure/identity-readme) chain to
+retrieve an access token for the `https://<namespace>.servicebus.windows.net/.default` scope. This means the
+credential resolution follows the standard Azure SDK order (environment variables, workload identity, managed
+identity, Azure CLI, etc.), so credentials must be provided through one of these standard mechanisms (for example
+the `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` and `AZURE_CLIENT_SECRET` environment variables for a Service Principal).
+
+```yaml
+akhq:
+  connections:
+    azure-eventhub:
+      properties:
+        bootstrap.servers: "my-eventhub.servicebus.windows.net:9093"
+        security.protocol: SASL_SSL
+        sasl.mechanism: OAUTHBEARER
+        sasl.jaas.config: >
+          org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required
+          oauth.scope="kafka-cluster";
+        sasl.login.callback.handler.class: "org.akhq.azure.KafkaOAuth2AuthenticateCallbackHandler"
+        ssl.endpoint.identification.algorithm: https
+```
+
+* `sasl.jaas.config`: the `oauth.scope` value is not used to request the token (the token audience is derived from
+  `bootstrap.servers`), but the property must be present for the JAAS module to be valid.
+* `sasl.login.callback.handler.class`: must be set to `org.akhq.azure.KafkaOAuth2AuthenticateCallbackHandler`.
+* `ssl.endpoint.identification.algorithm`: set to `https` (default Kafka client behaviour) unless your certificate does
+  not match the Event Hub FQDN.
+
+See [Azure Schema Registry](schema-registry/azure.md) to also configure schema resolution for messages produced to
+Azure Event Hub.
 
 
 

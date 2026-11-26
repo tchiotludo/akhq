@@ -106,10 +106,10 @@ public class AkhqSchemaToolService {
      * Resolves a global schema id to its subjects (restricted to the ones the caller can see) and to the schema
      * of the subject matching the topic when given, or else of the first visible subject.
      */
-    public GetSchemaByIdResult getSchemaById(String cluster, List<String> filters, int id, String topic)
+    public GetSchemaByIdResult getSchemaById(String cluster, List<String> filters, String id, String topic)
         throws IOException, RestClientException {
-        if (id < 0) {
-            throw new IllegalArgumentException("`arguments.id` must not be negative");
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("`arguments.id` is required");
         }
 
         List<Schema> candidates;

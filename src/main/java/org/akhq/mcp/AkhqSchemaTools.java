@@ -116,12 +116,13 @@ public class AkhqSchemaTools extends AbstractMcpTool {
             Expected `arguments` JSON object:
             {
               "cluster": "<cluster-name>",
-              "id": 42,
+              "id": "42",
               "topic": "optional topic name"
             }
 
             Rules:
             - `cluster` and `id` are required.
+            - `id` is a string: a numeric string for Confluent Schema Registry, or the opaque schema id for Azure Event Hubs.
             - `subjects` lists the visible subjects and versions registering this schema. `schema` is the one of the subject matching `topic`, else the first one.
             """
     )
