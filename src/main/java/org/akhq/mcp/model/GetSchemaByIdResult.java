@@ -7,7 +7,7 @@ import java.util.List;
 @Introspected
 public record GetSchemaByIdResult(
     String cluster,
-    int id,
+    String id,
     List<SubjectVersion> subjects,
     GetSchemaResult schema,
     String message

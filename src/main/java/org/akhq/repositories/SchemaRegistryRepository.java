@@ -147,12 +147,16 @@ public class SchemaRegistryRepository extends AbstractRepository {
             return List.of(schema);
         }
 
+        int schemaIdInt = Integer.parseInt(id);
+        if (schemaIdInt < 0) {
+            throw new IllegalArgumentException("Schema id must not be negative");
+        }
+
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
             .getRegistryRestClient(clusterId));
         if (maybeRegistryRestClient.isEmpty()) {
             return List.of();
         }
-        int schemaIdInt = Integer.parseInt(id);
         return maybeRegistryRestClient.get()
             .getAllVersionsById(schemaIdInt)
             .stream()
