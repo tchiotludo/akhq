@@ -11,3 +11,7 @@ group and a kafka stream & start AKHQ.
 
 ## Installation
 More standard installation can be found [here](./installation.md)
+
+## Compatibility Constraints
+A detailed Kafka-AKHQ compatibility matrix is available here:
+[Kafka Compatibility](./kafka-compatibility.md)
