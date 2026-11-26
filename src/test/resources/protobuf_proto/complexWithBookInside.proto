@@ -1,0 +1,23 @@
+syntax = "proto3";
+package org.akhq.utils;
+
+import "album.proto";
+import "film.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+
+option java_package = "org.akhq.utils";
+option java_outer_classname = "ComplexWithBookInsideProto";
+
+message Book {
+  string title = 1;
+  string author = 2;
+  google.protobuf.DoubleValue price = 3;
+}
+
+message ComplexWithBookInside {
+  Album album = 1;
+  Film film = 2;
+  google.protobuf.StringValue stringWrapper = 3;
+  google.protobuf.Any anything = 4;
+}
