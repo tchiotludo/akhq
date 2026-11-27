@@ -35,6 +35,7 @@ public class Connection extends AbstractProperties {
         SchemaRegistryType type = SchemaRegistryType.CONFLUENT;
         String glueSchemaRegistryName;
         String awsRegion;
+        String apicurioGroupId;
         @MapFormat(transformation = MapFormat.MapTransformation.FLAT)
         Map<String, String> properties;
     }

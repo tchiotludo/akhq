@@ -22,6 +22,8 @@ import org.akhq.models.Schema;
 import org.akhq.models.audit.SchemaAuditEvent;
 import org.akhq.modules.AuditModule;
 import org.akhq.modules.KafkaModule;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioRecordDeserializer;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioSchemaRegistryClient;
 import org.akhq.utils.PagedList;
 import org.akhq.utils.Pagination;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -34,6 +36,7 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -50,6 +53,7 @@ public class SchemaRegistryRepository extends AbstractRepository {
     private final Map<String, Deserializer> kafkaJsonDeserializers = new HashMap<>();
     private final Map<String, Deserializer> kafkaProtoDeserializers = new HashMap<>();
     private final Map<String, Deserializer> awsGlueKafkaDeserializers = new HashMap<>();
+    private final Map<String, ApicurioRecordDeserializer> apicurioRecordDeserializers = new ConcurrentHashMap<>();
 
 
     public PagedList<Schema> list(String clusterId, Pagination pagination, Optional<String> search, List<String> filters) throws IOException, RestClientException, ExecutionException, InterruptedException {
@@ -95,6 +99,17 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public List<String> all(String clusterId, Optional<String> search, List<String> filters) throws  IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            ApicurioSchemaRegistryClient apicurioClient = kafkaModule.getApicurioSchemaRegistryClient(clusterId);
+            if (apicurioClient == null) {
+                return List.of();
+            }
+            return apicurioClient.listSubjects()
+                .stream()
+                .filter(s -> isSearchMatch(search, s) && isMatchRegex(filters, s))
+                .sorted(Comparator.comparing(String::toLowerCase))
+                .collect(Collectors.toList());
+        }
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
                 .getRegistryRestClient(clusterId));
         if(maybeRegistryRestClient.isEmpty()){
@@ -124,6 +139,13 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public List<Schema> getSubjectsBySchemaId(String clusterId, int id) throws  IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            ApicurioSchemaRegistryClient apicurioClient = kafkaModule.getApicurioSchemaRegistryClient(clusterId);
+            if (apicurioClient == null) {
+                return List.of();
+            }
+            return apicurioClient.getSubjectsBySchemaId(id);
+        }
         Optional<RestService> maybeRegistryRestClient = Optional.ofNullable(kafkaModule
             .getRegistryRestClient(clusterId));
         if (maybeRegistryRestClient.isEmpty()) {
@@ -138,6 +160,18 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Optional<Schema> getById(String clusterId, Integer id) throws IOException, RestClientException, ExecutionException, InterruptedException {
+        if (isApicurio(clusterId) && id != null) {
+            List<Schema> matching = getSubjectsBySchemaId(clusterId, id);
+            if (!matching.isEmpty()) {
+                Schema ref = matching.get(0);
+                for (Schema version : this.getAllVersions(clusterId, ref.getSubject())) {
+                    if (id.equals(version.getId())) {
+                        return Optional.of(version);
+                    }
+                }
+            }
+            return Optional.empty();
+        }
         for (String subject: this.all(clusterId, Optional.empty(), List.of())) {
             for (Schema version: this.getAllVersions(clusterId, subject)) {
                 if (version.getId().equals(id)) {
@@ -150,6 +184,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema getLatestVersion(String clusterId, String subject) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).getLatestVersion(subject);
+        }
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema latestVersion = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .getLatestVersion(subject);
@@ -160,6 +197,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public List<Schema> getAllVersions(String clusterId, String subject) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).getAllVersions(subject);
+        }
         Schema.Config config = this.getConfig(clusterId, subject);
 
         return this.kafkaModule
@@ -181,6 +221,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema lookUpSubjectVersion(String clusterId, String subject, org.apache.avro.Schema schema, boolean deleted) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).lookUpSubjectVersion(subject, schema);
+        }
         io.confluent.kafka.schemaregistry.client.rest.entities.Schema find = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .lookUpSubjectVersion(schema.toString(), subject, deleted);
@@ -191,12 +234,18 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).testCompatibility(subject, schema);
+        }
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, "latest");
     }
 
     public List<String> testCompatibility(String clusterId, String subject, org.apache.avro.Schema schema, int version) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).testCompatibility(subject, schema);
+        }
         return this.kafkaModule
             .getRegistryRestClient(clusterId)
             .testCompatibility(schema.toString(), subject, String.valueOf(version));
@@ -207,6 +256,11 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema register(String clusterId, String subject, String type, String schema, List<SchemaReference> references) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            Schema latestVersion = requireApicurioClient(clusterId).register(subject, type, schema, references);
+            auditModule.save(SchemaAuditEvent.createOrUpdateSchema(clusterId, subject, latestVersion.getId(), latestVersion.getVersion()));
+            return latestVersion;
+        }
         RegisterSchemaResponse registerSchemaResponse = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .registerSchema(schema, type != null? type: "AVRO", references, subject);
@@ -223,6 +277,11 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public int delete(String clusterId, String subject) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            int deletedVersion = requireApicurioClient(clusterId).delete(subject);
+            auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
+            return deletedVersion;
+        }
         List<Integer> list = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .deleteSubject(new HashMap<>(), subject);
@@ -237,6 +296,11 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public int deleteVersion(String clusterId, String subject, int version) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            int deletedVersion = requireApicurioClient(clusterId).deleteVersion(subject, version);
+            auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
+            return deletedVersion;
+        }
         var deletedVersion = this.kafkaModule.getRegistryRestClient(clusterId)
             .deleteSchemaVersion(new HashMap<>(), subject, String.valueOf(version));
         auditModule.save(SchemaAuditEvent.deleteSchema(clusterId, subject, deletedVersion));
@@ -244,6 +308,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema.Config getDefaultConfig(String clusterId) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).getDefaultConfig();
+        }
         return new Schema.Config(this.kafkaModule
             .getRegistryRestClient(clusterId)
             .getConfig(null)
@@ -251,6 +318,9 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public Schema.Config getConfig(String clusterId, String subject) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            return requireApicurioClient(clusterId).getConfig(subject);
+        }
         try {
             return new Schema.Config(this.kafkaModule
                 .getRegistryRestClient(clusterId)
@@ -266,6 +336,11 @@ public class SchemaRegistryRepository extends AbstractRepository {
     }
 
     public void updateConfig(String clusterId, String subject, Schema.Config config) throws IOException, RestClientException {
+        if (isApicurio(clusterId)) {
+            requireApicurioClient(clusterId).updateConfig(subject, config);
+            auditModule.save(SchemaAuditEvent.updateSchemaCompatibility(clusterId, subject, null, config.getCompatibilityLevel().name()));
+            return;
+        }
         ConfigUpdateRequest configUpdateRequest = this.kafkaModule
             .getRegistryRestClient(clusterId)
             .updateCompatibility(config.getCompatibilityLevel().name(), subject);
@@ -343,6 +418,32 @@ public class SchemaRegistryRepository extends AbstractRepository {
             schemaRegistryType = schemaRegistry.getType();
         }
         return schemaRegistryType;
+    }
+
+    public ApicurioRecordDeserializer getApicurioRecordDeserializer(String clusterId) {
+        if (!isApicurio(clusterId)) {
+            return null;
+        }
+        ApicurioSchemaRegistryClient apicurioClient = this.kafkaModule.getApicurioSchemaRegistryClient(clusterId);
+        if (apicurioClient == null) {
+            return null;
+        }
+        return this.apicurioRecordDeserializers.computeIfAbsent(
+            clusterId,
+            id -> new ApicurioRecordDeserializer(apicurioClient)
+        );
+    }
+
+    private boolean isApicurio(String clusterId) {
+        return getSchemaRegistryType(clusterId) == SchemaRegistryType.APICURIO;
+    }
+
+    private ApicurioSchemaRegistryClient requireApicurioClient(String clusterId) {
+        ApicurioSchemaRegistryClient apicurioClient = this.kafkaModule.getApicurioSchemaRegistryClient(clusterId);
+        if (apicurioClient == null) {
+            throw new IllegalStateException("Cluster '" + clusterId + "' has no Apicurio schema registry configured");
+        }
+        return apicurioClient;
     }
     public Deserializer getAwsGlueKafkaDeserializer(String clusterId) {
 

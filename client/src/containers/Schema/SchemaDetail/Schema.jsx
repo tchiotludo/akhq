@@ -95,7 +95,7 @@ class Schema extends Root {
           <ul className="nav nav-tabs" role="tablist">
               <li className="nav-item">
                 <Link
-                  to={`/ui/${clusterId}/schema/details/${schemaId}/update`}
+                  to={`/ui/${clusterId}/schema/details/${encodeURIComponent(schemaId)}/update`}
                   className={this.tabClassName('update')}
                 >
                   Details
@@ -103,7 +103,7 @@ class Schema extends Root {
               </li>
             <li className="nav-item">
               <Link
-                to={`/ui/${clusterId}/schema/details/${schemaId}/versions`}
+                to={`/ui/${clusterId}/schema/details/${encodeURIComponent(schemaId)}/versions`}
                 className={this.tabClassName('versions')}
               >
                 Versions <span className="badge bg-secondary">{totalVersions}</span>

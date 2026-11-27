@@ -868,42 +868,42 @@ public class RecordRepository extends AbstractRepository {
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, String clusterId, Topic topic) {
         SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(clusterId);
+        if (schemaRegistryType == SchemaRegistryType.APICURIO) {
+            return masker.maskRecord(new Record(
+                null,
+                record,
+                schemaRegistryType,
+                null,
+                null,
+                null,
+                this.avroToJsonSerializer,
+                this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
+                this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
+                record.value(),
+                topic,
+                null,
+                this.schemaRegistryRepository.getApicurioRecordDeserializer(clusterId)
+            ));
+        }
         SchemaRegistryClient client = this.kafkaModule.getRegistryClient(clusterId);
         return masker.maskRecord(new Record(
             client,
             record,
-            this.schemaRegistryRepository.getSchemaRegistryType(clusterId),
+            schemaRegistryType,
             this.schemaRegistryRepository.getKafkaAvroDeserializer(clusterId),
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(clusterId):null,
             schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(clusterId):null,
             this.avroToJsonSerializer,
             this.customDeserializerRepository.getProtobufToJsonDeserializer(clusterId),
             this.customDeserializerRepository.getAvroToJsonDeserializer(clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, client,
-                this.schemaRegistryRepository.getSchemaRegistryType(clusterId)),
+            avroWireFormatConverter.convertValueToWireFormat(record, client, schemaRegistryType),
             topic,
             schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(clusterId): null
         ));
     }
 
     private Record newRecord(ConsumerRecord<byte[], byte[]> record, BaseOptions options, Topic topic) {
-        SchemaRegistryType schemaRegistryType = this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId);
-        SchemaRegistryClient client = this.kafkaModule.getRegistryClient(options.clusterId);
-        return masker.maskRecord(new Record(
-            client,
-            record,
-            schemaRegistryType,
-            this.schemaRegistryRepository.getKafkaAvroDeserializer(options.clusterId),
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaJsonDeserializer(options.clusterId):null,
-            schemaRegistryType == SchemaRegistryType.CONFLUENT? this.schemaRegistryRepository.getKafkaProtoDeserializer(options.clusterId):null,
-            this.avroToJsonSerializer,
-            this.customDeserializerRepository.getProtobufToJsonDeserializer(options.clusterId),
-            this.customDeserializerRepository.getAvroToJsonDeserializer(options.clusterId),
-            avroWireFormatConverter.convertValueToWireFormat(record, client,
-                this.schemaRegistryRepository.getSchemaRegistryType(options.clusterId)),
-            topic,
-            schemaRegistryType == SchemaRegistryType.GLUE ? schemaRegistryRepository.getAwsGlueKafkaDeserializer(options.getClusterId()): null
-        ));
+        return newRecord(record, options.clusterId, topic);
     }
 
     @ToString

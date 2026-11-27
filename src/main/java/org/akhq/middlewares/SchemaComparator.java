@@ -19,16 +19,24 @@ public class SchemaComparator implements Comparator<Schema> {
 
     @Override
     public int compare(Schema s1, Schema s2) {
-        if (this.defaultSchemaName.equals(s1.getSubject())) {
-            return -1;
-        } else if (this.defaultSchemaName.equals(s2.getSubject())) {
-            return 1;
-        } else if (s1.getSubject().startsWith(topicName)) {
-            return -1;
-        } else if (s2.getSubject().startsWith(topicName)) {
-            return 1;
+        String name1 = stripGroupPrefix(s1.getSubject());
+        String name2 = stripGroupPrefix(s2.getSubject());
+        boolean exact1 = this.defaultSchemaName.equals(name1);
+        boolean exact2 = this.defaultSchemaName.equals(name2);
+        if (exact1 != exact2) {
+            return exact1 ? -1 : 1;
+        }
+        boolean prefix1 = name1.startsWith(topicName);
+        boolean prefix2 = name2.startsWith(topicName);
+        if (prefix1 != prefix2) {
+            return prefix1 ? -1 : 1;
         }
         return s1.getSubject().compareTo(s2.getSubject());
+    }
+
+    private static String stripGroupPrefix(String subject) {
+        int colon = subject.indexOf(':');
+        return colon >= 0 && colon < subject.length() - 1 ? subject.substring(colon + 1) : subject;
     }
 
 }

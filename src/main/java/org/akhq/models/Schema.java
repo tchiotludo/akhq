@@ -52,29 +52,43 @@ public class Schema {
         this.subject = schema.subject;
         this.version = schema.version;
         this.schema = schema.getSchema();
+        this.schemaType = schema.getSchemaType();
         this.references = schema.getReferences();
         this.exception = schema.exception;
         this.compatibilityLevel = config.getCompatibilityLevel();
     }
 
     public Schema(io.confluent.kafka.schemaregistry.client.rest.entities.Schema schema, ParsedSchema parsedSchema, Schema.Config config) {
-        this.id = schema.getId();
-        this.subject = schema.getSubject();
-        this.version = schema.getVersion();
+        this(schema.getId(), schema.getSubject(), schema.getVersion(), schema.getSchemaType(), parsedSchema, config);
+    }
+
+    public Schema(Integer id, String subject, Integer version, String schemaType, Schema.Config config, String exception) {
+        this.id = id;
+        this.subject = subject;
+        this.version = version;
+        this.schemaType = schemaType;
+        this.compatibilityLevel = config != null ? config.getCompatibilityLevel() : null;
+        this.exception = exception;
+    }
+
+    public Schema(Integer id, String subject, Integer version, String schemaType, ParsedSchema parsedSchema, Schema.Config config) {
+        this.id = id;
+        this.subject = subject;
+        this.version = version;
         this.compatibilityLevel = config.getCompatibilityLevel();
 
         try {
             if (parsedSchema == null) {
-                throw new AvroTypeException("Failed to parse schema " + schema.getSubject());
+                throw new AvroTypeException("Failed to parse schema " + subject);
             }
             this.references = parsedSchema.references();
             this.schema = parsedSchema.rawSchema().toString();
-            this.schemaType = schema.getSchemaType();
-            if (schemaType.equals(AvroSchema.TYPE)) {
+            this.schemaType = schemaType;
+            if (AvroSchema.TYPE.equals(schemaType)) {
                 this.avroSchema = parser.parse(this.schema);
-            } else if ( schemaType.equals(JsonSchema.TYPE)) {
-                this.jsonSchema = ((JsonSchema)parsedSchema).toJsonNode();
-            } else if ( schemaType.equals(ProtobufSchema.TYPE)) {
+            } else if (JsonSchema.TYPE.equals(schemaType)) {
+                this.jsonSchema = ((JsonSchema) parsedSchema).toJsonNode();
+            } else if (ProtobufSchema.TYPE.equals(schemaType)) {
                 this.schema = parsedSchema.canonicalString();
             }
         } catch (AvroTypeException e) {

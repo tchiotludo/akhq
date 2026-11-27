@@ -5,6 +5,9 @@ import java.io.IOException;
 import org.akhq.configs.Connection;
 import org.akhq.configs.SchemaRegistryType;
 import org.akhq.modules.KafkaModule;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioSchemaRegistryClient;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioSchemaSerializer;
+import org.akhq.modules.schemaregistry.apicurio.ResolvedApicurioSchema;
 
 import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -20,9 +23,30 @@ public class RecordWithSchemaSerializerFactory {
     private final KafkaModule kafkaModule;
 
     public SchemaSerializer createSerializer(String clusterId, int schemaId) {
-        ParsedSchema parsedSchema = retrieveSchema(clusterId, schemaId);
         SchemaRegistryType schemaRegistryType = getSchemaRegistryType(clusterId);
+        if (schemaRegistryType == SchemaRegistryType.APICURIO) {
+            return createApicurioSerializer(clusterId, schemaId);
+        }
+        ParsedSchema parsedSchema = retrieveSchema(clusterId, schemaId);
         return createSerializer(schemaId, parsedSchema, schemaRegistryType);
+    }
+
+    private SchemaSerializer createApicurioSerializer(String clusterId, int schemaId) {
+        ApicurioSchemaRegistryClient apicurioClient = kafkaModule.getApicurioSchemaRegistryClient(clusterId);
+        if (apicurioClient == null) {
+            throw new IllegalStateException("Cluster '" + clusterId + "' has no Apicurio schema registry configured");
+        }
+        try {
+            ResolvedApicurioSchema resolved = apicurioClient.resolveById(
+                schemaId,
+                apicurioClient.defaultLookupHintForConfiguredUseId()
+            );
+            return new ApicurioSchemaSerializer(schemaId, resolved.parsedSchema(), apicurioClient.getConfig());
+        } catch (IOException | RestClientException e) {
+            String errorMsg = String.format("Can't retrieve schema %d in Apicurio registry", schemaId);
+            log.error(errorMsg, e);
+            throw new RuntimeException(errorMsg, e);
+        }
     }
 
     public SchemaSerializer createSerializer(int schemaId, ParsedSchema parsedSchema, SchemaRegistryType schemaRegistryType) {
