@@ -70,7 +70,8 @@ akhq:
         bootstrap.servers: "kafka:9092"
       schema-registry:
         url: "http://schema-registry:8085" # schema registry url (optional)
-        type: "confluent" # schema registry type (optional). Supported types are "confluent" (default) or "tibco"
+        type: "confluent" # schema registry type (optional). Supported types are "confluent" (default), "tibco", "glue", or "apicurio"
+        # apicurio-group-id: "my-group" # optional, Apicurio only: restrict to and default to a specific group (omit to show all groups)
         # Basic Auth user / pass
         basic-auth-username: basic-auth-user
         basic-auth-password: basic-auth-pass

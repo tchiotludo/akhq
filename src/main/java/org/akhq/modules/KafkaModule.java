@@ -19,6 +19,9 @@ import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
 import org.akhq.configs.Connection;
 import org.akhq.configs.Default;
+import org.akhq.configs.SchemaRegistryType;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioConfig;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioSchemaRegistryClient;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -30,6 +33,7 @@ import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.akhq.clients.connect.KafkaConnectApiClient;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -225,7 +229,7 @@ public class KafkaModule {
 
         Connection connection = this.getConnection(clusterId);
 
-        if (connection.getSchemaRegistry() != null) {
+        if (connection.getSchemaRegistry() != null && connection.getSchemaRegistry().getType() != SchemaRegistryType.APICURIO) {
             RestService restService = new RestService(
                 connection.getSchemaRegistry().getUrl()
             );
@@ -273,6 +277,7 @@ public class KafkaModule {
     }
 
     private final Map<String, SchemaRegistryClient> registryClient = new HashMap<>();
+    private final Map<String, ApicurioSchemaRegistryClient> apicurioRegistryClient = new ConcurrentHashMap<>();
 
 
     public SchemaRegistryClient getRegistryClient(String clusterId) throws InvalidClusterException {
@@ -280,10 +285,12 @@ public class KafkaModule {
             throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
         }
 
+        Connection connection = this.getConnection(clusterId);
+        if (connection.getSchemaRegistry() != null && connection.getSchemaRegistry().getType() == SchemaRegistryType.APICURIO) {
+            return null;
+        }
+
         if (!this.registryClient.containsKey(clusterId)) {
-            Connection connection = this.getConnection(clusterId);
-
-
             List<SchemaProvider> providers = new ArrayList<>();
             providers.add(new AvroSchemaProvider());
             providers.add(new JsonSchemaProvider());
@@ -301,6 +308,22 @@ public class KafkaModule {
         }
 
         return this.registryClient.get(clusterId);
+    }
+
+    public ApicurioSchemaRegistryClient getApicurioSchemaRegistryClient(String clusterId) throws InvalidClusterException {
+        if (!this.clusterExists(clusterId)) {
+            throw new InvalidClusterException(INVALID_CLUSTER + clusterId + "'");
+        }
+
+        Connection connection = this.getConnection(clusterId);
+        if (connection.getSchemaRegistry() == null || connection.getSchemaRegistry().getType() != SchemaRegistryType.APICURIO) {
+            return null;
+        }
+
+        return this.apicurioRegistryClient.computeIfAbsent(
+            clusterId,
+            id -> new ApicurioSchemaRegistryClient(new ApicurioConfig(connection.getSchemaRegistry()))
+        );
     }
 
     private final Map<String, Map<String, KafkaConnectApiClient>> connectRestClient = new HashMap<>();

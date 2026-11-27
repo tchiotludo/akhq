@@ -193,6 +193,11 @@ dependencies {
     // AWS Glue serde
     implementation ("software.amazon.glue:schema-registry-serde:2.0.2")
 
+    // Apicurio Schema Registry
+    implementation("io.apicurio:apicurio-registry-java-sdk:${apicurioRegistryVersion}") {
+        exclude group: "io.apicurio", module: "apicurio-registry-java-sdk-adapter-vertx"
+    }
+
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
 }
 

@@ -14,6 +14,7 @@ import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import lombok.*;
 import org.akhq.configs.SchemaRegistryType;
+import org.akhq.modules.schemaregistry.apicurio.ApicurioRecordDeserializer;
 import org.akhq.utils.AvroToJsonDeserializer;
 import org.akhq.utils.AvroToJsonSerializer;
 import org.akhq.utils.ConsumerOffsetsDecoder;
@@ -23,6 +24,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.coordinator.transaction.TransactionLog;
@@ -102,6 +104,10 @@ public class Record {
     @JsonIgnore
     private Deserializer awsGlueKafkaDeserializer;
     @JsonIgnore
+    private ApicurioRecordDeserializer apicurioRecordDeserializer;
+    @JsonIgnore
+    private Headers rawHeaders;
+    @JsonIgnore
     private final ConsumerOffsetsDecoder consumerOffsetsDecoder = new ConsumerOffsetsDecoder();
 
     public Record(RecordMetadata record, SchemaRegistryType schemaRegistryType, byte[] bytesKey, byte[] bytesValue, List<KeyValue<String, String>> headers, Topic topic, Deserializer awsGlueKafkaDeserializer) {
@@ -112,11 +118,11 @@ public class Record {
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.bytesKey = bytesKey;
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
-        this.keySchemaId = getAvroSchemaId(this.bytesKey);
-        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
+        this.keySchemaId = getAvroSchemaId(this.bytesKey, true);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey, true);
         this.bytesValue = bytesValue;
-        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
-        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue, false);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue, false);
         this.headers = headers;
         this.truncated = false;
     }
@@ -124,6 +130,27 @@ public class Record {
     public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
                   Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
                   ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer) {
+        this(
+            client,
+            record,
+            schemaRegistryType,
+            kafkaAvroDeserializer,
+            kafkaJsonDeserializer,
+            kafkaProtoDeserializer,
+            avroToJsonSerializer,
+            protobufToJsonDeserializer,
+            avroToJsonDeserializer,
+            bytesValue,
+            topic,
+            awsGlueKafkaDeserializer,
+            null
+        );
+    }
+
+    public Record(SchemaRegistryClient client, ConsumerRecord<byte[], byte[]> record, SchemaRegistryType schemaRegistryType, Deserializer kafkaAvroDeserializer,
+                  Deserializer kafkaJsonDeserializer, Deserializer kafkaProtoDeserializer, AvroToJsonSerializer avroToJsonSerializer,
+                  ProtobufToJsonDeserializer protobufToJsonDeserializer, AvroToJsonDeserializer avroToJsonDeserializer, byte[] bytesValue, Topic topic, Deserializer awsGlueKafkaDeserializer,
+                  ApicurioRecordDeserializer apicurioRecordDeserializer) {
         if (schemaRegistryType == SchemaRegistryType.TIBCO) {
             this.MAGIC_BYTE = (byte) 0x80;
         } else {
@@ -135,13 +162,15 @@ public class Record {
         this.offset = record.offset();
         this.timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneId.systemDefault());
         this.timestampType = record.timestampType();
+        this.rawHeaders = record.headers();
         this.bytesKey = record.key();
         this.awsGlueKafkaDeserializer = awsGlueKafkaDeserializer;
-        this.keySchemaId = getAvroSchemaId(this.bytesKey);
-        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey);
+        this.apicurioRecordDeserializer = apicurioRecordDeserializer;
+        this.keySchemaId = getAvroSchemaId(this.bytesKey, true);
+        this.keySubject = getAvroSchemaSubject(this.keySchemaId, this.bytesKey, true);
         this.bytesValue = bytesValue;
-        this.valueSchemaId = getAvroSchemaId(this.bytesValue);
-        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue);
+        this.valueSchemaId = getAvroSchemaId(this.bytesValue, false);
+        this.valueSubject = getAvroSchemaSubject(this.valueSchemaId, this.bytesValue, false);
         for (Header header: record.headers()) {
             String headerValue = String.valueOf(ContentUtils.convertToObject(header.value()));
             this.headers.add(new KeyValue<>(header.key(), headerValue));
@@ -204,6 +233,21 @@ public class Record {
     private String convertToString(byte[] payload, String schemaId, boolean isKey) {
         if (payload == null) {
             return null;
+        } else if (this.apicurioRecordDeserializer != null
+            && (schemaId != null || this.apicurioRecordDeserializer.canDeserialize(this.rawHeaders, payload, isKey))) {
+            try {
+                return this.apicurioRecordDeserializer.deserialize(
+                    this.topic.getName(),
+                    this.rawHeaders,
+                    payload,
+                    isKey,
+                    this.avroToJsonSerializer
+                );
+            } catch (Exception exception) {
+                this.exceptions.add(exception.getMessage());
+
+                return new String(payload);
+            }
         } else if (schemaId != null) {
             try {
 
@@ -350,11 +394,14 @@ public class Record {
         return TransactionLog.read(ByteBuffer.wrap(this.bytesKey), ByteBuffer.wrap(payload)).toString();
     }
 
-    private String getAvroSchemaId(byte[] payload) {
+    private String getAvroSchemaId(byte[] payload, boolean isKey) {
         if (topic.isInternalTopic()) {
             return null;
         }
         try {
+            if (apicurioRecordDeserializer != null) {
+                return apicurioRecordDeserializer.extractSchemaId(this.rawHeaders, payload, isKey);
+            }
 
             if (awsGlueKafkaDeserializer!= null) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
@@ -377,7 +424,17 @@ public class Record {
         return null;
     }
 
-    private String getAvroSchemaSubject(String schemaId, byte[] payload) {
+    private String getAvroSchemaSubject(String schemaId, byte[] payload, boolean isKey) {
+        if (topic.isInternalTopic()) {
+            return null;
+        }
+        if (apicurioRecordDeserializer != null) {
+            try {
+                return apicurioRecordDeserializer.extractSchemaSubject(this.rawHeaders, payload, isKey);
+            } catch (Exception ignore) {
+                return null;
+            }
+        }
         if (schemaId == null || client == null) {
             return null;
         }

@@ -44,9 +44,10 @@ module.exports = {
           {
             text: 'Schema Registry',
             children: [
+              '/docs/configuration/schema-registry/apicurio.md',
               '/docs/configuration/schema-registry/tibco.md',
-                '/docs/configuration/schema-registry/glue.md',
-                '/docs/configuration/schema-registry/schema-references.md',
+              '/docs/configuration/schema-registry/glue.md',
+              '/docs/configuration/schema-registry/schema-references.md',
             ]
           },
           {

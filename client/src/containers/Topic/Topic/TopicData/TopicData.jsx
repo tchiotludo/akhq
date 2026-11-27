@@ -777,7 +777,7 @@ class TopicData extends Root {
     this.getApi(uriSchemaId(selectedCluster, id, selectedTopic)).then(response => {
       if (response.data) {
         this.props.router.navigate({
-          pathname: `/ui/${selectedCluster}/schema/details/${response.data.subject}`,
+          pathname: `/ui/${selectedCluster}/schema/details/${encodeURIComponent(response.data.subject)}`,
           schemaId: response.data.subject
         });
       } else {
